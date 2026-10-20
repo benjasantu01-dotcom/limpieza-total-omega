@@ -287,13 +287,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre archivos recursivamente manejando fallos de acceso a directorios de forma elegante.
+    Recorre archivos recursivamente manejando fallos de acceso a directorios de forma eficiente.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     while stack:
         current_dir = stack.pop()
@@ -304,14 +304,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
-                        st = entry.stat(follow_symlinks=False)
-                        if entry.is_dir():
+                        if entry.is_dir(follow_symlinks=False):
+                            st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
-                        elif entry.is_file():
-                            yield Path(entry.path), st.st_size
+                                stack.append(entry.path)
+                        elif entry.is_file(follow_symlinks=False):
+                            yield Path(entry.path), entry.stat().st_size
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError, NotADirectoryError): 

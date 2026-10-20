@@ -59,6 +59,7 @@ class ScanContext:
     is_junction: JunctionChecker
     visited_files: Set[tuple[int, int]]
     visited_dirs: VisitedDirs
+    never_touch_lower: frozenset[str]
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     """
@@ -183,10 +184,6 @@ def base_directories() -> List[Path]:
         return []
     return []
 
-def _is_excluded_file(name: str) -> bool:
-    """Compara el nombre de un archivo contra la lista de elementos bloqueados (NEVER_TOUCH)."""
-    return name.lower() in NEVER_TOUCH
-
 @safe_path_operation(False)
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """Consulta la API de Win32 para verificar atributos ocultos o de sistema."""
@@ -196,9 +193,9 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     """Determina si un objeto del sistema debe ser excluido del escaneo."""
-    if _is_excluded_file(entry.name): return True
+    if entry.name.lower() in ctx.never_touch_lower: return True
     path_str = entry.path
-    if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in path_str): return True
+    if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
     
     try:
         if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): return True
@@ -207,12 +204,8 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """Recorrido recursivo depth-first: suma el peso de archivos únicos evitando ciclos."""
-    if not root_path or depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
-        return ScanResult(0, True)
+    if depth > MAX_SCAN_DEPTH: return ScanResult(0, True)
     
-    if not _is_within_sandbox(Path(root_path), ctx.sandbox_base):
-        return ScanResult(0, True)
-
     norm_path = os.path.normcase(root_path)
     if norm_path in ctx.visited_dirs: return ScanResult(0, True)
     ctx.visited_dirs.add(norm_path)
@@ -249,7 +242,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not is_safe_to_modify(resolved) or is_protected_path(resolved): return 0
     
     res_str = str(resolved)
-    ctx = ScanContext(Path(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set())
+    ctx = ScanContext(Path(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
     return _sum_directory_recursive(res_str, ctx, 0).bytes_found
 
 @safe_path_operation(False)
@@ -260,14 +253,13 @@ def _is_valid_cache_path(candidate: Path, base: Path) -> bool:
     try:
         real = candidate.resolve(strict=True)
         if not _is_within_sandbox(real, base): return False
-        return not (candidate.is_symlink() or _IS_JUNCTION_FN(str(real)) or _is_excluded_file(candidate.name))
+        return not (candidate.is_symlink() or _IS_JUNCTION_FN(str(real)) or candidate.name.lower() in NEVER_TOUCH)
     except (OSError, RuntimeError): return False
 
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve la ruta completa del caché a partir de una base normalizada usando partes de ruta."""
     if not rel_str or not _is_valid_rel_path(rel_str): return Path()
-    # Construcción segura mediante unpacking de las partes separadas por backslash
     target = real_base.joinpath(*rel_str.split("\\"))
     if not target.exists() or not target.is_dir(): return Path()
     return target
@@ -285,7 +277,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path) or not base.exists(): continue
         try:
             real_base = base.resolve(strict=True)
-            ctx = ScanContext(real_base, kernel, _IS_JUNCTION_FN, set(), set())
+            ctx = ScanContext(real_base, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
             
             for browser_key, relative_path in browser_map.items():
                 candidate = _resolve_browser_path(real_base, relative_path)
