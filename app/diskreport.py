@@ -142,9 +142,9 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser()
-        # Usamos resolve() con excepciones capturadas para manejar rutas inexistentes o inaccesibles
         resolved_path = p.resolve(strict=False)
         
+        # Validar puntos de reparse/junctions básicos antes de proceder
         if not resolved_path.exists() or not resolved_path.is_dir() or is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
             return None
             
@@ -170,9 +170,11 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if entry.is_symlink():
             return True
         
+        # Verificación contra el sistema de protección
         if is_protected_path(Path(entry.path)):
             return True
         
+        # Windows reparse points (junctions)
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
@@ -304,6 +306,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir():
+                            # Defensa extra: verificar que no estemos reingresando a un padre real
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)

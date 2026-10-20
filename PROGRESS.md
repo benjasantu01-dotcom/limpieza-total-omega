@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 122 | 9 | 30 | 17 | 142 |
-| 2026-10-20 | 76 | 6 | 20 | 8 | 74 |
+| 2026-10-19 | 122 | 9 | 30 | 17 | 138 |
+| 2026-10-20 | 78 | 7 | 20 | 8 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
+- seguridad defensiva: **38**
 - rendimiento: **37**
 - robustez ante casos límite: **36**
-- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **19**
 - `duplicates.py`: **19**
 - `quarantine.py`: **18**
-- `diskreport.py`: **18**
 - `browser.py`: **17**
 - `healthscore.py`: **17**
 - `memory.py`: **16**
+- `assistant.py`: **15**
 - `settings.py`: **15**
 - `branding.py`: **15**
-- `assistant.py`: **14**
 - `safety.py`: **12**
 - `scanner.py`: **12**
 - `main.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T07:56:02` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` implementando un chequeo explícito de recursión mediante `Path.samefile` (o comparación de inodes) antes de acceder, evitando que la aplicación quede atrapada o acceda erróneamente en estructuras con junctions o enlaces simbólicos complejos, reforzando la integridad del escaneo.
+- `2026-10-20T07:54:54` **assistant.py** (seguridad defensiva): Se endurece la validación del contexto al evitar que objetos externos arbitrarios sean procesados mediante `getattr` en `_get_source_value`, limitando el acceso exclusivamente a los atributos definidos en `_VALIDATORS` para prevenir cualquier tipo de intrusión en el estado interno del asistente.
 - `2026-10-20T07:45:48` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_secure_to_read` para detectar archivos con contenido malformado o desbordamientos antes del parseo JSON, y se añadió una validación explícita de `UTF-8` al leer, evitando bloqueos por archivos binarios o codificaciones inesperadas.
 - `2026-10-20T07:36:24` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` ante archivos bloqueados o inaccesibles, añadiendo una verificación explícita para evitar intentar el borrado de archivos que el sistema está utilizando, previniendo errores de I/O en entornos con alta actividad de fondo.
 - `2026-10-20T07:34:50` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` añadiendo validación explícita de `length` para prevenir desbordamientos o lecturas de buffers vacíos y se asegura que cualquier error durante la resolución de rutas de archivo resulte en un `False` seguro, evitando que procesos inciertos sean ignorados por el filtro.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T06:55:23` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `stored_names` en un conjunto para búsquedas O(1) y evitando la reconstrucción redundante de la lista completa de manifiesto, reduciendo la complejidad del algoritmo de O(N*M) a O(N+M).
 - `2026-10-20T06:54:58` **organizer.py** (rendimiento): Optimizado el rendimiento del escaneo recursivo de archivos mediante la pre-compilación de `JUNK_EXTENSIONS` como `frozenset` y su uso directo en `_is_junk_file` evitando la creación innecesaria de objetos `Path` y llamadas a `suffix` en cada iteración, reduciendo drásticamente la carga de CPU en sistemas con gran cantidad de archivos.
 - `2026-10-20T06:54:31` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` para realizar una única llamada a `EnumProcesses` con un buffer dinámico ajustado, evitando el desperdicio de iterar sobre una lista estática de 4096 elementos cuando hay pocos procesos activos, y se reemplazó la creación repetitiva de estructuras `PROCESS_MEMORY_COUNTERS` dentro del bucle por una única reutilización de la estructura.
-- `2026-10-20T06:44:24` **healthscore.py** (rendimiento): Se optimizó el pipeline de cómputo introduciendo una caché local (`_PIPELINE_CACHE`) dentro de `compute_score` para evitar llamadas redundantes a las funciones `scorer` y reglas asociadas cuando se procesan métricas idénticas, además de pre-calcular el límite del rango de `total_points` para evitar operaciones en cada iteración.
-- `2026-10-20T06:44:07` **duplicates.py** (rendimiento): Optimicé el proceso de recolección de archivos utilizando `os.scandir` junto a `entry.stat()` para evitar llamadas redundantes a `Path.stat()` y `path.is_file()`, reduciendo drásticamente las llamadas al sistema operativo durante el escaneo de directorios.

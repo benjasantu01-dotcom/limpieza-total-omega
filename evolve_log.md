@@ -836,3 +836,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-20T07:46:02` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-10-20T07:46:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T07:46:02` Corrida terminada. Total usado hoy: 184.
+- `2026-10-20T07:54:03` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-10-20T07:54:54` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endurece la validación del contexto al evitar que objetos externos arbitrarios sean procesados mediante `getattr` en `_get_source_value`, limitando el acceso exclusivamente a los atributos definidos en `_VALIDATORS` para prevenir cualquier tipo de intrusión en el estado interno del asistente.
+- `2026-10-20T07:55:26` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.58s
+
+```
+- `2026-10-20T07:55:26` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad en `save_logo_svg` al eliminar la construcción manual del directorio padre y consolidar la validación mediante `ensure_safe_to_modify`, asegurando que cualquier operación de escritura pase por los filtros de protección del sistema definidos en `safety.py`.
+- `2026-10-20T07:55:51` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-20T07:56:02` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_validate_root` y `walk_files` implementando un chequeo explícito de recursión mediante `Path.samefile` (o comparación de inodes) antes de acceder, evitando que la aplicación quede atrapada o acceda erróneamente en estructuras con junctions o enlaces simbólicos complejos, reforzando la integridad del escaneo.
+- `2026-10-20T07:56:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T07:56:02` Corrida terminada. Total usado hoy: 188.

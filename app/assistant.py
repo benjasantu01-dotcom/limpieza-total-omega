@@ -506,8 +506,8 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     if depth > _MAX_NESTING_DEPTH or not _is_safe_key(key): return None
     try:
         if isinstance(source, dict): return source.get(key)
-        val = getattr(source, key, None)
-        return val if not callable(val) else None
+        # Acceso restringido exclusivamente a campos de contexto permitidos
+        return getattr(source, key, None) if key in _VALIDATORS or key == "grade" else None
     except Exception:
         return None
 
