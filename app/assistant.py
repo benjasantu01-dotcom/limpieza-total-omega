@@ -83,7 +83,7 @@ _MAX_NESTING_DEPTH: Final[int] = 2
 _MAX_COLLECTION_SIZE: Final[int] = 20
 _MAX_GRADE_LEN: Final[int] = 10
 
-# Estructura fija para resumen de contexto: (clave_métrica, unidad_legible, precisión_decimal)
+# Esquema que define qué métricas se serializan al motor remoto (clave, sufijo, precisión)
 _CONTEXT_SCHEMA: Final = (
     ("score", "", 0), ("junk_mb", " MB", 0), ("suspicious_count", "", 0), 
     ("memory_available_percent", "%", 0), ("disk_free_percent", "%", 0),
@@ -291,6 +291,7 @@ _EXPLANATION_MAP: Final[Dict[str, str]] = {
     "inicio": "Programas que arrancan con Windows: cada entrada incrementa el tiempo de inicio y el consumo base de memoria.",
 }
 
+# Diccionario central de especificaciones: define rangos lógicos y tipos para validación de datos
 _VALIDATORS: Final[dict[str, MetricSpec]] = {
     "junk_mb": MetricSpec(float, 0.0, 1e9),
     "suspicious_count": MetricSpec(int, 0, 10000),

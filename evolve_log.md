@@ -480,3 +480,12 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-20T14:46:42` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_read_and_parse_json` al implementar una validación estricta contra archivos inusualmente grandes o con formato incorrecto antes de procesarlos, asegurando que cualquier entrada maliciosa o corrupta sea descartada mediante una comprobación de tipo explícita (`isinstance`) antes de intentar cualquier deserialización.
 - `2026-10-20T14:46:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T14:46:42` Corrida terminada. Total usado hoy: 348.
+- `2026-10-20T14:52:19` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-20T14:52:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-20T14:52:26` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-20T14:52:36` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-20T14:53:24` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-20T14:54:08` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de métricas con un nuevo docstring en `_VALIDATORS` y refinando la estructura de `_CONTEXT_SCHEMA` para que su propósito (serialización de contexto) sea evidente, asegurando que la arquitectura del asistente se mantenga autodocumentada para futuros colaboradores.
+- `2026-10-20T14:54:08` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-20T14:54:08` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T14:54:08` Corrida terminada. Total usado hoy: 350.
