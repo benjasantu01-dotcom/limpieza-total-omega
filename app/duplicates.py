@@ -56,10 +56,8 @@ _full_hash_cache: Dict[Path, str] = {}
 def is_junction(path: Path) -> bool:
     """
     Determina si un directorio es un punto de reanálisis (junction) o enlace simbólico.
-    
-    Usa la API de Windows para evitar recursión infinita en bucles del sistema.
     """
-    if not is_safe_to_modify(path):
+    if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     if path.is_symlink():
         return True
@@ -74,6 +72,8 @@ def is_system_or_hidden(path: Path) -> bool:
     """
     Verifica los atributos de bajo nivel (oculto/sistema) mediante Win32 API.
     """
+    if not isinstance(path, Path):
+        return True
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs == -1:
@@ -107,7 +107,7 @@ def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está en uso por otro proceso mediante intento de apertura exclusiva.
     """
-    if not is_safe_to_modify(path):
+    if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     try:
         with open(path, "rb") as f:
@@ -123,9 +123,9 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_path_check(path: Path) -> bool:
     """
     Valida la seguridad de la ruta, verificando protecciones y puntos de reanálisis.
-    
-    Devuelve True solo si la ruta es accesible y no representa un riesgo sistémico.
     """
+    if not isinstance(path, Path):
+        return False
     try:
         resolved_path = path.resolve()
         return (is_safe_to_modify(path) and 
@@ -139,10 +139,8 @@ def _safe_path_check(path: Path) -> bool:
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """
     Filtro previo: valida si un archivo debe ser considerado para análisis.
-    
-    Excluye archivos ocultos, de sistema, bloqueados o de tamaño nulo.
     """
-    if st_size <= 0:
+    if not isinstance(path, Path) or st_size <= 0:
         return False
     if is_system_or_hidden(path):
         return False
@@ -154,8 +152,6 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo (Paso 3) leyendo en bloques de 1MB.
-    
-    Retorna el hash hexadecimal o None si el archivo es inaccesible o inseguro.
     """
     if not isinstance(path, Path): return None
     if path in _full_hash_cache:
@@ -179,8 +175,6 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula el hash SHA256 de los primeros 64KB (Paso 2) usando caché de resultados.
-    
-    Es significativamente más rápido que el hash completo para archivos grandes.
     """
     if not isinstance(path, Path): return None
     if path in _partial_cache:
@@ -204,16 +198,14 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """
     Agrupa una lista de rutas por su tamaño en bytes (Paso 1).
-    
-    Solo incluye archivos válidos que pasaron los filtros de seguridad.
     """
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     if paths is None:
         return groups_by_size
-    for path_str in paths:
-        if not path_str: continue
+    for item in paths:
+        if not item: continue
         try:
-            path_obj = Path(path_str)
+            path_obj = Path(item)
             if path_obj.is_file() and _safe_path_check(path_obj):
                 file_size = path_obj.stat().st_size
                 if _is_valid_candidate(path_obj, file_size):
@@ -285,6 +277,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """Aplica una función de hashing (parcial o completa) y retorna grupos de colisión."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
+    if not paths: return {}
     for path in paths:
         if not isinstance(path, Path): continue
         if (digest_val := hash_func(path)):
@@ -313,6 +306,7 @@ def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """Orquesta la detección de duplicados mediante recolección, filtrado y hashing."""
+    if not directories: return []
     _partial_cache.clear()
     _full_hash_cache.clear()
     size_map = _collect_candidates(directories, min_size, skip_protected)
@@ -325,7 +319,7 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Calcula la suma total de bytes recuperables de un conjunto de grupos."""
-    if not groups: return 0
+    if not groups or not isinstance(groups, Sequence): return 0
     return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
@@ -333,8 +327,9 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """
     Retorna metadatos (tiempo de modificación, longitud ruta) para la elección del keeper.
     """
+    if not isinstance(path, Path): return None
     try:
-        if not isinstance(path, Path) or not path.is_file():
+        if not path.is_file():
             return None
         stat_info = path.stat()
         return float(stat_info.st_mtime), len(str(path))
@@ -365,7 +360,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
     """Retorna una etiqueta textual para diferenciar el original de los duplicados."""
-    if keeper is None:
+    if keeper is None or not isinstance(path, Path):
         return "[?]"
     return "[conservar]" if path == keeper else "[duplicado]"
 

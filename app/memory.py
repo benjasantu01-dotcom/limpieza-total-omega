@@ -322,18 +322,22 @@ def _is_process_executable_safe(pid: int, handle: int, psapi: Any) -> bool:
     if not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
+    length = psapi.GetModuleFileNameExW(handle, None, buffer_path, 4095)
+    
+    if length <= 0:
+        return False
+        
+    exe_str = buffer_path.value.strip()
+    if not exe_str: 
+        return False
+        
     try:
-        length = psapi.GetModuleFileNameExW(handle, None, buffer_path, 4095)
-        if length > 0:
-            exe_str = buffer_path.value.strip()
-            if not exe_str: return False
-            # Resolvemos a una ruta absoluta antes de verificar contra la lista de protegidos
-            executable_path = Path(exe_str).absolute().resolve(strict=False)
-            if not executable_path.exists(): return False
-            return not is_protected_path(executable_path)
+        executable_path = Path(exe_str).absolute().resolve(strict=False)
+        if not executable_path.exists(): 
+            return False
+        return not is_protected_path(executable_path)
     except (OSError, RuntimeError, ValueError, TypeError):
-        pass
-    return False
+        return False
 
 def _process_from_pid(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
     """Intenta obtener, medir y validar la seguridad de un proceso individual."""
