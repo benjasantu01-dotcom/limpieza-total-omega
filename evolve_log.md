@@ -1204,3 +1204,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-20T11:11:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-10-20T11:11:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T11:11:46` Corrida terminada. Total usado hoy: 264.
+- `2026-10-20T11:18:01` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-20T11:18:28` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.__post_init__, SystemMetrics.safe_get, SystemMetrics.validate
+- `2026-10-20T11:19:35` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de **invalidación selectiva de caché mediante `state_digests`** en el método `on_full_analysis` y se consolidó el uso del `ThreadPoolExecutor` para asegurar que las tareas pesadas no saturen el hilo principal, reduciendo significativamente la redundancia de procesamiento en análisis recurrentes.
+- `2026-10-20T11:20:35` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-20T11:21:05` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimizamos la recolección de procesos moviendo la instanciación de las librerías `kernel32` y `psapi` fuera del bucle de iteración de PIDs y limitando la resolución de `Path` a procesos que realmente superan el umbral mínimo de consumo, reduciendo drásticamente las llamadas costosas al sistema de archivos.
+- `2026-10-20T11:21:15` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-20T11:21:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T11:21:15` Corrida terminada. Total usado hoy: 268.
