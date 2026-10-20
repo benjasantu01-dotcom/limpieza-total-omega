@@ -37,7 +37,14 @@ RGBTuple: TypeAlias = Tuple[int, int, int]
 CoordinateSequence: TypeAlias = Tuple[float, ...]
 
 class UIConfiguration(NamedTuple):
-    """Contenedor inmutable de parámetros globales de identidad visual."""
+    """Contenedor inmutable de parámetros globales de identidad visual.
+    
+    Attributes:
+        font_family: Fuente base utilizada en la interfaz (default: Segoe UI).
+        header_size: Tamaño de fuente para encabezados.
+        body_size: Tamaño de fuente para texto estándar.
+        bold_weight: Grosor de fuente para énfasis (normalmente 'bold').
+    """
     font_family: str = "Segoe UI"
     header_size: int = 23
     body_size: int = 12
@@ -63,7 +70,7 @@ _SVG_GRADIENT_STOPS: Final[str] = "\n".join(
     for o, c in zip(("0%", "55%", "100%"), ("#00f0c0", "#7c5cff", "#ff2d78"))
 )
 
-# Plantilla SVG parametrizada
+# Plantilla SVG parametrizada con marcadores de posición para inyección segura
 _SVG_TEMPLATE: Final[str] = """<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}</linearGradient>
@@ -90,7 +97,13 @@ class CanvasElement(Protocol):
     def create_arc(self, x0: float, y0: float, x1: float, y1: float, *, start: float, extent: float, style: str = ..., outline: str = ..., width: int = ...) -> int: ...
 
 class ColorSegment(NamedTuple):
-    """Define una sección contigua de colores para optimizar el dibujo de gradientes mediante segmentación."""
+    """Define una sección contigua de colores para optimizar el dibujo de gradientes mediante segmentación.
+    
+    Attributes:
+        hex_color: Código hexadecimal de color para el segmento.
+        start_index: Índice de inicio en el rango global.
+        end_index: Índice final (exclusivo) en el rango global.
+    """
     hex_color: ColorHex
     start_index: int
     end_index: int

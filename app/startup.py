@@ -130,7 +130,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae la ruta absoluta dentro de comillas, validando contra Path Traversal y límites de MAX_PATH.
+        Extracts the absolute path within quotes, validating against Path Traversal and MAX_PATH limits.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -359,11 +359,12 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         for row in reader:
             if not isinstance(row, dict): continue
             
-            # Validar que los campos existan antes de acceder
             raw_val_name = row.get("Name")
             raw_val_cmd = row.get("Value")
             
-            if not isinstance(raw_val_name, str) or not isinstance(raw_val_cmd, str):
+            # Validación estricta: asegurar que ambos campos contengan texto no vacío
+            if not (isinstance(raw_val_name, str) and raw_val_name.strip()) or \
+               not (isinstance(raw_val_cmd, str) and raw_val_cmd.strip()):
                 continue
             
             if _is_registry_entry_safe(raw_val_name, raw_val_cmd, seen_commands):
@@ -401,7 +402,6 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
             capture_output=True, text=True, timeout=10, check=False
         )
         if process.stdout:
-            # Filtramos líneas vacías o de encabezado CSV malformado
             lines = [line.strip() for line in process.stdout.splitlines() if line.strip()]
             if len(lines) > 1:
                 return parse_registry_csv("\n".join(lines))

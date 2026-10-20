@@ -343,7 +343,7 @@ def _read_and_parse_json(file_path: Path) -> tuple[Optional[str], Optional[Setti
         return None, None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Asegura coherencia entre los valores cargados y la lógica de seguridad predefinida."""
+    """Asegura coherencia y tipos correctos entre los valores cargados y la lógica de seguridad."""
     final = dict(DEFAULTS)
     for key, val in settings.items():
         key_enum = ConfigKey(key) if key in _KEY_TO_ENUM else None
