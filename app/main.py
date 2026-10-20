@@ -268,9 +268,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Verifica existencia de un widget de Tkinter/CTk de forma genérica."""
         return hasattr(widget, 'winfo_exists') and widget.winfo_exists()
 
-    def _sanitize_path(self, path: Union[str, Path]) -> str:
+    def _sanitize_path(self, path: Union[str, Path, Any]) -> str:
         """Limpia caracteres no imprimibles y espacios excesivos para evitar inyecciones."""
         if path is None: return ""
+        if not isinstance(path, (str, Path)): return ""
         return "".join(c for c in str(path) if c.isprintable()).strip()
 
     def _ensure_safe_path_for_action(self, path: Union[str, Path]) -> Path:
@@ -1023,17 +1024,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _safe_get_entry_value(self, entry_widget: Any, default: Any, numeric: bool = False) -> Any:
         """Extrae de forma segura el valor ingresado en un widget, validando su estado."""
+        if not self._check_widget_integrity(entry_widget):
+            return default
         try:
-            if not self._check_widget_integrity(entry_widget):
-                return default
             raw = entry_widget.get().strip()
             if not raw:
                 return default
-            # Sanitizar entrada incluso si se espera un número
-            clean_raw = self._sanitize_path(raw)
             if numeric:
-                return self._validate_numeric_setting(clean_raw, default)
-            return clean_raw
+                return self._validate_numeric_setting(raw, default)
+            return self._sanitize_path(raw)
         except (ValueError, TypeError, tk.TclError, AttributeError):
             return default
 

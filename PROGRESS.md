@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 22
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 109 | 9 | 27 | 13 | 114 |
-| 2026-10-20 | 87 | 7 | 21 | 9 | 108 |
+| 2026-10-19 | 106 | 9 | 26 | 13 | 114 |
+| 2026-10-20 | 90 | 7 | 21 | 10 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
-- legibilidad y documentación: **40**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **42**
+- legibilidad y documentación: **37**
 - rendimiento: **37**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `duplicates.py`: **18**
-- `quarantine.py`: **17**
+- `healthscore.py`: **17**
 - `browser.py`: **16**
-- `healthscore.py`: **16**
 - `memory.py`: **16**
+- `quarantine.py`: **16**
 - `settings.py`: **15**
 - `assistant.py`: **15**
 - `branding.py`: **15**
-- `safety.py`: **13**
-- `scanner.py`: **12**
-- `main.py`: **10**
+- `safety.py`: **12**
+- `main.py`: **11**
+- `scanner.py`: **11**
 - `organizer.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T09:59:58` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_get_entry_value` y `_collect_settings` agregando validaciones de tipo y estructura para prevenir errores de ejecución al procesar datos del usuario, asegurando que las entradas numéricas y las cadenas sean procesadas de manera segura.
+- `2026-10-20T09:58:04` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` implementando una validación explícita de la suma de puntos calculados tras iterar el pipeline, asegurando que si los pesos no suman 100 o ocurre un error de cómputo, el resultado refleje la inconsistencia en lugar de devolver un valor potencialmente engañoso, además de proteger el acceso a los pesos durante la iteración.
+- `2026-10-20T09:57:01` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validación explícita para evitar errores en rutas que contienen símbolos `NUL` o estructuras de nombres inválidas, y asegurando que las excepciones de sistema al acceder a atributos de archivos (como `st_size`) se capturen sin detener el escaneo completo.
 - `2026-10-20T09:48:49` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `detect_profiles` y `base_directories` validando explícitamente los tipos de entrada y el estado de las rutas, asegurando que cualquier valor inesperado (`None`, tipos incorrectos o rutas inexistentes) no provoque excepciones innecesarias ni un comportamiento de escaneo impredecible.
 - `2026-10-20T09:48:32` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` validando la existencia y el tipo del directorio padre antes de intentar la escritura, y se reforzó `_hex_to_rgb` y `_rgb_to_hex` con manejo explícito de valores fuera de rango para prevenir excepciones silenciosas en el renderizado de gradientes.
 - `2026-10-20T09:48:00` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `ingest` y `_apply_updates` mediante la validación explícita de tipos y excepciones, asegurando que el estado del objeto `SystemContext` nunca quede parcialmente corrupto o en un estado inválido ante datos externos malformados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T07:56:02` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` implementando un chequeo explícito de recursión mediante `Path.samefile` (o comparación de inodes) antes de acceder, evitando que la aplicación quede atrapada o acceda erróneamente en estructuras con junctions o enlaces simbólicos complejos, reforzando la integridad del escaneo.
 - `2026-10-20T07:54:54` **assistant.py** (seguridad defensiva): Se endurece la validación del contexto al evitar que objetos externos arbitrarios sean procesados mediante `getattr` en `_get_source_value`, limitando el acceso exclusivamente a los atributos definidos en `_VALIDATORS` para prevenir cualquier tipo de intrusión en el estado interno del asistente.
 - `2026-10-20T07:45:48` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_secure_to_read` para detectar archivos con contenido malformado o desbordamientos antes del parseo JSON, y se añadió una validación explícita de `UTF-8` al leer, evitando bloqueos por archivos binarios o codificaciones inesperadas.
-- `2026-10-20T07:36:24` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` ante archivos bloqueados o inaccesibles, añadiendo una verificación explícita para evitar intentar el borrado de archivos que el sistema está utilizando, previniendo errores de I/O en entornos con alta actividad de fondo.
-- `2026-10-20T07:34:50` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` añadiendo validación explícita de `length` para prevenir desbordamientos o lecturas de buffers vacíos y se asegura que cualquier error durante la resolución de rutas de archivo resulte en un `False` seguro, evitando que procesos inciertos sean ignorados por el filtro.
-- `2026-10-20T07:26:29` **main.py** (robustez ante casos límite): Se ha implementado un mecanismo de "graceful shutdown" en `on_closing` para asegurar que el `ThreadPoolExecutor` libere sus recursos de manera ordenada, evitando condiciones de carrera donde hilos huérfanos intenten acceder a la interfaz de usuario durante el proceso de cierre.

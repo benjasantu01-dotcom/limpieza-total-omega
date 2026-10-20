@@ -306,7 +306,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir():
-                            # Defensa extra: verificar que no estemos reingresando a un padre real
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
