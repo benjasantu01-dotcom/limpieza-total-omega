@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 30
-- Sin respuesta de la IA (error o límite): 222
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 29
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 6 | 0 | 2 | 2 | 4 |
+| 2026-10-18 | 5 | 0 | 1 | 1 | 3 |
 | 2026-10-19 | 133 | 11 | 32 | 21 | 153 |
-| 2026-10-20 | 52 | 2 | 14 | 7 | 65 |
+| 2026-10-20 | 54 | 2 | 14 | 7 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **33**
-- rendimiento: **32**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **19**
 - `duplicates.py`: **19**
-- `diskreport.py`: **18**
-- `quarantine.py`: **17**
+- `browser.py`: **17**
 - `healthscore.py`: **16**
-- `browser.py`: **16**
+- `quarantine.py`: **16**
 - `branding.py`: **15**
 - `settings.py`: **15**
 - `assistant.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T06:03:57` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los módulos de datos (`ExtStats`, `FolderMetrics`, `GlobalStats`) y se refinó el uso de `type hints` y `docstrings` en las funciones de procesamiento para aclarar la lógica de negocio y los límites de las operaciones, facilitando el mantenimiento técnico.
+- `2026-10-20T06:03:31` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings detallados en funciones críticas y corrigiendo inconsistencias en la terminología para asegurar que el comportamiento de seguridad (sandbox y exclusiones) sea comprensible para cualquier colaborador senior.
 - `2026-10-20T05:52:47` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de datos al agregar una verificación de tipo explícita en `_SettingsManager.perform_atomic_write` para evitar escrituras de contenido no string (evitando errores en `os.fsync`) y mejoré el manejo de excepciones en `_read_and_parse_json` al capturar `UnicodeDecodeError` ante archivos malformados, garantizando que el sistema siempre retorne un estado válido de fábrica.
 - `2026-10-20T05:52:17` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas mediante la adición de validaciones `None`/vacío explícitas y bloques `try-except` más granulares, asegurando que cualquier fallo en una heurística individual no interrumpa el proceso de escaneo completo.
 - `2026-10-20T05:44:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` capturando excepciones de sistema específicas (como `WindowsError` o errores de acceso de bajo nivel) durante la validación de `SecurityDescriptor`, evitando que una lectura fallida en un archivo inaccesible colapse la validación completa.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T03:51:39` **safety.py** (seguridad defensiva): Se añadió una validación específica en `_validate_preconditions` para detectar si el proceso actual cuenta con privilegios elevados (Administrador) al intentar operar sobre archivos que requieren permisos del sistema, evitando que la herramienta intente modificar archivos críticos aunque estos no estén explícitamente marcados como "bloqueados" por la lista negra.
 - `2026-10-20T03:50:21` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine_file` al introducir un chequeo de coherencia adicional que valida la presencia del archivo destino tras la transferencia, pero antes de cualquier registro en el manifiesto, asegurando que ninguna operación incompleta deje rastros inconsistentes o manifiestos corruptos.
 - `2026-10-20T03:42:33` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `delete_reviewed` al reemplazar `os.path.commonpath` (que puede fallar si las rutas no existen o son ambiguas) por una verificación explícita de `is_relative_to` mediante `pathlib`, garantizando que el archivo a eliminar esté estrictamente dentro de la carpeta de cuarentena y no sea un enlace simbólico, reforzando la protección contra ataques de escalada de privilegios o borrado fuera de la zona segura.
-- `2026-10-20T03:42:15` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de recursos en `trim_working_set` y `_process_from_pid` mediante la implementación de un bloque `try...finally` más estricto y una verificación de estado de handle más conservadora, asegurando que los recursos del sistema sean liberados incluso ante fallos inesperados de la API de Win32, manteniendo el enfoque en la seguridad defensiva.
-- `2026-10-20T03:41:43` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` al sustituir el uso de `Path.home()` (que podría resolverse a rutas inesperadas según el entorno o políticas de usuario) por una verificación explícita mediante `Path.cwd()` y `Path.home()` con `resolve(strict=False)` consistente, además de fortalecer el método `on_save_settings` para garantizar que la escritura de la configuración nunca ocurra en una ruta no autorizada, utilizando `_ensure_path_writable_and_clean` antes de llamar a `settings_mod.update`.
