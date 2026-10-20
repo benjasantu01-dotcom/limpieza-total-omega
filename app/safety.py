@@ -318,8 +318,8 @@ def _is_virtual_drive(path_str: str) -> bool:
     return False
 
 def _is_file_owned_by_system(path_str: str) -> bool:
-    """Valida la propiedad mediante el SID de sistema (SYSTEM/LocalService) y herencia."""
-    if os.name != 'nt' or not isinstance(path_str, str): return False
+    """Valida la propiedad mediante el SID de sistema (SYSTEM/TrustedInstaller) y herencia."""
+    if os.name != 'nt' or not isinstance(path_str, str) or not os.path.exists(path_str): return False
     try:
         advapi32 = ctypes.windll.advapi32
         kernel32 = ctypes.windll.kernel32
@@ -333,8 +333,8 @@ def _is_file_owned_by_system(path_str: str) -> bool:
                 sid_str = ctypes.create_unicode_buffer(128)
                 if advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str)):
                     sid_val = sid_str.value
-                    # Verifica propiedad del sistema o denegación de herencia explícita
-                    return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
+                    # S-1-5-18 (SYSTEM), S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464 (TrustedInstaller)
+                    return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80-956008885")
             finally:
                 kernel32.LocalFree(sid_ptr)
     except (AttributeError, OSError, ctypes.ArgumentError, PermissionError, MemoryError):

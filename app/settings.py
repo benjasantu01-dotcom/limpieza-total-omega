@@ -150,19 +150,6 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
     ConfigKey.ASISTENTE_MODELO: VALID_MODELS
 })
 
-def _is_dir_safe(path: Path) -> bool:
-    """Valida que el directorio sea seguro: sin puntos de reanálisis y con permisos estrictos de escritura."""
-    try:
-        if not path.exists(): return True
-        real_path = Path(os.path.realpath(path))
-        # Verificación estricta contra junctions/symlinks
-        if not real_path.is_dir() or _Validators._is_reparse_point(real_path) or real_path.is_symlink(): return False
-        st = real_path.stat()
-        if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
-        return True
-    except (OSError, PermissionError): return False
-
 class _SettingsManager:
     """
     Singleton que gestiona el estado de la configuración, minimizando el acceso
@@ -185,7 +172,6 @@ class _SettingsManager:
         temp_path: Path = config_path.with_suffix(".tmp")
         try:
             if not is_safe_to_modify(str(config_path)): return False
-            if not _is_dir_safe(config_path.parent): return False
             if config_path.exists() and (config_path.is_symlink() or not config_path.is_file()): return False
             with open(temp_path, "w", encoding="utf-8") as f:
                 f.write(serialized)
@@ -389,15 +375,14 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if cache_key in _MANAGER.path_cache:
         return _MANAGER.path_cache[cache_key]
     try:
-        raw_base = Path(custom_base).resolve() if custom_base else Path(SETTINGS_DIR).resolve()
-        if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(str(raw_base)):
-            if not raw_base.exists(): 
-                try: raw_base.mkdir(parents=True, exist_ok=True)
+        base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
+        if is_safe_to_modify(str(base)):
+            if not base.exists():
+                try: base.mkdir(parents=True, exist_ok=True)
                 except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE
-            if raw_base.is_dir() and _is_dir_safe(raw_base):
-                full_path = raw_base / SETTINGS_FILE
-                _MANAGER.path_cache[cache_key] = full_path
-                return full_path
+            full_path = base / SETTINGS_FILE
+            _MANAGER.path_cache[cache_key] = full_path
+            return full_path
     except (OSError, RuntimeError, PermissionError, ValueError): pass
     return SETTINGS_DIR / SETTINGS_FILE
 
