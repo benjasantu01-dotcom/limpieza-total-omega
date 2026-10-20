@@ -287,8 +287,12 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Valida que todos los campos críticos tengan valores numéricos finitos."""
-        return all(math.isfinite(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
+        """Valida que todos los campos tengan valores numéricos finitos y tipo correcto."""
+        for f in self._FIELDS_TO_VALIDATE:
+            val = getattr(self, f)
+            if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
+                return False
+        return True
 
 @dataclass
 class HealthResult:

@@ -107,6 +107,8 @@ def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está en uso por otro proceso mediante intento de apertura exclusiva.
     """
+    if not is_safe_to_modify(path):
+        return True
     try:
         with open(path, "rb") as f:
             return False

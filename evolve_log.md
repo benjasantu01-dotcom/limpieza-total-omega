@@ -1478,3 +1478,10 @@ ERROR evolve/tests/test_safety.py - TypeError: _check_vol_restricted() missing 1
 - `2026-10-20T02:50:17` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_excluded_path` añadiendo un chequeo explícito para evitar el procesamiento de archivos que han sido eliminados durante el recorrido (`FileNotFoundError`), evitando que el escaneo se interrumpa prematuramente ante cambios concurrentes en el sistema de archivos.
 - `2026-10-20T02:50:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T02:50:17` Corrida terminada. Total usado hoy: 68.
+- `2026-10-20T02:58:28` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-10-20T02:59:00` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré `_is_file_locked` para evitar falsos positivos y caídas en directorios con permisos denegados o archivos de sistema, añadiendo un chequeo preventivo de `is_safe_to_modify` antes de intentar la apertura.
+- `2026-10-20T03:00:06` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha añadido un método de validación estructural a `SystemMetrics` para garantizar que los valores numéricos no solo se encuentran en rangos, sino que son tipos numéricos válidos antes de cualquier cálculo en el pipeline, previniendo errores de propagación de `NaN` o `None` en las funciones de `scorer` que podrían romper la interfaz de usuario.
+- `2026-10-20T03:00:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 1): invalid syntax
+- `2026-10-20T03:00:43` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-20T03:00:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T03:00:43` Corrida terminada. Total usado hoy: 72.
