@@ -176,6 +176,7 @@ class _SettingsManager:
         """Escribe datos en archivo temporal con reintentos para manejar bloqueos transitorios."""
         temp_path: Path = config_path.with_suffix(".tmp")
         try:
+            if not is_safe_to_modify(str(config_path)): return False
             if not _is_dir_safe(config_path.parent): return False
             if config_path.exists() and (config_path.is_symlink() or not config_path.is_file()): return False
             with open(temp_path, "w", encoding="utf-8") as f:
