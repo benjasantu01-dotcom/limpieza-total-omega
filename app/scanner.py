@@ -230,7 +230,7 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.path_stat_cache: Dict[str, bool] = {}
+        self.path_readable_cache: Dict[str, bool] = {}
         self.base_root_str: str = str(base_root.absolute()).lower()
         self.now_ts: float = datetime.now().timestamp()
 
@@ -311,10 +311,10 @@ class Scanner:
         """Aplica la secuencia de heurísticas de seguridad sobre un archivo validado."""
         path_str = str(path)
         
-        if path_str not in self.path_stat_cache:
-            self.path_stat_cache[path_str] = _is_readable(path) and not _is_locked_by_os(path)
+        if path_str not in self.path_readable_cache:
+            self.path_readable_cache[path_str] = _is_readable(path) and not _is_locked_by_os(path)
         
-        if not self.path_stat_cache[path_str]:
+        if not self.path_readable_cache[path_str]:
             return
 
         for check_fn in ALL_CHECKS:

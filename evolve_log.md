@@ -1464,3 +1464,10 @@ ERROR evolve/tests/test_safety.py - TypeError: _check_vol_restricted() missing 1
 - `2026-10-20T02:30:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-10-20T02:30:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T02:30:07` Corrida terminada. Total usado hoy: 60.
+- `2026-10-20T02:38:06` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-20T02:39:01` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la validación de rutas mediante la implementación de un cache de corto tiempo (`TTL`) para `is_protected_path`, reduciendo drásticamente las llamadas redundantes al sistema de archivos (`stat`) durante escaneos masivos en el bucle principal.
+- `2026-10-20T02:39:29` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner reemplazando la verificación repetitiva de bloqueos y permisos por un enfoque de caché de estado local dentro del `Scanner`, evitando llamadas innecesarias al sistema operativo (`_is_locked_by_os` y `os.access`) para archivos ya visitados en la misma iteración.
+- `2026-10-20T02:39:59` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuración implementando un caché de lectura basado en `os.stat` para evitar el parseo innecesario de JSON cuando el archivo no ha cambiado en disco.
+- `2026-10-20T02:40:12` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` y `summarize` reemplazando iteraciones redundantes y conteos lineales `sum(1 for ...)` por acceso directo a la lista cacheada `_FULL_SCAN_CACHE`, evitando recorrer el generador varias veces innecesariamente.
+- `2026-10-20T02:40:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T02:40:12` Corrida terminada. Total usado hoy: 64.

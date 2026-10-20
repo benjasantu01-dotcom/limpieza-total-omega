@@ -31,8 +31,9 @@ LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
-# Cache optimizado con timestamp para invalidación parcial
+# Cache con expiración simple para reducir IO en chequeos repetitivos
 _PROTECTED_PATH_CACHE: Final[dict[str, tuple[bool, float]]] = {}
+PROTECTION_CACHE_TTL: Final[float] = 2.0 
 
 class SafetyAction(Enum):
     """Define la criticidad de la operación para ajustar el rigor de la validación."""
@@ -745,41 +746,41 @@ def is_protected_path(path: PathLike) -> bool:
     """Determina si la ruta forma parte de una zona protegida del sistema (optimizado con caché)."""
     if not isinstance(path, (str, Path)) or not path: return True
     path_str = str(path).strip()
-    p_str_low = path_str.lower()
     
-    # 1. Chequeo de caché persistente (mtime del padre para invalidación)
+    # 1. Chequeo de caché persistente (TTL simple)
+    now = time.time()
+    if path_str in _PROTECTED_PATH_CACHE:
+        res, ts = _PROTECTED_PATH_CACHE[path_str]
+        if now - ts < PROTECTION_CACHE_TTL:
+            return res
+            
     try:
         p = Path(path_str)
-        parent_dir = p.parent
-        current_mtime = parent_dir.stat().st_mtime if parent_dir.exists() else 0.0
-        
-        if path_str in _PROTECTED_PATH_CACHE:
-            cached_res, cached_mtime = _PROTECTED_PATH_CACHE[path_str]
-            if cached_mtime == current_mtime: return cached_res
+        p_str_low = path_str.lower()
         
         # 2. Validación de prefijo rápido
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
-            _PROTECTED_PATH_CACHE[path_str] = (True, current_mtime)
+            _PROTECTED_PATH_CACHE[path_str] = (True, now)
             return True
         
         # 3. Validación de componentes
         if _is_kernel_managed(p_str_low):
-            _PROTECTED_PATH_CACHE[path_str] = (True, current_mtime)
+            _PROTECTED_PATH_CACHE[path_str] = (True, now)
             return True
             
         parts = {part.lower() for part in p.parts}
         if not PROTECTED_DIR_NAMES.isdisjoint(parts):
-            _PROTECTED_PATH_CACHE[path_str] = (True, current_mtime)
+            _PROTECTED_PATH_CACHE[path_str] = (True, now)
             return True
         
         # 4. Chequeo de atributos
         attrs = _get_file_attrs(str(p))
         if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT):
-            _PROTECTED_PATH_CACHE[path_str] = (True, current_mtime)
+            _PROTECTED_PATH_CACHE[path_str] = (True, now)
             return True
         
         res = p == Path(p.anchor)
-        _PROTECTED_PATH_CACHE[path_str] = (res, current_mtime)
+        _PROTECTED_PATH_CACHE[path_str] = (res, now)
         return res
     except Exception:
         return True

@@ -165,7 +165,7 @@ def _is_dir_safe(path: Path) -> bool:
 class _SettingsManager:
     """Singleton que gestiona el estado de la configuración."""
     def __init__(self) -> None:
-        self.settings_cache: dict[str, tuple[str, AppSettings]] = {}
+        self.settings_cache: dict[str, tuple[float, int, AppSettings]] = {}
         self.path_cache: dict[Optional[str], Path] = {}
 
     def clear(self) -> None:
@@ -326,21 +326,20 @@ def _is_file_secure_to_read(st: os.stat_result) -> bool:
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
-def _read_and_parse_json(file_path: Path) -> tuple[Optional[str], Optional[SettingsDict]]:
-    if not is_safe_to_modify(str(file_path)): return None, None
+def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
+    if not is_safe_to_modify(str(file_path)): return None
     try:
         with open(file_path, "rb") as f:
             try:
                 st = os.fstat(f.fileno())
-            except (OSError, PermissionError): return None, None
-            if not _is_file_secure_to_read(st): return None, None
+            except (OSError, PermissionError): return None
+            if not _is_file_secure_to_read(st): return None
             content = f.read(MAX_SETTINGS_SIZE + 1)
-            if not content or len(content) > MAX_SETTINGS_SIZE: return None, None
-            content_hash = hashlib.sha256(content).hexdigest()
+            if not content or len(content) > MAX_SETTINGS_SIZE: return None
             data = json.loads(content.decode("utf-8"))
-            return content_hash, data if _is_dict(data) else None
+            return data if _is_dict(data) else None
     except (OSError, IOError, PermissionError, json.JSONDecodeError, MemoryError):
-        return None, None
+        return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura coherencia y tipos correctos entre los valores cargados y la lógica de seguridad."""
@@ -356,14 +355,17 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     primary_path = settings_path(custom_base)
     try:
-        if primary_path.exists() and primary_path.is_file() and is_safe_to_modify(str(primary_path)):
-            content_hash, data = _read_and_parse_json(primary_path)
-            if content_hash:
-                cache_key = str(primary_path)
-                cached = _MANAGER.settings_cache.get(cache_key)
-                if cached and cached[0] == content_hash: return cached[1].copy() # type: ignore
-                settings = _coerce_and_verify(validate(data) if data else DEFAULTS)
-                _MANAGER.settings_cache[cache_key] = (content_hash, settings)
+        if primary_path.exists() and primary_path.is_file():
+            st = primary_path.stat()
+            cache_key = str(primary_path)
+            cached = _MANAGER.settings_cache.get(cache_key)
+            if cached and cached[0] == st.st_mtime and cached[1] == st.st_size:
+                return cached[2].copy() # type: ignore
+            
+            data = _read_and_parse_json(primary_path)
+            if data is not None:
+                settings = _coerce_and_verify(validate(data))
+                _MANAGER.settings_cache[cache_key] = (st.st_mtime, st.st_size, settings)
                 return settings
     except (OSError, PermissionError): pass
     return dict(DEFAULTS) # type: ignore
