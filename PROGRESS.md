@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 29 | 2 | 7 | 3 | 29 |
+| 2026-10-18 | 29 | 2 | 7 | 3 | 25 |
 | 2026-10-19 | 133 | 11 | 32 | 21 | 153 |
-| 2026-10-20 | 37 | 2 | 11 | 4 | 30 |
+| 2026-10-20 | 40 | 2 | 11 | 4 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **38**
+- seguridad defensiva: **41**
 - rendimiento: **35**
 - robustez ante casos límite: **33**
 
@@ -36,17 +36,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **17**
 - `healthscore.py`: **17**
 - `branding.py`: **16**
+- `memory.py`: **14**
 - `settings.py`: **14**
-- `memory.py`: **13**
 - `safety.py`: **13**
 - `assistant.py`: **13**
+- `main.py`: **11**
 - `scanner.py`: **11**
-- `main.py`: **10**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T03:42:33` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `delete_reviewed` al reemplazar `os.path.commonpath` (que puede fallar si las rutas no existen o son ambiguas) por una verificación explícita de `is_relative_to` mediante `pathlib`, garantizando que el archivo a eliminar esté estrictamente dentro de la carpeta de cuarentena y no sea un enlace simbólico, reforzando la protección contra ataques de escalada de privilegios o borrado fuera de la zona segura.
+- `2026-10-20T03:42:15` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de recursos en `trim_working_set` y `_process_from_pid` mediante la implementación de un bloque `try...finally` más estricto y una verificación de estado de handle más conservadora, asegurando que los recursos del sistema sean liberados incluso ante fallos inesperados de la API de Win32, manteniendo el enfoque en la seguridad defensiva.
+- `2026-10-20T03:41:43` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` al sustituir el uso de `Path.home()` (que podría resolverse a rutas inesperadas según el entorno o políticas de usuario) por una verificación explícita mediante `Path.cwd()` y `Path.home()` con `resolve(strict=False)` consistente, además de fortalecer el método `on_save_settings` para garantizar que la escritura de la configuración nunca ocurra en una ruta no autorizada, utilizando `_ensure_path_writable_and_clean` antes de llamar a `settings_mod.update`.
 - `2026-10-20T03:30:49` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en la recolección de archivos mediante la validación explícita de `is_safe_to_modify` dentro de `_collect_candidates` antes de invocar `entry.stat()`, evitando así acceder a metadatos de rutas potencialmente restringidas que podrían disparar excepciones o violaciones de acceso.
 - `2026-10-20T03:30:37` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` para evitar ataques de "path traversal" o acceso indebido mediante la normalización estricta de rutas y la verificación explícita de que la ruta raíz resuelta contenga efectivamente el directorio base antes de iniciar el escaneo.
 - `2026-10-20T03:30:10` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación de alcance (sandbox) explícita en cada paso de la recursión, garantizando que el escáner no pueda seguir enlaces simbólicos o puntos de reparse que escapen de la ruta base autorizada, mitigando así riesgos de traversal.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T02:50:17` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `_is_excluded_path` añadiendo un chequeo explícito para evitar el procesamiento de archivos que han sido eliminados durante el recorrido (`FileNotFoundError`), evitando que el escaneo se interrumpa prematuramente ante cambios concurrentes en el sistema de archivos.
 - `2026-10-20T02:48:57` **assistant.py** (robustez ante casos límite): Mejora la robustez del sistema ante datos de entrada corruptos o inesperados en `ingest` y `_apply_updates`, garantizando que el `SystemContext` mantenga su integridad incluso si los datos fuente contienen tipos inconsistentes o estructuras anidadas que evadan las comprobaciones previas.
 - `2026-10-20T02:40:12` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `summarize` reemplazando iteraciones redundantes y conteos lineales `sum(1 for ...)` por acceso directo a la lista cacheada `_FULL_SCAN_CACHE`, evitando recorrer el generador varias veces innecesariamente.
-- `2026-10-20T02:39:59` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración implementando un caché de lectura basado en `os.stat` para evitar el parseo innecesario de JSON cuando el archivo no ha cambiado en disco.
-- `2026-10-20T02:39:29` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando la verificación repetitiva de bloqueos y permisos por un enfoque de caché de estado local dentro del `Scanner`, evitando llamadas innecesarias al sistema operativo (`_is_locked_by_os` y `os.access`) para archivos ya visitados en la misma iteración.
-- `2026-10-20T02:39:01` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un cache de corto tiempo (`TTL`) para `is_protected_path`, reduciendo drásticamente las llamadas redundantes al sistema de archivos (`stat`) durante escaneos masivos en el bucle principal.

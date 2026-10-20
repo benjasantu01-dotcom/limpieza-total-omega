@@ -359,7 +359,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             app_root = Path(__file__).resolve(strict=False).parent
             cwd = Path.cwd().resolve(strict=False)
-            home = Path.home()
+            home = Path.home().resolve(strict=False)
             
             if not app_root.exists() or not cwd.exists() or not home.exists():
                 raise RuntimeError("Rutas base críticas no accesibles.")
@@ -375,7 +375,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 (app_root.exists(), "Directorio de aplicación inexistente."),
                 (not app_root.is_symlink(), "App ubicada en enlace simbólico."),
                 (home.exists(), "Directorio home del usuario inaccesible."),
-                (home.resolve(strict=False).is_absolute(), "La ruta home no es absoluta."),
+                (home.is_absolute(), "La ruta home no es absoluta."),
                 (safety.is_safe_to_modify(cwd), "Directorio de trabajo inseguro."),
                 (not safety.is_protected_path(app_root), "Directorio de aplicación protegido."),
                 (not cwd.is_symlink(), "Directorio de trabajo es un enlace simbólico o junction.")

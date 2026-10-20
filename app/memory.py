@@ -338,7 +338,7 @@ def _is_process_executable_safe(pid: int, handle: int, psapi: Any) -> bool:
 def _process_from_pid(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
     """Intenta obtener, medir y validar la seguridad de un proceso individual."""
     proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
-    if not proc_handle:
+    if proc_handle is None:
         return None
     
     try:
@@ -349,7 +349,8 @@ def _process_from_pid(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_C
                 return None
         return ProcessMemory(f"PID {pid}", pid, ws) if ws is not None else None
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle != INVALID_HANDLE_VALUE:
+            kernel32.CloseHandle(proc_handle)
 
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos activos del sistema, aplicando filtros de seguridad."""
@@ -442,4 +443,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.WinError, OSError, Exception):
         return False, "Error inesperado al intentar interactuar con el proceso."
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle != INVALID_HANDLE_VALUE:
+            kernel32.CloseHandle(proc_handle)
