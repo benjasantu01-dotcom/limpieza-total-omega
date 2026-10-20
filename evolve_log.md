@@ -1119,3 +1119,44 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-20T10:11:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-10-20T10:11:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T10:11:26` Corrida terminada. Total usado hoy: 240.
+- `2026-10-20T10:16:50` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-10-20T10:17:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-20T10:18:55` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-20T10:19:08` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-20T10:19:20` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-20T10:19:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-20T10:20:49` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-20T10:20:56` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-20T10:21:08` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-20T10:21:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-20T10:21:31` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-20T10:22:37` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-20T10:23:29` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez del manejo de datos al procesar el archivo `config.json`, añadiendo una validación explícita de `OSError` durante la serialización y garantizando que las llaves de configuración sean tratadas de forma defensiva para evitar la inyección de claves no definidas en el `AppSettings`.
+- `2026-10-20T10:23:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-20T10:23:49` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.32s
+
+```
+- `2026-10-20T10:23:49` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `StartupEntry.executable` manejando explícitamente posibles errores de `Path.resolve()` y validando el estado del archivo (`is_file()`) de forma defensiva para evitar excepciones durante el inventario.
+- `2026-10-20T10:23:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T10:23:49` Corrida terminada. Total usado hoy: 244.
