@@ -275,7 +275,7 @@ class SystemMetrics:
         return getattr(self, field_name, default)
 
     def validate(self) -> None:
-        """Asegura rangos aceptables para todas las métricas."""
+        """Asegura rangos aceptables para todas las métricas mediante normalización."""
         self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1048576.0)
         self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1048576.0)
         self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 5000))
@@ -287,7 +287,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Valida que todos los campos críticos sean finitos."""
+        """Valida que todos los campos críticos tengan valores numéricos finitos."""
         return all(math.isfinite(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
 
 @dataclass

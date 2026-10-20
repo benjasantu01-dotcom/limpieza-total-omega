@@ -41,10 +41,11 @@ __all__ = [
     "format_group",
 ]
 
+# Configuración de lectura y flags de sistema (Win32 API)
 PARTIAL_READ_BYTES: int = 64 * 1024
-FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
-FILE_ATTRIBUTE_HIDDEN: int = 0x2
-FILE_ATTRIBUTE_SYSTEM: int = 0x4
+FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400  # Identifica puntos de montaje o junctions
+FILE_ATTRIBUTE_HIDDEN: int = 0x2          # Archivo oculto
+FILE_ATTRIBUTE_SYSTEM: int = 0x4          # Archivo de sistema
 MAX_RECURSION_DEPTH: int = 100
 ERROR_SHARING_VIOLATION: int = 32
 ERROR_ACCESS_DENIED: int = 5

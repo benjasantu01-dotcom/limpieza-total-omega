@@ -46,7 +46,6 @@ MB_SIZE: int = 1024 * 1024
 SUSPICIOUS_CHARS: Tuple[str, ...] = ('\u202E', '\u202D', '\u200E', '\u200F')
 
 Inode: TypeAlias = Tuple[int, int]
-SizeReport: TypeAlias = Tuple[int, int]
 FileRecord: TypeAlias = Tuple[int, Path]
 
 
@@ -158,7 +157,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     Verifica enlaces simbólicos, protección de sistema y caracteres sospechosos.
     """
     name = entry.name
-    # Validación de seguridad defensiva ante caracteres nulos o nombres inválidos
     if not name or '\0' in name or len(name) > 255:
         return True
     if any(c in name for c in SUSPICIOUS_CHARS):
@@ -167,15 +165,12 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         return True
 
     try:
-        # Los enlaces simbólicos no se siguen por seguridad para evitar bucles o acceso fuera de ruta
         if entry.is_symlink():
             return True
         
-        # Validar ruta contra lista de protegidas
         if is_protected_path(Path(entry.path)):
             return True
         
-        # En Windows, verificar atributos de sistema (reparse points, archivos ocultos del sistema)
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
@@ -300,7 +295,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtrado estricto antes de cualquier operación I/O intensiva
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
@@ -355,7 +349,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
 
 
-def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
+def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
     """Calcula tamaño total en bytes y contador total de archivos en una ruta."""
     root = _validate_root(directory)
     if root is None: return (0, 0)
