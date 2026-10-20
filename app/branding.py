@@ -293,13 +293,19 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
         clean = value.lstrip('#')
         if len(clean) != 6: raise ValueError
         val = int(clean, 16)
-        return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
+        r = (val >> 16) & 0xFF
+        g = (val >> 8) & 0xFF
+        b = val & 0xFF
+        return (r, g, b)
     except (ValueError, TypeError, AttributeError): return (0, 0, 0)
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     """Serializa una tupla RGB a su formato hexadecimal CSS válido."""
-    return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, int(c))) for c in rgb])
+    try:
+        r, g, b = [max(0, min(255, int(c))) for c in rgb]
+        return f"#{r:02x}{g:02x}{b:02x}"
+    except (TypeError, ValueError): return "#000000"
 
 @lru_cache(maxsize=256)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
@@ -368,12 +374,14 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not destination: return None
     try:
         dest_path = Path(destination).resolve()
-        # Validación estricta mediante el validador del proyecto
+        # Validación: no permitir rutas protegidas o inseguras
         if is_protected_path(dest_path) or not is_safe_to_modify(dest_path):
             return None
         
         parent = dest_path.parent
+        # Validar si el directorio padre es una ruta de sistema válida antes de crear
         if not parent.exists():
+            if not is_safe_to_modify(parent): return None
             parent.mkdir(parents=True, exist_ok=True)
             
         dest_path.write_text(logo_svg(size), encoding="utf-8")

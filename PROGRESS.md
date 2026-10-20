@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 49
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 221
+- Rechazadas por guardia de seguridad: 48
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 110 | 9 | 28 | 15 | 114 |
-| 2026-10-20 | 84 | 7 | 21 | 9 | 107 |
+| 2026-10-19 | 109 | 9 | 27 | 13 | 114 |
+| 2026-10-20 | 87 | 7 | 21 | 9 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **39**
 - rendimiento: **37**
 - robustez ante casos límite: **36**
-- manejo de errores y validación de entradas: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
-- `healthscore.py`: **17**
 - `quarantine.py`: **17**
+- `browser.py`: **16**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
 - `settings.py`: **15**
-- `browser.py`: **15**
-- `assistant.py`: **14**
-- `branding.py`: **14**
+- `assistant.py`: **15**
+- `branding.py`: **15**
 - `safety.py`: **13**
 - `scanner.py`: **12**
 - `main.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T09:48:49` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `detect_profiles` y `base_directories` validando explícitamente los tipos de entrada y el estado de las rutas, asegurando que cualquier valor inesperado (`None`, tipos incorrectos o rutas inexistentes) no provoque excepciones innecesarias ni un comportamiento de escaneo impredecible.
+- `2026-10-20T09:48:32` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` validando la existencia y el tipo del directorio padre antes de intentar la escritura, y se reforzó `_hex_to_rgb` y `_rgb_to_hex` con manejo explícito de valores fuera de rango para prevenir excepciones silenciosas en el renderizado de gradientes.
+- `2026-10-20T09:48:00` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `ingest` y `_apply_updates` mediante la validación explícita de tipos y excepciones, asegurando que el estado del objeto `SystemContext` nunca quede parcialmente corrupto o en un estado inválido ante datos externos malformados.
 - `2026-10-20T08:26:08` **settings.py** (seguridad defensiva): Se endureció la validación en `_is_dir_safe` añadiendo una comprobación de que el directorio no sea un punto de unión (junction) o enlace simbólico, previniendo inyecciones de rutas fuera del espacio de configuración permitido y reforzando la seguridad defensiva contra escalada de privilegios en el sistema de archivos.
 - `2026-10-20T08:17:15` **safety.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `ensure_safe_to_modify` para detectar y bloquear rutas que contengan el carácter `~` en los nombres de los directorios de usuario (spoofing de nombres cortos 8.3 de DOS), evitando posibles bypasses de `is_protected_path`.
 - `2026-10-20T08:15:21` **organizer.py** (seguridad defensiva): Se reforzó `delete_reviewed` añadiendo una verificación crítica mediante `ensure_safe_to_modify` antes de llamar a `unlink()` para garantizar que la política de seguridad no solo se valide mediante booleanos, sino que fuerce una excepción si la ruta es manipulada por un proceso externo antes del borrado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T07:36:24` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` ante archivos bloqueados o inaccesibles, añadiendo una verificación explícita para evitar intentar el borrado de archivos que el sistema está utilizando, previniendo errores de I/O en entornos con alta actividad de fondo.
 - `2026-10-20T07:34:50` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` añadiendo validación explícita de `length` para prevenir desbordamientos o lecturas de buffers vacíos y se asegura que cualquier error durante la resolución de rutas de archivo resulte en un `False` seguro, evitando que procesos inciertos sean ignorados por el filtro.
 - `2026-10-20T07:26:29` **main.py** (robustez ante casos límite): Se ha implementado un mecanismo de "graceful shutdown" en `on_closing` para asegurar que el `ThreadPoolExecutor` libere sus recursos de manera ordenada, evitando condiciones de carrera donde hilos huérfanos intenten acceder a la interfaz de usuario durante el proceso de cierre.
-- `2026-10-20T07:25:31` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra `ZeroDivisionError` y estados inconsistentes en `_PIPELINE` mediante un chequeo de precondición en la función `compute_score`, asegurando que `_PIPELINE` no esté vacío antes de procesar para prevenir fallos en entornos de ejecución con configuración incompleta.
-- `2026-10-20T07:24:45` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco en la función `_is_file_locked` para manejar explícitamente el caso de archivos inexistentes, evitando falsos positivos de "bloqueo" y mejorando la precisión al filtrar candidatos en entornos con archivos transitorios.
-- `2026-10-20T07:23:57` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_validate_root` para manejar situaciones donde el sistema de archivos reporta errores de acceso durante la iteración o resolución de rutas, evitando que el escaneo se interrumpa prematuramente al encontrar archivos bloqueados o inaccesibles.

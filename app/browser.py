@@ -286,7 +286,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     """Escaneo coordinado de cachés, filtrando por rutas base autorizadas y heurísticas de seguridad."""
     if bases is not None and not isinstance(bases, (list, tuple)): return []
     raw_bases = list(bases) if bases is not None else base_directories()
-    if not raw_bases: return []
     
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     found: List[BrowserCache] = []

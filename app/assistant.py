@@ -448,17 +448,17 @@ class SystemContext:
         return not _is_input_too_deep_or_complex(source) if isinstance(source, dict) else True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
-        """Aplica cambios al contexto y limpia cachés internas."""
+        """Aplica cambios al contexto y limpia cachés internas de forma segura."""
         try:
             for k, v in updates.items():
                 if _is_safe_key(k):
                     setattr(self, k, v)
             self.analyzed = True
-            # Limpieza de cachés invalidando atributos de cached_property
             for attr in ("metrics_snapshot", "active_problems", "_hash_tuple"):
-                self.__dict__.pop(attr, None)
-        except Exception:
-            pass
+                if attr in self.__dict__:
+                    del self.__dict__[attr]
+        except (AttributeError, TypeError, KeyError) as e:
+            logging.error(f"Falla crítica aplicando actualizaciones: {e}")
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
@@ -506,7 +506,6 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     if depth > _MAX_NESTING_DEPTH or not _is_safe_key(key): return None
     try:
         if isinstance(source, dict): return source.get(key)
-        # Acceso restringido exclusivamente a campos de contexto permitidos
         return getattr(source, key, None) if key in _VALIDATORS or key == "grade" else None
     except Exception:
         return None
