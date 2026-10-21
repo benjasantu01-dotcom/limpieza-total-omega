@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 43 | 3 | 11 | 7 | 66 |
+| 2026-10-19 | 40 | 3 | 11 | 7 | 65 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 15 | 0 | 2 | 2 | 5 |
+| 2026-10-21 | 17 | 0 | 4 | 2 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **40**
-- rendimiento: **33**
+- seguridad defensiva: **37**
+- rendimiento: **35**
 - robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `duplicates.py`: **17**
+- `diskreport.py`: **18**
 - `memory.py`: **17**
 - `healthscore.py`: **16**
 - `quarantine.py`: **16**
 - `assistant.py`: **16**
-- `browser.py`: **14**
-- `safety.py`: **13**
+- `duplicates.py`: **16**
+- `safety.py`: **14**
+- `browser.py`: **13**
+- `settings.py`: **12**
 - `branding.py`: **12**
 - `scanner.py`: **11**
-- `settings.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **8**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T01:06:38` **settings.py** (rendimiento): Optimicé el rendimiento de `_Validators._is_reparse_point` y `_Validators._run_safety_checks` convirtiendo las llamadas a `Path.stat().st_file_attributes` en una lectura única de `os.stat` para evitar múltiples llamadas al sistema por cada validación de ruta.
+- `2026-10-21T01:05:57` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` centralizando y eliminando la duplicación de chequeos (como `_is_kernel_managed` y `_get_file_attrs`) para evitar llamadas redundantes a la API de Windows en cada iteración de los escaneos de disco.
 - `2026-10-21T00:57:18` **quarantine.py** (rendimiento): Optimicé el manejo de I/O en `_get_sha256` y `_perform_secure_copy` reemplazando los bucles de lectura manual por una gestión más eficiente, reduciendo el número de llamadas al sistema y mejorando la consistencia de los buffers de datos.
 - `2026-10-21T00:56:47` **organizer.py** (rendimiento): Optimizé la performance del escaneo reemplazando la verificación constante de extensión mediante conversión a tupla dentro del bucle `_is_junk_file`, utilizando en su lugar el set pre-compilado `JUNK_EXTENSIONS` para realizar búsquedas O(1) de forma más eficiente.
 - `2026-10-21T00:56:19` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y destrucción constante de `ctypes.CDLL` y estructuras dentro de cada iteración por un acceso centralizado, reduciendo la carga de llamadas al sistema operativo durante el escaneo de procesos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T00:20:56` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de Type Hints más precisos y docstrings descriptivos que clarifican la lógica detrás de los umbrales de seguridad y las operaciones de E/S, facilitando el mantenimiento y la auditoría del código.
 - `2026-10-21T00:19:47` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de bajo nivel que interactúan con la API de Windows (`ctypes`), clarificando los efectos secundarios y los requisitos de seguridad de cada operación.
 - `2026-10-21T00:14:30` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `healthscore.py` mediante la refactorización de `compute_score` para extraer la lógica de cálculo de puntajes en una función auxiliar `_calculate_area_contribution`, eliminando la complejidad ciclomática excesiva dentro del bucle principal y facilitando la depuración.
-- `2026-10-21T00:05:57` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (siguiendo el estilo Google/NumPy) en funciones complejas y aclaración de tipos, facilitando la comprensión de la lógica de escaneo y las estrategias de hashing sin alterar la funcionalidad.
-- `2026-10-21T00:04:52` **browser.py** (legibilidad y documentación): Documenté con docstrings detallados los parámetros y el comportamiento de las funciones críticas (`_sum_directory_recursive` y `_should_skip_entry`) para clarificar las salvaguardas de seguridad implementadas, facilitando el mantenimiento futuro y la auditoría del código.

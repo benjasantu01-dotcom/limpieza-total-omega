@@ -324,7 +324,6 @@ def _is_file_owned_by_system(path_str: str) -> bool:
         advapi32 = ctypes.windll.advapi32
         kernel32 = ctypes.windll.kernel32
         sid_ptr = ctypes.c_void_p()
-        # SE_FILE_OBJECT = 1, OWNER_SECURITY_INFORMATION = 1
         res = advapi32.GetNamedSecurityInfoW(
             path_str, 1, 1, ctypes.byref(sid_ptr), None, None, None, None
         )
@@ -333,7 +332,6 @@ def _is_file_owned_by_system(path_str: str) -> bool:
                 sid_str = ctypes.create_unicode_buffer(128)
                 if advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str)):
                     sid_val = sid_str.value
-                    # S-1-5-18 (SYSTEM), S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464 (TrustedInstaller)
                     return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80-956008885")
             finally:
                 kernel32.LocalFree(sid_ptr)
@@ -750,37 +748,27 @@ def is_protected_path(path: PathLike) -> bool:
     path_str = str(path).strip()
     
     now = time.time()
-    if path_str in _PROTECTED_PATH_CACHE:
-        if now - _PROTECTED_PATH_TS.get(path_str, 0) < PROTECTION_CACHE_TTL:
-            return _PROTECTED_PATH_CACHE[path_str]
+    cached_val = _PROTECTED_PATH_CACHE.get(path_str)
+    if cached_val is not None and now - _PROTECTED_PATH_TS.get(path_str, 0) < PROTECTION_CACHE_TTL:
+        return cached_val
             
     try:
         p = Path(path_str)
         p_str_low = path_str.lower()
         
+        # Validación temprana: Raíces de sistema conocidas
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
-            _PROTECTED_PATH_CACHE[path_str] = True
-            _PROTECTED_PATH_TS[path_str] = now
-            return True
+            res = True
+        # Validación de kernel y directorios bloqueados
+        elif _is_kernel_managed(p_str_low):
+            res = True
+        elif not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p.parts}):
+            res = True
+        # Atributos de sistema via cache (evita IO repetitivo)
+        else:
+            attrs = _get_file_attrs(str(p))
+            res = (attrs != INVALID_FILE_ATTRIBUTES and bool(attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or p == Path(p.anchor)
         
-        if _is_kernel_managed(p_str_low):
-            _PROTECTED_PATH_CACHE[path_str] = True
-            _PROTECTED_PATH_TS[path_str] = now
-            return True
-            
-        parts = {part.lower() for part in p.parts}
-        if not PROTECTED_DIR_NAMES.isdisjoint(parts):
-            _PROTECTED_PATH_CACHE[path_str] = True
-            _PROTECTED_PATH_TS[path_str] = now
-            return True
-        
-        attrs = _get_file_attrs(str(p))
-        if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
-            _PROTECTED_PATH_CACHE[path_str] = True
-            _PROTECTED_PATH_TS[path_str] = now
-            return True
-        
-        res = p == Path(p.anchor)
         _PROTECTED_PATH_CACHE[path_str] = res
         _PROTECTED_PATH_TS[path_str] = now
         return res

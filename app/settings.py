@@ -199,12 +199,11 @@ class _Validators:
 
     @staticmethod
     @lru_cache(maxsize=32)
-    def _is_reparse_point(path_str: str | Path) -> bool:
+    def _is_reparse_point(path_str: str) -> bool:
         try:
-            p = Path(os.path.realpath(str(path_str)))
-            if p.is_symlink(): return True
-            if not p.exists(): return False
-            return bool(p.stat().st_file_attributes & 0x400) if hasattr(p.stat(), 'st_file_attributes') else False
+            st = os.stat(path_str)
+            if stat.S_ISLNK(st.st_mode): return True
+            return bool(st.st_file_attributes & 0x400) if hasattr(st, 'st_file_attributes') else False
         except (OSError, PermissionError):
             return True
 
@@ -215,10 +214,11 @@ class _Validators:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
             if p.exists():
-                resolved = Path(os.path.realpath(p))
-                if any(_Validators._is_reparse_point(str(parent)) for parent in resolved.parents):
-                    return False
-                return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
+                resolved = os.path.realpath(p)
+                path_obj = Path(resolved)
+                for parent in path_obj.parents:
+                    if _Validators._is_reparse_point(str(parent)): return False
+                return not is_protected_path(resolved) and is_safe_to_modify(resolved)
             return not is_protected_path(str(p)) and is_safe_to_modify(str(p))
         except (OSError, PermissionError, RuntimeError, IndexError):
             return False

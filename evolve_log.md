@@ -594,3 +594,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-21T00:57:18` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el manejo de I/O en `_get_sha256` y `_perform_secure_copy` reemplazando los bucles de lectura manual por una gestión más eficiente, reduciendo el número de llamadas al sistema y mejorando la consistencia de los buffers de datos.
 - `2026-10-21T00:57:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T00:57:18` Corrida terminada. Total usado hoy: 24.
+- `2026-10-21T01:04:46` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-10-21T01:05:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-10-21T01:05:57` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` centralizando y eliminando la duplicación de chequeos (como `_is_kernel_managed` y `_get_file_attrs`) para evitar llamadas redundantes a la API de Windows en cada iteración de los escaneos de disco.
+- `2026-10-21T01:06:21` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point, scan_file
+- `2026-10-21T01:06:38` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `_Validators._is_reparse_point` y `_Validators._run_safety_checks` convirtiendo las llamadas a `Path.stat().st_file_attributes` en una lectura única de `os.stat` para evitar múltiples llamadas al sistema por cada validación de ruta.
+- `2026-10-21T01:06:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T01:06:38` Corrida terminada. Total usado hoy: 28.
