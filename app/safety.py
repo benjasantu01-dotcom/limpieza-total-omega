@@ -56,7 +56,8 @@ class Win32Attr(IntEnum):
 
 class SecurityDescriptor(NamedTuple):
     """
-    Contenedor de metadatos de seguridad extraídos vía Win32 API.
+    Contenedor de metadatos de seguridad extraídos mediante Win32 API.
+    Representa el estado de seguridad de un objeto del sistema de archivos.
     """
     attrs: int
     is_protected_system: bool
@@ -94,6 +95,7 @@ class SecurityDescriptor(NamedTuple):
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
+    """Estructura de metadatos para intercambio de información de seguridad."""
     is_reparse: bool
     is_system_hidden: bool
     is_readonly: bool
@@ -151,7 +153,7 @@ def _is_path_too_long(path_str: str) -> bool:
 
 @lru_cache(maxsize=4096)
 def _get_file_attrs(path_str: Optional[str]) -> int:
-    """Consulta atributos crudos de sistema sin lanzar excepciones."""
+    """Consulta atributos crudos de sistema mediante la API de Windows."""
     if not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): 
         return 0
     try:
@@ -281,6 +283,7 @@ _KERNEL_BLOCKED_FILES: Final[frozenset[str]] = frozenset(
 _KERNEL_BLOCKED_DIRS: Final[frozenset[str]] = frozenset(("config.msi", "installer"))
 
 class _IntegrityCheck(NamedTuple):
+    """Regla encapsulada para verificar una condición de integridad específica."""
     reason: ProtectionReason
     predicate: ViolationPredicate
 
@@ -290,7 +293,7 @@ class _CheckResult(NamedTuple):
 
 @lru_cache(maxsize=1)
 def is_running_as_admin() -> bool:
-    """Verifica privilegios elevados del proceso actual."""
+    """Verifica privilegios elevados del proceso actual mediante el subsistema de seguridad."""
     if os.name != 'nt':
         try: return os.geteuid() == 0
         except (AttributeError, OSError): return False
@@ -302,7 +305,7 @@ def is_running_as_admin() -> bool:
 
 @lru_cache(maxsize=128)
 def _is_virtual_drive(path_str: str) -> bool:
-    """Detecta si la unidad es un remapeo de dispositivo virtual."""
+    """Detecta si la unidad es un remapeo de dispositivo virtual (ej. SUBST)."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     drive = os.path.splitdrive(path_str)[0]
     if not drive: return False
@@ -318,7 +321,7 @@ def _is_virtual_drive(path_str: str) -> bool:
     return False
 
 def _is_file_owned_by_system(path_str: str) -> bool:
-    """Valida la propiedad mediante el SID de sistema (SYSTEM/TrustedInstaller) y herencia."""
+    """Valida la propiedad mediante el SID de sistema (SYSTEM/TrustedInstaller)."""
     if os.name != 'nt' or not isinstance(path_str, str) or not os.path.exists(path_str): return False
     try:
         advapi32 = ctypes.windll.advapi32
@@ -373,7 +376,7 @@ def _is_device_file(path: Path) -> bool:
 
 @lru_cache(maxsize=512)
 def _has_alternate_data_stream(path_name: str) -> bool:
-    """Detecta flujos de datos NTFS (ADS)."""
+    """Detecta flujos de datos NTFS (ADS) por el uso de ':' adicional."""
     return ":" in path_name and len(path_name.split(":")) > 2
 
 def _is_system_directory_junction(path_str: str) -> bool:
@@ -496,7 +499,7 @@ def _is_sensitive_extension(ext: str) -> bool:
     return ext.lower() in SENSITIVE_EXTENSIONS
 
 def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _IntegrityCheck:
-    """Helper para crear una tupla de regla de seguridad."""
+    """Constructor helper para definir reglas de seguridad."""
     return _IntegrityCheck(reason, predicate)
 
 def _validate_drive_restrictions(target_path: Path) -> None:
@@ -523,7 +526,7 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     except (AttributeError, OSError, ctypes.ArgumentError, MemoryError):
         pass
 
-# Predicados de validación para integridad
+# Definición de predicados para validaciones de integridad atómica
 def _check_symlink(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return p.is_symlink()
 def _check_reparse(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.is_reparse
 def _check_kernel_locked(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _is_kernel_managed(str(p))
@@ -699,7 +702,7 @@ def _normalize_resolved(path_str: str) -> Path:
 def normalize(path: PathLike) -> Path:
     """
     Normaliza rutas para el motor de seguridad, resolviendo enlaces y detectando 
-    trampas de path traversal o reparse points maliciosos antes de cualquier operación.
+    trampas de path traversal o reparse points maliciosos.
     """
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
     path_str = str(path).strip()
@@ -758,15 +761,12 @@ def is_protected_path(path: PathLike) -> bool:
         p = Path(path_str)
         p_str_low = path_str.lower()
         
-        # Validación temprana: Raíces de sistema conocidas
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
             res = True
-        # Validación de kernel y directorios bloqueados
         elif _is_kernel_managed(p_str_low):
             res = True
         elif not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p.parts}):
             res = True
-        # Atributos de sistema via cache (evita IO repetitivo)
         else:
             attrs = _get_file_attrs(str(p))
             res = (attrs != INVALID_FILE_ATTRIBUTES and bool(attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or p == Path(p.anchor)
@@ -1027,7 +1027,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return p
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
-    """Versión booleana de `ensure_safe_to_modify`."""
+    """Versión booleana de `ensure_safe_to_modify` para chequeos no disruptivos."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
