@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 23
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 93 | 9 | 24 | 14 | 128 |
-| 2026-10-21 | 101 | 6 | 22 | 9 | 98 |
+| 2026-10-20 | 90 | 9 | 24 | 14 | 127 |
+| 2026-10-21 | 102 | 6 | 23 | 10 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- seguridad defensiva: **43**
+- seguridad defensiva: **40**
 - robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **34**
-- rendimiento: **30**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **20**
 - `safety.py`: **18**
-- `diskreport.py`: **17**
 - `quarantine.py`: **17**
 - `assistant.py`: **17**
+- `diskreport.py`: **16**
 - `healthscore.py`: **16**
-- `duplicates.py`: **15**
 - `browser.py`: **15**
+- `duplicates.py`: **14**
 - `settings.py`: **13**
+- `scanner.py`: **11**
 - `branding.py`: **11**
 - `organizer.py`: **10**
-- `scanner.py`: **10**
-- `main.py`: **8**
 - `startup.py`: **7**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T10:06:31` **scanner.py** (rendimiento): Se implementó un filtrado preventivo mediante un conjunto de extensiones no relevantes antes de realizar operaciones de I/O o validaciones costosas en `process_entry`, reduciendo significativamente las llamadas a `is_safe_to_modify` y otras verificaciones de sistema para archivos que no serán analizados.
 - `2026-10-21T09:57:14` **safety.py** (rendimiento): Se ha optimizado `_PROTECTED_PATH_CACHE` reemplazando la lógica manual de TTL basada en `time.time()` por el decorador `@lru_cache` con un tamaño adecuado, lo que elimina el uso de diccionarios auxiliares, mejora la velocidad de acceso y reduce la huella de memoria al delegar la gestión del caché a la implementación nativa y eficiente de Python.
 - `2026-10-21T09:56:21` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total en `total_quarantined_bytes` y `summarize` evitando recargas innecesarias del manifiesto al pasar la lista pre-cargada, y mejoré la eficiencia de `purge_all` al utilizar una estructura `set` para búsquedas O(1) al procesar la purga masiva.
 - `2026-10-21T09:45:56` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la gestión manual de `_PIPELINE_CACHE` por `@lru_cache` sobre una función auxiliar, lo cual es más eficiente, idiomático y nativo, eliminando además la necesidad de limpiar explícitamente el diccionario.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T09:15:24` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints más precisos (especialmente en los retornos de funciones de seguridad) y docstrings que explican el "porqué" de las validaciones de bajo nivel (como la necesidad de `stat_result` para evitar race conditions), facilitando el mantenimiento futuro del código.
 - `2026-10-21T09:14:55` **memory.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `memory.py` mediante la refactorización de las estructuras de datos de la API Win32 (`MEMORYSTATUSEX` y `PROCESS_MEMORY_COUNTERS`) para utilizar constantes de tamaño explícitas y tipos más claros, además de añadir docstrings detallados en las funciones de bajo nivel que clarifican el propósito de los flags y buffers, eliminando ambigüedades técnicas.
 - `2026-10-21T09:05:13` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados con tipado claro, la simplificación del flujo de `_collect_candidates` para separar la lógica de filtrado de archivos de la lógica de recursión, y la eliminación de redundancias en las validaciones de `Path`.
-- `2026-10-21T09:04:46` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y type hints específicos en las clases `ExtStats` y `FolderMetrics` para clarificar sus responsabilidades y mejorar la mantenibilidad del código bajo el enfoque de documentación técnica.

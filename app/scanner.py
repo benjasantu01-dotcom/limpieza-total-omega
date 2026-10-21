@@ -296,16 +296,17 @@ class Scanner:
             return
             
         try:
-            # Re-validar seguridad antes de interactuar con la entrada
-            if not self._is_safe_entry(entry):
-                return
-
-            # Verificar existencia actual tras el chequeo de seguridad
-            if entry.is_dir(follow_symlinks=False):
-                self._handle_directory(entry, directory_stack, current_depth)
-            elif entry.is_file(follow_symlinks=False):
-                if self._is_relevant_extension(entry.name):
-                    self._run_file_heuristics(Path(entry.path), entry)
+            # Optimización de rendimiento: filtrar extensiones antes de chequear seguridad
+            if entry.is_file(follow_symlinks=False):
+                if not self._is_relevant_extension(entry.name):
+                    return
+                # Solo validar seguridad si el archivo es relevante
+                if not self._is_safe_entry(entry):
+                    return
+                self._run_file_heuristics(Path(entry.path), entry)
+            elif entry.is_dir(follow_symlinks=False):
+                if self._is_safe_entry(entry):
+                    self._handle_directory(entry, directory_stack, current_depth)
         except (OSError, PermissionError, FileNotFoundError):
             pass
 
