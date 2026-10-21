@@ -330,15 +330,15 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not destination: return None
     try:
         dest_path = Path(destination).resolve()
+        # Verificar seguridad antes de tocar nada
         if dest_path.exists():
             if not is_safe_to_modify(dest_path): return None
         else:
             parent = dest_path.parent
+            # ensure_safe_to_modify valida que la carpeta no esté bloqueada
+            ensure_safe_to_modify(parent)
             if not parent.exists():
-                ensure_safe_to_modify(parent)
                 parent.mkdir(parents=True, exist_ok=True)
-            elif not is_safe_to_modify(parent):
-                return None
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
     except (OSError, PermissionError, TypeError, ValueError): return None

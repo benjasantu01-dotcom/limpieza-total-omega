@@ -99,6 +99,9 @@ def _is_file_locked(path: Path) -> bool:
     """Verifica si un archivo puede abrirse para lectura exclusiva."""
     if not is_safe_to_modify(path):
         return True
+    # Verificación preliminar de acceso sin intentar abrir el handle
+    if not os.access(path, os.R_OK):
+        return True
     try:
         with open(path, "rb") as f:
             f.peek(1)
