@@ -316,7 +316,7 @@ class Scanner:
             try:
                 if finding := check_fn(path, entry, self.now_ts):
                     self.results.append(finding)
-            except Exception as e:
+            except (OSError, PermissionError, Exception) as e:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
@@ -332,10 +332,10 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
             try:
                 if res := check_fn(path, entry, now_ts):
                     findings.append(res)
-            except Exception as e:
+            except (OSError, PermissionError, Exception) as e:
                 logger.debug(f"Heurística puntual {check_fn.__name__} fallida en {path}: {e}")
         return findings
-    except Exception:
+    except (OSError, PermissionError, Exception):
         return []
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

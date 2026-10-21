@@ -949,21 +949,33 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
             if parent == base_dir: break
 
 def _validate_path_components(path: Path) -> None:
-    """Verificación de redundancia para prevenir ataques por recursión circular."""
-    anchor = Path(path.anchor)
-    parts = path.parts
+    """Verificación profunda para prevenir ataques por recursión circular y validación de componentes intermedios."""
+    # Resolvemos antes de iterar para identificar el camino real y prevenir TOCTOU
+    try:
+        resolved_path = path.resolve()
+    except (OSError, RuntimeError):
+        resolved_path = path
+
+    anchor = Path(resolved_path.anchor)
+    parts = resolved_path.parts
     visited: set[Path] = set()
+
     for i in range(len(parts)):
         current_check = anchor.joinpath(*parts[:i+1])
         if "~" in current_check.name:
             raise UnsafePathError("Ruta con spoofing de nombres cortos detectada.", SafetyValidationErrorCode.SHORT_NAME_SPOOFING)
+        
+        # Validamos existencia real del componente en el disco
         if current_check.exists():
-            resolved = _normalize_resolved(str(current_check))
-            if resolved in visited:
-                raise UnsafePathError(f"Referencia circular detectada: {current_check}", SafetyValidationErrorCode.CIRCULAR_REFERENCE)
-            visited.add(resolved)
-            if _is_system_directory_junction(str(current_check)):
-                raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+            try:
+                resolved = current_check.resolve()
+                if resolved in visited:
+                    raise UnsafePathError(f"Referencia circular detectada: {current_check}", SafetyValidationErrorCode.CIRCULAR_REFERENCE)
+                visited.add(resolved)
+                if _is_system_directory_junction(str(current_check)):
+                    raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+            except (OSError, RuntimeError):
+                continue
 
 def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Realiza validaciones finales de seguridad sobre archivos para operaciones de escritura."""

@@ -336,17 +336,13 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     if not is_safe_to_modify(str(file_path)): return None
     try:
         with open(file_path, "rb") as f:
-            try:
-                st = os.fstat(f.fileno())
-            except (OSError, PermissionError): return None
+            st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(st): return None
             content = f.read(MAX_SETTINGS_SIZE + 1)
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
-            try:
-                data = json.loads(content.decode("utf-8"))
-            except (UnicodeDecodeError, json.JSONDecodeError): return None
+            data = json.loads(content.decode("utf-8"))
             return data if _is_dict(data) else None
-    except (OSError, IOError, PermissionError, MemoryError):
+    except (OSError, IOError, PermissionError, MemoryError, UnicodeDecodeError, json.JSONDecodeError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
