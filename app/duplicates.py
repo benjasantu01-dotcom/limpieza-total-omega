@@ -272,6 +272,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """Heurística para elegir keeper: fecha de modificación y longitud del path."""
+    if not isinstance(path, Path): return None
     try:
         stat_info = path.stat()
         return float(stat_info.st_mtime), len(str(path))
@@ -285,8 +286,11 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for path_item in group.paths:
         score = _calculate_keeper_heuristic(path_item)
-        if score: candidates.append((score, path_item))
-    return min(candidates, key=lambda x: x[0])[1] if candidates else None
+        if score: 
+            candidates.append((score, path_item))
+    if not candidates:
+        return group.paths[0] if group.paths else None
+    return min(candidates, key=lambda x: x[0])[1]
 
 
 def _get_path_label(path: Path, keeper: Optional[Path]) -> str:

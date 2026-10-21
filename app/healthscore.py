@@ -390,10 +390,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_points = 0.0
     
     for entry in _PIPELINE:
-        points, recs = _calculate_area_contribution(metrics, entry)
-        metric_breakdown[entry.area] = points
-        recommendations.extend(recs)
-        total_points += points
+        try:
+            points, recs = _calculate_area_contribution(metrics, entry)
+            metric_breakdown[entry.area] = points
+            recommendations.extend(recs)
+            total_points += points
+        except Exception:
+            continue
             
     if metrics.quarantined_count > 0:
         recommendations.append("Existen elementos en cuarentena.")

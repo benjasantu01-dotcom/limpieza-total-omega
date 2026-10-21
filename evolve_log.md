@@ -1349,3 +1349,14 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-10-21T08:18:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-21T08:18:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T08:18:50` Corrida terminada. Total usado hoy: 196.
+- `2026-10-21T08:23:27` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-10-21T08:23:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T08:23:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-21T08:23:41` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-21T08:23:55` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-21T08:24:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T08:25:27` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-21T08:25:55` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `suggest_keeper` y `_calculate_keeper_heuristic` ante archivos que desaparecen durante el escaneo o tienen metadatos inaccesibles, evitando errores durante el cálculo del puntaje.
+- `2026-10-21T08:26:10` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del motor de cómputo validando la estructura del pipeline antes de operar y encapsulando las llamadas a las funciones normalizadoras en bloques `try-except` dentro de `compute_score`, garantizando que un fallo en un área no detenga el análisis global.
+- `2026-10-21T08:26:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T08:26:10` Corrida terminada. Total usado hoy: 200.
