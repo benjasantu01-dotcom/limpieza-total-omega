@@ -1092,3 +1092,12 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-10-21T05:52:30` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `compute_score` frente a la posible corrupción del caché global de resultados mediante una limpieza explícita de `_PIPELINE_CACHE` en caso de desbordamiento, y se ha añadido una validación de estado inicial para evitar cálculos basados en métricas inconsistentes tras cambios en la configuración del pipeline.
 - `2026-10-21T05:52:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T05:52:30` Corrida terminada. Total usado hoy: 140.
+- `2026-10-21T06:00:45` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-10-21T06:00:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T06:01:51` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-21T06:03:14` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de la configuración en `main.py` mediante la implementación de una validación de integridad diferida y tolerante a fallos, asegurando que un archivo `settings.json` corrupto o parcialmente ilegible no impida el inicio de la interfaz, permitiendo siempre la recuperación mediante los valores por defecto del módulo `settings`.
+- `2026-10-21T06:04:12` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_process_executable_safe` añadiendo una comprobación explícita para evitar errores de acceso en procesos que terminan durante la inspección (`GetModuleFileNameExW` puede fallar si el handle queda huérfano) y validando la existencia de la ruta antes de intentar resolverla, evitando excepciones de `Path.resolve()` en entornos con permisos restringidos.
+- `2026-10-21T06:04:51` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-21T06:05:19` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `purge_all` ante archivos huérfanos o fuera de control dentro de la carpeta de cuarentena, añadiendo una validación explícita mediante `is_within_directory` para evitar ataques de salto de directorio durante la limpieza masiva.
+- `2026-10-21T06:05:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T06:05:19` Corrida terminada. Total usado hoy: 144.

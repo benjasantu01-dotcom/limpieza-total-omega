@@ -125,17 +125,21 @@ _SETTINGS_CACHE: Dict[str, Any] = {"data": None, "last_load": 0}
 def get_cached_settings() -> Dict[str, Any]:
     """
     Carga de configuración desde archivo con caché temporal.
-    Valida la integridad de las rutas excluidas antes de retornar.
+    Recupera valores por defecto si el archivo es inexistente o corrupto.
     """
     now = time.time()
     if _SETTINGS_CACHE["data"] and (now - _SETTINGS_CACHE["last_load"] < 60):
         return _SETTINGS_CACHE["data"]
 
-    raw = settings_mod.load()
-    if isinstance(raw, dict):
-        _SETTINGS_CACHE["data"] = raw
-        _SETTINGS_CACHE["last_load"] = now
-        return raw
+    try:
+        raw = settings_mod.load()
+        if isinstance(raw, dict):
+            _SETTINGS_CACHE["data"] = raw
+            _SETTINGS_CACHE["last_load"] = now
+            return raw
+    except Exception as e:
+        logging.warning("Fallo al cargar configuración, usando valores de fábrica: %s", e)
+    
     return settings_mod.reset()
 
 class AppSettings(TypedDict, total=False):

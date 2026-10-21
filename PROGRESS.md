@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 0 | 0 | 0 | 0 | 14 |
+| 2026-10-19 | 0 | 0 | 0 | 0 | 10 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 61 | 4 | 13 | 7 | 55 |
+| 2026-10-21 | 64 | 4 | 13 | 7 | 56 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
+- robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **38**
 - seguridad defensiva: **36**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
-- `quarantine.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `browser.py`: **15**
 - `duplicates.py`: **15**
 - `safety.py`: **15**
@@ -43,10 +43,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **10**
 - `organizer.py`: **9**
 - `startup.py`: **8**
-- `main.py`: **7**
+- `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T06:05:19` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` ante archivos huérfanos o fuera de control dentro de la carpeta de cuarentena, añadiendo una validación explícita mediante `is_within_directory` para evitar ataques de salto de directorio durante la limpieza masiva.
+- `2026-10-21T06:04:12` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_is_process_executable_safe` añadiendo una comprobación explícita para evitar errores de acceso en procesos que terminan durante la inspección (`GetModuleFileNameExW` puede fallar si el handle queda huérfano) y validando la existencia de la ruta antes de intentar resolverla, evitando excepciones de `Path.resolve()` en entornos con permisos restringidos.
+- `2026-10-21T06:03:14` **main.py** (robustez ante casos límite): Se ha robustecido el manejo de la configuración en `main.py` mediante la implementación de una validación de integridad diferida y tolerante a fallos, asegurando que un archivo `settings.json` corrupto o parcialmente ilegible no impida el inicio de la interfaz, permitiendo siempre la recuperación mediante los valores por defecto del módulo `settings`.
 - `2026-10-21T05:52:30` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a la posible corrupción del caché global de resultados mediante una limpieza explícita de `_PIPELINE_CACHE` en caso de desbordamiento, y se ha añadido una validación de estado inicial para evitar cálculos basados en métricas inconsistentes tras cambios en la configuración del pipeline.
 - `2026-10-21T05:52:17` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de permisos de acceso durante la lectura de archivos en `hash_file` y `partial_hash` para evitar que bloqueos temporales del sistema operativo interrumpan el proceso de escaneo, permitiendo que la aplicación continúe analizando el resto de los archivos en lugar de abortar silenciosamente.
 - `2026-10-21T05:51:54` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `os.stat` dentro del generador, evitando que el proceso completo aborte si un archivo específico cambia de permisos o es eliminado durante el escaneo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T05:00:30` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad de la intención del código mediante la adición de Type Hints explícitos en retornos de funciones críticas y una estructura de docstrings más clara que especifica explícitamente qué puede retornar `None` ante fallos de validación.
 - `2026-10-21T05:00:01` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `scanner.py` mediante la normalización de *docstrings* (usando el formato Google Style) para clarificar las responsabilidades de las funciones de alto nivel, y se han añadido *type hints* precisos en las estructuras de datos de la pila de directorios para facilitar la lectura del flujo recursivo del escáner.
 - `2026-10-21T04:53:27` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `safety.py` mediante la adición de docstrings estructurados, tipado explícito en lambdas complejas y la refactorización de `_VALIDATORS` para usar una estructura de datos autodescriptiva que facilita la auditoría de reglas de seguridad.
-- `2026-10-21T04:51:35` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` documentando los contratos de las funciones críticas de validación y transformando validaciones implícitas en aserciones explícitas, facilitando la auditoría de seguridad del código.
-- `2026-10-21T04:49:47` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad conceptual de `organizer.py` mediante la adición de Type Hints explícitos, la normalización de docstrings siguiendo las mejores prácticas y la clarificación de la intención operativa en los métodos de validación, garantizando que cada función documente el PORQUÉ de sus restricciones.
-- `2026-10-21T04:41:56` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las estructuras de datos y funciones críticas, aclarando el propósito y las restricciones de seguridad para facilitar el mantenimiento y la comprensión de la lógica de bajo nivel.
