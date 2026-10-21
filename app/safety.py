@@ -871,6 +871,10 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     attrs = _get_file_attrs(str(target_path))
     if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN)):
         raise UnsafePathError("Protección defensiva: Archivo de sistema oculto.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+    
+    # Validación de capacidades de modificación de atributos (ACL)
+    if os.name == 'nt' and not os.access(target_path.parent, os.W_OK):
+        raise UnsafePathError("No se pueden modificar atributos por falta de privilegios en el contenedor.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
 
     if _is_kernel_managed(str(target_path)):
         raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)

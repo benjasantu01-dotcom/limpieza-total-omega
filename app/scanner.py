@@ -296,9 +296,11 @@ class Scanner:
             return
             
         try:
+            # Re-validar seguridad antes de interactuar con la entrada
             if not self._is_safe_entry(entry):
                 return
 
+            # Verificar existencia actual tras el chequeo de seguridad
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False):
