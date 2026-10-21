@@ -988,3 +988,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-21T04:32:09` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: legibilidad y documentación).
 - `2026-10-21T04:32:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T04:32:09` Corrida terminada. Total usado hoy: 108.
+- `2026-10-21T04:39:07` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-10-21T04:39:35` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación interna incluyendo type hints completos en los parámetros de funciones que carecían de ellos, añadí docstrings explicativos para los helpers privados y corregí una inconsistencia donde la lógica de "is_junction" podía dar falsos negativos por el orden de chequeo de la API de Windows.
+- `2026-10-21T04:40:00` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-21T04:41:12` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `main.py` documentando los flujos de control críticos (decoradores de seguridad, orquestación asíncrona y gestión de estado de UI) mediante docstrings técnicos más precisos, y clarifiqué la intención de las estructuras de datos complejas utilizadas en la aplicación.
+- `2026-10-21T04:41:56` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las estructuras de datos y funciones críticas, aclarando el propósito y las restricciones de seguridad para facilitar el mantenimiento y la comprensión de la lógica de bajo nivel.
+- `2026-10-21T04:41:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T04:41:56` Corrida terminada. Total usado hoy: 112.

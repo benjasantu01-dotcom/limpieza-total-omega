@@ -54,8 +54,11 @@ _partial_cache: Dict[Path, str] = {}
 _full_hash_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
-    """Verifica si el path es un punto de reanálisis (Junction/Symlink) vía Win32 API."""
-    if not isinstance(path, Path) or not is_safe_to_modify(path):
+    """
+    Verifica si el path es un punto de reanálisis (Junction/Symlink) vía Win32 API.
+    Los puntos de reanálisis se omiten para evitar bucles infinitos en escaneos.
+    """
+    if not isinstance(path, Path):
         return True
     if path.is_symlink():
         return True
@@ -234,6 +237,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in iterator:
                     try:
                         path_entry = Path(entry.path)
+                        # Chequeo preventivo antes de procesar entrada
                         if not is_safe_to_modify(path_entry): continue
 
                         if entry.is_dir(follow_symlinks=False):
@@ -319,6 +323,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 
 def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
+    """Retorna un tag visual para identificar al archivo designado como original."""
     return "[conservar]" if path == keeper else "[duplicado]"
 
 

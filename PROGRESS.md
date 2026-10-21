@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 26
 - Sin respuesta de la IA (error o límite): 235
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 9 | 0 | 4 | 2 | 31 |
+| 2026-10-19 | 8 | 0 | 1 | 2 | 31 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 44 | 3 | 9 | 6 | 46 |
+| 2026-10-21 | 47 | 3 | 10 | 6 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **40**
 - seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **37**
-- legibilidad y documentación: **37**
-- rendimiento: **29**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
+- `memory.py`: **18**
 - `healthscore.py`: **17**
-- `memory.py`: **17**
 - `assistant.py`: **16**
 - `quarantine.py`: **16**
-- `safety.py`: **15**
-- `duplicates.py`: **14**
+- `duplicates.py`: **15**
 - `browser.py`: **14**
+- `safety.py`: **14**
 - `branding.py`: **12**
 - `settings.py`: **12**
 - `scanner.py`: **9**
 - `organizer.py`: **8**
 - `startup.py`: **7**
-- `main.py`: **6**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T04:41:56` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las estructuras de datos y funciones críticas, aclarando el propósito y las restricciones de seguridad para facilitar el mantenimiento y la comprensión de la lógica de bajo nivel.
+- `2026-10-21T04:41:12` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` documentando los flujos de control críticos (decoradores de seguridad, orquestación asíncrona y gestión de estado de UI) mediante docstrings técnicos más precisos, y clarifiqué la intención de las estructuras de datos complejas utilizadas en la aplicación.
+- `2026-10-21T04:39:35` **duplicates.py** (legibilidad y documentación): Mejoré la documentación interna incluyendo type hints completos en los parámetros de funciones que carecían de ellos, añadí docstrings explicativos para los helpers privados y corregí una inconsistencia donde la lógica de "is_junction" podía dar falsos negativos por el orden de chequeo de la API de Windows.
 - `2026-10-21T04:31:52` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings explicativos en las funciones de recorrido recursivo y validación de rutas, además de refactorizar la lógica de `_should_skip_entry` para clarificar la precedencia de los chequeos de seguridad.
 - `2026-10-21T04:30:55` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de bajo nivel y la organización de los parámetros para facilitar la comprensión del sistema de renderizado.
 - `2026-10-21T04:20:48` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos de configuración agregando una validación específica `os.fsync` y verificaciones de tamaño antes y después de la serialización, además de añadir un filtro de integridad en la función `_is_file_secure_to_read` para prevenir la carga de archivos excesivamente grandes que podrían causar agotamiento de memoria.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T02:27:39` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` endureciendo la validación de metadatos de archivos (agregando chequeo de tipo mediante `stat.S_IFREG`) y restringiendo explícitamente los permisos permitidos para evitar la lectura de archivos que no pertenecen al dueño del proceso o que poseen permisos de escritura excesivos (grupo/otros).
 - `2026-10-21T02:18:35` **safety.py** (seguridad defensiva): Mejoré la robustez de `ensure_safe_to_modify` implementando una validación de `st_nlink` dentro de `_check_file_integrity`, lo que previene ataques de manipulación mediante enlaces duros (hard links) justo antes de la operación de modificación, fortaleciendo la defensa contra condiciones de carrera TOCTOU.
 - `2026-10-21T02:17:38` **quarantine.py** (seguridad defensiva): He mejorado `_verify_source_fs_permissions` y `_validate_input_path` para incluir una verificación de existencia de puntos de reparse (reparse points) mediante `GetFileAttributesW` en Windows, alineando la validación inicial con las garantías de seguridad de `safety.py` y evitando la manipulación de archivos ocultos tras junctions de sistema.
-- `2026-10-21T02:10:16` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` sustituyendo `path.resolve(strict=True)` (que puede lanzar excepciones si el proceso termina durante la ejecución) por una validación más robusta basada en la ruta normalizada, evitando operaciones destructivas o que provoquen cierres inesperados del hilo de ejecución.
-- `2026-10-21T02:07:10` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor de puntuación introduciendo un mecanismo de validación de métricas tipo "fail-safe" que bloquea el procesamiento ante estados inconsistentes, evitando el uso de valores potencialmente sesgados o manipulados en los cálculos de salud.
-- `2026-10-21T02:06:30` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` y `_is_file_locked` integrando `is_safe_to_modify` como un chequeo de pre-condición estricto, asegurando que ninguna operación de I/O ocurra sobre rutas no validadas o bloqueadas.

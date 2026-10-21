@@ -93,7 +93,10 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Mapeo de la estructura Win32 GlobalMemoryStatusEx para reporte global de RAM."""
+    """
+    Estructura de datos para la API GlobalMemoryStatusEx.
+    Reporta estadísticas globales de memoria física y paginada del sistema.
+    """
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -107,7 +110,10 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Mapeo de la estructura Win32 PSAPI para métricas detalladas de consumo por proceso."""
+    """
+    Estructura de datos para la API GetProcessMemoryInfo.
+    Provee contadores precisos sobre el uso de memoria privada y working set.
+    """
     _fields_: List[Tuple[str, Any]] = [
         ("cb", ctypes.c_size_t),
         ("PageFaultCount", wintypes.DWORD),
