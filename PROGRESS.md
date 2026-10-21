@@ -9,34 +9,34 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 225
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 97 | 9 | 25 | 15 | 130 |
-| 2026-10-21 | 98 | 6 | 20 | 9 | 95 |
+| 2026-10-20 | 96 | 9 | 24 | 14 | 129 |
+| 2026-10-21 | 99 | 6 | 21 | 9 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **34**
-- rendimiento: **27**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **20**
-- `safety.py`: **18**
 - `assistant.py`: **18**
 - `diskreport.py`: **17**
+- `safety.py`: **17**
 - `browser.py`: **16**
 - `quarantine.py`: **16**
+- `healthscore.py`: **16**
 - `duplicates.py`: **15**
-- `healthscore.py`: **15**
 - `settings.py`: **13**
 - `branding.py`: **12**
 - `organizer.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T09:45:56` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la gestión manual de `_PIPELINE_CACHE` por `@lru_cache` sobre una función auxiliar, lo cual es más eficiente, idiomático y nativo, eliminando además la necesidad de limpiar explícitamente el diccionario.
 - `2026-10-21T09:36:39` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` reemplazando llamadas redundantes a `Path.relative_to` por una lógica de manipulación de cadenas de `os.path` más ligera y evitando la creación innecesaria de objetos `Path` dentro del bucle crítico, reduciendo la presión sobre el recolector de basura.
 - `2026-10-21T09:36:28` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.normcase` dentro del bucle de cada archivo, y pre-calculando el estado de `never_touch` como un `frozenset` una sola vez en el contexto para acelerar las búsquedas de exclusión en O(1).
 - `2026-10-21T09:36:03` **branding.py** (rendimiento): Se optimizó el renderizado del logo y la barra de gradiente reemplazando la creación de múltiples elementos `canvas.create_line` (que saturan el widget) por un único `create_polygon` o el uso de `create_line` con `width` ajustado, reduciendo significativamente la carga de objetos en el Canvas por frame.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T09:04:46` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y type hints específicos en las clases `ExtStats` y `FolderMetrics` para clarificar sus responsabilidades y mejorar la mantenibilidad del código bajo el enfoque de documentación técnica.
 - `2026-10-21T08:56:35` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante la formalización de la estructura de control de errores y la clarificación de las responsabilidades en las funciones de escaneo, siguiendo estrictamente el enfoque de documentación técnica exigido.
 - `2026-10-21T08:56:20` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones críticas de renderizado, estandarizando el formato para facilitar la mantenibilidad y comprensión del flujo de datos gráficos.
-- `2026-10-21T08:55:12` **assistant.py** (legibilidad y documentación): Documenté con docstrings claros las funciones de validación y transformación de datos, aclarando su propósito de seguridad y el manejo de tipos para facilitar el mantenimiento del motor de asistencia.

@@ -32,7 +32,6 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
     "root", "drive", "user", "profile", "appdata", "programdata", "exe", "dll"
 ])
 _MAX_MSG_LEN: Final[int] = 128
-_MAX_CACHE_SIZE: Final[int] = 256
 
 class Scorer(Protocol):
     """
@@ -343,9 +342,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
     return findings
 
-# Caché local con control de tamaño
-_PIPELINE_CACHE: Dict[Tuple[float, ...], HealthResult] = {}
-
 def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Calcula el aporte de un área al puntaje global y sus recomendaciones."""
     try:
@@ -357,7 +353,6 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
         weight = max(0, entry.weight)
         points = area_ratio * weight
         
-        # Uso de redondeo defensivo y validación de rango estricta
         val_int = int(round(points))
         val_int = int(_clamp(float(val_int), 0.0, float(weight)))
         
@@ -365,26 +360,13 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
     except Exception:
         return 0, []
 
-def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Computa el puntaje global mediante el pipeline con validación de estado."""
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
+@lru_cache(maxsize=256)
+def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
+    """Implementación interna cacheable de la lógica de cómputo."""
+    # Reconstrucción mínima de las métricas para pasar al pipeline
+    keys = SystemMetrics._FIELDS_TO_VALIDATE
+    metrics = SystemMetrics(**dict(zip(keys, metrics_tuple)))
     
-    metrics.validate()
-    if not metrics.is_finite:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos o corruptos."])
-    
-    if not _PIPELINE:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Pipeline no configurado."])
-    
-    # Gestión de caché defensiva
-    if len(_PIPELINE_CACHE) > _MAX_CACHE_SIZE:
-        _PIPELINE_CACHE.clear()
-
-    cache_key = tuple(getattr(metrics, f) for f in metrics._FIELDS_TO_VALIDATE)
-    if cache_key in _PIPELINE_CACHE:
-        return _PIPELINE_CACHE[cache_key]
-        
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
     total_points = 0.0
@@ -398,19 +380,31 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         except Exception:
             continue
             
-    if metrics.quarantined_count > 0:
+    if quarantined > 0:
         recommendations.append("Existen elementos en cuarentena.")
         
     final_score = int(round(_clamp(total_points, 0.0, 100.0)))
-    result = HealthResult(
+    return HealthResult(
         score=final_score,
         grade=grade_for_score(final_score),
         breakdown=metric_breakdown,
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
+
+def compute_score(metrics: SystemMetrics | None) -> HealthResult:
+    """Computa el puntaje global mediante el pipeline con validación de estado."""
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
-    _PIPELINE_CACHE[cache_key] = result
-    return result
+    metrics.validate()
+    if not metrics.is_finite:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos o corruptos."])
+    
+    if not _PIPELINE:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Pipeline no configurado."])
+    
+    cache_key = tuple(getattr(metrics, f) for f in metrics._FIELDS_TO_VALIDATE)
+    return _compute_cached(cache_key, metrics.quarantined_count)
 
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:

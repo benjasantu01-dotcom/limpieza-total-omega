@@ -1477,3 +1477,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-21T09:36:39` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `walk_files` y `largest_folders` reemplazando llamadas redundantes a `Path.relative_to` por una lógica de manipulación de cadenas de `os.path` más ligera y evitando la creación innecesaria de objetos `Path` dentro del bucle crítico, reduciendo la presión sobre el recolector de basura.
 - `2026-10-21T09:36:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T09:36:39` Corrida terminada. Total usado hoy: 228.
+- `2026-10-21T09:45:03` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-21T09:45:27` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-21T09:45:56` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` reemplazando la gestión manual de `_PIPELINE_CACHE` por `@lru_cache` sobre una función auxiliar, lo cual es más eficiente, idiomático y nativo, eliminando además la necesidad de limpiar explícitamente el diccionario.
+- `2026-10-21T09:46:19` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 10% del original (posible pérdida de código)
+- `2026-10-21T09:46:31` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-10-21T09:46:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T09:46:31` Corrida terminada. Total usado hoy: 232.
