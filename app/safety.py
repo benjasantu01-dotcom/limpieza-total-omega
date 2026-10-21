@@ -690,6 +690,16 @@ def _validate_access_permissions(path: Path) -> None:
     except Exception as e:
         raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.ACCESS_DENIED)
 
+def _validate_volume_integrity(path: Path) -> None:
+    """Valida que el volumen contenga capacidades operativas y no sea restringido."""
+    if os.name != 'nt': return
+    if _is_volume_readonly(str(path)) or _is_volume_compressed_or_encrypted(str(path)) or \
+       _is_virtual_drive(str(path)) or _is_volume_busy_or_invalid(str(path)):
+        raise UnsafePathError(f"Volumen restringido/inaccesible: {path.anchor}", SafetyValidationErrorCode.VOLUME_RESTRICTED)
+    if os.path.ismount(path):
+        raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
+    _validate_drive_restrictions(path)
+
 @lru_cache(maxsize=4096)
 def _normalize_resolved(path_str: str) -> Path:
     """Resuelve la ruta absoluta de forma segura evitando errores de resolución."""
@@ -880,13 +890,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if _is_kernel_managed(str(target_path)):
             raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
         
-        if os.name == 'nt':
-            if _is_volume_readonly(str(target_path)) or _is_volume_compressed_or_encrypted(str(target_path)) or \
-               _is_virtual_drive(str(target_path)) or _is_volume_busy_or_invalid(str(target_path)):
-                raise UnsafePathError(f"Volumen restringido/inaccesible: {target_path.anchor}", SafetyValidationErrorCode.VOLUME_RESTRICTED)
-            if os.path.ismount(target_path):
-                raise UnsafePathError(f"Punto de montaje bloqueado: {target_path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
-            _validate_drive_restrictions(target_path)
+        _validate_volume_integrity(target_path)
     except Exception as e:
         if isinstance(e, UnsafePathError): raise
         pass

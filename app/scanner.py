@@ -63,10 +63,10 @@ class SuspicionCheck(Protocol):
     """
     Interfaz para funciones de análisis heurístico.
     
-    Las implementaciones deben ser funciones puras que operen de forma segura 
-    sobre los parámetros proporcionados (path, entry, now_ts).
+    Las implementaciones deben ser funciones puras, inyectando 'now_ts' 
+    para mantener consistencia temporal durante un escaneo completo.
     """
-    def __call__(self, path: Path, entry: Optional[os.DirEntry], now_ts: float) -> Optional[Suspicion]: ...
+    def __call__(self, path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]: ...
 
 # Alias de tipos para mejorar la legibilidad de la estructura de datos
 ScanResult: TypeAlias = List[Suspicion]
@@ -167,7 +167,7 @@ def _is_target_extension(name: str) -> bool:
         return False
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta ejecutables de 0 bytes."""
+    """Heurística: Identifica ejecutables maliciosos cuya carga útil es nula (0 bytes)."""
     if path is None: return None
     try:
         if _get_file_size(path) == 0:
@@ -177,7 +177,7 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Ti
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta técnicas de ocultamiento mediante doble extensión."""
+    """Heurística: Detecta el uso de doble extensión (ej: archivo.pdf.exe) para engañar al usuario."""
     if path is None or not path.name: return None
     try:
         if DOUBLE_EXTENSION_RE.search(path.name):
@@ -187,7 +187,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta nombres de procesos críticos fuera de sus carpetas legítimas."""
+    """Heurística: Detecta ejecutables que suplantan nombres de procesos críticos del sistema."""
     if path is None or not path.name: return None
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
@@ -198,7 +198,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta ejecutables creados recientemente en directorios temporales."""
+    """Heurística: Señala ejecutables recién descargados en carpetas volátiles como el Downloads."""
     if path is None or path.parent is None: return None
     try:
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
