@@ -313,7 +313,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
-                                yield Path(entry.path), entry.stat().st_size
+                                # Captura el tamaño garantizando que sea un entero positivo
+                                size = entry.stat().st_size
+                                if size >= 0:
+                                    yield Path(entry.path), size
                             except (PermissionError, FileNotFoundError, OSError):
                                 continue
                     except (PermissionError, FileNotFoundError, OSError):
@@ -351,7 +354,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         p_str = str(path)
         if len(p_str) > root_len:
-            # Obtiene el nombre del directorio inmediato sin instanciar Paths extra
             sub_path = p_str[root_len:]
             top_part = sub_path.split(os.sep)[0]
             top_path = os.path.join(root_str, top_part)
@@ -381,6 +383,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
+        if size < 0: continue
         stats.register_file(size, path.suffix)
         
         if limit > 0:

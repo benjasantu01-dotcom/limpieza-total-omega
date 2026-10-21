@@ -364,8 +364,13 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global mediante el pipeline con validación de suma total."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
+    
+    # Asegurar integridad de datos antes de procesar
+    metrics.validate()
+    if not metrics.is_finite:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema corruptos."])
     
     if not _PIPELINE:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Pipeline de análisis no configurado."])

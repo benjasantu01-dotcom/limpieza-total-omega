@@ -183,6 +183,7 @@ def safe_ui_operation(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Optional[Any]:
         try:
+            # Verifica si el primer argumento es un widget y si aún existe
             if args and hasattr(args[0], 'winfo_exists') and not args[0].winfo_exists():
                 return None
             return func(*args, **kwargs)
@@ -265,8 +266,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._setup_application()
 
     def _check_widget_integrity(self, widget: Any) -> bool:
-        """Verifica existencia de un widget de Tkinter/CTk de forma genérica."""
-        return hasattr(widget, 'winfo_exists') and widget.winfo_exists()
+        """Verifica existencia de un widget de Tkinter/CTk de forma genérica y segura."""
+        if widget is None:
+            return False
+        if hasattr(widget, 'winfo_exists'):
+            try:
+                return bool(widget.winfo_exists())
+            except Exception:
+                return False
+        return True
 
     def _sanitize_path(self, path: Union[str, Path, Any]) -> str:
         """Limpia caracteres no imprimibles y espacios excesivos para evitar inyecciones."""
@@ -352,8 +360,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._executor = None
         
         if executor:
-            # Shutdown sin esperar para cerrar la UI rápidamente, 
-            # pero descartando las tareas pendientes en la cola.
             executor.shutdown(wait=False, cancel_futures=True)
         
         try:
@@ -460,7 +466,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.settings = get_cached_settings()
             
         with self._executor_lock:
-            # Se especifica thread_name_prefix para mejor depuración
             self._executor = concurrent.futures.ThreadPoolExecutor(
                 max_workers=3, 
                 thread_name_prefix="OmegaWorker"

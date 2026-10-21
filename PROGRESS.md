@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 37 | 3 | 11 | 6 | 65 |
+| 2026-10-19 | 34 | 3 | 10 | 6 | 65 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 20 | 0 | 5 | 2 | 5 |
+| 2026-10-21 | 23 | 0 | 5 | 2 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
 - rendimiento: **35**
-- seguridad defensiva: **34**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **34**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `assistant.py`: **17**
-- `quarantine.py`: **16**
 - `duplicates.py`: **16**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
-- `healthscore.py`: **15**
-- `safety.py`: **14**
+- `quarantine.py`: **15**
 - `browser.py`: **14**
 - `branding.py`: **13**
+- `safety.py`: **13**
 - `settings.py`: **12**
-- `scanner.py`: **11**
 - `organizer.py`: **10**
+- `scanner.py`: **10**
 - `startup.py`: **8**
-- `main.py`: **5**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T01:28:01` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y accesibilidad en `_check_widget_integrity` para evitar que los callbacks asíncronos intenten operar sobre widgets o ventanas ya destruidas, complementando los decoradores existentes con una verificación explícita antes de cualquier interacción, previniendo errores de "TclError" ante cierres abruptos o condiciones de carrera en el hilo principal.
+- `2026-10-21T01:27:02` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante datos de entrada corruptos o maliciosos durante la serialización/deserialización, añadiendo una validación explícita de `SystemMetrics` en `compute_score` para asegurar que ningún campo contenga valores `NaN` o fuera de rango que puedan romper los cálculos matemáticos del pipeline.
+- `2026-10-21T01:26:01` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` manejando explícitamente `OSError` durante la lectura de metadatos (`st_size`), evitando que archivos bloqueados por el sistema o en acceso exclusivo aborten el procesamiento o registren tamaños negativos.
 - `2026-10-21T01:17:14` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la inicialización de los puntos de escaneo de `base_directories`, añadiendo una validación explícita para evitar errores cuando la variable de entorno `LOCALAPPDATA` apunta a rutas inexistentes, no legibles o que escapan de las restricciones de seguridad del sistema.
 - `2026-10-21T01:17:01` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` validando la existencia de la ruta de destino antes de intentar operaciones de escritura y asegurando que las excepciones durante la creación del directorio no rompan el flujo de la aplicación.
 - `2026-10-21T01:16:28` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_payload_structure` al incorporar una validación recursiva de profundidad y límites de colección que evita ataques de desbordamiento de pila o agotamiento de memoria, reforzando la integridad del procesamiento de datos en el asistente ante entradas malintencionadas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T00:45:17` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` evitando la creación innecesaria de objetos `Path` y reduciendo las llamadas a `relative_to` al calcular pesos de carpetas, utilizando operaciones de string de bajo costo.
 - `2026-10-21T00:36:03` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando llamadas redundantes a `__dict__` y `getattr` por el uso de `metrics_snapshot`, y se eliminaron recorridos de diccionario innecesarios en `_apply_updates` y `ingest`, mejorando la eficiencia en escenarios de consultas frecuentes.
 - `2026-10-21T00:35:21` **startup.py** (legibilidad y documentación): Mejora la legibilidad del código mediante la adición de docstrings estructuradas en los métodos del registro y la normalización de la terminología de tipos, facilitando la comprensión del flujo de datos en el módulo `startup.py`.
-- `2026-10-21T00:34:47` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos del gestor de estados `_SettingsManager` y aclarando el propósito de la lógica de validación atómica en `_ValidatorEntry`, facilitando la comprensión del flujo de persistencia sin alterar la funcionalidad.
-- `2026-10-21T00:26:06` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de validación de bajo nivel y predicados (`_check_*`), además de refactorizar la estructura de `_evaluate_security_rules` para que el manejo de errores sea más explícito y fácil de auditar según los estándares de seguridad exigidos.
-- `2026-10-21T00:24:51` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de las responsabilidades de las funciones de bajo nivel y la adición de Type Hints detallados en funciones que carecían de ellos, facilitando la legibilidad técnica sin alterar la lógica de seguridad.
