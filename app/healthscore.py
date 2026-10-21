@@ -363,7 +363,6 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
 @lru_cache(maxsize=256)
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Implementación interna cacheable de la lógica de cómputo."""
-    # Reconstrucción mínima de las métricas para pasar al pipeline
     keys = SystemMetrics._FIELDS_TO_VALIDATE
     metrics = SystemMetrics(**dict(zip(keys, metrics_tuple)))
     
@@ -431,3 +430,7 @@ def summarize(result: HealthResult | None) -> List[str]:
         
     lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recs]))
     return lines
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    logging.info("Módulo healthscore cargado. Motor analítico inicializado.")

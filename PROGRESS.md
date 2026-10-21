@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 46
+- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 241
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 64 | 7 | 18 | 10 | 89 |
-| 2026-10-21 | 119 | 6 | 28 | 11 | 152 |
+| 2026-10-20 | 62 | 6 | 17 | 10 | 89 |
+| 2026-10-21 | 123 | 6 | 28 | 11 | 152 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **44**
 - robustez ante casos límite: **42**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **32**
-- rendimiento: **27**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **17**
 - `memory.py`: **17**
+- `browser.py`: **17**
 - `assistant.py`: **16**
-- `diskreport.py`: **16**
+- `duplicates.py`: **16**
+- `healthscore.py`: **16**
 - `safety.py`: **16**
-- `browser.py`: **16**
-- `quarantine.py`: **15**
-- `duplicates.py`: **15**
-- `healthscore.py`: **15**
+- `quarantine.py`: **14**
 - `branding.py`: **13**
 - `settings.py`: **13**
-- `organizer.py`: **8**
 - `scanner.py`: **8**
 - `main.py`: **8**
+- `organizer.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T13:32:16` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en funciones de alto nivel y el uso de un bloque `if __name__ == "__main__"` para centralizar y documentar el propósito del módulo, facilitando el mantenimiento para futuros colaboradores.
+- `2026-10-21T13:31:58` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings estructurados, la clarificación de la intención en funciones auxiliares críticas y la estandarización de las anotaciones de tipo para mejorar la mantenibilidad.
+- `2026-10-21T13:30:57` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings detallados en funciones clave, la clarificación de tipos en estructuras complejas y la mejora de la semántica en el manejo de rutas, garantizando que el código sea autodocumentado sin alterar su funcionalidad.
+- `2026-10-21T13:30:21` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings y se han aclarado las responsabilidades de las funciones de recorrido recursivo para mejorar la mantenibilidad y legibilidad del motor de escaneo.
 - `2026-10-21T13:20:10` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `parse_registry_csv` añadiendo una validación explícita para asegurar que el `csv_text` procesado contenga los encabezados esperados ("Name" y "Value"), evitando errores en caso de recibir salidas de PowerShell malformadas o inesperadas que podrían causar excepciones al iterar sobre las filas.
 - `2026-10-21T13:19:41` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` mediante una validación más estricta del tamaño del archivo y la integridad de la decodificación, asegurando que ante cualquier error parcial de lectura o escritura el sistema retorne `None` o falle de forma controlada sin comprometer la configuración persistida.
 - `2026-10-21T13:00:24` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos y rangos en `_get_numeric_setting_from_widget` y se mejoró `_safe_get_entry_value` para manejar errores de conversión sin interrumpir la ejecución, previniendo inyecciones de datos corruptos desde la interfaz hacia la lógica de configuración.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T11:09:14` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar `GetModuleFileNameExW` utilizando un manejo explícito del buffer de memoria mediante `ctypes.create_unicode_buffer`, asegurando que cualquier error en la escritura de la ruta sea capturado preventivamente antes de que `is_protected_path` intente evaluar una cadena potencialmente truncada o inválida.
 - `2026-10-21T10:59:35` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `duplicates.py` mediante la validación estricta de rutas absolutas antes de cualquier acceso al sistema de archivos dentro de `_collect_candidates`, previniendo la manipulación de paths relativos o resoluciones inesperadas tras el uso de `os.scandir`.
 - `2026-10-21T10:58:31` **diskreport.py** (seguridad defensiva): Se ha implementado una validación de seguridad crítica en `largest_folders` para asegurar que el cálculo de `top_folder` no escape del directorio raíz (`root`) mediante ataques de recorrido de directorios o rutas relativas maliciosas, garantizando que el análisis se mantenga confinado al alcance del usuario.
-- `2026-10-21T10:57:51` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_should_skip_entry` y `_sum_directory_recursive` mediante una verificación estricta de "sandbox" para cada entrada durante la recursión, evitando que un enlace simbólico o unión que apunte fuera del directorio base escape al control de `safety.py`.
-- `2026-10-21T10:51:29` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir la escritura de archivos en rutas que, aunque no existan, podrían resolverse a ubicaciones sensibles fuera del contexto de la aplicación, utilizando `is_protected_path` como barrera adicional antes de la creación de directorios.
-- `2026-10-21T10:50:48` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la validación explícita de `content-length` en la cabecera de la respuesta HTTP, evitando el procesamiento de respuestas potencialmente maliciosas o excesivamente grandes antes de que lleguen a `_extract_text_from_gemini_json`.
-- `2026-10-21T10:47:06` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `load` y `_read_and_parse_json` ante archivos de configuración bloqueados o con formato inválido, asegurando que la aplicación siempre mantenga un estado operativo incluso si el archivo de ajustes se encuentra en un estado inusual.
