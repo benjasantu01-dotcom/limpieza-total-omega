@@ -331,7 +331,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 continue
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
-        except (PermissionError, FileNotFoundError, OSError, NotADirectoryError): 
+        except (OSError, PermissionError, FileNotFoundError, NotADirectoryError): 
             continue
 
 

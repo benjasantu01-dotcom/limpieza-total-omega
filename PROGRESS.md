@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 246
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 248
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 49 | 4 | 15 | 10 | 82 |
-| 2026-10-21 | 129 | 7 | 32 | 12 | 164 |
+| 2026-10-20 | 46 | 4 | 15 | 9 | 82 |
+| 2026-10-21 | 131 | 7 | 32 | 12 | 166 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **36**
+- robustez ante casos límite: **35**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **17**
 - `browser.py`: **17**
 - `safety.py`: **16**
-- `diskreport.py`: **15**
+- `diskreport.py`: **16**
+- `memory.py`: **16**
 - `duplicates.py`: **15**
 - `quarantine.py`: **15**
 - `assistant.py`: **14**
+- `branding.py`: **14**
 - `healthscore.py`: **14**
-- `branding.py`: **13**
 - `settings.py`: **12**
 - `startup.py`: **8**
 - `scanner.py`: **8**
-- `main.py`: **7**
-- `organizer.py`: **7**
+- `main.py`: **6**
+- `organizer.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T15:23:22` **diskreport.py** (robustez ante casos límite): Se ha añadido un manejo de excepciones robusto en `walk_files` para capturar `OSError` durante la creación del objeto `Path` o el acceso a los atributos del sistema, asegurando que el bucle de escaneo no se interrumpa ante nombres de archivo inválidos, rutas excesivamente largas (Windows MAX_PATH) o errores de acceso a disco.
+- `2026-10-21T15:22:11` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` validando la existencia de la carpeta padre y su capacidad de escritura mediante `is_safe_to_modify` antes de intentar crear directorios o archivos, evitando errores en tiempo de ejecución ante rutas inexistentes o permisos denegados.
 - `2026-10-21T14:22:39` **quarantine.py** (rendimiento): Se implementó un cache en `_get_sha256` y se optimizó el acceso al manifiesto en `purge_all` utilizando un `set` para búsquedas de $O(1)$ en lugar de iteraciones repetidas, mejorando el rendimiento en directorios con gran cantidad de archivos.
 - `2026-10-21T14:03:47` **branding.py** (rendimiento): Se eliminó el uso de `lru_cache` en funciones que realizan operaciones de cálculo simples o que devuelven resultados dinámicos basados en parámetros volátiles, reduciendo el consumo de memoria y la sobrecarga de gestión de caché en llamadas frecuentes de la interfaz.
 - `2026-10-21T14:01:21` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de parseo del registro para clarificar el flujo de datos desde PowerShell hasta el modelo `StartupEntry`, además de estandarizar la nomenclatura de los argumentos en `_is_registry_entry_safe` para mejorar la legibilidad del código.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T13:20:10` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `parse_registry_csv` añadiendo una validación explícita para asegurar que el `csv_text` procesado contenga los encabezados esperados ("Name" y "Value"), evitando errores en caso de recibir salidas de PowerShell malformadas o inesperadas que podrían causar excepciones al iterar sobre las filas.
 - `2026-10-21T13:19:41` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` mediante una validación más estricta del tamaño del archivo y la integridad de la decodificación, asegurando que ante cualquier error parcial de lectura o escritura el sistema retorne `None` o falle de forma controlada sin comprometer la configuración persistida.
 - `2026-10-21T13:00:24` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos y rangos en `_get_numeric_setting_from_widget` y se mejoró `_safe_get_entry_value` para manejar errores de conversión sin interrumpir la ejecución, previniendo inyecciones de datos corruptos desde la interfaz hacia la lógica de configuración.
-- `2026-10-21T12:51:09` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validación de tipos y estados vacíos en `suggest_keeper` y `_collect_candidates`, además de capturar excepciones más específicas en la lectura de archivos para evitar que una falla puntual en `stat` o `open` detenga el análisis completo.
-- `2026-10-21T12:49:56` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `detect_profiles` y `directory_size` añadiendo validaciones de tipo y estructura a sus parámetros de entrada, asegurando que ante valores inesperados (como `None` o tipos incorrectos pasados desde otras partes del sistema) la aplicación no propague errores hacia el resto de los módulos de análisis.
