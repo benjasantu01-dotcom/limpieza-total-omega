@@ -828,3 +828,4 @@ ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflict
 - `2026-10-21T15:30:59` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-10-21T15:30:59` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T15:30:59` Corrida terminada. Total usado hoy: 350.
+- `2026-10-21T15:39:57` Presupuesto diario agotado (350 usados). Corte hasta mañana.
