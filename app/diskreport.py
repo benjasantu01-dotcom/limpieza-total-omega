@@ -64,8 +64,8 @@ class ExtStats:
     Contenedor de métricas para un grupo de extensiones.
 
     Attributes:
-        total_bytes: Suma acumulada del tamaño de archivos (bytes).
-        count: Cantidad total de archivos con esta extensión.
+        total_bytes (int): Suma acumulada del tamaño de archivos en bytes.
+        count (int): Cantidad total de archivos procesados con esta extensión.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -74,7 +74,12 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Actualiza el acumulador con un nuevo archivo si el tamaño es válido."""
+        """
+        Incrementa las estadísticas con el tamaño de un nuevo archivo.
+        
+        Args:
+            size: Tamaño del archivo en bytes (debe ser >= 0).
+        """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -101,6 +106,10 @@ class GlobalStats:
 class FolderMetrics:
     """
     Acumulador para el peso y conteo de archivos en un directorio específico.
+
+    Attributes:
+        size (int): Tamaño total acumulado en bytes.
+        file_count (int): Cantidad total de archivos encontrados en la carpeta.
     """
     __slots__ = ('size', 'file_count')
     
