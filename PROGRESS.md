@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 24
+- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 44
+- Sin cambios (nada sustancial que mejorar): 25
 - Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 111 | 9 | 30 | 16 | 138 |
-| 2026-10-21 | 80 | 4 | 15 | 8 | 93 |
+| 2026-10-20 | 109 | 9 | 29 | 16 | 137 |
+| 2026-10-21 | 81 | 5 | 15 | 9 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - robustez ante casos límite: **45**
-- legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **31**
+- legibilidad y documentación: **37**
+- manejo de errores y validación de entradas: **32**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
+- `memory.py`: **19**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
@@ -38,14 +38,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **15**
 - `browser.py`: **14**
 - `settings.py`: **13**
-- `scanner.py`: **11**
 - `branding.py`: **11**
+- `scanner.py`: **10**
 - `organizer.py`: **9**
-- `startup.py`: **8**
 - `main.py`: **8**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T08:36:06` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_process_executable_safe` reemplazando el acceso directo a `stat()` por un bloque `try-except` más específico y validando la integridad del buffer devuelto, evitando caídas ante errores de sistema al consultar rutas bloqueadas o inaccesibles.
 - `2026-10-21T08:26:10` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del motor de cómputo validando la estructura del pipeline antes de operar y encapsulando las llamadas a las funciones normalizadoras en bloques `try-except` dentro de `compute_score`, garantizando que un fallo en un área no detenga el análisis global.
 - `2026-10-21T08:25:55` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `suggest_keeper` y `_calculate_keeper_heuristic` ante archivos que desaparecen durante el escaneo o tienen metadatos inaccesibles, evitando errores durante el cálculo del puntaje.
 - `2026-10-21T06:53:03` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` implementando una validación explícita para evitar que `process_entry` intente procesar o expandir rutas que fueron alteradas o resultan inaccesibles tras la validación inicial, asegurando además que no se sigan puntos de reanálisis mediante una verificación más estricta en el nivel de entrada.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T06:22:10` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad en `_ensure_safe_text` y se añadió `_REGEX_SHELL_INJECTION` a `SECURITY_PATTERNS` para prevenir inyecciones de comandos más sofisticadas (uso de pipes o redirecciones) que podrían evadir los filtros anteriores al procesar la pregunta del usuario o las respuestas del modelo.
 - `2026-10-21T06:21:34` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_registry_entry_safe` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra caracteres nulos incrustados y comportamientos inesperados de `Path` ante rutas malformadas, evitando excepciones no controladas durante la inspección del registro.
 - `2026-10-21T06:13:53` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_read_and_parse_json` ante casos límite como archivos de tamaño 0, errores de lectura de metadatos o corrupción parcial, asegurando que cualquier anomalía en el archivo de configuración resulte en una recarga limpia y segura en lugar de propagar estados inválidos.
-- `2026-10-21T06:13:40` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `process_entry` y las heurísticas añadiendo un manejo explícito de `PermissionError` y `OSError` para evitar que el escaneo se interrumpa prematuramente al encontrar archivos bloqueados o inaccesibles por el sistema (casos límite de I/O).

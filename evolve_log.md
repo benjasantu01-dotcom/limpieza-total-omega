@@ -1360,3 +1360,48 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-10-21T08:26:10` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del motor de cómputo validando la estructura del pipeline antes de operar y encapsulando las llamadas a las funciones normalizadoras en bloques `try-except` dentro de `compute_score`, garantizando que un fallo en un área no detenga el análisis global.
 - `2026-10-21T08:26:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T08:26:10` Corrida terminada. Total usado hoy: 200.
+- `2026-10-21T08:33:36` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-21T08:33:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T08:33:42` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-21T08:34:48` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-21T08:35:06` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-21T08:35:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T08:36:06` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_is_process_executable_safe` reemplazando el acceso directo a `stat()` por un bloque `try-except` más específico y validando la integridad del buffer devuelto, evitando caídas ante errores de sistema al consultar rutas bloqueadas o inaccesibles.
+- `2026-10-21T08:36:41` ➖ Sin cambios en organizer.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la validación explícita de tipos, chequeos de integridad de rutas mediante `is_relative_to` (evitando escaladas) y el reemplazo de capturas genéricas por excepciones más informativas para evitar silenciamiento de errores críticos.
+- `2026-10-21T08:37:19` Tests FALLARON:
+```
+e_missing_file_r0/no-existe.txt')
+
+    def _validate_input_path(source: PathLike) -> Path:
+        """
+        Validación de entrada para la ruta origen, verificando existencia,
+        tipo, permisos y protección contra inyecciones.
+        """
+        if source is None:
+            raise ValueError("Ruta de origen nula.")
+    
+        p_source = Path(str(source))
+        if not str(p_source).strip():
+            raise ValueError("Ruta de origen vacía.")
+    
+        if str(p_source).startswith(r"\\") or str(p_source).startswith("//"):
+            raise UnsafePathError("Rutas UNC no permitidas.")
+    
+        if len(str(p_source)) > 260:
+            raise UnsafePathError("Ruta de entrada excede límites del sistema.")
+    
+        try:
+            p_source = p_source.resolve(strict=True)
+        except (OSError, RuntimeError) as e:
+>           raise UnsafePathError(f"Ruta origen no válida: {e}")
+E           safety.UnsafePathError: [GENERIC] Ruta origen no válida: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-2/test_quarantine_missing_file_r0/no-existe.txt'
+
+app/quarantine.py:897: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [GENERIC] Ruta origen no válida: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-2/test_quarantine_missing_file_r0/no-existe.txt'
+1 failed, 298 passed in 1.67s
+
+```
+- `2026-10-21T08:37:19` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las validaciones de entrada en `quarantine_dir` y `quarantine_file` para asegurar que las rutas se normalicen y resuelvan correctamente antes de cualquier operación, evitando errores silenciosos de `Path` que podrían llevar a inyecciones o desbordamientos fuera del sandbox.
+- `2026-10-21T08:37:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T08:37:19` Corrida terminada. Total usado hoy: 204.

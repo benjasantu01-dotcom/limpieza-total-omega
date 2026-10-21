@@ -350,15 +350,17 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
         
     try:
         executable_path = Path(exe_str)
-        # Verificamos existencia real antes de resolver para evitar errores de permisos
         if not executable_path.exists(): return False
         
-        # Check reparse points (junctions)
-        if executable_path.is_symlink() or (executable_path.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
+        # Check reparse points (junctions) usando manejo de errores robusto
+        try:
+            st = executable_path.stat()
+            if executable_path.is_symlink() or (st.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
+                return False
+        except (OSError, AttributeError):
             return False
             
         abs_path = executable_path.resolve()
-        # Seguridad Defensiva: validación estricta contra rutas protegidas
         return not is_protected_path(abs_path)
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
