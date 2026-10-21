@@ -364,14 +364,15 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         path_str = str(path)
-        # Eficiencia: extraer el segmento de carpeta de primer nivel sin crear objetos Path extra
-        rel_path = path_str[len(root_str):].lstrip(os.sep)
-        if os.sep in rel_path:
-            top_part = rel_path.split(os.sep)[0]
-            top_folder = os.path.join(root_str, top_part)
-            metrics = stats[top_folder]
-            metrics.size += size
-            metrics.file_count += 1
+        # Eficiencia: extraer el segmento de carpeta de primer nivel asegurando confinamiento
+        if path_str.startswith(root_str):
+            rel_path = path_str[len(root_str):].lstrip(os.sep)
+            if os.sep in rel_path:
+                top_part = rel_path.split(os.sep)[0]
+                top_folder = os.path.join(root_str, top_part)
+                metrics = stats[top_folder]
+                metrics.size += size
+                metrics.file_count += 1
             
     results = [FolderUsage(Path(p), m.size, m.file_count) for p, m in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)

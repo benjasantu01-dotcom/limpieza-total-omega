@@ -203,6 +203,8 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     path_str = entry.path
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
     
+    if not _is_within_sandbox(Path(path_str), ctx.sandbox_base): return True
+    
     try:
         is_hidden_or_reparse = _is_system_hidden(path_str, ctx.kernel32)
         if entry.is_symlink() or ctx.is_junction(path_str) or is_hidden_or_reparse: 
@@ -217,6 +219,8 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     
     if not os.path.isdir(root_path) or not os.access(root_path, os.R_OK):
         return ScanResult(0, True)
+    
+    if not _is_within_sandbox(Path(root_path), ctx.sandbox_base): return ScanResult(0, True)
     
     norm_path = os.path.normcase(root_path)
     if norm_path in ctx.visited_dirs: return ScanResult(0, True)

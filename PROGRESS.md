@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 84 | 9 | 23 | 14 | 118 |
-| 2026-10-21 | 107 | 6 | 24 | 10 | 109 |
+| 2026-10-20 | 84 | 9 | 23 | 14 | 114 |
+| 2026-10-21 | 110 | 6 | 24 | 10 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **36**
+- seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **34**
 - rendimiento: **31**
 
@@ -32,11 +32,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **19**
 - `assistant.py`: **18**
 - `safety.py`: **17**
+- `diskreport.py`: **17**
+- `duplicates.py`: **16**
 - `quarantine.py`: **16**
-- `diskreport.py`: **16**
+- `browser.py`: **16**
 - `healthscore.py`: **16**
-- `duplicates.py`: **15**
-- `browser.py`: **15**
 - `branding.py`: **13**
 - `settings.py`: **13**
 - `scanner.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T10:59:35` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `duplicates.py` mediante la validación estricta de rutas absolutas antes de cualquier acceso al sistema de archivos dentro de `_collect_candidates`, previniendo la manipulación de paths relativos o resoluciones inesperadas tras el uso de `os.scandir`.
+- `2026-10-21T10:58:31` **diskreport.py** (seguridad defensiva): Se ha implementado una validación de seguridad crítica en `largest_folders` para asegurar que el cálculo de `top_folder` no escape del directorio raíz (`root`) mediante ataques de recorrido de directorios o rutas relativas maliciosas, garantizando que el análisis se mantenga confinado al alcance del usuario.
+- `2026-10-21T10:57:51` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_should_skip_entry` y `_sum_directory_recursive` mediante una verificación estricta de "sandbox" para cada entrada durante la recursión, evitando que un enlace simbólico o unión que apunte fuera del directorio base escape al control de `safety.py`.
 - `2026-10-21T10:51:29` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir la escritura de archivos en rutas que, aunque no existan, podrían resolverse a ubicaciones sensibles fuera del contexto de la aplicación, utilizando `is_protected_path` como barrera adicional antes de la creación de directorios.
 - `2026-10-21T10:50:48` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la validación explícita de `content-length` en la cabecera de la respuesta HTTP, evitando el procesamiento de respuestas potencialmente maliciosas o excesivamente grandes antes de que lleguen a `_extract_text_from_gemini_json`.
 - `2026-10-21T10:47:06` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `load` y `_read_and_parse_json` ante archivos de configuración bloqueados o con formato inválido, asegurando que la aplicación siempre mantenga un estado operativo incluso si el archivo de ajustes se encuentra en un estado inusual.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T09:36:39` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` reemplazando llamadas redundantes a `Path.relative_to` por una lógica de manipulación de cadenas de `os.path` más ligera y evitando la creación innecesaria de objetos `Path` dentro del bucle crítico, reduciendo la presión sobre el recolector de basura.
 - `2026-10-21T09:36:28` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.normcase` dentro del bucle de cada archivo, y pre-calculando el estado de `never_touch` como un `frozenset` una sola vez en el contexto para acelerar las búsquedas de exclusión en O(1).
 - `2026-10-21T09:36:03` **branding.py** (rendimiento): Se optimizó el renderizado del logo y la barra de gradiente reemplazando la creación de múltiples elementos `canvas.create_line` (que saturan el widget) por un único `create_polygon` o el uso de `create_line` con `width` ajustado, reduciendo significativamente la carga de objetos en el Canvas por frame.
-- `2026-10-21T09:35:32` **assistant.py** (rendimiento): Se optimizó `SystemContext.metrics_snapshot` y `SystemContext.active_problems` reemplazando llamadas redundantes a `getattr` y `isinstance` por una iteración sobre un diccionario pre-filtrado, reduciendo el overhead de acceso a atributos en cada consulta.
-- `2026-10-21T09:26:43` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `StartupEntry` y se han añadido `type hints` explícitos en los métodos de validación, garantizando que la lógica de seguridad —que es crítica y compleja— sea más legible y mantenible por otros colaboradores.
-- `2026-10-21T09:26:01` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la interfaz `SuspicionCheck` y la clarificación de docstrings en las funciones heurísticas, explicitando el "porqué" de las validaciones de seguridad y su contexto operativo en Windows.

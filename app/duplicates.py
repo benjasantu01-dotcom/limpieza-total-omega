@@ -197,7 +197,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    path = Path(entry.path)
+                    # Garantizar path absoluto para validación de seguridad
+                    path = Path(entry.path).resolve()
                     if not is_safe_to_modify(path): continue
                     
                     if entry.is_dir(follow_symlinks=False):
@@ -205,12 +206,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     elif entry.is_file(follow_symlinks=False):
                         stat = entry.stat(follow_symlinks=False)
                         if stat.st_size >= min_size:
-                            resolved = path.resolve()
                             inode = (stat.st_dev, stat.st_ino)
-                            if inode not in visited_inodes and _safe_path_check(resolved):
-                                if not (skip_protected and is_protected_path(resolved)) and _is_valid_candidate(resolved, stat.st_size):
+                            if inode not in visited_inodes and _safe_path_check(path):
+                                if not (skip_protected and is_protected_path(path)) and _is_valid_candidate(path, stat.st_size):
                                     visited_inodes.add(inode)
-                                    size_to_paths_map[stat.st_size].append(resolved)
+                                    size_to_paths_map[stat.st_size].append(path)
         except (OSError, PermissionError): continue
     return {sz: files for sz, files in size_to_paths_map.items() if len(files) > 1}
 
