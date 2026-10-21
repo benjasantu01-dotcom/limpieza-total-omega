@@ -316,7 +316,13 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 
 def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: Set[str]) -> bool:
-    """Verifica que una entrada de registro sea segura contra inyección y rutas inválidas."""
+    """
+    Valida la seguridad de una entrada obtenida del registro.
+    
+    Comprueba: existencia de caracteres no imprimibles, duplicidad, rutas absolutas 
+    sospechosas (UNC), presencia de caracteres de inyección (SUSPICIOUS_CHARS) 
+    y protección mediante `is_protected_path`.
+    """
     if not isinstance(entry_name, str) or not isinstance(entry_command, str):
         return False
     
@@ -343,7 +349,12 @@ def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: 
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Parsea el output CSV de PowerShell transformándolo en objetos StartupEntry."""
+    """
+    Convierte el reporte en formato CSV proveniente de PowerShell a objetos `StartupEntry`.
+    
+    Filtra entradas mediante `_is_registry_entry_safe` y normaliza los datos recibidos 
+    antes de instanciar cada objeto.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         

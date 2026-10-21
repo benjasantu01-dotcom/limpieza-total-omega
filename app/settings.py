@@ -71,9 +71,9 @@ class _NumericRange(NamedTuple):
 
 class _ValidatorEntry(NamedTuple):
     """
-    Encapsula una lógica de validación específica.
-    El campo 'func' recibe la clave y el valor crudo, retornando el valor
-    normalizado si es válido, o None en caso contrario.
+    Encapsula una estrategia de validación para una configuración específica.
+    La función 'func' procesa la entrada bruta y la normaliza según las reglas del dominio;
+    retorna el valor procesado si es correcto, o None si la entrada es inválida.
     """
     func: Callable[[ConfigKey, Any], Any]
 
@@ -160,13 +160,13 @@ class _SettingsManager:
         self.path_cache: dict[Optional[str], Path] = {}
 
     def clear(self) -> None:
-        """Invalidar caché actual para obligar una lectura fresca del disco."""
+        """Limpia las memorias caché para forzar una recarga limpia desde el disco en la siguiente operación."""
         self.settings_cache.clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Escribe datos utilizando un archivo temporal y fsync para garantizar que
-        la operación de escritura sea atómica, evitando la corrupción ante fallos.
+        Realiza una escritura atómica mediante un archivo temporal y fsync para 
+        asegurar la integridad de los datos, evitando la corrupción ante fallos.
         """
         if not isinstance(serialized, str): return False
         temp_path: Path = config_path.with_suffix(".tmp")

@@ -379,7 +379,7 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
         """Snapshot cacheado de las métricas numéricas para acceso eficiente."""
-        return {k: float(v) for k, v in self.__dict__.items() if k in _VALIDATORS and isinstance(v, (int, float))}
+        return {k: float(getattr(self, k)) for k in _VALIDATORS if isinstance(getattr(self, k), (int, float))}
 
     @cached_property
     def active_problems(self) -> tuple[str, ...]:
@@ -397,7 +397,7 @@ class SystemContext:
 
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
-        val: Any = self.__dict__.get(key)
+        val = getattr(self, key, default)
         return float(val) if _is_safe_numeric_context(val) else default
 
     @property
@@ -420,7 +420,6 @@ class SystemContext:
         try:
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
             if valid_val is None: return None
-            # Asegurar conversión segura a tipo
             return spec.type_hint(valid_val)
         except (ValueError, TypeError, Exception):
             return None
@@ -434,8 +433,6 @@ class SystemContext:
 
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
         """Extrae y valida métricas numéricas y texto de calificación de una fuente."""
-        if not isinstance(source, (dict, object)): return None
-        
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             val = self._apply_field(source, key, spec)
@@ -461,26 +458,18 @@ class SystemContext:
         for k, v in updates.items():
             setattr(self, k, v)
         self.analyzed = True
-        
-        # Limpieza de cachés para reflejar el nuevo estado
-        for attr in ("metrics_snapshot", "active_problems", "_hash_tuple"):
-            if attr in self.__dict__:
-                del self.__dict__[attr]
+        self.__dict__.pop("metrics_snapshot", None)
+        self.__dict__.pop("active_problems", None)
+        self.__dict__.pop("_hash_tuple", None)
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
         if not self._validate_ingestion_source(source): 
             return False
-        
         updates = self._validate_and_sanitize_data(source)
-        if not updates: 
-            return False
-            
-        try:
-            self._apply_updates(updates)
-            return True
-        except (AttributeError, TypeError, KeyError):
-            return False
+        if not updates: return False
+        self._apply_updates(updates)
+        return True
 
 @dataclass
 class Answer:
@@ -516,8 +505,7 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     """Acceso seguro a atributos validando contra lista blanca para evitar ataques de introspección."""
     if depth > _MAX_NESTING_DEPTH or not _is_safe_key(key): return None
     try:
-        if isinstance(source, dict): return source.get(key)
-        return getattr(source, key, None) if key in _VALIDATORS or key == "grade" else None
+        return source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     except Exception:
         return None
 
@@ -651,7 +639,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda directa por palabra clave
     for word in _TOKEN_REGEX.findall(q_sanitized.lower()):
         if word in _TOKENS_MAP:
             return _TOKENS_MAP[word](context, question)
@@ -690,7 +677,6 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     q: str = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
     full_prompt: str = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
-    # Doble verificación de seguridad sobre el prompt final antes de serializar
     if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): return None
     payload_data: dict[str, Any] = {"contents": [{"parts": [{"text": full_prompt}]}]}
     if not _is_safe_payload_structure(payload_data): return None
@@ -763,7 +749,6 @@ def ask(question: str, context: SystemContext | None = None,
         cfg: AssistantConfig = _parse_config(settings_data)
         if ctx.is_empty and cfg.allow_metrics:
             return respaldo
-        # Validación defensiva de estructura del contexto antes de envío externo
         if not isinstance(ctx, SystemContext) or not ctx.is_valid_structure:
             return respaldo
         texto_contexto: str = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
