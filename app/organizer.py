@@ -265,11 +265,10 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 
 def _is_junk_file(entry: os.DirEntry, stats: os.stat_result, now_ts: float) -> bool:
     """Evalúa si el archivo cumple los criterios de elegibilidad (tamaño, tipo, antigüedad)."""
-    _, ext = os.path.splitext(entry.name)
     return (0 <= stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
             not _is_system_hidden(entry) and
-            ext.lower() in JUNK_EXTENSIONS)
+            os.path.splitext(entry.name)[1].lower() in JUNK_EXTENSIONS)
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[Path]) -> None:
     """Realiza un escaneo recursivo de directorios con control de profundidad y caché de rutas visitadas."""

@@ -64,7 +64,7 @@ __all__: Tuple[str, ...] = (
 
 DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
-CHUNK_SIZE: int = 131072  # 128KB para procesamiento de I/O
+CHUNK_SIZE: int = 262144  # 256KB para mejorar throughput de I/O
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float]] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
@@ -100,7 +100,6 @@ def _verify_source_fs_permissions(path: Path) -> None:
 def _is_filesystem_read_only(path: Path) -> bool:
     """Determina si un directorio es de solo lectura mediante una operación de prueba."""
     if not path.exists(): return True
-    # Verificamos permisos a nivel de OS antes de intentar escritura
     if not os.access(path, os.W_OK):
         return True
     try:
@@ -255,21 +254,13 @@ class QuarantineItem:
 
 def _get_sha256(path: Path) -> str:
     """Calcula hash SHA256 mediante streaming para optimizar consumo de memoria."""
-    if not path.exists() or not path.is_file():
+    if not path.is_file():
         return ""
     
-    flags: int = os.O_RDONLY
-    if hasattr(os, 'O_NOFOLLOW'):
-        flags |= os.O_NOFOLLOW
-        
     sha256_hash = hashlib.sha256()
     try:
-        fd: int = os.open(str(path), flags)
-        with os.fdopen(fd, "rb") as handle:
-            while True:
-                chunk: bytes = handle.read(CHUNK_SIZE)
-                if not chunk:
-                    break
+        with open(path, "rb", buffering=CHUNK_SIZE) as f:
+            for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
                 sha256_hash.update(chunk)
     except (OSError, PermissionError, IOError):
         return ""
@@ -657,42 +648,31 @@ def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_has
 
 def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> None:
     """Copia archivo vía streaming, garantizando sincronización de disco (fsync)."""
-    flags: int = os.O_RDONLY
-    if hasattr(os, 'O_NOFOLLOW'):
-        flags |= os.O_NOFOLLOW
-        
     try:
-        source_fd: int = os.open(str(source), flags)
-        with os.fdopen(source_fd, "rb") as source_handle:
-            stat_src: os.stat_result = os.fstat(source_handle.fileno())
-            if not (stat_src.st_mode & 0o100000):
-                raise OSError("El archivo origen no es un archivo regular.")
-            
-            if os.name == 'nt':
-                _check_path_for_junctions(source)
-            
-            if stat_src.st_nlink > 1:
-                raise UnsafePathError("Archivo origen con enlaces físicos múltiples.")
-            
-            if not is_safe_to_modify(temp_dest.parent):
-                raise UnsafePathError("Directorio de destino no seguro.")
-            
-            if not is_safe_to_modify(temp_dest):
-                raise UnsafePathError("Ruta destino insegura detectada.")
-            
-            dest_fd: int = os.open(str(temp_dest), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-            try:
-                with os.fdopen(dest_fd, "wb") as dest_handle:
-                    shutil.copyfileobj(source_handle, dest_handle)
-                    dest_handle.flush()
-                    os.fsync(dest_fd)
-            except Exception:
-                os.close(dest_fd)
-                if temp_dest.exists():
-                    _check_io_error_context(temp_dest.unlink)
-                raise
-        _verify_copied_data(stat_src, temp_dest, source_hash)
+        st = source.stat()
+        if not (st.st_mode & 0o100000):
+            raise OSError("El archivo origen no es un archivo regular.")
+        
+        if os.name == 'nt':
+            _check_path_for_junctions(source)
+        
+        if st.st_nlink > 1:
+            raise UnsafePathError("Archivo origen con enlaces físicos múltiples.")
+        
+        if not is_safe_to_modify(temp_dest.parent):
+            raise UnsafePathError("Directorio de destino no seguro.")
+        
+        with open(source, "rb", buffering=CHUNK_SIZE) as f_src:
+            with open(temp_dest, "wb", buffering=CHUNK_SIZE) as f_dst:
+                shutil.copyfileobj(f_src, f_dst, length=CHUNK_SIZE)
+                f_dst.flush()
+                os.fsync(f_dst.fileno())
+                
+        _verify_copied_data(st, temp_dest, source_hash)
     except (OSError, IOError) as e:
+        if temp_dest.exists():
+            try: _check_io_error_context(temp_dest.unlink)
+            except OSError: pass
         raise OSError(f"Falla durante operación I/O de copia: {e}")
 
 

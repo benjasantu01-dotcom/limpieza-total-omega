@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 232
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 44 | 3 | 11 | 7 | 69 |
+| 2026-10-19 | 43 | 3 | 11 | 7 | 66 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 12 | 0 | 2 | 1 | 5 |
+| 2026-10-21 | 15 | 0 | 2 | 2 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **41**
-- rendimiento: **30**
+- seguridad defensiva: **40**
+- rendimiento: **33**
 - robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `assistant.py`: **17**
 - `duplicates.py`: **17**
+- `memory.py`: **17**
 - `healthscore.py`: **16**
-- `memory.py`: **16**
-- `quarantine.py`: **15**
+- `quarantine.py`: **16**
+- `assistant.py`: **16**
 - `browser.py`: **14**
 - `safety.py`: **13**
 - `branding.py`: **12**
 - `scanner.py`: **11**
 - `settings.py`: **11**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
 - `startup.py`: **8**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T00:57:18` **quarantine.py** (rendimiento): Optimicé el manejo de I/O en `_get_sha256` y `_perform_secure_copy` reemplazando los bucles de lectura manual por una gestión más eficiente, reduciendo el número de llamadas al sistema y mejorando la consistencia de los buffers de datos.
+- `2026-10-21T00:56:47` **organizer.py** (rendimiento): Optimizé la performance del escaneo reemplazando la verificación constante de extensión mediante conversión a tupla dentro del bucle `_is_junk_file`, utilizando en su lugar el set pre-compilado `JUNK_EXTENSIONS` para realizar búsquedas O(1) de forma más eficiente.
+- `2026-10-21T00:56:19` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y destrucción constante de `ctypes.CDLL` y estructuras dentro de cada iteración por un acceso centralizado, reduciendo la carga de llamadas al sistema operativo durante el escaneo de procesos.
 - `2026-10-21T00:47:25` **healthscore.py** (rendimiento): Se optimizó el acceso a las métricas del sistema utilizando `getattr` dentro de un diccionario para evitar la creación de tuplas de caché mediante introspección repetitiva, y se reemplazó el uso de `tuple` sobre los campos por una conversión directa más eficiente, mejorando el rendimiento en el pipeline de análisis.
 - `2026-10-21T00:45:17` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` evitando la creación innecesaria de objetos `Path` y reduciendo las llamadas a `relative_to` al calcular pesos de carpetas, utilizando operaciones de string de bajo costo.
 - `2026-10-21T00:36:03` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando llamadas redundantes a `__dict__` y `getattr` por el uso de `metrics_snapshot`, y se eliminaron recorridos de diccionario innecesarios en `_apply_updates` y `ingest`, mejorando la eficiencia en escenarios de consultas frecuentes.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T00:14:30` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `healthscore.py` mediante la refactorización de `compute_score` para extraer la lógica de cálculo de puntajes en una función auxiliar `_calculate_area_contribution`, eliminando la complejidad ciclomática excesiva dentro del bucle principal y facilitando la depuración.
 - `2026-10-21T00:05:57` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (siguiendo el estilo Google/NumPy) en funciones complejas y aclaración de tipos, facilitando la comprensión de la lógica de escaneo y las estrategias de hashing sin alterar la funcionalidad.
 - `2026-10-21T00:04:52` **browser.py** (legibilidad y documentación): Documenté con docstrings detallados los parámetros y el comportamiento de las funciones críticas (`_sum_directory_recursive` y `_should_skip_entry`) para clarificar las salvaguardas de seguridad implementadas, facilitando el mantenimiento futuro y la auditoría del código.
-- `2026-10-20T14:54:08` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de métricas con un nuevo docstring en `_VALIDATORS` y refinando la estructura de `_CONTEXT_SCHEMA` para que su propósito (serialización de contexto) sea evidente, asegurando que la arquitectura del asistente se mantenga autodocumentada para futuros colaboradores.
-- `2026-10-20T14:45:34` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de excepciones en `_is_file_owned_by_system` y `_get_file_attrs` para evitar la propagación de fallos cuando las llamadas a la Win32 API devuelven errores inesperados de sistema, mejorando la robustez ante entornos con restricciones de acceso granulares.
-- `2026-10-20T14:35:16` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` al reemplazar una comparación por nombre de archivo (vulnerable a colisiones o archivos externos al manifiesto) por una validación estricta contra el `item_id` y el estado del manifiesto, asegurando que solo se eliminen archivos correctamente registrados y validados.
