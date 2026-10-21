@@ -436,7 +436,7 @@ class SystemContext:
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             val = self._apply_field(source, key, spec)
-            if val is not None: 
+            if val is not None and not _is_nan_or_inf(val): 
                 updates[key] = val
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))

@@ -8,38 +8,38 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 2 | 0 | 0 | 0 | 20 |
+| 2026-10-19 | 0 | 0 | 0 | 0 | 18 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 55 | 4 | 12 | 7 | 54 |
+| 2026-10-21 | 57 | 4 | 13 | 7 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **36**
+- robustez ante casos límite: **34**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **17**
+- `assistant.py`: **17**
 - `diskreport.py`: **17**
 - `quarantine.py`: **17**
-- `assistant.py`: **16**
 - `healthscore.py`: **16**
-- `duplicates.py`: **15**
+- `memory.py`: **16**
 - `safety.py`: **15**
 - `browser.py`: **14**
+- `duplicates.py`: **14**
 - `settings.py`: **13**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `scanner.py`: **10**
 - `organizer.py`: **9**
 - `startup.py`: **8**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T05:43:50` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` y `_get_scaled_poly` ante rutas inválidas y escalas no numéricas, garantizando que operaciones de entrada/salida no provoquen cierres inesperados de la interfaz.
+- `2026-10-21T05:43:28` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_apply_field` y `ingest` añadiendo una validación explícita para evitar que una entrada `NaN` o `Inf` se propague a través de los selectores, protegiendo al motor local de fallos de cálculo al procesar datos del sistema potencialmente malformados.
 - `2026-10-21T05:11:23` **duplicates.py** (rendimiento): Se ha optimizado `_collect_candidates` mediante el uso de un generador para el manejo de directorios, evitando la creación de listas innecesarias, y se ha reemplazado el `os.scandir` recursivo por una iteración que reduce el costo de memoria y procesamiento durante la recolección inicial.
 - `2026-10-21T05:11:14` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reduciendo el costo de creación de objetos `Path` y conversiones de cadena en el bucle principal, usando el método `relative_to` para identificar subcarpetas de manera más eficiente y segura.
 - `2026-10-21T05:00:57` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de `StartupEntry` para clarificar la lógica de resolución de rutas, incluyendo la distinción entre validación por seguridad (`is_valid`) y resolución técnica (`executable`), eliminando ambigüedades sobre el manejo de rutas protegidas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T04:39:35` **duplicates.py** (legibilidad y documentación): Mejoré la documentación interna incluyendo type hints completos en los parámetros de funciones que carecían de ellos, añadí docstrings explicativos para los helpers privados y corregí una inconsistencia donde la lógica de "is_junction" podía dar falsos negativos por el orden de chequeo de la API de Windows.
 - `2026-10-21T04:31:52` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings explicativos en las funciones de recorrido recursivo y validación de rutas, además de refactorizar la lógica de `_should_skip_entry` para clarificar la precedencia de los chequeos de seguridad.
 - `2026-10-21T04:30:55` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de bajo nivel y la organización de los parámetros para facilitar la comprensión del sistema de renderizado.
-- `2026-10-21T04:20:48` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos de configuración agregando una validación específica `os.fsync` y verificaciones de tamaño antes y después de la serialización, además de añadir un filtro de integridad en la función `_is_file_secure_to_read` para prevenir la carga de archivos excesivamente grandes que podrían causar agotamiento de memoria.
-- `2026-10-21T04:19:36` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores inesperados durante la inicialización de `base_dir`, capturando excepciones específicas para evitar que un parámetro de entrada mal formado colapse la lógica de validación principal.

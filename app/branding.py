@@ -360,7 +360,7 @@ SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 9
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Aplica el factor de escala y desplazamiento (x, y) a las coordenadas del escudo."""
-    if not math.isfinite(scale): return ()
+    if not math.isfinite(scale) or scale <= 0: return ()
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
 
 @lru_cache(maxsize=8)
@@ -374,12 +374,10 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not destination: return None
     try:
         dest_path = Path(destination).resolve()
-        # Verificamos si existe un archivo y no sea de sistema
         if dest_path.exists():
             if not is_safe_to_modify(dest_path):
                 return None
         else:
-            # Validar que el directorio padre exista y sea seguro
             parent = dest_path.parent
             if not parent.exists():
                 ensure_safe_to_modify(parent)
@@ -389,7 +387,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
             
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
-    except (OSError, PermissionError, TypeError): 
+    except (OSError, PermissionError, TypeError, ValueError): 
         return None
 
 def logo_ascii() -> str: return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
