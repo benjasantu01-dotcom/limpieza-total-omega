@@ -350,7 +350,10 @@ _PIPELINE_CACHE: Dict[Tuple[float, ...], HealthResult] = {}
 def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Calcula el aporte de un área al puntaje global y sus recomendaciones."""
     try:
-        area_ratio = _clamp(entry.scorer(metrics))
+        # Validación defensiva de la función scorer asignada
+        raw_ratio = entry.scorer(metrics)
+        area_ratio = _clamp(float(raw_ratio))
+        
         recommendations = _evaluate_rules(metrics, entry.rules, area_ratio) if entry.rules else []
         
         weight = max(0, entry.weight)
@@ -359,6 +362,7 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
         
         return val_int, recommendations
     except Exception:
+        # En caso de error en la lógica de cálculo (excepciones en scorer), reportar 0 pts
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

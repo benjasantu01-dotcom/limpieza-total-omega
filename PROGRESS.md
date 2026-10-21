@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 234
+- Rechazadas por guardia de seguridad: 49
+- Sin cambios (nada sustancial que mejorar): 26
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 16 | 0 | 7 | 5 | 34 |
+| 2026-10-19 | 15 | 0 | 6 | 3 | 34 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 36 | 2 | 8 | 4 | 42 |
+| 2026-10-21 | 38 | 2 | 8 | 5 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **39**
 - robustez ante casos límite: **37**
-- legibilidad y documentación: **36**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **35**
+- legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `memory.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **16**
-- `healthscore.py`: **16**
 - `assistant.py`: **16**
 - `duplicates.py`: **15**
 - `browser.py`: **14**
 - `safety.py`: **14**
 - `branding.py`: **12**
 - `settings.py`: **11**
-- `scanner.py`: **10**
+- `scanner.py`: **9**
 - `organizer.py`: **8**
 - `startup.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T03:59:49` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del `PipelineEntry` y el cálculo de áreas mediante el uso de una lógica de validación preventiva en `_calculate_area_contribution`, asegurando que cualquier error interno en las funciones de `scorer` o `rules` (que son definidas por el usuario o externas) no interrumpa el cálculo del score global y devuelva un estado consistente.
+- `2026-10-21T03:58:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo el acceso a metadatos críticos en bloques `try-except` más granulares y validando la integridad de las rutas durante la iteración para prevenir errores de ejecución ante archivos bloqueados o con rutas malformadas durante el escaneo.
 - `2026-10-21T03:50:43` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `detect_profiles` y `summarize` mediante la validación estricta de tipos y valores, asegurando que las colecciones recibidas no sean `None` o tengan elementos inválidos antes de iterar, mitigando así posibles errores de ejecución silenciosos.
 - `2026-10-21T02:27:39` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` endureciendo la validación de metadatos de archivos (agregando chequeo de tipo mediante `stat.S_IFREG`) y restringiendo explícitamente los permisos permitidos para evitar la lectura de archivos que no pertenecen al dueño del proceso o que poseen permisos de escritura excesivos (grupo/otros).
 - `2026-10-21T02:18:35` **safety.py** (seguridad defensiva): Mejoré la robustez de `ensure_safe_to_modify` implementando una validación de `st_nlink` dentro de `_check_file_integrity`, lo que previene ataques de manipulación mediante enlaces duros (hard links) justo antes de la operación de modificación, fortaleciendo la defensa contra condiciones de carrera TOCTOU.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T01:47:11` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante errores de I/O al escanear archivos en uso o con permisos restringidos, reemplazando las comprobaciones de estado potencialmente bloqueantes por un manejo de excepciones preciso en las heurísticas y eliminando `_is_locked_by_os` del flujo principal, la cual causaba fallos de acceso innecesarios al intentar abrir handles exclusivos sobre archivos ya abiertos por el sistema.
 - `2026-10-21T01:37:17` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes de disco implementando una validación explícita de `st_nlink` dentro de `_atomic_isolate_file` y reforzando las comprobaciones de integridad post-operación para detectar si el archivo ha sido modificado o reemplazado por otro proceso simultáneo durante el aislamiento, reduciendo así la ventana de vulnerabilidad TOCTOU.
 - `2026-10-21T01:36:06` **memory.py** (robustez ante casos límite): Mejora la robustez de `_is_process_executable_safe` ante rutas de proceso que no pueden resolverse, añadiendo una validación explícita de `is_file()` antes del `resolve()` para evitar excepciones `FileNotFoundError` al intentar evaluar procesos que finalizaron durante la ejecución.
-- `2026-10-21T01:28:01` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y accesibilidad en `_check_widget_integrity` para evitar que los callbacks asíncronos intenten operar sobre widgets o ventanas ya destruidas, complementando los decoradores existentes con una verificación explícita antes de cualquier interacción, previniendo errores de "TclError" ante cierres abruptos o condiciones de carrera en el hilo principal.
-- `2026-10-21T01:27:02` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante datos de entrada corruptos o maliciosos durante la serialización/deserialización, añadiendo una validación explícita de `SystemMetrics` en `compute_score` para asegurar que ningún campo contenga valores `NaN` o fuera de rango que puedan romper los cálculos matemáticos del pipeline.
