@@ -193,30 +193,36 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     """
-    Evalúa si una entrada del sistema debe omitirse para evitar daños o recursión infinita.
-    Aplica filtros contra: carpetas sensibles (NEVER_TOUCH), longitud de ruta, 
-    caracteres ilegales, enlaces simbólicos y puntos de reparse (Junctions).
+    Decide si omitir una entrada basándose en políticas de seguridad.
+    
+    Aplica filtros en orden de criticidad:
+    1. Bloqueo manual (NEVER_TOUCH).
+    2. Validaciones de integridad de ruta (longitud, caracteres).
+    3. Inspección de tipo de nodo (reparse points, links, atributos sistema).
     """
+    # Filtro nominal: archivos de configuración prohibidos
     if entry.name.lower() in ctx.never_touch_lower: return True
+    
+    # Filtro estructural: prevención de desbordamientos o caracteres maliciosos
     path_str = entry.path
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
     
+    # Filtro técnico: evitar recursión en enlaces simbólicos, junctions o áreas protegidas por SO
     try:
-        if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): return True
-    except OSError: return True
+        if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): 
+            return True
+    except OSError: 
+        return True
     return False
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
-    Realiza un recorrido recursivo (DFS) sobre el sistema de archivos.
+    Calcula el tamaño acumulado de un directorio mediante una búsqueda DFS (Depth-First Search).
     
-    Args:
-        root_path: Ruta raíz del sub-árbol a analizar.
-        ctx: Contexto de escaneo con set de archivos ya visitados (evita doble conteo en hardlinks).
-        depth: Profundidad actual (limitada por MAX_SCAN_DEPTH para evitar stack overflow).
-        
-    Returns:
-        ScanResult con la suma total de bytes y éxito de la operación.
+    El proceso es cauteloso respecto a:
+    - Ciclos de directorios: mantiene 'visited_dirs' para evitar bucles infinitos.
+    - Hardlinks: utiliza 'visited_files' (basado en dev/ino) para no contabilizar duplicados.
+    - Límites del SO: detiene la recursión al alcanzar 'MAX_SCAN_DEPTH'.
     """
     if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
     
@@ -247,7 +253,12 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    """Calcula el peso total de una ruta, validando seguridad antes del escaneo."""
+    """
+    Calcula el peso total de una ruta, validando seguridad de acceso antes de iniciar.
+    
+    La ruta es resuelta y verificada mediante 'is_safe_to_modify' y 
+    'is_protected_path' para asegurar que el escaneo no acceda a zonas sensibles.
+    """
     if not path or not isinstance(path, (str, Path)): return 0
     path_obj = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0

@@ -288,7 +288,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=512)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Deserializa un valor hexadecimal a su tupla RGB representativa."""
+    """Convierte un color hexadecimal (#RRGGBB) a una tupla de enteros (0-255)."""
     try:
         clean = value.lstrip('#')
         if len(clean) != 6: raise ValueError
@@ -301,7 +301,7 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
-    """Serializa una tupla RGB a su formato hexadecimal CSS válido."""
+    """Convierte una tupla RGB a formato hexadecimal CSS (#RRGGBB)."""
     try:
         r, g, b = [max(0, min(255, int(c))) for c in rgb]
         return f"#{r:02x}{g:02x}{b:02x}"
@@ -309,7 +309,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 
 @lru_cache(maxsize=256)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
-    """Interpola linealmente entre dos colores usando un factor ratio (0.0-1.0)."""
+    """Realiza interpolación lineal entre dos colores según un ratio [0, 1]."""
     try:
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)
@@ -332,7 +332,7 @@ def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, .
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """Genera una secuencia de colores interpolados distribuida en el número de pasos dado."""
+    """Calcula una lista de colores interpolados distribuida en el número de pasos dado."""
     n = max(1, int(steps))
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
@@ -352,14 +352,14 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=64)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
-    """Obtiene segmentos de gradiente pre-calculados para dibujo eficiente."""
+    """Retorna segmentos de gradiente para dibujar líneas eficientemente."""
     return _get_grouped_segments(gradient_colors(steps, stops))
 
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
-    """Escala las coordenadas del polígono del escudo basado en un factor de escala."""
+    """Aplica el factor de escala y desplazamiento (x, y) a las coordenadas del escudo."""
     if not math.isfinite(scale): return ()
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
 
@@ -400,7 +400,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float], ...]:
-    """Calcula los parámetros dimensionales para las bandas decorativas del escudo."""
+    """Calcula el grosor y posición vertical de las bandas internas para un escudo."""
     tf = STRIPE_THICKNESS_SCALE * scale
     params = []
     for i in range(n):
