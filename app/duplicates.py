@@ -126,7 +126,7 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Filtra archivos que no deben ser analizados (ocultos, sistema o bloqueados)."""
-    if not isinstance(path, Path) or st_size <= 0:
+    if not isinstance(path, Path) or st_size <= 0 or not is_safe_to_modify(path):
         return False
     return not (is_system_or_hidden(path) or _is_file_locked(path))
 
@@ -233,8 +233,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        path_entry = Path(entry.path)
+                        if not is_safe_to_modify(path_entry): continue
+
                         if entry.is_dir(follow_symlinks=False):
-                            path_entry = Path(entry.path)
                             if not is_junction(path_entry):
                                 queue.append((path_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
@@ -242,8 +244,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             if file_stat.st_size < min_size: continue
                             if (file_stat.st_dev, file_stat.st_ino) in visited_inodes: continue
                             
-                            path_entry = Path(entry.path)
-                            if not is_safe_to_modify(path_entry): continue
                             if skip_protected and is_protected_path(path_entry): continue
                             
                             if _is_valid_candidate(path_entry, file_stat.st_size):

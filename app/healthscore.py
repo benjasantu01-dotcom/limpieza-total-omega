@@ -274,7 +274,6 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura rangos aceptables para todas las métricas mediante normalización."""
-        # Mapeo de límites por campo para validación dinámica
         limits = {
             "junk_mb": (0.0, 1048576.0),
             "duplicate_mb": (0.0, 1048576.0),
@@ -363,17 +362,17 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Computa el puntaje global mediante el pipeline con validación de suma total."""
+    """Computa el puntaje global mediante el pipeline con validación de estado."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
-    # Asegurar integridad de datos antes de procesar
+    # Asegurar integridad de datos: Si están corrompidos o son inválidos, se aborta el cálculo.
     metrics.validate()
     if not metrics.is_finite:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema corruptos."])
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos o corruptos."])
     
     if not _PIPELINE:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Pipeline de análisis no configurado."])
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Pipeline no configurado."])
     
     cache_key = tuple(getattr(metrics, f) for f in metrics._FIELDS_TO_VALIDATE)
     if cache_key in _PIPELINE_CACHE:

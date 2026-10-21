@@ -695,3 +695,12 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-21T01:58:20` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_excluded_path` añadiendo una verificación explícita de `os.path.abspath` y el uso de `pathlib.Path.samefile` para detectar si una ruta, tras resolverse, coincide con puntos de reparse o directorios protegidos, previniendo el escape del contexto de escaneo esperado.
 - `2026-10-21T01:58:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T01:58:20` Corrida terminada. Total usado hoy: 48.
+- `2026-10-21T02:06:03` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-10-21T02:06:30` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_collect_candidates` y `_is_file_locked` integrando `is_safe_to_modify` como un chequeo de pre-condición estricto, asegurando que ninguna operación de I/O ocurra sobre rutas no validadas o bloqueadas.
+- `2026-10-21T02:07:10` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del motor de puntuación introduciendo un mecanismo de validación de métricas tipo "fail-safe" que bloquea el procesamiento ante estados inconsistentes, evitando el uso de valores potencialmente sesgados o manipulados en los cálculos de salud.
+- `2026-10-21T02:08:10` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-21T02:09:13` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-21T02:10:00` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): el archivo se encogió al 38% del original (posible pérdida de código)
+- `2026-10-21T02:10:16` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` sustituyendo `path.resolve(strict=True)` (que puede lanzar excepciones si el proceso termina durante la ejecución) por una validación más robusta basada en la ruta normalizada, evitando operaciones destructivas o que provoquen cierres inesperados del hilo de ejecución.
+- `2026-10-21T02:10:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T02:10:16` Corrida terminada. Total usado hoy: 52.
