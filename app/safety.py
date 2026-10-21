@@ -886,15 +886,13 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """Valida los límites del alcance (jail) y permisos generales de la ruta."""
     if root_directory:
-        if not isinstance(root_directory, (str, Path, os.PathLike)):
-             raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC)
         try:
             rd_path = Path(root_directory)
             if not rd_path.is_absolute():
                 raise UnsafePathError("El directorio base debe ser absoluto.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
             if not is_within_directory(target_path, rd_path, allow_equal=True):
                 raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, OSError):
             raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC)
 
     if is_protected_path(str(target_path)):

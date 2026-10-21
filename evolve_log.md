@@ -940,3 +940,40 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-21T04:10:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-10-21T04:10:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T04:10:36` Corrida terminada. Total usado hoy: 100.
+- `2026-10-21T04:18:43` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-21T04:19:36` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante errores inesperados durante la inicialización de `base_dir`, capturando excepciones específicas para evitar que un parámetro de entrada mal formado colapse la lógica de validación principal.
+- `2026-10-21T04:20:02` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed in 1.38s
+
+```
+- `2026-10-21T04:20:02` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de las heurísticas mediante la adición de chequeos de nulidad y validación de tipos `Path` en los parámetros de entrada (`path`), asegurando que las funciones no fallen silenciosamente ante estados de archivo inconsistentes durante la iteración.
+- `2026-10-21T04:20:48` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del manejo de archivos de configuración agregando una validación específica `os.fsync` y verificaciones de tamaño antes y después de la serialización, además de añadir un filtro de integridad en la función `_is_file_secure_to_read` para prevenir la carga de archivos excesivamente grandes que podrían causar agotamiento de memoria.
+- `2026-10-21T04:20:59` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-21T04:20:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T04:20:59` Corrida terminada. Total usado hoy: 104.

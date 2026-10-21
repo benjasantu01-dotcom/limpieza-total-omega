@@ -173,6 +173,7 @@ class _SettingsManager:
         try:
             if not is_safe_to_modify(str(config_path)): return False
             if config_path.exists() and (config_path.is_symlink() or not config_path.is_file()): return False
+            
             with open(temp_path, "w", encoding="utf-8") as f:
                 f.write(serialized)
                 f.flush()
@@ -181,6 +182,9 @@ class _SettingsManager:
             self.clear()
             return True
         except (OSError, IOError, PermissionError):
+            if temp_path.exists():
+                try: os.remove(temp_path)
+                except OSError: pass
             return False
 
 _MANAGER = _SettingsManager()
@@ -396,7 +400,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         except (TypeError, ValueError):
             return None
-        if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
+        serialized_bytes = serialized.encode("utf-8")
+        if len(serialized_bytes) > MAX_SETTINGS_SIZE: return None
         return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None
     except (OSError, PermissionError, AttributeError, TypeError): return None
 
