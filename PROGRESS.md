@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 128 | 11 | 35 | 18 | 156 |
-| 2026-10-21 | 73 | 4 | 14 | 8 | 57 |
+| 2026-10-20 | 128 | 11 | 35 | 18 | 152 |
+| 2026-10-21 | 76 | 4 | 15 | 8 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - robustez ante casos límite: **45**
-- seguridad defensiva: **41**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **39**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `healthscore.py`: **18**
-- `quarantine.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `browser.py`: **16**
 - `duplicates.py`: **16**
 - `safety.py`: **16**
 - `settings.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **11**
+- `organizer.py`: **10**
 - `startup.py`: **9**
-- `organizer.py`: **9**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T06:43:03` **quarantine.py** (seguridad defensiva): Se fortalece la validación de seguridad durante el aislamiento agregando una verificación de "propiedad cruzada" (cross-check) entre la metadata del inodo almacenado en el manifiesto y el estado real del archivo en el sandbox, previniendo posibles ataques de reemplazo de archivo si el sistema de archivos tuviera comportamientos inesperados de reuso de inodos.
+- `2026-10-21T06:42:22` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de seguridad en `stage_for_review` y `delete_reviewed` mediante el uso de `Path.is_relative_to` para confirmar que los archivos operados residen estrictamente dentro del árbol de directorios permitido, previniendo ataques de "path traversal" o fugas fuera de la carpeta de cuarentena/revisión.
+- `2026-10-21T06:41:56` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` añadiendo una validación explícita de la ruta del ejecutable utilizando `is_protected_path` sobre la ruta resuelta, garantizando que procesos que se ejecutan desde ubicaciones críticas del sistema (como directorios de sistema o perfiles de usuario bloqueados) sean excluidos del reporte de memoria, reforzando la protección contra inyección o manipulación de PIDs.
 - `2026-10-21T06:32:40` **healthscore.py** (seguridad defensiva): Se ha mejorado la integridad defensiva del motor de normalización mediante la adición de `math.isclose` y validación estricta de límites en `_clamp` y `_calculate_area_contribution`, previniendo que valores flotantes imprecisos o valores fuera de rango afecten el score final debido a errores de punto flotante.
 - `2026-10-21T06:32:11` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en el escaneo recursivo de `_collect_candidates` mediante el uso de `path.resolve()` antes de realizar chequeos, para evitar ataques de tipo path traversal o acceso a rutas fuera del alcance permitido mediante enlaces simbólicos complejos, asegurando que cada entrada sea validada contra las restricciones de seguridad antes de su procesamiento.
 - `2026-10-21T06:23:03` **browser.py** (seguridad defensiva): Se ha robustecido el escaneo defensivo en `browser.py` implementando una validación explícita de puntos de reparse mediante el chequeo de atributos de archivo (`FILE_ATTRIBUTE_REPARSE_POINT`) a través de la API `GetFileAttributesW` en todas las entradas detectadas por `os.scandir`, garantizando que no se sigan enlaces simbólicos o junctions de forma accidental incluso si el sistema de archivos reporta metadatos ambiguos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T06:05:19` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` ante archivos huérfanos o fuera de control dentro de la carpeta de cuarentena, añadiendo una validación explícita mediante `is_within_directory` para evitar ataques de salto de directorio durante la limpieza masiva.
 - `2026-10-21T06:04:12` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_is_process_executable_safe` añadiendo una comprobación explícita para evitar errores de acceso en procesos que terminan durante la inspección (`GetModuleFileNameExW` puede fallar si el handle queda huérfano) y validando la existencia de la ruta antes de intentar resolverla, evitando excepciones de `Path.resolve()` en entornos con permisos restringidos.
 - `2026-10-21T06:03:14` **main.py** (robustez ante casos límite): Se ha robustecido el manejo de la configuración en `main.py` mediante la implementación de una validación de integridad diferida y tolerante a fallos, asegurando que un archivo `settings.json` corrupto o parcialmente ilegible no impida el inicio de la interfaz, permitiendo siempre la recuperación mediante los valores por defecto del módulo `settings`.
-- `2026-10-21T05:52:30` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a la posible corrupción del caché global de resultados mediante una limpieza explícita de `_PIPELINE_CACHE` en caso de desbordamiento, y se ha añadido una validación de estado inicial para evitar cálculos basados en métricas inconsistentes tras cambios en la configuración del pipeline.
-- `2026-10-21T05:52:17` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de permisos de acceso durante la lectura de archivos en `hash_file` y `partial_hash` para evitar que bloqueos temporales del sistema operativo interrumpan el proceso de escaneo, permitiendo que la aplicación continúe analizando el resto de los archivos en lugar de abortar silenciosamente.
-- `2026-10-21T05:51:54` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `os.stat` dentro del generador, evitando que el proceso completo aborte si un archivo específico cambia de permisos o es eliminado durante el escaneo.

@@ -257,6 +257,9 @@ class QuarantineItem:
             return False
         try:
             current_hash: str = _get_sha256(stored_path)
+            # Doble check de inodo con el sistema de archivos actual al verificar
+            if stored_path.stat().st_ino != self.file_inode:
+                return False
             return bool(self.sha256 and current_hash == self.sha256)
         except (OSError, PermissionError):
             return False
@@ -816,6 +819,11 @@ def _register_quarantine_item(
             raise RuntimeError("Falla: intento de registrar archivo inexistente en manifiesto.")
 
         items_list: List[QuarantineItem] = load_manifest(base)
+        
+        # Cross-check: verifica que el inodo actual del archivo en el sandbox coincida con lo recién movido
+        if destination.stat().st_ino != file_inode:
+            raise RuntimeError("Inconsistencia crítica: mismatch de inodo post-escritura.")
+
         quarantine_item: QuarantineItem = QuarantineItem(
             item_id=uuid.uuid4().hex[:12],
             original_path=str(source_path),

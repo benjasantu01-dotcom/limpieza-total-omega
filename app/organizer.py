@@ -332,7 +332,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 if not _is_safe_for_disk_op(junk_file, dest_res): continue
                 target_path = _can_move_file(junk_file, dest_res)
                 if target_path and target_path != junk_file.path:
-                    if junk_file.path.exists():
+                    # Validar destino absoluto antes de mover
+                    if target_path.resolve(strict=False).is_relative_to(dest_res) and junk_file.path.exists():
                         shutil.move(str(junk_file.path.resolve(strict=True)), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
@@ -363,6 +364,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not item.is_file() or item.is_symlink(): continue
                 item_res = item.resolve(strict=False)
+                # Seguridad estricta: asegurar que el ítem pertenece a la carpeta de revisión
                 if not item_res.is_relative_to(dest_res): continue
                 ensure_safe_to_modify(item_res)
                 item_res.unlink()
