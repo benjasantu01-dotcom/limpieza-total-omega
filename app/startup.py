@@ -134,8 +134,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y valida una ruta entrecomillada del registro o carpeta. 
-        Asegura que la ruta extraída no sea parte del árbol de sistema protegido.
+        Extracts and validates a quoted path.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -162,8 +161,6 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """
         Confirma si el archivo existe físicamente y si es seguro según `safety.py`.
-        Usa `is_safe_to_modify` para asegurar que el escáner no intente auditar
-        directorios protegidos o críticos del sistema.
         """
         try:
             if is_protected_path(p) or p.is_symlink() or not is_safe_to_modify(p):
@@ -175,7 +172,6 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
         Resuelve rutas relativas a absolutas usando resolución canónica.
-        El resultado se guarda en `_EXISTS_CACHE` para evitar penalizaciones en el rendimiento.
         """
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
@@ -324,7 +320,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 
 def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: Set[str]) -> bool:
-    """Valida la integridad de datos leídos del registro antes de convertirlos en StartupEntry."""
+    """Valida la integridad de datos leídos del registro."""
     if not isinstance(entry_name, str) or not isinstance(entry_command, str):
         return False
     
@@ -361,6 +357,10 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
     try:
         f: io.StringIO = io.StringIO(csv_text.strip())
         reader = csv.DictReader(f)
+        
+        # Validar existencia de campos requeridos
+        if not reader.fieldnames or "Name" not in reader.fieldnames or "Value" not in reader.fieldnames:
+            return []
         
         for row in reader:
             if not isinstance(row, dict): continue

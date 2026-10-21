@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 240
+- Rechazadas por guardia de seguridad: 46
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 67 | 7 | 18 | 11 | 89 |
-| 2026-10-21 | 117 | 6 | 27 | 11 | 151 |
+| 2026-10-20 | 64 | 7 | 18 | 10 | 89 |
+| 2026-10-21 | 119 | 6 | 28 | 11 | 152 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **42**
 - seguridad defensiva: **42**
 - legibilidad y documentación: **40**
-- rendimiento: **30**
-- manejo de errores y validación de entradas: **30**
+- manejo de errores y validación de entradas: **32**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
-- `duplicates.py`: **16**
-- `healthscore.py`: **16**
+- `memory.py`: **17**
 - `assistant.py`: **16**
 - `diskreport.py`: **16**
 - `safety.py`: **16**
 - `browser.py`: **16**
 - `quarantine.py`: **15**
+- `duplicates.py`: **15**
+- `healthscore.py`: **15**
 - `branding.py`: **13**
-- `settings.py`: **12**
+- `settings.py`: **13**
 - `organizer.py`: **8**
 - `scanner.py`: **8**
 - `main.py`: **8**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T13:20:10` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `parse_registry_csv` añadiendo una validación explícita para asegurar que el `csv_text` procesado contenga los encabezados esperados ("Name" y "Value"), evitando errores en caso de recibir salidas de PowerShell malformadas o inesperadas que podrían causar excepciones al iterar sobre las filas.
+- `2026-10-21T13:19:41` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` mediante una validación más estricta del tamaño del archivo y la integridad de la decodificación, asegurando que ante cualquier error parcial de lectura o escritura el sistema retorne `None` o falle de forma controlada sin comprometer la configuración persistida.
 - `2026-10-21T13:00:24` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos y rangos en `_get_numeric_setting_from_widget` y se mejoró `_safe_get_entry_value` para manejar errores de conversión sin interrumpir la ejecución, previniendo inyecciones de datos corruptos desde la interfaz hacia la lógica de configuración.
 - `2026-10-21T12:51:09` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validación de tipos y estados vacíos en `suggest_keeper` y `_collect_candidates`, además de capturar excepciones más específicas en la lectura de archivos para evitar que una falla puntual en `stat` o `open` detenga el análisis completo.
 - `2026-10-21T12:49:56` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `detect_profiles` y `directory_size` añadiendo validaciones de tipo y estructura a sus parámetros de entrada, asegurando que ante valores inesperados (como `None` o tipos incorrectos pasados desde otras partes del sistema) la aplicación no propague errores hacia el resto de los módulos de análisis.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T10:51:29` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir la escritura de archivos en rutas que, aunque no existan, podrían resolverse a ubicaciones sensibles fuera del contexto de la aplicación, utilizando `is_protected_path` como barrera adicional antes de la creación de directorios.
 - `2026-10-21T10:50:48` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la validación explícita de `content-length` en la cabecera de la respuesta HTTP, evitando el procesamiento de respuestas potencialmente maliciosas o excesivamente grandes antes de que lleguen a `_extract_text_from_gemini_json`.
 - `2026-10-21T10:47:06` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `load` y `_read_and_parse_json` ante archivos de configuración bloqueados o con formato inválido, asegurando que la aplicación siempre mantenga un estado operativo incluso si el archivo de ajustes se encuentra en un estado inusual.
-- `2026-10-21T10:18:19` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para evitar falsos positivos y excepciones innecesarias mediante el uso de `os.access` con `os.R_OK` antes de intentar la apertura, mejorando la tolerancia ante archivos bloqueados por el sistema sin forzar cierres inesperados.
-- `2026-10-21T10:16:25` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de seguridad de la ruta completa de forma más granular, evitando race conditions y asegurando que las operaciones de creación de directorios y escritura de archivos utilicen validadores de seguridad antes de cualquier acceso al disco.

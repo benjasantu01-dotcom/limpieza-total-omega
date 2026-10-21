@@ -680,3 +680,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-21T13:11:11` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-21T13:11:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T13:11:11` Corrida terminada. Total usado hoy: 312.
+- `2026-10-21T13:19:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-21T13:19:41` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` y `save` mediante una validación más estricta del tamaño del archivo y la integridad de la decodificación, asegurando que ante cualquier error parcial de lectura o escritura el sistema retorne `None` o falle de forma controlada sin comprometer la configuración persistida.
+- `2026-10-21T13:20:10` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `parse_registry_csv` añadiendo una validación explícita para asegurar que el `csv_text` procesado contenga los encabezados esperados ("Name" y "Value"), evitando errores en caso de recibir salidas de PowerShell malformadas o inesperadas que podrían causar excepciones al iterar sobre las filas.
+- `2026-10-21T13:20:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T13:20:16` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-21T13:20:51` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): el archivo se encogió al 42% del original (posible pérdida de código)
+- `2026-10-21T13:21:18` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-21T13:21:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T13:21:18` Corrida terminada. Total usado hoy: 316.

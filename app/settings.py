@@ -170,7 +170,6 @@ class _SettingsManager:
         """
         if not isinstance(serialized, str): return False
         try:
-            # Validación estricta antes de abrir cualquier flujo
             resolved_path = config_path.resolve()
             if not is_safe_to_modify(str(resolved_path)): return False
             if resolved_path.exists() and (resolved_path.is_symlink() or not resolved_path.is_file()): return False
