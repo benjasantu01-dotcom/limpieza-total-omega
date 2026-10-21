@@ -169,23 +169,21 @@ class _SettingsManager:
         asegurar la integridad de los datos, evitando la corrupción ante fallos.
         """
         if not isinstance(serialized, str): return False
-        temp_path: Path = config_path.with_suffix(".tmp")
         try:
-            if not is_safe_to_modify(str(config_path)): return False
-            if config_path.exists() and (config_path.is_symlink() or not config_path.is_file()): return False
+            # Validación estricta antes de abrir cualquier flujo
+            resolved_path = config_path.resolve()
+            if not is_safe_to_modify(str(resolved_path)): return False
+            if resolved_path.exists() and (resolved_path.is_symlink() or not resolved_path.is_file()): return False
             
+            temp_path = resolved_path.with_suffix(".tmp")
             with open(temp_path, "w", encoding="utf-8") as f:
                 f.write(serialized)
                 f.flush()
                 os.fsync(f.fileno())
-            if temp_path.exists():
-                os.replace(temp_path, config_path)
+            os.replace(temp_path, resolved_path)
             self.clear()
             return True
         except (OSError, IOError, PermissionError):
-            if temp_path.exists():
-                try: os.remove(temp_path)
-                except OSError: pass
             return False
 
 _MANAGER = _SettingsManager()
@@ -334,9 +332,10 @@ def _is_file_secure_to_read(st: os.stat_result) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    if not is_safe_to_modify(str(file_path)): return None
     try:
-        with open(file_path, "rb") as f:
+        resolved = file_path.resolve()
+        if not is_safe_to_modify(str(resolved)): return None
+        with open(resolved, "rb") as f:
             st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(st): return None
             content = f.read(MAX_SETTINGS_SIZE + 1)
@@ -402,11 +401,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     config_path = settings_path(custom_base)
     try:
         cleaned_settings = _coerce_and_verify(validate(values))
-        if not is_safe_to_modify(str(config_path)): return None
-        try:
-            serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
-        except (TypeError, ValueError):
-            return None
+        serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE: return None
         return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None

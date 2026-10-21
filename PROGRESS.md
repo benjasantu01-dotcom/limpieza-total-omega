@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 84 | 9 | 23 | 14 | 110 |
-| 2026-10-21 | 112 | 6 | 24 | 10 | 112 |
+| 2026-10-20 | 84 | 9 | 23 | 14 | 106 |
+| 2026-10-21 | 113 | 6 | 25 | 10 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **41**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **34**
 - rendimiento: **31**
 
@@ -37,8 +37,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **16**
+- `settings.py`: **14**
 - `branding.py`: **13**
-- `settings.py`: **13**
 - `scanner.py`: **10**
 - `organizer.py`: **9**
 - `startup.py`: **7**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T11:20:16` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta de la ruta del archivo de configuración para prevenir ataques de sustitución mediante enlaces simbólicos o rutas relativas no deseadas, utilizando `pathlib` de forma robusta antes de cualquier operación de escritura o lectura.
 - `2026-10-21T11:10:47` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de escritura en `quarantine.py` mediante la implementación de una validación de `st_nlink` (contador de enlaces físicos) en el momento del registro del manifiesto y una verificación adicional de exclusividad de archivo, previniendo que archivos con enlaces físicos externos sean tratados como aislados, lo cual es una vulnerabilidad de integridad.
 - `2026-10-21T11:09:14` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar `GetModuleFileNameExW` utilizando un manejo explícito del buffer de memoria mediante `ctypes.create_unicode_buffer`, asegurando que cualquier error en la escritura de la ruta sea capturado preventivamente antes de que `is_protected_path` intente evaluar una cadena potencialmente truncada o inválida.
 - `2026-10-21T10:59:35` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `duplicates.py` mediante la validación estricta de rutas absolutas antes de cualquier acceso al sistema de archivos dentro de `_collect_candidates`, previniendo la manipulación de paths relativos o resoluciones inesperadas tras el uso de `os.scandir`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T09:57:14` **safety.py** (rendimiento): Se ha optimizado `_PROTECTED_PATH_CACHE` reemplazando la lógica manual de TTL basada en `time.time()` por el decorador `@lru_cache` con un tamaño adecuado, lo que elimina el uso de diccionarios auxiliares, mejora la velocidad de acceso y reduce la huella de memoria al delegar la gestión del caché a la implementación nativa y eficiente de Python.
 - `2026-10-21T09:56:21` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total en `total_quarantined_bytes` y `summarize` evitando recargas innecesarias del manifiesto al pasar la lista pre-cargada, y mejoré la eficiencia de `purge_all` al utilizar una estructura `set` para búsquedas O(1) al procesar la purga masiva.
 - `2026-10-21T09:45:56` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la gestión manual de `_PIPELINE_CACHE` por `@lru_cache` sobre una función auxiliar, lo cual es más eficiente, idiomático y nativo, eliminando además la necesidad de limpiar explícitamente el diccionario.
-- `2026-10-21T09:36:39` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` reemplazando llamadas redundantes a `Path.relative_to` por una lógica de manipulación de cadenas de `os.path` más ligera y evitando la creación innecesaria de objetos `Path` dentro del bucle crítico, reduciendo la presión sobre el recolector de basura.
