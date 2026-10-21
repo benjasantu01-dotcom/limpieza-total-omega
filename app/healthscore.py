@@ -356,7 +356,10 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
         
         weight = max(0, entry.weight)
         points = area_ratio * weight
-        val_int = int(round(_clamp(points if math.isfinite(points) else 0.0, 0.0, float(weight))))
+        
+        # Uso de redondeo defensivo y validación de rango estricta
+        val_int = int(round(points))
+        val_int = int(_clamp(float(val_int), 0.0, float(weight)))
         
         return val_int, recommendations
     except Exception:

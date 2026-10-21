@@ -215,13 +215,15 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     if entry.is_dir(follow_symlinks=False):
                         if not is_junction(path_entry): queue.append((path_entry, depth + 1))
                     elif entry.is_file(follow_symlinks=False):
+                        resolved = path_entry.resolve()
+                        if not _safe_path_check(resolved): continue
                         stat = entry.stat(follow_symlinks=False)
                         if stat.st_size >= min_size:
                             inode = (stat.st_dev, stat.st_ino)
-                            if inode not in visited_inodes and not (skip_protected and is_protected_path(path_entry)):
-                                if _is_valid_candidate(path_entry, stat.st_size):
+                            if inode not in visited_inodes and not (skip_protected and is_protected_path(resolved)):
+                                if _is_valid_candidate(resolved, stat.st_size):
                                     visited_inodes.add(inode)
-                                    size_to_paths_map[stat.st_size].append(path_entry)
+                                    size_to_paths_map[stat.st_size].append(resolved)
         except (OSError, PermissionError): continue
     return {sz: files for sz, files in size_to_paths_map.items() if len(files) > 1}
 
