@@ -542,3 +542,12 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-20T23:33:02` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-20T23:43:13` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-20T23:53:22` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-21T00:03:36` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-10-21T00:03:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T00:04:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-21T00:04:52` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Documenté con docstrings detallados los parámetros y el comportamiento de las funciones críticas (`_sum_directory_recursive` y `_should_skip_entry`) para clarificar las salvaguardas de seguridad implementadas, facilitando el mantenimiento futuro y la auditoría del código.
+- `2026-10-21T00:05:21` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: legibilidad y documentación).
+- `2026-10-21T00:05:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T00:05:57` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (siguiendo el estilo Google/NumPy) en funciones complejas y aclaración de tipos, facilitando la comprensión de la lógica de escaneo y las estrategias de hashing sin alterar la funcionalidad.
+- `2026-10-21T00:05:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T00:05:57` Corrida terminada. Total usado hoy: 4.

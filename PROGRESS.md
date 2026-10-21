@@ -5,36 +5,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **179** (35.7% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 230
+- Rechazadas por guardia de seguridad: 50
+- Sin cambios (nada sustancial que mejorar): 25
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 51 | 5 | 16 | 8 | 72 |
+| 2026-10-19 | 51 | 5 | 15 | 7 | 72 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
+| 2026-10-21 | 2 | 0 | 0 | 0 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **41**
 - robustez ante casos límite: **35**
-- legibilidad y documentación: **33**
+- legibilidad y documentación: **35**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
+- `duplicates.py`: **18**
 - `diskreport.py`: **18**
 - `assistant.py`: **17**
-- `duplicates.py`: **17**
+- `browser.py`: **15**
 - `quarantine.py`: **15**
 - `memory.py`: **15**
-- `browser.py`: **14**
 - `healthscore.py`: **14**
 - `branding.py`: **13**
 - `safety.py`: **13**
@@ -46,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T00:05:57` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (siguiendo el estilo Google/NumPy) en funciones complejas y aclaración de tipos, facilitando la comprensión de la lógica de escaneo y las estrategias de hashing sin alterar la funcionalidad.
+- `2026-10-21T00:04:52` **browser.py** (legibilidad y documentación): Documenté con docstrings detallados los parámetros y el comportamiento de las funciones críticas (`_sum_directory_recursive` y `_should_skip_entry`) para clarificar las salvaguardas de seguridad implementadas, facilitando el mantenimiento futuro y la auditoría del código.
 - `2026-10-20T14:54:08` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de métricas con un nuevo docstring en `_VALIDATORS` y refinando la estructura de `_CONTEXT_SCHEMA` para que su propósito (serialización de contexto) sea evidente, asegurando que la arquitectura del asistente se mantenga autodocumentada para futuros colaboradores.
 - `2026-10-20T14:45:34` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de excepciones en `_is_file_owned_by_system` y `_get_file_attrs` para evitar la propagación de fallos cuando las llamadas a la Win32 API devuelven errores inesperados de sistema, mejorando la robustez ante entornos con restricciones de acceso granulares.
 - `2026-10-20T14:35:16` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` al reemplazar una comparación por nombre de archivo (vulnerable a colisiones o archivos externos al manifiesto) por una validación estricta contra el `item_id` y el estado del manifiesto, asegurando que solo se eliminen archivos correctamente registrados y validados.
@@ -59,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T12:53:59` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `safety.py` al implementar un bloqueo estricto contra el acceso a archivos de sistema mediante la validación de la propiedad del SID (Security Identifier) en archivos críticos, asegurando que cualquier intento de modificación sobre archivos cuyo propietario sea el grupo `SYSTEM` o `TrustedInstaller` sea bloqueado preventivamente, fortaleciendo la defensa frente a privilegios elevados.
 - `2026-10-20T12:41:19` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` reforzando la validación en `_atomic_isolate_file` para evitar condiciones de carrera TOCTOU (Time-of-Check to Time-of-Use) mediante una verificación explícita de `st_ino` (inodo) y tamaño justo antes de la operación de escritura, cerrando una brecha de integridad.
 - `2026-10-20T12:40:12` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` añadiendo una comprobación adicional para evitar el seguimiento de puntos de reparse (reparse points) mediante `reparse_point` y asegurando que las rutas sean canónicas antes de la validación, evitando posibles ataques de "path traversal" o redirección de rutas durante la inspección de procesos.
-- `2026-10-20T12:32:08` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` al implementar `_validate_path_for_read` para restringir el acceso a rutas arbitrarias durante operaciones que solo deberían ser de lectura, garantizando que incluso las consultas de reportes o inventarios no escapen al ámbito de confianza definido.
-- `2026-10-20T12:29:51` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` asegurando que la verificación de `is_protected_path` ocurra inmediatamente después de obtener la ruta absoluta y normalizada, evitando posibles ataques de "time-of-check to time-of-use" (TOCTOU) y garantizando que se bloqueen rutas maliciosas antes de cualquier acceso al sistema de archivos.

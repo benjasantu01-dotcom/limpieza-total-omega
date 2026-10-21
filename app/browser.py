@@ -192,7 +192,11 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
-    """Determina si un objeto del sistema debe ser excluido del escaneo."""
+    """
+    Evalúa si una entrada del sistema debe omitirse para evitar daños o recursión infinita.
+    Aplica filtros contra: carpetas sensibles (NEVER_TOUCH), longitud de ruta, 
+    caracteres ilegales, enlaces simbólicos y puntos de reparse (Junctions).
+    """
     if entry.name.lower() in ctx.never_touch_lower: return True
     path_str = entry.path
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
@@ -203,7 +207,17 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Recorrido recursivo depth-first: suma el peso de archivos únicos evitando ciclos."""
+    """
+    Realiza un recorrido recursivo (DFS) sobre el sistema de archivos.
+    
+    Args:
+        root_path: Ruta raíz del sub-árbol a analizar.
+        ctx: Contexto de escaneo con set de archivos ya visitados (evita doble conteo en hardlinks).
+        depth: Profundidad actual (limitada por MAX_SCAN_DEPTH para evitar stack overflow).
+        
+    Returns:
+        ScanResult con la suma total de bytes y éxito de la operación.
+    """
     if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
     
     norm_path = os.path.normcase(root_path)

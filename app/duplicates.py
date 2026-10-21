@@ -103,7 +103,6 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     try:
-        # Intentar abrir el archivo solo para lectura
         with open(path, "rb") as f:
             f.peek(1)
             return False
@@ -133,7 +132,15 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula SHA256 completo del archivo para confirmación de duplicados."""
+    """
+    Calcula SHA256 completo del archivo.
+    
+    Args:
+        path: Path del archivo a procesar.
+        chunk_size: Tamaño de buffer para lectura incremental.
+    Returns:
+        Hexdigest del hash si el archivo es legible y seguro, None caso contrario.
+    """
     if not isinstance(path, Path) or not path.exists(): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     if chunk_size <= 0 or not path.is_file() or not _safe_path_check(path):
@@ -151,7 +158,15 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula SHA256 parcial (primeros 64KB) para filtrado rápido."""
+    """
+    Calcula SHA256 parcial (primeros 64KB) para filtrado rápido.
+    
+    Args:
+        path: Path del archivo.
+        read_bytes: Bytes a leer desde el inicio.
+    Returns:
+        Hexdigest parcial si es exitoso, None caso contrario.
+    """
     if not isinstance(path, Path) or not path.exists(): return None
     if path in _partial_cache: return _partial_cache.get(path)
     if read_bytes <= 0 or not path.is_file() or not _safe_path_check(path):
@@ -196,7 +211,12 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Escaneo BFS recolectando archivos candidatos según criterios de seguridad y tamaño."""
+    """
+    Realiza un escaneo BFS recursivo para recolectar candidatos a duplicados.
+    
+    Utiliza un conjunto de inodos (`visited_inodes`) para evitar procesar enlaces
+    físicos múltiples veces, optimizando la complejidad espacial.
+    """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
     visited_inodes: set[Tuple[int, int]] = set()
@@ -219,7 +239,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                 queue.append((path_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             file_stat = entry.stat(follow_symlinks=False)
-                            # Criterios de exclusión
                             if file_stat.st_size < min_size: continue
                             if (file_stat.st_dev, file_stat.st_ino) in visited_inodes: continue
                             
