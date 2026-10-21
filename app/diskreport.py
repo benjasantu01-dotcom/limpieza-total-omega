@@ -289,8 +289,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if root_path is None: return
     
+    root_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[str] = [root_str]
     
     while stack:
         current_dir = stack.pop()
@@ -342,17 +343,22 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     """Identifica las carpetas inmediatas más pesadas en la raíz indicada."""
     root = _validate_root(directory)
     if root is None: return []
+    
+    root_str = str(root)
+    root_len = len(root_str) + len(os.sep)
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
-        try:
-            rel = path.relative_to(root)
-            if not rel.parts: continue
-            top_path = str(root / rel.parts[0])
-            stats[top_path].size += size
-            stats[top_path].file_count += 1
-        except (ValueError, IndexError, OSError, AttributeError):
-            continue
+        p_str = str(path)
+        if len(p_str) > root_len:
+            # Obtiene el nombre del directorio inmediato sin instanciar Paths extra
+            sub_path = p_str[root_len:]
+            top_part = sub_path.split(os.sep)[0]
+            top_path = os.path.join(root_str, top_part)
+            
+            metrics = stats[top_path]
+            metrics.size += size
+            metrics.file_count += 1
 
     results = [FolderUsage(Path(p), m.size, m.file_count) for p, m in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)

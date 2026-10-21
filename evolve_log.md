@@ -577,3 +577,13 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-21T00:36:22` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: gradient_colors
 - `2026-10-21T00:36:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T00:36:22` Corrida terminada. Total usado hoy: 16.
+- `2026-10-21T00:44:19` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-21T00:44:49` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-10-21T00:45:17` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `walk_files` y `largest_folders` evitando la creación innecesaria de objetos `Path` y reduciendo las llamadas a `relative_to` al calcular pesos de carpetas, utilizando operaciones de string de bajo costo.
+- `2026-10-21T00:45:41` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-21T00:46:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T00:46:09` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-21T00:46:55` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-21T00:47:25` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el acceso a las métricas del sistema utilizando `getattr` dentro de un diccionario para evitar la creación de tuplas de caché mediante introspección repetitiva, y se reemplazó el uso de `tuple` sobre los campos por una conversión directa más eficiente, mejorando el rendimiento en el pipeline de análisis.
+- `2026-10-21T00:47:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T00:47:25` Corrida terminada. Total usado hoy: 20.

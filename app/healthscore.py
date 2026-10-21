@@ -370,7 +370,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not _PIPELINE:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Pipeline de análisis no configurado."])
     
-    cache_key = tuple(float(getattr(metrics, f)) for f in metrics._FIELDS_TO_VALIDATE)
+    cache_key = tuple(getattr(metrics, f) for f in metrics._FIELDS_TO_VALIDATE)
     if cache_key in _PIPELINE_CACHE:
         return _PIPELINE_CACHE[cache_key]
         

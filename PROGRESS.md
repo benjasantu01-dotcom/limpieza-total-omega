@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 231
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 46 | 3 | 12 | 7 | 70 |
+| 2026-10-19 | 44 | 3 | 11 | 7 | 69 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 10 | 0 | 2 | 1 | 3 |
+| 2026-10-21 | 12 | 0 | 2 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **30**
-- rendimiento: **28**
+- rendimiento: **30**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `assistant.py`: **17**
 - `duplicates.py`: **17**
-- `quarantine.py`: **16**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
-- `healthscore.py`: **15**
-- `safety.py`: **14**
+- `quarantine.py`: **15**
 - `browser.py`: **14**
+- `safety.py`: **13**
 - `branding.py`: **12**
 - `scanner.py`: **11**
 - `settings.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T00:47:25` **healthscore.py** (rendimiento): Se optimizó el acceso a las métricas del sistema utilizando `getattr` dentro de un diccionario para evitar la creación de tuplas de caché mediante introspección repetitiva, y se reemplazó el uso de `tuple` sobre los campos por una conversión directa más eficiente, mejorando el rendimiento en el pipeline de análisis.
+- `2026-10-21T00:45:17` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` evitando la creación innecesaria de objetos `Path` y reduciendo las llamadas a `relative_to` al calcular pesos de carpetas, utilizando operaciones de string de bajo costo.
 - `2026-10-21T00:36:03` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando llamadas redundantes a `__dict__` y `getattr` por el uso de `metrics_snapshot`, y se eliminaron recorridos de diccionario innecesarios en `_apply_updates` y `ingest`, mejorando la eficiencia en escenarios de consultas frecuentes.
 - `2026-10-21T00:35:21` **startup.py** (legibilidad y documentación): Mejora la legibilidad del código mediante la adición de docstrings estructuradas en los métodos del registro y la normalización de la terminología de tipos, facilitando la comprensión del flujo de datos en el módulo `startup.py`.
 - `2026-10-21T00:34:47` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos del gestor de estados `_SettingsManager` y aclarando el propósito de la lógica de validación atómica en `_ValidatorEntry`, facilitando la comprensión del flujo de persistencia sin alterar la funcionalidad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T14:54:08` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de métricas con un nuevo docstring en `_VALIDATORS` y refinando la estructura de `_CONTEXT_SCHEMA` para que su propósito (serialización de contexto) sea evidente, asegurando que la arquitectura del asistente se mantenga autodocumentada para futuros colaboradores.
 - `2026-10-20T14:45:34` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de excepciones en `_is_file_owned_by_system` y `_get_file_attrs` para evitar la propagación de fallos cuando las llamadas a la Win32 API devuelven errores inesperados de sistema, mejorando la robustez ante entornos con restricciones de acceso granulares.
 - `2026-10-20T14:35:16` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` al reemplazar una comparación por nombre de archivo (vulnerable a colisiones o archivos externos al manifiesto) por una validación estricta contra el `item_id` y el estado del manifiesto, asegurando que solo se eliminen archivos correctamente registrados y validados.
-- `2026-10-20T14:33:26` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_windows_process_csv` y `_extract_process_info` mediante validaciones de entrada más estrictas y manejo explícito de errores de conversión de datos para evitar procesar líneas malformadas o PIDs inválidos.
-- `2026-10-20T14:24:36` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y la validación de `SystemMetrics` mediante la captura explícita de errores durante la ejecución del pipeline y la adición de una verificación de estado de las métricas que previene la propagación de valores inválidos (NaN/Inf) que podrían causar errores silenciosos en los cálculos de los scores.
