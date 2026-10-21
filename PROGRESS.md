@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 27
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 26
 - Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 40 | 3 | 11 | 7 | 65 |
+| 2026-10-19 | 37 | 3 | 11 | 6 | 65 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 17 | 0 | 4 | 2 | 5 |
+| 2026-10-21 | 20 | 0 | 5 | 2 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **37**
 - rendimiento: **35**
-- robustez ante casos límite: **28**
+- seguridad defensiva: **34**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
-- `memory.py`: **17**
-- `healthscore.py`: **16**
+- `assistant.py`: **17**
 - `quarantine.py`: **16**
-- `assistant.py`: **16**
 - `duplicates.py`: **16**
+- `memory.py`: **16**
+- `healthscore.py`: **15**
 - `safety.py`: **14**
-- `browser.py`: **13**
+- `browser.py`: **14**
+- `branding.py`: **13**
 - `settings.py`: **12**
-- `branding.py`: **12**
 - `scanner.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **8**
-- `main.py`: **6**
+- `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T01:17:14` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la inicialización de los puntos de escaneo de `base_directories`, añadiendo una validación explícita para evitar errores cuando la variable de entorno `LOCALAPPDATA` apunta a rutas inexistentes, no legibles o que escapan de las restricciones de seguridad del sistema.
+- `2026-10-21T01:17:01` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` validando la existencia de la ruta de destino antes de intentar operaciones de escritura y asegurando que las excepciones durante la creación del directorio no rompan el flujo de la aplicación.
+- `2026-10-21T01:16:28` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_payload_structure` al incorporar una validación recursiva de profundidad y límites de colección que evita ataques de desbordamiento de pila o agotamiento de memoria, reforzando la integridad del procesamiento de datos en el asistente ante entradas malintencionadas.
 - `2026-10-21T01:06:38` **settings.py** (rendimiento): Optimicé el rendimiento de `_Validators._is_reparse_point` y `_Validators._run_safety_checks` convirtiendo las llamadas a `Path.stat().st_file_attributes` en una lectura única de `os.stat` para evitar múltiples llamadas al sistema por cada validación de ruta.
 - `2026-10-21T01:05:57` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` centralizando y eliminando la duplicación de chequeos (como `_is_kernel_managed` y `_get_file_attrs`) para evitar llamadas redundantes a la API de Windows en cada iteración de los escaneos de disco.
 - `2026-10-21T00:57:18` **quarantine.py** (rendimiento): Optimicé el manejo de I/O en `_get_sha256` y `_perform_secure_copy` reemplazando los bucles de lectura manual por una gestión más eficiente, reduciendo el número de llamadas al sistema y mejorando la consistencia de los buffers de datos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T00:34:47` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos del gestor de estados `_SettingsManager` y aclarando el propósito de la lógica de validación atómica en `_ValidatorEntry`, facilitando la comprensión del flujo de persistencia sin alterar la funcionalidad.
 - `2026-10-21T00:26:06` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de validación de bajo nivel y predicados (`_check_*`), además de refactorizar la estructura de `_evaluate_security_rules` para que el manejo de errores sea más explícito y fácil de auditar según los estándares de seguridad exigidos.
 - `2026-10-21T00:24:51` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de las responsabilidades de las funciones de bajo nivel y la adición de Type Hints detallados en funciones que carecían de ellos, facilitando la legibilidad técnica sin alterar la lógica de seguridad.
-- `2026-10-21T00:20:56` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de Type Hints más precisos y docstrings descriptivos que clarifican la lógica detrás de los umbrales de seguridad y las operaciones de E/S, facilitando el mantenimiento y la auditoría del código.
-- `2026-10-21T00:19:47` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de bajo nivel que interactúan con la API de Windows (`ctypes`), clarificando los efectos secundarios y los requisitos de seguridad de cada operación.
-- `2026-10-21T00:14:30` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `healthscore.py` mediante la refactorización de `compute_score` para extraer la lógica de cálculo de puntajes en una función auxiliar `_calculate_area_contribution`, eliminando la complejidad ciclomática excesiva dentro del bucle principal y facilitando la depuración.

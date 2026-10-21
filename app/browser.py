@@ -176,7 +176,7 @@ def base_directories() -> List[Path]:
     
     p = Path(local_env)
     try:
-        if p.exists() and p.is_dir():
+        if p.exists() and p.is_dir() and os.access(p, os.R_OK):
             path_local = p.resolve(strict=True)
             if is_safe_to_modify(path_local) and not is_protected_path(path_local):
                 return [path_local]
