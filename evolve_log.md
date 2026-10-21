@@ -1019,3 +1019,39 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-21T05:11:23` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se ha optimizado `_collect_candidates` mediante el uso de un generador para el manejo de directorios, evitando la creación de listas innecesarias, y se ha reemplazado el `os.scandir` recursivo por una iteración que reduce el costo de memoria y procesamiento durante la recolección inicial.
 - `2026-10-21T05:11:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T05:11:23` Corrida terminada. Total usado hoy: 124.
+- `2026-10-21T05:19:50` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-10-21T05:20:31` Tests FALLARON:
+```
+o = healthscore.compute_score(healthscore.SystemMetrics(junk_mb=3000))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: unhashable type: 'SystemMetrics'
+
+evolve/tests/test_modules.py:921: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_clean_system_scores_high - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_a_broken_system_scores_low - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_score_never_leaves_the_zero_to_hundred_range - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommendation - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_quarantined_files_are_mentioned - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_compute_score_is_pure_and_repeatable - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recommendations - TypeError: unhashable type: 'SystemMetrics'
+9 failed, 290 passed in 1.41s
+
+```
+- `2026-10-21T05:20:31` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento del motor de cálculo reemplazando la caché manual `_PIPELINE_CACHE` por un decorador `lru_cache` estándar en `compute_score` y eliminando la validación redundante `is_finite` dentro del bucle de pipeline, aprovechando que el método `validate` ya garantiza la integridad al inicio.
+- `2026-10-21T05:20:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T05:20:56` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-21T05:21:03` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-21T05:21:15` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-21T05:21:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T05:21:34` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-21T05:21:40` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-21T05:21:54` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-21T05:22:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T05:22:15` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-21T05:22:21` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-21T05:22:34` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-21T05:22:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T05:22:34` Corrida terminada. Total usado hoy: 128.
