@@ -236,7 +236,7 @@ class Scanner:
 
     @lru_cache(maxsize=2048)
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica si la ruta actual es descendiente del directorio raíz de escaneo."""
+        """Verifica recursivamente si la ruta está contenida dentro del scope del escaneo."""
         try:
             canonical_path: str = str(Path(entry_path).absolute()).lower()
             return canonical_path.startswith(self.base_root_str)
@@ -244,16 +244,20 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Verifica si el nombre de archivo contiene caracteres prohibidos o reservados."""
+        """Valida que el nombre de archivo no contenga caracteres o patrones reservados por el SO."""
         if not name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name) or "\0" in name)
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si la entrada es un punto de reanálisis (Junction/Mount Point)."""
+        """Verifica mediante atributos de archivo si la entrada es un punto de unión de Win32."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida que la entrada sea segura para procesar según las reglas de integridad."""
+        """
+        Realiza la validación de seguridad de la entrada.
+        Aplica filtros de: nombres prohibidos, enlaces simbólicos, puntos de unión, 
+        listas negras de rutas y scope de escaneo raíz.
+        """
         if entry is None or not entry.path:
             return False
         
@@ -275,7 +279,10 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Gestiona la entrada de nuevos directorios en la pila de exploración."""
+        """
+        Gestiona la expansión del árbol de directorios.
+        Controla la profundidad máxima permitida y previene ciclos mediante set 'seen'.
+        """
         if current_depth >= SCAN_LIMITS.max_depth or entry is None or not entry.path:
             return
         
@@ -287,11 +294,14 @@ class Scanner:
     @staticmethod
     @lru_cache(maxsize=1024)
     def _is_relevant_extension(name: str) -> bool:
-        """Filtro de extensiones para reducir I/O en archivos irrelevantes."""
+        """Filtro de optimización: evita procesar archivos cuya extensión no es de interés."""
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Enruta la entrada según tipo (archivo o directorio) para análisis o expansión."""
+        """
+        Enrutador principal de procesado por entrada.
+        Diferencia archivos de directorios y delega el análisis heurístico o la navegación.
+        """
         if entry is None or not entry.path:
             return
             
@@ -311,7 +321,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta el conjunto completo de heurísticas registradas sobre un archivo."""
+        """Ejecuta iterativamente el conjunto de heurísticas registradas sobre un archivo."""
         if not _is_readable(path):
             return
 

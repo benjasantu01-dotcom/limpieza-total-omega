@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 60 | 5 | 16 | 10 | 89 |
-| 2026-10-21 | 125 | 6 | 29 | 11 | 153 |
+| 2026-10-20 | 57 | 5 | 16 | 10 | 88 |
+| 2026-10-21 | 126 | 6 | 30 | 11 | 155 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **47**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **18**
-- `diskreport.py`: **17**
 - `browser.py`: **17**
-- `duplicates.py`: **16**
 - `healthscore.py`: **16**
+- `diskreport.py`: **16**
 - `safety.py`: **16**
 - `quarantine.py`: **15**
 - `assistant.py`: **15**
-- `branding.py`: **13**
+- `duplicates.py`: **15**
 - `settings.py`: **13**
+- `branding.py`: **12**
 - `main.py`: **8**
+- `scanner.py`: **8**
 - `organizer.py`: **7**
 - `startup.py`: **7**
-- `scanner.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T13:51:36` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos a los métodos internos de la clase `Scanner`, aclarando el propósito y las restricciones de seguridad que cada uno impone, facilitando la auditoría de los flujos de control.
 - `2026-10-21T13:42:17` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en las funciones de validación crítica y la normalización de la terminología de seguridad, facilitando el mantenimiento y la auditoría de las garantías de integridad.
 - `2026-10-21T13:40:57` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `memory.py` mediante la adición de Type Hints explícitos, la normalización de los docstrings siguiendo el estándar de estilo exigido y la clarificación de las responsabilidades en los bloques de inicialización de estructuras Win32.
 - `2026-10-21T13:32:16` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en funciones de alto nivel y el uso de un bloque `if __name__ == "__main__"` para centralizar y documentar el propósito del módulo, facilitando el mantenimiento para futuros colaboradores.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T12:49:07` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo una validación explícita para evitar posibles errores al manejar rutas inválidas o nombres de archivo mal formados antes de interactuar con el sistema de archivos.
 - `2026-10-21T11:20:16` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta de la ruta del archivo de configuración para prevenir ataques de sustitución mediante enlaces simbólicos o rutas relativas no deseadas, utilizando `pathlib` de forma robusta antes de cualquier operación de escritura o lectura.
 - `2026-10-21T11:10:47` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de escritura en `quarantine.py` mediante la implementación de una validación de `st_nlink` (contador de enlaces físicos) en el momento del registro del manifiesto y una verificación adicional de exclusividad de archivo, previniendo que archivos con enlaces físicos externos sean tratados como aislados, lo cual es una vulnerabilidad de integridad.
-- `2026-10-21T11:09:14` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar `GetModuleFileNameExW` utilizando un manejo explícito del buffer de memoria mediante `ctypes.create_unicode_buffer`, asegurando que cualquier error en la escritura de la ruta sea capturado preventivamente antes de que `is_protected_path` intente evaluar una cadena potencialmente truncada o inválida.
