@@ -105,12 +105,12 @@ def _check_metric_integrity(val: Any) -> bool:
     return isinstance(val, (int, float)) and not isinstance(val, bool) and not _is_nan_or_inf(val)
 
 def _is_safe_numeric_context(val: Any) -> bool:
-    """Verifica límites de seguridad para evitar desbordamientos en cálculos de contexto."""
+    """Valida que un valor numérico no exceda rangos críticos para prevenir desbordamientos."""
     if not _check_metric_integrity(val): return False
     return -1e12 < float(val) < 1e12
 
 def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
-    """Valida si un valor puede convertirse en una métrica numérica segura dentro de límites esperados."""
+    """Valida si un valor es convertible a métrica numérica segura dentro de los límites de la especificación."""
     try:
         f: float = float(val)
         if _is_safe_numeric_context(f) and spec.is_valid_type(f) and _is_metric_within_bounds(f, spec):
@@ -120,7 +120,7 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     return None
 
 def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
-    """Acceso defensivo a atributos validando tipo y seguridad mediante lista blanca."""
+    """Accede defensivamente a atributos del objeto evitando llamadas a métodos ejecutables."""
     if not _is_safe_key(name): return default
     try:
         val = getattr(obj, name, default)
@@ -129,10 +129,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
         return default
 
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """
-    Decorador protector para manejadores de consulta (query handlers).
-    Valida la existencia de contexto y atrapa excepciones para evitar caídas de la interfaz.
-    """
+    """Decorador para proteger manejadores de consulta ante excepciones y asegurar contexto válido."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not isinstance(ctx, SystemContext): 
@@ -150,33 +147,31 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
     return wrapper
 
 class AssistantConfig(NamedTuple):
-    """Configuración estructurada para el cliente de IA (Gemini)."""
+    """Configuración inmutable para el cliente de IA (Gemini)."""
     api_key: str
     model: str
     allow_metrics: bool
 
 @dataclass(frozen=True)
 class MetricSpec:
-    """Especificación de validación para métricas numéricas del sistema."""
+    """Define las restricciones de tipo y rango para una métrica numérica."""
     type_hint: type
     min_val: float
     max_val: float
 
     def is_valid_type(self, val: Any) -> bool:
-        """Verifica que el valor sea del tipo esperado y no un booleano."""
+        """Verifica que el valor coincida con el tipo permitido y no sea booleano."""
         return isinstance(val, (int, float)) and not isinstance(val, bool) and _check_metric_integrity(val)
 
 class ProblemCriterion(NamedTuple):
-    """
-    Regla declarativa para detectar condiciones de riesgo.
-    """
+    """Regla declarativa para la evaluación de problemas basados en umbrales."""
     metric_key: str
     threshold: float
     operator: str
     message_format: str
 
     def _evaluate_metric(self, val: float) -> bool:
-        """Ejecuta la comparación lógica según el operador del criterio."""
+        """Compara una métrica contra el umbral según el operador definido."""
         if not _check_metric_integrity(val):
             return False
         if self.operator == "<":
@@ -186,11 +181,11 @@ class ProblemCriterion(NamedTuple):
         return False
 
     def is_triggered_by(self, val: float) -> bool:
-        """Verifica si el criterio de riesgo se cumple dado un valor."""
+        """Determina si un valor específico dispara esta advertencia."""
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, val: float) -> Optional[str]:
-        """Formatea un mensaje de advertencia si el criterio se dispara."""
+        """Formatea el mensaje de advertencia solo si la condición es verdadera."""
         if not self.is_triggered_by(val):
             return None
             
@@ -201,7 +196,7 @@ class ProblemCriterion(NamedTuple):
             return None
 
 class AreaExplanation(NamedTuple):
-    """Mapeo para descripciones pedagógicas de cada área de la aplicación."""
+    """Mapeo para descripciones pedagógicas de áreas de la aplicación."""
     key: str
     description: str
 
@@ -361,9 +356,7 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 
 @dataclass
 class SystemContext:
-    """
-    Contenedor de estado consolidado que representa la salud del sistema.
-    """
+    """Contenedor de estado consolidado que representa la salud del sistema."""
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0
@@ -496,7 +489,7 @@ def _contains_forbidden_patterns(text: str) -> bool:
     return any(pattern.search(text) for pattern in SECURITY_PATTERNS)
 
 def _ensure_safe_text(text: Any) -> bool:
-    """Realiza una desinfección estricta sobre cadenas evitando inyecciones de comandos."""
+    """Desinfecta estricta sobre cadenas evitando inyecciones de comandos."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
     # Evitar caracteres especiales de control de shell y inyección directa

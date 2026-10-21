@@ -434,7 +434,15 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el escudo completo en el lienzo ajustando escala y posición."""
+    """
+    Renderiza el escudo completo en el lienzo ajustando escala y posición.
+
+    Args:
+        canvas: Objeto Canvas compatible con el protocolo CanvasElement.
+        size: Tamaño base en píxeles.
+        canvas_x: Coordenada X de origen.
+        canvas_y: Coordenada Y de origen.
+    """
     try:
         val_size = float(size)
         if not math.isfinite(val_size): return
@@ -448,7 +456,17 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra horizontal con un gradiente interpolado optimizado por segmentos."""
+    """
+    Dibuja una barra horizontal con un gradiente interpolado optimizado por segmentos.
+
+    Args:
+        canvas: Objeto Canvas.
+        width: Ancho total de la barra.
+        height: Grosor de la línea.
+        canvas_x: Posición horizontal.
+        canvas_y: Posición vertical.
+        stops: Tupla de colores hexadecimales para definir el gradiente.
+    """
     try:
         w = max(1, int(width))
         h = max(1, int(height))
@@ -457,7 +475,19 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un indicador circular de progreso basado en el porcentaje recibido."""
+    """
+    Dibuja un indicador circular de progreso basado en el porcentaje recibido.
+
+    Args:
+        canvas: Objeto Canvas.
+        percent: Valor numérico entre 0 y 100.
+        size: Diámetro total.
+        canvas_x: Coordenada X superior izquierda.
+        canvas_y: Coordenada Y superior izquierda.
+        thickness: Grosor del trazo.
+        track: Color del anillo de fondo.
+        fill: Color del segmento activo.
+    """
     try:
         if percent is None: return
         val = max(0.0, min(100.0, float(percent)))

@@ -1415,3 +1415,37 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-10-21T08:46:48` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de `perform_atomic_write` añadiendo un chequeo explícito de la existencia del archivo temporal antes de intentar reemplazarlo, y se mejoró la resiliencia en `_read_and_parse_json` y `save` mediante el uso de excepciones específicas para evitar que errores inesperados de I/O dejen el proceso en un estado inconsistente.
 - `2026-10-21T08:46:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T08:46:48` Corrida terminada. Total usado hoy: 208.
+- `2026-10-21T08:54:02` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-21T08:54:32` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '/home/runner...\App\\app.exe' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+E         + /home/runner/work/limpieza-total-omega/limpieza-total-omega/C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '/home/runner...\App\\app.exe' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+  + /home/runner/work/limpieza-total-omega/limpieza-total-omega/C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.64s
+
+```
+- `2026-10-21T08:54:32` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_extract_quoted_path` al validar explícitamente el resultado de `Path(path_str)` antes de intentar cualquier operación de acceso, evitando errores en rutas malformadas o inválidas que podrían interrumpir el flujo.
+- `2026-10-21T08:55:12` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Documenté con docstrings claros las funciones de validación y transformación de datos, aclarando su propósito de seguridad y el manejo de tipos para facilitar el mantenimiento del motor de asistencia.
+- `2026-10-21T08:56:20` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones críticas de renderizado, estandarizando el formato para facilitar la mantenibilidad y comprensión del flujo de datos gráficos.
+- `2026-10-21T08:56:35` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la robustez del código mediante la formalización de la estructura de control de errores y la clarificación de las responsabilidades en las funciones de escaneo, siguiendo estrictamente el enfoque de documentación técnica exigido.
+- `2026-10-21T08:56:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T08:56:35` Corrida terminada. Total usado hoy: 212.

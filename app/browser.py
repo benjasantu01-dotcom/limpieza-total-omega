@@ -52,7 +52,9 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 @dataclass
 class ScanContext:
     """
-    Estado de control durante el recorrido recursivo para garantizar integridad.
+    Estado compartido durante el recorrido recursivo.
+    Contiene las referencias necesarias para validar la seguridad de cada 
+    nodo visitado y evitar ciclos en sistemas de archivos complejos.
     """
     sandbox_base: Path
     kernel32: Optional[ctypes.WinDLL]
@@ -63,8 +65,11 @@ class ScanContext:
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     """
-    Decorador: encapsula operaciones de E/S en bloques try-except para absorber 
-    errores de acceso (Access Denied/In Use) comunes en escaneos de disco.
+    Decorador: encapsula operaciones de E/S en bloques try-except.
+    
+    Absorbe errores de sistema (Access Denied, File In Use) para permitir
+    que el escáner continúe su labor sin abortar el proceso ante carpetas
+    protegidas o bloqueadas por procesos de terceros.
     """
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
@@ -195,17 +200,17 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     """
     Decide si omitir una entrada basándose en políticas de seguridad.
     
-    Aplica filtros en orden de criticidad:
-    1. Bloqueo manual (NEVER_TOUCH).
-    2. Validaciones de integridad de ruta (longitud, caracteres).
-    3. Inspección de tipo de nodo (reparse points, links, atributos sistema).
+    La lógica sigue este orden:
+    1. Filtro estático: nombres protegidos por la configuración (NEVER_TOUCH).
+    2. Integridad de ruta: longitud máxima y caracteres inválidos (seguridad OS).
+    3. Inspección profunda: detección de enlaces simbólicos o junctions que 
+       puedan causar escapes fuera del directorio raíz de escaneo.
     """
     if entry.name.lower() in ctx.never_touch_lower: return True
     
     path_str = entry.path
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
     
-    # Se añade la verificación de atributos para detectar reparse points no capturados por DirEntry
     try:
         is_hidden_or_reparse = _is_system_hidden(path_str, ctx.kernel32)
         if entry.is_symlink() or ctx.is_junction(path_str) or is_hidden_or_reparse: 
@@ -216,7 +221,12 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
-    Calcula el tamaño acumulado de un directorio mediante una búsqueda DFS (Depth-First Search).
+    Calcula el tamaño acumulado de un directorio mediante una búsqueda DFS.
+    
+    Implementa:
+    - Control de profundidad máxima para evitar recursión infinita.
+    - Registro de nodos visitados por dispositivo/inode para evitar bucles.
+    - Verificación de permisos de lectura antes de cada operación de acceso.
     """
     if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
     
@@ -251,7 +261,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
     """
-    Calcula el peso total de una ruta, validando seguridad de acceso antes de iniciar.
+    Cálculo de peso total; valida que la ruta sea segura antes de iniciar el DFS.
     """
     if not path or not isinstance(path, (str, Path)): return 0
     path_obj = Path(path)
@@ -277,7 +287,7 @@ def _is_valid_cache_path(candidate: Path, base: Path) -> bool:
 
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Resuelve la ruta completa del caché a partir de una base normalizada usando partes de ruta."""
+    """Resuelve la ruta completa del caché a partir de una base normalizada."""
     if not rel_str or not _is_valid_rel_path(rel_str): return Path()
     target = real_base.joinpath(*rel_str.split("\\"))
     if not target.exists() or not target.is_dir(): return Path()
