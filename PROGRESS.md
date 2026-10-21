@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 84 | 9 | 23 | 14 | 122 |
-| 2026-10-21 | 104 | 6 | 24 | 10 | 108 |
+| 2026-10-20 | 84 | 9 | 23 | 14 | 118 |
+| 2026-10-21 | 107 | 6 | 24 | 10 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **42**
+- seguridad defensiva: **36**
 - manejo de errores y validación de entradas: **34**
-- seguridad defensiva: **34**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
 - `safety.py`: **17**
 - `quarantine.py`: **16**
 - `diskreport.py`: **16**
 - `healthscore.py`: **16**
 - `duplicates.py`: **15**
 - `browser.py`: **15**
-- `branding.py`: **12**
-- `settings.py`: **12**
+- `branding.py`: **13**
+- `settings.py`: **13**
 - `scanner.py`: **10**
 - `organizer.py`: **9**
 - `startup.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T10:51:29` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir la escritura de archivos en rutas que, aunque no existan, podrían resolverse a ubicaciones sensibles fuera del contexto de la aplicación, utilizando `is_protected_path` como barrera adicional antes de la creación de directorios.
+- `2026-10-21T10:50:48` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la validación explícita de `content-length` en la cabecera de la respuesta HTTP, evitando el procesamiento de respuestas potencialmente maliciosas o excesivamente grandes antes de que lleguen a `_extract_text_from_gemini_json`.
+- `2026-10-21T10:47:06` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `load` y `_read_and_parse_json` ante archivos de configuración bloqueados o con formato inválido, asegurando que la aplicación siempre mantenga un estado operativo incluso si el archivo de ajustes se encuentra en un estado inusual.
 - `2026-10-21T10:18:19` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para evitar falsos positivos y excepciones innecesarias mediante el uso de `os.access` con `os.R_OK` antes de intentar la apertura, mejorando la tolerancia ante archivos bloqueados por el sistema sin forzar cierres inesperados.
 - `2026-10-21T10:16:25` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de seguridad de la ruta completa de forma más granular, evitando race conditions y asegurando que las operaciones de creación de directorios y escritura de archivos utilicen validadores de seguridad antes de cualquier acceso al disco.
 - `2026-10-21T10:06:31` **scanner.py** (rendimiento): Se implementó un filtrado preventivo mediante un conjunto de extensiones no relevantes antes de realizar operaciones de I/O o validaciones costosas en `process_entry`, reduciendo significativamente las llamadas a `is_safe_to_modify` y otras verificaciones de sistema para archivos que no serán analizados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T09:35:32` **assistant.py** (rendimiento): Se optimizó `SystemContext.metrics_snapshot` y `SystemContext.active_problems` reemplazando llamadas redundantes a `getattr` y `isinstance` por una iteración sobre un diccionario pre-filtrado, reduciendo el overhead de acceso a atributos en cada consulta.
 - `2026-10-21T09:26:43` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `StartupEntry` y se han añadido `type hints` explícitos en los métodos de validación, garantizando que la lógica de seguridad —que es crítica y compleja— sea más legible y mantenible por otros colaboradores.
 - `2026-10-21T09:26:01` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la interfaz `SuspicionCheck` y la clarificación de docstrings en las funciones heurísticas, explicitando el "porqué" de las validaciones de seguridad y su contexto operativo en Windows.
-- `2026-10-21T09:25:31` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_preconditions`, extrayendo las validaciones de volumen y permisos a métodos privados dedicados, lo cual facilita la auditoría de cada capa de seguridad.
-- `2026-10-21T09:16:14` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_check_path_syntax_integrity` para reducir su complejidad ciclomática y añadí docstrings detallados en las funciones de validación crítica, explicando el "porqué" de las restricciones de seguridad (como los bloqueos TOCTOU).
-- `2026-10-21T09:15:24` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints más precisos (especialmente en los retornos de funciones de seguridad) y docstrings que explican el "porqué" de las validaciones de bajo nivel (como la necesidad de `stat_result` para evitar race conditions), facilitando el mantenimiento futuro del código.

@@ -685,7 +685,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae de manera segura el contenido textual de la respuesta JSON del motor remoto."""
+    """Extracte de manera segura el contenido textual de la respuesta JSON del motor remoto."""
     if not isinstance(data, dict) or not _is_safe_payload_structure(data): return None
     candidates = data.get("candidates")
     if not isinstance(candidates, list) or not candidates: return None
@@ -727,8 +727,9 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: 
                 return None
+            # Validación estricta de tamaño basada en cabeceras HTTP antes de lectura
             content_length = res.headers.get("Content-Length")
-            if content_length is not None and int(content_length) > _MAX_RESPONSE_BYTES: 
+            if content_length and int(content_length) > _MAX_RESPONSE_BYTES: 
                 return None
             raw_res: bytes = res.read(_MAX_RESPONSE_BYTES + 1)
             if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: 

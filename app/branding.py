@@ -330,7 +330,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not destination: return None
     try:
         dest_path = Path(destination).resolve()
-        # Verificar seguridad antes de tocar nada
+        # Verificar seguridad: no permitir rutas de sistema ni bloqueadas
+        if is_protected_path(dest_path): return None
+        
         if dest_path.exists():
             if not is_safe_to_modify(dest_path): return None
         else:

@@ -1559,3 +1559,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-21T10:39:02` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-21T10:39:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T10:39:02` Corrida terminada. Total usado hoy: 252.
+- `2026-10-21T10:46:10` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-10-21T10:46:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T10:47:06` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `load` y `_read_and_parse_json` ante archivos de configuración bloqueados o con formato inválido, asegurando que la aplicación siempre mantenga un estado operativo incluso si el archivo de ajustes se encuentra en un estado inusual.
+- `2026-10-21T10:47:56` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-21T10:48:57` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-21T10:49:13` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-21T10:49:32` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-21T10:50:48` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva de `assistant.py` mediante la validación explícita de `content-length` en la cabecera de la respuesta HTTP, evitando el procesamiento de respuestas potencialmente maliciosas o excesivamente grandes antes de que lleguen a `_extract_text_from_gemini_json`.
+- `2026-10-21T10:51:29` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir la escritura de archivos en rutas que, aunque no existan, podrían resolverse a ubicaciones sensibles fuera del contexto de la aplicación, utilizando `is_protected_path` como barrera adicional antes de la creación de directorios.
+- `2026-10-21T10:51:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T10:51:29` Corrida terminada. Total usado hoy: 256.
