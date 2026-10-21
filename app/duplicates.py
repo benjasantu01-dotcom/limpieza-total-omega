@@ -135,15 +135,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """
-    Calcula SHA256 completo del archivo.
-    
-    Args:
-        path: Path del archivo a procesar.
-        chunk_size: Tamaño de buffer para lectura incremental.
-    Returns:
-        Hexdigest del hash si el archivo es legible y seguro, None caso contrario.
-    """
+    """Calcula SHA256 completo del archivo."""
     if not isinstance(path, Path) or not path.exists(): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     if chunk_size <= 0 or not path.is_file() or not _safe_path_check(path):
@@ -161,15 +153,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """
-    Calcula SHA256 parcial (primeros 64KB) para filtrado rápido.
-    
-    Args:
-        path: Path del archivo.
-        read_bytes: Bytes a leer desde el inicio.
-    Returns:
-        Hexdigest parcial si es exitoso, None caso contrario.
-    """
+    """Calcula SHA256 parcial (primeros 64KB) para filtrado rápido."""
     if not isinstance(path, Path) or not path.exists(): return None
     if path in _partial_cache: return _partial_cache.get(path)
     if read_bytes <= 0 or not path.is_file() or not _safe_path_check(path):
@@ -214,19 +198,10 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """
-    Realiza un escaneo BFS recursivo para recolectar candidatos a duplicados.
-    
-    Utiliza un conjunto de inodos (`visited_inodes`) para evitar procesar enlaces
-    físicos múltiples veces, optimizando la complejidad espacial.
-    """
+    """Realiza un escaneo BFS eficiente para recolectar candidatos a duplicados."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    queue: deque[Tuple[Path, int]] = deque()
+    queue: deque[Tuple[Path, int]] = deque((root, 0) for d in directories if (root := _resolve_and_verify_root(d)))
     visited_inodes: set[Tuple[int, int]] = set()
-
-    for dir_path in directories:
-        if (root := _resolve_and_verify_root(dir_path)):
-            queue.append((root, 0))
     
     while queue:
         current_dir, depth = queue.popleft()
@@ -235,25 +210,18 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    try:
-                        path_entry = Path(entry.path)
-                        # Chequeo preventivo antes de procesar entrada
-                        if not is_safe_to_modify(path_entry): continue
-
-                        if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(path_entry):
-                                queue.append((path_entry, depth + 1))
-                        elif entry.is_file(follow_symlinks=False):
-                            file_stat = entry.stat(follow_symlinks=False)
-                            if file_stat.st_size < min_size: continue
-                            if (file_stat.st_dev, file_stat.st_ino) in visited_inodes: continue
-                            
-                            if skip_protected and is_protected_path(path_entry): continue
-                            
-                            if _is_valid_candidate(path_entry, file_stat.st_size):
-                                visited_inodes.add((file_stat.st_dev, file_stat.st_ino))
-                                size_to_paths_map[file_stat.st_size].append(path_entry)
-                    except (OSError, PermissionError): continue
+                    path_entry = Path(entry.path)
+                    if not is_safe_to_modify(path_entry): continue
+                    if entry.is_dir(follow_symlinks=False):
+                        if not is_junction(path_entry): queue.append((path_entry, depth + 1))
+                    elif entry.is_file(follow_symlinks=False):
+                        stat = entry.stat(follow_symlinks=False)
+                        if stat.st_size >= min_size:
+                            inode = (stat.st_dev, stat.st_ino)
+                            if inode not in visited_inodes and not (skip_protected and is_protected_path(path_entry)):
+                                if _is_valid_candidate(path_entry, stat.st_size):
+                                    visited_inodes.add(inode)
+                                    size_to_paths_map[stat.st_size].append(path_entry)
         except (OSError, PermissionError): continue
     return {sz: files for sz, files in size_to_paths_map.items() if len(files) > 1}
 
@@ -279,10 +247,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona estrategia de hashing según el tamaño para optimizar rendimiento."""
     if not file_paths or size_bytes <= 0: return []
-    if size_bytes <= PARTIAL_READ_BYTES:
-        final_groups = _group_paths_by_hash(file_paths, hash_file)
-    else:
-        final_groups = _process_large_file_subset(file_paths)
+    final_groups = _group_paths_by_hash(file_paths, hash_file) if size_bytes <= PARTIAL_READ_BYTES else _process_large_file_subset(file_paths)
     return [DuplicateGroup(d, size_bytes, sorted(p)) for d, p in final_groups.items()]
 
 

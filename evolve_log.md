@@ -1012,3 +1012,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-21T05:02:26` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimicé el método `active_problems` en `SystemContext` usando un generador dentro de la tupla para evitar la creación de listas intermedias y simplificar la lógica de filtrado, mejorando la eficiencia en el acceso a propiedades cacheadas.
 - `2026-10-21T05:02:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T05:02:26` Corrida terminada. Total usado hoy: 120.
+- `2026-10-21T05:09:41` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-10-21T05:10:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-21T05:10:46` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-10-21T05:11:14` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `largest_folders` reduciendo el costo de creación de objetos `Path` y conversiones de cadena en el bucle principal, usando el método `relative_to` para identificar subcarpetas de manera más eficiente y segura.
+- `2026-10-21T05:11:23` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se ha optimizado `_collect_candidates` mediante el uso de un generador para el manejo de directorios, evitando la creación de listas innecesarias, y se ha reemplazado el `os.scandir` recursivo por una iteración que reduce el costo de memoria y procesamiento durante la recolección inicial.
+- `2026-10-21T05:11:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T05:11:23` Corrida terminada. Total usado hoy: 124.
