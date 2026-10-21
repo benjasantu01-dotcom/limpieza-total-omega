@@ -7,26 +7,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 232
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 50
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 17 | 1 | 9 | 5 | 34 |
+| 2026-10-19 | 16 | 0 | 7 | 5 | 34 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 35 | 2 | 8 | 3 | 40 |
+| 2026-10-21 | 36 | 2 | 8 | 4 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **39**
-- legibilidad y documentación: **37**
 - robustez ante casos límite: **37**
+- legibilidad y documentación: **36**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,17 +36,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **16**
 - `assistant.py`: **16**
 - `duplicates.py`: **15**
+- `browser.py`: **14**
 - `safety.py`: **14**
-- `browser.py`: **13**
 - `branding.py`: **12**
 - `settings.py`: **11**
 - `scanner.py`: **10**
-- `organizer.py`: **9**
+- `organizer.py`: **8**
 - `startup.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T03:50:43` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `detect_profiles` y `summarize` mediante la validación estricta de tipos y valores, asegurando que las colecciones recibidas no sean `None` o tengan elementos inválidos antes de iterar, mitigando así posibles errores de ejecución silenciosos.
 - `2026-10-21T02:27:39` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` endureciendo la validación de metadatos de archivos (agregando chequeo de tipo mediante `stat.S_IFREG`) y restringiendo explícitamente los permisos permitidos para evitar la lectura de archivos que no pertenecen al dueño del proceso o que poseen permisos de escritura excesivos (grupo/otros).
 - `2026-10-21T02:18:35` **safety.py** (seguridad defensiva): Mejoré la robustez de `ensure_safe_to_modify` implementando una validación de `st_nlink` dentro de `_check_file_integrity`, lo que previene ataques de manipulación mediante enlaces duros (hard links) justo antes de la operación de modificación, fortaleciendo la defensa contra condiciones de carrera TOCTOU.
 - `2026-10-21T02:17:38` **quarantine.py** (seguridad defensiva): He mejorado `_verify_source_fs_permissions` y `_validate_input_path` para incluir una verificación de existencia de puntos de reparse (reparse points) mediante `GetFileAttributesW` en Windows, alineando la validación inicial con las garantías de seguridad de `safety.py` y evitando la manipulación de archivos ocultos tras junctions de sistema.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T01:36:06` **memory.py** (robustez ante casos límite): Mejora la robustez de `_is_process_executable_safe` ante rutas de proceso que no pueden resolverse, añadiendo una validación explícita de `is_file()` antes del `resolve()` para evitar excepciones `FileNotFoundError` al intentar evaluar procesos que finalizaron durante la ejecución.
 - `2026-10-21T01:28:01` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y accesibilidad en `_check_widget_integrity` para evitar que los callbacks asíncronos intenten operar sobre widgets o ventanas ya destruidas, complementando los decoradores existentes con una verificación explícita antes de cualquier interacción, previniendo errores de "TclError" ante cierres abruptos o condiciones de carrera en el hilo principal.
 - `2026-10-21T01:27:02` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante datos de entrada corruptos o maliciosos durante la serialización/deserialización, añadiendo una validación explícita de `SystemMetrics` en `compute_score` para asegurar que ningún campo contenga valores `NaN` o fuera de rango que puedan romper los cálculos matemáticos del pipeline.
-- `2026-10-21T01:26:01` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` manejando explícitamente `OSError` durante la lectura de metadatos (`st_size`), evitando que archivos bloqueados por el sistema o en acceso exclusivo aborten el procesamiento o registren tamaños negativos.

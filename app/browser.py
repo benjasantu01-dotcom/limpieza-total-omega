@@ -280,9 +280,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Escaneo coordinado de cachés, filtrando por rutas base autorizadas y heurísticas de seguridad."""
-    if bases is not None and not isinstance(bases, (list, tuple)): return []
-    raw_bases = list(bases) if bases is not None else base_directories()
-    
+    raw_bases = list(bases) if bases is not None and isinstance(bases, (list, tuple)) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     found: List[BrowserCache] = []
     kernel = _get_kernel32()
@@ -315,7 +313,8 @@ def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     total_mb = round(total_cache_bytes(current_caches) / BYTES_TO_MB, 2)
     lines = [f"Caché de navegadores: {total_mb} MB en {len(current_caches)} carpeta(s)", ""]
     for cache in current_caches:
-        lines.append(f"  {cache.browser:<20} {cache.size_mb:>9} MB")
-        lines.append(f"      {cache.path}")
+        if isinstance(cache, BrowserCache):
+            lines.append(f"  {cache.browser:<20} {cache.size_mb:>9} MB")
+            lines.append(f"      {cache.path}")
     lines.extend(["", SAFETY_NOTE])
     return lines

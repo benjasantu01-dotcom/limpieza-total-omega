@@ -913,3 +913,16 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-21T03:41:55` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-21T03:41:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T03:41:55` Corrida terminada. Total usado hoy: 88.
+- `2026-10-21T03:48:01` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-21T03:48:03` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-21T03:48:03` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-21T03:48:23` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-21T03:48:23` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-21T03:48:54` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-21T03:48:54` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-21T03:49:45` ➖ Sin cambios en assistant.py (enfoque: manejo de errores y validación de entradas). Motivo: Se mejoró la robustez de `ingest` y `_apply_field` implementando validación exhaustiva de los datos de entrada, evitando que valores `None` inesperados o tipos inválidos silencien fallos en la actualización del contexto.
+- `2026-10-21T03:49:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T03:50:33` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-21T03:50:43` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `detect_profiles` y `summarize` mediante la validación estricta de tipos y valores, asegurando que las colecciones recibidas no sean `None` o tengan elementos inválidos antes de iterar, mitigando así posibles errores de ejecución silenciosos.
+- `2026-10-21T03:50:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T03:50:43` Corrida terminada. Total usado hoy: 92.
