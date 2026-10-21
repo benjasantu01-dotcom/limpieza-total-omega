@@ -374,9 +374,10 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not destination: return None
     try:
         dest_path = Path(destination).resolve()
+        # Si el archivo existe, validamos modificación
         if dest_path.exists():
-            if not is_safe_to_modify(dest_path):
-                return None
+            if not is_safe_to_modify(dest_path): return None
+        # Si no existe, validamos el directorio padre
         else:
             parent = dest_path.parent
             if not parent.exists():

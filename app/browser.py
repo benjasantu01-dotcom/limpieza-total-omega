@@ -186,7 +186,7 @@ def base_directories() -> List[Path]:
 
 @safe_path_operation(False)
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Consulta la API de Win32 para verificar atributos ocultos o de sistema."""
+    """Consulta la API de Win32 para verificar atributos ocultos, sistema o reparse points."""
     if kernel32 is None: return False
     attrs = kernel32.GetFileAttributesW(entry_path)
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
@@ -205,8 +205,10 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     path_str = entry.path
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
     
+    # Se añade la verificación de atributos para detectar reparse points no capturados por DirEntry
     try:
-        if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): 
+        is_hidden_or_reparse = _is_system_hidden(path_str, ctx.kernel32)
+        if entry.is_symlink() or ctx.is_junction(path_str) or is_hidden_or_reparse: 
             return True
     except OSError: 
         return True

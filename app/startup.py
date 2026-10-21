@@ -182,7 +182,8 @@ class StartupEntry:
             return ""
         
         try:
-            if len(path_string) > 260 or path_string.startswith(r"\\"):
+            # Validación adicional contra rutas con caracteres nulos o excesivamente largas
+            if "\0" in path_string or len(path_string) > 260 or path_string.startswith(r"\\"):
                 return ""
             norm: str = os.path.normpath(path_string)
         except (ValueError, TypeError):
@@ -343,7 +344,7 @@ def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: 
     if not isinstance(entry_name, str) or not isinstance(entry_command, str):
         return False
     
-    if any(ord(c) < 32 for c in entry_command):
+    if any(ord(c) < 32 for c in entry_command) or "\0" in entry_command:
         return False
         
     clean_name = entry_name.strip()

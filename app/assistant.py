@@ -257,6 +257,7 @@ _REGEX_ANSI_ESCAPE: Final[re.Pattern] = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ 
 _REGEX_POWERSHELL_CMDS: Final[re.Pattern] = re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE)
 _REGEX_EXEC_FUNCTIONS: Final[re.Pattern] = re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE)
 _REGEX_SYSTEM_PATHS: Final[re.Pattern] = re.compile(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows|System32|/proc/|/dev/)", re.IGNORECASE)
+_REGEX_SHELL_INJECTION: Final[re.Pattern] = re.compile(r"([&|<>!])")
 
 SECURITY_PATTERNS: Final[list[re.Pattern]] = [
     _REGEX_STRUCTURE_INJECTION,
@@ -265,7 +266,8 @@ SECURITY_PATTERNS: Final[list[re.Pattern]] = [
     _REGEX_ANSI_ESCAPE,
     _REGEX_POWERSHELL_CMDS,
     _REGEX_EXEC_FUNCTIONS,
-    _REGEX_SYSTEM_PATHS
+    _REGEX_SYSTEM_PATHS,
+    _REGEX_SHELL_INJECTION
 ]
 
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
@@ -497,7 +499,8 @@ def _ensure_safe_text(text: Any) -> bool:
     """Realiza una desinfección estricta sobre cadenas evitando inyecciones de comandos."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
-    if any(c in text for c in "<>|&^"):
+    # Evitar caracteres especiales de control de shell y inyección directa
+    if any(c in text for c in "<>|&^$():;"):
         return False
     return not _is_safe_path_input(text)
 
