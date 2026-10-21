@@ -178,7 +178,8 @@ class _SettingsManager:
                 f.write(serialized)
                 f.flush()
                 os.fsync(f.fileno())
-            os.replace(temp_path, config_path)
+            if temp_path.exists():
+                os.replace(temp_path, config_path)
             self.clear()
             return True
         except (OSError, IOError, PermissionError):

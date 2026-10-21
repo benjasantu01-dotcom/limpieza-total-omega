@@ -1405,3 +1405,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-10-21T08:37:19` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las validaciones de entrada en `quarantine_dir` y `quarantine_file` para asegurar que las rutas se normalicen y resuelvan correctamente antes de cualquier operación, evitando errores silenciosos de `Path` que podrían llevar a inyecciones o desbordamientos fuera del sandbox.
 - `2026-10-21T08:37:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T08:37:19` Corrida terminada. Total usado hoy: 204.
+- `2026-10-21T08:43:47` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-10-21T08:43:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T08:43:54` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-21T08:44:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-21T08:45:36` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante errores de entrada inesperados, asegurando que `_validate_preconditions` no aborte por un `OSError` al intentar leer atributos de un archivo que se eliminó entre verificaciones, mejorando el manejo de excepciones para mantener la estabilidad del sistema.
+- `2026-10-21T08:45:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T08:46:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-21T08:46:48` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de `perform_atomic_write` añadiendo un chequeo explícito de la existencia del archivo temporal antes de intentar reemplazarlo, y se mejoró la resiliencia en `_read_and_parse_json` y `save` mediante el uso de excepciones específicas para evitar que errores inesperados de I/O dejen el proceso en un estado inconsistente.
+- `2026-10-21T08:46:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T08:46:48` Corrida terminada. Total usado hoy: 208.

@@ -868,24 +868,28 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if _is_file_owned_by_system(str(target_path)) or _is_kernel_managed(str(target_path)):
             raise UnsafePathError("Operación denegada en modo privilegiado (seguridad del sistema).", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION)
 
-    attrs = _get_file_attrs(str(target_path))
-    if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN)):
-        raise UnsafePathError("Protección defensiva: Archivo de sistema oculto.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-    
-    # Validación de capacidades de modificación de atributos (ACL)
-    if os.name == 'nt' and not os.access(target_path.parent, os.W_OK):
-        raise UnsafePathError("No se pueden modificar atributos por falta de privilegios en el contenedor.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+    try:
+        attrs = _get_file_attrs(str(target_path))
+        if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN)):
+            raise UnsafePathError("Protección defensiva: Archivo de sistema oculto.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+        
+        # Validación de capacidades de modificación de atributos (ACL)
+        if os.name == 'nt' and target_path.parent.exists() and not os.access(target_path.parent, os.W_OK):
+            raise UnsafePathError("No se pueden modificar atributos por falta de privilegios en el contenedor.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
 
-    if _is_kernel_managed(str(target_path)):
-        raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
-    
-    if os.name == 'nt':
-        if _is_volume_readonly(str(target_path)) or _is_volume_compressed_or_encrypted(str(target_path)) or \
-           _is_virtual_drive(str(target_path)) or _is_volume_busy_or_invalid(str(target_path)):
-            raise UnsafePathError(f"Volumen restringido/inaccesible: {target_path.anchor}", SafetyValidationErrorCode.VOLUME_RESTRICTED)
-        if os.path.ismount(target_path):
-            raise UnsafePathError(f"Punto de montaje bloqueado: {target_path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
-        _validate_drive_restrictions(target_path)
+        if _is_kernel_managed(str(target_path)):
+            raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
+        
+        if os.name == 'nt':
+            if _is_volume_readonly(str(target_path)) or _is_volume_compressed_or_encrypted(str(target_path)) or \
+               _is_virtual_drive(str(target_path)) or _is_volume_busy_or_invalid(str(target_path)):
+                raise UnsafePathError(f"Volumen restringido/inaccesible: {target_path.anchor}", SafetyValidationErrorCode.VOLUME_RESTRICTED)
+            if os.path.ismount(target_path):
+                raise UnsafePathError(f"Punto de montaje bloqueado: {target_path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
+            _validate_drive_restrictions(target_path)
+    except Exception as e:
+        if isinstance(e, UnsafePathError): raise
+        pass
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """Valida los límites del alcance (jail) y permisos generales de la ruta."""
