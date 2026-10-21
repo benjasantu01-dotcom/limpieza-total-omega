@@ -828,8 +828,8 @@ def _register_quarantine_item(
         items_list: List[QuarantineItem] = load_manifest(base)
         
         # Cross-check: verifica que el inodo actual del archivo en el sandbox coincida con lo recién movido
-        if destination.stat().st_ino != file_inode:
-            raise RuntimeError("Inconsistencia crítica: mismatch de inodo post-escritura.")
+        if destination.stat().st_ino != file_inode or destination.stat().st_nlink > 1:
+            raise RuntimeError("Inconsistencia crítica: mismatch de inodo post-escritura o enlace físico detectado.")
 
         quarantine_item: QuarantineItem = QuarantineItem(
             item_id=uuid.uuid4().hex[:12],

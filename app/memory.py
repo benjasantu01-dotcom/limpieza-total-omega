@@ -329,11 +329,11 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
     """Verifica que el ejecutable del proceso no se encuentre en rutas protegidas."""
     if not handle or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
-    # El límite de ruta en Windows es 260, usamos 4096 para prevenir desbordes.
+    # Manejo seguro de buffer para la ruta del ejecutable
     buffer_path = ctypes.create_unicode_buffer(4096)
-    length = psapi.GetModuleFileNameExW(handle, None, buffer_path, 4095)
+    length = psapi.GetModuleFileNameExW(handle, None, buffer_path, 4096)
     
-    if length <= 0 or length > 4095:
+    if length <= 0 or length >= 4096:
         return False
         
     exe_str = buffer_path.value.strip()
