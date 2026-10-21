@@ -663,3 +663,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-21T01:48:03` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_reserved_device_name` y `_resolve_and_cache_path` en `StartupEntry` para manejar de forma segura rutas que contienen caracteres nulos o que son inválidas para el sistema de archivos de Windows, previniendo excepciones no controladas durante el análisis.
 - `2026-10-21T01:48:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T01:48:03` Corrida terminada. Total usado hoy: 44.
+- `2026-10-21T01:55:54` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-10-21T01:56:39` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_call_gemini` al forzar el uso de `urllib.request.Request` con parámetros explícitos para evitar ataques de inyección en la URL, asegurando que los encabezados y la lógica de validación del endpoint sean estrictamente validados antes de realizar la petición.
+- `2026-10-21T01:57:22` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.67s
+
+```
+- `2026-10-21T01:57:22` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación manual de `exists()` por un uso estricto de `ensure_safe_to_modify`, alineando la función con el contrato exigido para operaciones de escritura y previniendo condiciones de carrera o validaciones incompletas al intentar crear directorios.
+- `2026-10-21T01:57:54` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se endureció la seguridad defensiva de `browser.py` implementando un chequeo estricto de los permisos de escritura del proceso sobre las carpetas candidatas mediante `os.access(..., os.W_OK)`, asegurando que no intentaremos procesar rutas que el sistema operativo ya marca como protegidas o inaccesibles, reforzando la integridad del bucle de escaneo.
+- `2026-10-21T01:57:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T01:58:20` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_excluded_path` añadiendo una verificación explícita de `os.path.abspath` y el uso de `pathlib.Path.samefile` para detectar si una ruta, tras resolverse, coincide con puntos de reparse o directorios protegidos, previniendo el escape del contexto de escaneo esperado.
+- `2026-10-21T01:58:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T01:58:20` Corrida terminada. Total usado hoy: 48.

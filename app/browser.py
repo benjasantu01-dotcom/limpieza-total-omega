@@ -266,7 +266,7 @@ def _is_valid_cache_path(candidate: Path, base: Path) -> bool:
     
     try:
         real = candidate.resolve(strict=True)
-        if not _is_within_sandbox(real, base): return False
+        if not _is_within_sandbox(real, base) or not os.access(real, os.W_OK): return False
         return not (candidate.is_symlink() or _IS_JUNCTION_FN(str(real)) or candidate.name.lower() in NEVER_TOUCH)
     except (OSError, RuntimeError): return False
 

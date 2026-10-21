@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 33 | 2 | 10 | 6 | 59 |
+| 2026-10-19 | 33 | 2 | 10 | 6 | 55 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 26 | 1 | 6 | 3 | 8 |
+| 2026-10-21 | 29 | 2 | 6 | 3 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,17 +26,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **37**
 - rendimiento: **35**
-- seguridad defensiva: **30**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `assistant.py`: **17**
+- `diskreport.py`: **20**
+- `assistant.py`: **18**
 - `memory.py`: **17**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `quarantine.py`: **16**
-- `browser.py`: **14**
+- `browser.py`: **15**
 - `branding.py`: **13**
 - `safety.py`: **13**
 - `scanner.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T01:58:20` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_excluded_path` añadiendo una verificación explícita de `os.path.abspath` y el uso de `pathlib.Path.samefile` para detectar si una ruta, tras resolverse, coincide con puntos de reparse o directorios protegidos, previniendo el escape del contexto de escaneo esperado.
+- `2026-10-21T01:57:54` **browser.py** (seguridad defensiva): Se endureció la seguridad defensiva de `browser.py` implementando un chequeo estricto de los permisos de escritura del proceso sobre las carpetas candidatas mediante `os.access(..., os.W_OK)`, asegurando que no intentaremos procesar rutas que el sistema operativo ya marca como protegidas o inaccesibles, reforzando la integridad del bucle de escaneo.
+- `2026-10-21T01:56:39` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` al forzar el uso de `urllib.request.Request` con parámetros explícitos para evitar ataques de inyección en la URL, asegurando que los encabezados y la lógica de validación del endpoint sean estrictamente validados antes de realizar la petición.
 - `2026-10-21T01:47:11` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante errores de I/O al escanear archivos en uso o con permisos restringidos, reemplazando las comprobaciones de estado potencialmente bloqueantes por un manejo de excepciones preciso en las heurísticas y eliminando `_is_locked_by_os` del flujo principal, la cual causaba fallos de acceso innecesarios al intentar abrir handles exclusivos sobre archivos ya abiertos por el sistema.
 - `2026-10-21T01:37:17` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes de disco implementando una validación explícita de `st_nlink` dentro de `_atomic_isolate_file` y reforzando las comprobaciones de integridad post-operación para detectar si el archivo ha sido modificado o reemplazado por otro proceso simultáneo durante el aislamiento, reduciendo así la ventana de vulnerabilidad TOCTOU.
 - `2026-10-21T01:36:06` **memory.py** (robustez ante casos límite): Mejora la robustez de `_is_process_executable_safe` ante rutas de proceso que no pueden resolverse, añadiendo una validación explícita de `is_file()` antes del `resolve()` para evitar excepciones `FileNotFoundError` al intentar evaluar procesos que finalizaron durante la ejecución.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T01:06:38` **settings.py** (rendimiento): Optimicé el rendimiento de `_Validators._is_reparse_point` y `_Validators._run_safety_checks` convirtiendo las llamadas a `Path.stat().st_file_attributes` en una lectura única de `os.stat` para evitar múltiples llamadas al sistema por cada validación de ruta.
 - `2026-10-21T01:05:57` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` centralizando y eliminando la duplicación de chequeos (como `_is_kernel_managed` y `_get_file_attrs`) para evitar llamadas redundantes a la API de Windows en cada iteración de los escaneos de disco.
 - `2026-10-21T00:57:18` **quarantine.py** (rendimiento): Optimicé el manejo de I/O en `_get_sha256` y `_perform_secure_copy` reemplazando los bucles de lectura manual por una gestión más eficiente, reduciendo el número de llamadas al sistema y mejorando la consistencia de los buffers de datos.
-- `2026-10-21T00:56:47` **organizer.py** (rendimiento): Optimizé la performance del escaneo reemplazando la verificación constante de extensión mediante conversión a tupla dentro del bucle `_is_junk_file`, utilizando en su lugar el set pre-compilado `JUNK_EXTENSIONS` para realizar búsquedas O(1) de forma más eficiente.
-- `2026-10-21T00:56:19` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y destrucción constante de `ctypes.CDLL` y estructuras dentro de cada iteración por un acceso centralizado, reduciendo la carga de llamadas al sistema operativo durante el escaneo de procesos.
-- `2026-10-21T00:47:25` **healthscore.py** (rendimiento): Se optimizó el acceso a las métricas del sistema utilizando `getattr` dentro de un diccionario para evitar la creación de tuplas de caché mediante introspección repetitiva, y se reemplazó el uso de `tuple` sobre los campos por una conversión directa más eficiente, mejorando el rendimiento en el pipeline de análisis.
