@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 231
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 0 | 0 | 0 | 0 | 18 |
+| 2026-10-19 | 0 | 0 | 0 | 0 | 14 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 57 | 4 | 13 | 7 | 55 |
+| 2026-10-21 | 61 | 4 | 13 | 7 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **39**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **36**
-- robustez ante casos límite: **34**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **18**
 - `assistant.py`: **17**
-- `diskreport.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **16**
 - `memory.py`: **16**
+- `browser.py`: **15**
+- `duplicates.py`: **15**
 - `safety.py`: **15**
-- `browser.py`: **14**
-- `duplicates.py`: **14**
 - `settings.py`: **13**
 - `branding.py`: **12**
 - `scanner.py`: **10**
@@ -47,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T05:52:30` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a la posible corrupción del caché global de resultados mediante una limpieza explícita de `_PIPELINE_CACHE` en caso de desbordamiento, y se ha añadido una validación de estado inicial para evitar cálculos basados en métricas inconsistentes tras cambios en la configuración del pipeline.
+- `2026-10-21T05:52:17` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de permisos de acceso durante la lectura de archivos en `hash_file` y `partial_hash` para evitar que bloqueos temporales del sistema operativo interrumpan el proceso de escaneo, permitiendo que la aplicación continúe analizando el resto de los archivos en lugar de abortar silenciosamente.
+- `2026-10-21T05:51:54` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `os.stat` dentro del generador, evitando que el proceso completo aborte si un archivo específico cambia de permisos o es eliminado durante el escaneo.
+- `2026-10-21T05:51:26` **browser.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y permisos de lectura en la función `_sum_directory_recursive` para manejar archivos o carpetas que desaparecen durante el escaneo (condición de carrera) o que deniegan acceso debido a bloqueos exclusivos del sistema, mejorando la estabilidad ante los casos límite definidos en el enfoque.
 - `2026-10-21T05:43:50` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` y `_get_scaled_poly` ante rutas inválidas y escalas no numéricas, garantizando que operaciones de entrada/salida no provoquen cierres inesperados de la interfaz.
 - `2026-10-21T05:43:28` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_apply_field` y `ingest` añadiendo una validación explícita para evitar que una entrada `NaN` o `Inf` se propague a través de los selectores, protegiendo al motor local de fallos de cálculo al procesar datos del sistema potencialmente malformados.
 - `2026-10-21T05:11:23` **duplicates.py** (rendimiento): Se ha optimizado `_collect_candidates` mediante el uso de un generador para el manejo de directorios, evitando la creación de listas innecesarias, y se ha reemplazado el `os.scandir` recursivo por una iteración que reduce el costo de memoria y procesamiento durante la recolección inicial.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T04:51:35` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` documentando los contratos de las funciones críticas de validación y transformando validaciones implícitas en aserciones explícitas, facilitando la auditoría de seguridad del código.
 - `2026-10-21T04:49:47` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad conceptual de `organizer.py` mediante la adición de Type Hints explícitos, la normalización de docstrings siguiendo las mejores prácticas y la clarificación de la intención operativa en los métodos de validación, garantizando que cada función documente el PORQUÉ de sus restricciones.
 - `2026-10-21T04:41:56` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las estructuras de datos y funciones críticas, aclarando el propósito y las restricciones de seguridad para facilitar el mantenimiento y la comprensión de la lógica de bajo nivel.
-- `2026-10-21T04:41:12` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` documentando los flujos de control críticos (decoradores de seguridad, orquestación asíncrona y gestión de estado de UI) mediante docstrings técnicos más precisos, y clarifiqué la intención de las estructuras de datos complejas utilizadas en la aplicación.
-- `2026-10-21T04:39:35` **duplicates.py** (legibilidad y documentación): Mejoré la documentación interna incluyendo type hints completos en los parámetros de funciones que carecían de ellos, añadí docstrings explicativos para los helpers privados y corregí una inconsistencia donde la lógica de "is_junction" podía dar falsos negativos por el orden de chequeo de la API de Windows.
-- `2026-10-21T04:31:52` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings explicativos en las funciones de recorrido recursivo y validación de rutas, además de refactorizar la lógica de `_should_skip_entry` para clarificar la precedencia de los chequeos de seguridad.
-- `2026-10-21T04:30:55` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de bajo nivel y la organización de los parámetros para facilitar la comprensión del sistema de renderizado.

@@ -148,7 +148,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, IOError, PermissionError, ValueError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -165,7 +165,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             digest_val = hashlib.sha256(header_content).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, IOError, PermissionError, ValueError):
+    except (OSError, PermissionError, IOError):
         return None
 
 

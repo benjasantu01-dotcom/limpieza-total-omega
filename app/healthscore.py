@@ -32,6 +32,7 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
     "root", "drive", "user", "profile", "appdata", "programdata", "exe", "dll"
 ])
 _MAX_MSG_LEN: Final[int] = 128
+_MAX_CACHE_SIZE: Final[int] = 256
 
 class Scorer(Protocol):
     """
@@ -216,14 +217,12 @@ def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Calcula el score normalizado de memoria disponible."""
     val = float(available_percent) if isinstance(available_percent, (int, float)) else 0.0
     if _LIMIT_RAM_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
-    # Evitar divisiones por cero en el límite configurado
     return _clamp(val / _LIMIT_RAM_PERCENT) if _LIMIT_RAM_PERCENT > 0 else 0.0
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Calcula el score normalizado de espacio en disco."""
     val = float(free_percent) if isinstance(free_percent, (int, float)) else 0.0
     if _LIMIT_DISK_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
-    # Evitar divisiones por cero en el límite configurado
     return _clamp(val / _LIMIT_DISK_PERCENT) if _LIMIT_DISK_PERCENT > 0 else 0.0
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
@@ -344,13 +343,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
     return findings
 
-# Caché local para evitar recomputaciones idénticas
+# Caché local con control de tamaño
 _PIPELINE_CACHE: Dict[Tuple[float, ...], HealthResult] = {}
 
 def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Calcula el aporte de un área al puntaje global y sus recomendaciones."""
     try:
-        # Validación defensiva de la función scorer asignada
         raw_ratio = entry.scorer(metrics)
         area_ratio = _clamp(float(raw_ratio))
         
@@ -362,7 +360,6 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
         
         return val_int, recommendations
     except Exception:
-        # En caso de error en la lógica de cálculo (excepciones en scorer), reportar 0 pts
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -370,7 +367,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
-    # Asegurar integridad de datos: Si están corrompidos o son inválidos, se aborta el cálculo.
     metrics.validate()
     if not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos o corruptos."])
@@ -378,6 +374,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not _PIPELINE:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Pipeline no configurado."])
     
+    # Gestión de caché defensiva
+    if len(_PIPELINE_CACHE) > _MAX_CACHE_SIZE:
+        _PIPELINE_CACHE.clear()
+
     cache_key = tuple(getattr(metrics, f) for f in metrics._FIELDS_TO_VALIDATE)
     if cache_key in _PIPELINE_CACHE:
         return _PIPELINE_CACHE[cache_key]
