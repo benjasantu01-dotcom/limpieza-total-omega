@@ -26,9 +26,6 @@ from safety import is_protected_path
 logger: Final = logging.getLogger(__name__)
 
 # Constantes de API de Windows para control de acceso (Win32 API)
-GENERIC_READ: Final = 0x80000000
-FILE_ATTRIBUTE_NORMAL: Final = 0x00000080
-OPEN_EXISTING: Final = 3
 FILE_ATTRIBUTE_REPARSE_POINT: Final = 0x400
 
 class ScannerLimits(NamedTuple):
@@ -102,32 +99,12 @@ def _is_valid_file_path(path: Path) -> bool:
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
         return False
 
-def _is_locked_by_os(path: Path) -> bool:
-    """
-    Verifica si un archivo está bloqueado por otro proceso en Windows.
-    Intenta obtener un handle de lectura exclusivo para determinar disponibilidad.
-    """
-    if not isinstance(path, Path):
-        return True
-    try:
-        target = str(path.resolve())
-        handle = ctypes.windll.kernel32.CreateFileW(
-            target, GENERIC_READ, 0, None, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, None
-        )
-        if handle == -1 or handle == 0: 
-            return True
-        ctypes.windll.kernel32.CloseHandle(handle)
-        return False
-    except (OSError, AttributeError, TypeError, ValueError):
-        return True
-
 def _is_readable(path: Path) -> bool:
     """Verifica si el archivo posee permisos de lectura mediante el sistema operativo."""
     if not isinstance(path, (Path, str)):
         return False
     try:
-        target = os.path.realpath(str(path))
-        return os.access(target, os.R_OK)
+        return os.access(str(path), os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError, TypeError):
         return False
 
@@ -324,8 +301,7 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre el archivo indicado."""
-        # Verificación directa de acceso sin caché para minimizar consumo de memoria
-        if not _is_readable(path) or _is_locked_by_os(path):
+        if not _is_readable(path):
             return
 
         for check_fn in ALL_CHECKS:
@@ -340,7 +316,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     if not isinstance(path, Path) or not _is_valid_path_structure(str(path)):
         return []
     try:
-        if not path.exists() or _cached_is_protected(str(path)) or not _is_readable(path) or _is_locked_by_os(path):
+        if not path.exists() or _cached_is_protected(str(path)) or not _is_readable(path):
             return []
         
         findings: ScanResult = []

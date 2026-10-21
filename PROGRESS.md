@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 228
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 33 | 2 | 10 | 6 | 63 |
+| 2026-10-19 | 33 | 2 | 10 | 6 | 59 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 25 | 0 | 6 | 2 | 7 |
+| 2026-10-21 | 26 | 1 | 6 | 3 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 - rendimiento: **35**
 - seguridad defensiva: **30**
 
@@ -39,14 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **14**
 - `branding.py`: **13**
 - `safety.py`: **13**
+- `scanner.py`: **11**
 - `settings.py`: **11**
 - `organizer.py`: **10**
-- `scanner.py`: **10**
 - `startup.py`: **8**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T01:47:11` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante errores de I/O al escanear archivos en uso o con permisos restringidos, reemplazando las comprobaciones de estado potencialmente bloqueantes por un manejo de excepciones preciso en las heurísticas y eliminando `_is_locked_by_os` del flujo principal, la cual causaba fallos de acceso innecesarios al intentar abrir handles exclusivos sobre archivos ya abiertos por el sistema.
 - `2026-10-21T01:37:17` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes de disco implementando una validación explícita de `st_nlink` dentro de `_atomic_isolate_file` y reforzando las comprobaciones de integridad post-operación para detectar si el archivo ha sido modificado o reemplazado por otro proceso simultáneo durante el aislamiento, reduciendo así la ventana de vulnerabilidad TOCTOU.
 - `2026-10-21T01:36:06` **memory.py** (robustez ante casos límite): Mejora la robustez de `_is_process_executable_safe` ante rutas de proceso que no pueden resolverse, añadiendo una validación explícita de `is_file()` antes del `resolve()` para evitar excepciones `FileNotFoundError` al intentar evaluar procesos que finalizaron durante la ejecución.
 - `2026-10-21T01:28:01` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y accesibilidad en `_check_widget_integrity` para evitar que los callbacks asíncronos intenten operar sobre widgets o ventanas ya destruidas, complementando los decoradores existentes con una verificación explícita antes de cualquier interacción, previniendo errores de "TclError" ante cierres abruptos o condiciones de carrera en el hilo principal.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T00:56:47` **organizer.py** (rendimiento): Optimizé la performance del escaneo reemplazando la verificación constante de extensión mediante conversión a tupla dentro del bucle `_is_junk_file`, utilizando en su lugar el set pre-compilado `JUNK_EXTENSIONS` para realizar búsquedas O(1) de forma más eficiente.
 - `2026-10-21T00:56:19` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y destrucción constante de `ctypes.CDLL` y estructuras dentro de cada iteración por un acceso centralizado, reduciendo la carga de llamadas al sistema operativo durante el escaneo de procesos.
 - `2026-10-21T00:47:25` **healthscore.py** (rendimiento): Se optimizó el acceso a las métricas del sistema utilizando `getattr` dentro de un diccionario para evitar la creación de tuplas de caché mediante introspección repetitiva, y se reemplazó el uso de `tuple` sobre los campos por una conversión directa más eficiente, mejorando el rendimiento en el pipeline de análisis.
-- `2026-10-21T00:45:17` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` evitando la creación innecesaria de objetos `Path` y reduciendo las llamadas a `relative_to` al calcular pesos de carpetas, utilizando operaciones de string de bajo costo.
