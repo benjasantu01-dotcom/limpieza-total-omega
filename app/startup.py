@@ -92,8 +92,9 @@ class StartupEntry:
     @property
     def is_valid(self) -> bool:
         """
-        Verifica integridad básica del comando de inicio.
-        Retorna True si el comando parece legítimo y no contiene riesgos de seguridad.
+        Verifica que el comando de inicio no sea inherentemente malicioso o inválido.
+        No confirma la existencia del archivo en disco, solo evalúa la sintaxis 
+        y seguridad de la ruta definida.
         """
         if not self.command or self._is_path_suspicious(self.command):
             return False
@@ -119,20 +120,23 @@ class StartupEntry:
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida que la ruta sea un ejecutable permitido y no un enlace simbólico."""
+        """Valida que la ruta termine en una extensión ejecutable permitida."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Limpia la cadena de comandos eliminando caracteres no imprimibles."""
+        """Elimina caracteres de control para evitar problemas de parseo en la línea de comandos."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae y valida rutas encerradas entre comillas desde una línea de comandos."""
+        """
+        Extrae una ruta entrecomillada. Realiza validaciones previas de seguridad 
+        usando is_protected_path para asegurar que la ruta extraída no sea de sistema.
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -156,7 +160,11 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica permisos de acceso y seguridad sobre un archivo específico."""
+        """
+        Valida que el archivo exista, no sea una ruta protegida y sea seguro de leer.
+        Utiliza is_safe_to_modify como filtro lógico para garantizar que no violamos
+        la integridad de directorios del sistema.
+        """
         try:
             if is_protected_path(p) or p.is_symlink() or not is_safe_to_modify(p):
                 return False
@@ -165,7 +173,11 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Resuelve, normaliza y cachea rutas de archivos para optimizar lecturas subsiguientes."""
+        """
+        Resuelve una ruta relativa a absoluta y cachea el resultado.
+        La resolución se realiza con `strict=False` para evitar excepciones por 
+        archivos que no existen, limitándose a validar la seguridad del acceso.
+        """
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
@@ -222,7 +234,12 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Retorna la ruta absoluta del ejecutable asociada a la entrada."""
+        """
+        Retorna la ruta absoluta validada del ejecutable.
+        Esta propiedad ejecuta la lógica de resolución la primera vez que se consulta
+        (Lazy Loading), asegurando que el acceso al sistema de archivos solo ocurra
+        si es estrictamente necesario.
+        """
         if self._checked_exists:
             return self._exec_cache or ""
             
