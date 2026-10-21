@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 237
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 71 | 9 | 18 | 11 | 91 |
-| 2026-10-21 | 116 | 6 | 26 | 10 | 146 |
+| 2026-10-20 | 68 | 9 | 18 | 11 | 90 |
+| 2026-10-21 | 117 | 6 | 26 | 11 | 148 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **43**
 - robustez ante casos límite: **42**
 - seguridad defensiva: **42**
+- legibilidad y documentación: **40**
 - rendimiento: **31**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **30**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,15 +37,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **16**
 - `browser.py`: **16**
 - `quarantine.py`: **15**
-- `settings.py`: **13**
 - `branding.py`: **13**
-- `scanner.py`: **9**
+- `settings.py`: **12**
 - `organizer.py`: **8**
-- `startup.py`: **7**
-- `main.py`: **7**
+- `scanner.py`: **8**
+- `main.py`: **8**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T13:00:24` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos y rangos en `_get_numeric_setting_from_widget` y se mejoró `_safe_get_entry_value` para manejar errores de conversión sin interrumpir la ejecución, previniendo inyecciones de datos corruptos desde la interfaz hacia la lógica de configuración.
 - `2026-10-21T12:51:09` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validación de tipos y estados vacíos en `suggest_keeper` y `_collect_candidates`, además de capturar excepciones más específicas en la lectura de archivos para evitar que una falla puntual en `stat` o `open` detenga el análisis completo.
 - `2026-10-21T12:49:56` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `detect_profiles` y `directory_size` añadiendo validaciones de tipo y estructura a sus parámetros de entrada, asegurando que ante valores inesperados (como `None` o tipos incorrectos pasados desde otras partes del sistema) la aplicación no propague errores hacia el resto de los módulos de análisis.
 - `2026-10-21T12:49:07` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo una validación explícita para evitar posibles errores al manejar rutas inválidas o nombres de archivo mal formados antes de interactuar con el sistema de archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T10:47:06` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `load` y `_read_and_parse_json` ante archivos de configuración bloqueados o con formato inválido, asegurando que la aplicación siempre mantenga un estado operativo incluso si el archivo de ajustes se encuentra en un estado inusual.
 - `2026-10-21T10:18:19` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para evitar falsos positivos y excepciones innecesarias mediante el uso de `os.access` con `os.R_OK` antes de intentar la apertura, mejorando la tolerancia ante archivos bloqueados por el sistema sin forzar cierres inesperados.
 - `2026-10-21T10:16:25` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de seguridad de la ruta completa de forma más granular, evitando race conditions y asegurando que las operaciones de creación de directorios y escritura de archivos utilicen validadores de seguridad antes de cualquier acceso al disco.
-- `2026-10-21T10:06:31` **scanner.py** (rendimiento): Se implementó un filtrado preventivo mediante un conjunto de extensiones no relevantes antes de realizar operaciones de I/O o validaciones costosas en `process_entry`, reduciendo significativamente las llamadas a `is_safe_to_modify` y otras verificaciones de sistema para archivos que no serán analizados.

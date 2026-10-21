@@ -1028,7 +1028,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
 
     def _safe_get_entry_value(self, entry_widget: Any, default: Any, numeric: bool = False) -> Any:
-        """Extrae el texto de un widget de forma segura."""
+        """Extrae el texto de un widget de forma segura con validación opcional."""
         if not self._check_widget_integrity(entry_widget):
             return default
         try:
@@ -1039,6 +1039,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return self._validate_numeric_setting(raw, default)
             return self._sanitize_path(raw)
         except (ValueError, TypeError, tk.TclError, AttributeError):
+            return default
+
+    def _get_numeric_setting_from_widget(self, widget: ctk.CTkEntry, key: str, default: int) -> int:
+        """Extrae y valida un valor numérico desde un widget de entrada."""
+        raw = self._safe_get_entry_value(widget, str(default), numeric=False)
+        return self._validate_numeric_setting(raw, default)
+
+    def _validate_numeric_setting(self, value: Any, default: int) -> int:
+        """Validación de rango seguro para configuraciones numéricas."""
+        try:
+            if value is None: return default
+            val = int(value)
+            # Rango razonable para la app
+            return max(1, min(val, 1000000)) 
+        except (ValueError, TypeError):
             return default
 
     def _is_safe_disk_operation(self, path: Union[str, Path]) -> bool:
@@ -2036,59 +2051,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
-    def _get_numeric_setting_from_widget(self, widget: ctk.CTkEntry, key: str, default: int) -> int:
-        """Extrae entero desde input."""
-        return self._safe_get_entry_value(widget, default, numeric=True)
-
-    def _validate_numeric_setting(self, value: Any, default: int) -> int:
-        """Validación de rango para configuraciones numéricas."""
-        try:
-            if value is None: return default
-            val = int(value)
-            return max(0, min(val, 100000)) if val >= 0 else default
-        except (ValueError, TypeError):
-            return default
-
-    def _safe_validate_inputs(self, propuestos: AppSettings) -> bool:
-        """Validación de seguridad para cambios de settings."""
-        if "carpeta_excluida" in propuestos and propuestos["carpeta_excluida"]:
-            try:
-                p = Path(propuestos["carpeta_excluida"]).resolve(strict=False)
-                if not p.exists() or not safety.is_safe_to_modify(p):
-                    self.log(f"Error: Ruta restringida o inválida: {propuestos['carpeta_excluida']}", "Ajustes")
-                    return False
-            except Exception:
-                return False
-        return True
-
-    def _collect_settings(self) -> AppSettings:
-        """Recopila configuraciones desde formulario."""
-        valores: AppSettings = dict(self.settings)  # type: ignore
-        for clave, variable in self.setting_vars.items():
-            try:
-                val = variable.get() if hasattr(variable, 'get') else variable
-                if isinstance(val, str):
-                    val = self._sanitize_path(val)
-                valores[clave] = val  # type: ignore
-            except (tk.TclError, Exception):
-                continue
-        
-        try:
-            if self._check_widget_integrity(getattr(self, 'min_dup_entry', None)):
-                valores["duplicados_tamano_minimo_kb"] = self._get_numeric_setting_from_widget(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
-                
-            if self._check_widget_integrity(getattr(self, 'top_files_entry', None)):
-                valores["top_archivos"] = self._get_numeric_setting_from_widget(self.top_files_entry, "top_archivos", 15)
-                
-            if self._check_widget_integrity(getattr(self, 'api_key_entry', None)):
-                clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
-                if clave_raw:
-                    valores["asistente_clave_api"] = self._sanitize_path(clave_raw)[:128]
-        except Exception as e:
-            logging.error("Fallo durante recolección segura de parámetros UI: %s", e)
-            
-        return valores
-
     @validated_ui_operation
     @ensure_safety
     def on_save_settings(self) -> None:
@@ -2131,6 +2093,46 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.run_async(task)
         except Exception as e:
             logging.error("Error al recopilar ajustes: %s", e)
+
+    def _collect_settings(self) -> AppSettings:
+        """Recopila configuraciones desde formulario."""
+        valores: AppSettings = dict(self.settings)  # type: ignore
+        for clave, variable in self.setting_vars.items():
+            try:
+                val = variable.get() if hasattr(variable, 'get') else variable
+                if isinstance(val, str):
+                    val = self._sanitize_path(val)
+                valores[clave] = val  # type: ignore
+            except (tk.TclError, Exception):
+                continue
+        
+        try:
+            if self._check_widget_integrity(getattr(self, 'min_dup_entry', None)):
+                valores["duplicados_tamano_minimo_kb"] = self._get_numeric_setting_from_widget(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
+                
+            if self._check_widget_integrity(getattr(self, 'top_files_entry', None)):
+                valores["top_archivos"] = self._get_numeric_setting_from_widget(self.top_files_entry, "top_archivos", 15)
+                
+            if self._check_widget_integrity(getattr(self, 'api_key_entry', None)):
+                clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
+                if clave_raw:
+                    valores["asistente_clave_api"] = self._sanitize_path(clave_raw)[:128]
+        except Exception as e:
+            logging.error("Fallo durante recolección segura de parámetros UI: %s", e)
+            
+        return valores
+
+    def _safe_validate_inputs(self, propuestos: AppSettings) -> bool:
+        """Validación de seguridad para cambios de settings."""
+        if "carpeta_excluida" in propuestos and propuestos["carpeta_excluida"]:
+            try:
+                p = Path(propuestos["carpeta_excluida"]).resolve(strict=False)
+                if not p.exists() or not safety.is_safe_to_modify(p):
+                    self.log(f"Error: Ruta restringida o inválida: {propuestos['carpeta_excluida']}", "Ajustes")
+                    return False
+            except Exception:
+                return False
+        return True
 
     @validated_ui_operation
     def on_show_settings(self) -> None:
