@@ -330,7 +330,7 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
     Resuelve la ruta absoluta del ejecutable del proceso y valida mediante 'safety.py'
     que no pertenezca a directorios protegidos o junctions del sistema.
     """
-    if not hasattr(psapi, "GetModuleFileNameExW"): return False
+    if not handle or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     length = psapi.GetModuleFileNameExW(handle, None, buffer_path, 4095)
@@ -344,14 +344,12 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
         
     try:
         executable_path = Path(exe_str)
-        # Verificación estricta: si es reparse point, no lo seguimos.
         if not executable_path.is_file(): return False
         
+        # Check reparse points (junctions)
         if executable_path.is_symlink() or (executable_path.exists() and executable_path.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
             return False
             
-        # Normalizamos la ruta sin forzar la existencia estricta con resolve(strict=True) 
-        # para evitar fallos si el ejecutable termina durante la consulta.
         abs_path = executable_path.resolve()
         return not is_protected_path(abs_path)
     except (OSError, RuntimeError, ValueError, TypeError):
