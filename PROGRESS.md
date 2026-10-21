@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 104 | 9 | 26 | 15 | 134 |
-| 2026-10-21 | 88 | 6 | 18 | 9 | 95 |
+| 2026-10-20 | 101 | 9 | 26 | 15 | 133 |
+| 2026-10-21 | 91 | 6 | 19 | 9 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
-- robustez ante casos límite: **45**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **45**
+- robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **34**
-- rendimiento: **25**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
-- `assistant.py`: **18**
+- `memory.py`: **20**
 - `diskreport.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **17**
+- `assistant.py`: **17**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
-- `quarantine.py`: **16**
 - `browser.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **13**
 - `branding.py`: **11**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
 - `scanner.py`: **9**
 - `main.py`: **8**
-- `startup.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T09:16:14` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_check_path_syntax_integrity` para reducir su complejidad ciclomática y añadí docstrings detallados en las funciones de validación crítica, explicando el "porqué" de las restricciones de seguridad (como los bloqueos TOCTOU).
+- `2026-10-21T09:15:24` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints más precisos (especialmente en los retornos de funciones de seguridad) y docstrings que explican el "porqué" de las validaciones de bajo nivel (como la necesidad de `stat_result` para evitar race conditions), facilitando el mantenimiento futuro del código.
+- `2026-10-21T09:14:55` **memory.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `memory.py` mediante la refactorización de las estructuras de datos de la API Win32 (`MEMORYSTATUSEX` y `PROCESS_MEMORY_COUNTERS`) para utilizar constantes de tamaño explícitas y tipos más claros, además de añadir docstrings detallados en las funciones de bajo nivel que clarifican el propósito de los flags y buffers, eliminando ambigüedades técnicas.
 - `2026-10-21T09:05:13` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados con tipado claro, la simplificación del flujo de `_collect_candidates` para separar la lógica de filtrado de archivos de la lógica de recursión, y la eliminación de redundancias en las validaciones de `Path`.
 - `2026-10-21T09:04:46` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y type hints específicos en las clases `ExtStats` y `FolderMetrics` para clarificar sus responsabilidades y mejorar la mantenibilidad del código bajo el enfoque de documentación técnica.
 - `2026-10-21T08:56:35` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante la formalización de la estructura de control de errores y la clarificación de las responsabilidades en las funciones de escaneo, siguiendo estrictamente el enfoque de documentación técnica exigido.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T08:25:55` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `suggest_keeper` y `_calculate_keeper_heuristic` ante archivos que desaparecen durante el escaneo o tienen metadatos inaccesibles, evitando errores durante el cálculo del puntaje.
 - `2026-10-21T06:53:03` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` implementando una validación explícita para evitar que `process_entry` intente procesar o expandir rutas que fueron alteradas o resultan inaccesibles tras la validación inicial, asegurando además que no se sigan puntos de reanálisis mediante una verificación más estricta en el nivel de entrada.
 - `2026-10-21T06:52:35` **safety.py** (seguridad defensiva): Se añadió una validación en `_validate_preconditions` para detectar si el proceso tiene privilegios para modificar atributos de archivo (como los de solo lectura o sistema), previniendo modificaciones silenciosas en archivos protegidos por ACLs a nivel de usuario.
-- `2026-10-21T06:43:03` **quarantine.py** (seguridad defensiva): Se fortalece la validación de seguridad durante el aislamiento agregando una verificación de "propiedad cruzada" (cross-check) entre la metadata del inodo almacenado en el manifiesto y el estado real del archivo en el sandbox, previniendo posibles ataques de reemplazo de archivo si el sistema de archivos tuviera comportamientos inesperados de reuso de inodos.
-- `2026-10-21T06:42:22` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de seguridad en `stage_for_review` y `delete_reviewed` mediante el uso de `Path.is_relative_to` para confirmar que los archivos operados residen estrictamente dentro del árbol de directorios permitido, previniendo ataques de "path traversal" o fugas fuera de la carpeta de cuarentena/revisión.
-- `2026-10-21T06:41:56` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` añadiendo una validación explícita de la ruta del ejecutable utilizando `is_protected_path` sobre la ruta resuelta, garantizando que procesos que se ejecutan desde ubicaciones críticas del sistema (como directorios de sistema o perfiles de usuario bloqueados) sean excluidos del reporte de memoria, reforzando la protección contra inyección o manipulación de PIDs.

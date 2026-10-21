@@ -209,7 +209,10 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
     return bool(_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK)
 
 def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
-    """Confirma la identidad del archivo mediante inodo y dispositivo para evitar race conditions."""
+    """
+    Confirma identidad mediante inodo y dispositivo. 
+    Previene race conditions si el archivo fue reemplazado desde el escaneo inicial.
+    """
     try:
         stat_result = src_real.stat()
         return (junk_file._ino is None or stat_result.st_ino == junk_file._ino) and \
@@ -231,6 +234,7 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Orquestador de seguridad: Valida identidad, protección, bloqueos y espacio antes de E/S.
+    Returns: True si es seguro proceder con la operación de disco, False de lo contrario.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:

@@ -340,13 +340,14 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
 
 def _check_path_syntax_integrity(path: Path) -> None:
     """
-    Validaciones de sintaxis estricta contra inyección o rutas inválidas.
-    Impone límites en longitud, caracteres y profundidad.
+    Validaciones estrictas contra inyección o rutas inválidas. 
+    Impide el uso de rutas que puedan desbordar el sistema o acceder a flujos ADS.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
         
     path_str: str = str(path)
+    # Validaciones de longitud, caracteres y profundidad para prevenir ataques de inyección
     if len(path_str) > 260:
         raise UnsafePathError("Ruta de sistema demasiado larga.")
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
@@ -739,7 +740,10 @@ class IsolationManager:
     
     @staticmethod
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
-        """Verifica que el archivo no ha sido manipulado (TOCTOU) durante el aislamiento."""
+        """
+        Verifica que el archivo no ha sido manipulado (TOCTOU) durante el aislamiento.
+        Compara el inodo y estado del archivo antes y después de la operación.
+        """
         if not source.exists():
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
         if source.stat().st_ino != original_stat.st_ino:
@@ -755,7 +759,10 @@ class IsolationManager:
             raise UnsafePathError("Sandbox destino no es una ruta segura.")
 
 def _validate_integrity_before_move(source: Path, original_size: int, original_inode: Inode) -> None:
-    """Verificación de estado previo al movimiento."""
+    """
+    Verificación de estado previo al movimiento.
+    Detecta si el archivo fue reemplazado o modificado tras la validación inicial.
+    """
     try:
         current_stat: os.stat_result = source.stat()
         if current_stat.st_size != original_size or current_stat.st_ino != original_inode:
