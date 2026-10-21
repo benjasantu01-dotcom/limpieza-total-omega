@@ -304,13 +304,19 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _is_process_accessible(pid: int, access_mask: int, kernel32: ctypes.CDLL) -> Optional[wintypes.HANDLE]:
-    """Intenta abrir un handle de proceso con privilegios específicos."""
+    """
+    Intenta obtener un handle de proceso con el nivel de acceso especificado.
+    Retorna None si el PID es crítico, protegido o si Windows deniega el acceso.
+    """
     if _is_system_process(pid): return None
     handle = kernel32.OpenProcess(access_mask, False, pid)
     return handle if handle not in (0, INVALID_HANDLE_VALUE) else None
 
 def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
-    """Consulta el valor actual de Working Set para un proceso mediante su handle."""
+    """
+    Utiliza GetProcessMemoryInfo para obtener el WorkingSetSize.
+    Valida que el resultado esté dentro de límites lógicos de hardware.
+    """
     try:
         if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
@@ -320,7 +326,10 @@ def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CD
     return None
 
 def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL) -> bool:
-    """Valida que el archivo ejecutable asociado no pertenezca a rutas protegidas."""
+    """
+    Resuelve la ruta absoluta del ejecutable del proceso y valida mediante 'safety.py'
+    que no pertenezca a directorios protegidos o junctions del sistema.
+    """
     if not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
@@ -345,7 +354,10 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
         return False
 
 def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
-    """Obtiene y valida la seguridad de un proceso a partir de su PID."""
+    """
+    Orquestador de seguridad: abre, consulta y valida la integridad de un PID
+    antes de permitir que sea procesado por las métricas del sistema.
+    """
     proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
     if proc_handle is None:
         return None
@@ -363,7 +375,10 @@ def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: 
             kernel32.CloseHandle(proc_handle)
 
 def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
-    """Enumera procesos activos del sistema aplicando filtros de seguridad."""
+    """
+    Enumera los PIDs activos del sistema, filtrando cada uno mediante las políticas
+    de seguridad definidas en _process_from_pid.
+    """
     buf_size = 4096
     while buf_size <= 65536:
         pids = (wintypes.DWORD * (buf_size // 4))()
@@ -430,7 +445,13 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Libera el working set de un proceso tras verificar que no sea un sistema crítico."""
+    """
+    Libera el Working Set de un proceso. REQUIERE:
+    1. Verificación de PID no crítico.
+    2. Privilegios de acceso (PROCESS_SET_QUOTA).
+    3. Validación de integridad de ruta (is_protected_path).
+    Si estas condiciones pasan, invoca a la API nativa 'EmptyWorkingSet'.
+    """
     if not _is_windows: return False, "Solo soportado en Windows."
     
     try: 

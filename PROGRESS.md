@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 50
+- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 51 | 5 | 15 | 7 | 72 |
+| 2026-10-19 | 51 | 3 | 13 | 7 | 72 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 2 | 0 | 0 | 0 | 2 |
+| 2026-10-21 | 5 | 0 | 0 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **41**
+- legibilidad y documentación: **38**
 - robustez ante casos límite: **35**
-- legibilidad y documentación: **35**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
@@ -33,20 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `diskreport.py`: **18**
 - `assistant.py`: **17**
+- `memory.py`: **16**
 - `browser.py`: **15**
 - `quarantine.py`: **15**
-- `memory.py`: **15**
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
 - `branding.py`: **13**
 - `safety.py`: **13**
 - `scanner.py`: **11**
 - `settings.py`: **10**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `main.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T00:20:56` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de Type Hints más precisos y docstrings descriptivos que clarifican la lógica detrás de los umbrales de seguridad y las operaciones de E/S, facilitando el mantenimiento y la auditoría del código.
+- `2026-10-21T00:19:47` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de bajo nivel que interactúan con la API de Windows (`ctypes`), clarificando los efectos secundarios y los requisitos de seguridad de cada operación.
+- `2026-10-21T00:14:30` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `healthscore.py` mediante la refactorización de `compute_score` para extraer la lógica de cálculo de puntajes en una función auxiliar `_calculate_area_contribution`, eliminando la complejidad ciclomática excesiva dentro del bucle principal y facilitando la depuración.
 - `2026-10-21T00:05:57` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (siguiendo el estilo Google/NumPy) en funciones complejas y aclaración de tipos, facilitando la comprensión de la lógica de escaneo y las estrategias de hashing sin alterar la funcionalidad.
 - `2026-10-21T00:04:52` **browser.py** (legibilidad y documentación): Documenté con docstrings detallados los parámetros y el comportamiento de las funciones críticas (`_sum_directory_recursive` y `_should_skip_entry`) para clarificar las salvaguardas de seguridad implementadas, facilitando el mantenimiento futuro y la auditoría del código.
 - `2026-10-20T14:54:08` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de métricas con un nuevo docstring en `_VALIDATORS` y refinando la estructura de `_CONTEXT_SCHEMA` para que su propósito (serialización de contexto) sea evidente, asegurando que la arquitectura del asistente se mantenga autodocumentada para futuros colaboradores.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T14:22:44` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_sum_directory_recursive` mediante la validación explícita de `root_path` y la captura preventiva de errores en `os.scandir` para evitar excepciones no controladas durante el acceso a directorios con restricciones de acceso.
 - `2026-10-20T14:14:37` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez en la ingesta de datos del `SystemContext` mediante la inclusión de comprobaciones de tipo y rangos más estrictas, y protege al módulo de posibles errores de ejecución durante la serialización y el acceso a métricas volátiles.
 - `2026-10-20T12:54:52` **settings.py** (seguridad defensiva): He refactorizado la validación del directorio de configuración en `settings_path` para emplear `is_safe_to_modify` en lugar de una lógica de chequeo manual, asegurando consistencia con las reglas de seguridad del proyecto y previniendo la creación de rutas en zonas protegidas o puntos de reanálisis.
-- `2026-10-20T12:53:59` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `safety.py` al implementar un bloqueo estricto contra el acceso a archivos de sistema mediante la validación de la propiedad del SID (Security Identifier) en archivos críticos, asegurando que cualquier intento de modificación sobre archivos cuyo propietario sea el grupo `SYSTEM` o `TrustedInstaller` sea bloqueado preventivamente, fortaleciendo la defensa frente a privilegios elevados.
-- `2026-10-20T12:41:19` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` reforzando la validación en `_atomic_isolate_file` para evitar condiciones de carrera TOCTOU (Time-of-Check to Time-of-Use) mediante una verificación explícita de `st_ino` (inodo) y tamaño justo antes de la operación de escritura, cerrando una brecha de integridad.
-- `2026-10-20T12:40:12` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` añadiendo una comprobación adicional para evitar el seguimiento de puntos de reparse (reparse points) mediante `reparse_point` y asegurando que las rutas sean canónicas antes de la validación, evitando posibles ataques de "path traversal" o redirección de rutas durante la inspección de procesos.

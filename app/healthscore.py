@@ -348,6 +348,20 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 # Caché local para evitar recomputaciones idénticas
 _PIPELINE_CACHE: Dict[Tuple[float, ...], HealthResult] = {}
 
+def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
+    """Calcula el aporte de un área al puntaje global y sus recomendaciones."""
+    try:
+        area_ratio = _clamp(entry.scorer(metrics))
+        recommendations = _evaluate_rules(metrics, entry.rules, area_ratio) if entry.rules else []
+        
+        weight = max(0, entry.weight)
+        points = area_ratio * weight
+        val_int = int(round(_clamp(points if math.isfinite(points) else 0.0, 0.0, float(weight))))
+        
+        return val_int, recommendations
+    except Exception:
+        return 0, []
+
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global mediante el pipeline con validación de suma total."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
@@ -356,7 +370,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not _PIPELINE:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Pipeline de análisis no configurado."])
     
-    # Cache key basada en los valores actuales para evitar colisiones de hash
     cache_key = tuple(float(getattr(metrics, f)) for f in metrics._FIELDS_TO_VALIDATE)
     if cache_key in _PIPELINE_CACHE:
         return _PIPELINE_CACHE[cache_key]
@@ -366,20 +379,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_points = 0.0
     
     for entry in _PIPELINE:
-        try:
-            area_ratio = _clamp(entry.scorer(metrics))
-            if entry.rules:
-                recommendations.extend(_evaluate_rules(metrics, entry.rules, area_ratio))
-            
-            w = max(0, entry.weight)
-            points = area_ratio * w
-            if not math.isfinite(points): points = 0.0
-            val_int = int(round(_clamp(points, 0.0, float(w))))
-            metric_breakdown[entry.area] = val_int
-            total_points += val_int
-        except Exception:
-            metric_breakdown[entry.area] = 0
-            continue
+        points, recs = _calculate_area_contribution(metrics, entry)
+        metric_breakdown[entry.area] = points
+        recommendations.extend(recs)
+        total_points += points
             
     if metrics.quarantined_count > 0:
         recommendations.append("Existen elementos en cuarentena.")
