@@ -660,6 +660,8 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
         raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
+    if path.is_file() and current_stat.st_nlink > 1:
+        raise UnsafePathError(f"Manipulación de enlaces duros (TOCTOU): {path.name}", SafetyValidationErrorCode.HARD_LINK_DETECTED)
     _evaluate_security_rules(path, current_stat)
 
 @lru_cache(maxsize=2048)
@@ -965,11 +967,6 @@ def _validate_path_components(path: Path) -> None:
             if _is_system_directory_junction(str(current_check)):
                 raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
-def _check_hard_link_security(path: Path, stat_res: os.stat_result) -> None:
-    """Previene manipulación de archivos con múltiples enlaces duros."""
-    if path.is_file() and stat_res.st_nlink > 1:
-        raise UnsafePathError(f"Archivo con múltiples hard links detectado: {path.name}", SafetyValidationErrorCode.HARD_LINK_DETECTED)
-
 def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Realiza validaciones finales de seguridad sobre archivos para operaciones de escritura."""
     if not p.exists():
@@ -982,7 +979,6 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
         raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
     
     initial_stat = _get_path_stat_robust(p)
-    _check_hard_link_security(p, initial_stat)
     if os.name == 'nt': 
         _validate_ntfs_reparse_redirection(p, base)
     _check_file_integrity(p, initial_stat)

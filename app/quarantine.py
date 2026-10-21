@@ -89,6 +89,7 @@ def _verify_source_fs_permissions(path: Path) -> None:
     p_str: str = str(path)
     if p_str.startswith(r"\\") or p_str.startswith("//"):
         raise UnsafePathError("Operaciones en rutas UNC no permitidas.")
+    _check_path_for_junctions(path)
     if os.name == 'nt':
         try:
             attrs: int = ctypes.windll.kernel32.GetFileAttributesW(p_str)

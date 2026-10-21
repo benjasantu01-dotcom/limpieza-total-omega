@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 33 | 2 | 10 | 6 | 51 |
+| 2026-10-19 | 33 | 2 | 10 | 6 | 47 |
 | 2026-10-20 | 128 | 11 | 35 | 18 | 158 |
-| 2026-10-21 | 32 | 2 | 7 | 3 | 8 |
+| 2026-10-21 | 34 | 2 | 8 | 3 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
+- seguridad defensiva: **38**
 - robustez ante casos límite: **37**
-- seguridad defensiva: **36**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -35,10 +35,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **18**
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `browser.py`: **15**
+- `safety.py`: **14**
 - `branding.py`: **13**
-- `safety.py`: **13**
 - `scanner.py`: **11**
 - `settings.py`: **11**
 - `organizer.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T02:18:35` **safety.py** (seguridad defensiva): Mejoré la robustez de `ensure_safe_to_modify` implementando una validación de `st_nlink` dentro de `_check_file_integrity`, lo que previene ataques de manipulación mediante enlaces duros (hard links) justo antes de la operación de modificación, fortaleciendo la defensa contra condiciones de carrera TOCTOU.
+- `2026-10-21T02:17:38` **quarantine.py** (seguridad defensiva): He mejorado `_verify_source_fs_permissions` y `_validate_input_path` para incluir una verificación de existencia de puntos de reparse (reparse points) mediante `GetFileAttributesW` en Windows, alineando la validación inicial con las garantías de seguridad de `safety.py` y evitando la manipulación de archivos ocultos tras junctions de sistema.
 - `2026-10-21T02:10:16` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` sustituyendo `path.resolve(strict=True)` (que puede lanzar excepciones si el proceso termina durante la ejecución) por una validación más robusta basada en la ruta normalizada, evitando operaciones destructivas o que provoquen cierres inesperados del hilo de ejecución.
 - `2026-10-21T02:07:10` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor de puntuación introduciendo un mecanismo de validación de métricas tipo "fail-safe" que bloquea el procesamiento ante estados inconsistentes, evitando el uso de valores potencialmente sesgados o manipulados en los cálculos de salud.
 - `2026-10-21T02:06:30` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` y `_is_file_locked` integrando `is_safe_to_modify` como un chequeo de pre-condición estricto, asegurando que ninguna operación de I/O ocurra sobre rutas no validadas o bloqueadas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T01:27:02` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante datos de entrada corruptos o maliciosos durante la serialización/deserialización, añadiendo una validación explícita de `SystemMetrics` en `compute_score` para asegurar que ningún campo contenga valores `NaN` o fuera de rango que puedan romper los cálculos matemáticos del pipeline.
 - `2026-10-21T01:26:01` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` manejando explícitamente `OSError` durante la lectura de metadatos (`st_size`), evitando que archivos bloqueados por el sistema o en acceso exclusivo aborten el procesamiento o registren tamaños negativos.
 - `2026-10-21T01:17:14` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la inicialización de los puntos de escaneo de `base_directories`, añadiendo una validación explícita para evitar errores cuando la variable de entorno `LOCALAPPDATA` apunta a rutas inexistentes, no legibles o que escapan de las restricciones de seguridad del sistema.
-- `2026-10-21T01:17:01` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` validando la existencia de la ruta de destino antes de intentar operaciones de escritura y asegurando que las excepciones durante la creación del directorio no rompan el flujo de la aplicación.
-- `2026-10-21T01:16:28` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_payload_structure` al incorporar una validación recursiva de profundidad y límites de colección que evita ataques de desbordamiento de pila o agotamiento de memoria, reforzando la integridad del procesamiento de datos en el asistente ante entradas malintencionadas.
