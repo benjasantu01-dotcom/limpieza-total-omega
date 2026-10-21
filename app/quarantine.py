@@ -66,6 +66,7 @@ DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para mejorar throughput de I/O
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float]] = {}
+_HASH_CACHE: Dict[Tuple[str, float], str] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -266,17 +267,22 @@ class QuarantineItem:
 
 def _get_sha256(path: Path) -> str:
     """Calcula hash SHA256 mediante streaming para optimizar uso de memoria con archivos grandes."""
-    if not path.is_file():
-        return ""
+    if not path.is_file(): return ""
+    
+    stat = path.stat()
+    cache_key = (str(path), stat.st_mtime)
+    if cache_key in _HASH_CACHE: return _HASH_CACHE[cache_key]
     
     sha256_hash = hashlib.sha256()
     try:
         with open(path, "rb", buffering=CHUNK_SIZE) as f:
             for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
                 sha256_hash.update(chunk)
+        res = sha256_hash.hexdigest()
+        _HASH_CACHE[cache_key] = res
+        return res
     except (OSError, PermissionError, IOError):
         return ""
-    return sha256_hash.hexdigest()
 
 
 def _is_file_in_use_by_system(path: Path) -> bool:
@@ -1058,7 +1064,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             
         items: List[QuarantineItem] = load_manifest(base)
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
-        purgado_ids: Set[str] = set()
+        purgado_ids: Set[str] = {i.item_id for i in items}
+        purgados_confirmados: Set[str] = set()
         
         for f in quarantine_root.iterdir():
             try:
@@ -1070,15 +1077,15 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
                 if f.name in item_map:
                     if _is_item_purgable(f, item_map[f.name]):
-                        purgado_ids.add(item_map[f.name].item_id)
+                        purgados_confirmados.add(item_map[f.name].item_id)
                 else:
                     if _safe_unlink(f):
                         continue
             except (OSError, PermissionError, UnsafePathError):
                 continue
         
-        if purgado_ids:
-            new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]
+        if purgados_confirmados:
+            new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgados_confirmados]
             save_manifest(new_items, base)
             
             try:
@@ -1088,7 +1095,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             except OSError:
                 pass
             
-        return len(purgado_ids)
+        return len(purgados_confirmados)
     except (OSError, PermissionError, UnsafePathError):
         return 0
 
