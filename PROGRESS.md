@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 236
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 74 | 9 | 19 | 11 | 91 |
-| 2026-10-21 | 113 | 6 | 26 | 10 | 145 |
+| 2026-10-20 | 71 | 9 | 18 | 11 | 91 |
+| 2026-10-21 | 116 | 6 | 26 | 10 | 146 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **42**
 - seguridad defensiva: **42**
 - rendimiento: **31**
-- manejo de errores y validación de entradas: **26**
+- manejo de errores y validación de entradas: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
+- `memory.py`: **18**
 - `assistant.py`: **17**
-- `quarantine.py`: **16**
+- `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `diskreport.py`: **16**
 - `safety.py`: **16**
-- `duplicates.py`: **15**
-- `browser.py`: **15**
+- `browser.py`: **16**
+- `quarantine.py`: **15**
 - `settings.py`: **13**
-- `branding.py`: **12**
-- `organizer.py`: **9**
+- `branding.py`: **13**
 - `scanner.py`: **9**
+- `organizer.py`: **8**
 - `startup.py`: **7**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T12:51:09` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validación de tipos y estados vacíos en `suggest_keeper` y `_collect_candidates`, además de capturar excepciones más específicas en la lectura de archivos para evitar que una falla puntual en `stat` o `open` detenga el análisis completo.
+- `2026-10-21T12:49:56` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `detect_profiles` y `directory_size` añadiendo validaciones de tipo y estructura a sus parámetros de entrada, asegurando que ante valores inesperados (como `None` o tipos incorrectos pasados desde otras partes del sistema) la aplicación no propague errores hacia el resto de los módulos de análisis.
+- `2026-10-21T12:49:07` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo una validación explícita para evitar posibles errores al manejar rutas inválidas o nombres de archivo mal formados antes de interactuar con el sistema de archivos.
 - `2026-10-21T11:20:16` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta de la ruta del archivo de configuración para prevenir ataques de sustitución mediante enlaces simbólicos o rutas relativas no deseadas, utilizando `pathlib` de forma robusta antes de cualquier operación de escritura o lectura.
 - `2026-10-21T11:10:47` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de escritura en `quarantine.py` mediante la implementación de una validación de `st_nlink` (contador de enlaces físicos) en el momento del registro del manifiesto y una verificación adicional de exclusividad de archivo, previniendo que archivos con enlaces físicos externos sean tratados como aislados, lo cual es una vulnerabilidad de integridad.
 - `2026-10-21T11:09:14` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar `GetModuleFileNameExW` utilizando un manejo explícito del buffer de memoria mediante `ctypes.create_unicode_buffer`, asegurando que cualquier error en la escritura de la ruta sea capturado preventivamente antes de que `is_protected_path` intente evaluar una cadena potencialmente truncada o inválida.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T10:18:19` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para evitar falsos positivos y excepciones innecesarias mediante el uso de `os.access` con `os.R_OK` antes de intentar la apertura, mejorando la tolerancia ante archivos bloqueados por el sistema sin forzar cierres inesperados.
 - `2026-10-21T10:16:25` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de seguridad de la ruta completa de forma más granular, evitando race conditions y asegurando que las operaciones de creación de directorios y escritura de archivos utilicen validadores de seguridad antes de cualquier acceso al disco.
 - `2026-10-21T10:06:31` **scanner.py** (rendimiento): Se implementó un filtrado preventivo mediante un conjunto de extensiones no relevantes antes de realizar operaciones de I/O o validaciones costosas en `process_entry`, reduciendo significativamente las llamadas a `is_safe_to_modify` y otras verificaciones de sistema para archivos que no serán analizados.
-- `2026-10-21T09:57:14` **safety.py** (rendimiento): Se ha optimizado `_PROTECTED_PATH_CACHE` reemplazando la lógica manual de TTL basada en `time.time()` por el decorador `@lru_cache` con un tamaño adecuado, lo que elimina el uso de diccionarios auxiliares, mejora la velocidad de acceso y reduce la huella de memoria al delegar la gestión del caché a la implementación nativa y eficiente de Python.
-- `2026-10-21T09:56:21` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total en `total_quarantined_bytes` y `summarize` evitando recargas innecesarias del manifiesto al pasar la lista pre-cargada, y mejoré la eficiencia de `purge_all` al utilizar una estructura `set` para búsquedas O(1) al procesar la purga masiva.
-- `2026-10-21T09:45:56` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la gestión manual de `_PIPELINE_CACHE` por `@lru_cache` sobre una función auxiliar, lo cual es más eficiente, idiomático y nativo, eliminando además la necesidad de limpiar explícitamente el diccionario.

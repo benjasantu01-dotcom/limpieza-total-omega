@@ -264,7 +264,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base: Path) -> bool:
     """Valida la integridad de una ruta antes de considerarla un caché apto para análisis."""
-    if not candidate.exists() or not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
+    if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
     
     try:
         real = candidate.resolve(strict=True)
@@ -282,7 +282,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Escaneo coordinado de cachés, filtrando por rutas base autorizadas y heurísticas de seguridad."""
-    raw_bases = list(bases) if bases is not None and isinstance(bases, (list, tuple)) else base_directories()
+    raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     found: List[BrowserCache] = []
     kernel = _get_kernel32()
@@ -294,6 +294,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             ctx = ScanContext(real_base, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
             
             for browser_key, relative_path in browser_map.items():
+                if not isinstance(relative_path, str): continue
                 candidate = _resolve_browser_path(real_base, relative_path)
                 if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base):
                     scan_res = _sum_directory_recursive(str(candidate), ctx, 0)

@@ -99,14 +99,13 @@ def _is_file_locked(path: Path) -> bool:
     """Verifica si un archivo puede abrirse para lectura exclusiva."""
     if not is_safe_to_modify(path):
         return True
-    # Verificación preliminar de acceso sin intentar abrir el handle
     if not os.access(path, os.R_OK):
         return True
     try:
         with open(path, "rb") as f:
             f.peek(1)
             return False
-    except (OSError, IOError, PermissionError, ValueError):
+    except (OSError, PermissionError, ValueError, AttributeError):
         return True
 
 
@@ -132,7 +131,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo de un archivo."""
-    if path in _full_hash_cache: return _full_hash_cache[path]
+    if not path or path in _full_hash_cache: return _full_hash_cache.get(path)
     if not path.is_file() or not _safe_path_check(path): return None
     try:
         hasher = hashlib.sha256()
@@ -148,7 +147,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash SHA256 de los primeros 64KB (filtrado rápido)."""
-    if path in _partial_cache: return _partial_cache.get(path)
+    if not path or path in _partial_cache: return _partial_cache.get(path)
     if not path.is_file() or not _safe_path_check(path): return None
     try:
         with open(path, "rb") as f:
@@ -164,19 +163,21 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa paths válidos por tamaño de archivo en bytes."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     for item in paths:
+        if not item: continue
         path = Path(item)
         if path.is_file() and _safe_path_check(path):
             try:
                 st_size = path.stat().st_size
                 if _is_valid_candidate(path, st_size):
                     groups_by_size[st_size].append(path)
-            except OSError:
+            except (OSError, PermissionError):
                 continue
     return groups_by_size
 
 
 def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
     """Valida y resuelve el directorio base para el escaneo."""
+    if not directory_path: return None
     try:
         root = Path(directory_path).resolve()
         return root if root.is_dir() and _safe_path_check(root) else None
@@ -187,7 +188,8 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Recolecta archivos candidatos mediante BFS controlado."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    queue: deque[Tuple[Path, int]] = deque((root, 0) for d in directories if (root := _resolve_and_verify_root(d)))
+    roots = [r for d in directories if (r := _resolve_and_verify_root(d))]
+    queue: deque[Tuple[Path, int]] = deque((root, 0) for root in roots)
     visited_inodes: set[Tuple[int, int]] = set()
     
     while queue:
@@ -197,20 +199,21 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    # Garantizar path absoluto para validación de seguridad
                     path = Path(entry.path).resolve()
                     if not is_safe_to_modify(path): continue
                     
                     if entry.is_dir(follow_symlinks=False):
                         if not is_junction(path): queue.append((path, depth + 1))
                     elif entry.is_file(follow_symlinks=False):
-                        stat = entry.stat(follow_symlinks=False)
-                        if stat.st_size >= min_size:
-                            inode = (stat.st_dev, stat.st_ino)
-                            if inode not in visited_inodes and _safe_path_check(path):
-                                if not (skip_protected and is_protected_path(path)) and _is_valid_candidate(path, stat.st_size):
-                                    visited_inodes.add(inode)
-                                    size_to_paths_map[stat.st_size].append(path)
+                        try:
+                            stat = entry.stat(follow_symlinks=False)
+                            if stat.st_size >= min_size:
+                                inode = (stat.st_dev, stat.st_ino)
+                                if inode not in visited_inodes and _safe_path_check(path):
+                                    if not (skip_protected and is_protected_path(path)) and _is_valid_candidate(path, stat.st_size):
+                                        visited_inodes.add(inode)
+                                        size_to_paths_map[stat.st_size].append(path)
+                        except (OSError, PermissionError): continue
         except (OSError, PermissionError): continue
     return {sz: files for sz, files in size_to_paths_map.items() if len(files) > 1}
 
@@ -257,6 +260,7 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma los bytes desperdiciados en todos los grupos."""
+    if not groups: return 0
     return sum(g.wasted_bytes for g in groups)
 
 
@@ -271,7 +275,7 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """Sugiere el archivo más antiguo como original a conservar."""
-    if not group.paths: return None
+    if not group or not group.paths: return None
     candidates = [(s, p) for p in group.paths if (s := _calculate_keeper_heuristic(p))]
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
