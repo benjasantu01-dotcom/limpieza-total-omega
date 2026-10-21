@@ -31,11 +31,6 @@ LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
-# Cache para reducir IO en chequeos repetitivos
-_PROTECTED_PATH_CACHE: Final[dict[str, bool]] = {}
-_PROTECTED_PATH_TS: Final[dict[str, float]] = {}
-PROTECTION_CACHE_TTL: Final[float] = 2.0 
-
 class SafetyAction(Enum):
     """Define la criticidad de la operación para ajustar el rigor de la validación."""
     READ = auto()
@@ -757,15 +752,11 @@ def is_drive_root(path: PathLike) -> bool:
         return p == Path(p.anchor)
     except (UnsafePathError, TypeError, OSError): return True
 
+@lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
     """Determina si la ruta forma parte de una zona protegida del sistema."""
     if not isinstance(path, (str, Path)) or not path: return True
     path_str = str(path).strip()
-    
-    now = time.time()
-    cached_val = _PROTECTED_PATH_CACHE.get(path_str)
-    if cached_val is not None and now - _PROTECTED_PATH_TS.get(path_str, 0) < PROTECTION_CACHE_TTL:
-        return cached_val
             
     try:
         p = Path(path_str)
@@ -781,8 +772,6 @@ def is_protected_path(path: PathLike) -> bool:
             attrs = _get_file_attrs(str(p))
             res = (attrs != INVALID_FILE_ATTRIBUTES and bool(attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or p == Path(p.anchor)
         
-        _PROTECTED_PATH_CACHE[path_str] = res
-        _PROTECTED_PATH_TS[path_str] = now
         return res
     except Exception:
         return True

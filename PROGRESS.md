@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 226
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 96 | 9 | 24 | 14 | 129 |
-| 2026-10-21 | 99 | 6 | 21 | 9 | 97 |
+| 2026-10-20 | 93 | 9 | 24 | 14 | 128 |
+| 2026-10-21 | 101 | 6 | 22 | 9 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- seguridad defensiva: **46**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **34**
-- rendimiento: **28**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **20**
-- `assistant.py`: **18**
+- `safety.py`: **18**
 - `diskreport.py`: **17**
-- `safety.py`: **17**
-- `browser.py`: **16**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
+- `assistant.py`: **17**
 - `healthscore.py`: **16**
 - `duplicates.py`: **15**
+- `browser.py`: **15**
 - `settings.py`: **13**
-- `branding.py`: **12**
+- `branding.py`: **11**
 - `organizer.py`: **10**
 - `scanner.py`: **10**
 - `main.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T09:57:14` **safety.py** (rendimiento): Se ha optimizado `_PROTECTED_PATH_CACHE` reemplazando la lógica manual de TTL basada en `time.time()` por el decorador `@lru_cache` con un tamaño adecuado, lo que elimina el uso de diccionarios auxiliares, mejora la velocidad de acceso y reduce la huella de memoria al delegar la gestión del caché a la implementación nativa y eficiente de Python.
+- `2026-10-21T09:56:21` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total en `total_quarantined_bytes` y `summarize` evitando recargas innecesarias del manifiesto al pasar la lista pre-cargada, y mejoré la eficiencia de `purge_all` al utilizar una estructura `set` para búsquedas O(1) al procesar la purga masiva.
 - `2026-10-21T09:45:56` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la gestión manual de `_PIPELINE_CACHE` por `@lru_cache` sobre una función auxiliar, lo cual es más eficiente, idiomático y nativo, eliminando además la necesidad de limpiar explícitamente el diccionario.
 - `2026-10-21T09:36:39` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` reemplazando llamadas redundantes a `Path.relative_to` por una lógica de manipulación de cadenas de `os.path` más ligera y evitando la creación innecesaria de objetos `Path` dentro del bucle crítico, reduciendo la presión sobre el recolector de basura.
 - `2026-10-21T09:36:28` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.normcase` dentro del bucle de cada archivo, y pre-calculando el estado de `never_touch` como un `frozenset` una sola vez en el contexto para acelerar las búsquedas de exclusión en O(1).
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T09:14:55` **memory.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `memory.py` mediante la refactorización de las estructuras de datos de la API Win32 (`MEMORYSTATUSEX` y `PROCESS_MEMORY_COUNTERS`) para utilizar constantes de tamaño explícitas y tipos más claros, además de añadir docstrings detallados en las funciones de bajo nivel que clarifican el propósito de los flags y buffers, eliminando ambigüedades técnicas.
 - `2026-10-21T09:05:13` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados con tipado claro, la simplificación del flujo de `_collect_candidates` para separar la lógica de filtrado de archivos de la lógica de recursión, y la eliminación de redundancias en las validaciones de `Path`.
 - `2026-10-21T09:04:46` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con formato Google Style y type hints específicos en las clases `ExtStats` y `FolderMetrics` para clarificar sus responsabilidades y mejorar la mantenibilidad del código bajo el enfoque de documentación técnica.
-- `2026-10-21T08:56:35` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante la formalización de la estructura de control de errores y la clarificación de las responsabilidades en las funciones de escaneo, siguiendo estrictamente el enfoque de documentación técnica exigido.
-- `2026-10-21T08:56:20` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones críticas de renderizado, estandarizando el formato para facilitar la mantenibilidad y comprensión del flujo de datos gráficos.
