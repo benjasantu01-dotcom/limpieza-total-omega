@@ -316,8 +316,8 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(st: os.stat_result) -> bool:
     """Comprueba permisos, metadatos y asegura que no es un enlace simbólico o vínculo duro peligroso."""
     try:
-        if st.st_nlink != 1: return False
         if not stat.S_ISREG(st.st_mode): return False
+        if st.st_nlink != 1: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
