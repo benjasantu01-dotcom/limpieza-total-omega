@@ -203,19 +203,15 @@ SEVERITY_MAP: Final[Mapping[SeverityType, str]] = MappingProxyType({
 def app_title() -> str: 
     return f"{APP_NAME} v{APP_VERSION}"
 
-@lru_cache(maxsize=32)
 def color(name: Optional[str]) -> ColorHex: 
     return PALETTE.get(name, "#808080") if name else "#808080"
 
-@lru_cache(maxsize=32)
 def font_size(name: Optional[str]) -> int: 
     return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size
 
-@lru_cache(maxsize=32)
 def icon(section: Optional[str]) -> str: 
     return ICONS.get(section, "\u2022") if section else "\u2022"
 
-@lru_cache(maxsize=32)
 def tab_label(section: Optional[str]) -> str: 
     return f"{icon(section)}  {section}" if section else "\u2022  Desconocido"
 
@@ -260,7 +256,6 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
         return filled * llenos + empty * (ancho - llenos)
     except (TypeError, ValueError): return empty * max(1, int(width))
 
-@lru_cache(maxsize=512)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     try:
         clean = value.lstrip('#')
@@ -268,18 +263,15 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
         return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
     except (ValueError, TypeError, AttributeError): return (0, 0, 0)
 
-@lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
 
-@lru_cache(maxsize=256)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
     r = max(0.0, min(1.0, float(ratio)))
     return _rgb_to_hex((int(r1 + (r2 - r1) * r), int(g1 + (g2 - g1) * r), int(b1 + (b2 - b1) * r)))
 
-@lru_cache(maxsize=128)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
     if not colors: return ()
     segments = []
@@ -291,7 +283,6 @@ def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, .
     segments.append(ColorSegment(curr, start, len(colors)))
     return tuple(segments)
 
-@lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
     n = max(1, int(steps))
     n_stops = len(stops)
@@ -321,7 +312,6 @@ def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     if not math.isfinite(scale) or scale <= 0: return ()
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
 
-@lru_cache(maxsize=8)
 def logo_svg(size: int = 128) -> str:
     s = max(16, min(1024, int(size)))
     return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS, glow=C_GLOW, bg=C_SURFACE, font=UI_CONFIG.font_family)

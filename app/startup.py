@@ -134,7 +134,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extracts and validates a quoted path.
+        Extrae y valida una ruta delimitada por comillas dentro de una línea de comando.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -319,18 +319,21 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     return found_entries
 
 
-def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: Set[str]) -> bool:
-    """Valida la integridad de datos leídos del registro."""
-    if not isinstance(entry_name, str) or not isinstance(entry_command, str):
+def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
+    """
+    Realiza una validación de seguridad sobre los valores crudos obtenidos del registro
+    para prevenir inyecciones y accesos a rutas protegidas antes de instanciar StartupEntry.
+    """
+    if not isinstance(name, str) or not isinstance(command, str):
         return False
     
-    if any(ord(c) < 32 for c in entry_command) or "\0" in entry_command:
+    if any(ord(c) < 32 for c in command) or "\0" in command:
         return False
         
-    clean_name = entry_name.strip()
-    clean_cmd = entry_command.strip()
+    clean_name = name.strip()
+    clean_cmd = command.strip()
     
-    if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen_commands:
+    if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen:
         return False
     
     try:
@@ -347,7 +350,10 @@ def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: 
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Convierte el CSV generado por PowerShell en una lista de StartupEntry."""
+    """
+    Procesa el output CSV de PowerShell y lo convierte en objetos StartupEntry,
+    aplicando filtros de seguridad preventivos a cada fila.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -358,23 +364,22 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         f: io.StringIO = io.StringIO(csv_text.strip())
         reader = csv.DictReader(f)
         
-        # Validar existencia de campos requeridos
         if not reader.fieldnames or "Name" not in reader.fieldnames or "Value" not in reader.fieldnames:
             return []
         
         for row in reader:
             if not isinstance(row, dict): continue
             
-            raw_val_name = row.get("Name")
-            raw_val_cmd = row.get("Value")
+            raw_name = row.get("Name")
+            raw_cmd = row.get("Value")
             
-            if not (isinstance(raw_val_name, str) and raw_val_name.strip()) or \
-               not (isinstance(raw_val_cmd, str) and raw_val_cmd.strip()):
+            if not (isinstance(raw_name, str) and raw_name.strip()) or \
+               not (isinstance(raw_cmd, str) and raw_cmd.strip()):
                 continue
             
-            if _is_registry_entry_safe(raw_val_name, raw_val_cmd, seen_commands):
-                seen_commands.add(raw_val_cmd.strip())
-                parsed_entries.append(StartupEntry(name=raw_val_name.strip(), command=raw_val_cmd.strip(), source=source))
+            if _is_registry_entry_safe(raw_name, raw_cmd, seen_commands):
+                seen_commands.add(raw_cmd.strip())
+                parsed_entries.append(StartupEntry(name=raw_name.strip(), command=raw_cmd.strip(), source=source))
             
     except (csv.Error, OSError, ValueError, TypeError):
         return parsed_entries

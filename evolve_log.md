@@ -724,3 +724,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-21T13:53:26` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-21T13:53:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-21T13:53:26` Corrida terminada. Total usado hoy: 328.
+- `2026-10-21T13:59:49` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-21T13:59:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T13:59:55` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-21T14:00:02` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-21T14:01:21` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de las funciones de parseo del registro para clarificar el flujo de datos desde PowerShell hasta el modelo `StartupEntry`, además de estandarizar la nomenclatura de los argumentos en `_is_registry_entry_safe` para mejorar la legibilidad del código.
+- `2026-10-21T14:02:21` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-21T14:02:25` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-21T14:03:09` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:358: in <module>
+    class SystemContext:
+E   ValueError: 'score' in __slots__ conflicts with class variable
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflicts with class variable
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.19s
+
+```
+- `2026-10-21T14:03:09` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a métricas en `SystemContext` mediante el uso de `__slots__` para reducir la huella de memoria y mejorar la velocidad de acceso a atributos, y se reemplazó la recreación innecesaria de diccionarios en `metrics_snapshot` por un enfoque más eficiente.
+- `2026-10-21T14:03:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T14:03:47` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se eliminó el uso de `lru_cache` en funciones que realizan operaciones de cálculo simples o que devuelven resultados dinámicos basados en parámetros volátiles, reduciendo el consumo de memoria y la sobrecarga de gestión de caché en llamadas frecuentes de la interfaz.
+- `2026-10-21T14:03:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-21T14:04:29` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-10-21T14:04:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-21T14:04:29` Corrida terminada. Total usado hoy: 332.

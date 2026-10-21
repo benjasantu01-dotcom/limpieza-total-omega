@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 243
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 57 | 5 | 16 | 10 | 88 |
-| 2026-10-21 | 126 | 6 | 30 | 11 | 155 |
+| 2026-10-20 | 54 | 5 | 16 | 10 | 87 |
+| 2026-10-21 | 128 | 7 | 30 | 11 | 156 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **35**
 - manejo de errores y validación de entradas: **32**
-- rendimiento: **24**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
+- `memory.py`: **17**
 - `browser.py`: **17**
-- `healthscore.py`: **16**
 - `diskreport.py`: **16**
 - `safety.py`: **16**
 - `quarantine.py`: **15**
 - `assistant.py`: **15**
+- `healthscore.py`: **15**
 - `duplicates.py`: **15**
 - `settings.py`: **13**
-- `branding.py`: **12**
-- `main.py`: **8**
+- `branding.py`: **13**
+- `startup.py`: **8**
 - `scanner.py`: **8**
+- `main.py`: **7**
 - `organizer.py`: **7**
-- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-21T14:03:47` **branding.py** (rendimiento): Se eliminó el uso de `lru_cache` en funciones que realizan operaciones de cálculo simples o que devuelven resultados dinámicos basados en parámetros volátiles, reduciendo el consumo de memoria y la sobrecarga de gestión de caché en llamadas frecuentes de la interfaz.
+- `2026-10-21T14:01:21` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de parseo del registro para clarificar el flujo de datos desde PowerShell hasta el modelo `StartupEntry`, además de estandarizar la nomenclatura de los argumentos en `_is_registry_entry_safe` para mejorar la legibilidad del código.
 - `2026-10-21T13:51:36` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos a los métodos internos de la clase `Scanner`, aclarando el propósito y las restricciones de seguridad que cada uno impone, facilitando la auditoría de los flujos de control.
 - `2026-10-21T13:42:17` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en las funciones de validación crítica y la normalización de la terminología de seguridad, facilitando el mantenimiento y la auditoría de las garantías de integridad.
 - `2026-10-21T13:40:57` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `memory.py` mediante la adición de Type Hints explícitos, la normalización de los docstrings siguiendo el estándar de estilo exigido y la clarificación de las responsabilidades en los bloques de inicialización de estructuras Win32.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T12:51:09` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validación de tipos y estados vacíos en `suggest_keeper` y `_collect_candidates`, además de capturar excepciones más específicas en la lectura de archivos para evitar que una falla puntual en `stat` o `open` detenga el análisis completo.
 - `2026-10-21T12:49:56` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `detect_profiles` y `directory_size` añadiendo validaciones de tipo y estructura a sus parámetros de entrada, asegurando que ante valores inesperados (como `None` o tipos incorrectos pasados desde otras partes del sistema) la aplicación no propague errores hacia el resto de los módulos de análisis.
 - `2026-10-21T12:49:07` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo una validación explícita para evitar posibles errores al manejar rutas inválidas o nombres de archivo mal formados antes de interactuar con el sistema de archivos.
-- `2026-10-21T11:20:16` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta de la ruta del archivo de configuración para prevenir ataques de sustitución mediante enlaces simbólicos o rutas relativas no deseadas, utilizando `pathlib` de forma robusta antes de cualquier operación de escritura o lectura.
-- `2026-10-21T11:10:47` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de escritura en `quarantine.py` mediante la implementación de una validación de `st_nlink` (contador de enlaces físicos) en el momento del registro del manifiesto y una verificación adicional de exclusividad de archivo, previniendo que archivos con enlaces físicos externos sean tratados como aislados, lo cual es una vulnerabilidad de integridad.
