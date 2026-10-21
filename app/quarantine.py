@@ -752,8 +752,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             raise OSError("Directorio de cuarentena inaccesible durante la operación.")
         
         stat_orig: os.stat_result = _check_io_error_context(source.stat)
-        if stat_orig.st_size != original_size:
-            raise RuntimeError("El archivo cambió durante la validación inicial (TOCTOU).")
+        if stat_orig.st_size != original_size or stat_orig.st_nlink > 1:
+            raise RuntimeError("El archivo cambió o tiene enlaces inválidos durante la validación (TOCTOU).")
     except OSError as e:
         raise RuntimeError(f"No se pudo obtener estado de archivo: {e}")
     
@@ -769,7 +769,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     _validate_integrity_before_move(source, original_size, stat_orig.st_ino)
 
     final_check: os.stat_result = source.stat()
-    if final_check.st_ino != stat_orig.st_ino or final_check.st_size != original_size:
+    if final_check.st_ino != stat_orig.st_ino or final_check.st_size != original_size or final_check.st_nlink > 1:
         raise RuntimeError("Integridad comprometida: el archivo fue modificado (TOCTOU).")
 
     try:

@@ -345,6 +345,9 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
     try:
         executable_path = Path(exe_str)
         # Verificación estricta: si es reparse point, no lo seguimos.
+        # Valida que sea un archivo antes de resolver para evitar errores si el proceso cerró.
+        if not executable_path.is_file(): return False
+        
         if executable_path.is_symlink() or (executable_path.exists() and executable_path.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
             return False
             
