@@ -197,15 +197,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
-    """
-    Decide si omitir una entrada basándose en políticas de seguridad.
-    
-    La lógica sigue este orden:
-    1. Filtro estático: nombres protegidos por la configuración (NEVER_TOUCH).
-    2. Integridad de ruta: longitud máxima y caracteres inválidos (seguridad OS).
-    3. Inspección profunda: detección de enlaces simbólicos o junctions que 
-       puedan causar escapes fuera del directorio raíz de escaneo.
-    """
+    """Decide si omitir una entrada basándose en políticas de seguridad."""
     if entry.name.lower() in ctx.never_touch_lower: return True
     
     path_str = entry.path
@@ -220,14 +212,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """
-    Calcula el tamaño acumulado de un directorio mediante una búsqueda DFS.
-    
-    Implementa:
-    - Control de profundidad máxima para evitar recursión infinita.
-    - Registro de nodos visitados por dispositivo/inode para evitar bucles.
-    - Verificación de permisos de lectura antes de cada operación de acceso.
-    """
+    """Calcula el tamaño acumulado de un directorio mediante una búsqueda DFS."""
     if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
     
     if not os.path.isdir(root_path) or not os.access(root_path, os.R_OK):
@@ -260,9 +245,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    """
-    Cálculo de peso total; valida que la ruta sea segura antes de iniciar el DFS.
-    """
+    """Cálculo de peso total; valida que la ruta sea segura antes de iniciar el DFS."""
     if not path or not isinstance(path, (str, Path)): return 0
     path_obj = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0

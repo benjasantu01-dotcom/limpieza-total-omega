@@ -374,7 +374,7 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
         """Snapshot cacheado de las métricas numéricas para acceso eficiente."""
-        return {k: float(getattr(self, k)) for k in _VALIDATORS if isinstance(getattr(self, k), (int, float))}
+        return {k: float(v) for k in _VALIDATORS if (v := getattr(self, k, -1.0)) != -1.0}
 
     @cached_property
     def active_problems(self) -> tuple[str, ...]:

@@ -175,7 +175,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         return True
 
     try:
-        # Validación defensiva de ruta
         entry_path = Path(entry.path)
         if is_protected_path(entry_path):
             return True
@@ -327,11 +326,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
-                                # Acceso directo a stat para manejar errores volátiles
                                 st = entry.stat()
-                                size = st.st_size
-                                if size >= 0:
-                                    yield Path(entry.path), size
+                                if st.st_size >= 0:
+                                    yield Path(entry.path), st.st_size
                             except (PermissionError, FileNotFoundError, OSError):
                                 continue
                     except (PermissionError, FileNotFoundError, OSError):
@@ -362,20 +359,21 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if root is None: return []
     
-    stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
+    root_str = str(root)
+    stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
-        try:
-            rel = path.relative_to(root)
-            if rel.parts:
-                top_folder = root / rel.parts[0]
-                metrics = stats[top_folder]
-                metrics.size += size
-                metrics.file_count += 1
-        except ValueError:
-            continue
-
-    results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items()]
+        path_str = str(path)
+        # Eficiencia: extraer el segmento de carpeta de primer nivel sin crear objetos Path extra
+        rel_path = path_str[len(root_str):].lstrip(os.sep)
+        if os.sep in rel_path:
+            top_part = rel_path.split(os.sep)[0]
+            top_folder = os.path.join(root_str, top_part)
+            metrics = stats[top_folder]
+            metrics.size += size
+            metrics.file_count += 1
+            
+    results = [FolderUsage(Path(p), m.size, m.file_count) for p, m in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
 
 
@@ -396,7 +394,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if size < 0: continue
         stats.register_file(size, path.suffix)
         
         if limit > 0:
