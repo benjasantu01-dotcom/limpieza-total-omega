@@ -175,7 +175,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
 
         # Verifica confinamiento de la ruta relativa a la raíz escaneada
-        # Se asegura que la resolución sea posible antes de comparar
         abs_entry = entry_path.resolve(strict=False)
         if not str(abs_entry).startswith(str(root_path)):
              return True
@@ -315,21 +314,15 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(entry.path)
-                            except (OSError, PermissionError):
-                                continue
+                            st = entry.stat(follow_symlinks=False)
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat()
-                                if st.st_size >= 0:
-                                    yield Path(entry.path), st.st_size
-                            except (PermissionError, FileNotFoundError, OSError):
-                                continue
+                            st = entry.stat()
+                            if st.st_size >= 0:
+                                yield Path(entry.path), st.st_size
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, NotADirectoryError): 

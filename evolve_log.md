@@ -1208,3 +1208,11 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-10-22T02:25:46` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de parámetros de entrada, evitando cálculos matemáticos con valores inválidos o desbordamientos que antes se capturaban de forma genérica con `try/except`.
 - `2026-10-22T02:25:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T02:25:46` Corrida terminada. Total usado hoy: 56.
+- `2026-10-22T02:32:40` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-10-22T02:32:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T02:33:12` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-22T02:33:43` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` validando la integridad de las rutas y tipos de archivos antes de operar sobre ellos, evitando excepciones innecesarias durante el escaneo.
+- `2026-10-22T02:34:09` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-22T02:34:24` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `compute_score` ante estados inválidos, asegurando que el motor devuelva un resultado consistente incluso si el `_PIPELINE` es modificado externamente o si faltan claves en el desglose, evitando excepciones de clave (`KeyError`) o visualización distorsionada.
+- `2026-10-22T02:34:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T02:34:24` Corrida terminada. Total usado hoy: 60.
