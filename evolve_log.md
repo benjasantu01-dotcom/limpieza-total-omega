@@ -1010,3 +1010,12 @@ assert not {'replace'}
 - `2026-10-22T12:36:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-10-22T12:36:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T12:36:50` Corrida terminada. Total usado hoy: 296.
+- `2026-10-22T12:43:55` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-22T12:44:23` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo reemplazando la resolución repetitiva de rutas `Path.resolve()` en el bucle principal por una comparación de strings normalizados `os.path.normcase`, lo que reduce drásticamente las llamadas al sistema operativo (I/O) durante el recorrido recursivo.
+- `2026-10-22T12:44:49` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `largest_folders` reemplazando el uso de `path.parts` (que genera tuplas completas de strings por cada archivo) por una comprobación basada en `path.is_relative_to` y la determinación manual de la subcarpeta raíz, evitando la creación innecesaria de objetos intermedios durante el recorrido de grandes volúmenes de datos.
+- `2026-10-22T12:44:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T12:45:14` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-22T12:45:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T12:45:27` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 47% del original (posible pérdida de código)
+- `2026-10-22T12:45:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T12:45:27` Corrida terminada. Total usado hoy: 300.

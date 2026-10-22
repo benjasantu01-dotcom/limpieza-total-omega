@@ -54,12 +54,12 @@ class ScanContext:
     """
     Estado compartido durante el recorrido del árbol.
     
-    sandbox_base: Raíz del usuario para evitar 'escape' del escaneo.
+    sandbox_base_norm: Base normalizada para comparación eficiente.
     visited_files: Cache de (dev, ino) para evitar conteo doble por hardlinks.
     visited_dirs: Cache de rutas normalizadas para evitar bucles infinitos en simlinks.
     never_touch_lower: Nombres de carpetas críticas prohibidas (cookies, etc).
     """
-    sandbox_base: Path
+    sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
     is_junction: JunctionChecker
     visited_files: Set[tuple[int, int]]
@@ -165,18 +165,9 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     """Determina si una ruta es una ruta de red (UNC) para evitar bloqueos por latencia."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
-def _is_within_sandbox(target: Path, base: Path) -> bool:
-    """
-    Verifica si la ruta destino está contenida dentro del directorio base.
-    Utiliza resolución de rutas real para evitar ataques de bypass por simlinks.
-    """
-    if not target.exists(): return False
-    try:
-        t_res = target.resolve(strict=False)
-        b_res = base.resolve(strict=True)
-        return os.path.commonpath([os.path.normcase(b_res), os.path.normcase(t_res)]) == os.path.normcase(str(b_res))
-    except (OSError, RuntimeError, ValueError):
-        return False
+def _is_within_sandbox(path_norm: str, base_norm: str) -> bool:
+    """Verifica si la ruta normalizada está contenida dentro de la base normalizada."""
+    return path_norm.startswith(base_norm)
 
 def base_directories() -> List[Path]:
     """Identifica las carpetas raíz autorizadas en LOCALAPPDATA para iniciar el escaneo."""
@@ -202,28 +193,20 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
-    """
-    Aplica políticas de seguridad: descarta entradas protegidas, rutas fuera 
-    del sandbox, enlaces simbólicos/junctions (para evitar recursión circular 
-    fuera de control) y archivos del sistema marcados como ocultos.
-    """
-    if not entry: return True
+    """Aplica políticas de seguridad."""
     if entry.name.lower() in ctx.never_touch_lower: return True
     
     path_str = entry.path
-    if not path_str or len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
-    
-    if not _is_within_sandbox(Path(path_str), ctx.sandbox_base): return True
+    if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
+    if not _is_within_sandbox(os.path.normcase(path_str), ctx.sandbox_base_norm): return True
     
     try:
-        is_hidden_or_reparse = _is_system_hidden(path_str, ctx.kernel32)
-        if entry.is_symlink() or ctx.is_junction(path_str) or is_hidden_or_reparse: 
+        if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): 
             return True
-    except OSError: 
-        return True
+    except OSError: return True
     return False
 
-def _process_file_in_dir(entry: os.DirEntry, ctx: ScanContext, depth: int) -> int:
+def _process_file_in_dir(entry: os.DirEntry, ctx: ScanContext) -> int:
     """Procesa un archivo individual y retorna su peso si es válido y no duplicado."""
     try:
         st = entry.stat(follow_symlinks=False)
@@ -232,40 +215,30 @@ def _process_file_in_dir(entry: os.DirEntry, ctx: ScanContext, depth: int) -> in
             if file_id not in ctx.visited_files:
                 ctx.visited_files.add(file_id)
                 return st.st_size
-    except (OSError, PermissionError):
-        pass
+    except (OSError, PermissionError): pass
     return 0
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """
-    Recorrido DFS recursivo para sumar el peso de archivos.
-    Utiliza el contexto de escaneo para evitar procesar dos veces el mismo archivo
-    (mediante dev/ino) y mantener el control sobre los límites de profundidad.
-    """
+    """Recorrido DFS recursivo para sumar el peso de archivos."""
     if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
     
-    if not os.path.isdir(root_path) or not os.access(root_path, os.R_OK):
+    norm_path = os.path.normcase(root_path)
+    if not os.path.isdir(root_path) or not os.access(root_path, os.R_OK) or norm_path in ctx.visited_dirs:
         return ScanResult(0, True)
     
-    if not _is_within_sandbox(Path(root_path), ctx.sandbox_base): return ScanResult(0, True)
+    if not _is_within_sandbox(norm_path, ctx.sandbox_base_norm): return ScanResult(0, True)
     
-    norm_path = os.path.normcase(root_path)
-    if norm_path in ctx.visited_dirs: return ScanResult(0, True)
     ctx.visited_dirs.add(norm_path)
-    
     total_bytes = 0
     try:
         with os.scandir(root_path) as it:
             for entry in it:
                 if _should_skip_entry(entry, ctx): continue
-                
-                try:
-                    if entry.is_dir(follow_symlinks=False):
-                        res = _sum_directory_recursive(entry.path, ctx, depth + 1)
-                        total_bytes += res.bytes_found
-                    else:
-                        total_bytes += _process_file_in_dir(entry, ctx, depth)
-                except (OSError, PermissionError): continue
+                if entry.is_dir(follow_symlinks=False):
+                    res = _sum_directory_recursive(entry.path, ctx, depth + 1)
+                    total_bytes += res.bytes_found
+                else:
+                    total_bytes += _process_file_in_dir(entry, ctx)
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError): return ScanResult(0, False)
 
@@ -280,17 +253,17 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not is_safe_to_modify(resolved) or is_protected_path(resolved): return 0
     
     res_str = str(resolved)
-    ctx = ScanContext(Path(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
+    ctx = ScanContext(os.path.normcase(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
     return _sum_directory_recursive(res_str, ctx, 0).bytes_found
 
 @safe_path_operation(False)
-def _is_valid_cache_path(candidate: Path, base: Path) -> bool:
+def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
     """Valida si una ruta es un caché de navegador legítimo y analizable."""
-    if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
+    if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): return False
     
     try:
         real = candidate.resolve(strict=True)
-        if not _is_within_sandbox(real, base) or not os.access(real, os.R_OK): return False
+        if not _is_within_sandbox(os.path.normcase(str(real)), base_norm): return False
         return not (candidate.is_symlink() or _IS_JUNCTION_FN(str(real)) or candidate.name.lower() in NEVER_TOUCH)
     except (OSError, RuntimeError): return False
 
@@ -299,16 +272,14 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve la ruta completa del caché a partir de una base normalizada."""
     if not rel_str or not _is_valid_rel_path(rel_str): return Path()
     target = real_base.joinpath(*rel_str.split("\\"))
-    if not target.exists() or not target.is_dir(): return Path()
-    return target
+    return target if target.exists() and target.is_dir() else Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Escanea y reporta el tamaño de cachés de navegadores detectados en el sistema."""
     raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
-    if not raw_bases or not browser_map:
-        return []
+    if not raw_bases or not browser_map: return []
         
     found: List[BrowserCache] = []
     kernel = _get_kernel32()
@@ -317,12 +288,12 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path) or not base.exists(): continue
         try:
             real_base = base.resolve(strict=True)
-            ctx = ScanContext(real_base, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
+            base_norm = os.path.normcase(str(real_base))
+            ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
             
             for browser_key, relative_path in browser_map.items():
-                if not isinstance(relative_path, str): continue
                 candidate = _resolve_browser_path(real_base, relative_path)
-                if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base):
+                if candidate != Path() and _is_valid_cache_path(candidate, base_norm):
                     scan_res = _sum_directory_recursive(str(candidate), ctx, 0)
                     if scan_res.success and scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_key), candidate, scan_res.bytes_found))
