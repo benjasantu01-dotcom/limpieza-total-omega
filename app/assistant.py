@@ -318,37 +318,23 @@ def _validate_response_length(text: Any) -> str:
     if not isinstance(text, str) or not text: return "Respuesta no disponible."
     return text[:_MAX_TEXT_LENGTH]
 
-def _is_safe_payload_structure(val: Any) -> bool:
-    """Valida la estructura del JSON remoto evitando inyecciones y profundidad excesiva."""
-    queue: list[tuple[Any, int]] = [(val, 0)]
-    while queue:
-        item, depth = queue.pop(0)
-        if depth > _MAX_NESTING_DEPTH: return False
-        if isinstance(item, (dict, list, tuple, set)):
-            if len(item) > _MAX_COLLECTION_SIZE: return False
-            if isinstance(item, dict):
-                queue.extend((v, depth + 1) for v in item.values())
-            else:
-                queue.extend((v, depth + 1) for v in item)
-        elif not isinstance(item, (int, float, bool, str, type(None))):
-            return False
-    return True
+def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
+    """Valida la estructura del JSON remoto de forma recursiva y segura."""
+    if depth > _MAX_NESTING_DEPTH: return False
+    if isinstance(val, (dict, list, tuple, set)):
+        if len(val) > _MAX_COLLECTION_SIZE: return False
+        iterable = val.values() if isinstance(val, dict) else val
+        return all(_is_safe_payload_structure(item, depth + 1) for item in iterable)
+    return isinstance(val, (int, float, bool, str, type(None)))
 
-def _is_input_too_deep_or_complex(val: Any) -> bool:
-    """Detecta si un objeto excede la profundidad o límites de colección permitidos."""
-    stack: list[tuple[Any, int]] = [(val, 0)]
-    while stack:
-        current, depth = stack.pop()
-        if depth > _MAX_NESTING_DEPTH: return True
-        if isinstance(current, (list, tuple, set)):
-            if len(current) > _MAX_COLLECTION_SIZE: return True
-            stack.extend((item, depth + 1) for item in current)
-        elif isinstance(current, dict):
-            if len(current) > _MAX_COLLECTION_SIZE: return True
-            stack.extend((v, depth + 1) for v in current.values())
-        elif not isinstance(current, (int, float, bool, str, type(None))):
-            return True
-    return False
+def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
+    """Detecta recursivamente si un objeto excede límites permitidos."""
+    if depth > _MAX_NESTING_DEPTH: return True
+    if isinstance(val, (list, tuple, set, dict)):
+        collection = val.values() if isinstance(val, dict) else val
+        if len(val) > _MAX_COLLECTION_SIZE: return True
+        return any(_is_input_too_deep_or_complex(item, depth + 1) for item in collection)
+    return not isinstance(val, (int, float, bool, str, type(None)))
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     """Verifica si un valor numérico está dentro del rango lógico definido por su especificación."""

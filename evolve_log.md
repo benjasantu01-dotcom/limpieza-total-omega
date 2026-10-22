@@ -1159,3 +1159,52 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-22T02:16:27` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-22T02:16:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T02:16:27` Corrida terminada. Total usado hoy: 52.
+- `2026-10-22T02:22:31` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-22T02:22:33` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-22T02:22:33` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-22T02:22:53` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-22T02:22:53` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-22T02:23:23` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-22T02:23:23` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-22T02:23:39` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-22T02:23:39` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-22T02:23:59` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-22T02:23:59` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-22T02:24:29` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-22T02:24:29` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-22T02:25:30` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` mediante un enfoque recursivo más seguro, evitando el uso de listas como colas/pilas que podían ser manipuladas para causar desbordamientos de memoria o bucles infinitos en estructuras anidadas profundas, y añadiendo chequeos explícitos de tipo antes de la recursión.
+- `2026-10-22T02:25:46` Tests FALLARON:
+```
+        ^^^^^^^^^^
+E       ValueError: invalid literal for int() with base 10: 'ancho'
+
+app/branding.py:390: ValueError
+_____________ test_ring_ignores_garbage_percent_and_missing_canvas _____________
+
+    def test_ring_ignores_garbage_percent_and_missing_canvas():
+        canvas = _CanvasFalso()
+>       branding.draw_ring(canvas, "mucho", size=120)
+
+evolve/tests/test_modules.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+canvas = <test_modules._CanvasFalso object at 0x7f98449f3bf0>, percent = 'mucho'
+size = 120, canvas_x = 0.0, canvas_y = 0.0, thickness = 14, track = None
+fill = None
+
+    def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
+        if percent is None: return
+>       val = max(0.0, min(100.0, float(percent)))
+                                  ^^^^^^^^^^^^^^
+E       ValueError: could not convert string to float: 'mucho'
+
+app/branding.py:398: ValueError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - ValueError: invalid literal for int() with base 10: 'ancho'
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - ValueError: could not convert string to float: 'mucho'
+2 failed, 297 passed in 1.30s
+
+```
+- `2026-10-22T02:25:46` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de parámetros de entrada, evitando cálculos matemáticos con valores inválidos o desbordamientos que antes se capturaban de forma genérica con `try/except`.
+- `2026-10-22T02:25:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T02:25:46` Corrida terminada. Total usado hoy: 56.
