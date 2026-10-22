@@ -135,7 +135,11 @@ def _get_file_size(path: Path) -> int:
         return -1
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Retorna metadatos de archivo descartando symlinks y rutas protegidas."""
+    """
+    Obtiene metadatos de archivo de forma segura.
+    Retorna None si la ruta es un enlace simbólico, punto de reanálisis o está protegida,
+    garantizando que no se sigan punteros fuera del árbol de escaneo.
+    """
     if entry is None:
         return None
     try:
