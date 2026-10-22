@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 45
+- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 246
+- Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 16 | 3 | 4 | 3 | 36 |
+| 2026-10-20 | 15 | 2 | 4 | 2 | 35 |
 | 2026-10-21 | 131 | 7 | 32 | 12 | 168 |
-| 2026-10-22 | 33 | 2 | 9 | 6 | 42 |
+| 2026-10-22 | 35 | 2 | 10 | 7 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- seguridad defensiva: **43**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **32**
 - robustez ante casos límite: **32**
-- rendimiento: **24**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
-- `branding.py`: **15**
 - `browser.py`: **14**
+- `branding.py`: **14**
 - `settings.py`: **13**
 - `healthscore.py`: **13**
 - `assistant.py`: **12**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `scanner.py`: **8**
 - `main.py`: **7**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T04:07:15` **safety.py** (rendimiento): Optimicé el rendimiento de las validaciones de seguridad mediante la implementación de `lru_cache` en los predicados de reglas de integridad y la consolidación de `_is_kernel_managed` para reducir el impacto de las llamadas al sistema en los recorridos de disco.
+- `2026-10-22T04:04:44` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo integrando el filtrado de extensiones directamente en la llamada a `os.scandir` mediante un conjunto de búsqueda eficiente y evitando la creación redundante de objetos `Path` y llamadas a `stat` adicionales dentro del bucle.
 - `2026-10-22T03:55:05` **healthscore.py** (rendimiento): Se ha optimizado la gestión de las reglas de diagnóstico eliminando la regeneración innecesaria de tuplas en el pipeline mediante la persistencia de `_RULES` como constante y reemplazando la creación dinámica de `PipelineEntry` por una definición estática más eficiente, reduciendo la presión sobre el recolector de basura en cada iteración del bucle.
 - `2026-10-22T03:54:33` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` mediante un filtrado previo de archivos únicos usando `stat` (tamaño) antes de realizar cualquier operación costosa, y eliminé redundancias al consolidar las validaciones en `is_safe_to_modify` para evitar llamadas innecesarias al sistema de archivos.
 - `2026-10-22T03:46:36` **diskreport.py** (rendimiento): Optimizé la función `largest_folders` para evitar la creación innecesaria de objetos `Path` y manipulación repetitiva de cadenas dentro del bucle de recorrido, usando directamente operaciones de string más eficientes para identificar la subcarpeta de primer nivel.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T03:13:56` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo mediante docstrings detallados que explican el propósito del min-heap y el manejo de excepciones, además de unificar el uso de TypeHints en firmas complejas para mejorar la mantenibilidad y claridad del flujo de datos.
 - `2026-10-22T03:05:30` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en funciones críticas y se han aplicado type hints adicionales para esclarecer la intención de las operaciones en las estructuras de datos de escaneo.
 - `2026-10-22T03:05:16` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos para las funciones de dibujo y helpers de color, aclarando su propósito y el origen de los cálculos para mejorar la mantenibilidad.
-- `2026-10-22T02:54:41` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_path_stat_robust` envolviendo la llamada a `os.stat` en un bloque de control de errores más granular, asegurando que se liberen recursos y se propaguen excepciones específicas antes de realizar operaciones de validación, evitando así estados inconsistentes en la validación de integridad.
-- `2026-10-22T02:45:05` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante una validación explícita de `is_relative_to` (reemplazando lógica manual) y una gestión de errores más granular, asegurando que `ensure_safe_to_modify` se utilice correctamente según las reglas para el borrado.

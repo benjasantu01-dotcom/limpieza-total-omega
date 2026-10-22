@@ -268,13 +268,6 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
         return False
     return True
 
-def _is_junk_file(entry: os.DirEntry, stats: os.stat_result, now_ts: float) -> bool:
-    """Evalúa si el archivo cumple los criterios de elegibilidad (tamaño, tipo, antigüedad)."""
-    return (0 <= stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and 
-            stats.st_mtime <= now_ts + 3600 and
-            not _is_system_hidden(entry) and
-            os.path.splitext(entry.name)[1].lower() in JUNK_EXTENSIONS)
-
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[Path]) -> None:
     """Realiza un escaneo recursivo limitado por profundidad y caché de rutas visitadas."""
     if depth > LIMITS.MAX_SCAN_DEPTH: return
@@ -291,9 +284,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        stats = entry.stat(follow_symlinks=False)
-                        if _is_junk_file(entry, stats, now_ts):
-                            found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                        if entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
+                            stats = entry.stat(follow_symlinks=False)
+                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and stats.st_mtime <= (now_ts + 3600) and not _is_system_hidden(entry):
+                                found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
