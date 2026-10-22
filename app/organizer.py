@@ -368,7 +368,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 ensure_safe_to_modify(item_res)
                 item_res.unlink()
                 count += 1
-            except (Exception) as e:
+            except (OSError, PermissionError) as e:
                 logger.warning(f"No se pudo eliminar {item}: {e}")
                 continue
         return count

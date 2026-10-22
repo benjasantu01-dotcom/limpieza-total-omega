@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 244
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 96 | 5 | 24 | 9 | 158 |
-| 2026-10-22 | 82 | 7 | 21 | 16 | 86 |
+| 2026-10-21 | 96 | 5 | 24 | 9 | 154 |
+| 2026-10-22 | 83 | 7 | 22 | 16 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - seguridad defensiva: **40**
+- robustez ante casos límite: **34**
 - manejo de errores y validación de entradas: **33**
-- robustez ante casos límite: **33**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **11**
 - `scanner.py`: **11**
 - `assistant.py`: **11**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `main.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T09:10:22` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante errores de I/O y permisos en la función `delete_reviewed`, reemplazando el bloque genérico de excepciones `except (Exception)` por un manejo explícito que preserva la integridad del bucle sin ocultar errores críticos de seguridad.
 - `2026-10-22T09:02:59` **memory.py** (robustez ante casos límite): Se añade una validación de seguridad en `_iter_process_memory` para manejar correctamente casos donde `EnumProcesses` falla parcialmente o devuelve listas corruptas, asegurando que la iteración de PIDs sea robusta ante errores de acceso del kernel antes de intentar procesarlos.
 - `2026-10-22T09:00:43` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante entradas extremas en `SystemMetrics` mediante la implementación de `math.isfinite` en las validaciones de campos críticos y se protegió la ejecución del `Pipeline` frente a posibles errores en las funciones de cálculo (scorers) personalizadas mediante un bloque `try-except` más estricto.
 - `2026-10-22T08:51:16` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a archivos bloqueados por procesos activos mediante la mejora en el manejo de excepciones de E/S en `_sum_directory_recursive`, asegurando que `OSError` o `PermissionError` durante el `stat` de un archivo específico no detengan la iteración completa del directorio, manteniendo la integridad de la cuenta total.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T07:59:44` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `is_protected_path` hacia un estilo declarativo basado en una lista de validadores, eliminando el anidamiento de funciones auxiliares y facilitando la auditoría de las reglas de protección.
 - `2026-10-22T07:51:19` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más descriptivos que aclaran el propósito de funciones críticas y se han unificado criterios de type hinting para mejorar la mantenibilidad y legibilidad del código.
 - `2026-10-22T07:50:00` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings informativos, la clarificación de tipos complejos mediante type hinting adicional y la refactorización de nombres de constantes internas para reflejar mejor su propósito semántico, aumentando la legibilidad del código sin alterar su lógica.
-- `2026-10-22T07:39:48` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de procesamiento de hashes y el recolector de candidatos, además de clarificar los tipos de datos en la lógica de agrupación para asegurar que el flujo de trabajo de los tres pasos (tamaño, hash parcial, hash completo) sea evidente para cualquier colaborador.
