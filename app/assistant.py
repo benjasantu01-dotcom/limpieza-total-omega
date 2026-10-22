@@ -401,6 +401,7 @@ class SystemContext:
         try:
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
             if valid_val is None: return None
+            # Asegurar que el tipo final sea consistente con el hint de la especificación
             return spec.type_hint(valid_val)
         except (ValueError, TypeError, Exception):
             return None
