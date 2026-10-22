@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 110 | 7 | 27 | 10 | 162 |
-| 2026-10-22 | 72 | 4 | 18 | 13 | 81 |
+| 2026-10-21 | 107 | 7 | 27 | 10 | 161 |
+| 2026-10-22 | 73 | 4 | 18 | 13 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - legibilidad y documentación: **46**
-- robustez ante casos límite: **34**
 - manejo de errores y validación de entradas: **33**
-- rendimiento: **20**
+- robustez ante casos límite: **31**
+- rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **17**
 - `quarantine.py`: **17**
 - `duplicates.py`: **17**
 - `diskreport.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **16**
 - `branding.py`: **16**
 - `browser.py`: **14**
 - `settings.py`: **14**
-- `healthscore.py`: **12**
+- `assistant.py`: **12**
 - `scanner.py`: **11**
-- `assistant.py`: **11**
+- `healthscore.py`: **11**
 - `organizer.py`: **8**
-- `main.py`: **7**
+- `main.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T08:10:51` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando los llamados repetidos a `getattr` y `is_safe_key` por un acceso directo al diccionario `metrics_snapshot` ya cacheado, reduciendo la sobrecarga de procesamiento en consultas frecuentes.
 - `2026-10-22T08:00:47` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos con las responsabilidades de los métodos clave, anotaciones de tipo más precisas y una estructuración lógica de los validadores para facilitar futuras auditorías del código.
 - `2026-10-22T07:59:44` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `is_protected_path` hacia un estilo declarativo basado en una lista de validadores, eliminando el anidamiento de funciones auxiliares y facilitando la auditoría de las reglas de protección.
 - `2026-10-22T07:51:19` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más descriptivos que aclaran el propósito de funciones críticas y se han unificado criterios de type hinting para mejorar la mantenibilidad y legibilidad del código.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T06:59:28` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_candidates` añadiendo validaciones de entrada (`if not directories`) y garantizando que los `Path` sean validados antes de procesarlos, evitando así posibles errores al tratar con iterables vacíos o rutas mal formadas.
 - `2026-10-22T06:59:04` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y validando estados intermedios para prevenir caídas ante errores de sistema de archivos o archivos inaccesibles durante el recorrido.
 - `2026-10-22T06:58:32` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` añadiendo validación explícita de tipos y estados para los parámetros `bases` y `cache_paths`, asegurando que el bucle no intente operar sobre entradas `None` o malformadas, alineándose con el enfoque de validación de entradas.
-- `2026-10-22T06:57:59` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` mediante una validación de parámetros más estricta, asegurando que los valores de entrada sean finitos y válidos antes de procesarlos, evitando así posibles errores de cálculo en el canvas o en el sistema de archivos.

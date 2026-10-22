@@ -386,8 +386,7 @@ class SystemContext:
 
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
-        val = getattr(self, key, default)
-        return float(val) if _is_safe_numeric_context(val) else default
+        return self.metrics_snapshot.get(key, default)
 
     @property
     def is_empty(self) -> bool:
