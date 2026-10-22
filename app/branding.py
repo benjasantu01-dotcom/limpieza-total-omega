@@ -427,8 +427,9 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     """Dibuja un anillo de progreso circular para representar métricas de salud."""
     try:
         if percent is None: return
-        val = max(0.0, min(100.0, float(percent)))
+        val = float(percent)
         if not math.isfinite(val): return
+        val = max(0.0, min(100.0, val))
         d, t = max(20, min(2048, int(size))), max(2, int(thickness))
         pad = t / 2.0
         bb = (canvas_x + pad, canvas_y + pad, canvas_x + d - pad, canvas_y + d - pad)

@@ -292,8 +292,13 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Escanea y reporta el tamaño de cachés de navegadores detectados en el sistema."""
+    # Validación estricta de parámetros de entrada
     raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
+    
+    if not raw_bases or not browser_map:
+        return []
+        
     found: List[BrowserCache] = []
     kernel = _get_kernel32()
     
