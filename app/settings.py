@@ -232,6 +232,7 @@ class _Validators:
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
+        """Valida que la cadena sea una ruta absoluta, libre de caracteres de control y fuera de zonas protegidas."""
         if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         if is_protected_path(path_str): return False

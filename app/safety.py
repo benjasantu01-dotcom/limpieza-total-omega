@@ -767,25 +767,29 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
-    """Determina si la ruta forma parte de una zona protegida del sistema."""
+    """
+    Determina si la ruta forma parte de una zona protegida del sistema.
+    Utiliza predicados para verificar contra raíces del sistema, kernels y listas bloqueadas.
+    """
     if not isinstance(path, (str, Path)) or not path: return True
-    path_str = str(path).strip()
+    path_str = str(path).strip().lower()
             
     try:
         p = Path(path_str)
-        p_str_low = path_str.lower()
         
-        if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
-            res = True
-        elif _is_kernel_managed(p_str_low):
-            res = True
-        elif not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p.parts}):
-            res = True
-        else:
-            attrs = _get_file_attrs(str(p))
-            res = (attrs != INVALID_FILE_ATTRIBUTES and bool(attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or p == Path(p.anchor)
+        def _in_system_root() -> bool:
+            return any(path_str.startswith(root) for root in _SYSTEM_ROOT_STRS)
+            
+        def _in_protected_dir() -> bool:
+            return not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p.parts})
+            
+        def _has_system_attributes() -> bool:
+            attrs = _get_file_attrs(path_str)
+            return attrs != INVALID_FILE_ATTRIBUTES and bool(attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))
         
-        return res
+        if _in_system_root() or _is_kernel_managed(path_str) or _in_protected_dir() or _has_system_attributes() or p == Path(p.anchor):
+            return True
+        return False
     except Exception:
         return True
 
@@ -964,7 +968,6 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
 
 def _validate_path_components(path: Path) -> None:
     """Verificación profunda para prevenir ataques por recursión circular y validación de componentes intermedios."""
-    # Resolvemos antes de iterar para identificar el camino real y prevenir TOCTOU
     try:
         resolved_path = path.resolve()
     except (OSError, RuntimeError):
@@ -979,7 +982,6 @@ def _validate_path_components(path: Path) -> None:
         if "~" in current_check.name:
             raise UnsafePathError("Ruta con spoofing de nombres cortos detectada.", SafetyValidationErrorCode.SHORT_NAME_SPOOFING)
         
-        # Validamos existencia real del componente en el disco
         if current_check.exists():
             try:
                 resolved = current_check.resolve()
