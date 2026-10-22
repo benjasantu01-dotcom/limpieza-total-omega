@@ -296,7 +296,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa y segura.
-    Utiliza el registro de inodos para evitar ciclos en sistemas con enlaces simbólicos.
+    Utiliza un set de inodos (st_dev, st_ino) para detectar enlaces duros 
+    y evitar ciclos infinitos en el árbol de directorios.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -330,7 +331,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Calcula los archivos de mayor tamaño encontrados en el directorio base."""
+    """Calcula los archivos de mayor tamaño encontrados en el directorio base utilizando un heap."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
@@ -347,7 +348,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Identifica las subcarpetas inmediatas de mayor peso."""
+    """Identifica las subcarpetas de primer nivel que ocupan mayor espacio."""
     root = _validate_root(directory)
     if root is None: return []
     
@@ -379,8 +380,12 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Función interna de escaneo. Utiliza un min-heap para mantener el top de archivos
-    más grandes sin comprometer la memoria del sistema.
+    Realiza el escaneo recursivo y consolida las estadísticas en un objeto `SummaryData`.
+    Utiliza un min-heap de tamaño `limit` para mantener los archivos más grandes 
+    sin almacenar toda la lista en memoria.
+    
+    Returns:
+        SummaryData: Datos consolidados (bytes totales, conteo de archivos, stats por ext y archivos top).
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -388,6 +393,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size in walk_files(directory, skip_protected):
         stats.register_file(size, path.suffix)
         
+        # Mantener el heap con los N archivos más grandes encontrados
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))
