@@ -238,7 +238,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
-        # Verificación final de existencia antes de cualquier operación para evitar TOCTOU
         if not junk_file.path.exists() or not junk_file.path.is_file(): return False
         
         src_real = junk_file.path.resolve(strict=True)
@@ -338,12 +337,11 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 if not _is_safe_for_disk_op(junk_file, dest_res): continue
                 target_path = _can_move_file(junk_file, dest_res)
                 if target_path and target_path != junk_file.path:
-                    # Validar destino absoluto antes de mover
+                    # Validar destino absoluto antes de mover y verificar relocalización
                     if target_path.resolve(strict=False).is_relative_to(dest_res) and junk_file.path.exists():
                         shutil.move(str(junk_file.path.resolve(strict=True)), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
-                continue
         return dest_res
     except (OSError, ValueError, RuntimeError, TypeError):
         return None
@@ -363,20 +361,19 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         dest = Path(review_dir).expanduser()
         if not dest.exists() or not dest.is_dir(): return 0
         dest_res = dest.resolve(strict=False)
-        if not is_safe_to_modify(dest_res) or is_protected_path(dest_res): return 0
         
         count = 0
         for item in dest_res.iterdir():
             try:
                 if not item.is_file() or item.is_symlink(): continue
                 item_res = item.resolve(strict=False)
-                # Seguridad estricta: asegurar que el ítem pertenece a la carpeta de revisión
-                # y validación de seguridad previa al borrado
+                # Verifica contención en la carpeta de cuarentena para evitar borrados erróneos
                 if not item_res.is_relative_to(dest_res): continue
+                
                 ensure_safe_to_modify(item_res)
                 item_res.unlink()
                 count += 1
-            except (OSError, PermissionError, FileNotFoundError, ValueError, TypeError) as e:
+            except (Exception) as e:
                 logger.warning(f"No se pudo eliminar {item}: {e}")
                 continue
         return count

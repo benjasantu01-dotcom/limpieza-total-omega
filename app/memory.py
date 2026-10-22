@@ -324,7 +324,10 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
     if not handle or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
-    length = psapi.GetModuleFileNameExW(handle, None, buffer_path, 4096)
+    try:
+        length = psapi.GetModuleFileNameExW(handle, None, buffer_path, 4096)
+    except (ctypes.WinError, OSError):
+        return False
     
     if length <= 0 or length >= 4096:
         return False
