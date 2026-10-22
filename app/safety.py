@@ -977,12 +977,6 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
         return None
     return None
 
-def _is_junction_target_outside_base(path: Path, base_dir: Path) -> bool:
-    """Verifica si un junction apunta fuera del directorio base."""
-    final_path = _get_final_path_normalized(path)
-    if not final_path: return False
-    return not final_path.is_relative_to(base_dir)
-
 def _is_reparse_point_safe(path: Path, base_dir: Optional[Path]) -> bool:
     """Verifica que el destino de un reparse point sea seguro."""
     if not base_dir: return True
@@ -991,16 +985,11 @@ def _is_reparse_point_safe(path: Path, base_dir: Optional[Path]) -> bool:
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Verifica que los reparse points no redirijan fuera de la zona segura."""
-    if not path.exists(): return
-    if _is_system_directory_junction(str(path)):
-        if not _is_reparse_point_safe(path, base_dir):
-            raise UnsafePathError("Redirección de reparse point fuera de base.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
-        
-        for parent in path.parents:
-            if _is_system_directory_junction(str(parent)):
-                if not _is_reparse_point_safe(parent, base_dir):
-                    raise UnsafePathError("Reparse point anidado detectado.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
-            if parent == base_dir: break
+    # Verificación del path actual y cada uno de sus ancestros
+    for p in [path] + list(path.parents):
+        if _is_system_directory_junction(str(p)):
+            if not _is_reparse_point_safe(p, base_dir):
+                raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def _validate_path_components(path: Path) -> None:
     """Verificación profunda para prevenir ataques por recursión circular y validación de componentes intermedios."""
@@ -1030,7 +1019,6 @@ def _validate_path_components(path: Path) -> None:
                 
                 # Check previo: si es reparse point, validar antes de seguir
                 if _is_system_directory_junction(str(current_check)):
-                    # Si no podemos validar la seguridad de la redirección, abortamos
                     if _get_final_path_normalized(current_check) is None:
                         raise UnsafePathError(f"Punto de reparse inaccesible: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
             except (OSError, RuntimeError):

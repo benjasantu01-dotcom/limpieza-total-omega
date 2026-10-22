@@ -814,6 +814,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if final_check.st_ino != stat_orig.st_ino or final_check.st_size != original_size or final_check.st_nlink > 1:
         raise RuntimeError("Integridad comprometida: el archivo fue modificado (TOCTOU).")
 
+    temp_dest: Optional[Path] = None
     try:
         if destination.exists():
             raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
@@ -822,9 +823,12 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         if destination.stat().st_ino != i:
             raise RuntimeError("Integridad comprometida: el inodo destino no coincide tras la operación.")
         return h, i
-    except (OSError, IOError, RuntimeError) as e:
+    except Exception as e:
         if destination.exists() and not os.path.samefile(source, destination):
             _safe_unlink(destination)
+        if temp_dest and temp_dest.exists():
+            try: _check_io_error_context(temp_dest.unlink)
+            except OSError: pass
         raise RuntimeError(f"Error durante aislamiento: {e}")
 
 

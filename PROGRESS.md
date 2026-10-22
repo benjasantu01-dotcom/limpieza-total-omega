@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 53 | 3 | 17 | 4 | 95 |
-| 2026-10-22 | 126 | 9 | 34 | 19 | 144 |
+| 2026-10-21 | 53 | 3 | 17 | 4 | 91 |
+| 2026-10-22 | 128 | 9 | 35 | 19 | 145 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **45**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **35**
 - robustez ante casos límite: **30**
 - rendimiento: **28**
@@ -31,12 +31,12 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **19**
 - `memory.py`: **17**
+- `safety.py`: **16**
 - `branding.py`: **16**
 - `browser.py`: **16**
-- `safety.py`: **15**
+- `quarantine.py`: **16**
 - `settings.py`: **15**
 - `assistant.py`: **15**
-- `quarantine.py`: **15**
 - `duplicates.py`: **13**
 - `scanner.py`: **11**
 - `healthscore.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T14:18:25` **safety.py** (seguridad defensiva): Se ha implementado una validación de `reparse points` más estricta en `_validate_ntfs_reparse_redirection` para prevenir que un usuario o proceso malintencionado utilice un punto de unión para escapar de la zona permitida (`jail`), asegurando que no solo el destino, sino también los puntos intermedios de la ruta, sean validados contra la base de datos de seguridad.
+- `2026-10-22T14:17:02` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` reforzando `_atomic_isolate_file` para asegurar que, ante cualquier falla durante la copia o verificación de metadatos, se aplique una limpieza explícita de archivos temporales mediante una estructura `finally` robusta, evitando dejar restos en el sistema de archivos que podrían ser explotados.
 - `2026-10-22T14:06:39` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de un límite estricto de recursión y profundidad en `_compute_cached` y `_calculate_area_contribution`, previniendo potenciales desbordamientos de pila ante entradas de métricas maliciosamente diseñadas o ciclos inesperados, además de asegurar que los `SystemMetrics` no puedan ser inyectados con valores que escapen de las restricciones de tipo tras la inicialización.
 - `2026-10-22T13:57:33` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `_is_excluded_path` añadiendo validaciones explícitas contra rutas fuera del ámbito (directory traversal) y garantizando que las rutas resueltas mantengan su integridad antes de cualquier operación de escaneo, evitando así accesos no intencionados fuera del directorio raíz.
 - `2026-10-22T13:57:15` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_should_skip_entry` y `_sum_directory_recursive` mediante el uso de `is_protected_path` como barrera adicional para prevenir el acceso accidental a rutas sensibles, incluso si estas no forman parte explícita de `NEVER_TOUCH`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T13:16:43` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo ante errores de E/S y accesos denegados mediante la validación de `os.access(..., os.R_OK)` y el manejo estricto de rutas malformadas antes de realizar operaciones de resolución de sistema, evitando que una ruta inválida o bloqueada propague excepciones en el bucle principal de `detect_profiles`.
 - `2026-10-22T13:15:41` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `AssistantConfig` y `_parse_config` agregando validaciones de tipo explícitas y manejo de errores ante configuraciones corrompidas o con tipos inesperados (e.g., valores no numéricos o estructuras anidadas), evitando que un `settings.json` mal formado pueda romper la ejecución del asistente.
 - `2026-10-22T13:06:03` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando los chequeos secuenciales costosos (como `path.parts` y `path_str.startswith`) por un hash set de pre-validación basado en `os.path.commonpath`, eliminando la necesidad de iterar sobre `_SYSTEM_ROOT_STRS` y `PROTECTED_DIR_NAMES` en cada llamada.
-- `2026-10-22T12:44:49` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reemplazando el uso de `path.parts` (que genera tuplas completas de strings por cada archivo) por una comprobación basada en `path.is_relative_to` y la determinación manual de la subcarpeta raíz, evitando la creación innecesaria de objetos intermedios durante el recorrido de grandes volúmenes de datos.
-- `2026-10-22T12:44:23` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la resolución repetitiva de rutas `Path.resolve()` en el bucle principal por una comparación de strings normalizados `os.path.normcase`, lo que reduce drásticamente las llamadas al sistema operativo (I/O) durante el recorrido recursivo.
