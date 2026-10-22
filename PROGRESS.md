@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 245
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 246
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 62 | 3 | 18 | 5 | 112 |
-| 2026-10-22 | 113 | 8 | 32 | 18 | 133 |
+| 2026-10-21 | 59 | 3 | 18 | 5 | 111 |
+| 2026-10-22 | 114 | 8 | 32 | 19 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **48**
+- seguridad defensiva: **45**
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **35**
-- rendimiento: **27**
+- rendimiento: **28**
 - robustez ante casos límite: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `branding.py`: **17**
 - `memory.py`: **17**
 - `diskreport.py`: **17**
-- `browser.py`: **15**
+- `branding.py`: **16**
 - `quarantine.py`: **15**
-- `duplicates.py`: **14**
-- `safety.py`: **14**
+- `safety.py`: **15**
 - `settings.py`: **14**
+- `browser.py`: **14**
+- `duplicates.py`: **13**
 - `assistant.py`: **13**
 - `scanner.py`: **12**
 - `healthscore.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T13:06:03` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando los chequeos secuenciales costosos (como `path.parts` y `path_str.startswith`) por un hash set de pre-validación basado en `os.path.commonpath`, eliminando la necesidad de iterar sobre `_SYSTEM_ROOT_STRS` y `PROTECTED_DIR_NAMES` en cada llamada.
 - `2026-10-22T12:44:49` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reemplazando el uso de `path.parts` (que genera tuplas completas de strings por cada archivo) por una comprobación basada en `path.is_relative_to` y la determinación manual de la subcarpeta raíz, evitando la creación innecesaria de objetos intermedios durante el recorrido de grandes volúmenes de datos.
 - `2026-10-22T12:44:23` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la resolución repetitiva de rutas `Path.resolve()` en el bucle principal por una comparación de strings normalizados `os.path.normcase`, lo que reduce drásticamente las llamadas al sistema operativo (I/O) durante el recorrido recursivo.
 - `2026-10-22T12:36:08` **assistant.py** (rendimiento): Se optimizó el acceso a las métricas del `SystemContext` reemplazando los múltiples llamados a `getattr` y validaciones redundantes por un acceso directo al diccionario `metrics_snapshot` ya cacheado, reduciendo la complejidad algorítmica de O(N) a O(1) en las operaciones frecuentes de evaluación de criterios y generación de respuestas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T11:54:35` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` y `_process_folder_entry` mediante la captura explícita de excepciones durante la iteración y el acceso a datos, evitando que un fallo en un único registro o archivo bloquee la recolección total de datos de inicio.
 - `2026-10-22T11:54:02` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_secure_to_read` mediante una verificación de `stat` más estricta para asegurar que el archivo no sea un enlace simbólico, bloqueando posibles vectores de escalada de privilegios o lectura de archivos fuera de la carpeta protegida.
 - `2026-10-22T11:53:29` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validaciones de entrada (`is_readable`, `is_file`, `is_protected_path`) y manejando explícitamente excepciones de sistema en las funciones `check_` para evitar que un archivo bloqueado o con metadatos inaccesibles detenga el escaneo completo.
-- `2026-10-22T11:45:54` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores más granular y defensiva en `_get_path_stat_robust` y `_evaluate_security_rules` para capturar fallos de acceso (`PermissionError` y `OSError` específicos) antes de que se propaguen como `UnsafePathError` genéricos, mejorando la robustez de las validaciones de integridad frente a archivos bloqueados por el sistema operativo.

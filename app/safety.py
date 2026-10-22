@@ -265,8 +265,6 @@ _SYSTEM_ROOT_PATHS: Final[set[Path]] = {
     if os.environ.get(v)
 }
 
-_SYSTEM_ROOT_STRS: Final[tuple[str, ...]] = tuple(str(p).lower() + os.sep for p in _SYSTEM_ROOT_PATHS)
-
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
 )
@@ -788,28 +786,30 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Determina si la ruta forma parte de una zona protegida del sistema.
-    Utiliza predicados para verificar contra raíces del sistema, kernels y listas bloqueadas.
+    Optimizado: usa un set de raíces y comparación de paths relativos.
     """
     if not isinstance(path, (str, Path)) or not path: return True
     path_str = str(path).strip().lower()
             
     try:
-        p = Path(path_str)
+        p_resolved = Path(path_str).resolve()
         
-        def _has_system_attributes() -> bool:
-            attrs = _get_file_attrs(path_str)
-            return attrs != INVALID_FILE_ATTRIBUTES and bool(attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))
-        
-        # Validadores de protección
-        checks = [
-            any(path_str.startswith(root) for root in _SYSTEM_ROOT_STRS),
-            _is_kernel_managed(path_str),
-            not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p.parts}),
-            _has_system_attributes(),
-            p == Path(p.anchor)
-        ]
-        
-        return any(checks)
+        # 1. Chequeo rápido de ancestros contra raíces de sistema
+        for root in _SYSTEM_ROOT_PATHS:
+            try:
+                if p_resolved.is_relative_to(root): return True
+            except ValueError: continue
+            
+        # 2. Chequeo por nombre de directorio bloqueado
+        if not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p_resolved.parts}):
+            return True
+            
+        # 3. Atributos de sistema
+        attrs = _get_file_attrs(path_str)
+        if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
+            return True
+            
+        return p_resolved == Path(p_resolved.anchor)
     except Exception:
         return True
 
