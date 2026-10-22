@@ -878,3 +878,11 @@ ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflict
 - `2026-10-21T23:39:26` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-21T23:49:42` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-21T23:59:51` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-22T00:10:01` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-10-22T00:11:14` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una comprobación robusta mediante `_validate_process_state` y un manejo de errores más específico en `on_trim_process` para asegurar que el PID sea válido antes de intentar cualquier operación de sistema, evitando caídas ante procesos zombies o errores de acceso.
+- `2026-10-22T00:11:44` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-22T00:12:26` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_safe_for_disk_op` al añadir una verificación explícita contra ataques de "Time-of-check to time-of-use" (TOCTOU) y corrupción de metadatos, asegurando que la ruta de origen sea un archivo real antes de intentar cualquier operación de E/S.
+- `2026-10-22T00:12:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T00:12:59` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_get_sha256` añadiendo un manejo de excepciones más granular para archivos bloqueados o inaccesibles durante el cálculo, y se añadió una verificación de integridad más estricta en `purge_all` para asegurar que los archivos huérfanos sin entrada en el manifiesto se procesen bajo las mismas reglas de seguridad que los registrados.
+- `2026-10-22T00:12:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T00:12:59` Corrida terminada. Total usado hoy: 4.

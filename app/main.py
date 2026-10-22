@@ -1791,9 +1791,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def _validate_process_state(self, pid: int) -> bool:
-        """Verifica PID activo."""
+        """Verifica PID activo y que no sea un proceso del sistema o inválido."""
+        if pid < 100:
+            self.log(f"Error: El PID {pid} es inválido o crítico del sistema.", "Memoria")
+            return False
         if not memory_mod.process_exists(pid):
-            self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
+            self.log(f"Error: El proceso {pid} no está activo.", "Memoria")
             return False
         return True
 
@@ -1805,10 +1808,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         try:
             pid = int(raw_pid)
-            if pid < 100:
-                raise ValueError
         except (TypeError, ValueError):
-            self.log("Error: PID inválido o crítico del sistema (debe ser numérico y >= 100).", "Memoria")
+            self.log("Error: El PID debe ser un valor numérico.", "Memoria")
             return
         
         if not self._validate_process_state(pid):

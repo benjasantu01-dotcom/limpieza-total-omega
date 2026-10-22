@@ -238,7 +238,9 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
-        if not junk_file.path.exists(): return False
+        # Verificación final de existencia antes de cualquier operación para evitar TOCTOU
+        if not junk_file.path.exists() or not junk_file.path.is_file(): return False
+        
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
@@ -250,7 +252,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         if _is_recursive_violation(src_real, dest_real) or not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
-        return src_real.is_file()
+        return True
     except (OSError, AttributeError, ValueError, PermissionError):
         return False
 

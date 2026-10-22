@@ -269,19 +269,19 @@ def _get_sha256(path: Path) -> str:
     """Calcula hash SHA256 mediante streaming para optimizar uso de memoria con archivos grandes."""
     if not path.is_file(): return ""
     
-    stat = path.stat()
-    cache_key = (str(path), stat.st_mtime)
-    if cache_key in _HASH_CACHE: return _HASH_CACHE[cache_key]
-    
-    sha256_hash = hashlib.sha256()
     try:
+        stat = path.stat()
+        cache_key = (str(path), stat.st_mtime)
+        if cache_key in _HASH_CACHE: return _HASH_CACHE[cache_key]
+        
+        sha256_hash = hashlib.sha256()
         with open(path, "rb", buffering=CHUNK_SIZE) as f:
             for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
                 sha256_hash.update(chunk)
         res = sha256_hash.hexdigest()
         _HASH_CACHE[cache_key] = res
         return res
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, MemoryError):
         return ""
 
 
@@ -1043,16 +1043,20 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     return False
 
 
-def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
+def _is_item_purgable(file_path: Path, item: Optional[QuarantineItem] = None) -> bool:
     """Verifica si un ítem puede ser purgado tras validar integridad."""
     if not (file_path.exists() and file_path.is_file() and not file_path.is_symlink()):
         return False
     if _is_file_in_use_by_system(file_path):
         return False
-    return (
-        item.verify_integrity(file_path) and
-        _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
-    )
+    
+    if item:
+        return item.verify_integrity(file_path) and _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
+    
+    # Si no hay ítem, aplicar seguridad base: ni oculto, ni sistema, ni en uso.
+    if _win_has_system_attributes(file_path):
+        return False
+    return _safe_unlink(file_path)
 
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
@@ -1064,8 +1068,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             
         items: List[QuarantineItem] = load_manifest(base)
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
-        purgado_ids: Set[str] = {i.item_id for i in items}
-        purgados_confirmados: Set[str] = set()
+        purgado_ids: Set[str] = set()
         
         for f in quarantine_root.iterdir():
             try:
@@ -1077,15 +1080,15 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
                 if f.name in item_map:
                     if _is_item_purgable(f, item_map[f.name]):
-                        purgados_confirmados.add(item_map[f.name].item_id)
+                        purgado_ids.add(item_map[f.name].item_id)
                 else:
-                    if _safe_unlink(f):
+                    if _is_item_purgable(f):
                         continue
             except (OSError, PermissionError, UnsafePathError):
                 continue
         
-        if purgados_confirmados:
-            new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgados_confirmados]
+        if purgado_ids:
+            new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
             
             try:
@@ -1095,7 +1098,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             except OSError:
                 pass
             
-        return len(purgados_confirmados)
+        return len(purgado_ids)
     except (OSError, PermissionError, UnsafePathError):
         return 0
 
