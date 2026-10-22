@@ -163,6 +163,7 @@ class _SettingsManager:
     def clear(self) -> None:
         """Limpia las memorias caché para forzar una recarga limpia desde el disco."""
         self.settings_cache.clear()
+        _load_impl.cache_clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
@@ -300,7 +301,7 @@ INT_KEYS: Final[frozenset[ConfigKey]] = frozenset((
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS
 ))
 
-def _get_validator_for_key(k: ConfigKey) -> _ValidatorEntry:
+def _get_validator_for_k(k: ConfigKey) -> _ValidatorEntry:
     """Asigna la estrategia de validación adecuada según el tipo de clave."""
     if k in BOOL_KEYS: return _ValidatorEntry(_Validators.bool)
     if k in INT_KEYS: return _ValidatorEntry(_Validators.int)
@@ -308,7 +309,7 @@ def _get_validator_for_key(k: ConfigKey) -> _ValidatorEntry:
     return _ValidatorEntry(_Validators.str)
 
 _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingProxyType({
-    k: _get_validator_for_key(k) for k in ConfigKey
+    k: _get_validator_for_k(k) for k in ConfigKey
 })
 
 def validate(raw_values: Any) -> AppSettings:
@@ -368,22 +369,21 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         final["asistente_activado"] = False
     return final # type: ignore
 
+@lru_cache(maxsize=4)
+def _load_impl(file_path_str: str, mtime: float, size: int) -> AppSettings:
+    """Implementación cacheable de carga de configuración."""
+    data = _read_and_parse_json(Path(file_path_str))
+    if data is not None:
+        return _coerce_and_verify(validate(data))
+    return dict(DEFAULTS) # type: ignore
+
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga y valida la configuración desde disco o retorna los valores por defecto."""
     primary_path = settings_path(custom_base)
     try:
         if primary_path.exists() and primary_path.is_file():
             st = primary_path.stat()
-            cache_key = str(primary_path)
-            cached = _MANAGER.settings_cache.get(cache_key)
-            if cached and cached[0] == st.st_mtime and cached[1] == st.st_size:
-                return cached[2].copy() # type: ignore
-            
-            data = _read_and_parse_json(primary_path)
-            if data is not None:
-                settings = _coerce_and_verify(validate(data))
-                _MANAGER.settings_cache[cache_key] = (st.st_mtime, st.st_size, settings)
-                return settings
+            return _load_impl(str(primary_path), st.st_mtime, st.st_size).copy() # type: ignore
     except (OSError, PermissionError): pass
     return dict(DEFAULTS) # type: ignore
 

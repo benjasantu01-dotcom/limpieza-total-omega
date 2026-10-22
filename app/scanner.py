@@ -295,12 +295,17 @@ class Scanner:
         if entry is None or not entry.path:
             return
             
+        path_norm: str = os.path.normcase(entry.path)
+        if path_norm in self.seen:
+            return
+        
         try:
             if entry.is_file(follow_symlinks=False):
                 if not self._is_relevant_extension(entry.name):
                     return
                 if not self._is_safe_entry(entry):
                     return
+                self.seen.add(path_norm)
                 self._run_file_heuristics(Path(entry.path), entry)
             elif entry.is_dir(follow_symlinks=False):
                 if self._is_safe_entry(entry):

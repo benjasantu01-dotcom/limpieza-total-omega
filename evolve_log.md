@@ -546,3 +546,76 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-10-22T08:30:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 99): unterminated string literal (detected at line 99)
 - `2026-10-22T08:30:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T08:30:58` Corrida terminada. Total usado hoy: 200.
+- `2026-10-22T08:39:14` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-22T08:39:53` Tests FALLARON:
+```
+e <function is_safe_to_modify at 0x7f2866fbc680> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_drive_root - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_sensitive_extensions_by_default - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'app.tmp'
+  'instalador.exe'
+  'malo.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'instalador.exe',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - AssertionError: assert 'protegida' in 'Diagnóstico optimizado'
+ +  where 'Diagnóstico optimizado' = <function describe_protection at 0x7f2866fbc7c0>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f2866fbc7c0> = safety.describe_protection
+8 failed, 291 passed in 0.84s
+
+```
+- `2026-10-22T08:39:53` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_get_file_attrs` y otras verificaciones de estado reemplazando llamadas repetitivas de `ctypes` en el bucle principal por un acceso centralizado a `SecurityDescriptor`, aprovechando que ya se cachean los atributos.
+- `2026-10-22T08:40:22` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se implementó un filtro de "paso previo" en `process_entry` que verifica si la ruta ya fue procesada o está en caché antes de realizar validaciones de sistema de archivos costosas, optimizando significativamente el rendimiento en recorridos profundos.
+- `2026-10-22T08:40:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T08:41:26` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-22T08:42:22` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento del acceso a las configuraciones mediante la implementación de `lru_cache` en la función `load`, evitando deserializaciones innecesarias de JSON en llamadas sucesivas cuando el archivo no ha cambiado en disco.
+- `2026-10-22T08:42:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T08:42:28` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T08:42:49` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 0.92s
+
+```
+- `2026-10-22T08:42:49` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento del módulo implementando una caché de resolución de rutas (`_RESOLVED_PATH_CACHE`) dentro de `StartupEntry` para evitar llamadas redundantes a `path.resolve(strict=False)` y `stat()`, que son las operaciones de E/S más costosas durante el escaneo del registro.
+- `2026-10-22T08:42:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T08:42:49` Corrida terminada. Total usado hoy: 204.
