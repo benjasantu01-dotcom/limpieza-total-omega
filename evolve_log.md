@@ -1412,3 +1412,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-22T05:18:13` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se mejora la robustez de las validaciones de seguridad en `quarantine.py` mediante la integración explícita de `is_protected_path` en el momento de la carga del manifiesto, asegurando que un manifiesto manipulado no pueda engañar al sistema para operar sobre rutas protegidas.
 - `2026-10-22T05:18:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T05:18:13` Corrida terminada. Total usado hoy: 124.
+- `2026-10-22T05:25:44` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-10-22T05:26:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-22T05:26:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T05:26:12` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T05:27:06` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para prevenir la suplantación de nombres cortos (8.3) mediante la detección de tildes/espacios no estándar o caracteres ocultos en nombres de archivos, protegiendo contra posibles rutas ambiguas que podrían evadir los chequeos de `is_protected_path`.
+- `2026-10-22T05:27:37` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `scanner.py` al implementar una validación de ruta absoluta antes de realizar cualquier operación en `process_entry` y `scan_directory`, garantizando que el escáner no escape del `base_root` incluso ante condiciones de carrera o manipulación de rutas externas, utilizando `pathlib.Path.resolve()` de forma consistente.
+- `2026-10-22T05:27:54` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_read_and_parse_json` y `perform_atomic_write` añadiendo verificaciones estrictas de metadatos (como el conteo de enlaces duros) para prevenir ataques de sustitución de archivos (TOCTOU/Symlink races) y asegurar la integridad de los datos antes de operar sobre ellos.
+- `2026-10-22T05:27:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T05:27:54` Corrida terminada. Total usado hoy: 128.

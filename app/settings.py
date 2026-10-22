@@ -174,7 +174,9 @@ class _SettingsManager:
             resolved_path = config_path.resolve()
             if not is_safe_to_modify(str(resolved_path)): return False
             if resolved_path.exists():
-                if resolved_path.is_symlink() or not resolved_path.is_file(): return False
+                # Verificación crítica: evitar enlaces o archivos con múltiples hardlinks
+                st = resolved_path.stat()
+                if st.st_nlink != 1 or not stat.S_ISREG(st.st_mode): return False
             
             temp_path = resolved_path.with_suffix(".tmp")
             with open(temp_path, "w", encoding="utf-8") as f:
@@ -184,8 +186,7 @@ class _SettingsManager:
             os.replace(temp_path, resolved_path)
             self.clear()
             return True
-        except (OSError, IOError, PermissionError) as e:
-            if getattr(e, 'winerror', 0) == 32: return False
+        except (OSError, IOError, PermissionError):
             return False
 
 _MANAGER = _SettingsManager()
@@ -338,14 +339,14 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     try:
         resolved = file_path.resolve()
         if not is_safe_to_modify(str(resolved)): return None
-        if resolved.is_symlink(): return None
+        # Verificar estado final de seguridad antes de abrir
+        st = resolved.stat()
+        if not _is_file_secure_to_read(st): return None
+        
         with open(resolved, "rb") as f:
-            try:
-                st = os.fstat(f.fileno())
-            except OSError as e:
-                if getattr(e, 'errno', 0) == errno.EACCES: return None
-                raise
-            if not _is_file_secure_to_read(st): return None
+            # Re-verificar metadatos tras abrir el file descriptor
+            if not _is_file_secure_to_read(os.fstat(f.fileno())): return None
+            
             content = f.read(MAX_SETTINGS_SIZE + 1)
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
             try:

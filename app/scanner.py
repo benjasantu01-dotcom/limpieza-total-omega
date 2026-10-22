@@ -239,7 +239,7 @@ class Scanner:
         """Verifica estrictamente si la ruta está contenida dentro del scope del escaneo."""
         try:
             target = Path(entry_path).resolve()
-            return os.path.commonpath([str(self.base_root), str(target)]) == str(self.base_root)
+            return str(target).startswith(str(self.base_root))
         except (OSError, ValueError, RuntimeError):
             return False
 

@@ -1004,8 +1004,9 @@ def _validate_path_components(path: Path) -> None:
 
     for i in range(len(parts)):
         current_check = anchor.joinpath(*parts[:i+1])
-        if "~" in current_check.name:
-            raise UnsafePathError("Ruta con spoofing de nombres cortos detectada.", SafetyValidationErrorCode.SHORT_NAME_SPOOFING)
+        # Detectar caracteres ocultos o spoofing de nombres cortos (tilde)
+        if "~" in current_check.name or re.search(r'[\u200E\u200F\u202A-\u202E]', current_check.name):
+            raise UnsafePathError("Ruta con spoofing de nombres o caracteres ocultos detectada.", SafetyValidationErrorCode.SHORT_NAME_SPOOFING)
         
         if current_check.exists():
             try:

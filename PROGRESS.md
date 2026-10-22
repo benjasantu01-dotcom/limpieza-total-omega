@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 9 | 1 | 2 | 2 | 16 |
+| 2026-10-20 | 9 | 1 | 2 | 2 | 12 |
 | 2026-10-21 | 131 | 7 | 32 | 12 | 168 |
-| 2026-10-22 | 53 | 4 | 12 | 9 | 46 |
+| 2026-10-22 | 56 | 4 | 13 | 9 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- seguridad defensiva: **46**
+- seguridad defensiva: **49**
 - robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **28**
@@ -33,20 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
+- `safety.py`: **18**
 - `duplicates.py`: **17**
-- `safety.py`: **17**
 - `branding.py`: **16**
 - `browser.py`: **15**
 - `healthscore.py`: **15**
+- `settings.py`: **14**
 - `assistant.py`: **13**
-- `settings.py`: **13**
 - `organizer.py`: **10**
-- `scanner.py`: **9**
+- `scanner.py`: **10**
 - `startup.py`: **7**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T05:27:54` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_read_and_parse_json` y `perform_atomic_write` añadiendo verificaciones estrictas de metadatos (como el conteo de enlaces duros) para prevenir ataques de sustitución de archivos (TOCTOU/Symlink races) y asegurar la integridad de los datos antes de operar sobre ellos.
+- `2026-10-22T05:27:37` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` al implementar una validación de ruta absoluta antes de realizar cualquier operación en `process_entry` y `scan_directory`, garantizando que el escáner no escape del `base_root` incluso ante condiciones de carrera o manipulación de rutas externas, utilizando `pathlib.Path.resolve()` de forma consistente.
+- `2026-10-22T05:27:06` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la suplantación de nombres cortos (8.3) mediante la detección de tildes/espacios no estándar o caracteres ocultos en nombres de archivos, protegiendo contra posibles rutas ambiguas que podrían evadir los chequeos de `is_protected_path`.
 - `2026-10-22T05:18:13` **quarantine.py** (seguridad defensiva): Se mejora la robustez de las validaciones de seguridad en `quarantine.py` mediante la integración explícita de `is_protected_path` en el momento de la carga del manifiesto, asegurando que un manifiesto manipulado no pueda engañar al sistema para operar sobre rutas protegidas.
 - `2026-10-22T05:17:43` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de la función `_is_safe_for_disk_op` añadiendo una validación explícita de `is_protected_path` sobre la ruta destino calculada, asegurando que el proceso de "staging" no pueda mover archivos a ubicaciones protegidas por el sistema incluso si la carpeta base original fuera permitida.
 - `2026-10-22T05:17:15` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar la API de Windows mediante la adición de una comprobación de tipo `GetExitCodeProcess` antes de realizar cualquier operación en `trim_working_set`, asegurando que el proceso sigue activo y no es un "zombie" que podría causar errores de acceso o comportamiento inesperado.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T04:56:49` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ensure_safe_text` y `_build_payload` implementando un filtrado más estricto contra inyecciones, asegurando que cualquier entrada que contenga caracteres de escape o metacaracteres de shell sea rechazada antes de ser procesada por el motor, cumpliendo con la premisa de seguridad defensiva.
 - `2026-10-22T04:55:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo un manejo explícito de archivos bloqueados o en uso, capturando `OSError` específico de acceso compartido (ERROR_SHARING_VIOLATION) para evitar fallos de ejecución al intentar leer o reemplazar el archivo de configuración cuando otro proceso lo está utilizando brevemente.
 - `2026-10-22T04:47:22` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `ensure_safe_to_modify` para detectar si el sistema de archivos reporta archivos con atributos de "punto de unión" o "reparse point" de forma recurrente, añadiendo una validación contra el límite de profundidad de resolución (`MAX_DIRECTORY_DEPTH`) para evitar ataques de recursión infinita mediante enlaces simbólicos circulares que podrían congelar la app.
-- `2026-10-22T04:37:14` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_process_executable_safe` añadiendo una validación explícita de `null` para el puntero del buffer de ruta y manejando correctamente casos donde `GetModuleFileNameExW` falla silenciosamente retornando una cadena vacía, evitando así falsos positivos o errores de manejo de memoria en rutas inesperadas.
-- `2026-10-22T04:35:24` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite mediante la validación estricta de las métricas en `compute_score` y la adición de una cláusula de guarda en `_compute_cached` para prevenir estados inconsistentes, garantizando que el `Pipeline` siempre tenga datos finitos y válidos.
-- `2026-10-22T04:26:41` **diskreport.py** (robustez ante casos límite): Mejora la robustez ante la concurrencia y cambios en el sistema de archivos durante el recorrido (`Race Conditions`), añadiendo un manejo de excepciones más granular en `walk_files` y protegiendo el heap de errores de ordenamiento si un archivo desaparece entre la lectura y la comparación.
