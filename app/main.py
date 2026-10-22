@@ -199,7 +199,6 @@ def validated_ui_operation(func: Callable) -> Callable:
     Decorador: Verifica el estado `_closing` de la instancia antes de ejecutar
     callbacks. Previene lógica residual post-cierre o en ventanas eliminadas.
     """
-    @wraps(func)
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Optional[Any]:
         if getattr(self, '_closing', False) or (hasattr(self, 'winfo_exists') and not self.winfo_exists()):
             return None

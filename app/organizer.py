@@ -244,6 +244,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         dest_real = dest.resolve(strict=False)
         
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES or is_protected_path(src_real): return False
+        if is_protected_path(dest_real): return False
         if src_real.is_symlink() or (os.name == 'nt' and _is_system_hidden(src_real)): return False
         if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
         if src_real.drive != dest_real.drive: return False

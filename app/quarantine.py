@@ -206,7 +206,8 @@ class QuarantineItem:
             
         try:
             orig_p: Path = Path(str(data["original_path"]))
-            if not orig_p.is_absolute():
+            # Validación de seguridad crítica: ni siquiera el manifiesto puede apuntar a sistema
+            if not orig_p.is_absolute() or is_protected_path(orig_p):
                 return None
                 
             return cls(

@@ -42,6 +42,7 @@ else:
         HANDLE = ctypes.c_void_p
         DWORD = ctypes.c_ulong
         BOOL = ctypes.c_int
+        PDWORD = ctypes.POINTER(ctypes.c_ulong)
 
 # Tipos semánticos para prevenir errores de lógica al operar con diferentes unidades.
 BytesValue = NewType("BytesValue", int)
@@ -55,11 +56,13 @@ MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB
 # Máscaras de acceso Win32 para interactuar con el subsistema de procesos:
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
-TRIM_ACCESS_MASK: Final[int] = 0x00020000 | PROCESS_SET_QUOTA
+PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
+TRIM_ACCESS_MASK: Final[int] = 0x00020000 | PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION
 
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
 DRIVE_FIXED: Final[int] = 3
 INVALID_HANDLE_VALUE: Final[int] = -1
+STILL_ACTIVE: Final[int] = 259
 
 # PIDs reservados por el kernel de Windows que no deben ser consultados.
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
@@ -456,6 +459,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso no encontrado."
 
     try:
+        # Validación de que el proceso sigue activo
+        exit_code = wintypes.DWORD()
+        if kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE:
+            return False, "El proceso no está activo."
+        
         # Validación defensiva extra antes de la acción destructiva
         if not _is_process_executable_safe(target_pid, proc_handle, psapi):
             return False, "Proceso protegido o ubicación insegura."
