@@ -755,6 +755,10 @@ def normalize(path: PathLike) -> Path:
         parts = p.parts
         current_subpath = anchor_path
         
+        # Validar profundidad recursiva durante la normalización
+        if len(parts) > MAX_DIRECTORY_DEPTH:
+            raise UnsafePathError("Profundidad de ruta excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP)
+
         for part in parts:
             if part in (os.sep, os.altsep): continue
             current_subpath = current_subpath / part
@@ -993,6 +997,10 @@ def _validate_path_components(path: Path) -> None:
     anchor = Path(resolved_path.anchor)
     parts = resolved_path.parts
     visited: set[Path] = set()
+
+    # Prevenir recursión infinita mediante profundidad excesiva detectada
+    if len(parts) > MAX_DIRECTORY_DEPTH:
+        raise UnsafePathError("Ruta demasiado profunda.", SafetyValidationErrorCode.PATH_TOO_DEEP)
 
     for i in range(len(parts)):
         current_check = anchor.joinpath(*parts[:i+1])

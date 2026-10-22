@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 245
+- Rechazadas por guardia de seguridad: 46
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 9 | 1 | 2 | 2 | 32 |
+| 2026-10-20 | 9 | 1 | 2 | 2 | 28 |
 | 2026-10-21 | 131 | 7 | 32 | 12 | 168 |
-| 2026-10-22 | 41 | 3 | 11 | 8 | 45 |
+| 2026-10-22 | 42 | 3 | 12 | 9 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 - seguridad defensiva: **36**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **28**
@@ -33,8 +33,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
-- `safety.py`: **16**
 - `branding.py`: **15**
 - `browser.py`: **14**
 - `healthscore.py`: **14**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T04:47:22` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `ensure_safe_to_modify` para detectar si el sistema de archivos reporta archivos con atributos de "punto de unión" o "reparse point" de forma recurrente, añadiendo una validación contra el límite de profundidad de resolución (`MAX_DIRECTORY_DEPTH`) para evitar ataques de recursión infinita mediante enlaces simbólicos circulares que podrían congelar la app.
 - `2026-10-22T04:37:14` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_process_executable_safe` añadiendo una validación explícita de `null` para el puntero del buffer de ruta y manejando correctamente casos donde `GetModuleFileNameExW` falla silenciosamente retornando una cadena vacía, evitando así falsos positivos o errores de manejo de memoria en rutas inesperadas.
 - `2026-10-22T04:35:24` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite mediante la validación estricta de las métricas en `compute_score` y la adición de una cláusula de guarda en `_compute_cached` para prevenir estados inconsistentes, garantizando que el `Pipeline` siempre tenga datos finitos y válidos.
 - `2026-10-22T04:26:41` **diskreport.py** (robustez ante casos límite): Mejora la robustez ante la concurrencia y cambios en el sistema de archivos durante el recorrido (`Race Conditions`), añadiendo un manejo de excepciones más granular en `walk_files` y protegiendo el heap de errores de ordenamiento si un archivo desaparece entre la lectura y la comparación.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T03:45:09` **branding.py** (rendimiento): Implementé `functools.lru_cache` en las funciones de conversión de color `_hex_to_rgb` y `_rgb_to_hex` para evitar la redundancia de cálculos matemáticos y conversiones de cadenas en llamadas repetidas dentro de bucles de renderizado (como el dibujo de franjas o barras).
 - `2026-10-22T03:36:21` **settings.py** (legibilidad y documentación): Mejoré la legibilidad del código extrayendo la lógica de validación de rutas (que era un bloque denso y complejo dentro de `_Validators`) a un método privado más claro, facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
 - `2026-10-22T03:34:43` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `is_protected_path`, reemplazando una cadena de `if/elif` difícil de auditar por una lógica basada en predicados claros, y agregué tipado y docstrings precisos a las funciones críticas para facilitar la revisión de seguridad.
-- `2026-10-22T03:25:19` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_isolation_request` para consolidar las validaciones de seguridad en un flujo lógico, mejoré la documentación de las funciones críticas con docstrings explicativos sobre las garantías de seguridad que implementan, y añadí *type hints* faltantes en funciones internas para mayor claridad.

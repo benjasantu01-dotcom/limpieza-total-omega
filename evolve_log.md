@@ -1356,3 +1356,12 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-22T04:37:28` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-10-22T04:37:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T04:37:28` Corrida terminada. Total usado hoy: 108.
+- `2026-10-22T04:44:59` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-10-22T04:45:46` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido una validación de estado de archivo en `_is_file_in_use_by_system` para manejar específicamente excepciones `OSError` al intentar obtener atributos mediante `stat()`, previniendo errores en condiciones de carrera (Race Conditions) comunes cuando un archivo es eliminado o bloqueado inmediatamente después de ser detectado pero antes de ser procesado.
+- `2026-10-22T04:46:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-22T04:46:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T04:46:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T04:47:22` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `ensure_safe_to_modify` para detectar si el sistema de archivos reporta archivos con atributos de "punto de unión" o "reparse point" de forma recurrente, añadiendo una validación contra el límite de profundidad de resolución (`MAX_DIRECTORY_DEPTH`) para evitar ataques de recursión infinita mediante enlaces simbólicos circulares que podrían congelar la app.
+- `2026-10-22T04:47:36` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-22T04:47:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T04:47:36` Corrida terminada. Total usado hoy: 112.
