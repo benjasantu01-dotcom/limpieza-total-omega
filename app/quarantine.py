@@ -1062,9 +1062,8 @@ def _is_item_purgable(file_path: Path, item: Optional[QuarantineItem] = None) ->
     if item:
         return item.verify_integrity(file_path) and _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
     
-    if _win_has_system_attributes(file_path):
-        return False
-    return _safe_unlink(file_path)
+    # Archivos huérfanos sin registro en manifiesto no son purgados por seguridad.
+    return False
 
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
@@ -1087,12 +1086,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     continue
 
                 item = item_map.get(f.name)
-                if item:
-                    if _is_item_purgable(f, item):
-                        purgado_ids.add(item.item_id)
-                else:
-                    if _is_item_purgable(f):
-                        continue
+                if item and _is_item_purgable(f, item):
+                    purgado_ids.add(item.item_id)
             except (OSError, PermissionError, UnsafePathError):
                 continue
         

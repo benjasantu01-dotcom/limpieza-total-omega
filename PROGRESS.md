@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 249
+- Sin respuesta de la IA (error o límite): 246
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 53 | 3 | 17 | 4 | 111 |
-| 2026-10-22 | 118 | 9 | 32 | 19 | 138 |
+| 2026-10-21 | 53 | 3 | 17 | 4 | 107 |
+| 2026-10-22 | 120 | 9 | 33 | 19 | 139 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,18 +25,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **35**
 - rendimiento: **28**
-- robustez ante casos límite: **26**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `branding.py`: **16**
 - `browser.py`: **15**
+- `quarantine.py`: **15**
 - `safety.py`: **14**
 - `settings.py`: **14**
 - `assistant.py`: **14**
-- `quarantine.py`: **14**
 - `duplicates.py`: **13**
 - `scanner.py`: **11**
 - `healthscore.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T13:36:38` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y corrupción de metadatos en `purge_all`, implementando una validación estricta del inodo y hash antes de borrar cualquier archivo, asegurando que solo se eliminen los ítems efectivamente registrados y verificados.
+- `2026-10-22T13:35:23` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `_is_process_executable_safe` añadiendo el manejo de `ERROR_ACCESS_DENIED` y otras excepciones comunes de Win32 al obtener el nombre del módulo, evitando que la app falle o quede en un estado inconsistente cuando el sistema operativo restringe el acceso a ciertos procesos (ej. procesos de nivel SYSTEM), y asegurando que las rutas de caracteres especiales sean manejadas correctamente sin bloqueos.
 - `2026-10-22T13:26:18` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `_calculate_area_contribution` ante entradas malformadas o inesperadas, añadiendo una comprobación explícita para evitar divisiones por cero o fallos catastróficos en el pipeline cuando las métricas recibidas son valores extremos o inválidos (como `None` o estados no inicializados).
 - `2026-10-22T13:25:11` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o con metadatos inaccesibles añadiendo un bloque `try-except` específico para `os.stat` y verificando la existencia del tamaño del archivo, evitando así que el generador colapse por excepciones de acceso de bajo nivel.
 - `2026-10-22T13:16:43` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo ante errores de E/S y accesos denegados mediante la validación de `os.access(..., os.R_OK)` y el manejo estricto de rutas malformadas antes de realizar operaciones de resolución de sistema, evitando que una ruta inválida o bloqueada propague excepciones en el bucle principal de `detect_profiles`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T12:24:28` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la normalización de la estructura de las funciones de validación de seguridad (introduciendo docstrings más descriptivos sobre el "PORQUÉ" de las restricciones) y aplicando type hinting consistente, asegurando que la complejidad de las operaciones críticas sea transparente para futuros colaboradores.
 - `2026-10-22T12:16:10` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en funciones críticas (como `_is_process_executable_safe` y `trim_working_set`) y la estandarización de type hints, facilitando la comprensión del flujo de seguridad al realizar llamadas de bajo nivel a la API de Windows.
 - `2026-10-22T12:04:52` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante la adición de Type Hints faltantes, normalización de docstrings para seguir estándares de documentación, y la simplificación de estructuras de datos en `_collect_summary_data` para mejorar la mantenibilidad.
-- `2026-10-22T12:04:22` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `browser.py` extrayendo la lógica de filtrado de `_sum_directory_recursive` a una función auxiliar nombrada `_process_file_in_dir`, clarificando así el propósito del bucle principal y facilitando la depuración de futuras heurísticas.
-- `2026-10-22T12:03:51` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y semántica del archivo mediante la incorporación de type hints detallados en funciones de dibujo geométrico y la sustitución de literales mágicos en los parámetros de los métodos `create_` de `CanvasElement` para reflejar con mayor claridad su propósito.

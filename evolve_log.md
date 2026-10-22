@@ -1091,3 +1091,13 @@ FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_fa
 - `2026-10-22T13:27:45` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-10-22T13:27:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T13:27:45` Corrida terminada. Total usado hoy: 316.
+- `2026-10-22T13:34:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-22T13:35:23` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_is_process_executable_safe` añadiendo el manejo de `ERROR_ACCESS_DENIED` y otras excepciones comunes de Win32 al obtener el nombre del módulo, evitando que la app falle o quede en un estado inconsistente cuando el sistema operativo restringe el acceso a ciertos procesos (ej. procesos de nivel SYSTEM), y asegurando que las rutas de caracteres especiales sean manejadas correctamente sin bloqueos.
+- `2026-10-22T13:35:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T13:35:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-22T13:36:38` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y corrupción de metadatos en `purge_all`, implementando una validación estricta del inodo y hash antes de borrar cualquier archivo, asegurando que solo se eliminen los ítems efectivamente registrados y verificados.
+- `2026-10-22T13:36:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T13:36:49` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T13:37:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-22T13:37:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T13:37:02` Corrida terminada. Total usado hoy: 320.

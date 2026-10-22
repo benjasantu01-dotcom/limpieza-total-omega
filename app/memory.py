@@ -335,16 +335,14 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
-        length = psapi.GetModuleFileNameExW(handle, None, buffer_path, 4096)
+        # Se maneja el error internamente: si no hay permiso, GetModuleFileNameExW devuelve 0
+        if psapi.GetModuleFileNameExW(handle, None, buffer_path, 4096) <= 0:
+            return False
     except (ctypes.WinError, OSError):
         return False
     
-    if length <= 0 or length >= 4096 or not buffer_path.value:
-        return False
-        
     exe_str = buffer_path.value.strip()
-    if not exe_str: 
-        return False
+    if not exe_str: return False
         
     try:
         executable_path = Path(exe_str)
