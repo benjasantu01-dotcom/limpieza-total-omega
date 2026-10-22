@@ -31,6 +31,35 @@ LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
+class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
+    _fields_ = [
+        ("dwFileAttributes", ctypes.c_uint32),
+        ("ftCreationTime", ctypes.c_uint64),
+        ("ftLastAccessTime", ctypes.c_uint64),
+        ("ftLastWriteTime", ctypes.c_uint64),
+        ("dwVolumeSerialNumber", ctypes.c_uint32),
+        ("nFileSizeHigh", ctypes.c_uint32),
+        ("nFileSizeLow", ctypes.c_uint32),
+        ("nNumberOfLinks", ctypes.c_uint32),
+        ("nFileIndexHigh", ctypes.c_uint32),
+        ("nFileIndexLow", ctypes.c_uint32),
+    ]
+
+def _get_file_id(path_str: str) -> tuple[int, int, int]:
+    """Obtiene ID de archivo único en Windows para detectar cambios de identidad (TOCTOU)."""
+    if os.name != 'nt': return (0, 0, 0)
+    info = BY_HANDLE_FILE_INFORMATION()
+    handle = ctypes.windll.kernel32.CreateFileW(
+        _to_long_path(path_str), 0, 0, None, 3, 0x00000080, None
+    )
+    if handle == -1: return (0, 0, 0)
+    try:
+        if ctypes.windll.kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
+            return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow)
+    finally:
+        ctypes.windll.kernel32.CloseHandle(handle)
+    return (0, 0, 0)
+
 class SafetyAction(Enum):
     """Define la criticidad de la operación para ajustar el rigor de la validación."""
     READ = auto()
@@ -632,15 +661,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
                 
             if os.name == 'nt':
-                class WIN32_FILE_ATTRIBUTE_DATA(ctypes.Structure):
-                    _fields_ = [("dwFileAttributes", ctypes.c_uint32),
-                                ("ftCreationTime", ctypes.c_uint64),
-                                ("ftLastAccessTime", ctypes.c_uint64),
-                                ("ftLastWriteTime", ctypes.c_uint64),
-                                ("nFileSizeHigh", ctypes.c_uint32),
-                                ("nFileSizeLow", ctypes.c_uint32)]
-                
-                data = WIN32_FILE_ATTRIBUTE_DATA()
+                data = BY_HANDLE_FILE_INFORMATION()
                 handle = ctypes.windll.kernel32.CreateFileW(_to_long_path(str(path)), 0x80000000, 0x00000001, None, 3, 0x00000080, None)
                 if handle == -1:
                     err = ctypes.windll.kernel32.GetLastError()
@@ -650,13 +671,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                         raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
                 else:
                     ctypes.windll.kernel32.CloseHandle(handle)
-                
-                if not ctypes.windll.kernel32.GetFileAttributesExW(_to_long_path(str(path)), 0, ctypes.byref(data)):
-                    err = ctypes.windll.kernel32.GetLastError()
-                    if err == ERROR_FILE_NOT_FOUND:
-                        raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
-                    if err == ERROR_ACCESS_DENIED:
-                        raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
             
             try:
                 return path.stat()
@@ -676,17 +690,20 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     raise UnsafePathError(f"Error tras reintentos leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
 
-def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
-    """Verifica que el archivo no haya cambiado entre la inspección y la operación (prevención TOCTOU)."""
+def _check_file_integrity(path: Path, initial_stat: os.stat_result, initial_id: tuple[int, int, int]) -> None:
+    """Verifica que el archivo no haya cambiado (prevención TOCTOU via IDs únicos)."""
     if not path.exists():
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
+    
     current_stat = _get_path_stat_robust(path)
+    current_id = _get_file_id(str(path))
+    
+    if initial_id != (0, 0, 0) and current_id != initial_id:
+        raise UnsafePathError(f"Manipulación de identidad detectada (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
+    
     if stat.S_ISREG(initial_stat.st_mode) != stat.S_ISREG(current_stat.st_mode):
         raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
-    if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:
-        raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
-    if path.is_file() and current_stat.st_nlink > 1:
-        raise UnsafePathError(f"Manipulación de enlaces duros (TOCTOU): {path.name}", SafetyValidationErrorCode.HARD_LINK_DETECTED)
+    
     _evaluate_security_rules(path, current_stat)
 
 @lru_cache(maxsize=2048)
@@ -1031,9 +1048,10 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
         raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
     
     initial_stat = _get_path_stat_robust(p)
+    initial_id = _get_file_id(str(p))
     if os.name == 'nt': 
         _validate_ntfs_reparse_redirection(p, base)
-    _check_file_integrity(p, initial_stat)
+    _check_file_integrity(p, initial_stat, initial_id)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """Función de entrada principal para validar si un archivo puede ser modificado."""

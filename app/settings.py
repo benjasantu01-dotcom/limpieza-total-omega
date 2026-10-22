@@ -183,6 +183,8 @@ class _SettingsManager:
                 f.write(serialized)
                 f.flush()
                 os.fsync(f.fileno())
+            
+            if not temp_path.exists(): return False
             os.replace(temp_path, resolved_path)
             self.clear()
             return True
