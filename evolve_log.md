@@ -1125,3 +1125,14 @@ FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_fa
 - `2026-10-22T13:57:33` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `_is_excluded_path` añadiendo validaciones explícitas contra rutas fuera del ámbito (directory traversal) y garantizando que las rutas resueltas mantengan su integridad antes de cualquier operación de escaneo, evitando así accesos no intencionados fuera del directorio raíz.
 - `2026-10-22T13:57:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T13:57:33` Corrida terminada. Total usado hoy: 328.
+- `2026-10-22T14:05:25` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-22T14:05:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T14:05:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-22T14:05:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T14:06:01` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T14:06:39` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la implementación de un límite estricto de recursión y profundidad en `_compute_cached` y `_calculate_area_contribution`, previniendo potenciales desbordamientos de pila ante entradas de métricas maliciosamente diseñadas o ciclos inesperados, además de asegurar que los `SystemMetrics` no puedan ser inyectados con valores que escapen de las restricciones de tipo tras la inicialización.
+- `2026-10-22T14:07:54` Gemini no devolvió un bloque de archivo válido para main.py (enfoque: seguridad defensiva).
+- `2026-10-22T14:07:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T14:08:16` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-22T14:08:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T14:08:16` Corrida terminada. Total usado hoy: 332.

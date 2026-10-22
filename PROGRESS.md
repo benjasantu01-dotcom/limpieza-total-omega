@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 240
+- Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 53 | 3 | 17 | 4 | 99 |
-| 2026-10-22 | 125 | 9 | 34 | 19 | 141 |
+| 2026-10-21 | 53 | 3 | 17 | 4 | 95 |
+| 2026-10-22 | 126 | 9 | 34 | 19 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
-- seguridad defensiva: **42**
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **35**
 - robustez ante casos límite: **30**
 - rendimiento: **28**
@@ -39,13 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **15**
 - `duplicates.py`: **13**
 - `scanner.py`: **11**
-- `healthscore.py`: **9**
+- `healthscore.py`: **10**
 - `organizer.py`: **7**
 - `startup.py`: **5**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T14:06:39` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de un límite estricto de recursión y profundidad en `_compute_cached` y `_calculate_area_contribution`, previniendo potenciales desbordamientos de pila ante entradas de métricas maliciosamente diseñadas o ciclos inesperados, además de asegurar que los `SystemMetrics` no puedan ser inyectados con valores que escapen de las restricciones de tipo tras la inicialización.
 - `2026-10-22T13:57:33` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `_is_excluded_path` añadiendo validaciones explícitas contra rutas fuera del ámbito (directory traversal) y garantizando que las rutas resueltas mantengan su integridad antes de cualquier operación de escaneo, evitando así accesos no intencionados fuera del directorio raíz.
 - `2026-10-22T13:57:15` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_should_skip_entry` y `_sum_directory_recursive` mediante el uso de `is_protected_path` como barrera adicional para prevenir el acceso accidental a rutas sensibles, incluso si estas no forman parte explícita de `NEVER_TOUCH`.
 - `2026-10-22T13:56:08` **assistant.py** (seguridad defensiva): Se reforzó `_ensure_safe_text` y los validadores de entrada para prohibir explícitamente caracteres de control y metacaracteres de shell en el cuerpo de las consultas, previniendo inyecciones de comandos incluso en casos de consultas maliciosas altamente ofuscadas antes de que lleguen a cualquier motor de procesamiento.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T13:06:03` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando los chequeos secuenciales costosos (como `path.parts` y `path_str.startswith`) por un hash set de pre-validación basado en `os.path.commonpath`, eliminando la necesidad de iterar sobre `_SYSTEM_ROOT_STRS` y `PROTECTED_DIR_NAMES` en cada llamada.
 - `2026-10-22T12:44:49` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reemplazando el uso de `path.parts` (que genera tuplas completas de strings por cada archivo) por una comprobación basada en `path.is_relative_to` y la determinación manual de la subcarpeta raíz, evitando la creación innecesaria de objetos intermedios durante el recorrido de grandes volúmenes de datos.
 - `2026-10-22T12:44:23` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la resolución repetitiva de rutas `Path.resolve()` en el bucle principal por una comparación de strings normalizados `os.path.normcase`, lo que reduce drásticamente las llamadas al sistema operativo (I/O) durante el recorrido recursivo.
-- `2026-10-22T12:36:08` **assistant.py** (rendimiento): Se optimizó el acceso a las métricas del `SystemContext` reemplazando los múltiples llamados a `getattr` y validaciones redundantes por un acceso directo al diccionario `metrics_snapshot` ya cacheado, reduciendo la complejidad algorítmica de O(N) a O(1) en las operaciones frecuentes de evaluación de criterios y generación de respuestas.

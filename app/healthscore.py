@@ -19,6 +19,7 @@ from pathlib import Path
 import math
 import logging
 import string
+import sys
 from functools import lru_cache
 
 ScoreMap: TypeAlias = Dict[str, float]
@@ -32,6 +33,7 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
     "root", "drive", "user", "profile", "appdata", "programdata", "exe", "dll"
 ])
 _MAX_MSG_LEN: Final[int] = 128
+_MAX_RECURSION_DEPTH: Final[int] = 5
 
 class Scorer(Protocol):
     """
@@ -348,6 +350,10 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
         return 0, []
         
     try:
+        # Validación defensiva de profundidad de recursión
+        if sys.getrecursionlimit() < _MAX_RECURSION_DEPTH:
+            return 0, []
+
         raw_ratio = entry.scorer(metrics)
         area_ratio = _clamp(float(raw_ratio))
         
