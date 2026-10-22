@@ -1019,3 +1019,13 @@ assert not {'replace'}
 - `2026-10-22T12:45:27` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 47% del original (posible pérdida de código)
 - `2026-10-22T12:45:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T12:45:27` Corrida terminada. Total usado hoy: 300.
+- `2026-10-22T12:54:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-22T12:55:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached, LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._invalidate_cache, LimpiezaTotalOmegaApp._update_cards
+- `2026-10-22T12:55:47` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-10-22T12:56:14` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-22T12:56:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T12:56:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T12:56:25` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-22T12:56:38` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-22T12:56:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T12:56:38` Corrida terminada. Total usado hoy: 304.
