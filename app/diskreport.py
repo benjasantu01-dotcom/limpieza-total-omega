@@ -175,8 +175,9 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
 
         # Verifica confinamiento de la ruta relativa a la raíz escaneada
+        # Se asegura que la resolución sea posible antes de comparar
         abs_entry = entry_path.resolve(strict=False)
-        if root_path.is_absolute() and not str(abs_entry).startswith(str(root_path)):
+        if not str(abs_entry).startswith(str(root_path)):
              return True
 
         if entry.is_symlink():

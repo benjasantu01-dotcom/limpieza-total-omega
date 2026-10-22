@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 242
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 44 | 4 | 14 | 9 | 71 |
+| 2026-10-20 | 44 | 4 | 14 | 9 | 67 |
 | 2026-10-21 | 131 | 7 | 32 | 12 | 168 |
-| 2026-10-22 | 7 | 1 | 1 | 0 | 3 |
+| 2026-10-22 | 9 | 1 | 1 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **36**
+- seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `duplicates.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **16**
 - `quarantine.py`: **16**
 - `assistant.py`: **15**
 - `branding.py`: **15**
-- `duplicates.py`: **15**
 - `healthscore.py`: **14**
 - `settings.py`: **12**
 - `startup.py`: **8**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T00:41:38` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` eliminando la resolución (`resolve()`) prematura e inestable de paths dentro del bucle, reemplazándola por una validación de seguridad robusta basada en la ruta original del `os.scandir`, evitando así riesgos con accesos a rutas mal formadas o puntos de reanálisis fuera de control.
+- `2026-10-22T00:41:08` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_is_excluded_path` asegurando que la validación de confinamiento mediante `path.resolve()` maneje correctamente los casos donde el sistema de archivos impida la resolución de rutas, evitando que una excepción inesperada resulte en la inclusión de archivos potencialmente inseguros fuera del alcance definido.
 - `2026-10-22T00:32:26` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` al reemplazar el uso de `ensure_safe_to_modify(parent.parent)` (que es una operación invasiva sobre el abuelo de la ruta, potencialmente fuera del alcance del usuario) por una verificación directa sobre la existencia y permisos del directorio destino, delegando la creación de la estructura de carpetas a una lógica que respeta estrictamente los límites definidos en `safety.py`.
 - `2026-10-22T00:31:46` **assistant.py** (seguridad defensiva): Se endurecieron los criterios de seguridad en `_ensure_safe_text` y se reforzó la validación de entrada en `_call_gemini` para impedir activamente cualquier intento de inyección de parámetros (como caracteres especiales de shell o saltos de línea) en la URL o el cuerpo de la petición, alineándose con el enfoque de seguridad defensiva.
 - `2026-10-22T00:23:07` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos agregando verificaciones de tamaño y integridad en `_read_and_parse_json` y garantizando que las rutas de configuración no sean atacables mediante symlinks o permisos inseguros antes de cualquier operación de escritura.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T14:03:47` **branding.py** (rendimiento): Se eliminó el uso de `lru_cache` en funciones que realizan operaciones de cálculo simples o que devuelven resultados dinámicos basados en parámetros volátiles, reduciendo el consumo de memoria y la sobrecarga de gestión de caché en llamadas frecuentes de la interfaz.
 - `2026-10-21T14:01:21` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de parseo del registro para clarificar el flujo de datos desde PowerShell hasta el modelo `StartupEntry`, además de estandarizar la nomenclatura de los argumentos en `_is_registry_entry_safe` para mejorar la legibilidad del código.
 - `2026-10-21T13:51:36` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos a los métodos internos de la clase `Scanner`, aclarando el propósito y las restricciones de seguridad que cada uno impone, facilitando la auditoría de los flujos de control.
-- `2026-10-21T13:42:17` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en las funciones de validación crítica y la normalización de la terminología de seguridad, facilitando el mantenimiento y la auditoría de las garantías de integridad.
-- `2026-10-21T13:40:57` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `memory.py` mediante la adición de Type Hints explícitos, la normalización de los docstrings siguiendo el estándar de estilo exigido y la clarificación de las responsabilidades en los bloques de inicialización de estructuras Win32.

@@ -115,11 +115,9 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_path_check(path: Path) -> bool:
     """Valida la integridad de un path frente a restricciones de seguridad y reanálisis."""
     try:
-        resolved = path.resolve()
         return (is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
-                not is_junction(path) and
-                is_safe_to_modify(resolved))
+                not is_junction(path))
     except (OSError, RuntimeError, PermissionError, AttributeError):
         return False
 
@@ -202,7 +200,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    path = Path(entry.path).resolve()
+                    path = Path(entry.path)
                     if not is_safe_to_modify(path): continue
                     
                     if entry.is_dir(follow_symlinks=False):
