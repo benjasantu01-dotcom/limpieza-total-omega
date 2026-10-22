@@ -668,3 +668,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-22T09:32:15` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado `_collect_candidates` para aplicar `is_safe_to_modify` antes de llamar a `entry.stat()`, evitando posibles errores de acceso y garantizando que el escaneo solo realice operaciones estadísticas sobre rutas verificadas como seguras.
 - `2026-10-22T09:32:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T09:32:15` Corrida terminada. Total usado hoy: 224.
+- `2026-10-22T09:40:30` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-10-22T09:40:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T09:41:07` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-22T09:41:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T09:41:11` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T09:41:18` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-22T09:42:00` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-22T09:42:45` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `memory.py` centralizando y reforzando la validación de acceso mediante `_is_process_accessible` antes de cualquier operación, asegurando que `EmptyWorkingSet` solo se ejecute sobre procesos validados y protegidos contra rutas sospechosas o de sistema.
+- `2026-10-22T09:43:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-22T09:43:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T09:43:02` Corrida terminada. Total usado hoy: 228.

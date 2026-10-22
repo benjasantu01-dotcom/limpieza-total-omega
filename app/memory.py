@@ -456,6 +456,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida en procesos del sistema."
     
     psapi, kernel32 = ctypes.windll.psapi, ctypes.windll.kernel32
+    # El proceso es validado mediante _is_process_accessible antes de cualquier acción
     proc_handle = _is_process_accessible(target_pid, TRIM_ACCESS_MASK, kernel32)
     
     if proc_handle is None:
@@ -467,7 +468,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
         
-        # Validación defensiva extra antes de la acción destructiva
+        # Validación defensiva extra: el ejecutable no debe estar en zonas protegidas
         if not _is_process_executable_safe(target_pid, proc_handle, psapi):
             return False, "Proceso protegido o ubicación insegura."
             
