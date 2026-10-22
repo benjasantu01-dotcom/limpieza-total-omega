@@ -111,8 +111,8 @@ SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
-_BOOL_TRUE_SET: Final = frozenset(("1", "true", "si", "sí", "yes"))
-_BOOL_FALSE_SET: Final = frozenset(("0", "false", "no", "none"))
+_BOOL_TRUE_SET: Final[tuple[str, ...]] = ("1", "true", "si", "sí", "yes")
+_BOOL_FALSE_SET: Final[tuple[str, ...]] = ("0", "false", "no", "none")
 
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))

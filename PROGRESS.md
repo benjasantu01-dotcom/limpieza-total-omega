@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 72 | 3 | 19 | 5 | 113 |
-| 2026-10-22 | 109 | 8 | 29 | 18 | 128 |
+| 2026-10-21 | 68 | 3 | 19 | 5 | 113 |
+| 2026-10-22 | 111 | 8 | 30 | 18 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **35**
-- robustez ante casos límite: **31**
-- rendimiento: **24**
+- robustez ante casos límite: **27**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
 - `branding.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **16**
 - `diskreport.py`: **16**
-- `duplicates.py`: **15**
 - `safety.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **15**
+- `assistant.py`: **14**
 - `browser.py`: **14**
+- `duplicates.py`: **14**
 - `scanner.py`: **13**
-- `assistant.py`: **13**
-- `healthscore.py`: **10**
+- `healthscore.py`: **9**
 - `organizer.py`: **8**
-- `main.py`: **6**
 - `startup.py`: **6**
+- `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T12:36:08` **assistant.py** (rendimiento): Se optimizó el acceso a las métricas del `SystemContext` reemplazando los múltiples llamados a `getattr` y validaciones redundantes por un acceso directo al diccionario `metrics_snapshot` ya cacheado, reduciendo la complejidad algorítmica de O(N) a O(1) en las operaciones frecuentes de evaluación de criterios y generación de respuestas.
+- `2026-10-22T12:34:13` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la adición de Type Hints detallados en las funciones de validación interna y el uso de `tuple` para las estructuras de datos de configuración, reforzando el contrato del sistema.
 - `2026-10-22T12:26:23` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las interfaces y métodos críticos en `scanner.py`, añadiendo docstrings que explican el propósito lógico detrás de los filtros de seguridad y el flujo de trabajo heurístico, mejorando la legibilidad para el mantenimiento futuro.
 - `2026-10-22T12:24:28` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la normalización de la estructura de las funciones de validación de seguridad (introduciendo docstrings más descriptivos sobre el "PORQUÉ" de las restricciones) y aplicando type hinting consistente, asegurando que la complejidad de las operaciones críticas sea transparente para futuros colaboradores.
 - `2026-10-22T12:16:10` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en funciones críticas (como `_is_process_executable_safe` y `trim_working_set`) y la estandarización de type hints, facilitando la comprensión del flujo de seguridad al realizar llamadas de bajo nivel a la API de Windows.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T11:45:54` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores más granular y defensiva en `_get_path_stat_robust` y `_evaluate_security_rules` para capturar fallos de acceso (`PermissionError` y `OSError` específicos) antes de que se propaguen como `UnsafePathError` genéricos, mejorando la robustez de las validaciones de integridad frente a archivos bloqueados por el sistema operativo.
 - `2026-10-22T11:35:50` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` añadiendo validaciones de entrada más estrictas y manejo de excepciones localizadas para evitar que datos malformados o tipos inesperados propaguen errores en el escaneo de memoria.
 - `2026-10-22T11:35:23` **main.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante la validación explícita de entradas antes de ejecutar lógica crítica, utilizando capturas de excepciones específicas para evitar que errores inesperados en el hilo trabajador congelen la interfaz.
-- `2026-10-22T11:24:45` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` capturando excepciones específicas durante la iteración y el acceso a metadatos, evitando que fallos puntuales en archivos bloqueados o con permisos denegados interrumpan el análisis completo del disco.
-- `2026-10-22T11:24:31` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_within_sandbox` y `_should_skip_entry` añadiendo validaciones de tipo y manejo de errores explícito frente a rutas inexistentes o malformadas, evitando que el escáner se interrumpa ante excepciones de sistema de archivos.
