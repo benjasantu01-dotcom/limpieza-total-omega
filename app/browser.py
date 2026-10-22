@@ -223,6 +223,19 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
         return True
     return False
 
+def _process_file_in_dir(entry: os.DirEntry, ctx: ScanContext, depth: int) -> int:
+    """Procesa un archivo individual y retorna su peso si es válido y no duplicado."""
+    try:
+        st = entry.stat(follow_symlinks=False)
+        if st.st_size > 0:
+            file_id = (st.st_dev, st.st_ino)
+            if file_id not in ctx.visited_files:
+                ctx.visited_files.add(file_id)
+                return st.st_size
+    except (OSError, PermissionError):
+        pass
+    return 0
+
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
     Recorrido DFS recursivo para sumar el peso de archivos.
@@ -251,15 +264,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
                         res = _sum_directory_recursive(entry.path, ctx, depth + 1)
                         total_bytes += res.bytes_found
                     else:
-                        try:
-                            st = entry.stat(follow_symlinks=False)
-                            if st.st_size > 0:
-                                file_id = (st.st_dev, st.st_ino)
-                                if file_id not in ctx.visited_files:
-                                    ctx.visited_files.add(file_id)
-                                    total_bytes += st.st_size
-                        except (OSError, PermissionError):
-                            continue
+                        total_bytes += _process_file_in_dir(entry, ctx, depth)
                 except (OSError, PermissionError): continue
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError): return ScanResult(0, False)
