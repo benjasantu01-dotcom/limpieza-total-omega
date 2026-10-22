@@ -461,3 +461,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-22T07:30:33` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
 - `2026-10-22T07:30:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T07:30:33` Corrida terminada. Total usado hoy: 176.
+- `2026-10-22T07:38:06` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-10-22T07:38:47` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las estructuras de datos y funciones críticas (`ScanContext`, `BrowserCache`, `_should_skip_entry`) para clarificar el propósito de seguridad de cada campo y lógica, facilitando el mantenimiento al explicar el "porqué" de las restricciones de sandbox y filtrado.
+- `2026-10-22T07:39:13` ➖ Sin cambios en diskreport.py (enfoque: legibilidad y documentación). Motivo: Mejoré la legibilidad y mantenibilidad de la lógica de recorrido y agregación en `diskreport.py` añadiendo docstrings técnicos que explican el propósito de las clases y métodos, aclarando la diferencia entre `Path` (objetos) y `str` (rutas crudas), y utilizando type hints en las colecciones para mayor claridad en el flujo de datos.
+- `2026-10-22T07:39:48` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de procesamiento de hashes y el recolector de candidatos, además de clarificar los tipos de datos en la lógica de agrupación para asegurar que el flujo de trabajo de los tres pasos (tamaño, hash parcial, hash completo) sea evidente para cualquier colaborador.
+- `2026-10-22T07:39:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T07:40:52` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-22T07:41:20` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-22T07:41:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T07:41:20` Corrida terminada. Total usado hoy: 180.

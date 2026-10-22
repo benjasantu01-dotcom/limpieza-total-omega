@@ -52,9 +52,12 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 @dataclass
 class ScanContext:
     """
-    Contenedor de estado compartido durante el recorrido del árbol de directorios.
-    Mantiene la integridad del escaneo evitando ciclos (via visited_dirs/files)
-    y restringiendo la ejecución al entorno del usuario actual (sandbox_base).
+    Estado compartido durante el recorrido del árbol.
+    
+    sandbox_base: Raíz del usuario para evitar 'escape' del escaneo.
+    visited_files: Cache de (dev, ino) para evitar conteo doble por hardlinks.
+    visited_dirs: Cache de rutas normalizadas para evitar bucles infinitos en simlinks.
+    never_touch_lower: Nombres de carpetas críticas prohibidas (cookies, etc).
     """
     sandbox_base: Path
     kernel32: Optional[ctypes.WinDLL]
@@ -200,9 +203,9 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     """
-    Evaluación de políticas de filtrado antes de procesar un archivo o carpeta.
-    Implementa reglas de seguridad para evitar tocar archivos protegidos o 
-    seguir puntos de reparse que podrían salir del scope del usuario.
+    Aplica políticas de seguridad: descarta entradas protegidas, rutas fuera 
+    del sandbox, enlaces simbólicos/junctions (para evitar recursión circular 
+    fuera de control) y archivos del sistema marcados como ocultos.
     """
     if entry.name.lower() in ctx.never_touch_lower: return True
     
