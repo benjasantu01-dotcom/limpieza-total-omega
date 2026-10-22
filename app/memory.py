@@ -326,7 +326,11 @@ def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CD
     return None
 
 def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL) -> bool:
-    """Verifica que el ejecutable del proceso no se encuentre en zonas restringidas."""
+    """
+    Verifica mediante la API Win32 que el ejecutable del proceso no se encuentre en
+    una ubicación restringida. Obtiene la ruta real del binario y utiliza 
+    is_protected_path para asegurar que no tocamos procesos críticos.
+    """
     if not handle or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
@@ -446,7 +450,14 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta liberar working set de un proceso (Acción manual con validación)."""
+    """
+    Intenta liberar el 'working set' de un proceso específico (Acción manual).
+    
+    Realiza una validación exhaustiva de seguridad: primero comprueba que el
+    proceso no sea crítico, verifica que el handle sea válido, confirma que el
+    proceso sigue activo y, finalmente, utiliza _is_process_executable_safe 
+    para asegurar que no interactuamos con binarios en ubicaciones protegidas.
+    """
     if not _is_windows: return False, "Solo soportado en Windows."
     
     try: 

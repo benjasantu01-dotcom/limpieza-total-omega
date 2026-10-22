@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 243
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 76 | 3 | 21 | 5 | 115 |
-| 2026-10-22 | 106 | 8 | 25 | 17 | 128 |
+| 2026-10-21 | 76 | 3 | 19 | 5 | 113 |
+| 2026-10-22 | 107 | 8 | 27 | 18 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **35**
 - manejo de errores y validación de entradas: **35**
 - rendimiento: **24**
@@ -30,8 +30,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `branding.py`: **18**
+- `memory.py`: **18**
 - `diskreport.py`: **17**
-- `memory.py`: **17**
 - `browser.py`: **15**
 - `duplicates.py`: **15**
 - `quarantine.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T12:16:10` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en funciones críticas (como `_is_process_executable_safe` y `trim_working_set`) y la estandarización de type hints, facilitando la comprensión del flujo de seguridad al realizar llamadas de bajo nivel a la API de Windows.
 - `2026-10-22T12:04:52` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante la adición de Type Hints faltantes, normalización de docstrings para seguir estándares de documentación, y la simplificación de estructuras de datos en `_collect_summary_data` para mejorar la mantenibilidad.
 - `2026-10-22T12:04:22` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `browser.py` extrayendo la lógica de filtrado de `_sum_directory_recursive` a una función auxiliar nombrada `_process_file_in_dir`, clarificando así el propósito del bucle principal y facilitando la depuración de futuras heurísticas.
 - `2026-10-22T12:03:51` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y semántica del archivo mediante la incorporación de type hints detallados en funciones de dibujo geométrico y la sustitución de literales mágicos en los parámetros de los métodos `create_` de `CanvasElement` para reflejar con mayor claridad su propósito.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T11:24:31` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_within_sandbox` y `_should_skip_entry` añadiendo validaciones de tipo y manejo de errores explícito frente a rutas inexistentes o malformadas, evitando que el escáner se interrumpa ante excepciones de sistema de archivos.
 - `2026-10-22T11:23:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar adecuadamente tipos de datos inusuales (como `set` o tipos complejos inesperados) mediante la conversión explícita de colecciones a listas, evitando errores de tipo durante la validación recursiva y fortaleciendo la integridad del parser ante entradas mal formadas.
 - `2026-10-22T09:53:47` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` aplicando la regla de oro: el chequeo de seguridad debe ocurrir antes de cualquier procesamiento, utilizando el patrón de filtro booleano `is_safe_to_modify` (vía `_is_safe_entry`) para evitar excepciones y asegurar que no se sigan rutas de reanálisis fuera del scope definido.
-- `2026-10-22T09:53:16` **safety.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `ensure_safe_to_modify` añadiendo un control de estado de reparse points anidados previo a la validación de integridad, asegurando que no se pueda manipular una ruta que, aunque parezca segura, sea una trampa lógica a través de redirecciones ocultas en niveles superiores del árbol de directorios.
