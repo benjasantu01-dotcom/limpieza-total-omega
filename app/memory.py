@@ -329,7 +329,7 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
     except (ctypes.WinError, OSError):
         return False
     
-    if length <= 0 or length >= 4096:
+    if length <= 0 or length >= 4096 or not buffer_path.value:
         return False
         
     exe_str = buffer_path.value.strip()

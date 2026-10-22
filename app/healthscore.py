@@ -366,6 +366,9 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
     keys = SystemMetrics._FIELDS_TO_VALIDATE
     metrics = SystemMetrics(**dict(zip(keys, metrics_tuple)))
     
+    if not metrics.is_finite or not _PIPELINE:
+        return HealthResult(0, "F", {}, ["Error: Inconsistencia en métricas o pipeline."])
+    
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
     total_points = 0.0
@@ -398,9 +401,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metrics.validate()
     if not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos o corruptos."])
-    
-    if not _PIPELINE:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Pipeline no configurado."])
     
     cache_key = tuple(getattr(metrics, f) for f in metrics._FIELDS_TO_VALIDATE)
     return _compute_cached(cache_key, metrics.quarantined_count)
