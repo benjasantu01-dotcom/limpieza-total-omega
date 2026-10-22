@@ -326,22 +326,20 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     """
     if depth > _MAX_NESTING_DEPTH: return False
     if isinstance(val, (dict, list, tuple, set)):
-        if len(val) > _MAX_COLLECTION_SIZE: return False
-        iterable = val.values() if isinstance(val, dict) else val
-        return all(_is_safe_payload_structure(item, depth + 1) for item in iterable)
+        items = list(val.values()) if isinstance(val, dict) else list(val)
+        if len(items) > _MAX_COLLECTION_SIZE: return False
+        return all(_is_safe_payload_structure(item, depth + 1) for item in items)
     return isinstance(val, (int, float, bool, str, type(None)))
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """
     Realiza un escaneo profundo para detectar estructuras anidadas excesivas.
-    Utiliza recursión limitada para validar que los datos entrantes no contengan 
-    objetos demasiado complejos que puedan comprometer la integridad del parser JSON.
     """
     if depth > _MAX_NESTING_DEPTH: return True
     if isinstance(val, (list, tuple, set, dict)):
-        collection = val.values() if isinstance(val, dict) else val
-        if len(val) > _MAX_COLLECTION_SIZE: return True
-        return any(_is_input_too_deep_or_complex(item, depth + 1) for item in collection)
+        items = list(val.values()) if isinstance(val, dict) else list(val)
+        if len(items) > _MAX_COLLECTION_SIZE: return True
+        return any(_is_input_too_deep_or_complex(item, depth + 1) for item in items)
     return not isinstance(val, (int, float, bool, str, type(None)))
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:

@@ -170,7 +170,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         return True
 
     try:
-        # Verifica confinamiento de la ruta mediante commonpath para prevenir escapes
         entry_path = Path(entry.path)
         if is_protected_path(entry_path):
             return True
@@ -182,13 +181,11 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         except ValueError:
             return True
 
-        # Seguridad defensiva: detección estricta de symlinks y reparse points
         if entry.is_symlink():
             return True
         
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
-            # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT)
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
                 return True
         
@@ -360,7 +357,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root_depth = len(root.parts)
     
     for path, size in walk_files(root, skip_protected):
-        # Determina la carpeta de primer nivel dentro de root usando componentes de la ruta
         if len(path.parts) > root_depth:
             top_folder = root / path.parts[root_depth]
             metrics = stats[str(top_folder)]
@@ -382,11 +378,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Realiza el escaneo recursivo y consolida las estadísticas en un objeto `SummaryData`.
-    Utiliza un min-heap de tamaño `limit` para mantener los archivos más grandes 
-    sin almacenar toda la lista en memoria.
-    
-    Returns:
-        SummaryData: Datos consolidados (bytes totales, conteo de archivos, stats por ext y archivos top).
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -394,7 +385,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size in walk_files(directory, skip_protected):
         stats.register_file(size, path.suffix)
         
-        # Mantener el heap con los N archivos más grandes encontrados
         if limit > 0:
             try:
                 if len(top_heap) < limit:
@@ -415,8 +405,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception as e:
-        return [f"Error: Fallo inesperado al realizar el escaneo: {type(e).__name__}"]
+    except (OSError, PermissionError, Exception):
+        return ["Error: Fallo inesperado al realizar el escaneo."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

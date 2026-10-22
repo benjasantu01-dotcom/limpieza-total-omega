@@ -170,10 +170,10 @@ def _is_within_sandbox(target: Path, base: Path) -> bool:
     Verifica si la ruta destino está contenida dentro del directorio base.
     Utiliza resolución de rutas real para evitar ataques de bypass por simlinks.
     """
+    if not target.exists(): return False
     try:
         t_res = target.resolve(strict=False)
         b_res = base.resolve(strict=True)
-        # normcase es necesario en Windows para comparar rutas de forma agnóstica al case
         return os.path.commonpath([os.path.normcase(b_res), os.path.normcase(t_res)]) == os.path.normcase(str(b_res))
     except (OSError, RuntimeError, ValueError):
         return False
@@ -207,10 +207,11 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     del sandbox, enlaces simbólicos/junctions (para evitar recursión circular 
     fuera de control) y archivos del sistema marcados como ocultos.
     """
+    if not entry: return True
     if entry.name.lower() in ctx.never_touch_lower: return True
     
     path_str = entry.path
-    if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
+    if not path_str or len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
     
     if not _is_within_sandbox(Path(path_str), ctx.sandbox_base): return True
     
@@ -298,7 +299,6 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Escanea y reporta el tamaño de cachés de navegadores detectados en el sistema."""
-    # Validación estricta de parámetros de entrada
     raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     

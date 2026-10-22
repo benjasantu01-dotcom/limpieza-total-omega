@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 245
+- Sin respuesta de la IA (error o límite): 246
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 86 | 4 | 22 | 6 | 122 |
-| 2026-10-22 | 93 | 7 | 24 | 17 | 123 |
+| 2026-10-21 | 82 | 4 | 22 | 6 | 122 |
+| 2026-10-22 | 96 | 7 | 24 | 17 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **35**
+- manejo de errores y validación de entradas: **29**
 - rendimiento: **26**
-- manejo de errores y validación de entradas: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **17**
+- `diskreport.py`: **17**
 - `branding.py`: **17**
-- `quarantine.py`: **16**
-- `diskreport.py`: **16**
 - `duplicates.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **15**
+- `quarantine.py`: **15**
 - `settings.py`: **14**
-- `browser.py`: **13**
+- `browser.py`: **14**
+- `assistant.py`: **13**
 - `scanner.py`: **12**
-- `assistant.py`: **12**
 - `healthscore.py`: **10**
-- `organizer.py`: **9**
-- `main.py`: **6**
+- `organizer.py`: **8**
 - `startup.py`: **6**
+- `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T11:24:45` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` capturando excepciones específicas durante la iteración y el acceso a metadatos, evitando que fallos puntuales en archivos bloqueados o con permisos denegados interrumpan el análisis completo del disco.
+- `2026-10-22T11:24:31` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_within_sandbox` y `_should_skip_entry` añadiendo validaciones de tipo y manejo de errores explícito frente a rutas inexistentes o malformadas, evitando que el escáner se interrumpa ante excepciones de sistema de archivos.
+- `2026-10-22T11:23:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar adecuadamente tipos de datos inusuales (como `set` o tipos complejos inesperados) mediante la conversión explícita de colecciones a listas, evitando errores de tipo durante la validación recursiva y fortaleciendo la integridad del parser ante entradas mal formadas.
 - `2026-10-22T09:53:47` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` aplicando la regla de oro: el chequeo de seguridad debe ocurrir antes de cualquier procesamiento, utilizando el patrón de filtro booleano `is_safe_to_modify` (vía `_is_safe_entry`) para evitar excepciones y asegurar que no se sigan rutas de reanálisis fuera del scope definido.
 - `2026-10-22T09:53:16` **safety.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `ensure_safe_to_modify` añadiendo un control de estado de reparse points anidados previo a la validación de integridad, asegurando que no se pueda manipular una ruta que, aunque parezca segura, sea una trampa lógica a través de redirecciones ocultas en niveles superiores del árbol de directorios.
 - `2026-10-22T09:51:25` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en el proceso de aislamiento atómico (`_atomic_isolate_file`) mediante una validación de estado "post-creación" más estricta, forzando la verificación del inodo antes de cualquier registro en el manifiesto para cerrar un posible vacío entre el reemplazo del archivo y el registro de metadatos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T09:21:41` **settings.py** (robustez ante casos límite): Mejoré la robustez ante la concurrencia y fallos de E/S en `_is_file_secure_to_read` mediante una validación más estricta del descriptor de archivo (usando `fstat` directamente si está disponible) para prevenir condiciones de carrera TOCTOU y accesos a archivos con permisos inadecuados.
 - `2026-10-22T09:10:22` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante errores de I/O y permisos en la función `delete_reviewed`, reemplazando el bloque genérico de excepciones `except (Exception)` por un manejo explícito que preserva la integridad del bucle sin ocultar errores críticos de seguridad.
 - `2026-10-22T09:02:59` **memory.py** (robustez ante casos límite): Se añade una validación de seguridad en `_iter_process_memory` para manejar correctamente casos donde `EnumProcesses` falla parcialmente o devuelve listas corruptas, asegurando que la iteración de PIDs sea robusta ante errores de acceso del kernel antes de intentar procesarlos.
-- `2026-10-22T09:00:43` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante entradas extremas en `SystemMetrics` mediante la implementación de `math.isfinite` en las validaciones de campos críticos y se protegió la ejecución del `Pipeline` frente a posibles errores en las funciones de cálculo (scorers) personalizadas mediante un bloque `try-except` más estricto.
-- `2026-10-22T08:51:16` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a archivos bloqueados por procesos activos mediante la mejora en el manejo de excepciones de E/S en `_sum_directory_recursive`, asegurando que `OSError` o `PermissionError` durante el `stat` de un archivo específico no detengan la iteración completa del directorio, manteniendo la integridad de la cuenta total.
-- `2026-10-22T08:50:47` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` añadiendo una validación de ruta absoluta y verificando que el directorio destino no sea una ruta protegida antes de intentar crear o escribir archivos, mejorando la seguridad ante posibles manipulaciones de la ruta destino.
