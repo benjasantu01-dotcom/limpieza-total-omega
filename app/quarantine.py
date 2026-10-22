@@ -307,7 +307,9 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     o modificado antes de realizar una operación destructiva.
     """
     try:
-        if not is_safe_to_modify(path) or is_protected_path(path) or ":" in path.name:
+        # Requerimos el check estricto mediante ensure_safe_to_modify antes de destruir
+        ensure_safe_to_modify(path)
+        if is_protected_path(path) or ":" in path.name:
             return False
             
         st: os.stat_result = path.stat()
@@ -320,7 +322,7 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
             return False
         
         return not _is_file_in_use_by_system(path)
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, UnsafePathError):
         return False
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:

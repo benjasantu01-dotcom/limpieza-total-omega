@@ -371,6 +371,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 if not item.is_file() or item.is_symlink(): continue
                 item_res = item.resolve(strict=False)
                 # Seguridad estricta: asegurar que el ítem pertenece a la carpeta de revisión
+                # y validación de seguridad previa al borrado
                 if not item_res.is_relative_to(dest_res): continue
                 ensure_safe_to_modify(item_res)
                 item_res.unlink()

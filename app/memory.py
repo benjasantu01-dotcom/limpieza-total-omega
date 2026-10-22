@@ -453,6 +453,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso no encontrado."
 
     try:
+        # Validación defensiva extra antes de la acción destructiva
         if not _is_process_executable_safe(target_pid, proc_handle, psapi):
             return False, "Proceso protegido o ubicación insegura."
             

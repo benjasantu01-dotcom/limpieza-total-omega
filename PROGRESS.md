@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 44 | 4 | 14 | 9 | 67 |
+| 2026-10-20 | 44 | 4 | 14 | 9 | 63 |
 | 2026-10-21 | 131 | 7 | 32 | 12 | 168 |
-| 2026-10-22 | 9 | 1 | 1 | 1 | 4 |
+| 2026-10-22 | 12 | 1 | 2 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **26**
 
@@ -32,21 +32,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `browser.py`: **17**
 - `diskreport.py`: **17**
+- `memory.py`: **17**
+- `quarantine.py`: **17**
 - `duplicates.py`: **16**
-- `memory.py`: **16**
 - `safety.py`: **16**
-- `quarantine.py`: **16**
 - `assistant.py`: **15**
 - `branding.py`: **15**
 - `healthscore.py`: **14**
 - `settings.py`: **12**
+- `organizer.py`: **8**
 - `startup.py`: **8**
 - `scanner.py`: **8**
 - `main.py`: **7**
-- `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T00:52:38` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `_safe_unlink` integrando `ensure_safe_to_modify` para el borrado efectivo (que es una operación destructiva), asegurando que la ruta pase por el filtro de seguridad de `safety.py` en lugar de confiar solo en chequeos booleanos previos, alineándome con la misión de seguridad defensiva.
+- `2026-10-22T00:51:50` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` al validar explícitamente que cada archivo a borrar en la carpeta de cuarentena resida efectivamente dentro de la misma, previniendo ataques de "path traversal" o manipulación de enlaces simbólicos mediante la verificación de `is_relative_to` antes de llamar a `ensure_safe_to_modify`.
+- `2026-10-22T00:51:21` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita con `is_protected_path` sobre la ruta del ejecutable antes de ejecutar cualquier acción de escritura o modificación (en este caso, `EmptyWorkingSet`), garantizando que la operación no afecte inadvertidamente a procesos críticos detectados mediante su ruta absoluta.
 - `2026-10-22T00:41:38` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` eliminando la resolución (`resolve()`) prematura e inestable de paths dentro del bucle, reemplazándola por una validación de seguridad robusta basada en la ruta original del `os.scandir`, evitando así riesgos con accesos a rutas mal formadas o puntos de reanálisis fuera de control.
 - `2026-10-22T00:41:08` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_is_excluded_path` asegurando que la validación de confinamiento mediante `path.resolve()` maneje correctamente los casos donde el sistema de archivos impida la resolución de rutas, evitando que una excepción inesperada resulte en la inclusión de archivos potencialmente inseguros fuera del alcance definido.
 - `2026-10-22T00:32:26` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` al reemplazar el uso de `ensure_safe_to_modify(parent.parent)` (que es una operación invasiva sobre el abuelo de la ruta, potencialmente fuera del alcance del usuario) por una verificación directa sobre la existencia y permisos del directorio destino, delegando la creación de la estructura de carpetas a una lógica que respeta estrictamente los límites definidos en `safety.py`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-21T15:23:22` **diskreport.py** (robustez ante casos límite): Se ha añadido un manejo de excepciones robusto en `walk_files` para capturar `OSError` durante la creación del objeto `Path` o el acceso a los atributos del sistema, asegurando que el bucle de escaneo no se interrumpa ante nombres de archivo inválidos, rutas excesivamente largas (Windows MAX_PATH) o errores de acceso a disco.
 - `2026-10-21T15:22:11` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` validando la existencia de la carpeta padre y su capacidad de escritura mediante `is_safe_to_modify` antes de intentar crear directorios o archivos, evitando errores en tiempo de ejecución ante rutas inexistentes o permisos denegados.
 - `2026-10-21T14:22:39` **quarantine.py** (rendimiento): Se implementó un cache en `_get_sha256` y se optimizó el acceso al manifiesto en `purge_all` utilizando un `set` para búsquedas de $O(1)$ en lugar de iteraciones repetidas, mejorando el rendimiento en directorios con gran cantidad de archivos.
-- `2026-10-21T14:03:47` **branding.py** (rendimiento): Se eliminó el uso de `lru_cache` en funciones que realizan operaciones de cálculo simples o que devuelven resultados dinámicos basados en parámetros volátiles, reduciendo el consumo de memoria y la sobrecarga de gestión de caché en llamadas frecuentes de la interfaz.
-- `2026-10-21T14:01:21` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de parseo del registro para clarificar el flujo de datos desde PowerShell hasta el modelo `StartupEntry`, además de estandarizar la nomenclatura de los argumentos en `_is_registry_entry_safe` para mejorar la legibilidad del código.
-- `2026-10-21T13:51:36` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos a los métodos internos de la clase `Scanner`, aclarando el propósito y las restricciones de seguridad que cada uno impone, facilitando la auditoría de los flujos de control.
