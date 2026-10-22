@@ -823,7 +823,12 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     try:
         if destination.exists():
             raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
-        return _write_temp_to_final(source, destination)
+        
+        # Ejecutar transferencia y verificar inodo destino inmediatamente
+        h, i = _write_temp_to_final(source, destination)
+        if destination.stat().st_ino != i:
+            raise RuntimeError("Integridad comprometida: el inodo destino no coincide tras la operación.")
+        return h, i
     except (OSError, IOError, RuntimeError) as e:
         if destination.exists() and not os.path.samefile(source, destination):
             _safe_unlink(destination)

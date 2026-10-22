@@ -292,7 +292,7 @@ class Scanner:
         Enrutador principal de procesado por entrada.
         Diferencia archivos de directorios y delega el análisis heurístico o la navegación.
         """
-        if entry is None or not entry.path:
+        if entry is None or not entry.path or not self._is_safe_entry(entry):
             return
             
         path_norm: str = os.path.normcase(entry.path)
@@ -303,13 +303,10 @@ class Scanner:
             if entry.is_file(follow_symlinks=False):
                 if not self._is_relevant_extension(entry.name):
                     return
-                if not self._is_safe_entry(entry):
-                    return
                 self.seen.add(path_norm)
                 self._run_file_heuristics(Path(entry.path), entry)
             elif entry.is_dir(follow_symlinks=False):
-                if self._is_safe_entry(entry):
-                    self._handle_directory(entry, directory_stack, current_depth)
+                self._handle_directory(entry, directory_stack, current_depth)
         except (OSError, PermissionError, FileNotFoundError):
             pass
 

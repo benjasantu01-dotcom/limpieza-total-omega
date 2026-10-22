@@ -679,3 +679,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-22T09:43:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-10-22T09:43:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T09:43:02` Corrida terminada. Total usado hoy: 228.
+- `2026-10-22T09:50:38` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-22T09:51:25` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad en el proceso de aislamiento atómico (`_atomic_isolate_file`) mediante una validación de estado "post-creación" más estricta, forzando la verificación del inodo antes de cualquier registro en el manifiesto para cerrar un posible vacío entre el reemplazo del archivo y el registro de metadatos.
+- `2026-10-22T09:51:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T09:51:37` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T09:51:49` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-22T09:52:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-22T09:53:16` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `ensure_safe_to_modify` añadiendo un control de estado de reparse points anidados previo a la validación de integridad, asegurando que no se pueda manipular una ruta que, aunque parezca segura, sea una trampa lógica a través de redirecciones ocultas en niveles superiores del árbol de directorios.
+- `2026-10-22T09:53:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T09:53:47` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` aplicando la regla de oro: el chequeo de seguridad debe ocurrir antes de cualquier procesamiento, utilizando el patrón de filtro booleano `is_safe_to_modify` (vía `_is_safe_entry`) para evitar excepciones y asegurar que no se sigan rutas de reanálisis fuera del scope definido.
+- `2026-10-22T09:53:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T09:53:47` Corrida terminada. Total usado hoy: 232.

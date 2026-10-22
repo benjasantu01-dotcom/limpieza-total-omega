@@ -1009,8 +1009,12 @@ def _validate_path_components(path: Path) -> None:
                 if resolved in visited:
                     raise UnsafePathError(f"Referencia circular detectada: {current_check}", SafetyValidationErrorCode.CIRCULAR_REFERENCE)
                 visited.add(resolved)
+                
+                # Check previo: si es reparse point, validar antes de seguir
                 if _is_system_directory_junction(str(current_check)):
-                    raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+                    # Si no podemos validar la seguridad de la redirección, abortamos
+                    if _get_final_path_normalized(current_check) is None:
+                        raise UnsafePathError(f"Punto de reparse inaccesible: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
             except (OSError, RuntimeError):
                 continue
 
