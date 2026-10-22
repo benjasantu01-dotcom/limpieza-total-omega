@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 247
+- Sin respuesta de la IA (error o límite): 249
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 56 | 3 | 18 | 4 | 111 |
-| 2026-10-22 | 116 | 9 | 32 | 19 | 136 |
+| 2026-10-21 | 53 | 3 | 17 | 4 | 111 |
+| 2026-10-22 | 118 | 9 | 32 | 19 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
-- seguridad defensiva: **42**
+- seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **35**
 - rendimiento: **28**
-- robustez ante casos límite: **24**
+- robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `memory.py`: **16**
 - `branding.py`: **16**
-- `quarantine.py`: **15**
-- `safety.py`: **15**
 - `browser.py`: **15**
+- `safety.py`: **14**
 - `settings.py`: **14**
 - `assistant.py`: **14**
+- `quarantine.py`: **14**
 - `duplicates.py`: **13**
-- `scanner.py`: **12**
-- `healthscore.py`: **8**
+- `scanner.py`: **11**
+- `healthscore.py`: **9**
 - `organizer.py`: **7**
 - `startup.py`: **5**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T13:26:18` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `_calculate_area_contribution` ante entradas malformadas o inesperadas, añadiendo una comprobación explícita para evitar divisiones por cero o fallos catastróficos en el pipeline cuando las métricas recibidas son valores extremos o inválidos (como `None` o estados no inicializados).
+- `2026-10-22T13:25:11` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o con metadatos inaccesibles añadiendo un bloque `try-except` específico para `os.stat` y verificando la existencia del tamaño del archivo, evitando así que el generador colapse por excepciones de acceso de bajo nivel.
 - `2026-10-22T13:16:43` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo ante errores de E/S y accesos denegados mediante la validación de `os.access(..., os.R_OK)` y el manejo estricto de rutas malformadas antes de realizar operaciones de resolución de sistema, evitando que una ruta inválida o bloqueada propague excepciones en el bucle principal de `detect_profiles`.
 - `2026-10-22T13:15:41` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `AssistantConfig` y `_parse_config` agregando validaciones de tipo explícitas y manejo de errores ante configuraciones corrompidas o con tipos inesperados (e.g., valores no numéricos o estructuras anidadas), evitando que un `settings.json` mal formado pueda romper la ejecución del asistente.
 - `2026-10-22T13:06:03` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando los chequeos secuenciales costosos (como `path.parts` y `path_str.startswith`) por un hash set de pre-validación basado en `os.path.commonpath`, eliminando la necesidad de iterar sobre `_SYSTEM_ROOT_STRS` y `PROTECTED_DIR_NAMES` en cada llamada.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T12:04:52` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante la adición de Type Hints faltantes, normalización de docstrings para seguir estándares de documentación, y la simplificación de estructuras de datos en `_collect_summary_data` para mejorar la mantenibilidad.
 - `2026-10-22T12:04:22` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `browser.py` extrayendo la lógica de filtrado de `_sum_directory_recursive` a una función auxiliar nombrada `_process_file_in_dir`, clarificando así el propósito del bucle principal y facilitando la depuración de futuras heurísticas.
 - `2026-10-22T12:03:51` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y semántica del archivo mediante la incorporación de type hints detallados en funciones de dibujo geométrico y la sustitución de literales mágicos en los parámetros de los métodos `create_` de `CanvasElement` para reflejar con mayor claridad su propósito.
-- `2026-10-22T11:55:01` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de negocio en `assistant.py` mediante la implementación de `TypeAlias` para definiciones complejas y la adición de docstrings estructurados que aclaran el flujo de datos y las garantías de seguridad en funciones críticas.
-- `2026-10-22T11:54:35` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` y `_process_folder_entry` mediante la captura explícita de excepciones durante la iteración y el acceso a datos, evitando que un fallo en un único registro o archivo bloquee la recolección total de datos de inicio.

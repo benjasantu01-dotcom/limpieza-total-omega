@@ -344,7 +344,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Calcula el aporte de un área al puntaje global y sus recomendaciones."""
-    if entry.area not in WEIGHTS:
+    if entry.area not in WEIGHTS or not metrics.is_finite:
         return 0, []
         
     try:
