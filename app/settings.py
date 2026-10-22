@@ -172,7 +172,8 @@ class _SettingsManager:
         try:
             resolved_path = config_path.resolve()
             if not is_safe_to_modify(str(resolved_path)): return False
-            if resolved_path.exists() and (resolved_path.is_symlink() or not resolved_path.is_file()): return False
+            if resolved_path.exists():
+                if resolved_path.is_symlink() or not resolved_path.is_file(): return False
             
             temp_path = resolved_path.with_suffix(".tmp")
             with open(temp_path, "w", encoding="utf-8") as f:
@@ -334,6 +335,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     try:
         resolved = file_path.resolve()
         if not is_safe_to_modify(str(resolved)): return None
+        if resolved.is_symlink(): return None
         with open(resolved, "rb") as f:
             st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(st): return None

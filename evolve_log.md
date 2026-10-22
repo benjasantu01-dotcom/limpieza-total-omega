@@ -886,3 +886,14 @@ ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflict
 - `2026-10-22T00:12:59` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_get_sha256` añadiendo un manejo de excepciones más granular para archivos bloqueados o inaccesibles durante el cálculo, y se añadió una verificación de integridad más estricta en `purge_all` para asegurar que los archivos huérfanos sin entrada en el manifiesto se procesen bajo las mismas reglas de seguridad que los registrados.
 - `2026-10-22T00:12:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T00:12:59` Corrida terminada. Total usado hoy: 4.
+- `2026-10-22T00:20:14` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-10-22T00:20:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T00:20:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-22T00:20:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T00:21:57` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación de concurrencia y acceso denegado específica para el volcado de buffers al intentar abrir rutas con `CreateFileW`, mejorando la robustez ante archivos que están bloqueados exclusivamente por el subsistema de E/S de Windows durante la fase de inspección de metadatos.
+- `2026-10-22T00:22:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T00:22:46` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-22T00:22:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T00:23:07` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos agregando verificaciones de tamaño y integridad en `_read_and_parse_json` y garantizando que las rutas de configuración no sean atacables mediante symlinks o permisos inseguros antes de cualquier operación de escritura.
+- `2026-10-22T00:23:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T00:23:07` Corrida terminada. Total usado hoy: 8.

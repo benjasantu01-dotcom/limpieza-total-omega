@@ -614,9 +614,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
                 
             if os.name == 'nt':
-                if _is_file_locked_by_other_process(str(path)):
-                    raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
-
                 class WIN32_FILE_ATTRIBUTE_DATA(ctypes.Structure):
                     _fields_ = [("dwFileAttributes", ctypes.c_uint32),
                                 ("ftCreationTime", ctypes.c_uint64),
@@ -626,6 +623,17 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                                 ("nFileSizeLow", ctypes.c_uint32)]
                 
                 data = WIN32_FILE_ATTRIBUTE_DATA()
+                # Usamos CreateFileW para testear acceso y luego GetFileAttributesExW para datos
+                handle = ctypes.windll.kernel32.CreateFileW(_to_long_path(str(path)), 0x80000000, 0x00000001, None, 3, 0x00000080, None)
+                if handle == -1:
+                    err = ctypes.windll.kernel32.GetLastError()
+                    if err == ERROR_SHARING_VIOLATION:
+                        raise UnsafePathError(f"Archivo bloqueado: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
+                    if err == ERROR_FILE_NOT_FOUND:
+                        raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+                else:
+                    ctypes.windll.kernel32.CloseHandle(handle)
+                
                 if not ctypes.windll.kernel32.GetFileAttributesExW(_to_long_path(str(path)), 0, ctypes.byref(data)):
                     err = ctypes.windll.kernel32.GetLastError()
                     if err == ERROR_FILE_NOT_FOUND:
