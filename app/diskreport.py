@@ -174,10 +174,13 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if is_protected_path(entry_path):
             return True
 
-        # Verifica confinamiento de la ruta relativa a la raíz escaneada
+        # Verifica confinamiento de la ruta mediante commonpath para prevenir escapes
         abs_entry = entry_path.resolve(strict=False)
-        if not str(abs_entry).startswith(str(root_path)):
-             return True
+        try:
+            if os.path.commonpath([str(abs_entry), str(root_path)]) != str(root_path):
+                return True
+        except ValueError:
+            return True
 
         if entry.is_symlink():
             return True

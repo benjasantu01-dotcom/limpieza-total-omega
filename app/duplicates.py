@@ -149,7 +149,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     while queue:
         current_dir, depth = queue.popleft()
-        if depth > MAX_RECURSION_DEPTH or not _safe_path_check(current_dir): continue
+        if depth > MAX_RECURSION_DEPTH or not _safe_path_check(current_dir) or is_junction(current_dir):
+            continue
             
         try:
             with os.scandir(current_dir) as it:

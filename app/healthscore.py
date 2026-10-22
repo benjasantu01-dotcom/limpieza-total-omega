@@ -344,6 +344,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Calcula el aporte de un área al puntaje global y sus recomendaciones."""
+    if entry.area not in WEIGHTS:
+        return 0, []
+        
     try:
         raw_ratio = entry.scorer(metrics)
         area_ratio = _clamp(float(raw_ratio))
