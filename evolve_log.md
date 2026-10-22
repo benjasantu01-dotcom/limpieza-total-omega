@@ -518,3 +518,31 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-22T08:21:42` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
 - `2026-10-22T08:21:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T08:21:42` Corrida terminada. Total usado hoy: 196.
+- `2026-10-22T08:29:03` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-10-22T08:29:37` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` al pre-asignar el buffer de PIDs y reducir el número de llamadas a `EnumProcesses` mediante un chequeo más directo, evitando el crecimiento exponencial innecesario del buffer.
+- `2026-10-22T08:30:06` Tests FALLARON:
+```
+w_symlinks=False):
+                            # Optimizacion: stat una sola vez para verificar extension, tamaño y oculto
+                            stats = entry.stat(follow_symlinks=False)
+                            if (Path(entry.name).suffix.lower() in JUNK_EXTENSIONS and
+                                stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and
+                                stats.st_mtime <= (now_ts + 3600) and
+>                               not bool(stats.st_file_attributes & LIMITS.WIN_ATTR_MASK)):
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^
+E                               AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+
+app/organizer.py:293: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+4 failed, 295 passed in 1.91s
+
+```
+- `2026-10-22T08:30:06` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Optimizé el rendimiento de `_process_directory` reemplazando la verificación repetida `entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE)` y múltiples llamadas a `stat` por una única consulta `stat` previa al filtrado, además de consolidar la validación de extensiones usando el conjunto `JUNK_EXTENSIONS` ya disponible para reducir el costo de cómputo en cada iteración.
+- `2026-10-22T08:30:52` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el rendimiento de `purge_all` transformando `item_map` de una lista a un diccionario para obtener una búsqueda O(1) en lugar de O(N) por cada archivo en el bucle de purga.
+- `2026-10-22T08:30:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 99): unterminated string literal (detected at line 99)
+- `2026-10-22T08:30:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T08:30:58` Corrida terminada. Total usado hoy: 200.

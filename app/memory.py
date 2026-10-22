@@ -376,22 +376,16 @@ def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: 
 
 def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos activos del sistema aplicando filtros de seguridad."""
-    buf_size = 4096
-    while buf_size <= 65536:
-        pids = (wintypes.DWORD * (buf_size // 4))()
-        cb_needed = wintypes.DWORD(0)
-        if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-            if cb_needed.value < ctypes.sizeof(pids):
-                count = cb_needed.value // 4
-                for i in range(count):
-                    pid_val = int(pids[i])
-                    if _is_system_process(pid_val) or pid_val <= 0: continue
-                    proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
-                    if proc: yield proc
-                break
-            buf_size *= 2
-        else:
-            break
+    # Pre-asignamos un buffer de 16k para obtener hasta 4096 procesos en una sola llamada
+    pids = (wintypes.DWORD * 4096)()
+    cb_needed = wintypes.DWORD(0)
+    if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+        count = min(cb_needed.value // 4, 4096)
+        for i in range(count):
+            pid_val = int(pids[i])
+            if _is_system_process(pid_val) or pid_val <= 0: continue
+            proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
+            if proc: yield proc
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna top procesos por consumo de RAM (caché: 60s)."""

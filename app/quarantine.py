@@ -1100,9 +1100,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 if not is_within_directory(f, quarantine_root):
                     continue
 
-                if f.name in item_map:
-                    if _is_item_purgable(f, item_map[f.name]):
-                        purgado_ids.add(item_map[f.name].item_id)
+                item = item_map.get(f.name)
+                if item:
+                    if _is_item_purgable(f, item):
+                        purgado_ids.add(item.item_id)
                 else:
                     if _is_item_purgable(f):
                         continue

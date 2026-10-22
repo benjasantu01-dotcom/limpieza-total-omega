@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 23
+- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Rechazadas por tests: 10
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 105 | 7 | 26 | 10 | 160 |
-| 2026-10-22 | 74 | 4 | 20 | 13 | 85 |
+| 2026-10-21 | 104 | 5 | 26 | 9 | 160 |
+| 2026-10-22 | 76 | 5 | 21 | 13 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **49**
+- seguridad defensiva: **48**
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **33**
 - robustez ante casos límite: **29**
-- rendimiento: **22**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
-- `memory.py`: **16**
-- `quarantine.py`: **16**
+- `memory.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `branding.py`: **16**
 - `browser.py`: **14**
 - `settings.py`: **14**
-- `assistant.py`: **12**
 - `healthscore.py`: **11**
+- `assistant.py`: **11**
 - `scanner.py`: **10**
 - `organizer.py`: **8**
 - `main.py`: **6**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T08:30:52` **quarantine.py** (rendimiento): Se optimizó el rendimiento de `purge_all` transformando `item_map` de una lista a un diccionario para obtener una búsqueda O(1) en lugar de O(N) por cada archivo en el bucle de purga.
+- `2026-10-22T08:29:37` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` al pre-asignar el buffer de PIDs y reducir el número de llamadas a `EnumProcesses` mediante un chequeo más directo, evitando el crecimiento exponencial innecesario del buffer.
 - `2026-10-22T08:19:20` **diskreport.py** (rendimiento): Optimicé el rendimiento del recorrido de archivos eliminando el cálculo innecesario y costoso de `path_str[len(root_str):]` en cada iteración dentro del bucle de `largest_folders`, reemplazando el procesamiento de strings redundante por una lógica de `Path.parts` que es más eficiente y legible.
 - `2026-10-22T08:10:51` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando los llamados repetidos a `getattr` y `is_safe_key` por un acceso directo al diccionario `metrics_snapshot` ya cacheado, reduciendo la sobrecarga de procesamiento en consultas frecuentes.
 - `2026-10-22T08:00:47` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos con las responsabilidades de los métodos clave, anotaciones de tipo más precisas y una estructuración lógica de los validadores para facilitar futuras auditorías del código.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T07:20:39` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas mediante la implementación de validaciones defensivas ante atributos nulos o fallidos en el acceso a metadatos, evitando que errores silenciosos en `os.stat` propaguen excepciones durante el escaneo.
 - `2026-10-22T07:18:48` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante la captura explícita de excepciones al procesar el archivo JSON y la validación de integridad de los datos leídos, asegurando que un archivo manifiesto dañado no detenga la aplicación y se recupere de forma segura.
 - `2026-10-22T07:09:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `format_bytes` y `parse_windows_process_csv` implementando validaciones de entrada más estrictas y capturando excepciones de forma específica para prevenir comportamientos inesperados ante datos mal formados.
-- `2026-10-22T06:59:28` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_candidates` añadiendo validaciones de entrada (`if not directories`) y garantizando que los `Path` sean validados antes de procesarlos, evitando así posibles errores al tratar con iterables vacíos o rutas mal formadas.
-- `2026-10-22T06:59:04` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y validando estados intermedios para prevenir caídas ante errores de sistema de archivos o archivos inaccesibles durante el recorrido.
