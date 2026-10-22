@@ -478,7 +478,6 @@ def _is_kernel_managed(path_str: str) -> bool:
     try:
         if path.name.lower() in _KERNEL_BLOCKED_FILES: return True
         if os.name == 'nt':
-            # Obtener raíz del sistema una vez vía caché implícita mediante variables
             p_str = path_str.lower()
             local_app_data = os.environ.get("LOCALAPPDATA", "").lower()
             app_data = os.environ.get("APPDATA", "").lower()
@@ -642,7 +641,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                                 ("nFileSizeLow", ctypes.c_uint32)]
                 
                 data = WIN32_FILE_ATTRIBUTE_DATA()
-                # Usamos CreateFileW para testear acceso y luego GetFileAttributesExW para datos
                 handle = ctypes.windll.kernel32.CreateFileW(_to_long_path(str(path)), 0x80000000, 0x00000001, None, 3, 0x00000080, None)
                 if handle == -1:
                     err = ctypes.windll.kernel32.GetLastError()
@@ -660,7 +658,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                     if err == ERROR_ACCESS_DENIED:
                         raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
             
-            # Realizamos stat con control de errores específico
             try:
                 return path.stat()
             except (PermissionError, FileNotFoundError, OSError):
@@ -755,7 +752,6 @@ def normalize(path: PathLike) -> Path:
         parts = p.parts
         current_subpath = anchor_path
         
-        # Validar profundidad recursiva durante la normalización
         if len(parts) > MAX_DIRECTORY_DEPTH:
             raise UnsafePathError("Profundidad de ruta excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP)
 
@@ -798,19 +794,20 @@ def is_protected_path(path: PathLike) -> bool:
     try:
         p = Path(path_str)
         
-        def _in_system_root() -> bool:
-            return any(path_str.startswith(root) for root in _SYSTEM_ROOT_STRS)
-            
-        def _in_protected_dir() -> bool:
-            return not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p.parts})
-            
         def _has_system_attributes() -> bool:
             attrs = _get_file_attrs(path_str)
             return attrs != INVALID_FILE_ATTRIBUTES and bool(attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))
         
-        if _in_system_root() or _is_kernel_managed(path_str) or _in_protected_dir() or _has_system_attributes() or p == Path(p.anchor):
-            return True
-        return False
+        # Validadores de protección
+        checks = [
+            any(path_str.startswith(root) for root in _SYSTEM_ROOT_STRS),
+            _is_kernel_managed(path_str),
+            not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p.parts}),
+            _has_system_attributes(),
+            p == Path(p.anchor)
+        ]
+        
+        return any(checks)
     except Exception:
         return True
 
@@ -998,13 +995,11 @@ def _validate_path_components(path: Path) -> None:
     parts = resolved_path.parts
     visited: set[Path] = set()
 
-    # Prevenir recursión infinita mediante profundidad excesiva detectada
     if len(parts) > MAX_DIRECTORY_DEPTH:
         raise UnsafePathError("Ruta demasiado profunda.", SafetyValidationErrorCode.PATH_TOO_DEEP)
 
     for i in range(len(parts)):
         current_check = anchor.joinpath(*parts[:i+1])
-        # Detectar caracteres ocultos o spoofing de nombres cortos (tilde)
         if "~" in current_check.name or re.search(r'[\u200E\u200F\u202A-\u202E]', current_check.name):
             raise UnsafePathError("Ruta con spoofing de nombres o caracteres ocultos detectada.", SafetyValidationErrorCode.SHORT_NAME_SPOOFING)
         
