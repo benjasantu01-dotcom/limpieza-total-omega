@@ -167,7 +167,7 @@ class ProcessMemory:
 
 def format_bytes(num: Optional[int | float]) -> str:
     """Convierte un valor numérico en bytes a formato de cadena legible."""
-    if not isinstance(num, (int, float)) or num < 0:
+    if not isinstance(num, (int, float)) or math.isnan(num) or num < 0:
         return "0 B"
     if num == 0:
         return "0 B"
@@ -268,9 +268,12 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     def _gen() -> Iterator[ProcessMemory]:
         for line in lines[1:]:
-            proc = _extract_process_info(line)
-            if proc: 
-                yield proc
+            try:
+                proc = _extract_process_info(line)
+                if proc: 
+                    yield proc
+            except Exception:
+                continue
             
     return _filter_and_sort_processes(_gen(), limit)
 

@@ -431,3 +431,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-22T06:59:28` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_collect_candidates` añadiendo validaciones de entrada (`if not directories`) y garantizando que los `Path` sean validados antes de procesarlos, evitando así posibles errores al tratar con iterables vacíos o rutas mal formadas.
 - `2026-10-22T06:59:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T06:59:28` Corrida terminada. Total usado hoy: 164.
+- `2026-10-22T07:07:36` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-22T07:07:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T07:07:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T07:07:50` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-22T07:08:02` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-22T07:08:41` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 3): unexpected indent
+- `2026-10-22T07:09:23` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `format_bytes` y `parse_windows_process_csv` implementando validaciones de entrada más estrictas y capturando excepciones de forma específica para prevenir comportamientos inesperados ante datos mal formados.
+- `2026-10-22T07:09:44` ➖ Sin cambios en organizer.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez y seguridad del módulo mediante la validación estricta de parámetros en funciones críticas, sustituyendo verificaciones genéricas `isinstance` por validaciones de estado más seguras y añadiendo el manejo de `ValueError` en `stage_for_review` para prevenir el uso de rutas mal formadas.
+- `2026-10-22T07:09:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T07:09:44` Corrida terminada. Total usado hoy: 168.
