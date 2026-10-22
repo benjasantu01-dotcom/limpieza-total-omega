@@ -278,20 +278,19 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
         
-        entry_path = entry.path
-        if not isinstance(entry_path, str):
+        name_ext = os.path.splitext(entry.name)
+        if name_ext[1].lower() not in EXECUTABLE_EXTS:
             return None
             
-        _, ext = os.path.splitext(entry.name)
-        if ext.lower() not in EXECUTABLE_EXTS:
+        entry_path = entry.path
+        if not isinstance(entry_path, str):
             return None
             
         p = Path(entry_path)
         if is_protected_path(p):
             return None
             
-        name = os.path.splitext(entry.name)[0]
-        return StartupEntry(name=name, command=entry_path, source="carpeta")
+        return StartupEntry(name=name_ext[0], command=entry_path, source="carpeta")
     except (OSError, PermissionError, ValueError, TypeError):
         return None
 

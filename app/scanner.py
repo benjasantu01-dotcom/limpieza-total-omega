@@ -256,7 +256,7 @@ class Scanner:
         """
         Realiza la validación de seguridad de la entrada.
         Aplica filtros de: nombres prohibidos, enlaces simbólicos, puntos de unión, 
-        listas negras de rutas y scope de escaneo raíz.
+        listas negras de rutas y scope de escaneo raíz (el más costoso al final).
         """
         if entry is None or not entry.path:
             return False

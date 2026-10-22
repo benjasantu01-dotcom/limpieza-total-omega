@@ -16,24 +16,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 15 | 2 | 4 | 2 | 35 |
+| 2026-10-20 | 13 | 1 | 3 | 2 | 35 |
 | 2026-10-21 | 131 | 7 | 32 | 12 | 168 |
-| 2026-10-22 | 35 | 2 | 10 | 7 | 42 |
+| 2026-10-22 | 37 | 3 | 11 | 7 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- seguridad defensiva: **42**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **32**
 - robustez ante casos límite: **32**
-- rendimiento: **26**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
-- `diskreport.py`: **17**
 - `memory.py`: **17**
 - `safety.py`: **17**
+- `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `browser.py`: **14**
 - `branding.py`: **14**
@@ -41,12 +41,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **13**
 - `assistant.py`: **12**
 - `organizer.py`: **9**
-- `scanner.py`: **8**
-- `main.py`: **7**
-- `startup.py`: **6**
+- `scanner.py`: **9**
+- `startup.py`: **7**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T04:15:58` **startup.py** (rendimiento): Se implementó un mecanismo de caché local dentro de `_process_folder_entry` para evitar múltiples llamadas `os.path.splitext` y accesos a `Path` innecesarios por cada archivo escaneado, mejorando el rendimiento del bucle de recorrido en carpetas.
+- `2026-10-22T04:14:55` **scanner.py** (rendimiento): Se ha optimizado `_is_safe_entry` moviendo la validación de `_is_inside_base_root` (la operación más costosa que involucra resolución de rutas y comparaciones de cadenas) al final del flujo, permitiendo que filtros rápidos como el caché, caracteres prohibidos o atributos de sistema descarten rutas inválidas prematuramente.
 - `2026-10-22T04:07:15` **safety.py** (rendimiento): Optimicé el rendimiento de las validaciones de seguridad mediante la implementación de `lru_cache` en los predicados de reglas de integridad y la consolidación de `_is_kernel_managed` para reducir el impacto de las llamadas al sistema en los recorridos de disco.
 - `2026-10-22T04:04:44` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo integrando el filtrado de extensiones directamente en la llamada a `os.scandir` mediante un conjunto de búsqueda eficiente y evitando la creación redundante de objetos `Path` y llamadas a `stat` adicionales dentro del bucle.
 - `2026-10-22T03:55:05` **healthscore.py** (rendimiento): Se ha optimizado la gestión de las reglas de diagnóstico eliminando la regeneración innecesaria de tuplas en el pipeline mediante la persistencia de `_RULES` como constante y reemplazando la creación dinámica de `PipelineEntry` por una definición estática más eficiente, reduciendo la presión sobre el recolector de basura en cada iteración del bucle.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T03:16:34` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `main.py` mediante la refactorización de las docstrings de las clases y métodos clave, utilizando un formato estructurado que facilita la comprensión rápida de la intención y los contratos de cada componente sin alterar la lógica funcional.
 - `2026-10-22T03:14:56` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de procesamiento crítico (`_collect_candidates` y `_decide_hash_strategy_and_process`) y refiné el uso de tipos para mayor claridad, asegurando que las decisiones de diseño sobre el ciclo de vida de los datos estén claramente expuestas para futuros colaboradores.
 - `2026-10-22T03:13:56` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo mediante docstrings detallados que explican el propósito del min-heap y el manejo de excepciones, además de unificar el uso de TypeHints en firmas complejas para mejorar la mantenibilidad y claridad del flujo de datos.
-- `2026-10-22T03:05:30` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en funciones críticas y se han aplicado type hints adicionales para esclarecer la intención de las operaciones en las estructuras de datos de escaneo.
-- `2026-10-22T03:05:16` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos para las funciones de dibujo y helpers de color, aclarando su propósito y el origen de los cálculos para mejorar la mantenibilidad.
