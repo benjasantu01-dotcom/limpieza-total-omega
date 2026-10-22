@@ -176,9 +176,11 @@ class StartupEntry:
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
+        # Validación defensiva contra rutas excesivamente largas o UNC antes de normalizar
+        if len(path_string) > 260 or path_string.startswith(r"\\"):
+            return ""
+            
         try:
-            if "\0" in path_string or len(path_string) > 260 or path_string.startswith(r"\\"):
-                return ""
             norm: str = os.path.normpath(path_string)
         except (ValueError, TypeError):
             return ""
@@ -335,6 +337,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     clean_name = name.strip()
     clean_cmd = command.strip()
     
+    # Bloqueo defensivo: rutas UNC no deben estar en el registro de inicio
     if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen:
         return False
     

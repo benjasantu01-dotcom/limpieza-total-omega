@@ -236,10 +236,10 @@ class Scanner:
 
     @lru_cache(maxsize=2048)
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica estrictamente si la ruta está contenida dentro del scope del escaneo."""
+        """Verifica estrictamente mediante commonpath si la ruta está contenida dentro del scope."""
         try:
             target = Path(entry_path).resolve()
-            return str(target).startswith(str(self.base_root))
+            return os.path.commonpath([str(self.base_root), str(target)]) == str(self.base_root)
         except (OSError, ValueError, RuntimeError):
             return False
 
@@ -312,6 +312,9 @@ class Scanner:
         try:
             if entry.is_file(follow_symlinks=False):
                 if not self._is_relevant_extension(entry.name):
+                    return
+                # Doble validación de scope antes de heurística
+                if not self._is_inside_base_root(entry.path):
                     return
                 self.seen.add(path_norm)
                 self._run_file_heuristics(Path(entry.path), entry)

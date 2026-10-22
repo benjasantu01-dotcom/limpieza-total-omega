@@ -173,7 +173,7 @@ class _SettingsManager:
         if not isinstance(serialized, str): return False
         try:
             resolved_path = config_path.resolve()
-            if not is_safe_to_modify(str(resolved_path)): return False
+            if is_protected_path(str(resolved_path)) or not is_safe_to_modify(str(resolved_path)): return False
             if resolved_path.exists():
                 st = resolved_path.stat()
                 if st.st_nlink != 1 or not stat.S_ISREG(st.st_mode): return False
@@ -346,7 +346,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Carga, verifica y parsea el archivo JSON de configuración con mitigación TOCTOU."""
     try:
         resolved = file_path.resolve()
-        if not is_safe_to_modify(str(resolved)): return None
+        if is_protected_path(str(resolved)) or not is_safe_to_modify(str(resolved)): return None
         # Usamos lstat para verificar que no es symlink antes de abrir
         if not _is_file_secure_to_read(os.lstat(resolved)): return None
         
