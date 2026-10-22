@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 53 | 3 | 17 | 4 | 103 |
-| 2026-10-22 | 122 | 9 | 34 | 19 | 140 |
+| 2026-10-21 | 53 | 3 | 17 | 4 | 99 |
+| 2026-10-22 | 125 | 9 | 34 | 19 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
-- seguridad defensiva: **39**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **35**
 - robustez ante casos límite: **30**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `memory.py`: **17**
 - `branding.py`: **16**
+- `browser.py`: **16**
 - `safety.py`: **15**
 - `settings.py`: **15**
-- `browser.py`: **15**
+- `assistant.py`: **15**
 - `quarantine.py`: **15**
-- `assistant.py`: **14**
 - `duplicates.py`: **13**
 - `scanner.py`: **11**
 - `healthscore.py`: **9**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T13:57:33` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `_is_excluded_path` añadiendo validaciones explícitas contra rutas fuera del ámbito (directory traversal) y garantizando que las rutas resueltas mantengan su integridad antes de cualquier operación de escaneo, evitando así accesos no intencionados fuera del directorio raíz.
+- `2026-10-22T13:57:15` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_should_skip_entry` y `_sum_directory_recursive` mediante el uso de `is_protected_path` como barrera adicional para prevenir el acceso accidental a rutas sensibles, incluso si estas no forman parte explícita de `NEVER_TOUCH`.
+- `2026-10-22T13:56:08` **assistant.py** (seguridad defensiva): Se reforzó `_ensure_safe_text` y los validadores de entrada para prohibir explícitamente caracteres de control y metacaracteres de shell en el cuerpo de las consultas, previniendo inyecciones de comandos incluso en casos de consultas maliciosas altamente ofuscadas antes de que lleguen a cualquier motor de procesamiento.
 - `2026-10-22T13:47:20` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` añadiendo una comprobación explícita de existencia mediante `os.path.exists()` tras la creación del archivo temporal para prevenir condiciones de carrera, y se aseguró la integridad del descriptor de archivo tras el `flush` mediante `os.fsync`.
 - `2026-10-22T13:46:05` **safety.py** (robustez ante casos límite): Mejoré la robustez ante la concurrencia y el bloqueo de archivos añadiendo un chequeo preventivo de `GetFileInformationByHandle` con `BY_HANDLE_FILE_INFORMATION` para obtener `nFileIndex` y `dwVolumeSerialNumber` de manera atómica, reemplazando la lógica de comparación `st_dev`/`st_ino` que en Windows es inestable ante cambios de estado o reintento de manejo de archivos.
 - `2026-10-22T13:36:38` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y corrupción de metadatos en `purge_all`, implementando una validación estricta del inodo y hash antes de borrar cualquier archivo, asegurando que solo se eliminen los ítems efectivamente registrados y verificados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T12:44:49` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reemplazando el uso de `path.parts` (que genera tuplas completas de strings por cada archivo) por una comprobación basada en `path.is_relative_to` y la determinación manual de la subcarpeta raíz, evitando la creación innecesaria de objetos intermedios durante el recorrido de grandes volúmenes de datos.
 - `2026-10-22T12:44:23` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando la resolución repetitiva de rutas `Path.resolve()` en el bucle principal por una comparación de strings normalizados `os.path.normcase`, lo que reduce drásticamente las llamadas al sistema operativo (I/O) durante el recorrido recursivo.
 - `2026-10-22T12:36:08` **assistant.py** (rendimiento): Se optimizó el acceso a las métricas del `SystemContext` reemplazando los múltiples llamados a `getattr` y validaciones redundantes por un acceso directo al diccionario `metrics_snapshot` ya cacheado, reduciendo la complejidad algorítmica de O(N) a O(1) en las operaciones frecuentes de evaluación de criterios y generación de respuestas.
-- `2026-10-22T12:34:13` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la adición de Type Hints detallados en las funciones de validación interna y el uso de `tuple` para las estructuras de datos de configuración, reforzando el contrato del sistema.
-- `2026-10-22T12:26:23` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las interfaces y métodos críticos en `scanner.py`, añadiendo docstrings que explican el propósito lógico detrás de los filtros de seguridad y el flujo de trabajo heurístico, mejorando la legibilidad para el mantenimiento futuro.
-- `2026-10-22T12:24:28` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la normalización de la estructura de las funciones de validación de seguridad (introduciendo docstrings más descriptivos sobre el "PORQUÉ" de las restricciones) y aplicando type hinting consistente, asegurando que la complejidad de las operaciones críticas sea transparente para futuros colaboradores.

@@ -197,6 +197,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     if entry.name.lower() in ctx.never_touch_lower: return True
     
     path_str = entry.path
+    if is_protected_path(Path(path_str)): return True
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
     if not _is_within_sandbox(os.path.normcase(path_str), ctx.sandbox_base_norm): return True
     
@@ -223,6 +224,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
     
     norm_path = os.path.normcase(root_path)
+    if is_protected_path(Path(root_path)): return ScanResult(0, True)
     if not os.path.isdir(root_path) or not os.access(root_path, os.R_OK) or norm_path in ctx.visited_dirs:
         return ScanResult(0, True)
     
@@ -264,7 +266,7 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
     try:
         real = candidate.resolve(strict=True)
         if not _is_within_sandbox(os.path.normcase(str(real)), base_norm): return False
-        return not (candidate.is_symlink() or _IS_JUNCTION_FN(str(real)) or candidate.name.lower() in NEVER_TOUCH)
+        return not (candidate.is_symlink() or _IS_JUNCTION_FN(str(real)) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
     except (OSError, RuntimeError): return False
 
 @safe_path_operation(Path())

@@ -1114,3 +1114,14 @@ FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_fa
 - `2026-10-22T13:47:52` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-22T13:47:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T13:47:52` Corrida terminada. Total usado hoy: 324.
+- `2026-10-22T13:55:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-22T13:55:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T13:56:08` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó `_ensure_safe_text` y los validadores de entrada para prohibir explícitamente caracteres de control y metacaracteres de shell en el cuerpo de las consultas, previniendo inyecciones de comandos incluso en casos de consultas maliciosas altamente ofuscadas antes de que lleguen a cualquier motor de procesamiento.
+- `2026-10-22T13:56:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T13:56:14` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T13:56:21` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-22T13:56:35` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-22T13:57:15` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_should_skip_entry` y `_sum_directory_recursive` mediante el uso de `is_protected_path` como barrera adicional para prevenir el acceso accidental a rutas sensibles, incluso si estas no forman parte explícita de `NEVER_TOUCH`.
+- `2026-10-22T13:57:33` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `_is_excluded_path` añadiendo validaciones explícitas contra rutas fuera del ámbito (directory traversal) y garantizando que las rutas resueltas mantengan su integridad antes de cualquier operación de escaneo, evitando así accesos no intencionados fuera del directorio raíz.
+- `2026-10-22T13:57:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T13:57:33` Corrida terminada. Total usado hoy: 328.

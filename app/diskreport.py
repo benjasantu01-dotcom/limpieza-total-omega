@@ -171,8 +171,11 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if is_protected_path(entry_path):
             return True
 
+        # Verificar contención estricta para evitar escape de directorio
         abs_entry = entry_path.resolve(strict=False)
-        if os.path.commonpath([str(abs_entry), str(root_path)]) != str(root_path):
+        try:
+            abs_entry.relative_to(root_path)
+        except ValueError:
             return True
 
         if entry.is_symlink():
