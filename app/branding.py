@@ -330,12 +330,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
             if not is_safe_to_modify(dest_path): return None
         else:
             parent = dest_path.parent
-            # ensure_safe_to_modify valida seguridad de escritura en la carpeta
-            if not parent.exists():
-                ensure_safe_to_modify(parent.parent)
-                parent.mkdir(parents=True, exist_ok=True)
-            else:
-                ensure_safe_to_modify(parent)
+            # Validar que el directorio padre permita operaciones de escritura
+            if not is_safe_to_modify(parent): return None
+            parent.mkdir(parents=True, exist_ok=True)
         
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path

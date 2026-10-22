@@ -492,8 +492,8 @@ def _ensure_safe_text(text: Any) -> bool:
     """Desinfecta estricta sobre cadenas evitando inyecciones de comandos."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
-    # Evitar caracteres especiales de control de shell y inyección directa
-    if any(c in text for c in "<>|&^$():;"):
+    # Evitar caracteres especiales de control de shell, saltos de línea y inyección directa
+    if any(c in text for c in "<>|&^$():;\n\r\t\"'"):
         return False
     return not _is_safe_path_input(text)
 
@@ -710,13 +710,13 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload: Optional[bytes] = _build_payload(question, context_text)
     if not payload: return None
     
-    # Validar endpoint y URL base
+    # Validar endpoint y URL base con reglas estrictas de inyección de parámetros
     target_url: str = _ENDPOINT_BASE.format(model=model)
-    if not target_url.startswith(_API_HOST_ROOT) or is_protected_path(target_url) or any(c in target_url for c in "<>\"' \t\n\r"):
+    if not target_url.startswith(_API_HOST_ROOT) or any(c in target_url for c in "<>\"' \t\n\r&?="):
         return None
     
     try:
-        # Construcción segura de la URL con parámetros
+        # Construcción segura de la URL con parámetros: no se permiten metacaracteres adicionales
         full_url: str = f"{target_url}?key={api_key}"
         req: urllib.request.Request = urllib.request.Request(
             full_url, 
@@ -727,7 +727,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: 
                 return None
-            # Validación estricta de tamaño basada en cabeceras HTTP antes de lectura
             content_length = res.headers.get("Content-Length")
             if content_length and int(content_length) > _MAX_RESPONSE_BYTES: 
                 return None

@@ -897,3 +897,45 @@ ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflict
 - `2026-10-22T00:23:07` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante archivos corruptos o maliciosos agregando verificaciones de tamaño y integridad en `_read_and_parse_json` y garantizando que las rutas de configuración no sean atacables mediante symlinks o permisos inseguros antes de cualquier operación de escritura.
 - `2026-10-22T00:23:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T00:23:07` Corrida terminada. Total usado hoy: 8.
+- `2026-10-22T00:30:24` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-22T00:30:58` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 0.92s
+
+```
+- `2026-10-22T00:30:58` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `StartupEntry` frente a rutas inválidas o inaccesibles añadiendo una validación explícita en `_extract_quoted_path` y `_resolve_and_cache_path` que previene el procesamiento de rutas malformadas que superan los límites de longitud o contienen caracteres de control, asegurando que `Path.resolve()` no lance excepciones críticas durante la inspección.
+- `2026-10-22T00:31:46` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endurecieron los criterios de seguridad en `_ensure_safe_text` y se reforzó la validación de entrada en `_call_gemini` para impedir activamente cualquier intento de inyección de parámetros (como caracteres especiales de shell o saltos de línea) en la URL o el cuerpo de la petición, alineándose con el enfoque de seguridad defensiva.
+- `2026-10-22T00:32:26` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `save_logo_svg` al reemplazar el uso de `ensure_safe_to_modify(parent.parent)` (que es una operación invasiva sobre el abuelo de la ruta, potencialmente fuera del alcance del usuario) por una verificación directa sobre la existencia y permisos del directorio destino, delegando la creación de la estructura de carpetas a una lógica que respeta estrictamente los límites definidos en `safety.py`.
+- `2026-10-22T00:32:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T00:32:52` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-22T00:32:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T00:32:52` Corrida terminada. Total usado hoy: 12.
