@@ -105,7 +105,10 @@ def _verify_source_fs_permissions(path: Path) -> None:
             pass
 
 def _is_filesystem_read_only(path: Path) -> bool:
-    """Verifica si un directorio permite escrituras mediante una prueba de creación."""
+    """
+    Verifica si un directorio permite escrituras mediante una prueba de creación.
+    Útil para descartar montajes de solo lectura sin depender de permisos OS.
+    """
     if not path.exists(): return True
     if not os.access(path, os.W_OK):
         return True
@@ -143,7 +146,8 @@ def _win_has_system_attributes(path: Path) -> bool:
 
 def _is_file_exclusive(path: Path) -> bool:
     """
-    Intenta abrir el archivo con exclusividad para verificar si está siendo usado por otro proceso.
+    Determina si un archivo está disponible para escritura exclusiva comprobando el bloqueo.
+    En Windows usa CreateFileW con acceso compartido nulo, en POSIX usa fcntl.
     """
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
@@ -267,7 +271,10 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula hash SHA256 mediante streaming para optimizar uso de memoria con archivos grandes."""
+    """
+    Calcula hash SHA256 mediante streaming para optimizar uso de memoria con archivos grandes.
+    Utiliza una caché basada en mtime para evitar re-cálculos innecesarios.
+    """
     if not path.is_file(): return ""
     
     try:
@@ -404,7 +411,7 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     return candidate
 
 def _ensure_path_ownership(path: Path) -> None:
-    """Seguridad: valida que el directorio sea propiedad del usuario actual."""
+    """Seguridad: valida que el directorio sea propiedad del usuario actual (en POSIX)."""
     if hasattr(os, 'getuid'):
         try:
             if path.stat().st_uid != os.getuid():
@@ -1056,7 +1063,10 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 
 def _is_item_purgable(file_path: Path, item: Optional[QuarantineItem] = None) -> bool:
-    """Verifica si un ítem puede ser purgado tras validar integridad."""
+    """
+    Verifica si un ítem puede ser purgado tras validar integridad.
+    Si se proporciona un ítem de cuarentena, se valida contra el hash y inodo registrados.
+    """
     if not (file_path.exists() and file_path.is_file() and not file_path.is_symlink()):
         return False
     if _is_file_in_use_by_system(file_path):

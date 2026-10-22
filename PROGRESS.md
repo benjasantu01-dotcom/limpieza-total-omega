@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 22
+- Rechazadas por guardia de seguridad: 44
+- Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 115 | 7 | 29 | 10 | 163 |
-| 2026-10-22 | 68 | 4 | 16 | 12 | 80 |
+| 2026-10-21 | 113 | 7 | 27 | 10 | 163 |
+| 2026-10-22 | 70 | 4 | 17 | 13 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **42**
-- robustez ante casos límite: **38**
+- legibilidad y documentación: **44**
+- robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **33**
-- rendimiento: **21**
+- rendimiento: **20**
 
 ## Mejoras aceptadas por archivo
 
 - `branding.py`: **17**
 - `diskreport.py`: **17**
+- `memory.py`: **17**
+- `quarantine.py`: **17**
 - `duplicates.py`: **17**
-- `memory.py`: **16**
-- `quarantine.py`: **16**
 - `browser.py`: **15**
 - `safety.py`: **15**
-- `settings.py`: **14**
-- `assistant.py`: **12**
+- `settings.py`: **13**
 - `healthscore.py`: **12**
 - `scanner.py`: **11**
+- `assistant.py`: **11**
 - `organizer.py`: **8**
 - `main.py`: **7**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T07:51:19` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más descriptivos que aclaran el propósito de funciones críticas y se han unificado criterios de type hinting para mejorar la mantenibilidad y legibilidad del código.
+- `2026-10-22T07:50:00` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings informativos, la clarificación de tipos complejos mediante type hinting adicional y la refactorización de nombres de constantes internas para reflejar mejor su propósito semántico, aumentando la legibilidad del código sin alterar su lógica.
 - `2026-10-22T07:39:48` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de procesamiento de hashes y el recolector de candidatos, además de clarificar los tipos de datos en la lógica de agrupación para asegurar que el flujo de trabajo de los tres pasos (tamaño, hash parcial, hash completo) sea evidente para cualquier colaborador.
 - `2026-10-22T07:38:47` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de las estructuras de datos y funciones críticas (`ScanContext`, `BrowserCache`, `_should_skip_entry`) para clarificar el propósito de seguridad de cada campo y lógica, facilitando el mantenimiento al explicar el "porqué" de las restricciones de sandbox y filtrado.
 - `2026-10-22T07:30:08` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de validación de seguridad dentro de `assistant.py`, clarificando mediante docstrings el propósito técnico de los límites de recursión y los criterios de saneamiento de datos para facilitar auditorías futuras.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T06:57:59` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` mediante una validación de parámetros más estricta, asegurando que los valores de entrada sean finitos y válidos antes de procesarlos, evitando así posibles errores de cálculo en el canvas o en el sistema de archivos.
 - `2026-10-22T06:50:52` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez en la validación de las métricas en `SystemContext` agregando una verificación de tipo explícita y coherente con `MetricSpec` en `_apply_field`, asegurando que valores inválidos no silencien errores de formato y fallando de forma segura.
 - `2026-10-22T05:27:54` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_read_and_parse_json` y `perform_atomic_write` añadiendo verificaciones estrictas de metadatos (como el conteo de enlaces duros) para prevenir ataques de sustitución de archivos (TOCTOU/Symlink races) y asegurar la integridad de los datos antes de operar sobre ellos.
-- `2026-10-22T05:27:37` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` al implementar una validación de ruta absoluta antes de realizar cualquier operación en `process_entry` y `scan_directory`, garantizando que el escáner no escape del `base_root` incluso ante condiciones de carrera o manipulación de rutas externas, utilizando `pathlib.Path.resolve()` de forma consistente.
-- `2026-10-22T05:27:06` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la suplantación de nombres cortos (8.3) mediante la detección de tildes/espacios no estándar o caracteres ocultos en nombres de archivos, protegiendo contra posibles rutas ambiguas que podrían evadir los chequeos de `is_protected_path`.

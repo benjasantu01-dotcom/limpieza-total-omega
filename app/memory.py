@@ -51,7 +51,7 @@ MegabytesValue = NewType("MegabytesValue", float)
 # Constantes de conversión y límites de seguridad:
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
-MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
+MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32 para interactuar con el subsistema de procesos:
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
@@ -60,13 +60,11 @@ PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
 TRIM_ACCESS_MASK: Final[int] = 0x00020000 | PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION
 
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
-DRIVE_FIXED: Final[int] = 3
 INVALID_HANDLE_VALUE: Final[int] = -1
-STILL_ACTIVE: Final[int] = 259
+STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 
 # PIDs reservados por el kernel de Windows que no deben ser consultados.
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
-ERROR_ACCESS_DENIED: Final[int] = 5
 
 class CacheEntry(NamedTuple):
     """Contenedor temporal con timestamp para implementar caché basada en expiración."""
@@ -245,7 +243,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         
         if _is_system_process(pid) or pid <= 0:
             return None
-        if not (0 < ws < MAX_VALID_PROCESS_MEM):
+        if not (0 < ws < MAX_VALID_PROCESS_MEM_BYTES):
             return None
             
         return ProcessMemory(name, pid, ws)
@@ -320,7 +318,7 @@ def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CD
     try:
         if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
-            return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM else None
+            return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
     except (ctypes.WinError, OSError, ValueError):
         return None
     return None
@@ -464,7 +462,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         # Validación de que el proceso sigue activo
         exit_code = wintypes.DWORD()
-        if kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE:
+        if kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
         
         # Validación defensiva extra antes de la acción destructiva
