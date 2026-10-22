@@ -201,43 +201,55 @@ SEVERITY_MAP: Final[Mapping[SeverityType, str]] = MappingProxyType({
 })
 
 def app_title() -> str: 
+    """Retorna el nombre completo de la aplicación con su versión actual."""
     return f"{APP_NAME} v{APP_VERSION}"
 
 def color(name: Optional[str]) -> ColorHex: 
+    """Acceso seguro a un color de la paleta corporativa por nombre."""
     return PALETTE.get(name, "#808080") if name else "#808080"
 
 def font_size(name: Optional[str]) -> int: 
+    """Retorna el tamaño de fuente configurado para una categoría dada."""
     return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size
 
 def icon(section: Optional[str]) -> str: 
+    """Retorna el glifo Unicode asociado a una sección de la aplicación."""
     return ICONS.get(section, "\u2022") if section else "\u2022"
 
 def tab_label(section: Optional[str]) -> str: 
+    """Formatea la etiqueta de una pestaña combinando icono y texto."""
     return f"{icon(section)}  {section}" if section else "\u2022  Desconocido"
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
+    """Valida y normaliza una cadena de texto a un enum de tipo SeverityType."""
     if not isinstance(severity, str): return None
     try: return SeverityType(severity.strip().lower())
     except (ValueError, AttributeError): return None
 
 def _get_severity_style(severity_key: Optional[SeverityType]) -> SeverityStyle:
+    """Busca el par color/etiqueta para un nivel de severidad determinado."""
     return SEVERITY_STYLES.get(severity_key, (C_TEXT_MUTED, "Desconocido"))
 
 def severity_color(severity: Optional[str]) -> ColorHex: 
+    """Retorna el color corporativo asociado a una severidad dada."""
     return _get_severity_style(_parse_severity(severity))[0]
 
 def severity_label(severity: Optional[str]) -> str: 
+    """Retorna la etiqueta legible para una severidad dada."""
     return _get_severity_style(_parse_severity(severity))[1]
 
 def severity_icon(severity: Optional[str]) -> str: 
+    """Retorna el icono Unicode para representar una severidad."""
     return SEVERITY_MAP.get(_parse_severity(severity), "\u2022")
 
 def grade_color(grade: Optional[str]) -> ColorHex: 
+    """Retorna el color asignado a una calificación de salud (A-F)."""
     if not grade: return C_TEXT_MUTED
     return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED)
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
+    """Calcula el color representativo según el umbral de una puntuación (0-100)."""
     if score is None: return C_TEXT_MUTED
     try:
         valor = float(score)
@@ -249,6 +261,7 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
 
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588", empty: str = "\u2591") -> str:
+    """Genera una barra de progreso visual en texto mediante caracteres Unicode."""
     try:
         valor = float(percent) if percent is not None else 0.0
         ancho = max(1, int(width))
@@ -257,6 +270,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
     except (TypeError, ValueError): return empty * max(1, int(width))
 
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
+    """Convierte un color hexadecimal (#RRGGBB) a una tupla de valores (R, G, B)."""
     try:
         clean = value.lstrip('#')
         val = int(clean, 16)
@@ -264,15 +278,18 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     except (ValueError, TypeError, AttributeError): return (0, 0, 0)
 
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
+    """Convierte una tupla RGB a formato hexadecimal CSS."""
     return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
+    """Realiza una interpolación lineal (mezcla) entre dos colores dado un ratio (0.0-1.0)."""
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
     r = max(0.0, min(1.0, float(ratio)))
     return _rgb_to_hex((int(r1 + (r2 - r1) * r), int(g1 + (g2 - g1) * r), int(b1 + (b2 - b1) * r)))
 
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
+    """Optimiza una secuencia de colores agrupando colores adyacentes idénticos."""
     if not colors: return ()
     segments = []
     curr, start = colors[0], 0
@@ -284,6 +301,7 @@ def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, .
     return tuple(segments)
 
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
+    """Genera una lista de colores interpolados basada en puntos de control (stops)."""
     n = max(1, int(steps))
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
@@ -303,20 +321,24 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=64)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
+    """Caché para los segmentos de gradiente calculados para una longitud específica."""
     return _get_grouped_segments(gradient_colors(steps, stops))
 
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
+    """Escala y traslada las coordenadas base del escudo de Omega."""
     if not math.isfinite(scale) or scale <= 0: return ()
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
 
 def logo_svg(size: int = 128) -> str:
+    """Genera el contenido XML de un logo SVG basado en la identidad visual."""
     s = max(16, min(1024, int(size)))
     return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS, glow=C_GLOW, bg=C_SURFACE, font=UI_CONFIG.font_family)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
+    """Guarda el logo SVG en el sistema de archivos tras verificar permisos."""
     if not destination: return None
     try:
         path_str = str(destination).strip()
@@ -338,7 +360,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return dest_path
     except (OSError, PermissionError, TypeError, ValueError): return None
 
-def logo_ascii() -> str: return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
+def logo_ascii() -> str: 
+    """Retorna una versión ASCII art del logo para logs de terminal."""
+    return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
 
 STRIPE_THICKNESS_SCALE: Final[float] = 92.0
 STRIPE_COUNT_FACTOR: Final[float] = 28.0
@@ -346,6 +370,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float], ...]:
+    """Calcula los parámetros geométricos para las franjas dinámicas del escudo."""
     tf = STRIPE_THICKNESS_SCALE * scale
     params = []
     for i in range(n):
@@ -355,6 +380,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
+    """Dibuja las franjas internas del logo usando gradientes segmentados."""
     try:
         if scale <= 0: return
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -366,6 +392,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except Exception: pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
+    """Dibuja detalles decorativos (líneas, texto) sobre la base del escudo."""
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
         canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
@@ -374,6 +401,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
+    """Renderiza el logo completo Omega en un objeto Canvas de tkinter."""
     try:
         val_size = float(size)
         if not math.isfinite(val_size): return
@@ -387,6 +415,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
+    """Dibuja una barra de degradado horizontal sobre un canvas."""
     try:
         w, h = max(1, int(width)), max(1, int(height))
         for s in get_gradient_segments(w, stops):
@@ -394,6 +423,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
+    """Dibuja un anillo de progreso circular para representar métricas de salud."""
     try:
         if percent is None: return
         val = max(0.0, min(100.0, float(percent)))

@@ -53,8 +53,8 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 class ScanContext:
     """
     Contenedor de estado compartido durante el recorrido del árbol de directorios.
-    Permite el seguimiento de nodos visitados, límites de seguridad y 
-    configuración del entorno para evitar ciclos y accesos indebidos.
+    Mantiene la integridad del escaneo evitando ciclos (via visited_dirs/files)
+    y restringiendo la ejecución al entorno del usuario actual (sandbox_base).
     """
     sandbox_base: Path
     kernel32: Optional[ctypes.WinDLL]
@@ -65,8 +65,9 @@ class ScanContext:
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     """
-    Decorador para capturar errores de E/S, evitando que fallos de acceso 
-    en archivos bloqueados o protegidos interrumpan el escaneo completo.
+    Decorador de seguridad para capturar excepciones de E/S.
+    El objetivo es garantizar que una falla en un archivo bloqueado por el
+    sistema operativo no propague un error que detenga el escaneo completo.
     """
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
@@ -79,7 +80,7 @@ def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     return decorator
 
 class ScanResult(NamedTuple):
-    """Resultado del escaneo recursivo de directorios."""
+    """Resultado estructurado de la suma de peso, indicando éxito de lectura."""
     bytes_found: int
     success: bool
 
@@ -152,17 +153,20 @@ class BrowserCache:
 
 @safe_path_operation(None)
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
-    """Intenta cargar kernel32.dll para operaciones de bajo nivel en Windows."""
+    """Carga kernel32.dll para consultar atributos de archivo Win32 nativos."""
     if os.name != 'nt': return None
     dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
     return dll if hasattr(dll, 'GetFileAttributesW') else None
 
 def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
-    """Determina si una ruta es una ruta de red (UNC)."""
+    """Determina si una ruta es una ruta de red (UNC) para evitar bloqueos por latencia."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def _is_within_sandbox(target: Path, base: Path) -> bool:
-    """Verifica si la ruta destino está contenida dentro del directorio base."""
+    """
+    Verifica si la ruta destino está contenida dentro del directorio base.
+    Utiliza resolución de rutas real para evitar ataques de bypass por simlinks.
+    """
     try:
         t_res = target.resolve(strict=False)
         b_res = base.resolve(strict=True)
@@ -188,13 +192,17 @@ def base_directories() -> List[Path]:
 
 @safe_path_operation(False)
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Verifica si un archivo/carpeta tiene atributos de sistema, oculto o reparse point."""
+    """Verifica bits de sistema/oculto mediante llamadas de bajo nivel."""
     if kernel32 is None: return False
     attrs = kernel32.GetFileAttributesW(entry_path)
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
-    """Evaluación de políticas para omitir archivos durante el recorrido DFS."""
+    """
+    Evaluación de políticas de filtrado antes de procesar un archivo o carpeta.
+    Implementa reglas de seguridad para evitar tocar archivos protegidos o 
+    seguir puntos de reparse que podrían salir del scope del usuario.
+    """
     if entry.name.lower() in ctx.never_touch_lower: return True
     
     path_str = entry.path
@@ -211,7 +219,11 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Recorrido DFS recursivo para sumar el peso de archivos en un directorio."""
+    """
+    Recorrido DFS recursivo para sumar el peso de archivos.
+    Utiliza el contexto de escaneo para evitar procesar dos veces el mismo archivo
+    (mediante dev/ino) y mantener el control sobre los límites de profundidad.
+    """
     if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
     
     if not os.path.isdir(root_path) or not os.access(root_path, os.R_OK):
