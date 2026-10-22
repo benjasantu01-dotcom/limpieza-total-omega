@@ -1234,3 +1234,4 @@ FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_fa
 - `2026-10-22T15:48:44` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T15:48:44` Corrida terminada. Total usado hoy: 350.
 - `2026-10-22T15:56:42` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-22T16:06:56` Presupuesto diario agotado (350 usados). Corte hasta mañana.
