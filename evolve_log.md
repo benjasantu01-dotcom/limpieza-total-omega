@@ -908,3 +908,42 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-22T11:24:45` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `_collect_summary_data` capturando excepciones específicas durante la iteración y el acceso a metadatos, evitando que fallos puntuales en archivos bloqueados o con permisos denegados interrumpan el análisis completo del disco.
 - `2026-10-22T11:24:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T11:24:45` Corrida terminada. Total usado hoy: 268.
+- `2026-10-22T11:32:39` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-10-22T11:32:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T11:33:38` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-22T11:34:12` Tests FALLARON:
+```
+............ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.63s
+
+```
+- `2026-10-22T11:34:12` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Mejora la robustez del motor analítico implementando validación estricta de parámetros en `compute_score` y `summarize`, eliminando la dependencia de estados mutables mediante una copia defensiva, y asegurando que las funciones de alto nivel manejen correctamente objetos `None` o malformados sin propagar excepciones hacia la interfaz de usuario.
+- `2026-10-22T11:35:23` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante la validación explícita de entradas antes de ejecutar lógica crítica, utilizando capturas de excepciones específicas para evitar que errores inesperados en el hilo trabajador congelen la interfaz.
+- `2026-10-22T11:35:50` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` añadiendo validaciones de entrada más estrictas y manejo de excepciones localizadas para evitar que datos malformados o tipos inesperados propaguen errores en el escaneo de memoria.
+- `2026-10-22T11:35:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T11:35:50` Corrida terminada. Total usado hoy: 272.

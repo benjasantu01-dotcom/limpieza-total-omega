@@ -1697,10 +1697,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         clean_id = "".join(c for c in raw_id if c.isalnum() or c == "-")
         
         def task() -> None:
-            if not quarantine.item_exists(clean_id):
-                self._safe_run_ui_callback(lambda: self.log(f"Error: El ID '{clean_id}' no existe o ya fue restaurado.", "Cuarentena"))
-                return
             try:
+                if not quarantine.item_exists(clean_id):
+                    self._safe_run_ui_callback(lambda: self.log(f"Error: El ID '{clean_id}' no existe o ya fue restaurado.", "Cuarentena"))
+                    return
+                
                 item = quarantine.get_item(clean_id)
                 if not item or not hasattr(item, 'original_path'):
                     self._safe_run_ui_callback(lambda: self.log("Error: Manifiesto de cuarentena corrupto.", "Cuarentena"))
@@ -1805,7 +1806,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_trim_process(self) -> None:
         """Intento de liberación de working set de un proceso."""
         raw_pid = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None)
-        
         try:
             pid = int(raw_pid)
         except (TypeError, ValueError):

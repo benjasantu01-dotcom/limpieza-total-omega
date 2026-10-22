@@ -186,9 +186,10 @@ def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValu
     """Extrae dígitos de una cadena de texto y aplica un factor de escala."""
     if not isinstance(value, str): return BytesValue(0)
     digits = "".join(filter(str.isdigit, value))
+    if not digits: return BytesValue(0)
     try:
-        if not digits: return BytesValue(0)
-        return BytesValue(int(digits) * multiplier)
+        val = int(digits) * multiplier
+        return BytesValue(val) if val >= 0 else BytesValue(0)
     except (ValueError, OverflowError):
         return BytesValue(0)
 
@@ -238,6 +239,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     
     try:
         name = parts[0]
+        if not name: return None
         pid = int(parts[-2])
         ws = _safe_int_conversion(parts[-1])
         

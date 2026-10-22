@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 46
+- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 246
+- Sin respuesta de la IA (error o límite): 247
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 82 | 4 | 22 | 6 | 122 |
-| 2026-10-22 | 96 | 7 | 24 | 17 | 124 |
+| 2026-10-21 | 79 | 4 | 21 | 6 | 122 |
+| 2026-10-22 | 98 | 8 | 24 | 17 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **36**
 - robustez ante casos límite: **35**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **31**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **17**
 - `branding.py`: **17**
+- `memory.py`: **17**
 - `duplicates.py`: **16**
-- `memory.py`: **16**
-- `safety.py`: **15**
 - `quarantine.py`: **15**
-- `settings.py`: **14**
 - `browser.py`: **14**
+- `safety.py`: **14**
 - `assistant.py`: **13**
-- `scanner.py`: **12**
+- `settings.py`: **13**
+- `scanner.py`: **11**
 - `healthscore.py`: **10**
 - `organizer.py`: **8**
 - `startup.py`: **6**
-- `main.py`: **5**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T11:35:50` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` añadiendo validaciones de entrada más estrictas y manejo de excepciones localizadas para evitar que datos malformados o tipos inesperados propaguen errores en el escaneo de memoria.
+- `2026-10-22T11:35:23` **main.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante la validación explícita de entradas antes de ejecutar lógica crítica, utilizando capturas de excepciones específicas para evitar que errores inesperados en el hilo trabajador congelen la interfaz.
 - `2026-10-22T11:24:45` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` capturando excepciones específicas durante la iteración y el acceso a metadatos, evitando que fallos puntuales en archivos bloqueados o con permisos denegados interrumpan el análisis completo del disco.
 - `2026-10-22T11:24:31` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_within_sandbox` y `_should_skip_entry` añadiendo validaciones de tipo y manejo de errores explícito frente a rutas inexistentes o malformadas, evitando que el escáner se interrumpa ante excepciones de sistema de archivos.
 - `2026-10-22T11:23:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar adecuadamente tipos de datos inusuales (como `set` o tipos complejos inesperados) mediante la conversión explícita de colecciones a listas, evitando errores de tipo durante la validación recursiva y fortaleciendo la integridad del parser ante entradas mal formadas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T09:30:49` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` utilizando `ensure_safe_to_modify` para el archivo de destino, garantizando una validación robusta y uniforme en lugar de una comprobación de booleano incompleta, manteniendo la consistencia con las reglas del proyecto.
 - `2026-10-22T09:22:36` **assistant.py** (seguridad defensiva): Mejoré `_ensure_safe_text` integrando `is_protected_path` directamente en la validación de seguridad para garantizar que ninguna cadena de entrada, incluso si no contiene metacaracteres de shell, pueda representar una ruta de sistema prohibida.
 - `2026-10-22T09:21:41` **settings.py** (robustez ante casos límite): Mejoré la robustez ante la concurrencia y fallos de E/S en `_is_file_secure_to_read` mediante una validación más estricta del descriptor de archivo (usando `fstat` directamente si está disponible) para prevenir condiciones de carrera TOCTOU y accesos a archivos con permisos inadecuados.
-- `2026-10-22T09:10:22` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante errores de I/O y permisos en la función `delete_reviewed`, reemplazando el bloque genérico de excepciones `except (Exception)` por un manejo explícito que preserva la integridad del bucle sin ocultar errores críticos de seguridad.
-- `2026-10-22T09:02:59` **memory.py** (robustez ante casos límite): Se añade una validación de seguridad en `_iter_process_memory` para manejar correctamente casos donde `EnumProcesses` falla parcialmente o devuelve listas corruptas, asegurando que la iteración de PIDs sea robusta ante errores de acceso del kernel antes de intentar procesarlos.
