@@ -343,7 +343,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     """Guarda el logo SVG en el sistema de archivos tras verificar permisos."""
     if not destination: return None
     try:
-        dest_path = Path(str(destination)).resolve()
+        dest_path = Path(destination).resolve()
         
         # Validaciones de seguridad: rutas de sistema o bloqueadas
         if is_protected_path(dest_path): return None
