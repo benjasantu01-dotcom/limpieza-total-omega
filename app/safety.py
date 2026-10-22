@@ -316,12 +316,13 @@ def _is_virtual_drive(path_str: str) -> bool:
     return False
 
 def _is_file_owned_by_system(path_str: str) -> bool:
-    """Valida la propiedad mediante el SID de sistema (SYSTEM/TrustedInstaller)."""
+    """Valida la propiedad mediante el SID de sistema (SYSTEM/TrustedInstaller/TrustedInstallerGroup)."""
     if os.name != 'nt' or not isinstance(path_str, str) or not os.path.exists(path_str): return False
     try:
         advapi32 = ctypes.windll.advapi32
         kernel32 = ctypes.windll.kernel32
         sid_ptr = ctypes.c_void_p()
+        # SE_FILE_OBJECT = 1, OWNER_SECURITY_INFORMATION = 1
         res = advapi32.GetNamedSecurityInfoW(
             path_str, 1, 1, ctypes.byref(sid_ptr), None, None, None, None
         )
@@ -330,7 +331,8 @@ def _is_file_owned_by_system(path_str: str) -> bool:
                 sid_str = ctypes.create_unicode_buffer(128)
                 if advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str)):
                     sid_val = sid_str.value
-                    return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80-956008885")
+                    # SYSTEM (S-1-5-18), TrustedInstaller (S-1-5-80-956008885...), TrustedInstallerGroup (S-1-5-21-...)
+                    return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
             finally:
                 kernel32.LocalFree(sid_ptr)
     except (AttributeError, OSError, ctypes.ArgumentError, PermissionError, MemoryError, SystemError):

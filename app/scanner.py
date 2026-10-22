@@ -231,16 +231,16 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.base_root_str: str = str(base_root.absolute()).lower()
+        self.base_root: Path = base_root.resolve()
         self.now_ts: float = datetime.now().timestamp()
 
     @lru_cache(maxsize=2048)
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica recursivamente si la ruta está contenida dentro del scope del escaneo."""
+        """Verifica estrictamente si la ruta está contenida dentro del scope del escaneo."""
         try:
-            canonical_path: str = str(Path(entry_path).absolute()).lower()
-            return canonical_path.startswith(self.base_root_str)
-        except (OSError, RuntimeError):
+            target = Path(entry_path).resolve()
+            return os.path.commonpath([str(self.base_root), str(target)]) == str(self.base_root)
+        except (OSError, ValueError, RuntimeError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
@@ -286,9 +286,9 @@ class Scanner:
         if current_depth >= SCAN_LIMITS.max_depth or entry is None or not entry.path:
             return
         
-        path_lower: str = entry.path.lower()
-        if path_lower not in self.seen:
-            self.seen.add(path_lower)
+        path_norm: str = os.path.normcase(entry.path)
+        if path_norm not in self.seen:
+            self.seen.add(path_norm)
             directory_stack.append((entry.path, current_depth + 1))
 
     @staticmethod
@@ -368,7 +368,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
     
     directory_stack: DirectoryStack = [(str(base_path), 0)]
-    scanner.seen.add(str(base_path).lower())
+    scanner.seen.add(os.path.normcase(str(base_path)))
     while directory_stack:
         current_dir, depth = directory_stack.pop()
         try:

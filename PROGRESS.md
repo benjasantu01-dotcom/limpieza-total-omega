@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 235
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 44 | 4 | 14 | 9 | 63 |
+| 2026-10-20 | 44 | 4 | 14 | 9 | 59 |
 | 2026-10-21 | 131 | 7 | 32 | 12 | 168 |
-| 2026-10-22 | 12 | 1 | 2 | 1 | 4 |
+| 2026-10-22 | 14 | 1 | 3 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **26**
@@ -33,20 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **17**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
+- `safety.py`: **17**
 - `quarantine.py`: **17**
 - `duplicates.py`: **16**
-- `safety.py`: **16**
 - `assistant.py`: **15**
 - `branding.py`: **15**
 - `healthscore.py`: **14**
 - `settings.py`: **12**
+- `scanner.py`: **9**
 - `organizer.py`: **8**
 - `startup.py`: **8**
-- `scanner.py`: **8**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T01:02:33` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner implementando una validación estricta de rutas mediante `os.path.commonpath` dentro del método `_is_inside_base_root`, evitando que rutas que comparten prefijo pero no son subcarpetas (ej: `/carpeta` y `/carpetas`) sean validadas incorrectamente, y consolidando la lógica de comparación de rutas para evitar problemas de resolución de nombres de camino.
+- `2026-10-22T01:01:55` **safety.py** (seguridad defensiva): Se implementó una verificación de integridad basada en SIDs de usuario para asegurar que no se intenten modificar archivos propiedad de grupos de seguridad críticos (como `TrustedInstaller`), añadiendo una capa de defensa frente a intentos de modificación de componentes protegidos del sistema que podrían eludir los filtros por nombre o atributos.
 - `2026-10-22T00:52:38` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `_safe_unlink` integrando `ensure_safe_to_modify` para el borrado efectivo (que es una operación destructiva), asegurando que la ruta pase por el filtro de seguridad de `safety.py` en lugar de confiar solo en chequeos booleanos previos, alineándome con la misión de seguridad defensiva.
 - `2026-10-22T00:51:50` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` al validar explícitamente que cada archivo a borrar en la carpeta de cuarentena resida efectivamente dentro de la misma, previniendo ataques de "path traversal" o manipulación de enlaces simbólicos mediante la verificación de `is_relative_to` antes de llamar a `ensure_safe_to_modify`.
 - `2026-10-22T00:51:21` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita con `is_protected_path` sobre la ruta del ejecutable antes de ejecutar cualquier acción de escritura o modificación (en este caso, `EmptyWorkingSet`), garantizando que la operación no afecte inadvertidamente a procesos críticos detectados mediante su ruta absoluta.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T00:12:26` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` al añadir una verificación explícita contra ataques de "Time-of-check to time-of-use" (TOCTOU) y corrupción de metadatos, asegurando que la ruta de origen sea un archivo real antes de intentar cualquier operación de E/S.
 - `2026-10-22T00:11:14` **main.py** (robustez ante casos límite): Se introdujo una comprobación robusta mediante `_validate_process_state` y un manejo de errores más específico en `on_trim_process` para asegurar que el PID sea válido antes de intentar cualquier operación de sistema, evitando caídas ante procesos zombies o errores de acceso.
 - `2026-10-21T15:23:22` **diskreport.py** (robustez ante casos límite): Se ha añadido un manejo de excepciones robusto en `walk_files` para capturar `OSError` durante la creación del objeto `Path` o el acceso a los atributos del sistema, asegurando que el bucle de escaneo no se interrumpa ante nombres de archivo inválidos, rutas excesivamente largas (Windows MAX_PATH) o errores de acceso a disco.
-- `2026-10-21T15:22:11` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` validando la existencia de la carpeta padre y su capacidad de escritura mediante `is_safe_to_modify` antes de intentar crear directorios o archivos, evitando errores en tiempo de ejecución ante rutas inexistentes o permisos denegados.
-- `2026-10-21T14:22:39` **quarantine.py** (rendimiento): Se implementó un cache en `_get_sha256` y se optimizó el acceso al manifiesto en `purge_all` utilizando un `set` para búsquedas de $O(1)$ en lugar de iteraciones repetidas, mejorando el rendimiento en directorios con gran cantidad de archivos.

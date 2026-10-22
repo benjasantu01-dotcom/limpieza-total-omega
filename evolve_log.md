@@ -959,3 +959,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-22T00:52:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-22T00:52:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T00:52:50` Corrida terminada. Total usado hoy: 20.
+- `2026-10-22T01:00:59` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-22T01:01:55` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se implementó una verificación de integridad basada en SIDs de usuario para asegurar que no se intenten modificar archivos propiedad de grupos de seguridad críticos (como `TrustedInstaller`), añadiendo una capa de defensa frente a intentos de modificación de componentes protegidos del sistema que podrían eludir los filtros por nombre o atributos.
+- `2026-10-22T01:02:33` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del escáner implementando una validación estricta de rutas mediante `os.path.commonpath` dentro del método `_is_inside_base_root`, evitando que rutas que comparten prefijo pero no son subcarpetas (ej: `/carpeta` y `/carpetas`) sean validadas incorrectamente, y consolidando la lógica de comparación de rutas para evitar problemas de resolución de nombres de camino.
+- `2026-10-22T01:02:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T01:02:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T01:02:49` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-22T01:03:02` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-22T01:03:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T01:03:43` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-22T01:03:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T01:03:43` Corrida terminada. Total usado hoy: 24.
