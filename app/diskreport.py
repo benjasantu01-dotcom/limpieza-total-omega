@@ -170,11 +170,11 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         return True
 
     try:
+        # Verifica confinamiento de la ruta mediante commonpath para prevenir escapes
         entry_path = Path(entry.path)
         if is_protected_path(entry_path):
             return True
 
-        # Verifica confinamiento de la ruta mediante commonpath para prevenir escapes
         abs_entry = entry_path.resolve(strict=False)
         try:
             if os.path.commonpath([str(abs_entry), str(root_path)]) != str(root_path):
@@ -182,12 +182,13 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         except ValueError:
             return True
 
+        # Seguridad defensiva: detección estricta de symlinks y reparse points
         if entry.is_symlink():
             return True
         
-        # Filtrado específico para Windows: carpetas ocultas/sistema
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
+            # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT)
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
                 return True
         

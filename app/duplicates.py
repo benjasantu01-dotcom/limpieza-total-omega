@@ -167,15 +167,17 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
+                    path = Path(entry.path)
+                    if not _safe_path_check(path):
+                        continue
                     if entry.is_dir(follow_symlinks=False):
-                        queue.append((Path(entry.path), depth + 1))
+                        queue.append((path, depth + 1))
                     elif entry.is_file(follow_symlinks=False):
                         stat = entry.stat(follow_symlinks=False)
                         if stat.st_size >= min_size:
                             inode = (stat.st_dev, stat.st_ino)
                             if inode not in visited:
-                                path = Path(entry.path)
-                                if _safe_path_check(path) and _is_valid_candidate(path, stat.st_size):
+                                if _is_valid_candidate(path, stat.st_size):
                                     if not (skip_protected and is_protected_path(path)):
                                         visited.add(inode)
                                         raw_map[stat.st_size].append(path)

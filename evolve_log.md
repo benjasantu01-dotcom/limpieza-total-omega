@@ -658,3 +658,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-22T09:22:36` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré `_ensure_safe_text` integrando `is_protected_path` directamente en la validación de seguridad para garantizar que ninguna cadena de entrada, incluso si no contiene metacaracteres de shell, pueda representar una ruta de sistema prohibida.
 - `2026-10-22T09:22:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T09:22:36` Corrida terminada. Total usado hoy: 220.
+- `2026-10-22T09:30:16` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-10-22T09:30:49` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save_logo_svg` utilizando `ensure_safe_to_modify` para el archivo de destino, garantizando una validación robusta y uniforme en lugar de una comprobación de booleano incompleta, manteniendo la consistencia con las reglas del proyecto.
+- `2026-10-22T09:31:19` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_within_sandbox` y `_should_skip_entry` para asegurar que las rutas sean normalizadas antes de la comparación (`os.path.normcase`), evitando que el caso (case-sensitivity) de Windows permita saltarse el sandbox o las restricciones de `NEVER_TOUCH`.
+- `2026-10-22T09:31:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T09:31:25` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T09:32:02` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_excluded_path` mediante una verificación explícita de `is_symlink` y la validación de que el archivo no sea un punto de reparse (reparse point), evitando el seguimiento inadvertido de enlaces simbólicos o junctions que podrían causar bucles o acceso fuera de la ruta permitida.
+- `2026-10-22T09:32:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T09:32:15` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado `_collect_candidates` para aplicar `is_safe_to_modify` antes de llamar a `entry.stat()`, evitando posibles errores de acceso y garantizando que el escaneo solo realice operaciones estadísticas sobre rutas verificadas como seguras.
+- `2026-10-22T09:32:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T09:32:15` Corrida terminada. Total usado hoy: 224.

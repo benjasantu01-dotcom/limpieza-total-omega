@@ -348,13 +348,11 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         # Validaciones de seguridad: rutas de sistema o bloqueadas
         if is_protected_path(dest_path): return None
         
-        # Verificar seguridad de escritura en destino o padre
-        if dest_path.exists():
-            if not is_safe_to_modify(dest_path): return None
-        else:
-            parent = dest_path.parent
-            if not is_safe_to_modify(parent): return None
-            parent.mkdir(parents=True, exist_ok=True)
+        # Utilizar ensure_safe_to_modify para garantizar integridad de escritura
+        ensure_safe_to_modify(dest_path)
+        
+        if not dest_path.parent.exists():
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
         
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path

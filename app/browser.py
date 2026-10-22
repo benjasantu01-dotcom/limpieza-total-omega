@@ -174,7 +174,7 @@ def _is_within_sandbox(target: Path, base: Path) -> bool:
         t_res = target.resolve(strict=False)
         b_res = base.resolve(strict=True)
         # normcase es necesario en Windows para comparar rutas de forma agnóstica al case
-        return os.path.commonpath([b_res, t_res]) == str(b_res)
+        return os.path.commonpath([os.path.normcase(b_res), os.path.normcase(t_res)]) == os.path.normcase(str(b_res))
     except (OSError, RuntimeError, ValueError):
         return False
 
