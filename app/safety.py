@@ -613,12 +613,14 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     if not path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     
-    sd: SecurityDescriptor = _get_security_descriptor(path)
-    
-    for rule in _VALIDATORS:
-        if rule.predicate(path, current_stat, sd):
-            code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-            raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
+    try:
+        sd: SecurityDescriptor = _get_security_descriptor(path)
+        for rule in _VALIDATORS:
+            if rule.predicate(path, current_stat, sd):
+                code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+                raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
+    except (OSError, PermissionError) as e:
+        raise UnsafePathError(f"Error de acceso en validación: {e}", SafetyValidationErrorCode.ACCESS_DENIED)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """Obtiene metadatos del archivo usando reintentos ante bloqueos temporales."""
@@ -709,7 +711,7 @@ def _validate_access_permissions(path: Path) -> None:
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
         if not os.access(path, os.W_OK):
             raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-    except Exception as e:
+    except (OSError, PermissionError) as e:
         raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.ACCESS_DENIED)
 
 def _validate_volume_integrity(path: Path) -> None:
@@ -915,8 +917,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
         
         _validate_volume_integrity(target_path)
-    except Exception as e:
-        if isinstance(e, UnsafePathError): raise
+    except (OSError, PermissionError):
         pass
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
