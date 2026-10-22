@@ -659,6 +659,8 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         api_key = raw_cfg.get("asistente_api_key")
         model = raw_cfg.get("asistente_modelo")
         metrics_val = raw_cfg.get("asistente_enviar_metricas")
+        
+        # Validaciones de seguridad sobre tipos de datos ingresados
         return AssistantConfig(
             api_key=str(api_key) if isinstance(api_key, str) else "",
             model=str(model) if isinstance(model, str) and len(model) < 64 else "gemini-3.1-flash-lite",

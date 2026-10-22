@@ -176,13 +176,13 @@ def base_directories() -> List[Path]:
         return []
     
     p = Path(local_env)
-    try:
-        if p.exists() and p.is_dir() and os.access(p, os.R_OK):
+    if p.exists() and p.is_dir() and os.access(p, os.R_OK):
+        try:
             path_local = p.resolve(strict=True)
             if is_safe_to_modify(path_local) and not is_protected_path(path_local):
                 return [path_local]
-    except (OSError, RuntimeError):
-        return []
+        except (OSError, RuntimeError):
+            pass
     return []
 
 @safe_path_operation(False)
@@ -285,7 +285,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
-        if not isinstance(base, Path) or not base.exists(): continue
+        if not isinstance(base, Path) or not base.exists() or not os.access(base, os.R_OK): continue
         try:
             real_base = base.resolve(strict=True)
             base_norm = os.path.normcase(str(real_base))

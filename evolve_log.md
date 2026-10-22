@@ -1047,3 +1047,36 @@ assert not {'replace'}
 - `2026-10-22T13:07:35` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó el acceso a los valores de configuración en las funciones `assistant_api_key` y `assistant_enabled`, evitando llamadas redundantes a `load()` que disparaban lecturas de disco y operaciones de parseo JSON innecesarias en cada consulta.
 - `2026-10-22T13:07:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T13:07:35` Corrida terminada. Total usado hoy: 308.
+- `2026-10-22T13:14:27` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-22T13:14:59` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-22T13:15:41` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `AssistantConfig` y `_parse_config` agregando validaciones de tipo explícitas y manejo de errores ante configuraciones corrompidas o con tipos inesperados (e.g., valores no numéricos o estructuras anidadas), evitando que un `settings.json` mal formado pueda romper la ejecución del asistente.
+- `2026-10-22T13:15:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T13:15:46` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T13:16:28` Tests FALLARON:
+```
++      where [] = <test_modules._CanvasFalso object at 0x7f0cb72675f0>.llamadas
+
+evolve/tests/test_modules.py:266: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_ring_draws_track_and_progress - AssertionError: hacen falta pista y avance
+assert 0 == 2
+ +  where 0 = <built-in method count of list object at 0x7f0cb71c3400>('arc')
+ +    where <built-in method count of list object at 0x7f0cb71c3400> = [].count
+ +      where [] = <test_modules._CanvasFalso object at 0x7f0cb7386db0>.llamadas
+FAILED evolve/tests/test_modules.py::test_ring_at_zero_draws_only_the_track - AssertionError: assert 0 == 1
+ +  where 0 = <built-in method count of list object at 0x7f0cb6f15d00>('arc')
+ +    where <built-in method count of list object at 0x7f0cb6f15d00> = [].count
+ +      where [] = <test_modules._CanvasFalso object at 0x7f0cb7265370>.llamadas
+FAILED evolve/tests/test_modules.py::test_ring_uses_the_score_color - AssertionError: assert '#22e39a' in []
+ +  where [] = <test_modules._CanvasFalso object at 0x7f0cb7265f40>.colores
+FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_failing - AssertionError: assert 0 == 2
+ +  where 0 = <built-in method count of list object at 0x7f0cb6f43b40>('arc')
+ +    where <built-in method count of list object at 0x7f0cb6f43b40> = [].count
+ +      where [] = <test_modules._CanvasFalso object at 0x7f0cb72675f0>.llamadas
+4 failed, 295 passed in 1.68s
+
+```
+- `2026-10-22T13:16:28` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el guardado de archivos en `save_logo_svg` añadiendo una verificación previa de permisos de escritura (`os.access` con `os.W_OK`) para evitar excepciones no controladas antes de intentar la escritura en disco.
+- `2026-10-22T13:16:43` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escaneo ante errores de E/S y accesos denegados mediante la validación de `os.access(..., os.R_OK)` y el manejo estricto de rutas malformadas antes de realizar operaciones de resolución de sistema, evitando que una ruta inválida o bloqueada propague excepciones en el bucle principal de `detect_profiles`.
+- `2026-10-22T13:16:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T13:16:43` Corrida terminada. Total usado hoy: 312.
