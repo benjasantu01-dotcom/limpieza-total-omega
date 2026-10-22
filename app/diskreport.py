@@ -353,15 +353,19 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if root is None: return []
     
     root_str = str(root)
+    # Asegurar que el string termine en separador para facilitar el sub-pathing
+    if not root_str.endswith(os.sep):
+        root_str += os.sep
+        
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
         path_str = str(path)
         if path_str.startswith(root_str):
-            rel_path = path_str[len(root_str):].lstrip(os.sep)
+            rel_path = path_str[len(root_str):]
             if os.sep in rel_path:
                 top_part = rel_path.split(os.sep)[0]
-                top_folder = os.path.join(root_str, top_part)
+                top_folder = root_str + top_part
                 metrics = stats[top_folder]
                 metrics.size += size
                 metrics.file_count += 1

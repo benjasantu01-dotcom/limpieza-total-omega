@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 250
+- Rechazadas por guardia de seguridad: 45
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 247
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 18 | 3 | 5 | 3 | 41 |
+| 2026-10-20 | 17 | 3 | 5 | 3 | 38 |
 | 2026-10-21 | 131 | 7 | 32 | 12 | 168 |
-| 2026-10-22 | 29 | 2 | 7 | 5 | 41 |
+| 2026-10-22 | 31 | 2 | 8 | 6 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **33**
 - manejo de errores y validación de entradas: **32**
-- rendimiento: **20**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
 - `quarantine.py`: **18**
 - `safety.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `memory.py`: **17**
+- `branding.py`: **15**
 - `duplicates.py`: **15**
-- `branding.py`: **14**
 - `browser.py`: **14**
 - `settings.py`: **13**
 - `assistant.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T03:46:36` **diskreport.py** (rendimiento): Optimizé la función `largest_folders` para evitar la creación innecesaria de objetos `Path` y manipulación repetitiva de cadenas dentro del bucle de recorrido, usando directamente operaciones de string más eficientes para identificar la subcarpeta de primer nivel.
+- `2026-10-22T03:45:09` **branding.py** (rendimiento): Implementé `functools.lru_cache` en las funciones de conversión de color `_hex_to_rgb` y `_rgb_to_hex` para evitar la redundancia de cálculos matemáticos y conversiones de cadenas en llamadas repetidas dentro de bucles de renderizado (como el dibujo de franjas o barras).
 - `2026-10-22T03:36:21` **settings.py** (legibilidad y documentación): Mejoré la legibilidad del código extrayendo la lógica de validación de rutas (que era un bloque denso y complejo dentro de `_Validators`) a un método privado más claro, facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
 - `2026-10-22T03:34:43` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `is_protected_path`, reemplazando una cadena de `if/elif` difícil de auditar por una lógica basada en predicados claros, y agregué tipado y docstrings precisos a las funciones críticas para facilitar la revisión de seguridad.
 - `2026-10-22T03:25:19` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_isolation_request` para consolidar las validaciones de seguridad en un flujo lógico, mejoré la documentación de las funciones críticas con docstrings explicativos sobre las garantías de seguridad que implementan, y añadí *type hints* faltantes en funciones internas para mayor claridad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T02:45:05` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante una validación explícita de `is_relative_to` (reemplazando lógica manual) y una gestión de errores más granular, asegurando que `ensure_safe_to_modify` se utilice correctamente según las reglas para el borrado.
 - `2026-10-22T02:44:35` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_process_executable_safe` al añadir una captura de excepciones más específica durante la obtención del nombre del módulo, evitando que errores de acceso a memoria o errores de sistema (`ctypes.WinError`) bloqueen el escaneo de procesos.
 - `2026-10-22T02:34:24` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `compute_score` ante estados inválidos, asegurando que el motor devuelva un resultado consistente incluso si el `_PIPELINE` es modificado externamente o si faltan claves en el desglose, evitando excepciones de clave (`KeyError`) o visualización distorsionada.
-- `2026-10-22T02:33:43` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando la integridad de las rutas y tipos de archivos antes de operar sobre ellos, evitando excepciones innecesarias durante el escaneo.
-- `2026-10-22T02:25:30` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` mediante un enfoque recursivo más seguro, evitando el uso de listas como colas/pilas que podían ser manipuladas para causar desbordamientos de memoria o bucles infinitos en estructuras anidadas profundas, y añadiendo chequeos explícitos de tipo antes de la recursión.
