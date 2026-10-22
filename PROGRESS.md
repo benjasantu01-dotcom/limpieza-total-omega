@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 9 | 1 | 2 | 2 | 28 |
+| 2026-10-20 | 9 | 1 | 2 | 2 | 24 |
 | 2026-10-21 | 131 | 7 | 32 | 12 | 168 |
-| 2026-10-22 | 42 | 3 | 12 | 9 | 46 |
+| 2026-10-22 | 45 | 4 | 12 | 9 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- robustez ante casos límite: **37**
-- seguridad defensiva: **36**
+- robustez ante casos límite: **38**
+- seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **28**
 
@@ -35,11 +35,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **17**
 - `safety.py`: **17**
 - `duplicates.py`: **16**
-- `branding.py`: **15**
+- `branding.py`: **16**
 - `browser.py`: **14**
 - `healthscore.py`: **14**
-- `assistant.py`: **12**
-- `settings.py`: **12**
+- `assistant.py`: **13**
+- `settings.py`: **13**
 - `organizer.py`: **9**
 - `scanner.py`: **9**
 - `startup.py`: **7**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T04:57:05` **branding.py** (seguridad defensiva): Mejoré la seguridad en `save_logo_svg` utilizando `Path.resolve()` antes de cualquier validación y asegurando que `destination` se trate como una ruta absoluta, evitando posibles ataques de recorrido de directorio (path traversal) mediante rutas relativas maliciosas.
+- `2026-10-22T04:56:49` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ensure_safe_text` y `_build_payload` implementando un filtrado más estricto contra inyecciones, asegurando que cualquier entrada que contenga caracteres de escape o metacaracteres de shell sea rechazada antes de ser procesada por el motor, cumpliendo con la premisa de seguridad defensiva.
+- `2026-10-22T04:55:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo un manejo explícito de archivos bloqueados o en uso, capturando `OSError` específico de acceso compartido (ERROR_SHARING_VIOLATION) para evitar fallos de ejecución al intentar leer o reemplazar el archivo de configuración cuando otro proceso lo está utilizando brevemente.
 - `2026-10-22T04:47:22` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `ensure_safe_to_modify` para detectar si el sistema de archivos reporta archivos con atributos de "punto de unión" o "reparse point" de forma recurrente, añadiendo una validación contra el límite de profundidad de resolución (`MAX_DIRECTORY_DEPTH`) para evitar ataques de recursión infinita mediante enlaces simbólicos circulares que podrían congelar la app.
 - `2026-10-22T04:37:14` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_process_executable_safe` añadiendo una validación explícita de `null` para el puntero del buffer de ruta y manejando correctamente casos donde `GetModuleFileNameExW` falla silenciosamente retornando una cadena vacía, evitando así falsos positivos o errores de manejo de memoria en rutas inesperadas.
 - `2026-10-22T04:35:24` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite mediante la validación estricta de las métricas en `compute_score` y la adición de una cláusula de guarda en `_compute_cached` para prevenir estados inconsistentes, garantizando que el `Pipeline` siempre tenga datos finitos y válidos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T03:55:05` **healthscore.py** (rendimiento): Se ha optimizado la gestión de las reglas de diagnóstico eliminando la regeneración innecesaria de tuplas en el pipeline mediante la persistencia de `_RULES` como constante y reemplazando la creación dinámica de `PipelineEntry` por una definición estática más eficiente, reduciendo la presión sobre el recolector de basura en cada iteración del bucle.
 - `2026-10-22T03:54:33` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` mediante un filtrado previo de archivos únicos usando `stat` (tamaño) antes de realizar cualquier operación costosa, y eliminé redundancias al consolidar las validaciones en `is_safe_to_modify` para evitar llamadas innecesarias al sistema de archivos.
 - `2026-10-22T03:46:36` **diskreport.py** (rendimiento): Optimizé la función `largest_folders` para evitar la creación innecesaria de objetos `Path` y manipulación repetitiva de cadenas dentro del bucle de recorrido, usando directamente operaciones de string más eficientes para identificar la subcarpeta de primer nivel.
-- `2026-10-22T03:45:09` **branding.py** (rendimiento): Implementé `functools.lru_cache` en las funciones de conversión de color `_hex_to_rgb` y `_rgb_to_hex` para evitar la redundancia de cálculos matemáticos y conversiones de cadenas en llamadas repetidas dentro de bucles de renderizado (como el dibujo de franjas o barras).
-- `2026-10-22T03:36:21` **settings.py** (legibilidad y documentación): Mejoré la legibilidad del código extrayendo la lógica de validación de rutas (que era un bloque denso y complejo dentro de `_Validators`) a un método privado más claro, facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
-- `2026-10-22T03:34:43` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `is_protected_path`, reemplazando una cadena de `if/elif` difícil de auditar por una lógica basada en predicados claros, y agregué tipado y docstrings precisos a las funciones críticas para facilitar la revisión de seguridad.

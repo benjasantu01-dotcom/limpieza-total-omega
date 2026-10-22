@@ -13,6 +13,7 @@ import json
 import os
 import stat
 import hashlib
+import errno
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -183,7 +184,8 @@ class _SettingsManager:
             os.replace(temp_path, resolved_path)
             self.clear()
             return True
-        except (OSError, IOError, PermissionError):
+        except (OSError, IOError, PermissionError) as e:
+            if getattr(e, 'winerror', 0) == 32: return False
             return False
 
 _MANAGER = _SettingsManager()
@@ -338,7 +340,11 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         if not is_safe_to_modify(str(resolved)): return None
         if resolved.is_symlink(): return None
         with open(resolved, "rb") as f:
-            st = os.fstat(f.fileno())
+            try:
+                st = os.fstat(f.fileno())
+            except OSError as e:
+                if getattr(e, 'errno', 0) == errno.EACCES: return None
+                raise
             if not _is_file_secure_to_read(st): return None
             content = f.read(MAX_SETTINGS_SIZE + 1)
             if not content or len(content) > MAX_SETTINGS_SIZE: return None

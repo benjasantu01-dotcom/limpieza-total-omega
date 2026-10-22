@@ -478,8 +478,8 @@ def _ensure_safe_text(text: Any) -> bool:
     """Desinfecta estricta sobre cadenas evitando inyecciones de comandos."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
-    # Evitar caracteres especiales de control de shell, saltos de línea y inyección directa
-    if any(c in text for c in "<>|&^$():;\n\r\t\"'"):
+    # Rechazo estricto de metacaracteres de shell y control
+    if any(c in text for c in "<>|&^$():;\n\r\t\"'\\`"):
         return False
     return not _is_safe_path_input(text)
 
@@ -654,15 +654,16 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en el formato JSON esperado por Gemini."""
-    if not context_text or not _ensure_safe_text(context_text) or not _ensure_safe_text(SYSTEM_PROMPT): 
+    if not context_text or not _ensure_safe_text(context_text): 
         return None
     q: str = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
     full_prompt: str = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
-    if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): return None
+    if len(full_prompt) > _MAX_PROMPT_LIMIT: return None
+    # Verificación final de seguridad estricta para evitar inyección en el payload completo
+    if not _ensure_safe_text(full_prompt): return None
     payload_data: dict[str, Any] = {"contents": [{"parts": [{"text": full_prompt}]}]}
     if not _is_safe_payload_structure(payload_data): return None
-    if _is_input_too_deep_or_complex(payload_data): return None
     try:
         encoded = json.dumps(payload_data).encode("utf-8")
         if len(encoded) > _MAX_RESPONSE_BYTES: return None

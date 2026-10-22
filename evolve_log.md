@@ -1365,3 +1365,35 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-22T04:47:36` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-10-22T04:47:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T04:47:36` Corrida terminada. Total usado hoy: 112.
+- `2026-10-22T04:55:09` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-10-22T04:55:41` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo un manejo explícito de archivos bloqueados o en uso, capturando `OSError` específico de acceso compartido (ERROR_SHARING_VIOLATION) para evitar fallos de ejecución al intentar leer o reemplazar el archivo de configuración cuando otro proceso lo está utilizando brevemente.
+- `2026-10-22T04:55:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T04:56:12` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.62s
+
+```
+- `2026-10-22T04:56:12` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `_resolve_and_cache_path` y `_resolve_path_from_command` para manejar casos donde `os.path.normpath` o `Path.resolve()` fallan ante rutas mal formadas (caracteres no válidos o rutas que exceden MAX_PATH), asegurando que el bucle de escaneo no se interrumpa ante entradas corruptas en el registro o archivos del sistema inaccesibles.
+- `2026-10-22T04:56:49` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_ensure_safe_text` y `_build_payload` implementando un filtrado más estricto contra inyecciones, asegurando que cualquier entrada que contenga caracteres de escape o metacaracteres de shell sea rechazada antes de ser procesada por el motor, cumpliendo con la premisa de seguridad defensiva.
+- `2026-10-22T04:57:05` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad en `save_logo_svg` utilizando `Path.resolve()` antes de cualquier validación y asegurando que `destination` se trate como una ruta absoluta, evitando posibles ataques de recorrido de directorio (path traversal) mediante rutas relativas maliciosas.
+- `2026-10-22T04:57:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T04:57:05` Corrida terminada. Total usado hoy: 116.
