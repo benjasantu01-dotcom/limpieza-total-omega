@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 245
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 107 | 7 | 27 | 10 | 161 |
-| 2026-10-22 | 73 | 4 | 18 | 13 | 84 |
+| 2026-10-21 | 105 | 7 | 26 | 10 | 160 |
+| 2026-10-22 | 74 | 4 | 20 | 13 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **33**
-- robustez ante casos límite: **31**
-- rendimiento: **21**
+- robustez ante casos límite: **29**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **17**
+- `diskreport.py`: **17**
 - `duplicates.py`: **17**
-- `diskreport.py`: **16**
 - `memory.py`: **16**
+- `quarantine.py`: **16**
 - `safety.py`: **16**
 - `branding.py`: **16**
 - `browser.py`: **14**
 - `settings.py`: **14**
 - `assistant.py`: **12**
-- `scanner.py`: **11**
 - `healthscore.py`: **11**
+- `scanner.py`: **10**
 - `organizer.py`: **8**
 - `main.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T08:19:20` **diskreport.py** (rendimiento): Optimicé el rendimiento del recorrido de archivos eliminando el cálculo innecesario y costoso de `path_str[len(root_str):]` en cada iteración dentro del bucle de `largest_folders`, reemplazando el procesamiento de strings redundante por una lógica de `Path.parts` que es más eficiente y legible.
 - `2026-10-22T08:10:51` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando los llamados repetidos a `getattr` y `is_safe_key` por un acceso directo al diccionario `metrics_snapshot` ya cacheado, reduciendo la sobrecarga de procesamiento en consultas frecuentes.
 - `2026-10-22T08:00:47` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos con las responsabilidades de los métodos clave, anotaciones de tipo más precisas y una estructuración lógica de los validadores para facilitar futuras auditorías del código.
 - `2026-10-22T07:59:44` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `is_protected_path` hacia un estilo declarativo basado en una lista de validadores, eliminando el anidamiento de funciones auxiliares y facilitando la auditoría de las reglas de protección.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T07:09:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `format_bytes` y `parse_windows_process_csv` implementando validaciones de entrada más estrictas y capturando excepciones de forma específica para prevenir comportamientos inesperados ante datos mal formados.
 - `2026-10-22T06:59:28` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_candidates` añadiendo validaciones de entrada (`if not directories`) y garantizando que los `Path` sean validados antes de procesarlos, evitando así posibles errores al tratar con iterables vacíos o rutas mal formadas.
 - `2026-10-22T06:59:04` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y validando estados intermedios para prevenir caídas ante errores de sistema de archivos o archivos inaccesibles durante el recorrido.
-- `2026-10-22T06:58:32` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` añadiendo validación explícita de tipos y estados para los parámetros `bases` y `cache_paths`, asegurando que el bucle no intente operar sobre entradas `None` o malformadas, alineándose con el enfoque de validación de entradas.
