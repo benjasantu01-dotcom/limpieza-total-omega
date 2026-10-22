@@ -8,35 +8,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 245
+- Sin respuesta de la IA (error o límite): 246
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-20 | 13 | 1 | 3 | 2 | 35 |
+| 2026-10-20 | 11 | 1 | 2 | 2 | 34 |
 | 2026-10-21 | 131 | 7 | 32 | 12 | 168 |
-| 2026-10-22 | 37 | 3 | 11 | 7 | 42 |
+| 2026-10-22 | 39 | 3 | 11 | 7 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- seguridad defensiva: **40**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **34**
 - manejo de errores y validación de entradas: **32**
-- robustez ante casos límite: **32**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
-- `memory.py`: **17**
 - `safety.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `quarantine.py`: **17**
 - `duplicates.py`: **16**
+- `memory.py`: **16**
+- `branding.py`: **15**
 - `browser.py`: **14**
-- `branding.py`: **14**
 - `settings.py`: **13**
 - `healthscore.py`: **13**
 - `assistant.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T04:26:41` **diskreport.py** (robustez ante casos límite): Mejora la robustez ante la concurrencia y cambios en el sistema de archivos durante el recorrido (`Race Conditions`), añadiendo un manejo de excepciones más granular en `walk_files` y protegiendo el heap de errores de ordenamiento si un archivo desaparece entre la lectura y la comparación.
+- `2026-10-22T04:25:43` **branding.py** (robustez ante casos límite): Se ha robustecido el método `save_logo_svg` añadiendo un control estricto de rutas malformadas o peligrosas mediante `os.path.normpath` y una validación explícita para evitar intentos de escritura en directorios raíz o rutas no normalizadas, además de asegurar que la gestión de excepciones de E/S sea exhaustiva.
 - `2026-10-22T04:15:58` **startup.py** (rendimiento): Se implementó un mecanismo de caché local dentro de `_process_folder_entry` para evitar múltiples llamadas `os.path.splitext` y accesos a `Path` innecesarios por cada archivo escaneado, mejorando el rendimiento del bucle de recorrido en carpetas.
 - `2026-10-22T04:14:55` **scanner.py** (rendimiento): Se ha optimizado `_is_safe_entry` moviendo la validación de `_is_inside_base_root` (la operación más costosa que involucra resolución de rutas y comparaciones de cadenas) al final del flujo, permitiendo que filtros rápidos como el caché, caracteres prohibidos o atributos de sistema descarten rutas inválidas prematuramente.
 - `2026-10-22T04:07:15` **safety.py** (rendimiento): Optimicé el rendimiento de las validaciones de seguridad mediante la implementación de `lru_cache` en los predicados de reglas de integridad y la consolidación de `_is_kernel_managed` para reducir el impacto de las llamadas al sistema en los recorridos de disco.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T03:25:19` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_isolation_request` para consolidar las validaciones de seguridad en un flujo lógico, mejoré la documentación de las funciones críticas con docstrings explicativos sobre las garantías de seguridad que implementan, y añadí *type hints* faltantes en funciones internas para mayor claridad.
 - `2026-10-22T03:24:05` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y la precisión técnica mediante la actualización de los docstrings (especificando la naturaleza de las estructuras de datos y el flujo de los parsers) y la estandarización de las firmas de funciones para reflejar mejor su rol de "solo lectura" o de "validación", cumpliendo con el enfoque de documentación técnica.
 - `2026-10-22T03:16:34` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `main.py` mediante la refactorización de las docstrings de las clases y métodos clave, utilizando un formato estructurado que facilita la comprensión rápida de la intención y los contratos de cada componente sin alterar la lógica funcional.
-- `2026-10-22T03:14:56` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de procesamiento crítico (`_collect_candidates` y `_decide_hash_strategy_and_process`) y refiné el uso de tipos para mayor claridad, asegurando que las decisiones de diseño sobre el ciclo de vida de los datos estén claramente expuestas para futuros colaboradores.
-- `2026-10-22T03:13:56` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo mediante docstrings detallados que explican el propósito del min-heap y el manejo de excepciones, además de unificar el uso de TypeHints en firmas complejas para mejorar la mantenibilidad y claridad del flujo de datos.

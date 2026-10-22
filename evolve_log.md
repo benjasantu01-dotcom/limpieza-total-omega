@@ -1337,3 +1337,13 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-22T04:16:34` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del manejo de configuración en `_parse_config` y `ask`, añadiendo una validación explícita de `api_key` contra el regex permitido antes de intentar cualquier conexión, previniendo posibles ataques de inyección mediante valores de configuración malformados en `settings.json`.
 - `2026-10-22T04:16:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T04:16:34` Corrida terminada. Total usado hoy: 100.
+- `2026-10-22T04:24:40` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-22T04:24:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T04:24:46` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-22T04:25:43` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el método `save_logo_svg` añadiendo un control estricto de rutas malformadas o peligrosas mediante `os.path.normpath` y una validación explícita para evitar intentos de escritura en directorios raíz o rutas no normalizadas, además de asegurar que la gestión de excepciones de E/S sea exhaustiva.
+- `2026-10-22T04:26:11` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-22T04:26:41` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejora la robustez ante la concurrencia y cambios en el sistema de archivos durante el recorrido (`Race Conditions`), añadiendo un manejo de excepciones más granular en `walk_files` y protegiendo el heap de errores de ordenamiento si un archivo desaparece entre la lectura y la comparación.
+- `2026-10-22T04:26:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T04:26:57` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-22T04:26:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T04:26:57` Corrida terminada. Total usado hoy: 104.
