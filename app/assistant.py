@@ -486,8 +486,10 @@ def _ensure_safe_text(text: Any) -> bool:
     """Desinfecta estricta sobre cadenas evitando inyecciones de comandos."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
-    # Rechazo estricto de metacaracteres de shell y control
+    # Rechazo estricto de metacaracteres de shell, control, y rutas protegidas
     if any(c in text for c in "<>|&^$():;\n\r\t\"'\\`"):
+        return False
+    if is_protected_path(text):
         return False
     return not _is_safe_path_input(text)
 

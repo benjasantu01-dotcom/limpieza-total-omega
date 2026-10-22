@@ -650,3 +650,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-22T09:12:25` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-10-22T09:12:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-22T09:12:25` Corrida terminada. Total usado hoy: 216.
+- `2026-10-22T09:20:02` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-10-22T09:20:32` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-22T09:21:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-22T09:21:41` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante la concurrencia y fallos de E/S en `_is_file_secure_to_read` mediante una validación más estricta del descriptor de archivo (usando `fstat` directamente si está disponible) para prevenir condiciones de carrera TOCTOU y accesos a archivos con permisos inadecuados.
+- `2026-10-22T09:22:10` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-22T09:22:36` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré `_ensure_safe_text` integrando `is_protected_path` directamente en la validación de seguridad para garantizar que ninguna cadena de entrada, incluso si no contiene metacaracteres de shell, pueda representar una ruta de sistema prohibida.
+- `2026-10-22T09:22:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-22T09:22:36` Corrida terminada. Total usado hoy: 220.

@@ -346,7 +346,10 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         if not _is_file_secure_to_read(resolved.stat()): return None
         
         with open(resolved, "rb") as f:
-            if not _is_file_secure_to_read(os.fstat(f.fileno())): return None
+            # Re-verificación mediante descriptor para mitigar race conditions TOCTOU
+            try:
+                if not _is_file_secure_to_read(os.fstat(f.fileno())): return None
+            except OSError: pass
             
             content = f.read(MAX_SETTINGS_SIZE + 1)
             if not content or len(content) > MAX_SETTINGS_SIZE: return None

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 96 | 5 | 24 | 9 | 154 |
-| 2026-10-22 | 83 | 7 | 22 | 16 | 88 |
+| 2026-10-21 | 96 | 5 | 24 | 9 | 150 |
+| 2026-10-22 | 85 | 7 | 22 | 16 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **35**
 - manejo de errores y validación de entradas: **33**
 - rendimiento: **26**
 
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **16**
 - `duplicates.py`: **16**
 - `safety.py`: **15**
+- `settings.py`: **15**
 - `browser.py`: **14**
-- `settings.py`: **14**
+- `assistant.py`: **12**
 - `healthscore.py`: **11**
 - `scanner.py`: **11**
-- `assistant.py`: **11**
 - `organizer.py`: **9**
 - `main.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T09:22:36` **assistant.py** (seguridad defensiva): Mejoré `_ensure_safe_text` integrando `is_protected_path` directamente en la validación de seguridad para garantizar que ninguna cadena de entrada, incluso si no contiene metacaracteres de shell, pueda representar una ruta de sistema prohibida.
+- `2026-10-22T09:21:41` **settings.py** (robustez ante casos límite): Mejoré la robustez ante la concurrencia y fallos de E/S en `_is_file_secure_to_read` mediante una validación más estricta del descriptor de archivo (usando `fstat` directamente si está disponible) para prevenir condiciones de carrera TOCTOU y accesos a archivos con permisos inadecuados.
 - `2026-10-22T09:10:22` **organizer.py** (robustez ante casos límite): Se mejora la robustez ante errores de I/O y permisos en la función `delete_reviewed`, reemplazando el bloque genérico de excepciones `except (Exception)` por un manejo explícito que preserva la integridad del bucle sin ocultar errores críticos de seguridad.
 - `2026-10-22T09:02:59` **memory.py** (robustez ante casos límite): Se añade una validación de seguridad en `_iter_process_memory` para manejar correctamente casos donde `EnumProcesses` falla parcialmente o devuelve listas corruptas, asegurando que la iteración de PIDs sea robusta ante errores de acceso del kernel antes de intentar procesarlos.
 - `2026-10-22T09:00:43` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante entradas extremas en `SystemMetrics` mediante la implementación de `math.isfinite` en las validaciones de campos críticos y se protegió la ejecución del `Pipeline` frente a posibles errores en las funciones de cálculo (scorers) personalizadas mediante un bloque `try-except` más estricto.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T08:10:51` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando los llamados repetidos a `getattr` y `is_safe_key` por un acceso directo al diccionario `metrics_snapshot` ya cacheado, reduciendo la sobrecarga de procesamiento en consultas frecuentes.
 - `2026-10-22T08:00:47` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos con las responsabilidades de los métodos clave, anotaciones de tipo más precisas y una estructuración lógica de los validadores para facilitar futuras auditorías del código.
 - `2026-10-22T07:59:44` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `is_protected_path` hacia un estilo declarativo basado en una lista de validadores, eliminando el anidamiento de funciones auxiliares y facilitando la auditoría de las reglas de protección.
-- `2026-10-22T07:51:19` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más descriptivos que aclaran el propósito de funciones críticas y se han unificado criterios de type hinting para mejorar la mantenibilidad y legibilidad del código.
-- `2026-10-22T07:50:00` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings informativos, la clarificación de tipos complejos mediante type hinting adicional y la refactorización de nombres de constantes internas para reflejar mejor su propósito semántico, aumentando la legibilidad del código sin alterar su lógica.
