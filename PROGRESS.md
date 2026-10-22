@@ -9,36 +9,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 242
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 120 | 7 | 30 | 11 | 164 |
-| 2026-10-22 | 64 | 4 | 15 | 11 | 78 |
+| 2026-10-21 | 118 | 7 | 30 | 10 | 163 |
+| 2026-10-22 | 66 | 4 | 15 | 11 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **32**
-- rendimiento: **26**
+- manejo de errores y validación de entradas: **33**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **17**
 - `quarantine.py`: **17**
 - `branding.py`: **17**
 - `diskreport.py`: **17**
 - `safety.py`: **16**
+- `memory.py`: **16**
 - `duplicates.py`: **16**
+- `settings.py`: **14**
 - `browser.py`: **14**
-- `healthscore.py`: **13**
-- `settings.py`: **13**
-- `assistant.py`: **11**
+- `assistant.py`: **12**
+- `healthscore.py`: **12**
 - `scanner.py`: **11**
 - `organizer.py`: **9**
 - `main.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-22T07:30:08` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de validación de seguridad dentro de `assistant.py`, clarificando mediante docstrings el propósito técnico de los límites de recursión y los criterios de saneamiento de datos para facilitar auditorías futuras.
+- `2026-10-22T07:28:52` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_read_and_parse_json` al implementar una validación de seguridad preventiva que verifica el estado del archivo tanto antes de abrir el manejador como inmediatamente después de obtener el descriptor de archivo (`fstat`), mitigando riesgos de condiciones de carrera (TOCTOU) al leer configuraciones.
 - `2026-10-22T07:20:39` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas mediante la implementación de validaciones defensivas ante atributos nulos o fallidos en el acceso a metadatos, evitando que errores silenciosos en `os.stat` propaguen excepciones durante el escaneo.
 - `2026-10-22T07:18:48` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante la captura explícita de excepciones al procesar el archivo JSON y la validación de integridad de los datos leídos, asegurando que un archivo manifiesto dañado no detenga la aplicación y se recupere de forma segura.
 - `2026-10-22T07:09:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `format_bytes` y `parse_windows_process_csv` implementando validaciones de entrada más estrictas y capturando excepciones de forma específica para prevenir comportamientos inesperados ante datos mal formados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T05:27:06` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la suplantación de nombres cortos (8.3) mediante la detección de tildes/espacios no estándar o caracteres ocultos en nombres de archivos, protegiendo contra posibles rutas ambiguas que podrían evadir los chequeos de `is_protected_path`.
 - `2026-10-22T05:18:13` **quarantine.py** (seguridad defensiva): Se mejora la robustez de las validaciones de seguridad en `quarantine.py` mediante la integración explícita de `is_protected_path` en el momento de la carga del manifiesto, asegurando que un manifiesto manipulado no pueda engañar al sistema para operar sobre rutas protegidas.
 - `2026-10-22T05:17:43` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de la función `_is_safe_for_disk_op` añadiendo una validación explícita de `is_protected_path` sobre la ruta destino calculada, asegurando que el proceso de "staging" no pueda mover archivos a ubicaciones protegidas por el sistema incluso si la carpeta base original fuera permitida.
-- `2026-10-22T05:17:15` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar la API de Windows mediante la adición de una comprobación de tipo `GetExitCodeProcess` antes de realizar cualquier operación en `trim_working_set`, asegurando que el proceso sigue activo y no es un "zombie" que podría causar errores de acceso o comportamiento inesperado.
-- `2026-10-22T05:16:45` **main.py** (seguridad defensiva): Se introdujo la verificación `_is_safe_disk_operation` como guardia explícita en `run_async` para evitar que el `ThreadPoolExecutor` procese tareas sobre rutas prohibidas antes de ser ejecutadas, cerrando un potencial vector de inyección de rutas en operaciones asíncronas.

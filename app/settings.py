@@ -339,9 +339,8 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     try:
         resolved = file_path.resolve()
         if not is_safe_to_modify(str(resolved)): return None
-        # Verificar estado final de seguridad antes de abrir
-        st = resolved.stat()
-        if not _is_file_secure_to_read(st): return None
+        # Doble verificación para mitigar riesgos TOCTOU
+        if not _is_file_secure_to_read(resolved.stat()): return None
         
         with open(resolved, "rb") as f:
             # Re-verificar metadatos tras abrir el file descriptor
