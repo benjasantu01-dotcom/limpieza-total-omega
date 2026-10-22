@@ -642,11 +642,14 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                         raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
                     if err == ERROR_ACCESS_DENIED:
                         raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-            return path.stat()
+            
+            # Realizamos stat con control de errores específico
+            try:
+                return path.stat()
+            except (PermissionError, FileNotFoundError, OSError):
+                raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         except UnsafePathError:
             raise
-        except (PermissionError, FileNotFoundError):
-            raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         except OSError as e:
             win_err = getattr(e, 'winerror', None)
             if e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or win_err in (ERROR_SHARING_VIOLATION, 1920):
