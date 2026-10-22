@@ -55,6 +55,10 @@ from typing import Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple,
 import settings
 from safety import is_protected_path
 
+# Type definitions for clarity
+MetricsDict: TypeAlias = Dict[str, float]
+ValidationSpec: TypeAlias = Dict[str, "MetricSpec"]
+
 __all__ = [
     "SystemContext",
     "Answer",
@@ -110,7 +114,10 @@ def _is_safe_numeric_context(val: Any) -> bool:
     return -1e12 < float(val) < 1e12
 
 def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
-    """Valida si un valor es convertible a métrica numérica segura dentro de los límites de la especificación."""
+    """
+    Valida si un valor es convertible a métrica numérica. 
+    Verifica tipos, límites de la especificación y seguridad ante overflow.
+    """
     try:
         f: float = float(val)
         if _is_safe_numeric_context(f) and spec.is_valid_type(f) and _is_metric_within_bounds(f, spec):
@@ -289,7 +296,7 @@ _EXPLANATION_MAP: Final[Dict[str, str]] = {
 }
 
 # Diccionario central de especificaciones: define rangos lógicos y tipos para validación de datos
-_VALIDATORS: Final[dict[str, MetricSpec]] = {
+_VALIDATORS: Final[ValidationSpec] = {
     "junk_mb": MetricSpec(float, 0.0, 1e9),
     "suspicious_count": MetricSpec(int, 0, 10000),
     "suspicious_warnings": MetricSpec(int, 0, 10000),
@@ -364,7 +371,7 @@ class SystemContext:
     analyzed: bool = False
 
     @cached_property
-    def metrics_snapshot(self) -> dict[str, float]:
+    def metrics_snapshot(self) -> MetricsDict:
         """Snapshot cacheado de las métricas numéricas para acceso eficiente."""
         return {k: float(v) for k in _VALIDATORS if (v := getattr(self, k, -1.0)) != -1.0}
 

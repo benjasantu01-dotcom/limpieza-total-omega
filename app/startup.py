@@ -307,12 +307,15 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
                 continue
             with os.scandir(folder) as it:
                 for entry in it:
-                    if entry.path in processed_paths:
+                    try:
+                        if entry.path in processed_paths:
+                            continue
+                        processed = _process_folder_entry(entry)
+                        if processed:
+                            found_entries.append(processed)
+                            processed_paths.add(entry.path)
+                    except (OSError, PermissionError):
                         continue
-                    processed = _process_folder_entry(entry)
-                    if processed:
-                        found_entries.append(processed)
-                        processed_paths.add(entry.path)
         except (OSError, PermissionError):
             continue
     return found_entries
@@ -367,18 +370,21 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             return []
         
         for row in reader:
-            if not isinstance(row, dict): continue
-            
-            raw_name = row.get("Name")
-            raw_cmd = row.get("Value")
-            
-            if not (isinstance(raw_name, str) and raw_name.strip()) or \
-               not (isinstance(raw_cmd, str) and raw_cmd.strip()):
+            try:
+                if not isinstance(row, dict): continue
+                
+                raw_name = row.get("Name")
+                raw_cmd = row.get("Value")
+                
+                if not (isinstance(raw_name, str) and raw_name.strip()) or \
+                   not (isinstance(raw_cmd, str) and raw_cmd.strip()):
+                    continue
+                
+                if _is_registry_entry_safe(raw_name, raw_cmd, seen_commands):
+                    seen_commands.add(raw_cmd.strip())
+                    parsed_entries.append(StartupEntry(name=raw_name.strip(), command=raw_cmd.strip(), source=source))
+            except Exception:
                 continue
-            
-            if _is_registry_entry_safe(raw_name, raw_cmd, seen_commands):
-                seen_commands.add(raw_cmd.strip())
-                parsed_entries.append(StartupEntry(name=raw_name.strip(), command=raw_cmd.strip(), source=source))
             
     except (csv.Error, OSError, ValueError, TypeError):
         return parsed_entries
