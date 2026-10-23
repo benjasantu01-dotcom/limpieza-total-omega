@@ -336,7 +336,15 @@ class Scanner:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Realiza un escaneo heurístico individual sobre un archivo específico."""
+    """
+    Realiza un escaneo heurístico individual sobre un archivo específico.
+    Args:
+        path: Ruta del archivo a escanear.
+        now_ts: Marca de tiempo actual para comparaciones temporales.
+        entry: Objeto opcional de sistema de archivos (os.DirEntry).
+    Returns:
+        Lista de anomalías encontradas.
+    """
     if not isinstance(path, Path) or not _is_valid_path_structure(str(path)):
         return []
     try:
