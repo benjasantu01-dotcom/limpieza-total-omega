@@ -20,6 +20,7 @@ import os
 import subprocess
 import csv
 import io
+import itertools
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
@@ -429,7 +430,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
 
 
 def list_startup_entries() -> StartupEntries:
-    """Consolida las fuentes (Registro + Carpetas) eliminando duplicados."""
+    """Consolida las fuentes (Registro + Carpetas) eliminando duplicados eficientemente."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
@@ -437,11 +438,8 @@ def list_startup_entries() -> StartupEntries:
     seen_items: Set[Tuple[str, str]] = set()
     unique_entries: StartupEntries = []
     
-    def _iterator() -> Iterator[StartupEntry]:
-        yield from entries_from_folders()
-        yield from entries_from_registry()
-
-    for entry in _iterator():
+    # Uso de itertools.chain para encadenar iterables sin crear listas intermedias pesadas
+    for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
         key = (entry.name.lower(), entry.command.lower())
         if key not in seen_items:
             seen_items.add(key)

@@ -291,7 +291,7 @@ SENSITIVE_EXTENSIONS: Final[set[str]] = {
 }
 
 _SYSTEM_ROOT_PATHS: Final[set[Path]] = {
-    Path(os.environ[v]).resolve() for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+    Path(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 }
 
@@ -801,32 +801,27 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Determina si la ruta reside en una zona protegida del sistema.
-    Optimizado: chequea raíces de sistema primero y compara partes de path.
+    Optimizado: realiza comparación de bajo costo (string/parts) antes de resolver.
     """
     if not isinstance(path, (str, Path)) or not path: return True
     path_str = str(path).strip().lower()
+    p_normalized = Path(path_str).absolute()
             
-    try:
-        p_resolved = Path(path_str).resolve()
-        
-        # 1. Chequeo de ancestros raíz contra variables de entorno del sistema
-        for root in _SYSTEM_ROOT_PATHS:
-            try:
-                if p_resolved.is_relative_to(root): return True
-            except ValueError: continue
-            
-        # 2. Chequeo por directorio sensible
-        if not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p_resolved.parts}):
+    # 1. Chequeo de ancestros contra rutas raíz del sistema (evita .resolve())
+    for root in _SYSTEM_ROOT_PATHS:
+        if str(p_normalized).startswith(str(root).lower()):
             return True
             
-        # 3. Atributos de archivos ocultos/sistema
-        attrs = _get_file_attrs(path_str)
-        if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
-            return True
-            
-        return p_resolved == Path(p_resolved.anchor)
-    except Exception:
+    # 2. Chequeo por nombre de directorio sensible
+    if not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p_normalized.parts}):
         return True
+        
+    # 3. Atributos de archivos ocultos/sistema
+    attrs = _get_file_attrs(path_str)
+    if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
+        return True
+            
+    return p_normalized == Path(p_normalized.anchor)
 
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:

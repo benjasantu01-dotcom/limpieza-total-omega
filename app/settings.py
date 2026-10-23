@@ -159,10 +159,13 @@ class _SettingsManager:
     def __init__(self) -> None:
         self.settings_cache: dict[str, tuple[float, int, AppSettings]] = {}
         self.path_cache: dict[Optional[str], Path] = {}
+        self._cached_settings: Optional[AppSettings] = None
+        self._last_mtime: float = 0.0
 
     def clear(self) -> None:
         """Limpia las memorias caché para forzar una recarga limpia desde el disco."""
         self.settings_cache.clear()
+        self._cached_settings = None
         _load_impl.cache_clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
@@ -385,10 +388,23 @@ def _load_impl(file_path_str: str, mtime: float, size: int) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga y valida la configuración desde disco o retorna los valores por defecto."""
     primary_path = settings_path(custom_base)
+    
+    # Check cache de instancia antes de tocar disco
+    if _MANAGER._cached_settings:
+        try:
+            if primary_path.exists():
+                st = primary_path.stat()
+                if st.st_mtime == _MANAGER._last_mtime:
+                    return _MANAGER._cached_settings.copy()
+        except (OSError, PermissionError): pass
+    
     try:
         if primary_path.exists() and primary_path.is_file():
             st = primary_path.stat()
-            return _load_impl(str(primary_path), st.st_mtime, st.st_size).copy() # type: ignore
+            settings = _load_impl(str(primary_path), st.st_mtime, st.st_size).copy() # type: ignore
+            _MANAGER._cached_settings = settings
+            _MANAGER._last_mtime = st.st_mtime
+            return settings
     except (OSError, PermissionError): pass
     return dict(DEFAULTS) # type: ignore
 
@@ -418,7 +434,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE: return None
-        return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None
+        if _MANAGER.perform_atomic_write(config_path, serialized):
+            _MANAGER._cached_settings = cleaned_settings
+            return config_path
+        return None
     except (OSError, PermissionError, AttributeError, TypeError): return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:

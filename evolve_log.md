@@ -1517,3 +1517,10 @@ FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - Nam
 - `2026-10-23T02:33:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-10-23T02:33:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T02:33:50` Corrida terminada. Total usado hoy: 60.
+- `2026-10-23T02:42:14` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-23T02:43:06` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` eliminando la llamada a `.resolve()` (que realiza llamadas costosas al sistema de archivos) en favor de una comparación de strings y partes (`parts`), manteniendo la integridad mediante el uso de `pathlib.Path` y normalización previa.
+- `2026-10-23T02:43:34` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-10-23T02:44:04` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a las configuraciones mediante la implementación de un caché de instancia (`self._cached_settings`) que evita lecturas repetitivas y validaciones costosas de disco, refrescándolo solo cuando el sistema detecta cambios mediante el monitoreo de metadatos del archivo.
+- `2026-10-23T02:44:33` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé `list_startup_entries` mediante el uso de `itertools.chain` para evitar iteradores anidados y una gestión de memoria más eficiente en el escaneo de registros y carpetas.
+- `2026-10-23T02:44:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T02:44:33` Corrida terminada. Total usado hoy: 64.
