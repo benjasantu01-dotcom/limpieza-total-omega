@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 248
+- Sin respuesta de la IA (error o límite): 249
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 43 | 1 | 14 | 3 | 73 |
+| 2026-10-21 | 40 | 1 | 13 | 3 | 73 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 1 | 0 | 0 | 0 | 19 |
+| 2026-10-23 | 4 | 0 | 0 | 0 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- legibilidad y documentación: **38**
-- manejo de errores y validación de entradas: **31**
+- legibilidad y documentación: **35**
+- manejo de errores y validación de entradas: **34**
 - robustez ante casos límite: **30**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
-- `memory.py`: **16**
-- `quarantine.py`: **16**
+- `diskreport.py`: **19**
+- `branding.py`: **16**
+- `browser.py`: **16**
 - `safety.py`: **15**
 - `assistant.py`: **15**
-- `branding.py`: **15**
-- `browser.py`: **15**
+- `quarantine.py`: **15**
 - `settings.py`: **15**
+- `memory.py`: **15**
 - `scanner.py`: **12**
 - `duplicates.py`: **11**
 - `healthscore.py`: **9**
-- `organizer.py`: **7**
 - `startup.py`: **6**
+- `organizer.py`: **6**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T01:03:26` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de acceso a disco en bloques `try...except` más granulares y específicos, asegurando que las excepciones (como `PermissionError` o `FileNotFoundError` durante la enumeración) no interrumpan la ejecución global del escaneo ni propaguen errores inesperados.
+- `2026-10-23T01:01:33` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_rel_path` y `_resolve_browser_path` para prevenir errores de tipo y rutas malformadas antes de intentar operaciones de sistema, reforzando la integridad en el manejo de entradas.
+- `2026-10-23T01:00:54` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente valores nulos y condiciones de borde, además de asegurar que `save_logo_svg` utilice `is_safe_to_modify` para el filtrado previo, siguiendo estrictamente el enfoque de seguridad definido.
 - `2026-10-23T00:53:51` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para garantizar que manejen correctamente valores `None` y tipos inesperados, evitando excepciones innecesarias durante la validación recursiva de datos externos.
 - `2026-10-22T14:30:10` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva al validar que los comandos extraídos del registro no sean rutas de red UNC (que no deben ser ejecutadas desde el inicio) y agregué un chequeo de longitud extrema antes de la normalización para prevenir desbordamientos o manipulación de rutas malintencionadas.
 - `2026-10-22T14:29:24` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` y `perform_atomic_write` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier operación de I/O, fortaleciendo la defensa contra posibles intentos de manipulación de rutas externas a la configuración esperada.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T13:56:08` **assistant.py** (seguridad defensiva): Se reforzó `_ensure_safe_text` y los validadores de entrada para prohibir explícitamente caracteres de control y metacaracteres de shell en el cuerpo de las consultas, previniendo inyecciones de comandos incluso en casos de consultas maliciosas altamente ofuscadas antes de que lleguen a cualquier motor de procesamiento.
 - `2026-10-22T13:47:20` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` añadiendo una comprobación explícita de existencia mediante `os.path.exists()` tras la creación del archivo temporal para prevenir condiciones de carrera, y se aseguró la integridad del descriptor de archivo tras el `flush` mediante `os.fsync`.
 - `2026-10-22T13:46:05` **safety.py** (robustez ante casos límite): Mejoré la robustez ante la concurrencia y el bloqueo de archivos añadiendo un chequeo preventivo de `GetFileInformationByHandle` con `BY_HANDLE_FILE_INFORMATION` para obtener `nFileIndex` y `dwVolumeSerialNumber` de manera atómica, reemplazando la lógica de comparación `st_dev`/`st_ino` que en Windows es inestable ante cambios de estado o reintento de manejo de archivos.
-- `2026-10-22T13:36:38` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y corrupción de metadatos en `purge_all`, implementando una validación estricta del inodo y hash antes de borrar cualquier archivo, asegurando que solo se eliminen los ítems efectivamente registrados y verificados.
-- `2026-10-22T13:35:23` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `_is_process_executable_safe` añadiendo el manejo de `ERROR_ACCESS_DENIED` y otras excepciones comunes de Win32 al obtener el nombre del módulo, evitando que la app falle o quede en un estado inconsistente cuando el sistema operativo restringe el acceso a ciertos procesos (ej. procesos de nivel SYSTEM), y asegurando que las rutas de caracteres especiales sean manejadas correctamente sin bloqueos.
-- `2026-10-22T13:26:18` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `_calculate_area_contribution` ante entradas malformadas o inesperadas, añadiendo una comprobación explícita para evitar divisiones por cero o fallos catastróficos en el pipeline cuando las métricas recibidas son valores extremos o inválidos (como `None` o estados no inicializados).

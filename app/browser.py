@@ -118,8 +118,9 @@ BROWSER_CACHE_PATHS: BrowserMap = {
 
 def _is_valid_rel_path(p: str) -> bool:
     """Valida que una ruta relativa no contenga secuencias de escape ('..') o caracteres ilegales."""
-    if not p or not isinstance(p, str): return False
+    if not isinstance(p, str) or not p.strip(): return False
     if any(ord(c) < 32 for c in p): return False
+    # Evitar referencias absolutas o escapes de directorio
     if os.path.isabs(p) or p.startswith(('\\', '/')): return False
     if '..' in p or any(c in p for c in PATH_FORBIDDEN_CHARS): return False
     return True
@@ -272,8 +273,10 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve la ruta completa del caché a partir de una base normalizada."""
-    if not rel_str or not _is_valid_rel_path(rel_str): return Path()
-    target = real_base.joinpath(*rel_str.split("\\"))
+    if not isinstance(rel_str, str) or not _is_valid_rel_path(rel_str): return Path()
+    # Uso de joinpath es más seguro para concatenar segmentos
+    parts = rel_str.split("\\")
+    target = real_base.joinpath(*parts)
     return target if target.exists() and target.is_dir() else Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
