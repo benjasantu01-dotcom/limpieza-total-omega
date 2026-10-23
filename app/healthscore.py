@@ -111,8 +111,8 @@ _LIMIT_DISK_PERCENT: Final[float] = 25.0
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Recorta un valor numérico para que se encuentre dentro de un rango inclusivo."""
-    if not math.isfinite(value): return min_val
-    return max(min_val, min(max_val, value))
+    if not isinstance(value, (int, float)) or not math.isfinite(value): return min_val
+    return float(max(min_val, min(max_val, value)))
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """

@@ -344,10 +344,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.protocol("WM_DELETE_WINDOW", self._on_closing)
         except Exception as e:
             logging.critical("Error fatal al inicializar la aplicación: %s", e)
-            if self._check_widget_integrity(self):
+            # Intentar mostrar mensaje si el widget principal existe y se puede interactuar
+            try:
                 messagebox.showerror("Error de inicio", "La aplicación no pudo inicializarse.")
                 self.destroy()
-            else:
+            except Exception:
                 raise
 
     def _on_closing(self) -> None:
@@ -604,8 +605,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             try:
                 constructor()
                 self._initialized_tabs[name] = True
-            except (tk.TclError, AttributeError) as e:
+            except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
+                self.log(f"Error al cargar pestaña {name}: {e}", "Salud")
 
     def _build_tabs_container(self) -> None:
         """Configura el tabview principal que contiene la lógica de la aplicación."""
@@ -723,9 +725,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _lazy_init_health_ui(self) -> None:
         """Carga perezosa de widgets del dashboard de salud."""
         if self._health_components_lazy_loaded: return
-        self._build_health_metrics_row(self.health_container)
-        self._build_health_area_bars(self.center_container)
-        self._health_components_lazy_loaded = True
+        try:
+            self._build_health_metrics_row(self.health_container)
+            self._build_health_area_bars(self.center_container)
+            self._health_components_lazy_loaded = True
+        except Exception as e:
+            logging.error("Fallo en inicialización de UI de Salud: %s", e)
 
     def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
         """Renderiza tarjetas con métricas numéricas resumen."""
