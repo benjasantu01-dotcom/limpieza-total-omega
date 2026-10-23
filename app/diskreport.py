@@ -180,6 +180,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         return True
 
     try:
+        # Resolvemos la ruta para validar contra el root antes de proceder
         path_obj = Path(entry.path).resolve(strict=False)
         
         # Validación de escape de raíz (seguridad defensiva)

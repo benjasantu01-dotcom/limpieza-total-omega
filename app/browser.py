@@ -210,6 +210,9 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     """Calcula el tamaño total de un directorio de forma recursiva y segura."""
     if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
     
+    # Verificación extra de seguridad defensiva antes de proceder
+    if is_protected_path(Path(root_path)): return ScanResult(0, True)
+
     norm_path = os.path.normcase(root_path)
     if norm_path in scan_ctx.visited_dirs or not os.access(root_path, os.R_OK):
         return ScanResult(0, True)
