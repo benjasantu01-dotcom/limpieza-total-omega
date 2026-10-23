@@ -130,9 +130,11 @@ def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     except (OSError, AttributeError, ValueError):
         return 0
 
-def _is_junction(entry: os.DirEntry) -> bool:
+def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     """Detecta puntos de reparse (Junctions) para prevenir bucles de recursión en el escaneo."""
     try:
+        if isinstance(entry, os.DirEntry):
+            return entry.is_symlink() or bool(_get_win_attributes(entry) & LIMITS.WIN_ATTR_JUNCTION)
         return entry.is_symlink() or bool(_get_win_attributes(entry) & LIMITS.WIN_ATTR_JUNCTION)
     except (OSError, AttributeError):
         return True
@@ -234,13 +236,6 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Orquestador de seguridad que valida identidad, protección, bloqueos y espacio antes de E/S.
-    
-    Args:
-        junk_file: El objeto JunkFile a evaluar para su movimiento.
-        dest: La ruta absoluta de destino donde se pretende mover el archivo.
-        
-    Returns:
-        True si el archivo es seguro para mover, False en caso contrario.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -276,16 +271,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     return True
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[Path]) -> None:
-    """
-    Realiza un escaneo recursivo limitado por profundidad y caché de rutas visitadas.
-    
-    Args:
-        current_dir: Directorio actual a explorar.
-        found: Lista acumuladora donde se agregan los JunkFile encontrados.
-        depth: Nivel de profundidad de la recursión actual.
-        protected_cache: Conjunto de rutas excluidas para optimizar el escaneo.
-        visited: Conjunto de rutas ya exploradas para evitar ciclos.
-    """
+    """Realiza un escaneo recursivo limitado por profundidad y caché de rutas visitadas."""
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
         resolved_dir = current_dir.resolve(strict=False)
@@ -339,7 +325,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         dest_base = Path(review_dir).expanduser()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve(strict=False)
-        if not is_safe_to_modify(dest_res) or is_protected_path(dest_res) or _has_forbidden_chars(dest_res): return None
+        # Seguridad extra: no aceptar si el destino es un punto de reparse
+        if not is_safe_to_modify(dest_res) or is_protected_path(dest_res) or _has_forbidden_chars(dest_res) or dest_res.is_symlink(): return None
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
@@ -347,7 +334,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 if not _is_safe_for_disk_op(junk_file, dest_res): continue
                 target_path = _can_move_file(junk_file, dest_res)
                 if target_path and target_path != junk_file.path:
-                    # Validar destino absoluto antes de mover y verificar relocalización
                     if target_path.resolve(strict=False).is_relative_to(dest_res) and junk_file.path.exists():
                         shutil.move(str(junk_file.path.resolve(strict=True)), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
@@ -375,9 +361,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest_res.iterdir():
             try:
-                if not item.is_file() or item.is_symlink(): continue
+                # Evitar seguir enlaces simbólicos dentro de la carpeta de revisión
+                if not item.is_file() or item.is_symlink() or _is_junction(item): continue
                 item_res = item.resolve(strict=False)
-                # Verifica contención en la carpeta de cuarentena para evitar borrados erróneos
                 if not item_res.is_relative_to(dest_res): continue
                 
                 ensure_safe_to_modify(item_res)

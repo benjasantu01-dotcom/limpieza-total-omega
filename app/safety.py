@@ -368,6 +368,7 @@ def _is_file_owned_by_system(path_str: str) -> bool:
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Filtra caracteres prohibidos en el sistema de archivos y secuencias BIDI maliciosas."""
     if not isinstance(path_str, str) or not path_str: return True
+    # Detecta caracteres de control y secuencias RTL/LTR (Bidi)
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
 def _is_path_empty_or_whitespace(path_str: str) -> bool:
@@ -886,11 +887,9 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _RESERVED_NAMES_PATTERN.fullmatch(target_path.name):
         raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME)
 
-    try:
-        if re.search(r'[\u200E\u200F\u202A-\u202E]', path_string):
-            raise UnsafePathError("Posible ataque de bidi spoofing detectado.", SafetyValidationErrorCode.GENERIC)
-    except re.error:
-        pass
+    # Bloqueo estricto contra ataques de Bidi (RTL/LTR spoofing)
+    if re.search(r'[\u200E\u200F\u202A-\u202E]', target_path.name):
+        raise UnsafePathError("Ataque de spoofing visual detectado.", SafetyValidationErrorCode.INVALID_CHARS)
 
     try:
         t_parts = target_path.parts
@@ -998,8 +997,9 @@ def _validate_path_components(path: Path) -> None:
 
     for i in range(len(parts)):
         current_check = anchor.joinpath(*parts[:i+1])
+        # Detección adicional de spoofing de nombres
         if "~" in current_check.name or re.search(r'[\u200E\u200F\u202A-\u202E]', current_check.name):
-            raise UnsafePathError("Ruta con spoofing de nombres o caracteres ocultos detectada.", SafetyValidationErrorCode.SHORT_NAME_SPOOFING)
+            raise UnsafePathError("Ruta con spoofing de nombres detectada.", SafetyValidationErrorCode.SHORT_NAME_SPOOFING)
         
         if current_check.exists():
             try:

@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 237
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 18 | 1 | 7 | 2 | 54 |
+| 2026-10-21 | 18 | 1 | 7 | 2 | 50 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 30 | 1 | 9 | 5 | 27 |
+| 2026-10-23 | 32 | 1 | 10 | 5 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **33**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
@@ -34,19 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **16**
 - `memory.py`: **16**
 - `quarantine.py`: **16**
+- `safety.py`: **16**
 - `branding.py`: **15**
 - `settings.py`: **15**
-- `safety.py`: **15**
 - `assistant.py`: **15**
 - `healthscore.py`: **11**
 - `scanner.py`: **11**
 - `duplicates.py`: **9**
 - `startup.py`: **8**
-- `organizer.py`: **7**
+- `organizer.py`: **8**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T03:15:39` **safety.py** (robustez ante casos límite): Se ha añadido una validación estricta en `_validate_structural_safety` para prevenir el uso de caracteres de control y secuencias Unicode de inversión de texto (RTL/LTR) en nombres de archivos, protegiendo contra ataques de spoofing visual donde una extensión `.exe` parece otra.
+- `2026-10-23T03:13:52` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `stage_for_review` y `delete_reviewed` al validar que las rutas destino no sean puntos de reparse (junctions) o enlaces simbólicos antes de realizar operaciones de E/S, evitando que la lógica de limpieza siga punteros fuera de la carpeta de destino segura.
 - `2026-10-23T03:03:22` **healthscore.py** (robustez ante casos límite): Mejoré la robustez ante estados inesperados en `_calculate_area_contribution` y `_compute_cached` mediante la validación explícita de `weights` y el manejo preventivo de posibles divisiones por cero o desbordamientos durante el cálculo de puntos.
 - `2026-10-23T02:54:06` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante rutas extremadamente largas o inválidas (que pueden disparar `OSError` fuera del alcance de los bloques `try` actuales) y se ha añadido un mecanismo de validación de caracteres de control en las rutas procesadas para prevenir posibles inyecciones de rutas o fallos en el sistema de archivos subyacente.
 - `2026-10-23T02:53:31` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada (`Path` con caracteres inválidos o tipos inesperados) y condiciones de carrera en el sistema de archivos, envolviendo la creación de directorios y la escritura en un bloque de control mejorado que asegura la integridad de la ruta antes de intentar cualquier operación de disco.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T02:13:31` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetitivas a `os.path.normcase` y `str(Path)` dentro del bucle, y reemplacé la validación de `NEVER_TOUCH` por una búsqueda más eficiente utilizando el conjunto normalizado en `ScanContext`.
 - `2026-10-23T02:12:49` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud mediante `lru_cache` y una tupla inmutable de problemas, evitando el cálculo redundante de cadenas formateadas y la iteración sobre `_CRITERIOS_SALUD` en cada acceso a la propiedad `active_problems`.
 - `2026-10-23T02:12:08` **startup.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en el uso de `Optional` y `Sequence`) y se añadieron docstrings detallados en las funciones de procesamiento de carpetas y registro para clarificar el propósito de las validaciones de seguridad aplicadas, mejorando la legibilidad técnica del código sin alterar su lógica.
-- `2026-10-23T02:03:03` **scanner.py** (legibilidad y documentación): Se introdujeron anotaciones de tipo más precisas y se documentaron mediante Docstrings los parámetros y retornos de funciones clave, mejorando la legibilidad técnica y facilitando la mantenibilidad del motor heurístico.
-- `2026-10-23T02:02:34` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en funciones clave y la estandarización de las descripciones de los códigos de error, clarificando el propósito de las validaciones de seguridad sin alterar la lógica de ejecución.
