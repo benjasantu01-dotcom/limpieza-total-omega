@@ -665,19 +665,17 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     default: AssistantConfig = AssistantConfig("", "gemini-3.1-flash-lite", True)
     if not isinstance(raw_cfg, dict):
         return default
-    try:
-        api_key = raw_cfg.get("asistente_api_key")
-        model = raw_cfg.get("asistente_modelo")
-        metrics_val = raw_cfg.get("asistente_enviar_metricas")
-        
-        # Validaciones de seguridad sobre tipos de datos ingresados
-        return AssistantConfig(
-            api_key=str(api_key) if isinstance(api_key, str) else "",
-            model=str(model) if isinstance(model, str) and len(model) < 64 else "gemini-3.1-flash-lite",
-            allow_metrics=bool(metrics_val) if isinstance(metrics_val, bool) else True
-        )
-    except (TypeError, ValueError, AttributeError):
-        return default
+    
+    # Extraer de forma defensiva asegurando que el dict contenga lo necesario o sea ignorado
+    api_key = raw_cfg.get("asistente_api_key", "")
+    model = raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")
+    metrics_val = raw_cfg.get("asistente_enviar_metricas", True)
+    
+    return AssistantConfig(
+        api_key=str(api_key) if isinstance(api_key, str) else "",
+        model=str(model) if isinstance(model, str) and len(model) < 64 else "gemini-3.1-flash-lite",
+        allow_metrics=bool(metrics_val)
+    )
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en el formato JSON esperado por Gemini."""
@@ -719,8 +717,10 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Realiza una petición POST segura a la API de Google."""
-    if not isinstance(api_key, str) or not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model) or not context_text:
-        return None
+    if not isinstance(api_key, str) or not _API_KEY_REGEX.match(api_key): return None
+    if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
+    if not context_text: return None
+    
     payload: Optional[bytes] = _build_payload(question, context_text)
     if not payload: return None
     

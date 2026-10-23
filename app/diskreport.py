@@ -170,7 +170,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     y validación de que la ruta permanezca dentro del árbol raíz (evitando fugas por links).
     """
     name = entry.name
-    if not name or '\0' in name or len(name) > 255:
+    # Validación estricta de nombre de archivo contra caracteres de control y formato de sistema
+    if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
     if any(c in name for c in SUSPICIOUS_CHARS):
         return True
@@ -335,7 +336,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 continue
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
-        except (OSError, PermissionError, FileNotFoundError, NotADirectoryError): 
+        except (OSError, PermissionError, FileNotFoundError, NotADirectoryError, ValueError): 
             continue
 
 
@@ -364,7 +365,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
-        # Determina la subcarpeta de primer nivel bajo root evitando resolver la ruta completa
         try:
             parts = path.relative_to(root).parts
             if parts:
@@ -372,7 +372,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 metrics = stats[str(top_folder)]
                 metrics.size += size
                 metrics.file_count += 1
-        except ValueError:
+        except (ValueError, OSError):
             continue
             
     results = [FolderUsage(Path(p), m.size, m.file_count) for p, m in stats.items()]
