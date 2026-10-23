@@ -1461,3 +1461,12 @@ FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_fa
 - `2026-10-23T02:03:18` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
 - `2026-10-23T02:03:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T02:03:18` Corrida terminada. Total usado hoy: 48.
+- `2026-10-23T02:11:32` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-10-23T02:11:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T02:12:08` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (específicamente en el uso de `Optional` y `Sequence`) y se añadieron docstrings detallados en las funciones de procesamiento de carpetas y registro para clarificar el propósito de las validaciones de seguridad aplicadas, mejorando la legibilidad técnica del código sin alterar su lógica.
+- `2026-10-23T02:12:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T02:12:49` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso a los criterios de salud mediante `lru_cache` y una tupla inmutable de problemas, evitando el cálculo redundante de cadenas formateadas y la iteración sobre `_CRITERIOS_SALUD` en cada acceso a la propiedad `active_problems`.
+- `2026-10-23T02:13:21` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 325): closing parenthesis ')' does not match opening parenthesis '['
+- `2026-10-23T02:13:31` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetitivas a `os.path.normcase` y `str(Path)` dentro del bucle, y reemplacé la validación de `NEVER_TOUCH` por una búsqueda más eficiente utilizando el conjunto normalizado en `ScanContext`.
+- `2026-10-23T02:13:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T02:13:31` Corrida terminada. Total usado hoy: 52.

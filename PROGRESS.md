@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 247
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 27 | 1 | 9 | 2 | 67 |
+| 2026-10-21 | 27 | 1 | 9 | 2 | 63 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 17 | 0 | 4 | 3 | 24 |
+| 2026-10-23 | 20 | 0 | 5 | 3 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **28**
-- rendimiento: **20**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
+- `browser.py`: **17**
 - `settings.py`: **16**
-- `browser.py`: **16**
 - `memory.py`: **16**
 - `quarantine.py`: **16**
+- `assistant.py`: **15**
 - `branding.py`: **15**
-- `assistant.py`: **14**
 - `safety.py`: **14**
 - `scanner.py`: **11**
 - `duplicates.py`: **10**
 - `healthscore.py`: **10**
+- `startup.py`: **7**
 - `organizer.py`: **7**
-- `startup.py`: **6**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T02:13:31` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetitivas a `os.path.normcase` y `str(Path)` dentro del bucle, y reemplacé la validación de `NEVER_TOUCH` por una búsqueda más eficiente utilizando el conjunto normalizado en `ScanContext`.
+- `2026-10-23T02:12:49` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud mediante `lru_cache` y una tupla inmutable de problemas, evitando el cálculo redundante de cadenas formateadas y la iteración sobre `_CRITERIOS_SALUD` en cada acceso a la propiedad `active_problems`.
+- `2026-10-23T02:12:08` **startup.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en el uso de `Optional` y `Sequence`) y se añadieron docstrings detallados en las funciones de procesamiento de carpetas y registro para clarificar el propósito de las validaciones de seguridad aplicadas, mejorando la legibilidad técnica del código sin alterar su lógica.
 - `2026-10-23T02:03:03` **scanner.py** (legibilidad y documentación): Se introdujeron anotaciones de tipo más precisas y se documentaron mediante Docstrings los parámetros y retornos de funciones clave, mejorando la legibilidad técnica y facilitando la mantenibilidad del motor heurístico.
 - `2026-10-23T02:02:34` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en funciones clave y la estandarización de las descripciones de los códigos de error, clarificando el propósito de las validaciones de seguridad sin alterar la lógica de ejecución.
 - `2026-10-23T01:56:10` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la lógica compleja de los validadores y renombradores con docstrings precisos, además de clarificar las firmas de los métodos `_validate_isolation_request` y `_write_temp_to_final` para reflejar mejor sus responsabilidades en la cadena de aislamiento.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T01:32:01` **startup.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en `parse_registry_csv` y `entries_from_registry` para manejar correctamente respuestas inesperadas del subproceso (como salidas vacías o errores de formato), asegurando que el parser no procese datos nulos o malformados que podrían causar excepciones no capturadas.
 - `2026-10-23T01:31:29` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al implementar una validación estricta contra errores de codificación y estados de archivo inconsistentes, asegurando que el contenido sea tratado de forma segura antes del parseo JSON.
 - `2026-10-23T01:21:20` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_unlink` centralizando la validación de integridad y añadiendo una comprobación explícita de `is_protected_path` al inicio de `purge_item` para prevenir errores antes de intentar cualquier operación de disco.
-- `2026-10-23T01:10:54` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez del motor añadiendo validaciones de tipo y estado antes de procesar el pipeline en `_compute_cached`, evitando errores de ejecución si los datos de entrada o la estructura del pipeline son alterados, además de asegurar que la caché no falle ante entradas `None` o malformadas.
-- `2026-10-23T01:03:26` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de acceso a disco en bloques `try...except` más granulares y específicos, asegurando que las excepciones (como `PermissionError` o `FileNotFoundError` durante la enumeración) no interrumpan la ejecución global del escaneo ni propaguen errores inesperados.
-- `2026-10-23T01:01:33` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_rel_path` y `_resolve_browser_path` para prevenir errores de tipo y rutas malformadas antes de intentar operaciones de sistema, reforzando la integridad en el manejo de entradas.

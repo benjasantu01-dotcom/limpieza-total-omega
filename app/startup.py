@@ -23,7 +23,7 @@ import io
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
-    Iterable, Optional, Iterator, List, Tuple, Dict, Set, TypeAlias
+    Iterable, Optional, Iterator, List, Tuple, Dict, Set, TypeAlias, Sequence
 )
 from safety import is_protected_path, is_safe_to_modify
 
@@ -275,7 +275,10 @@ def startup_folders() -> List[Path]:
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
-    """Valida un archivo individual en las carpetas de inicio contra extensiones y seguridad."""
+    """
+    Evalúa si un archivo en una carpeta de inicio es un ejecutable válido.
+    Aplica filtros contra symlinks, extensiones no permitidas y rutas protegidas.
+    """
     try:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
@@ -325,8 +328,9 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     """
-    Realiza una validación de seguridad sobre los valores crudos obtenidos del registro
-    para prevenir inyecciones y accesos a rutas protegidas antes de instanciar StartupEntry.
+    Valida la integridad de una entrada leída del Registro de Windows.
+    Verifica que la cadena no sea nula, no contenga caracteres de inyección y
+    que la ruta objetivo no esté marcada como protegida por el sistema.
     """
     if not isinstance(name, str) or not isinstance(command, str):
         return False
@@ -456,7 +460,7 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
     return "danger"
 
 
-def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> List[str]:
+def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
     """Genera el reporte de texto final con las entradas detectadas."""
     entries_list = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)

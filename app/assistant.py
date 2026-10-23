@@ -353,6 +353,15 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     """Verifica si un valor numérico está dentro del rango lógico definido por su especificación."""
     return spec.min_val <= val <= spec.max_val
 
+@lru_cache(maxsize=16)
+def _evaluate_active_problems(metrics_tuple: tuple) -> tuple[str, ...]:
+    """Calcula los problemas activos a partir de los valores crudos cacheables."""
+    metrics_dict = dict(metrics_tuple)
+    return tuple(
+        msg for c in _CRITERIOS_SALUD 
+        if (msg := c.format_if_triggered(metrics_dict.get(c.metric_key, -1.0))) is not None
+    )
+
 @dataclass
 class SystemContext:
     """Contenedor de estado consolidado que representa la salud del sistema."""
@@ -375,12 +384,12 @@ class SystemContext:
         """Snapshot cacheado de las métricas numéricas para acceso eficiente."""
         return {k: float(v) for k in _VALIDATORS if (v := getattr(self, k, -1.0)) != -1.0}
 
-    @cached_property
+    @property
     def active_problems(self) -> tuple[str, ...]:
         """Evalúa los criterios de salud contra los datos actuales y retorna los problemas activos."""
         if not self.analyzed: return ()
-        snap = self.metrics_snapshot
-        return tuple(msg for c in _CRITERIOS_SALUD if (msg := c.format_if_triggered(snap.get(c.metric_key, -1.0))) is not None)
+        # Convertimos a tupla de items para que sea hashable y cacheable en _evaluate_active_problems
+        return _evaluate_active_problems(tuple(sorted(self.metrics_snapshot.items())))
 
     @cached_property
     def _hash_tuple(self) -> tuple:
@@ -453,7 +462,7 @@ class SystemContext:
             setattr(self, k, v)
         self.analyzed = True
         self.__dict__.pop("metrics_snapshot", None)
-        self.__dict__.pop("active_problems", None)
+        # Nota: active_problems usa lru_cache externo, no requiere borrado aquí
         self.__dict__.pop("_hash_tuple", None)
 
     def ingest(self, source: Any) -> bool:
