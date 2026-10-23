@@ -313,7 +313,7 @@ def _is_process_accessible(pid: int, access_mask: int, kernel32: ctypes.CDLL) ->
     """Valida acceso al proceso; retorna el handle Win32 o None si es inaccesible."""
     if _is_system_process(pid): return None
     handle = kernel32.OpenProcess(access_mask, False, pid)
-    return handle if handle not in (0, INVALID_HANDLE_VALUE) else None
+    return handle if handle is not None and handle != 0 and handle != INVALID_HANDLE_VALUE else None
 
 def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Consulta la memoria real (Working Set) mediante psapi Win32."""
@@ -381,18 +381,21 @@ def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS
     pids = (wintypes.DWORD * MAX_PIDS)()
     cb_needed = wintypes.DWORD(0)
     
-    if not psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-        return
-        
-    count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
-    for i in range(count):
-        pid_val = int(pids[i])
-        if pid_val <= 0 or _is_system_process(pid_val):
-            continue
+    try:
+        if not psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+            return
             
-        proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
-        if proc:
-            yield proc
+        count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
+        for i in range(count):
+            pid_val = int(pids[i])
+            if pid_val <= 0 or _is_system_process(pid_val):
+                continue
+                
+            proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
+            if proc:
+                yield proc
+    except Exception:
+        pass
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna top procesos por consumo de RAM (caché: 60s)."""
@@ -405,7 +408,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             kernel32 = ctypes.windll.kernel32
             psapi = ctypes.windll.psapi
             pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
-            # Optimizamos la recolección filtrando intensamente al vuelo
             candidates = _filter_and_sort_processes(_iter_process_memory(kernel32, psapi, pmc), limit)
             _CACHE_TOP_PROC = CacheEntry(now, candidates)
         except (AttributeError, OSError):
@@ -480,5 +482,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.WinError, OSError, Exception):
         return False, "Error inesperado al intentar interactuar con el proceso."
     finally:
-        if proc_handle != INVALID_HANDLE_VALUE:
+        if proc_handle is not None and proc_handle != INVALID_HANDLE_VALUE:
             kernel32.CloseHandle(proc_handle)

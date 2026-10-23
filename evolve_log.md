@@ -866,3 +866,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-23T07:29:36` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `main.py` ante errores inesperados durante la carga de componentes visuales (lazy loading) y validación de entornos, añadiendo un manejo de excepciones más granular en `_tab_factory` y `_setup_application` para asegurar que un fallo en un widget específico no detenga la inicialización completa de la app.
 - `2026-10-23T07:29:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T07:29:36` Corrida terminada. Total usado hoy: 176.
+- `2026-10-23T07:37:28` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-10-23T07:38:01` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la consulta de procesos añadiendo una validación explícita para evitar que `EnumProcesses` o procesos inaccesibles bloqueen la ejecución del bucle, y asegurando que las llamadas a `kernel32` se manejen con mayor seguridad ante handles no válidos o permisos restringidos en entornos de usuario limitado.
+- `2026-10-23T07:38:38` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-23T07:39:22` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se añadió una validación explícita en `_atomic_isolate_file` para asegurar que el archivo de origen no tenga atributos de sistema o sea un archivo "espejo" (reparse point), fortaleciendo la robustez ante intentos de aislar archivos protegidos por el sistema operativo que escapan a las verificaciones previas.
+- `2026-10-23T07:39:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-23T07:39:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T07:39:25` Corrida terminada. Total usado hoy: 180.

@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 117 | 8 | 33 | 18 | 152 |
-| 2026-10-23 | 74 | 6 | 16 | 9 | 71 |
+| 2026-10-22 | 117 | 8 | 32 | 18 | 149 |
+| 2026-10-23 | 76 | 6 | 17 | 9 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
 - seguridad defensiva: **41**
+- robustez ante casos límite: **35**
 - rendimiento: **33**
-- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `browser.py`: **19**
 - `assistant.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
+- `quarantine.py`: **16**
 - `settings.py`: **16**
 - `safety.py`: **15**
 - `branding.py`: **15**
-- `quarantine.py`: **15**
 - `healthscore.py`: **14**
 - `scanner.py`: **13**
 - `startup.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T07:39:22` **quarantine.py** (robustez ante casos límite): Se añadió una validación explícita en `_atomic_isolate_file` para asegurar que el archivo de origen no tenga atributos de sistema o sea un archivo "espejo" (reparse point), fortaleciendo la robustez ante intentos de aislar archivos protegidos por el sistema operativo que escapan a las verificaciones previas.
+- `2026-10-23T07:38:01` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la consulta de procesos añadiendo una validación explícita para evitar que `EnumProcesses` o procesos inaccesibles bloqueen la ejecución del bucle, y asegurando que las llamadas a `kernel32` se manejen con mayor seguridad ante handles no válidos o permisos restringidos en entornos de usuario limitado.
 - `2026-10-23T07:29:36` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados durante la carga de componentes visuales (lazy loading) y validación de entornos, añadiendo un manejo de excepciones más granular en `_tab_factory` y `_setup_application` para asegurar que un fallo en un widget específico no detenga la inicialización completa de la app.
 - `2026-10-23T07:28:38` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo ante entradas numéricas mal formadas o extremas añadiendo validaciones explícitas en `_clamp` y `create_linear_scorer` para evitar resultados NaN o fuera de escala en escenarios de cálculo de ratios críticos.
 - `2026-10-23T07:27:44` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `entry.stat()` y validando el retorno de `os.stat` antes de procesarlo, evitando que archivos bloqueados por el sistema interrumpan el conteo total.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T06:39:38` **branding.py** (rendimiento): Se ha optimizado la generación del logo SVG inyectando las constantes estáticas de estilo directamente en la plantilla durante la fase de carga del módulo, eliminando la creación de strings innecesarios en cada llamada a `logo_svg` y aprovechando la naturaleza inmutable de las constantes precomputadas.
 - `2026-10-23T06:38:30` **assistant.py** (rendimiento): Optimicé el acceso a métricas en `SystemContext` reemplazando los cálculos recursivos y llamadas a `getattr` en los bucles de ingestión por una búsqueda directa en `__dict__` y estructuras de datos planas, mejorando el rendimiento en el procesamiento de contextos complejos.
 - `2026-10-23T06:28:19` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y la estandarización de type hints, facilitando la comprensión del propósito y los límites de cada validación.
-- `2026-10-23T06:16:34` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en las clases clave (`SystemMetrics`, `PipelineEntry`, `RecommendationRule`) para explicar el propósito y contrato de cada estructura, y se han añadido type hints en funciones donde la inferencia era ambigua.
-- `2026-10-23T06:07:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo de trabajo en `duplicates.py`, agregando docstrings detallados en las funciones clave y eliminando la redundancia en la lógica de filtrado de archivos para asegurar que la intención de seguridad sea explícita y fácil de mantener.

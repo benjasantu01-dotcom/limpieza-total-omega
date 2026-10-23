@@ -799,6 +799,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     
+    # Nueva validación de seguridad contra archivos de sistema/ocultos persistentes
+    if _win_has_system_attributes(source):
+        raise UnsafePathError("Aislamiento bloqueado: archivo de sistema detectado.")
+    
     try:
         if not destination.parent.exists():
             raise OSError("Directorio de cuarentena inaccesible.")
