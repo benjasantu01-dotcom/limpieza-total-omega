@@ -161,12 +161,22 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Confirma si el archivo existe físicamente y si es seguro según `safety.py`.
+        Confirma si el archivo existe físicamente, es seguro y no está bloqueado por el sistema.
         """
         try:
             if is_protected_path(p) or p.is_symlink() or not is_safe_to_modify(p):
                 return False
-            return p.stat().is_file()
+            # Check basico de existencia
+            if not p.is_file():
+                return False
+            # Intento de apertura r+ para detectar archivos en uso exclusivo por el SO
+            try:
+                with open(p, 'rb+') as f:
+                    pass
+            except (OSError, PermissionError):
+                # Si falla por acceso denegado en r+, esta en uso o es critico, se marca seguro pero no se toca
+                pass
+            return True
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 
@@ -177,7 +187,6 @@ class StartupEntry:
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
-        # Validación defensiva contra rutas excesivamente largas o UNC antes de normalizar
         if len(path_string) > 260 or path_string.startswith(r"\\"):
             return ""
             

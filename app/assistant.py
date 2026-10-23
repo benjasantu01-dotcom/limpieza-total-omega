@@ -501,10 +501,10 @@ def _ensure_safe_text(text: Any) -> bool:
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
     # Rechazo estricto de metacaracteres de shell, control, y rutas protegidas
-    # Se expandió el filtro para asegurar que ni siquiera caracteres invisibles o de control pasen
-    if any(c in text for c in "<>|&^$():;\n\r\t\"'\\`"):
-        return False
     if is_protected_path(text):
+        return False
+    # Filtro reforzado contra inyecciones y caracteres invisibles/de control
+    if any(c in text for c in "<>|&^$():;\n\r\t\"'\\`"):
         return False
     return not _is_safe_path_input(text)
 

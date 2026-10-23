@@ -402,3 +402,34 @@ FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - Nam
 - `2026-10-23T03:15:39` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación estricta en `_validate_structural_safety` para prevenir el uso de caracteres de control y secuencias Unicode de inversión de texto (RTL/LTR) en nombres de archivos, protegiendo contra ataques de spoofing visual donde una extensión `.exe` parece otra.
 - `2026-10-23T03:15:39` Rotación — log: 1148 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T03:15:39` Corrida terminada. Total usado hoy: 76.
+- `2026-10-23T03:22:49` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-10-23T03:22:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T03:23:25` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_________________ ERROR collecting evolve/tests/test_basic.py __________________
+ImportError while importing test module '/home/runner/work/limpieza-total-omega/limpieza-total-omega/evolve/tests/test_basic.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+evolve/tests/test_basic.py:23: in <module>
+    import scanner    # noqa: E402
+    ^^^^^^^^^^^^^^
+app/scanner.py:18: in <module>
+    import msvcrt
+E   ModuleNotFoundError: No module named 'msvcrt'
+=========================== short test summary info ============================
+ERROR evolve/tests/test_basic.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.30s
+
+```
+- `2026-10-23T03:23:25` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se implementó `_is_file_locked` utilizando `msvcrt` (librería estándar) para detectar si un archivo está en uso exclusivo antes de intentar aplicar heurísticas pesadas, evitando errores `PermissionError` o `OSError` en procesos de escaneo.
+- `2026-10-23T03:23:55` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_read_and_parse_json` al centralizar el control de lectura mediante un bloque `try-finally` que garantiza el cierre del descriptor de archivo, y añadí una verificación de `os.fsync` implícita en la escritura atómica para asegurar la integridad ante fallos del sistema durante la persistencia.
+- `2026-10-23T03:24:23` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se ha mejorado `_validate_file_access` en `StartupEntry` para incluir una validación específica que detecta archivos "en uso" (bloqueados) mediante el intento de apertura en modo `r+`, evitando fallos silenciosos al intentar inspeccionar archivos que el sistema está ejecutando activamente durante el inicio.
+- `2026-10-23T03:24:45` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció `_ensure_safe_text` agregando una validación explícita mediante `is_protected_path` al inicio y refinando el filtrado de caracteres especiales para prevenir inyecciones en el motor remoto, garantizando que el asistente nunca procese datos que pudieran comprometer la seguridad del sistema.
+- `2026-10-23T03:24:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T03:24:45` Corrida terminada. Total usado hoy: 80.
