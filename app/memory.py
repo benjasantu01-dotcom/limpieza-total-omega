@@ -182,9 +182,11 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
 
-def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
+def _safe_int_conversion(value: Optional[str | int], multiplier: int = 1) -> BytesValue:
     """Extrae dígitos de una cadena de texto y aplica un factor de escala."""
+    if isinstance(value, int): return BytesValue(max(0, value * multiplier))
     if not isinstance(value, str): return BytesValue(0)
+    
     digits = "".join(filter(str.isdigit, value))
     if not digits: return BytesValue(0)
     try:
