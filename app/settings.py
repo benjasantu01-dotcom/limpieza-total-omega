@@ -183,9 +183,12 @@ class _SettingsManager:
             
             temp_path = resolved_path.with_suffix(".tmp")
             with open(temp_path, "w", encoding="utf-8") as f:
-                f.write(serialized)
-                f.flush()
-                os.fsync(f.fileno())
+                try:
+                    f.write(serialized)
+                    f.flush()
+                    os.fsync(f.fileno())
+                finally:
+                    f.close()
             
             os.replace(temp_path, resolved_path)
             self.clear()
@@ -350,17 +353,17 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         if is_protected_path(str(resolved)) or not is_safe_to_modify(str(resolved)): return None
         
         with open(resolved, "rb") as f:
-            if not _is_file_secure_to_read(os.fstat(f.fileno())): return None
-            
-            content = f.read(MAX_SETTINGS_SIZE + 1)
-            if not content or len(content) > MAX_SETTINGS_SIZE: return None
             try:
+                if not _is_file_secure_to_read(os.fstat(f.fileno())): return None
+                content = f.read(MAX_SETTINGS_SIZE + 1)
+                if not content or len(content) > MAX_SETTINGS_SIZE: return None
+                
                 decoded = content.decode("utf-8")
                 data = json.loads(decoded)
-            except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
-                return None
-            return data if _is_dict(data) else None
-    except (OSError, IOError, PermissionError, MemoryError):
+                return data if _is_dict(data) else None
+            finally:
+                f.close()
+    except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, UnicodeDecodeError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:

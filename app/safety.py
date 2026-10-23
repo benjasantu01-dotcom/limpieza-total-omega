@@ -675,8 +675,14 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             
             try:
                 return path.stat()
-            except (PermissionError, FileNotFoundError, OSError):
-                raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+            except OSError as e:
+                # Captura errores específicos de Windows durante el stat
+                win_err = getattr(e, 'winerror', None)
+                if win_err == ERROR_ACCESS_DENIED or e.errno == errno.EACCES:
+                    raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+                if win_err == ERROR_FILE_NOT_FOUND or e.errno == errno.ENOENT:
+                    raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+                raise UnsafePathError(f"Error de acceso: {path.name} ({e})", SafetyValidationErrorCode.IO_ERROR)
         except UnsafePathError:
             raise
         except OSError as e:
@@ -686,8 +692,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
                 raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
-            if win_err == ERROR_ACCESS_DENIED or e.errno == errno.EACCES:
-                raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
             raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     raise UnsafePathError(f"Error tras reintentos leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
 

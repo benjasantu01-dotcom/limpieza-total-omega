@@ -1157,3 +1157,36 @@ assert not ['memory.py']
 - `2026-10-23T10:14:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-23T10:14:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T10:14:30` Corrida terminada. Total usado hoy: 240.
+- `2026-10-23T10:20:32` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-10-23T10:20:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T10:21:53` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora `_get_path_stat_robust` para capturar explícitamente `OSError` con códigos de error específicos de Windows (como acceso denegado o archivo inexistente) durante el `path.stat()`, asegurando que se lancen `UnsafePathError` con códigos adecuados en lugar de permitir que excepciones inesperadas rompan el flujo de la aplicación.
+- `2026-10-23T10:22:38` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas de `scanner.py` implementando un manejo de errores más específico y preventivo, validando la integridad de los resultados devueltos por `os.DirEntry.stat()` antes de su uso y envolviendo las operaciones de acceso a disco en un bloque de control de errores más granular, evitando así excepciones no capturadas durante el análisis.
+- `2026-10-23T10:22:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T10:23:33` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `perform_atomic_write` y `_read_and_parse_json` mediante el uso de bloques `try-finally` para asegurar el cierre de descriptores de archivo y mejorando la granularidad de las excepciones capturadas para evitar fallos silenciosos ante estados inconsistentes del sistema.
+- `2026-10-23T10:23:48` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.92s
+
+```
+- `2026-10-23T10:23:48` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_registry_entry_safe` y `_resolve_and_cache_path` mediante la validación explícita de tipos y valores `None` en las entradas, evitando posibles `AttributeError` o `TypeError` al procesar datos crudos del registro o rutas malformadas durante el escaneo.
+- `2026-10-23T10:23:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T10:23:48` Corrida terminada. Total usado hoy: 244.
