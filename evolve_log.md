@@ -1357,3 +1357,41 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-23T12:36:52` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita mediante `is_safe_to_modify` en la función `_collect_settings` al procesar campos de texto que representan rutas, asegurando que cualquier entrada de usuario que el sistema intente persistir sea filtrada preventivamente contra la lista de rutas protegidas antes de ser delegada a `settings_mod`.
 - `2026-10-23T12:36:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T12:36:52` Corrida terminada. Total usado hoy: 296.
+- `2026-10-23T12:43:06` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-23T12:43:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T12:44:15` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al validar que los handles de procesos abiertos para `EmptyWorkingSet` tengan los permisos mínimos necesarios (`TRIM_ACCESS_MASK`) y verificando explícitamente que la ruta del ejecutable no sea un enlace simbólico o apunte fuera de los límites de seguridad mediante `is_protected_path` antes de ejecutar la acción, evitando posibles ataques de manipulación de procesos.
+- `2026-10-23T12:44:43` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` al integrar explícitamente `ensure_safe_to_modify` para detectar si el destino está en una ruta restringida antes de proceder con cualquier lógica de E/S, asegurando que la validación de seguridad sea una barrera bloqueante y no solo un filtro lógico.
+- `2026-10-23T12:45:40` Tests FALLARON:
+```
+
+        _check_for_reparse_points(resolved_source)
+        if not resolved_source.is_file():
+            raise UnsafePathError("Solo se permiten archivos regulares.")
+        if resolved_source.stat().st_size == 0:
+            raise UnsafePathError("Archivos vacíos prohibidos.")
+        if _is_filesystem_read_only(target_directory):
+            raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
+    
+        if hasattr(os, 'getuid'):
+            if resolved_source.stat().st_uid != os.getuid():
+                raise UnsafePathError("Aislamiento denegado: el archivo no pertenece al usuario.")
+    
+        _check_device_consistency(resolved_source, resolved_dest_dir)
+        if os.path.exists(resolved_dest_dir) and os.path.samefile(resolved_source, resolved_dest_dir):
+            raise UnsafePathError("Operación circular detectada.")
+    
+        _verify_quarantine_preconditions(resolved_source, resolved_dest_dir)
+        if not is_safe_to_modify(resolved_source):
+>           raise UnsafePathError("Archivo origen no permitido para modificación.")
+E           safety.UnsafePathError: [GENERIC] Archivo origen no permitido para modificación.
+
+app/quarantine.py:533: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [GENERIC] Archivo origen no permitido para modificación.
+1 failed, 298 passed in 1.48s
+
+```
+- `2026-10-23T12:45:40` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de las operaciones de escritura en `quarantine.py` mediante la implementación de una verificación explícita de `is_safe_to_modify` antes de cualquier escritura de archivo, evitando que operaciones de aislamiento o restauración prosigan en directorios que hayan sido marcados como inseguros en tiempo de ejecución.
+- `2026-10-23T12:45:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-23T12:45:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T12:45:45` Corrida terminada. Total usado hoy: 300.

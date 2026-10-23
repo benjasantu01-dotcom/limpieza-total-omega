@@ -237,7 +237,7 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Orquestador de seguridad: valida identidad, protección, bloqueos y espacio antes de E/S.
-    Usa solo chequeos booleanos (`is_safe_to_modify`) para permitir flujos de control.
+    Usa chequeos booleanos y ensure_safe_to_modify para garantizar aislamiento del destino.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -246,6 +246,9 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
+        # Validar explícitamente destino antes de cualquier operación
+        ensure_safe_to_modify(dest_real)
+
         if src_real == dest_real or src_real.parent == dest_real: return False
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES or is_protected_path(src_real): return False
         if is_protected_path(dest_real): return False

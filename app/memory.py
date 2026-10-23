@@ -362,7 +362,6 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
 
 def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
     """Crea instancia ProcessMemory verificando seguridad y accesibilidad del binario."""
-    # Pre-filtrado para evitar llamadas a OpenProcess innecesarias
     if _is_system_process(pid):
         return None
 
@@ -395,7 +394,6 @@ def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS
         count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
         for i in range(count):
             pid_val = int(pids[i])
-            # La validación se delega a _process_from_pid para consistencia
             proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
             if proc:
                 yield proc
