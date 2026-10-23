@@ -39,8 +39,8 @@ class Scorer(Protocol):
     """
     Protocolo funcional para transformar SystemMetrics en un ratio de salud [0.0, 1.0].
     
-    Implementaciones deben ser puras (sin I/O), manejar valores atípicos y 
-    garantizar consistencia en la salida (siempre devuelve float).
+    Las implementaciones deben ser puras (sin efectos secundarios/IO), manejar 
+    valores atípicos y garantizar consistencia en la salida (siempre devuelve float).
     """
     def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
@@ -69,7 +69,8 @@ class Grade(Enum):
 
 class RecommendationRule(NamedTuple):
     """
-    Regla de diagnóstico ejecutable para detectar anomalías en una métrica específica.
+    Define una regla de diagnóstico con una condición de disparo y un mensaje 
+    dinámico para el usuario.
     """
     area: MetricKey
     threshold: float
@@ -78,7 +79,8 @@ class RecommendationRule(NamedTuple):
 
 class PipelineEntry(NamedTuple):
     """
-    Configuración de una unidad de análisis del motor de salud.
+    Configuración de una unidad de procesamiento en el pipeline de salud.
+    Contiene la lógica de ponderación, el normalizador y las reglas asociadas.
     """
     area: MetricKey
     weight: int
@@ -114,7 +116,8 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """
-    Fábrica que genera normalizadores lineales (1.0 = ideal, 0.0 = límite alcanzado).
+    Fábrica que genera normalizadores lineales donde 1.0 es el valor óptimo.
+    Si inverse es True, 0.0 es el límite crítico y 1.0 es valor cero.
     """
     def scorer(val: float) -> NormalizedRatio:
         if not math.isfinite(val) or limit <= 0.0: return 0.0
@@ -227,7 +230,10 @@ def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) ->
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos centralizado con validación automática de estados."""
+    """
+    Contenedor de datos inmutable utilizado como entrada para el análisis.
+    Realiza una validación de rangos automática al instanciarse.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -265,7 +271,6 @@ class SystemMetrics:
         }
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
-            # Asegurar no aplicar validación sobre valores nulos en el objeto
             if val is None:
                 setattr(self, field_name, 0.0)
                 continue
@@ -317,7 +322,7 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
     """Evalúa las reglas registradas y retorna solo las que disparan advertencias."""
     ratio = _clamp(normalized_ratio)
-    findings = []
+    findings: List[str] = []
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
