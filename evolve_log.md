@@ -1245,3 +1245,13 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-23T11:05:22` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el método `active_problems` eliminando el sorting innecesario y el tuple casting redundante en cada acceso, aprovechando la naturaleza de la tupla de criterios predefinidos para reducir ciclos de CPU durante el acceso frecuente a la salud del sistema.
 - `2026-10-23T11:05:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T11:05:22` Corrida terminada. Total usado hoy: 260.
+- `2026-10-23T11:11:26` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-10-23T11:11:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-23T11:12:30` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el rendimiento de `_sum_directory_recursive` evitando llamadas redundantes a `os.path.normcase` y `str()` dentro del bucle de `os.scandir`, y reemplacé la verificación de `visited_dirs` por una estructura de datos local más eficiente, reduciendo el overhead en escaneos profundos.
+- `2026-10-23T11:12:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T11:12:36` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-23T11:13:42` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-23T11:14:25` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-23T11:14:41` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de la recolección de candidatos utilizando `os.scandir` con un filtro previo por tamaño y optimizando el almacenamiento en el diccionario `raw_map`, evitando iteraciones innecesarias sobre grupos de un solo archivo durante la fase de recolección.
+- `2026-10-23T11:14:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T11:14:41` Corrida terminada. Total usado hoy: 264.

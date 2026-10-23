@@ -194,23 +194,17 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     attrs = kernel32.GetFileAttributesW(entry_path)
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
-def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext) -> bool:
+def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str) -> bool:
     """
     Valida si una entrada de directorio debe ser ignorada.
-    Aplica chequeos de nombre (lista negra), profundidad, sandbox y atributos de sistema.
     """
-    name_low = entry.name.lower()
-    if name_low in scan_ctx.never_touch_lower: return True
-    
-    path_str = entry.path
-    if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
-    
-    norm_path = os.path.normcase(path_str)
+    if entry.name.lower() in scan_ctx.never_touch_lower: return True
+    if len(entry.path) >= MAX_PATH_LEN or any(c in entry.path for c in PATH_FORBIDDEN_CHARS): return True
     if not _is_within_sandbox(norm_path, scan_ctx.sandbox_base_norm): return True
-    if is_protected_path(Path(path_str)): return True
+    if is_protected_path(Path(entry.path)): return True
     
     try:
-        if entry.is_symlink() or scan_ctx.is_junction(path_str) or _is_system_hidden(path_str, scan_ctx.kernel32): 
+        if entry.is_symlink() or scan_ctx.is_junction(entry.path) or _is_system_hidden(entry.path, scan_ctx.kernel32): 
             return True
     except OSError: return True
     return False
@@ -234,9 +228,6 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     """
     if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
     
-    # Verificación extra de seguridad defensiva antes de proceder
-    if is_protected_path(Path(root_path)): return ScanResult(0, True)
-
     norm_path = os.path.normcase(root_path)
     if norm_path in scan_ctx.visited_dirs or not os.access(root_path, os.R_OK):
         return ScanResult(0, True)
@@ -248,7 +239,8 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     try:
         with os.scandir(root_path) as dir_iterator:
             for entry in dir_iterator:
-                if _should_skip_entry(entry, scan_ctx): continue
+                entry_norm = os.path.normcase(entry.path)
+                if _should_skip_entry(entry, scan_ctx, entry_norm): continue
                 if entry.is_dir(follow_symlinks=False):
                     res = _sum_directory_recursive(entry.path, scan_ctx, depth + 1)
                     total_bytes += res.bytes_found
