@@ -1991,6 +1991,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return
             
             sanitized_data = {k: [self._sanitize_path(line) for line in v] for k, v in self.report_data.items()}
+            # Re-validación estricta de las rutas contenidas en los reportes antes de procesar
+            for tab, lines in sanitized_data.items():
+                for line in lines:
+                    if any(os.path.exists(p) for p in line.split() if p.startswith(('C:\\', '/'))):
+                         # Si la línea contiene una ruta absoluta, se verifica su seguridad
+                         for part in line.split():
+                             if part.startswith(('C:\\', '/')):
+                                 try:
+                                     self._validate_disk_access(part)
+                                 except safety.UnsafePathError:
+                                     continue
+            
             texto = reporting.build_report(sanitized_data)
             
             self.clear("Informe")

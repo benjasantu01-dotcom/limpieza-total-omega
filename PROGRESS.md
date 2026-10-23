@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 18 | 1 | 7 | 2 | 42 |
+| 2026-10-21 | 18 | 1 | 7 | 2 | 38 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 39 | 2 | 10 | 5 | 28 |
+| 2026-10-23 | 40 | 2 | 10 | 5 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **45**
+- seguridad defensiva: **46**
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **35**
@@ -43,10 +43,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **10**
 - `startup.py`: **9**
 - `organizer.py`: **8**
-- `main.py`: **5**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T03:44:47` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de directorios en `on_build_report` y `on_save_report`, asegurando que ninguna ruta pase al módulo de reportes sin haber sido sanitizada y verificada contra `safety.py`.
 - `2026-10-23T03:34:29` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo recursivo en `_collect_candidates` añadiendo una validación explícita de `is_safe_to_modify` antes de seguir cualquier ruta encontrada por `scandir`, asegurando que el motor no atraviese estructuras inseguras incluso si `entry.is_dir` devuelve verdadero.
 - `2026-10-23T03:34:22` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo una validación de "escape de raíz" para asegurar que, incluso en presencia de enlaces simbólicos o puntos de reparse, el escáner no pueda salirse del directorio base solicitado, utilizando `pathlib.Path.resolve` y `Path.is_relative_to` para una validación robusta.
 - `2026-10-23T03:33:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_cache_path` añadiendo un chequeo explícito de atributos de sistema ocultos (usando `kernel32`) para evitar que el escáner intente listar directorios de caché que residan inadvertidamente bajo rutas críticas protegidas por el SO, manteniendo la consistencia con las reglas de acceso seguro.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T02:53:31` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada (`Path` con caracteres inválidos o tipos inesperados) y condiciones de carrera en el sistema de archivos, envolviendo la creación de directorios y la escritura en un bloque de control mejorado que asegura la integridad de la ruta antes de intentar cualquier operación de disco.
 - `2026-10-23T02:52:56` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `AssistantConfig` y `_call_gemini` para manejar correctamente casos donde la configuración sea inesperadamente `None` o presente valores parciales, evitando que la app falle ante archivos de configuración corruptos o incompletos, manteniendo siempre la seguridad del motor local como fallback.
 - `2026-10-23T02:44:33` **startup.py** (rendimiento): Optimizé `list_startup_entries` mediante el uso de `itertools.chain` para evitar iteradores anidados y una gestión de memoria más eficiente en el escaneo de registros y carpetas.
-- `2026-10-23T02:44:04` **settings.py** (rendimiento): Se optimizó el acceso a las configuraciones mediante la implementación de un caché de instancia (`self._cached_settings`) que evita lecturas repetitivas y validaciones costosas de disco, refrescándolo solo cuando el sistema detecta cambios mediante el monitoreo de metadatos del archivo.

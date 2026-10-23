@@ -440,3 +440,11 @@ ERROR evolve/tests/test_basic.py
 - `2026-10-23T03:34:29` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo recursivo en `_collect_candidates` añadiendo una validación explícita de `is_safe_to_modify` antes de seguir cualquier ruta encontrada por `scandir`, asegurando que el motor no atraviese estructuras inseguras incluso si `entry.is_dir` devuelve verdadero.
 - `2026-10-23T03:34:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T03:34:29` Corrida terminada. Total usado hoy: 84.
+- `2026-10-23T03:43:12` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-10-23T03:43:39` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-10-23T03:44:47` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva centralizando la validación de directorios en `on_build_report` y `on_save_report`, asegurando que ninguna ruta pase al módulo de reportes sin haber sido sanitizada y verificada contra `safety.py`.
+- `2026-10-23T03:45:47` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-23T03:46:17` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-23T03:46:27` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-23T03:46:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T03:46:27` Corrida terminada. Total usado hoy: 88.
