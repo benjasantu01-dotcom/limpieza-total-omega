@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 49
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 28
 - Sin respuesta de la IA (error o límite): 223
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 125 | 8 | 34 | 19 | 154 |
-| 2026-10-23 | 68 | 3 | 15 | 9 | 69 |
+| 2026-10-22 | 122 | 8 | 34 | 19 | 153 |
+| 2026-10-23 | 69 | 4 | 16 | 9 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **49**
+- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
-- rendimiento: **32**
+- rendimiento: **33**
 - robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **19**
 - `assistant.py`: **18**
 - `browser.py`: **18**
 - `memory.py`: **17**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
 - `settings.py`: **16**
-- `branding.py`: **15**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
+- `branding.py`: **14**
 - `healthscore.py`: **13**
-- `duplicates.py`: **9**
 - `startup.py`: **9**
 - `organizer.py`: **8**
+- `duplicates.py`: **8**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T07:08:20` **scanner.py** (rendimiento): Optimicé el rendimiento de `scanner.py` eliminando la resolución redundante de rutas (`Path.resolve()`) dentro del bucle de escaneo mediante el uso de `os.path.normcase` para la comparación de identificadores, evitando llamadas costosas al sistema de archivos en cada iteración.
 - `2026-10-23T07:00:18` **quarantine.py** (rendimiento): Optimicé el cálculo de `total_quarantined_bytes` evitando llamadas innecesarias a `load_manifest` (que involucra I/O y parsing JSON) cuando ya se dispone de la lista de ítems, y simplifiqué el acceso a datos en `summarize` para reducir el overhead de procesamiento.
 - `2026-10-23T06:58:22` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la enumeración completa de procesos y el filtrado posterior por un mecanismo que pre-filtra los procesos y utiliza un buffer de memoria reutilizable, evitando la creación de objetos innecesarios y reduciendo las llamadas a la API de Windows en procesos irrelevantes (aquellos con menos de 10 MB de consumo).
 - `2026-10-23T06:47:53` **healthscore.py** (rendimiento): Se implementó un mecanismo de memoización selectiva en el cálculo de cada área del pipeline y se optimizó la serialización del estado mediante tuplas, reduciendo la redundancia de cálculos en el proceso de reporte y validación.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T06:06:37` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings estructuradas en las funciones geométricas y de dibujo, y se han aplicado Type Hints explícitos en los parámetros de configuración de las funciones `draw_logo` y `draw_ring` para aclarar sus propósitos.
 - `2026-10-23T05:57:39` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de evaluación de problemas mediante la extracción de `ProblemCriterion` desde el módulo global hacia el `SystemContext` y el uso de un `NamedTuple` para `ProblemCriterion` con lógica encapsulada, reduciendo la carga cognitiva en la sección de constantes.
 - `2026-10-23T05:57:14` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita de tipos y valores tras el `csv.DictReader` para evitar excepciones por datos malformados o entradas nulas, garantizando que el bucle procese solo estructuras de diccionario íntegras.
-- `2026-10-23T05:56:46` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `perform_atomic_write` añadiendo un manejo de excepciones más granular y específico para evitar que errores inesperados de E/S silencien la validación o corrompan el estado, asegurando que cualquier fallo en la escritura atómica sea detectado y no propague estados parciales.

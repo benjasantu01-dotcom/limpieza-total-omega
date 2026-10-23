@@ -763,3 +763,29 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-23T07:00:18` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo de `total_quarantined_bytes` evitando llamadas innecesarias a `load_manifest` (que involucra I/O y parsing JSON) cuando ya se dispone de la lista de ítems, y simplifiqué el acceso a datos en `summarize` para reducir el overhead de procesamiento.
 - `2026-10-23T07:00:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T07:00:18` Corrida terminada. Total usado hoy: 164.
+- `2026-10-23T07:06:51` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-23T07:07:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-10-23T07:07:53` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-10-23T07:08:20` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scanner.py` eliminando la resolución redundante de rutas (`Path.resolve()`) dentro del bucle de escaneo mediante el uso de `os.path.normcase` para la comparación de identificadores, evitando llamadas costosas al sistema de archivos en cada iteración.
+- `2026-10-23T07:08:35` Tests FALLARON:
+```
+ute 'st_is_file'
+FAILED evolve/tests/test_assistant.py::test_corrupt_file_falls_back_to_defaults - AttributeError: 'os.stat_result' object has no attribute 'st_is_file'
+FAILED evolve/tests/test_assistant.py::test_unknown_keys_are_discarded - AttributeError: 'os.stat_result' object has no attribute 'st_is_file'
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - AttributeError: 'os.stat_result' object has no attribute 'st_is_file'
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - AttributeError: 'os.stat_result' object has no attribute 'st_is_file'
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AttributeError: 'os.stat_result' object has no attribute 'st_is_file'
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AttributeError: 'os.stat_result' object has no attribute 'st_is_file'
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AttributeError: 'os.stat_result' object has no attribute 'st_is_file'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AttributeError: 'os.stat_result' object has no attribute 'st_is_file'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+11 failed, 288 passed in 1.38s
+
+```
+- `2026-10-23T07:08:35` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a disco en la función `load` reemplazando la consulta `exists()` seguida de `stat()` por un único bloque `try-except` con `os.stat()` para evitar una condición de carrera (TOCTOU) y reducir llamadas innecesarias al sistema de archivos, mejorando el rendimiento bajo I/O pesado.
+- `2026-10-23T07:08:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T07:08:35` Corrida terminada. Total usado hoy: 168.
