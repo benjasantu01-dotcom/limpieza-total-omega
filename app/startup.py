@@ -135,7 +135,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y valida una ruta delimitada por comillas dentro de una línea de comando.
+        Extracts and validates a quoted path within a command line.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -164,9 +164,9 @@ class StartupEntry:
         Confirma si el archivo existe físicamente, es seguro y no está bloqueado por el sistema.
         """
         try:
-            if is_protected_path(p) or p.is_symlink() or not is_safe_to_modify(p):
+            # Check previo de seguridad y existencia antes de cualquier I/O
+            if is_protected_path(p) or p.is_symlink() or not is_safe_to_modify(p) or not p.exists():
                 return False
-            # Check basico de existencia
             if not p.is_file():
                 return False
             # Intento de apertura r+ para detectar archivos en uso exclusivo por el SO
@@ -174,7 +174,6 @@ class StartupEntry:
                 with open(p, 'rb+') as f:
                     pass
             except (OSError, PermissionError):
-                # Si falla por acceso denegado en r+, esta en uso o es critico, se marca seguro pero no se toca
                 pass
             return True
         except (OSError, PermissionError, FileNotFoundError, AttributeError):

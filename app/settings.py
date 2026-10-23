@@ -347,22 +347,18 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     try:
         resolved = file_path.resolve()
         if is_protected_path(str(resolved)) or not is_safe_to_modify(str(resolved)): return None
-        if not _is_file_secure_to_read(os.lstat(resolved)): return None
         
-        try:
-            with open(resolved, "rb") as f:
-                if not _is_file_secure_to_read(os.fstat(f.fileno())): return None
-                
-                content = f.read(MAX_SETTINGS_SIZE + 1)
-                if not content or len(content) > MAX_SETTINGS_SIZE: return None
-                try:
-                    decoded = content.decode("utf-8")
-                    data = json.loads(decoded)
-                except (json.JSONDecodeError, UnicodeDecodeError):
-                    return None
-                return data if _is_dict(data) else None
-        finally:
-            pass
+        with open(resolved, "rb") as f:
+            if not _is_file_secure_to_read(os.fstat(f.fileno())): return None
+            
+            content = f.read(MAX_SETTINGS_SIZE + 1)
+            if not content or len(content) > MAX_SETTINGS_SIZE: return None
+            try:
+                decoded = content.decode("utf-8")
+                data = json.loads(decoded)
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return None
+            return data if _is_dict(data) else None
     except (OSError, IOError, PermissionError, MemoryError):
         return None
 

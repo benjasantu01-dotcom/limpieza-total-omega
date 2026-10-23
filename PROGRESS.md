@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 18 | 1 | 7 | 2 | 34 |
+| 2026-10-21 | 18 | 1 | 7 | 2 | 30 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 42 | 2 | 11 | 5 | 32 |
+| 2026-10-23 | 44 | 2 | 11 | 5 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **48**
+- seguridad defensiva: **50**
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **35**
@@ -32,21 +32,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **21**
 - `browser.py`: **17**
+- `settings.py`: **17**
 - `quarantine.py`: **17**
 - `branding.py`: **16**
-- `settings.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **16**
 - `assistant.py`: **16**
 - `scanner.py`: **12**
 - `healthscore.py`: **11**
 - `duplicates.py`: **10**
-- `startup.py`: **9**
+- `startup.py`: **10**
 - `organizer.py`: **8**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T04:04:32` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_file_access` incorporando un chequeo previo contra `is_protected_path` (que ya existía) pero añadiendo una validación explícita de `p.exists()` antes de cualquier intento de apertura de archivo, evitando excepciones innecesarias ante enlaces simbólicos rotos o rutas inexistentes que podrían comprometer la estabilidad del escaneo.
+- `2026-10-23T04:04:04` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` al reemplazar el uso de `os.lstat` seguido de `open` por una comprobación consistente mediante `os.fstat` una vez abierto el archivo, mitigando riesgos de condiciones de carrera (TOCTOU) y verificando atributos de seguridad antes de procesar el contenido.
 - `2026-10-23T03:55:27` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` implementando una validación de propiedad (ownership) que asegura que el archivo esté bajo el `base_root` antes de cualquier procesamiento, utilizando `pathlib.Path.is_relative_to` (o lógica equivalente segura) para prevenir ataques de escape de directorio mediante manipulación de rutas (`..`), garantizando que la navegación sea estrictamente descendente.
 - `2026-10-23T03:54:06` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_unlink` integrando una validación previa de existencia y estado del inodo, además de asegurar que `os.remove` no se ejecute sobre rutas que hayan perdido su relación de integridad durante la llamada, previniendo condiciones de carrera TOCTOU al borrar archivos del sandbox.
 - `2026-10-23T03:44:47` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de directorios en `on_build_report` y `on_save_report`, asegurando que ninguna ruta pase al módulo de reportes sin haber sido sanitizada y verificada contra `safety.py`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T03:15:39` **safety.py** (robustez ante casos límite): Se ha añadido una validación estricta en `_validate_structural_safety` para prevenir el uso de caracteres de control y secuencias Unicode de inversión de texto (RTL/LTR) en nombres de archivos, protegiendo contra ataques de spoofing visual donde una extensión `.exe` parece otra.
 - `2026-10-23T03:13:52` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `stage_for_review` y `delete_reviewed` al validar que las rutas destino no sean puntos de reparse (junctions) o enlaces simbólicos antes de realizar operaciones de E/S, evitando que la lógica de limpieza siga punteros fuera de la carpeta de destino segura.
 - `2026-10-23T03:03:22` **healthscore.py** (robustez ante casos límite): Mejoré la robustez ante estados inesperados en `_calculate_area_contribution` y `_compute_cached` mediante la validación explícita de `weights` y el manejo preventivo de posibles divisiones por cero o desbordamientos durante el cálculo de puntos.
-- `2026-10-23T02:54:06` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante rutas extremadamente largas o inválidas (que pueden disparar `OSError` fuera del alcance de los bloques `try` actuales) y se ha añadido un mecanismo de validación de caracteres de control en las rutas procesadas para prevenir posibles inyecciones de rutas o fallos en el sistema de archivos subyacente.
-- `2026-10-23T02:53:31` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada (`Path` con caracteres inválidos o tipos inesperados) y condiciones de carrera en el sistema de archivos, envolviendo la creación de directorios y la escritura en un bloque de control mejorado que asegura la integridad de la ruta antes de intentar cualquier operación de disco.
