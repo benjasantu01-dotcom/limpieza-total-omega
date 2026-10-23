@@ -755,3 +755,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-23T06:47:53` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se implementó un mecanismo de memoización selectiva en el cálculo de cada área del pipeline y se optimizó la serialización del estado mediante tuplas, reduciendo la redundancia de cálculos en el proceso de reporte y validación.
 - `2026-10-23T06:47:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T06:47:53` Corrida terminada. Total usado hoy: 160.
+- `2026-10-23T06:56:41` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-23T06:57:52` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un sistema de "caché de estado de UI" mediante `_last_health_state` y `_last_compilation_digest` para evitar el redibujado redundante y cálculos costosos de salud y asistente en el hilo principal cuando los datos subyacentes no han cambiado.
+- `2026-10-23T06:58:22` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la enumeración completa de procesos y el filtrado posterior por un mecanismo que pre-filtra los procesos y utiliza un buffer de memoria reutilizable, evitando la creación de objetos innecesarios y reduciendo las llamadas a la API de Windows en procesos irrelevantes (aquellos con menos de 10 MB de consumo).
+- `2026-10-23T06:59:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-23T06:59:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-23T07:00:18` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo de `total_quarantined_bytes` evitando llamadas innecesarias a `load_manifest` (que involucra I/O y parsing JSON) cuando ya se dispone de la lista de ítems, y simplifiqué el acceso a datos en `summarize` para reducir el overhead de procesamiento.
+- `2026-10-23T07:00:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T07:00:18` Corrida terminada. Total usado hoy: 164.

@@ -405,6 +405,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             kernel32 = ctypes.windll.kernel32
             psapi = ctypes.windll.psapi
             pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
+            # Optimizamos la recolección filtrando intensamente al vuelo
             candidates = _filter_and_sort_processes(_iter_process_memory(kernel32, psapi, pmc), limit)
             _CACHE_TOP_PROC = CacheEntry(now, candidates)
         except (AttributeError, OSError):

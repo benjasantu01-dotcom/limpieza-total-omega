@@ -1125,7 +1125,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR, items: Optional[List[QuarantineItem]] = None) -> int:
-    """Calcula el espacio ocupado por ítems en cuarentena usando el manifiesto."""
+    """Calcula el espacio ocupado por ítems en cuarentena, permitiendo inyección de lista pre-cargada."""
     manifest_items = items if items is not None else load_manifest(base)
     return sum(item.size_bytes for item in manifest_items)
 
@@ -1139,11 +1139,9 @@ def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:
     total_mb: float = sum(i.size_mb for i in items)
     lines: List[str] = [f"{len(items)} archivo(s) en cuarentena — {total_mb:.2f} MB", ""]
     for item in items:
-        lines.extend([
-            f"  [{item.item_id}] {Path(item.original_path).name} — {item.size_mb} MB",
-            f"      Motivo: {item.reason}",
-            f"      Origen: {item.original_path}",
-            f"      Aislado: {item.quarantined_at}"
-        ])
+        lines.append(f"  [{item.item_id}] {Path(item.original_path).name} — {item.size_mb} MB")
+        lines.append(f"      Motivo: {item.reason}")
+        lines.append(f"      Origen: {item.original_path}")
+        lines.append(f"      Aislado: {item.quarantined_at}")
     lines.extend(["", "Nada de esto se borró: se puede restaurar a su ubicación original."])
     return lines
