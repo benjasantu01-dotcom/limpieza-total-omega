@@ -6,22 +6,22 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 117 | 8 | 32 | 18 | 137 |
-| 2026-10-23 | 85 | 7 | 18 | 9 | 73 |
+| 2026-10-22 | 117 | 8 | 32 | 18 | 133 |
+| 2026-10-23 | 87 | 7 | 19 | 9 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **47**
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **38**
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **20**
 - `assistant.py`: **19**
 - `memory.py`: **17**
+- `quarantine.py`: **17**
 - `settings.py`: **17**
 - `safety.py`: **16**
 - `branding.py`: **16**
-- `quarantine.py`: **16**
 - `healthscore.py`: **14**
 - `scanner.py`: **14**
 - `duplicates.py`: **9**
 - `startup.py`: **9**
-- `organizer.py`: **7**
+- `organizer.py`: **8**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T08:19:44` **quarantine.py** (seguridad defensiva): Se ha implementado `_check_for_reparse_points` en las validaciones críticas para reforzar la seguridad contra enlaces simbólicos, junctions o puntos de montaje que podrían ser usados para manipular rutas fuera del entorno de cuarentena, asegurando que `os.stat` y las operaciones de archivo actúen únicamente sobre el archivo esperado.
+- `2026-10-23T08:18:56` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita para asegurar que el archivo de origen no esté siendo movido sobre sí mismo o sobre el contenedor de destino, y se añadió una verificación de integridad de acceso mediante `os.access` en `_is_file_locked` para evitar falsos positivos con archivos que, aunque no están bloqueados por Win32 API, no tienen permisos de lectura.
 - `2026-10-23T08:10:11` **main.py** (seguridad defensiva): He unificado la lógica de validación de rutas en el método `_ensure_safe_path_for_action` para asegurar que todas las operaciones de escritura (borrado, movimiento o escritura de archivos) pasen obligatoriamente por `ensure_safe_to_modify` de `safety.py`, evitando así el riesgo de pasar por alto una validación crítica y fortaleciendo el cumplimiento de la política de seguridad del proyecto.
 - `2026-10-23T08:08:35` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` integrando `os.path.realpath` para normalizar rutas y resolviendo correctamente los enlaces simbólicos antes de procesarlos, previniendo así el acceso accidental fuera de los directorios permitidos o el seguimiento de bucles de directorios infinitos.
 - `2026-10-23T08:00:13` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` implementando una validación estricta de rutas mediante `path_obj.resolve(strict=False)` antes de realizar cualquier comparación, previniendo así el seguimiento de enlaces simbólicos malintencionados o accesos fuera de la raíz permitida que no estuvieran cubiertos por las comprobaciones previas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T07:38:01` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la consulta de procesos añadiendo una validación explícita para evitar que `EnumProcesses` o procesos inaccesibles bloqueen la ejecución del bucle, y asegurando que las llamadas a `kernel32` se manejen con mayor seguridad ante handles no válidos o permisos restringidos en entornos de usuario limitado.
 - `2026-10-23T07:29:36` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados durante la carga de componentes visuales (lazy loading) y validación de entornos, añadiendo un manejo de excepciones más granular en `_tab_factory` y `_setup_application` para asegurar que un fallo en un widget específico no detenga la inicialización completa de la app.
 - `2026-10-23T07:28:38` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo ante entradas numéricas mal formadas o extremas añadiendo validaciones explícitas en `_clamp` y `create_linear_scorer` para evitar resultados NaN o fuera de escala en escenarios de cálculo de ratios críticos.
-- `2026-10-23T07:27:44` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `entry.stat()` y validando el retorno de `os.stat` antes de procesarlo, evitando que archivos bloqueados por el sistema interrumpan el conteo total.
-- `2026-10-23T07:18:57` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` y `detect_profiles` ante rutas inexistentes o inaccesibles, añadiendo validaciones preventivas de existencia y permisos antes de invocar operaciones de resolución (resolve) o recursión, evitando excepciones innecesarias en entornos de disco restringidos.

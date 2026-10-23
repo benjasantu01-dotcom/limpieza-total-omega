@@ -74,19 +74,24 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
     "LPT6", "LPT7", "LPT8", "LPT9"
 }
 
+def _check_for_reparse_points(path: Path) -> None:
+    """Valida que la ruta no sea un punto de reparse (Junction/Symlink)."""
+    if os.name == 'nt':
+        try:
+            attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+            if attrs != -1 and (attrs & 0x400):
+                raise UnsafePathError("Ruta detectada como punto de reparse.")
+        except (OSError, AttributeError):
+            pass
+    if path.is_symlink():
+        raise UnsafePathError("Ruta detectada como enlace simbólico.")
+
 def _check_path_for_junctions(path: Path) -> None:
     """
     Verifica si la ruta es un punto de reparse (junction) mediante la API de Windows.
     Previene el seguimiento de enlaces que podrían ocultar estructuras de sistema.
     """
-    if os.name != 'nt':
-        return
-    try:
-        attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs != -1 and (attrs & 0x400):
-            raise UnsafePathError("Ruta detectada como punto de reparse/junction.")
-    except (OSError, AttributeError):
-        pass
+    _check_for_reparse_points(path)
 
 def _verify_source_fs_permissions(path: Path) -> None:
     """
@@ -236,9 +241,7 @@ class QuarantineItem:
         """
         if not stored_path.exists(): return False
         try:
-            _check_path_for_junctions(stored_path)
-            if stored_path.is_symlink():
-                return False
+            _check_for_reparse_points(stored_path)
             
             st: os.stat_result = stored_path.stat()
             if hasattr(os, 'getuid') and st.st_uid != os.getuid():
@@ -317,6 +320,7 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     """
     try:
         ensure_safe_to_modify(path)
+        _check_for_reparse_points(path)
         if is_protected_path(path) or ":" in path.name:
             return False
             
@@ -379,8 +383,7 @@ def _check_path_syntax_integrity(path: Path) -> None:
     _check_path_for_junctions(path)
     try:
         resolved: Path = path.resolve(strict=True)
-        if resolved.is_symlink():
-            raise UnsafePathError("Operación denegada: enlace simbólico.")
+        _check_for_reparse_points(resolved)
     except (OSError, RuntimeError):
         pass
 
@@ -441,8 +444,7 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
         
-        if path.is_symlink():
-             raise UnsafePathError("Ruta de cuarentena no puede ser un enlace simbólico.")
+        _check_for_reparse_points(path)
         
         if path.exists():
             if not path.is_dir():
@@ -512,10 +514,9 @@ def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
     """Validaciones de integridad y permisos antes de mover el archivo."""
     resolved_source: Path = source_path.resolve(strict=True)
     resolved_dest_dir: Path = target_directory.resolve()
+    _check_for_reparse_points(resolved_source)
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se permiten archivos regulares.")
-    if resolved_source.is_symlink():
-        raise UnsafePathError("Aislamiento de enlaces simbólicos prohibido.")
     if resolved_source.stat().st_size == 0:
         raise UnsafePathError("Archivos vacíos prohibidos.")
     if _is_filesystem_read_only(target_directory):
@@ -545,8 +546,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(source_path)
-    if source_path.is_symlink():
-        raise UnsafePathError("Aislamiento de enlaces simbólicos denegado.")
+    _check_for_reparse_points(source_path)
     
     try:
         resolved_source: Path = source_path.resolve(strict=True)
@@ -700,8 +700,7 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         if not (st.st_mode & 0o100000):
             raise OSError("El archivo origen no es un archivo regular.")
         
-        if os.name == 'nt':
-            _check_path_for_junctions(source)
+        _check_for_reparse_points(source)
         
         if st.st_nlink > 1:
             raise UnsafePathError("Archivo origen con enlaces físicos múltiples.")
@@ -886,9 +885,7 @@ def _register_quarantine_item(
 
 def _validate_source_for_quarantine(source: Path) -> Path:
     """Valida la seguridad de la ruta origen antes de cualquier proceso."""
-    if source.is_symlink():
-        raise UnsafePathError("Aislamiento de enlaces simbólicos no permitido.")
-    _check_path_for_junctions(source)
+    _check_for_reparse_points(source)
     if source.is_dir():
         raise UnsafePathError("Aislamiento de directorios no permitido.")
     if not source.is_file():
@@ -935,7 +932,7 @@ def _validate_input_path(source: PathLike) -> Path:
     if not p_source.exists():
         raise FileNotFoundError("Archivo origen no encontrado.")
     
-    _check_path_for_junctions(p_source)
+    _check_for_reparse_points(p_source)
     
     if not p_source.is_file():
         raise ValueError("El origen debe ser un archivo regular.")
@@ -1075,8 +1072,9 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: Optional[QuarantineItem] = None) -> bool:
     """Verifica si un ítem puede ser purgado tras validar integridad."""
-    if not (file_path.exists() and file_path.is_file() and not file_path.is_symlink()):
+    if not (file_path.exists() and file_path.is_file()):
         return False
+    _check_for_reparse_points(file_path)
     if _is_file_in_use_by_system(file_path):
         return False
     

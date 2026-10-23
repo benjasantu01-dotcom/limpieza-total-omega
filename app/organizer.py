@@ -178,6 +178,7 @@ def _try_open_win_file(path: Path) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """Verifica mediante APIs nativas o exclusión si un archivo está en uso por el SO."""
     if not path or not path.is_file(): return True
+    if not os.access(path, os.R_OK): return True
     if os.name == 'nt':
         return not _try_open_win_file(path)
     try:
@@ -244,6 +245,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
+        if src_real == dest_real or src_real.parent == dest_real: return False
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES or is_protected_path(src_real): return False
         if is_protected_path(dest_real): return False
         if src_real.is_symlink() or (os.name == 'nt' and _is_system_hidden(src_real)): return False

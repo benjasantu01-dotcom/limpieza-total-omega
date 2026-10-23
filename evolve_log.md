@@ -921,3 +921,10 @@ assert not ['memory.py']
 - `2026-10-23T08:10:44` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` reforzando la validación de rutas mediante `ensure_safe_to_modify` para detectar de forma explícita puntos de reparse o rutas fuera de los límites permitidos, evitando seguir punteros de sistema potencialmente maliciosos.
 - `2026-10-23T08:10:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T08:10:44` Corrida terminada. Total usado hoy: 192.
+- `2026-10-23T08:18:21` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-23T08:18:56` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita para asegurar que el archivo de origen no esté siendo movido sobre sí mismo o sobre el contenedor de destino, y se añadió una verificación de integridad de acceso mediante `os.access` en `_is_file_locked` para evitar falsos positivos con archivos que, aunque no están bloqueados por Win32 API, no tienen permisos de lectura.
+- `2026-10-23T08:19:44` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha implementado `_check_for_reparse_points` en las validaciones críticas para reforzar la seguridad contra enlaces simbólicos, junctions o puntos de montaje que podrían ser usados para manipular rutas fuera del entorno de cuarentena, asegurando que `os.stat` y las operaciones de archivo actúen únicamente sobre el archivo esperado.
+- `2026-10-23T08:20:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-23T08:21:19` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-23T08:21:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T08:21:19` Corrida terminada. Total usado hoy: 196.
