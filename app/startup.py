@@ -61,6 +61,9 @@ SUSPICIOUS_CHARS: str = '<>|?*\0&;%^$'
 # Lista de nombres reservados por el kernel que no deben ser tratados como archivos.
 RESERVED_DEVICE_NAMES: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
 
+# Constante de seguridad para límites de ruta de Windows.
+MAX_PATH_LEN: int = 260
+
 # Caché global para persistir resultados de resolución de rutas en la misma ejecución.
 _EXISTS_CACHE: Dict[str, bool] = {}
 _COMMAND_CACHE: Dict[str, str] = {}
@@ -97,7 +100,7 @@ class StartupEntry:
         Valida que el comando de inicio no sea inherentemente malicioso o sintácticamente 
         inválido, evitando el procesamiento de rutas con nombres de dispositivos reservados.
         """
-        if not self.command or self._is_path_suspicious(self.command):
+        if not self.command or len(self.command) > MAX_PATH_LEN or self._is_path_suspicious(self.command):
             return False
         if self._is_reserved_device_name(self.command):
             return False
@@ -150,7 +153,7 @@ class StartupEntry:
             return ""
             
         try:
-            if len(path_str) > 260:
+            if len(path_str) > MAX_PATH_LEN:
                 return ""
             p: Path = Path(path_str)
             if not p.parts or is_protected_path(p):
@@ -186,7 +189,7 @@ class StartupEntry:
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
-        if len(path_string) > 260 or path_string.startswith(r"\\"):
+        if len(path_string) > MAX_PATH_LEN or path_string.startswith(r"\\"):
             return ""
             
         try:
@@ -297,7 +300,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
             return None
             
         entry_path = entry.path
-        if not isinstance(entry_path, str):
+        if not isinstance(entry_path, str) or len(entry_path) > MAX_PATH_LEN:
             return None
             
         p = Path(entry_path)
@@ -344,7 +347,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     if not isinstance(name, str) or not isinstance(command, str):
         return False
     
-    if any(ord(c) < 32 for c in command) or "\0" in command:
+    if len(command) > MAX_PATH_LEN or any(ord(c) < 32 for c in command) or "\0" in command:
         return False
         
     clean_name = name.strip()

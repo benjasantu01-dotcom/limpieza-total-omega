@@ -101,6 +101,9 @@ def _is_valid_file_path(path: Path) -> bool:
         return False
     try:
         p = Path(path)
+        # Verificación defensiva: comprobar seguridad antes de llamar a is_file
+        if _cached_is_protected(str(p)):
+            return False
         return p.is_file()
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError):
         return False
@@ -108,6 +111,9 @@ def _is_valid_file_path(path: Path) -> bool:
 def _is_readable(path: Path) -> bool:
     """Verifica si el sistema operativo permite lectura en la ruta indicada."""
     if not isinstance(path, (Path, str)):
+        return False
+    # Verificación defensiva: comprobar seguridad antes de intentar acceso
+    if _cached_is_protected(str(path)):
         return False
     try:
         return os.access(str(path), os.R_OK)
@@ -127,6 +133,9 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 def _get_file_size(path: Path) -> int:
     """Retorna tamaño en bytes, devolviendo -1 en caso de error de acceso."""
     if not isinstance(path, Path):
+        return -1
+    # Verificación defensiva de seguridad previa al acceso de disco
+    if _cached_is_protected(str(path)):
         return -1
     try:
         # Usamos lstat para evitar seguir enlaces simbólicos accidentalmente
@@ -188,7 +197,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     Heurística: Detecta el uso de doble extensión (e.g., 'documento.pdf.exe').
     Técnica común para ocultar ejecutables engañando al usuario sobre el tipo de archivo real.
     """
-    if not path or not path.name: return None
+    if not path or not path.name or _cached_is_protected(str(path)): return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
@@ -199,7 +208,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     al utilizar nombres de archivos conocidos (e.g., 'svchost.exe') pero ubicados fuera 
     de los directorios legítimos del sistema (System32).
     """
-    if not path or not path.name: return None
+    if not path or not path.name or _cached_is_protected(str(path)): return None
     if path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -213,7 +222,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Heurística: Señala ejecutables recién descargados en carpetas volátiles (Downloads, Temp).
     El contexto temporal permite priorizar la revisión de archivos de alto riesgo introducidos recientemente.
     """
-    if not path or not path.parent: return None
+    if not path or not path.parent or _cached_is_protected(str(path)): return None
     if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
         return None
     try:
@@ -355,6 +364,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     if not isinstance(path, Path) or not _is_valid_path_structure(str(path)):
         return []
     try:
+        # Uso de la protección centralizada antes de cualquier operación
         if not path.exists() or _cached_is_protected(str(path)) or not _is_readable(path):
             return []
         

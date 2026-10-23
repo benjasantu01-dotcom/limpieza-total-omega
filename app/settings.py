@@ -377,6 +377,7 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
 @lru_cache(maxsize=4)
 def _load_impl(file_path_str: str, mtime: float, size: int) -> AppSettings:
     """Implementación cacheable de carga de configuración."""
+    if not _Validators._is_safe_path(file_path_str): return dict(DEFAULTS) # type: ignore
     data = _read_and_parse_json(Path(file_path_str))
     if data is not None:
         return _coerce_and_verify(validate(data))

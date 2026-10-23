@@ -6,22 +6,22 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 117 | 8 | 32 | 18 | 133 |
-| 2026-10-23 | 87 | 7 | 19 | 9 | 74 |
+| 2026-10-22 | 117 | 8 | 32 | 18 | 129 |
+| 2026-10-23 | 90 | 7 | 19 | 9 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **49**
+- seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **38**
@@ -32,20 +32,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `browser.py`: **20**
 - `assistant.py`: **19**
+- `settings.py`: **18**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
-- `settings.py`: **17**
 - `safety.py`: **16**
 - `branding.py`: **16**
+- `scanner.py`: **15**
 - `healthscore.py`: **14**
-- `scanner.py`: **14**
+- `startup.py`: **10**
 - `duplicates.py`: **9**
-- `startup.py`: **9**
 - `organizer.py`: **8**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T08:30:45` **startup.py** (seguridad defensiva): Se ha añadido una validación de longitud máxima de caracteres (`MAX_PATH`) en el parser del registro y en la lógica de resolución para prevenir posibles ataques por desbordamiento o procesamiento de rutas mal formadas que excedan los límites del sistema operativo (260 caracteres), reforzando la seguridad defensiva.
+- `2026-10-23T08:29:56` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` al implementar una comprobación estricta de metadatos (evitando archivos con enlaces físicos múltiples o permisos laxos) y se añadió una validación explícita para evitar que `_load_impl` procese rutas que hayan sido manipuladas o sean maliciosas antes de la lectura.
+- `2026-10-23T08:29:03` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de las heurísticas integrando `is_safe_to_modify` (vía `_cached_is_protected`) en la validación de acceso previo a cualquier operación de lectura, asegurando que el scanner respete las restricciones de seguridad antes de intentar acceder a cualquier ruta del sistema.
 - `2026-10-23T08:19:44` **quarantine.py** (seguridad defensiva): Se ha implementado `_check_for_reparse_points` en las validaciones críticas para reforzar la seguridad contra enlaces simbólicos, junctions o puntos de montaje que podrían ser usados para manipular rutas fuera del entorno de cuarentena, asegurando que `os.stat` y las operaciones de archivo actúen únicamente sobre el archivo esperado.
 - `2026-10-23T08:18:56` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita para asegurar que el archivo de origen no esté siendo movido sobre sí mismo o sobre el contenedor de destino, y se añadió una verificación de integridad de acceso mediante `os.access` en `_is_file_locked` para evitar falsos positivos con archivos que, aunque no están bloqueados por Win32 API, no tienen permisos de lectura.
 - `2026-10-23T08:10:11` **main.py** (seguridad defensiva): He unificado la lógica de validación de rutas en el método `_ensure_safe_path_for_action` para asegurar que todas las operaciones de escritura (borrado, movimiento o escritura de archivos) pasen obligatoriamente por `ensure_safe_to_modify` de `safety.py`, evitando así el riesgo de pasar por alto una validación crítica y fortaleciendo el cumplimiento de la política de seguridad del proyecto.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T07:49:09` **scanner.py** (robustez ante casos límite): Se añadió una validación de ruta absoluta y robustez ante fallos en `_get_file_size` y `_safe_stat` para prevenir excepciones durante el escaneo de directorios con permisos heterogéneos o rutas inexistentes.
 - `2026-10-23T07:48:42` **safety.py** (robustez ante casos límite): Se ha añadido una validación de concurrencia y estado de archivo en `_get_path_stat_robust` mediante el uso de `GetFileInformationByHandle` para asegurar que el archivo no esté bloqueado ni por el SO ni por otros procesos antes de intentar obtener sus metadatos, evitando excepciones de E/S impredecibles en archivos en uso.
 - `2026-10-23T07:39:22` **quarantine.py** (robustez ante casos límite): Se añadió una validación explícita en `_atomic_isolate_file` para asegurar que el archivo de origen no tenga atributos de sistema o sea un archivo "espejo" (reparse point), fortaleciendo la robustez ante intentos de aislar archivos protegidos por el sistema operativo que escapan a las verificaciones previas.
-- `2026-10-23T07:38:01` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la consulta de procesos añadiendo una validación explícita para evitar que `EnumProcesses` o procesos inaccesibles bloqueen la ejecución del bucle, y asegurando que las llamadas a `kernel32` se manejen con mayor seguridad ante handles no válidos o permisos restringidos en entornos de usuario limitado.
-- `2026-10-23T07:29:36` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados durante la carga de componentes visuales (lazy loading) y validación de entornos, añadiendo un manejo de excepciones más granular en `_tab_factory` y `_setup_application` para asegurar que un fallo en un widget específico no detenga la inicialización completa de la app.
-- `2026-10-23T07:28:38` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo ante entradas numéricas mal formadas o extremas añadiendo validaciones explícitas en `_clamp` y `create_linear_scorer` para evitar resultados NaN o fuera de escala en escenarios de cálculo de ratios críticos.
