@@ -118,6 +118,8 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     Valida si un valor es convertible a métrica numérica. 
     Verifica tipos, límites de la especificación y seguridad ante overflow.
     """
+    if val is None or isinstance(val, bool):
+        return None
     try:
         f: float = float(val)
         if _is_safe_numeric_context(f) and spec.is_valid_type(f) and _is_metric_within_bounds(f, spec):

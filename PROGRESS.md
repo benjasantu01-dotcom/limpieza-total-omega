@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 64 | 5 | 20 | 7 | 76 |
-| 2026-10-23 | 135 | 12 | 31 | 12 | 142 |
+| 2026-10-22 | 62 | 5 | 18 | 7 | 76 |
+| 2026-10-23 | 137 | 12 | 31 | 12 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **41**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **39**
+- manejo de errores y validación de entradas: **39**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **19**
+- `assistant.py`: **20**
 - `diskreport.py`: **19**
 - `browser.py`: **19**
-- `memory.py`: **17**
 - `settings.py`: **17**
 - `quarantine.py`: **16**
+- `memory.py`: **16**
 - `scanner.py`: **16**
 - `safety.py`: **15**
-- `branding.py`: **14**
+- `branding.py`: **15**
 - `healthscore.py`: **13**
 - `startup.py`: **11**
-- `duplicates.py`: **8**
 - `organizer.py`: **8**
+- `duplicates.py`: **7**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T14:18:08` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` reemplazando la captura genérica de excepciones por una validación explícita de `is_safe_to_modify` antes de proceder, eliminando así el riesgo de ignorar errores silenciosos y alineando la función con el patrón de seguridad exigido.
+- `2026-10-23T14:17:51` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_numeric_update` agregando una comprobación explícita para evitar que `float()` procese cadenas vacías o valores no numéricos de manera ineficiente antes de intentar la conversión, alineando el manejo de errores con la filosofía de validación defensiva exigida.
 - `2026-10-23T12:55:58` **settings.py** (seguridad defensiva): Se reforzó la integridad del sistema al limitar los permisos de acceso al archivo de configuración a solo lectura y escritura para el usuario propietario, evitando que otros usuarios o procesos en el mismo sistema modifiquen las preferencias de la aplicación.
 - `2026-10-23T12:55:20` **scanner.py** (seguridad defensiva): Mejoré la robustez de `scanner.py` implementando una validación explícita para evitar que `process_entry` intente procesar entradas que, aunque parecen archivos, podrían ser puntos de reanálisis que `_is_safe_entry` pasó por alto en casos de borde, asegurando que `_run_file_heuristics` solo reciba rutas validadas.
 - `2026-10-23T12:54:35` **safety.py** (seguridad defensiva): Se implementó `_is_reparse_point_junction_target` para validar que los puntos de reparse (junctions) no apunten fuera de la raíz permitida (jailbreak preventivo), añadiendo una capa extra de seguridad al resolver el destino real mediante la API `GetFinalPathNameByHandleW`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T12:16:02` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la carga de configuración mediante la validación explícita de `st.st_size` previo a la lectura del archivo y la implementación de un manejo defensivo ante archivos con tamaño inesperado (ej. truncados o corruptos) en `_read_and_parse_json`.
 - `2026-10-23T12:14:40` **scanner.py** (robustez ante casos límite): Se mejora la robustez de `scanner.py` ante archivos bloqueados o en uso al envolver la lectura de metadatos en `check_recent_executable_in_downloads` con un bloque de manejo de errores específico, evitando que un `PermissionError` durante el escaneo detenga el proceso completo.
 - `2026-10-23T12:07:56` **quarantine.py** (robustez ante casos límite): Se mejoró `_is_file_exclusive` agregando un manejo robusto de excepciones para `os.open` y `fcntl.flock`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura por procesos externos) interrumpan el flujo de validación, y se añadió una verificación de existencia previa al intento de apertura.
-- `2026-10-23T12:05:46` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_read_windows_snapshot` y `_iter_process_memory` ante fallos en la carga de librerías DLL o errores internos del sistema operativo que podían dejar la aplicación en un estado inconsistente.
-- `2026-10-23T11:55:20` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de cálculo frente a condiciones de carrera o datos inconsistentes, asegurando que `_compute_cached` maneje exitosamente estados donde el `_PIPELINE` o las métricas arrojen valores no finitos, evitando fugas de excepciones fuera del pipeline.
