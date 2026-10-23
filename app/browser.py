@@ -237,12 +237,14 @@ def directory_size(path: Optional[OSPath]) -> int:
     path_obj = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0
     
-    resolved = path_obj.resolve(strict=True)
-    if not is_safe_to_modify(resolved) or is_protected_path(resolved): return 0
-    
-    res_str = str(resolved)
-    scan_ctx = ScanContext(os.path.normcase(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
-    return _sum_directory_recursive(res_str, scan_ctx, 0).bytes_found
+    try:
+        resolved = path_obj.resolve(strict=True)
+        if not is_safe_to_modify(resolved) or is_protected_path(resolved): return 0
+        res_str = str(resolved)
+        scan_ctx = ScanContext(os.path.normcase(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
+        return _sum_directory_recursive(res_str, scan_ctx, 0).bytes_found
+    except (OSError, RuntimeError):
+        return 0
 
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
@@ -280,7 +282,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         try:
             real_base = base.resolve(strict=True)
             base_norm = os.path.normcase(str(real_base))
-            # Reutilizamos el contexto para todas las rutas de este usuario
             scan_ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
             
             for browser_key, relative_path in browser_map.items():

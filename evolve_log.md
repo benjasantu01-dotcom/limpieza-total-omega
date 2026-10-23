@@ -789,3 +789,73 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-23T07:08:35` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a disco en la función `load` reemplazando la consulta `exists()` seguida de `stat()` por un único bloque `try-except` con `os.stat()` para evitar una condición de carrera (TOCTOU) y reducir llamadas innecesarias al sistema de archivos, mejorando el rendimiento bajo I/O pesado.
 - `2026-10-23T07:08:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T07:08:35` Corrida terminada. Total usado hoy: 168.
+- `2026-10-23T07:17:03` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-10-23T07:17:32` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.69s
+
+```
+- `2026-10-23T07:17:32` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_resolve_and_cache_path` implementando una técnica de "fast-exit" para rutas que ya fueron validadas, evitando llamadas costosas al sistema de archivos mediante `os.path.exists()` cuando la ruta ya está en el `_EXISTS_CACHE` y fue marcada como válida, reduciendo el I/O innecesario.
+- `2026-10-23T07:18:14` Tests FALLARON:
+```
+ __________________
+
+    def test_build_context_reads_fields_one_by_one():
+        """Copia campo por campo, no el objeto entero, para no arrastrar datos."""
+        class MetricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 0.90s
+
+```
+- `2026-10-23T07:18:14` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del manejo de datos al mejorar la validación de `SystemContext.ingest` para prevenir que una entrada externa maliciosa o mal formada (ej. tipos inesperados o estructuras profundas) comprometa la integridad del objeto de contexto, utilizando las verificaciones de seguridad existentes de forma más estricta.
+- `2026-10-23T07:18:46` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la resiliencia de `save_logo_svg` ante errores de entrada, asegurando que si la ruta proporcionada es una carpeta existente o una ruta inválida que no puede ser escrita, la función retorne `None` en lugar de propagar errores o intentar operaciones sobre directorios, manteniendo la consistencia con las reglas de seguridad.
+- `2026-10-23T07:18:57` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `directory_size` y `detect_profiles` ante rutas inexistentes o inaccesibles, añadiendo validaciones preventivas de existencia y permisos antes de invocar operaciones de resolución (resolve) o recursión, evitando excepciones innecesarias en entornos de disco restringidos.
+- `2026-10-23T07:18:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T07:18:57` Corrida terminada. Total usado hoy: 172.

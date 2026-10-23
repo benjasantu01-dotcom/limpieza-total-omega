@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 12
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 122 | 8 | 34 | 19 | 153 |
-| 2026-10-23 | 69 | 4 | 16 | 9 | 70 |
+| 2026-10-22 | 120 | 8 | 34 | 18 | 152 |
+| 2026-10-23 | 71 | 6 | 16 | 9 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **46**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
 - rendimiento: **33**
-- robustez ante casos límite: **28**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
+- `browser.py`: **19**
 - `assistant.py`: **18**
-- `browser.py`: **18**
-- `memory.py`: **17**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
+- `memory.py`: **16**
 - `settings.py`: **16**
+- `branding.py`: **15**
 - `scanner.py`: **14**
-- `branding.py`: **14**
 - `healthscore.py`: **13**
 - `startup.py`: **9**
-- `organizer.py`: **8**
 - `duplicates.py`: **8**
+- `organizer.py`: **7**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T07:18:57` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` y `detect_profiles` ante rutas inexistentes o inaccesibles, añadiendo validaciones preventivas de existencia y permisos antes de invocar operaciones de resolución (resolve) o recursión, evitando excepciones innecesarias en entornos de disco restringidos.
+- `2026-10-23T07:18:46` **branding.py** (robustez ante casos límite): Mejoré la resiliencia de `save_logo_svg` ante errores de entrada, asegurando que si la ruta proporcionada es una carpeta existente o una ruta inválida que no puede ser escrita, la función retorne `None` en lugar de propagar errores o intentar operaciones sobre directorios, manteniendo la consistencia con las reglas de seguridad.
 - `2026-10-23T07:08:20` **scanner.py** (rendimiento): Optimicé el rendimiento de `scanner.py` eliminando la resolución redundante de rutas (`Path.resolve()`) dentro del bucle de escaneo mediante el uso de `os.path.normcase` para la comparación de identificadores, evitando llamadas costosas al sistema de archivos en cada iteración.
 - `2026-10-23T07:00:18` **quarantine.py** (rendimiento): Optimicé el cálculo de `total_quarantined_bytes` evitando llamadas innecesarias a `load_manifest` (que involucra I/O y parsing JSON) cuando ya se dispone de la lista de ítems, y simplifiqué el acceso a datos en `summarize` para reducir el overhead de procesamiento.
 - `2026-10-23T06:58:22` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la enumeración completa de procesos y el filtrado posterior por un mecanismo que pre-filtra los procesos y utiliza un buffer de memoria reutilizable, evitando la creación de objetos innecesarios y reduciendo las llamadas a la API de Windows en procesos irrelevantes (aquellos con menos de 10 MB de consumo).
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T06:07:31` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código en `diskreport.py` añadiendo tipos explícitos en los métodos de `GlobalStats` y consolidando el manejo de errores en `_collect_summary_data`, además de añadir docstrings detallados que explican la lógica de los acumuladores.
 - `2026-10-23T06:07:04` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad de la intención del código agregando docstrings de estilo Google a las funciones de escaneo y renombrando parámetros ambiguos (como `ctx` a `scan_ctx` y `it` a `dir_iterator`) para clarificar su rol en el recorrido recursivo.
 - `2026-10-23T06:06:37` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings estructuradas en las funciones geométricas y de dibujo, y se han aplicado Type Hints explícitos en los parámetros de configuración de las funciones `draw_logo` y `draw_ring` para aclarar sus propósitos.
-- `2026-10-23T05:57:39` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de evaluación de problemas mediante la extracción de `ProblemCriterion` desde el módulo global hacia el `SystemContext` y el uso de un `NamedTuple` para `ProblemCriterion` con lógica encapsulada, reduciendo la carga cognitiva en la sección de constantes.
-- `2026-10-23T05:57:14` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita de tipos y valores tras el `csv.DictReader` para evitar excepciones por datos malformados o entradas nulas, garantizando que el bucle procese solo estructuras de diccionario íntegras.

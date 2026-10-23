@@ -346,7 +346,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         dest_path = Path(destination).resolve()
         
         # Validaciones de seguridad: rutas de sistema o bloqueadas
-        if not is_safe_to_modify(dest_path): return None
+        if not is_safe_to_modify(dest_path) or dest_path.is_dir(): return None
         
         # Ensure_safe_to_modify confirma permisos y existencia de parent
         ensure_safe_to_modify(dest_path)
