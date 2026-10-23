@@ -270,6 +270,7 @@ _REGEX_POWERSHELL_CMDS: Final[re.Pattern] = re.compile(r"(Get-|Remove-|Set-|Stop
 _REGEX_EXEC_FUNCTIONS: Final[re.Pattern] = re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE)
 _REGEX_SYSTEM_PATHS: Final[re.Pattern] = re.compile(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows|System32|/proc/|/dev/)", re.IGNORECASE)
 _REGEX_SHELL_INJECTION: Final[re.Pattern] = re.compile(r"([&|<>!])")
+_REGEX_UNICODE_FORMAT: Final[re.Pattern] = re.compile(r"[\u2000-\u200f\u202a-\u202e\u2060-\u206f]")
 
 SECURITY_PATTERNS: Final[list[re.Pattern]] = [
     _REGEX_STRUCTURE_INJECTION,
@@ -279,7 +280,8 @@ SECURITY_PATTERNS: Final[list[re.Pattern]] = [
     _REGEX_POWERSHELL_CMDS,
     _REGEX_EXEC_FUNCTIONS,
     _REGEX_SYSTEM_PATHS,
-    _REGEX_SHELL_INJECTION
+    _REGEX_SHELL_INJECTION,
+    _REGEX_UNICODE_FORMAT
 ]
 
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
@@ -496,7 +498,11 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if is_protected_path(text):
         return False
+    # Evitar inyección de caracteres de control o comandos
     if any(c in text for c in "<>|&^$():;\n\r\t\"'\\`"):
+        return False
+    # Verificación adicional de caracteres ocultos de formato
+    if _REGEX_UNICODE_FORMAT.search(text):
         return False
     return not _is_safe_path_input(text)
 

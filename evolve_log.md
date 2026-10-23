@@ -1270,3 +1270,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-23T11:34:25` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
 - `2026-10-23T11:34:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T11:34:25` Corrida terminada. Total usado hoy: 272.
+- `2026-10-23T11:42:00` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-23T11:42:29` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety
+- `2026-10-23T11:43:25` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se implementó un mecanismo de descarte temprano en `list_startup_entries` mediante un conjunto de hashes de `command` antes de instanciar objetos `StartupEntry`, evitando la sobrecarga de resolución de rutas (`_resolve_path_from_command`) para comandos idénticos detectados en distintas fuentes (ej. claves Run de usuario vs sistema).
+- `2026-10-23T11:44:18` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_ensure_safe_text` y la sanitización de entradas añadiendo un chequeo explícito de caracteres Unicode de control y formato (como marcas de dirección RTL) que suelen usarse para ofuscar rutas o nombres de archivos, alineándolo con el enfoque de robustez ante casos límite.
+- `2026-10-23T11:44:38` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido la función `save_logo_svg` y las funciones de dibujo mediante la validación estricta de rutas, comprobación de estados de coma flotante (`math.isfinite`) y manejo de excepciones en entornos de archivos inexistentes o con restricciones de acceso, asegurando que la app no falle ante valores corruptos o rutas de sistema.
+- `2026-10-23T11:44:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T11:44:38` Corrida terminada. Total usado hoy: 276.

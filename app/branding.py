@@ -264,6 +264,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
     try:
         valor = float(percent) if percent is not None else 0.0
         ancho = max(1, int(width))
+        if not math.isfinite(valor): return empty * ancho
         llenos = int(round(max(0.0, min(100.0, valor)) / 100 * ancho))
         return filled * llenos + empty * (ancho - llenos)
     except (TypeError, ValueError): return empty * max(1, int(width))
@@ -343,18 +344,12 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not destination: return None
     try:
         dest_path = Path(destination).resolve()
-        
-        # Validaciones de seguridad: confirmamos viabilidad de escritura antes de actuar
-        if not is_safe_to_modify(dest_path) or dest_path.is_dir(): 
-            return None
-        
-        # Operación crítica protegida
+        # Verificación crítica: ensure_safe_to_modify lanza excepciones si la ruta es peligrosa
         ensure_safe_to_modify(dest_path)
-        
+        if dest_path.is_dir(): return None
         parent = dest_path.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-            
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError): 
@@ -382,7 +377,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja las franjas internas del logo usando gradientes segmentados."""
     try:
-        if scale <= 0: return
+        if not math.isfinite(scale) or scale <= 0: return
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + 64 * scale
         params = _get_stripe_params(scale, n)
@@ -394,29 +389,21 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja detalles decorativos (líneas, texto) sobre la base del escudo."""
     try:
+        if not math.isfinite(scale) or scale <= 0: return
         ts = max(8, int(UI_CONFIG.header_size * scale))
-        # Dibuja línea de corte y símbolo Omega decorativo
         canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
         canvas.create_polygon(x+75*scale, y+41*scale, x+89*scale, y+38*scale, x+92*scale, y+52*scale, fill=C_BACKGROUND, outline="")
         canvas.create_text(x+64*scale, y+96*scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center")
     except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza el logo vectorial completo de Omega en un widget Canvas.
-    
-    :param canvas: Objeto Canvas de tkinter compatible.
-    :param size: Escala total en píxeles del logo (default: 56.0).
-    :param canvas_x: Posición horizontal en el canvas.
-    :param canvas_y: Posición vertical en el canvas.
-    """
+    """Renderiza el logo vectorial completo de Omega en un widget Canvas."""
     try:
         val_size = float(size)
         if not math.isfinite(val_size): return
         s = max(0.1, min(10.0, val_size / 128.0))
         poly = _get_scaled_poly(s, canvas_x, canvas_y)
         if not poly: return
-        # Fondo glow y forma base del escudo
         canvas.create_oval(canvas_x+(64-75)*s, canvas_y+(58-75)*s, canvas_x+(64+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
@@ -432,13 +419,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """
-    Dibuja un anillo de progreso circular para representar métricas de salud.
-    
-    :param percent: Valor numérico (0-100) a representar.
-    :param size: Diámetro del anillo en píxeles.
-    :param thickness: Grosor del trazo circular (default: 14).
-    """
+    """Dibuja un anillo de progreso circular para representar métricas de salud."""
     try:
         if percent is None: return
         val = float(percent)
@@ -447,8 +428,6 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         d, t = max(20, min(2048, int(size))), max(2, int(thickness))
         pad = t / 2.0
         bb = (canvas_x + pad, canvas_y + pad, canvas_x + d - pad, canvas_y + d - pad)
-        # Borde de track circular
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=t)
-        # Arco de progreso dinámico
         if val > 0: canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=t)
     except Exception: pass

@@ -427,13 +427,13 @@ def list_startup_entries() -> StartupEntries:
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
 
-    seen_items: Set[Tuple[str, str]] = set()
+    # Usamos un conjunto de comandos (pre-normalización) para evitar instanciación innecesaria
+    seen_commands: Set[str] = set()
     unique_entries: StartupEntries = []
     
     for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
-        key = (entry.name.lower(), entry.command.lower())
-        if key not in seen_items:
-            seen_items.add(key)
+        if entry.command not in seen_commands:
+            seen_commands.add(entry.command)
             unique_entries.append(entry)
             
     _FULL_SCAN_CACHE = unique_entries
