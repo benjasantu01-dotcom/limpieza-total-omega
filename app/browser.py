@@ -104,12 +104,14 @@ BROWSER_CACHE_PATHS: BrowserMap = {
     "Chrome (GPU)": r"Microsoft\Edge\User Data\Default\GPUCache",
 }
 
-def _is_valid_rel_path(p: str) -> bool:
+def _is_valid_rel_path(p: Any) -> TypeGuard[str]:
     if not isinstance(p, str) or not p.strip(): return False
-    if any(ord(c) < 32 for c in p): return False
+    # No rutas absolutas, no traversals, no caracteres inválidos
     if os.path.isabs(p) or p.startswith(('\\', '/')): return False
     if '..' in p or any(c in p for c in PATH_FORBIDDEN_CHARS): return False
-    return True
+    # Evitar caracteres de control y asegurar que los segmentos no sean vacíos
+    if any(ord(c) < 32 for c in p): return False
+    return all(len(s) > 0 for s in p.split('\\'))
 
 for _k, _v in BROWSER_CACHE_PATHS.items():
     if not _is_valid_rel_path(_v):
@@ -251,9 +253,9 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
 
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    if not isinstance(rel_str, str) or not _is_valid_rel_path(rel_str): return Path()
-    parts = rel_str.split("\\")
-    target = real_base.joinpath(*parts)
+    if not _is_valid_rel_path(rel_str): return Path()
+    # joinpath con *args desempaqueta segmentos validados
+    target = real_base.joinpath(*rel_str.split("\\"))
     return target if target.exists() and target.is_dir() else Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:

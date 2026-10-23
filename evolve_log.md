@@ -661,3 +661,10 @@ ERROR evolve/tests/test_basic.py
 - `2026-10-23T05:19:05` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-23T05:19:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T05:19:05` Corrida terminada. Total usado hoy: 124.
+- `2026-10-23T05:25:04` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-10-23T05:25:42` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_sanitize_query` para manejar entradas nulas o maliciosas de forma explícita antes de cualquier procesamiento, y se añadió una validación defensiva en `_is_safe_path_input` para evitar que la validación de seguridad falle silenciosamente con entradas inesperadas.
+- `2026-10-23T05:26:39` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-23T05:27:03` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_valid_rel_path` y `_resolve_browser_path` añadiendo validaciones estrictas de tipo y contenido para prevenir manipulaciones indebidas de rutas, asegurando que `Path.joinpath` no sea invocado con argumentos maliciosos o vacíos que puedan escapar al sandbox.
+- `2026-10-23T05:27:12` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-23T05:27:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T05:27:12` Corrida terminada. Total usado hoy: 128.

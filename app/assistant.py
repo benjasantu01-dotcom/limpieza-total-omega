@@ -488,6 +488,7 @@ class Answer:
 
 def _is_safe_path_input(text: str) -> bool:
     """Verifica si el texto parece contener rutas o caracteres de control maliciosos."""
+    if not isinstance(text, str): return False
     if _contains_forbidden_patterns(text): return True
     if is_protected_path(text): return True
     return bool(_REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text))
@@ -629,9 +630,7 @@ def _sanitize_query(question: str) -> str:
     """Limpia, trunca y desinfecta la consulta del usuario antes del procesamiento."""
     if not isinstance(question, str): return ""
     clean: str = _REGEX_CONTROL_CHARS.sub(' ', question).strip()[:100]
-    if _ensure_safe_text(clean):
-        return clean
-    return ""
+    return clean if _ensure_safe_text(clean) else ""
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Motor de inferencia local: resuelve consultas basándose en heurísticas de datos."""
