@@ -279,17 +279,17 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Consulta la API GlobalMemoryStatusEx de Windows mediante llamadas de sistema."""
-    kernel32 = ctypes.windll.kernel32
-    if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
-    mem_status = _create_mem_status_ex()
     try:
+        kernel32 = ctypes.windll.kernel32
+        if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
+        mem_status = _create_mem_status_ex()
         if kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
             if mem_status.ullTotalPhys > 0 and mem_status.ullAvailPhys <= mem_status.ullTotalPhys:
                 return MemorySnapshot(
                     total=BytesValue(mem_status.ullTotalPhys), 
                     available=BytesValue(mem_status.ullAvailPhys)
                 )
-    except (ctypes.ArgumentError, OSError, ValueError):
+    except (ctypes.ArgumentError, OSError, ValueError, AttributeError):
         pass
     return _EMPTY_SNAPSHOT
 
@@ -328,13 +328,6 @@ def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CD
 def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL) -> bool:
     """
     Verifica que el ejecutable del proceso no se encuentre en una ubicación restringida.
-    
-    Precondiciones:
-        - handle: Debe ser un handle válido con permiso PROCESS_QUERY_LIMITED_INFORMATION o superior.
-        - psapi: Instancia del módulo psapi.dll de Win32.
-    
-    Retorna:
-        - True si el ejecutable existe, no es un symlink y no está en una ruta protegida.
     """
     if not handle or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
@@ -365,12 +358,7 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
         return False
 
 def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
-    """
-    Crea un objeto ProcessMemory tras verificar accesibilidad y seguridad del binario.
-    
-    Efectos laterales:
-        - Abre un handle de proceso mediante OpenProcess; este es cerrado en el bloque 'finally'.
-    """
+    """Crea un objeto ProcessMemory tras verificar accesibilidad y seguridad del binario."""
     proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
     if proc_handle is None:
         return None
@@ -413,12 +401,14 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
-        kernel32 = ctypes.windll.kernel32
-        psapi = ctypes.windll.psapi
-        pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
-        
-        candidates = _filter_and_sort_processes(_iter_process_memory(kernel32, psapi, pmc), limit)
-        _CACHE_TOP_PROC = CacheEntry(now, candidates)
+        try:
+            kernel32 = ctypes.windll.kernel32
+            psapi = ctypes.windll.psapi
+            pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
+            candidates = _filter_and_sort_processes(_iter_process_memory(kernel32, psapi, pmc), limit)
+            _CACHE_TOP_PROC = CacheEntry(now, candidates)
+        except (AttributeError, OSError):
+            pass
             
     return _CACHE_TOP_PROC.data
 
@@ -455,16 +445,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Intenta liberar el 'working set' de un proceso específico (Acción manual).
-    
-    Efectos laterales:
-        - Realiza validación exhaustiva de seguridad (is_protected_path, ubicación de binario).
-        - Interactúa con APIs de Win32 para invocar EmptyWorkingSet sobre el proceso.
-    
-    Retorna:
-        - Tupla (bool, str) indicando éxito y mensaje explicativo.
-    """
+    """Intenta liberar el 'working set' de un proceso específico (Acción manual)."""
     if not _is_windows: return False, "Solo soportado en Windows."
     
     try: 
@@ -475,20 +456,20 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid): 
         return False, "Operación no permitida en procesos del sistema."
     
-    psapi, kernel32 = ctypes.windll.psapi, ctypes.windll.kernel32
-    # El proceso es validado mediante _is_process_accessible antes de cualquier acción
+    try:
+        psapi, kernel32 = ctypes.windll.psapi, ctypes.windll.kernel32
+    except AttributeError:
+        return False, "No se pudo acceder a las APIs de Windows."
+        
     proc_handle = _is_process_accessible(target_pid, TRIM_ACCESS_MASK, kernel32)
-    
     if proc_handle is None:
         return False, "Acceso denegado o proceso no encontrado."
 
     try:
-        # Validación de que el proceso sigue activo
         exit_code = wintypes.DWORD()
         if kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
         
-        # Validación defensiva extra: el ejecutable no debe estar en zonas protegidas
         if not _is_process_executable_safe(target_pid, proc_handle, psapi):
             return False, "Proceso protegido o ubicación insegura."
             

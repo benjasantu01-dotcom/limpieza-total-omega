@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 235
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 6 | 1 | 3 | 1 | 15 |
+| 2026-10-21 | 5 | 1 | 2 | 1 | 13 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 46 | 2 | 11 | 5 | 64 |
+| 2026-10-23 | 49 | 2 | 11 | 5 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
-- legibilidad y documentación: **36**
+- manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **35**
 - robustez ante casos límite: **35**
-- manejo de errores y validación de entradas: **34**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
@@ -35,18 +35,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **16**
 - `safety.py`: **16**
 - `settings.py`: **16**
+- `memory.py`: **16**
 - `browser.py`: **16**
 - `branding.py`: **15**
-- `memory.py`: **15**
-- `scanner.py`: **12**
-- `healthscore.py`: **10**
+- `scanner.py`: **11**
+- `healthscore.py`: **11**
 - `startup.py`: **9**
 - `organizer.py`: **8**
 - `duplicates.py`: **8**
-- `main.py`: **5**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T05:38:22` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la validación explícita de `kernel32` y `psapi` antes de su uso, asegurando que cualquier fallo al cargar las DLLs de Windows resulte en un mensaje de error controlado en lugar de una excepción no capturada.
+- `2026-10-23T05:37:21` **main.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en el ciclo de vida de los componentes visuales mediante un chequeo de existencia más estricto (`winfo_exists`) antes de realizar operaciones de configuración o inserción, evitando excepciones en widgets que pudieran estar en proceso de destrucción durante operaciones asíncronas.
+- `2026-10-23T05:36:14` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y la integridad del pipeline introduciendo validaciones más estrictas contra `None` y valores extremos antes de que lleguen a los cálculos, asegurando que cualquier entrada maliciosa o corrupta sea degradada a valores seguros (0.0 o defaults) en lugar de permitir su propagación.
 - `2026-10-23T05:27:03` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_rel_path` y `_resolve_browser_path` añadiendo validaciones estrictas de tipo y contenido para prevenir manipulaciones indebidas de rutas, asegurando que `Path.joinpath` no sea invocado con argumentos maliciosos o vacíos que puedan escapar al sandbox.
 - `2026-10-23T05:25:42` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_sanitize_query` para manejar entradas nulas o maliciosas de forma explícita antes de cualquier procesamiento, y se añadió una validación defensiva en `_is_safe_path_input` para evitar que la validación de seguridad falle silenciosamente con entradas inesperadas.
 - `2026-10-23T04:04:32` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_file_access` incorporando un chequeo previo contra `is_protected_path` (que ya existía) pero añadiendo una validación explícita de `p.exists()` antes de cualquier intento de apertura de archivo, evitando excepciones innecesarias ante enlaces simbólicos rotos o rutas inexistentes que podrían comprometer la estabilidad del escaneo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T03:33:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_cache_path` añadiendo un chequeo explícito de atributos de sistema ocultos (usando `kernel32`) para evitar que el escáner intente listar directorios de caché que residan inadvertidamente bajo rutas críticas protegidas por el SO, manteniendo la consistencia con las reglas de acceso seguro.
 - `2026-10-23T03:33:33` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` al normalizar la ruta de destino antes de cualquier validación y asegurar que el directorio padre sea verificado explícitamente, evitando condiciones de carrera o validaciones ambiguas.
 - `2026-10-23T03:24:45` **assistant.py** (seguridad defensiva): Se endureció `_ensure_safe_text` agregando una validación explícita mediante `is_protected_path` al inicio y refinando el filtrado de caracteres especiales para prevenir inyecciones en el motor remoto, garantizando que el asistente nunca procese datos que pudieran comprometer la seguridad del sistema.
-- `2026-10-23T03:24:23` **startup.py** (robustez ante casos límite): Se ha mejorado `_validate_file_access` en `StartupEntry` para incluir una validación específica que detecta archivos "en uso" (bloqueados) mediante el intento de apertura en modo `r+`, evitando fallos silenciosos al intentar inspeccionar archivos que el sistema está ejecutando activamente durante el inicio.
-- `2026-10-23T03:23:55` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_read_and_parse_json` al centralizar el control de lectura mediante un bloque `try-finally` que garantiza el cierre del descriptor de archivo, y añadí una verificación de `os.fsync` implícita en la escritura atómica para asegurar la integridad ante fallos del sistema durante la persistencia.
-- `2026-10-23T03:15:39` **safety.py** (robustez ante casos límite): Se ha añadido una validación estricta en `_validate_structural_safety` para prevenir el uso de caracteres de control y secuencias Unicode de inversión de texto (RTL/LTR) en nombres de archivos, protegiendo contra ataques de spoofing visual donde una extensión `.exe` parece otra.

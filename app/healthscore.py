@@ -265,6 +265,10 @@ class SystemMetrics:
         }
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
+            # Asegurar no aplicar validación sobre valores nulos en el objeto
+            if val is None:
+                setattr(self, field_name, 0.0)
+                continue
             min_v, max_v = limits.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
             setattr(self, field_name, sanitized)
@@ -325,7 +329,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Calcula el aporte de puntos de un área específica del pipeline."""
-    # Validación robusta de entrada de peso
     weight = max(0, entry.weight)
     if entry.area not in WEIGHTS or not metrics.is_finite:
         return 0, []
@@ -339,7 +342,6 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
         
         recommendations = _evaluate_rules(metrics, entry.rules, area_ratio) if entry.rules else []
         
-        # Cálculo seguro de puntos evitando desbordamientos
         points = area_ratio * float(weight)
         val_int = int(_clamp(round(points), 0.0, float(weight)))
         

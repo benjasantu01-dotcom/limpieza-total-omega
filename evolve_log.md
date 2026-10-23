@@ -668,3 +668,11 @@ ERROR evolve/tests/test_basic.py
 - `2026-10-23T05:27:12` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-23T05:27:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T05:27:12` Corrida terminada. Total usado hoy: 128.
+- `2026-10-23T05:35:17` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-10-23T05:35:45` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-23T05:36:14` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics.validate` y la integridad del pipeline introduciendo validaciones más estrictas contra `None` y valores extremos antes de que lleguen a los cálculos, asegurando que cualquier entrada maliciosa o corrupta sea degradada a valores seguros (0.0 o defaults) en lugar de permitir su propagación.
+- `2026-10-23T05:37:21` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de errores en el ciclo de vida de los componentes visuales mediante un chequeo de existencia más estricto (`winfo_exists`) antes de realizar operaciones de configuración o inserción, evitando excepciones en widgets que pudieran estar en proceso de destrucción durante operaciones asíncronas.
+- `2026-10-23T05:37:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T05:38:22` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la validación explícita de `kernel32` y `psapi` antes de su uso, asegurando que cualquier fallo al cargar las DLLs de Windows resulte en un mensaje de error controlado en lugar de una excepción no capturada.
+- `2026-10-23T05:38:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T05:38:22` Corrida terminada. Total usado hoy: 132.

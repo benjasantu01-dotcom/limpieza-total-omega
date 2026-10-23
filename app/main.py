@@ -186,6 +186,7 @@ def safe_ui_operation(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Optional[Any]:
         try:
+            # Validar que args[0] sea un widget existente si está presente
             if args and hasattr(args[0], 'winfo_exists') and not args[0].winfo_exists():
                 return None
             return func(*args, **kwargs)
@@ -265,7 +266,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._setup_application()
 
     def _check_widget_integrity(self, widget: Any) -> bool:
-        """Verifica la existencia física de un widget en la jerarquía de Tk."""
+        """Verifica la existencia física y estado de un widget en la jerarquía de Tk."""
         if widget is None:
             return False
         if hasattr(widget, 'winfo_exists'):
