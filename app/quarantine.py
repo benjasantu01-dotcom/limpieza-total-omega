@@ -1070,17 +1070,19 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: Optional[QuarantineItem] = None) -> bool:
     """Verifica si un ítem puede ser purgado tras validar integridad."""
-    if not (file_path.exists() and file_path.is_file()):
+    try:
+        if not (file_path.exists() and file_path.is_file()):
+            return False
+        _check_for_reparse_points(file_path)
+        if _is_file_in_use_by_system(file_path):
+            return False
+        
+        if item:
+            return item.verify_integrity(file_path) and _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
+        
         return False
-    _check_for_reparse_points(file_path)
-    if _is_file_in_use_by_system(file_path):
+    except (OSError, PermissionError, UnsafePathError):
         return False
-    
-    if item:
-        return item.verify_integrity(file_path) and _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
-    
-    # Archivos huérfanos sin registro en manifiesto no son purgados por seguridad.
-    return False
 
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
@@ -1099,12 +1101,14 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 if f.name == MANIFEST_NAME or is_protected_path(f):
                     continue
                 
-                if not is_within_directory(f, quarantine_root):
-                    continue
-
+                # Solo procesar si el archivo es un ítem registrado o huérfano legítimo
                 item = item_map.get(f.name)
-                if item and _is_item_purgable(f, item):
-                    purgado_ids.add(item.item_id)
+                if _is_item_purgable(f, item):
+                    if item:
+                        purgado_ids.add(item.item_id)
+                    else:
+                        # Limpieza de archivos sin metadatos conocidos
+                        _safe_unlink(f)
             except (OSError, PermissionError, UnsafePathError):
                 continue
         

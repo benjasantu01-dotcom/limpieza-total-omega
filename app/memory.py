@@ -375,7 +375,7 @@ def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: 
             if not _is_process_executable_safe(pid, proc_handle, psapi):
                 return None
         return ProcessMemory(f"PID {pid}", pid, ws) if ws is not None else None
-    except Exception:
+    except (ctypes.WinError, OSError, ValueError, RuntimeError):
         return None
     finally:
         if proc_handle is not None and proc_handle != INVALID_HANDLE_VALUE:
@@ -393,10 +393,13 @@ def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS
             
         count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
         for i in range(count):
-            pid_val = int(pids[i])
-            proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
-            if proc:
-                yield proc
+            try:
+                pid_val = int(pids[i])
+                proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
+                if proc:
+                    yield proc
+            except (ValueError, TypeError, Exception):
+                continue
     except Exception:
         pass
 

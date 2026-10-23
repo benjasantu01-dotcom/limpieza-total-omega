@@ -369,8 +369,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         if not dest.exists() or not dest.is_dir(): return 0
         dest_res = dest.resolve(strict=False)
         
-        # Validación de seguridad de la carpeta base antes de iterar
-        if not is_safe_to_modify(dest_res): return 0
+        # Validación de seguridad estricta para asegurar que operamos en la carpeta correcta
+        if not is_safe_to_modify(dest_res) or is_protected_path(dest_res): return 0
         
         count = 0
         for item in dest_res.iterdir():
@@ -380,7 +380,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 if not item_res.is_relative_to(dest_res): continue
                 
                 # Validar seguridad individual antes de la eliminación física
-                if is_safe_to_modify(item_res):
+                if is_safe_to_modify(item_res) and not is_protected_path(item_res):
                     item_res.unlink()
                     count += 1
             except (OSError, PermissionError) as e:
