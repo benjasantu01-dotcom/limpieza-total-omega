@@ -155,13 +155,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     for d in directories:
         if d:
             p = Path(d)
-            if p.exists(): queue.append((p.resolve(), 0))
+            if p.exists() and _safe_path_check(p):
+                queue.append((p.resolve(), 0))
             
     visited: set[Tuple[int, int]] = set()
     
     while queue:
         current_dir, depth = queue.popleft()
-        if depth > MAX_RECURSION_DEPTH or not _safe_path_check(current_dir) or is_junction(current_dir):
+        if depth > MAX_RECURSION_DEPTH:
             continue
             
         try:

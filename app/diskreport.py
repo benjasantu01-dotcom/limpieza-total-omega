@@ -166,11 +166,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
     Determina mediante heurísticas de seguridad si una entrada de directorio debe ser ignorada.
-    Incluye chequeos de caracteres sospechosos, enlaces simbólicos, protección del sistema
-    y validación de que la ruta permanezca dentro del árbol raíz (evitando fugas por links).
     """
     name = entry.name
-    # Validación estricta de nombre de archivo contra caracteres de control y formato de sistema
     if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
     if any(c in name for c in SUSPICIOUS_CHARS):
@@ -179,13 +176,20 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         return True
 
     try:
-        if is_protected_path(Path(entry.path)):
+        path_obj = Path(entry.path).resolve(strict=False)
+        
+        # Validación de escape de raíz (seguridad defensiva)
+        try:
+            path_obj.relative_to(root_path)
+        except ValueError:
+            return True
+
+        if is_protected_path(path_obj):
             return True
 
         if entry.is_symlink():
             return True
         
-        # Filtro específico de atributos NTFS (reparse points)
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
@@ -300,8 +304,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador iterativo (no recursivo por pila) para recorrer el sistema de archivos.
-    Utiliza inodos para evitar el seguimiento infinito de ciclos de enlaces duros.
+    Generador iterativo para recorrer el sistema de archivos, restringido a la raíz original.
     """
     root_path = _validate_root(directory)
     if root_path is None: return

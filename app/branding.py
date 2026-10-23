@@ -351,7 +351,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         # Ensure_safe_to_modify confirma permisos y existencia de parent
         ensure_safe_to_modify(dest_path)
         
-        # Si llega acá, es seguro escribir
+        # Operación de escritura segura tras validaciones
         parent = dest_path.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)

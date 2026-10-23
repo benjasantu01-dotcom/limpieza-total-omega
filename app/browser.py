@@ -239,10 +239,13 @@ def directory_size(path: Optional[OSPath]) -> int:
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
     if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): return False
+    kernel = _get_kernel32()
     
     try:
         real = candidate.resolve(strict=True)
         if not _is_within_sandbox(os.path.normcase(str(real)), base_norm): return False
+        if _is_system_hidden(str(real), kernel): return False
+        
         return not (candidate.is_symlink() or _IS_JUNCTION_FN(str(real)) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
     except (OSError, RuntimeError): return False
 
