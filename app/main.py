@@ -2145,14 +2145,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _safe_validate_inputs(self, propuestos: AppSettings) -> bool:
         """Valida que los inputs de configuración sean seguros."""
-        if "carpeta_excluida" in propuestos and propuestos["carpeta_excluida"]:
-            try:
-                p = Path(propuestos["carpeta_excluida"]).resolve(strict=False)
-                if not p.exists() or not safety.is_safe_to_modify(p):
-                    self.log(f"Error: Ruta restringida o inválida: {propuestos['carpeta_excluida']}", "Ajustes")
+        # Se verifica explícitamente cualquier ruta de configuración cargada por el usuario
+        for clave in propuestos:
+            if "carpeta" in clave.lower() and isinstance(propuestos[clave], str):
+                path_val = Path(propuestos[clave])
+                if not safety.is_safe_to_modify(path_val):
+                    self.log(f"Error: Ruta restringida en configuración: {propuestos[clave]}", "Ajustes")
                     return False
-            except Exception:
-                return False
         return True
 
     @validated_ui_operation

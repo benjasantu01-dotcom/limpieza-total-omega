@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 75 | 5 | 22 | 10 | 100 |
-| 2026-10-23 | 128 | 10 | 29 | 12 | 113 |
+| 2026-10-22 | 75 | 5 | 22 | 10 | 96 |
+| 2026-10-23 | 130 | 10 | 30 | 12 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
+- seguridad defensiva: **44**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **42**
 - robustez ante casos límite: **40**
 - rendimiento: **32**
 
@@ -31,7 +31,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `assistant.py`: **21**
 - `browser.py`: **21**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
 - `settings.py`: **17**
@@ -42,10 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `startup.py`: **11**
 - `duplicates.py`: **9**
 - `organizer.py`: **7**
-- `main.py`: **6**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T12:36:52` **main.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `is_safe_to_modify` en la función `_collect_settings` al procesar campos de texto que representan rutas, asegurando que cualquier entrada de usuario que el sistema intente persistir sea filtrada preventivamente contra la lista de rutas protegidas antes de ser delegada a `settings_mod`.
+- `2026-10-23T12:33:39` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` mediante la validación explícita de `is_file()` y `is_dir()` antes de realizar `resolve()` o `stat()`, evitando excepciones innecesarias y asegurando que no se procesen entradas de dispositivos especiales o rutas que hayan sido eliminadas mientras se escanea.
 - `2026-10-23T12:27:32` **browser.py** (seguridad defensiva): Se ha implementado una validación de seguridad proactiva en `_is_valid_cache_path` y `_resolve_browser_path` para prevenir ataques de *path traversal* (ej. secuencias `..`) y asegurar que, incluso si una ruta maliciosa llega a ser resuelta, el sistema siempre verifique que el destino final se mantenga estrictamente dentro de `LOCALAPPDATA` antes de interactuar con él.
 - `2026-10-23T12:27:11` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la ruta antes de intentar crear directorios o escribir, y se añadió una verificación explícita para evitar que la función intente operar sobre directorios existentes, mitigando riesgos de manipulación de rutas.
 - `2026-10-23T12:25:28` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_build_payload` validando que la cadena `full_prompt` resultante no contenga caracteres de control peligrosos ni patrones de inyección mediante `_ensure_safe_text` antes de realizar cualquier operación de serialización, asegurando que el mensaje saliente sea estrictamente inocuo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T11:44:18` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_ensure_safe_text` y la sanitización de entradas añadiendo un chequeo explícito de caracteres Unicode de control y formato (como marcas de dirección RTL) que suelen usarse para ofuscar rutas o nombres de archivos, alineándolo con el enfoque de robustez ante casos límite.
 - `2026-10-23T11:43:25` **startup.py** (rendimiento): Se implementó un mecanismo de descarte temprano en `list_startup_entries` mediante un conjunto de hashes de `command` antes de instanciar objetos `StartupEntry`, evitando la sobrecarga de resolución de rutas (`_resolve_path_from_command`) para comandos idénticos detectados en distintas fuentes (ej. claves Run de usuario vs sistema).
 - `2026-10-23T11:34:11` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` al reemplazar la resolución de ruta completa (`absolute()`) por un cálculo de partes basado en la cadena de texto, evitando operaciones costosas de E/S y resolución de sistema de archivos en cada llamada.
-- `2026-10-23T11:32:39` **quarantine.py** (rendimiento): Optimicé el cálculo del hash SHA256 en `_get_sha256` moviendo la validación de `st_mtime` y `st_size` fuera de la función de lectura (usando un caché más eficiente) y aplicando un `try/except` más compacto para evitar el costo de llamadas innecesarias al sistema de archivos en cada iteración del bucle, mejorando significativamente el rendimiento de escaneos masivos.
-- `2026-10-23T11:23:57` **memory.py** (rendimiento): Se optimizó el acceso a los procesos mediante la pre-validación de `_is_system_process` antes de realizar llamadas costosas a `OpenProcess` y `GetModuleFileNameExW`, reduciendo la carga de I/O y el tiempo de ejecución en `top_memory_processes`.

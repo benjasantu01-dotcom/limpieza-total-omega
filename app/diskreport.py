@@ -182,6 +182,10 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         return True
 
     try:
+        # Verificar tipo antes de resolver para evitar errores en pseudo-archivos o dispositivos
+        if not (entry.is_file(follow_symlinks=False) or entry.is_dir(follow_symlinks=False)):
+            return True
+
         path_obj = Path(entry.path).resolve(strict=False)
         
         # Validación de escape de raíz (seguridad defensiva: no salir del directorio raíz)
