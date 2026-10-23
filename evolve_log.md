@@ -748,3 +748,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-23T06:39:38` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la generación del logo SVG inyectando las constantes estáticas de estilo directamente en la plantilla durante la fase de carga del módulo, eliminando la creación de strings innecesarios en cada llamada a `logo_svg` y aprovechando la naturaleza inmutable de las constantes precomputadas.
 - `2026-10-23T06:39:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T06:39:38` Corrida terminada. Total usado hoy: 156.
+- `2026-10-23T06:46:30` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-23T06:46:56` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `detect_profiles` al reutilizar la instancia de `ScanContext` y sus conjuntos de seguimiento entre las distintas rutas de caché de un mismo directorio base, evitando recalcular tamaños de archivos compartidos o re-escanear directorios ya visitados durante el mismo ciclo de detección.
+- `2026-10-23T06:47:20` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-23T06:47:40` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-23T06:47:53` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se implementó un mecanismo de memoización selectiva en el cálculo de cada área del pipeline y se optimizó la serialización del estado mediante tuplas, reduciendo la redundancia de cálculos en el proceso de reporte y validación.
+- `2026-10-23T06:47:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T06:47:53` Corrida terminada. Total usado hoy: 160.

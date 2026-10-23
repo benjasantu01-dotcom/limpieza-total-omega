@@ -332,15 +332,17 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
     return findings
 
-def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
-    """Calcula el aporte de puntos de un área específica del pipeline."""
+@lru_cache(maxsize=32)
+def _calculate_area_contribution(metrics_tuple: Tuple[float, ...], area_idx: int) -> Tuple[int, Tuple[str, ...]]:
+    """Calcula el aporte de puntos de un área específica del pipeline con cacheo."""
+    entry = _PIPELINE[area_idx]
+    keys = SystemMetrics._FIELDS_TO_VALIDATE
+    metrics = SystemMetrics(**dict(zip(keys, metrics_tuple)))
+    
     weight = max(0, entry.weight)
-    if entry.area not in WEIGHTS or not metrics.is_finite:
-        return 0, []
-        
     try:
-        if sys.getrecursionlimit() < _MAX_RECURSION_DEPTH:
-            return 0, []
+        if sys.getrecursionlimit() < _MAX_RECURSION_DEPTH or not metrics.is_finite:
+            return 0, ()
 
         raw_ratio = entry.scorer(metrics)
         area_ratio = _clamp(float(raw_ratio))
@@ -350,11 +352,11 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
         points = area_ratio * float(weight)
         val_int = int(_clamp(round(points), 0.0, float(weight)))
         
-        return val_int, recommendations
+        return val_int, tuple(recommendations)
     except Exception:
-        return 0, []
+        return 0, ()
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=128)
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """
     Motor de cómputo cacheado del HealthResult. Evita re-procesar los mismos 
@@ -363,28 +365,15 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
     if not _PIPELINE:
         return HealthResult(0, "F", {}, ["Error: Pipeline no inicializado."])
         
-    keys = SystemMetrics._FIELDS_TO_VALIDATE
-    if len(metrics_tuple) != len(keys):
-        return HealthResult(0, "F", {}, ["Error: Inconsistencia de datos."])
-        
-    metrics = SystemMetrics(**dict(zip(keys, metrics_tuple)))
-    metrics.quarantined_count = quarantined
-    
-    if not metrics.is_finite:
-        return HealthResult(0, "F", {}, ["Error: Inconsistencia en métricas."])
-    
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
     total_points = 0.0
     
-    for entry in _PIPELINE:
-        try:
-            points, recs = _calculate_area_contribution(metrics, entry)
-            metric_breakdown[entry.area] = points
-            recommendations.extend(recs)
-            total_points += float(points)
-        except Exception:
-            continue
+    for i, entry in enumerate(_PIPELINE):
+        points, recs = _calculate_area_contribution(metrics_tuple, i)
+        metric_breakdown[entry.area] = points
+        recommendations.extend(recs)
+        total_points += float(points)
             
     if quarantined > 0:
         recommendations.append("Existen elementos en cuarentena.")

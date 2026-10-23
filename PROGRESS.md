@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 130 | 9 | 35 | 19 | 155 |
-| 2026-10-23 | 64 | 3 | 15 | 8 | 66 |
+| 2026-10-22 | 127 | 9 | 34 | 19 | 155 |
+| 2026-10-23 | 66 | 3 | 15 | 8 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **32**
-- rendimiento: **28**
+- rendimiento: **30**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `assistant.py`: **19**
-- `safety.py`: **17**
+- `browser.py`: **18**
 - `settings.py`: **17**
-- `browser.py`: **17**
-- `quarantine.py`: **16**
 - `memory.py`: **16**
+- `safety.py`: **16**
 - `branding.py`: **15**
+- `quarantine.py`: **15**
 - `scanner.py`: **13**
-- `healthscore.py`: **12**
-- `organizer.py`: **9**
+- `healthscore.py`: **13**
 - `duplicates.py`: **9**
 - `startup.py`: **9**
+- `organizer.py`: **8**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T06:47:53` **healthscore.py** (rendimiento): Se implementó un mecanismo de memoización selectiva en el cálculo de cada área del pipeline y se optimizó la serialización del estado mediante tuplas, reduciendo la redundancia de cálculos en el proceso de reporte y validación.
+- `2026-10-23T06:46:56` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` al reutilizar la instancia de `ScanContext` y sus conjuntos de seguimiento entre las distintas rutas de caché de un mismo directorio base, evitando recalcular tamaños de archivos compartidos o re-escanear directorios ya visitados durante el mismo ciclo de detección.
 - `2026-10-23T06:39:38` **branding.py** (rendimiento): Se ha optimizado la generación del logo SVG inyectando las constantes estáticas de estilo directamente en la plantilla durante la fase de carga del módulo, eliminando la creación de strings innecesarios en cada llamada a `logo_svg` y aprovechando la naturaleza inmutable de las constantes precomputadas.
 - `2026-10-23T06:38:30` **assistant.py** (rendimiento): Optimicé el acceso a métricas en `SystemContext` reemplazando los cálculos recursivos y llamadas a `getattr` en los bucles de ingestión por una búsqueda directa en `__dict__` y estructuras de datos planas, mejorando el rendimiento en el procesamiento de contextos complejos.
 - `2026-10-23T06:28:19` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y la estandarización de type hints, facilitando la comprensión del propósito y los límites de cada validación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T05:56:46` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `perform_atomic_write` añadiendo un manejo de excepciones más granular y específico para evitar que errores inesperados de E/S silencien la validación o corrompan el estado, asegurando que cualquier fallo en la escritura atómica sea detectado y no propague estados parciales.
 - `2026-10-23T05:56:15` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_valid_path_structure` y `_is_valid_file_path` integrando verificaciones de nulidad y tipo más estrictas, y añade un manejo de excepciones más granular en `_get_file_size` para prevenir errores durante la lectura de atributos de archivos bloqueados.
 - `2026-10-23T05:47:57` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` implementando una validación temprana y exhaustiva de `base_dir`, asegurando que cualquier error en la resolución del directorio raíz (como rutas mal formadas o inaccesibles) sea capturado explícitamente como un `UnsafePathError` antes de proceder con el resto de la lógica.
-- `2026-10-23T05:46:57` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_exclusive` agregando un manejo explícito para el error `PermissionError` en POSIX (adicional a `OSError` e `IOError`), alineándolo con el resto de la suite de validación de seguridad para evitar caídas inesperadas en sistemas donde el acceso a descriptores de archivos sea restringido.
-- `2026-10-23T05:45:55` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `stage_for_review` y `delete_reviewed` mediante el uso de `pathlib.Path.is_relative_to` (reemplazando comparaciones manuales de strings), validación explícita de tipos, y la incorporación de `ensure_safe_to_modify` para el destino en `stage_for_review` para prevenir inyecciones de rutas fuera del directorio de cuarentena.

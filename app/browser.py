@@ -280,6 +280,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         try:
             real_base = base.resolve(strict=True)
             base_norm = os.path.normcase(str(real_base))
+            # Reutilizamos el contexto para todas las rutas de este usuario
             scan_ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
             
             for browser_key, relative_path in browser_map.items():
