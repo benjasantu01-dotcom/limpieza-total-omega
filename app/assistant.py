@@ -328,26 +328,26 @@ def _validate_response_length(text: Any) -> str:
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     """
     Verifica de forma recursiva que la estructura de datos sea segura.
-    Impone un límite de profundidad (_MAX_NESTING_DEPTH) para prevenir desbordamiento de pila
-    y limita el tamaño de las colecciones (_MAX_COLLECTION_SIZE) para prevenir DoS.
     """
     if depth > _MAX_NESTING_DEPTH: return False
+    if val is None: return True
     if isinstance(val, (dict, list, tuple, set)):
         items = list(val.values()) if isinstance(val, dict) else list(val)
         if len(items) > _MAX_COLLECTION_SIZE: return False
         return all(_is_safe_payload_structure(item, depth + 1) for item in items)
-    return isinstance(val, (int, float, bool, str, type(None)))
+    return isinstance(val, (int, float, bool, str))
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """
     Realiza un escaneo profundo para detectar estructuras anidadas excesivas.
     """
     if depth > _MAX_NESTING_DEPTH: return True
+    if val is None: return False
     if isinstance(val, (list, tuple, set, dict)):
         items = list(val.values()) if isinstance(val, dict) else list(val)
         if len(items) > _MAX_COLLECTION_SIZE: return True
         return any(_is_input_too_deep_or_complex(item, depth + 1) for item in items)
-    return not isinstance(val, (int, float, bool, str, type(None)))
+    return not isinstance(val, (int, float, bool, str))
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     """Verifica si un valor numérico está dentro del rango lógico definido por su especificación."""
