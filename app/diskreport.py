@@ -173,9 +173,10 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     Aplica filtros de caracteres maliciosos, límites de longitud y chequeos de protección.
     """
     name = entry.name
-    # Ignorar nombres invisibles o excesivamente largos (posible desbordamiento/ofuscación)
-    if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
+    # Ignorar nombres invisibles, demasiado largos (path overflow) o profundidad extrema
+    if not name or any(ord(c) < 32 for c in name) or len(name) > 255 or len(entry.path) > 32767:
         return True
+        
     # Bloquear caracteres RTL y caracteres prohibidos en sistemas de archivos Windows
     if any(c in name for c in SUSPICIOUS_CHARS) or any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
         return True

@@ -336,6 +336,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=32)
 def _calculate_area_contribution(metrics_tuple: Tuple[float, ...], area_idx: int) -> Tuple[int, Tuple[str, ...]]:
     """Calcula el aporte de puntos de un área específica del pipeline con cacheo."""
+    if area_idx < 0 or area_idx >= len(_PIPELINE):
+        return 0, ()
+        
     entry = _PIPELINE[area_idx]
     keys = SystemMetrics._FIELDS_TO_VALIDATE
     metrics = SystemMetrics(**dict(zip(keys, metrics_tuple)))
@@ -371,10 +374,13 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
     total_points = 0.0
     
     for i, entry in enumerate(_PIPELINE):
-        points, recs = _calculate_area_contribution(metrics_tuple, i)
-        metric_breakdown[entry.area] = points
-        recommendations.extend(recs)
-        total_points += float(points)
+        try:
+            points, recs = _calculate_area_contribution(metrics_tuple, i)
+            metric_breakdown[entry.area] = points
+            recommendations.extend(recs)
+            total_points += float(points)
+        except Exception:
+            continue
             
     if quarantined > 0:
         recommendations.append("Existen elementos en cuarentena.")

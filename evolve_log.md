@@ -1277,3 +1277,43 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-23T11:44:38` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido la función `save_logo_svg` y las funciones de dibujo mediante la validación estricta de rutas, comprobación de estados de coma flotante (`math.isfinite`) y manejo de excepciones en entornos de archivos inexistentes o con restricciones de acceso, asegurando que la app no falle ante valores corruptos o rutas de sistema.
 - `2026-10-23T11:44:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T11:44:38` Corrida terminada. Total usado hoy: 276.
+- `2026-10-23T11:52:12` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-23T11:52:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T11:53:42` Tests FALLARON:
+```
+includes_the_sa0')
+
+    def test_summarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:326: in summarize
+    total_mb = round(total_cache_bytes(current_caches) / BYTES_TO_MB, 2)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:320: in total_cache_bytes
+    return sum(c.bytes_found for c in caches) if isinstance(caches, (list, tuple, set)) else 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7f0d7daedcf0>
+
+>   return sum(c.bytes_found for c in caches) if isinstance(caches, (list, tuple, set)) else 0
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:320: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.69s
+
+```
+- `2026-10-23T11:53:42` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `detect_profiles` ante rutas inexistentes o malformadas al introducir una verificación de validación de `Path` más estricta durante la iteración, evitando el procesamiento de objetos `Path` vacíos antes de que sean validados por `_is_valid_cache_path`.
+- `2026-10-23T11:54:21` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_excluded_path` añadiendo un chequeo explícito de profundidad de ruta (path depth) y longitudes extremas, previniendo errores de `OSError` en sistemas de archivos con restricciones de `MAX_PATH` o estructuras profundamente anidadas (junction cycles), asegurando que el escáner no aborte ante nombres de archivo malformados o rutas excesivamente largas.
+- `2026-10-23T11:54:45` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-23T11:55:20` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el motor de cálculo frente a condiciones de carrera o datos inconsistentes, asegurando que `_compute_cached` maneje exitosamente estados donde el `_PIPELINE` o las métricas arrojen valores no finitos, evitando fugas de excepciones fuera del pipeline.
+- `2026-10-23T11:55:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T11:55:20` Corrida terminada. Total usado hoy: 280.
