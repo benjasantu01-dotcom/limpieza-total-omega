@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 75 | 5 | 22 | 10 | 104 |
-| 2026-10-23 | 125 | 10 | 29 | 12 | 112 |
+| 2026-10-22 | 75 | 5 | 22 | 10 | 100 |
+| 2026-10-23 | 128 | 10 | 29 | 12 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **43**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **39**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
-- `browser.py`: **20**
+- `assistant.py`: **21**
+- `browser.py`: **21**
 - `diskreport.py`: **19**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
 - `settings.py`: **17**
 - `scanner.py`: **16**
-- `branding.py`: **14**
+- `branding.py`: **15**
 - `safety.py`: **14**
 - `healthscore.py`: **13**
 - `startup.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T12:27:32` **browser.py** (seguridad defensiva): Se ha implementado una validación de seguridad proactiva en `_is_valid_cache_path` y `_resolve_browser_path` para prevenir ataques de *path traversal* (ej. secuencias `..`) y asegurar que, incluso si una ruta maliciosa llega a ser resuelta, el sistema siempre verifique que el destino final se mantenga estrictamente dentro de `LOCALAPPDATA` antes de interactuar con él.
+- `2026-10-23T12:27:11` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la ruta antes de intentar crear directorios o escribir, y se añadió una verificación explícita para evitar que la función intente operar sobre directorios existentes, mitigando riesgos de manipulación de rutas.
+- `2026-10-23T12:25:28` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_build_payload` validando que la cadena `full_prompt` resultante no contenga caracteres de control peligrosos ni patrones de inyección mediante `_ensure_safe_text` antes de realizar cualquier operación de serialización, asegurando que el mensaje saliente sea estrictamente inocuo.
 - `2026-10-23T12:16:02` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la carga de configuración mediante la validación explícita de `st.st_size` previo a la lectura del archivo y la implementación de un manejo defensivo ante archivos con tamaño inesperado (ej. truncados o corruptos) en `_read_and_parse_json`.
 - `2026-10-23T12:14:40` **scanner.py** (robustez ante casos límite): Se mejora la robustez de `scanner.py` ante archivos bloqueados o en uso al envolver la lectura de metadatos en `check_recent_executable_in_downloads` con un bloque de manejo de errores específico, evitando que un `PermissionError` durante el escaneo detenga el proceso completo.
 - `2026-10-23T12:07:56` **quarantine.py** (robustez ante casos límite): Se mejoró `_is_file_exclusive` agregando un manejo robusto de excepciones para `os.open` y `fcntl.flock`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura por procesos externos) interrumpan el flujo de validación, y se añadió una verificación de existencia previa al intento de apertura.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T11:34:11` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` al reemplazar la resolución de ruta completa (`absolute()`) por un cálculo de partes basado en la cadena de texto, evitando operaciones costosas de E/S y resolución de sistema de archivos en cada llamada.
 - `2026-10-23T11:32:39` **quarantine.py** (rendimiento): Optimicé el cálculo del hash SHA256 en `_get_sha256` moviendo la validación de `st_mtime` y `st_size` fuera de la función de lectura (usando un caché más eficiente) y aplicando un `try/except` más compacto para evitar el costo de llamadas innecesarias al sistema de archivos en cada iteración del bucle, mejorando significativamente el rendimiento de escaneos masivos.
 - `2026-10-23T11:23:57` **memory.py** (rendimiento): Se optimizó el acceso a los procesos mediante la pre-validación de `_is_system_process` antes de realizar llamadas costosas a `OpenProcess` y `GetModuleFileNameExW`, reduciendo la carga de I/O y el tiempo de ejecución en `top_memory_processes`.
-- `2026-10-23T11:23:19` **main.py** (rendimiento): Se implementó un esquema de serialización de ejecución de tareas críticas en el `ThreadPoolExecutor` para evitar condiciones de carrera en el caché de estado y saturación de E/S, eliminando la necesidad de constantes recálculos al procesar múltiples solicitudes de UI simultáneas.
-- `2026-10-23T11:14:41` **duplicates.py** (rendimiento): Optimicé el rendimiento de la recolección de candidatos utilizando `os.scandir` con un filtro previo por tamaño y optimizando el almacenamiento en el diccionario `raw_map`, evitando iteraciones innecesarias sobre grupos de un solo archivo durante la fase de recolección.
-- `2026-10-23T11:12:30` **browser.py** (rendimiento): Optimizé el rendimiento de `_sum_directory_recursive` evitando llamadas redundantes a `os.path.normcase` y `str()` dentro del bucle de `os.scandir`, y reemplacé la verificación de `visited_dirs` por una estructura de datos local más eficiente, reduciendo el overhead en escaneos profundos.

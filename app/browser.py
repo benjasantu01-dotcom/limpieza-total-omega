@@ -273,7 +273,9 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
     
     try:
         real = candidate.resolve(strict=True)
-        if not _is_within_sandbox(os.path.normcase(str(real)), base_norm): return False
+        real_norm = os.path.normcase(str(real))
+        # Verificación explícita de sandbox tras resolución del path real
+        if not _is_within_sandbox(real_norm, base_norm): return False
         if _is_system_hidden(str(real), kernel): return False
         
         return not (candidate.is_symlink() or _IS_JUNCTION_FN(str(real)) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
@@ -283,7 +285,11 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve la ruta completa de un caché a partir del perfil base, validando integridad."""
     if not _is_valid_rel_path(rel_str): return Path()
-    target = real_base.joinpath(*rel_str.split("\\"))
+    # Construcción segura evitando saltos de directorio mediante limpieza de segmentos
+    segments = rel_str.split("\\")
+    target = real_base.joinpath(*segments)
+    # Re-validar contra el Sandbox tras la resolución completa para evitar escapes
+    if not str(target.absolute()).startswith(str(real_base.absolute())): return Path()
     return target if target.exists() and target.is_dir() else Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:

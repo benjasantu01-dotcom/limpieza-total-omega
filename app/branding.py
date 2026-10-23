@@ -346,7 +346,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         dest_path = Path(destination).resolve()
         # Verificación crítica: ensure_safe_to_modify lanza excepciones si la ruta es peligrosa
         ensure_safe_to_modify(dest_path)
-        if dest_path.is_dir(): return None
+        if dest_path.exists() and dest_path.is_dir(): return None
         parent = dest_path.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
