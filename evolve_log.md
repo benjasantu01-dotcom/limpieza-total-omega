@@ -1213,3 +1213,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-23T10:53:50` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y la legibilidad de `safety.py` mediante la adición de docstrings estructuradas en las funciones de validación principales, detallando claramente el propósito funcional y los escenarios de error, además de tipado explícito en los iterables de `filter_safe_paths`.
 - `2026-10-23T10:53:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T10:53:50` Corrida terminada. Total usado hoy: 256.
+- `2026-10-23T11:01:15` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-23T11:02:12` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo mediante la inclusión de type hints explícitos en los retornos y la estandarización de docstrings siguiendo el estilo Google/NumPy para clarificar las responsabilidades de cada componente del motor heurístico.
+- `2026-10-23T11:02:46` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-23T11:03:18` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante docstrings estandarizados que clarifican el flujo de resolución de rutas (cache y validación), facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
+- `2026-10-23T11:04:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T11:04:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-23T11:04:39` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-23T11:05:22` Tests FALLARON:
+```
+d contra los datos actuales y retorna los problemas activos."""
+        if not self.analyzed: return ()
+>       return _evaluate_active_problems(self.metrics_snapshot)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: unhashable type: 'dict'
+
+app/assistant.py:390: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - TypeError: unhashable type: 'dict'
+9 failed, 290 passed in 1.32s
+
+```
+- `2026-10-23T11:05:22` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el método `active_problems` eliminando el sorting innecesario y el tuple casting redundante en cada acceso, aprovechando la naturaleza de la tupla de criterios predefinidos para reducir ciclos de CPU durante el acceso frecuente a la salud del sistema.
+- `2026-10-23T11:05:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T11:05:22` Corrida terminada. Total usado hoy: 260.

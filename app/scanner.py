@@ -233,16 +233,20 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
+        """Verifica si la ruta está dentro del alcance definido para el escaneo."""
         return os.path.normcase(os.path.abspath(entry_path)).startswith(self.base_root_norm)
 
     def _has_invalid_name(self, name: str) -> bool:
+        """Valida que el nombre de archivo no contenga caracteres prohibidos."""
         if not isinstance(name, str) or not name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name) or "\0" in name)
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
+        """Determina si una entrada es un punto de reanálisis (Junction/Symlink)."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
+        """Valida si una entrada de sistema debe ser ignorada por el escáner."""
         if entry is None or not entry.path:
             return False
         
@@ -264,6 +268,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
+        """Gestiona la cola de directorios para el recorrido recursivo seguro."""
         if current_depth >= SCAN_LIMITS.max_depth or entry is None or not entry.path:
             return
         
@@ -275,9 +280,11 @@ class Scanner:
     @staticmethod
     @lru_cache(maxsize=1024)
     def _is_relevant_extension(name: str) -> bool:
+        """Verifica si la extensión del archivo justifica un análisis heurístico."""
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
+        """Procesa una única entrada del sistema de archivos, delegando a heurísticas."""
         if entry is None or not entry.path or not self._is_safe_entry(entry):
             return
             
@@ -297,6 +304,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
+        """Ejecuta todas las heurísticas registradas sobre un archivo válido."""
         if not _is_readable(path):
             return
 
