@@ -6,22 +6,22 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 49
+- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 117 | 8 | 32 | 18 | 141 |
-| 2026-10-23 | 83 | 6 | 17 | 9 | 73 |
+| 2026-10-22 | 117 | 8 | 32 | 18 | 137 |
+| 2026-10-23 | 85 | 7 | 18 | 9 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **38**
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **16**
 - `healthscore.py`: **14**
 - `scanner.py`: **14**
+- `duplicates.py`: **9**
 - `startup.py`: **9**
-- `duplicates.py`: **8**
 - `organizer.py`: **7**
-- `main.py`: **6**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T08:10:11` **main.py** (seguridad defensiva): He unificado la lógica de validación de rutas en el método `_ensure_safe_path_for_action` para asegurar que todas las operaciones de escritura (borrado, movimiento o escritura de archivos) pasen obligatoriamente por `ensure_safe_to_modify` de `safety.py`, evitando así el riesgo de pasar por alto una validación crítica y fortaleciendo el cumplimiento de la política de seguridad del proyecto.
+- `2026-10-23T08:08:35` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` integrando `os.path.realpath` para normalizar rutas y resolviendo correctamente los enlaces simbólicos antes de procesarlos, previniendo así el acceso accidental fuera de los directorios permitidos o el seguimiento de bucles de directorios infinitos.
 - `2026-10-23T08:00:13` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` implementando una validación estricta de rutas mediante `path_obj.resolve(strict=False)` antes de realizar cualquier comparación, previniendo así el seguimiento de enlaces simbólicos malintencionados o accesos fuera de la raíz permitida que no estuvieran cubiertos por las comprobaciones previas.
 - `2026-10-23T08:00:02` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación explícita de `is_protected_path` sobre cada subdirectorio visitado durante la recursión, garantizando que el escaneo no acceda a rutas restringidas dinámicamente si la estructura de carpetas cambia.
 - `2026-10-23T07:59:27` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` reemplazando la validación implícita por una verificación booleana explícita antes de cualquier manipulación, asegurando que `ensure_safe_to_modify` se utilice exclusivamente cuando la operación de escritura es inminente y no como parte de una condición lógica.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T07:28:38` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo ante entradas numéricas mal formadas o extremas añadiendo validaciones explícitas en `_clamp` y `create_linear_scorer` para evitar resultados NaN o fuera de escala en escenarios de cálculo de ratios críticos.
 - `2026-10-23T07:27:44` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `entry.stat()` y validando el retorno de `os.stat` antes de procesarlo, evitando que archivos bloqueados por el sistema interrumpan el conteo total.
 - `2026-10-23T07:18:57` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` y `detect_profiles` ante rutas inexistentes o inaccesibles, añadiendo validaciones preventivas de existencia y permisos antes de invocar operaciones de resolución (resolve) o recursión, evitando excepciones innecesarias en entornos de disco restringidos.
-- `2026-10-23T07:18:46` **branding.py** (robustez ante casos límite): Mejoré la resiliencia de `save_logo_svg` ante errores de entrada, asegurando que si la ruta proporcionada es una carpeta existente o una ruta inválida que no puede ser escrita, la función retorne `None` en lugar de propagar errores o intentar operaciones sobre directorios, manteniendo la consistencia con las reglas de seguridad.
-- `2026-10-23T07:08:20` **scanner.py** (rendimiento): Optimicé el rendimiento de `scanner.py` eliminando la resolución redundante de rutas (`Path.resolve()`) dentro del bucle de escaneo mediante el uso de `os.path.normcase` para la comparación de identificadores, evitando llamadas costosas al sistema de archivos en cada iteración.

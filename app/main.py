@@ -344,7 +344,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.protocol("WM_DELETE_WINDOW", self._on_closing)
         except Exception as e:
             logging.critical("Error fatal al inicializar la aplicación: %s", e)
-            # Intentar mostrar mensaje si el widget principal existe y se puede interactuar
             try:
                 messagebox.showerror("Error de inicio", "La aplicación no pudo inicializarse.")
                 self.destroy()

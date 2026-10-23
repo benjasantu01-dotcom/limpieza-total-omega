@@ -146,7 +146,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     """
     Recorre recursivamente directorios para obtener archivos candidatos.
     Implementa un registro de inodos (dev, ino) para prevenir el procesamiento de enlaces duros
-    que, aunque distintos por ruta, son físicamente el mismo archivo.
+    y normaliza rutas para evitar escapes de directorio.
     """
     if not directories: return {}
     raw_map: Dict[int, List[Path]] = defaultdict(list)
@@ -154,9 +154,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     for d in directories:
         if d:
-            p = Path(d)
-            if p.exists() and _safe_path_check(p):
-                queue.append((p.resolve(), 0))
+            try:
+                p = Path(os.path.realpath(d))
+                if p.exists() and _safe_path_check(p):
+                    queue.append((p, 0))
+            except OSError: continue
             
     visited: set[Tuple[int, int]] = set()
     
@@ -169,12 +171,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as it:
                 for entry in it:
                     path = Path(entry.path)
-                    # Validación de seguridad antes de cualquier otra lógica
                     if not _safe_path_check(path):
                         continue
                         
                     if entry.is_dir(follow_symlinks=False):
-                        queue.append((path, depth + 1))
+                        queue.append((Path(os.path.realpath(path)), depth + 1))
                     elif entry.is_file(follow_symlinks=False):
                         stat = entry.stat(follow_symlinks=False)
                         if stat.st_size >= min_size and _is_valid_candidate(path, stat.st_size):

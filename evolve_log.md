@@ -887,3 +887,37 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-23T08:00:13` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_excluded_path` implementando una validación estricta de rutas mediante `path_obj.resolve(strict=False)` antes de realizar cualquier comparación, previniendo así el seguimiento de enlaces simbólicos malintencionados o accesos fuera de la raíz permitida que no estuvieran cubiertos por las comprobaciones previas.
 - `2026-10-23T08:00:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T08:00:13` Corrida terminada. Total usado hoy: 188.
+- `2026-10-23T08:08:10` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-10-23T08:08:35` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` integrando `os.path.realpath` para normalizar rutas y resolviendo correctamente los enlaces simbólicos antes de procesarlos, previniendo así el acceso accidental fuera de los directorios permitidos o el seguimiento de bucles de directorios infinitos.
+- `2026-10-23T08:09:02` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-23T08:10:11` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). He unificado la lógica de validación de rutas en el método `_ensure_safe_path_for_action` para asegurar que todas las operaciones de escritura (borrado, movimiento o escritura de archivos) pasen obligatoriamente por `ensure_safe_to_modify` de `safety.py`, evitando así el riesgo de pasar por alto una validación crítica y fortaleciendo el cumplimiento de la política de seguridad del proyecto.
+- `2026-10-23T08:10:44` Tests FALLARON:
+```
+[]
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            if "ensure_safe_to_modify" in calls_and_imports(parse(archivo)):
+                culpables.append(nombre)
+    
+>       assert not culpables, (
+            f"Estos módulos son de solo lectura y usan el chequeo de escritura: "
+            f"{', '.join(culpables)}. Para saber si algo es de sistema sin "
+            "bloquear la lectura, usá `is_protected_path`."
+        )
+E       AssertionError: Estos módulos son de solo lectura y usan el chequeo de escritura: memory.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+E       assert not ['memory.py']
+
+evolve/tests/test_integrity.py:279: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present - AssertionError: `ensure_safe_to_modify` está usado como condición en memory.py:347. Devuelve un Path o lanza, así que el `if` no filtra nada. Para condiciones usá `is_safe_to_modify`.
+assert not ['memory.py:347']
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check - AssertionError: Estos módulos son de solo lectura y usan el chequeo de escritura: memory.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+assert not ['memory.py']
+2 failed, 297 passed in 0.99s
+
+```
+- `2026-10-23T08:10:44` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` reforzando la validación de rutas mediante `ensure_safe_to_modify` para detectar de forma explícita puntos de reparse o rutas fuera de los límites permitidos, evitando seguir punteros de sistema potencialmente maliciosos.
+- `2026-10-23T08:10:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T08:10:44` Corrida terminada. Total usado hoy: 192.
