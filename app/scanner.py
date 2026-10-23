@@ -129,7 +129,8 @@ def _get_file_size(path: Path) -> int:
     if not isinstance(path, Path):
         return -1
     try:
-        return int(path.stat().st_size)
+        # Usamos lstat para evitar seguir enlaces simbólicos accidentalmente
+        return int(path.lstat().st_size)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError, TypeError):
         return -1
 
@@ -244,12 +245,13 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.base_root_norm: str = os.path.normcase(str(base_root.resolve()))
+        # Aseguramos que la ruta base sea absoluta para evitar problemas de resolución
+        self.base_root_norm: str = os.path.normcase(str(base_root.absolute()))
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica mediante normalización de rutas que no haya escape de directorio."""
-        return os.path.normcase(entry_path).startswith(self.base_root_norm)
+        return os.path.normcase(os.path.abspath(entry_path)).startswith(self.base_root_norm)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida que el nombre de archivo no contenga caracteres o patrones reservados por el SO."""

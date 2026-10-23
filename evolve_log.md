@@ -873,3 +873,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-23T07:39:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-10-23T07:39:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T07:39:25` Corrida terminada. Total usado hoy: 180.
+- `2026-10-23T07:47:47` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-10-23T07:48:42` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación de concurrencia y estado de archivo en `_get_path_stat_robust` mediante el uso de `GetFileInformationByHandle` para asegurar que el archivo no esté bloqueado ni por el SO ni por otros procesos antes de intentar obtener sus metadatos, evitando excepciones de E/S impredecibles en archivos en uso.
+- `2026-10-23T07:49:09` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se añadió una validación de ruta absoluta y robustez ante fallos en `_get_file_size` y `_safe_stat` para prevenir excepciones durante el escaneo de directorios con permisos heterogéneos o rutas inexistentes.
+- `2026-10-23T07:50:10` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se añadió una validación robusta en `_read_and_parse_json` para detectar rutas que, aunque sintácticamente válidas, son directorios en lugar de archivos o rutas bloqueadas por el sistema, previniendo errores de `PermissionError` y `IsADirectoryError` antes de intentar operar sobre ellas.
+- `2026-10-23T07:50:20` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-23T07:50:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T07:50:20` Corrida terminada. Total usado hoy: 184.

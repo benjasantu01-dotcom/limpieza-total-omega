@@ -346,6 +346,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Carga, verifica y parsea el archivo JSON de configuración con mitigación TOCTOU."""
     try:
         resolved = file_path.resolve()
+        if not resolved.exists() or not resolved.is_file(): return None
         if is_protected_path(str(resolved)) or not is_safe_to_modify(str(resolved)): return None
         
         with open(resolved, "rb") as f:
