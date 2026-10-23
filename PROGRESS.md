@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 49
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por guardia de seguridad: 48
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 107 | 7 | 30 | 15 | 117 |
-| 2026-10-23 | 90 | 7 | 19 | 9 | 103 |
+| 2026-10-22 | 105 | 7 | 29 | 14 | 117 |
+| 2026-10-23 | 91 | 7 | 19 | 9 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **37**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **35**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
+- `assistant.py`: **19**
 - `browser.py`: **19**
 - `settings.py`: **18**
-- `assistant.py`: **18**
 - `quarantine.py`: **17**
-- `memory.py`: **16**
 - `safety.py`: **15**
 - `branding.py`: **15**
 - `scanner.py`: **15**
+- `memory.py`: **15**
 - `healthscore.py`: **13**
 - `startup.py`: **10**
 - `duplicates.py`: **8**
-- `main.py`: **7**
 - `organizer.py`: **7**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T09:51:51` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de `_extract_text_from_gemini_json` implementando una validación exhaustiva de los tipos de datos en la respuesta JSON recibida antes de acceder a sus claves, evitando `KeyError` o `AttributeError` ante respuestas malformadas o inesperadas de la API.
 - `2026-10-23T08:30:45` **startup.py** (seguridad defensiva): Se ha añadido una validación de longitud máxima de caracteres (`MAX_PATH`) en el parser del registro y en la lógica de resolución para prevenir posibles ataques por desbordamiento o procesamiento de rutas mal formadas que excedan los límites del sistema operativo (260 caracteres), reforzando la seguridad defensiva.
 - `2026-10-23T08:29:56` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` al implementar una comprobación estricta de metadatos (evitando archivos con enlaces físicos múltiples o permisos laxos) y se añadió una validación explícita para evitar que `_load_impl` procese rutas que hayan sido manipuladas o sean maliciosas antes de la lectura.
 - `2026-10-23T08:29:03` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de las heurísticas integrando `is_safe_to_modify` (vía `_cached_is_protected`) en la validación de acceso previo a cualquier operación de lectura, asegurando que el scanner respete las restricciones de seguridad antes de intentar acceder a cualquier ruta del sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T07:50:10` **settings.py** (robustez ante casos límite): Se añadió una validación robusta en `_read_and_parse_json` para detectar rutas que, aunque sintácticamente válidas, son directorios en lugar de archivos o rutas bloqueadas por el sistema, previniendo errores de `PermissionError` y `IsADirectoryError` antes de intentar operar sobre ellas.
 - `2026-10-23T07:49:09` **scanner.py** (robustez ante casos límite): Se añadió una validación de ruta absoluta y robustez ante fallos en `_get_file_size` y `_safe_stat` para prevenir excepciones durante el escaneo de directorios con permisos heterogéneos o rutas inexistentes.
 - `2026-10-23T07:48:42` **safety.py** (robustez ante casos límite): Se ha añadido una validación de concurrencia y estado de archivo en `_get_path_stat_robust` mediante el uso de `GetFileInformationByHandle` para asegurar que el archivo no esté bloqueado ni por el SO ni por otros procesos antes de intentar obtener sus metadatos, evitando excepciones de E/S impredecibles en archivos en uso.
-- `2026-10-23T07:39:22` **quarantine.py** (robustez ante casos límite): Se añadió una validación explícita en `_atomic_isolate_file` para asegurar que el archivo de origen no tenga atributos de sistema o sea un archivo "espejo" (reparse point), fortaleciendo la robustez ante intentos de aislar archivos protegidos por el sistema operativo que escapan a las verificaciones previas.

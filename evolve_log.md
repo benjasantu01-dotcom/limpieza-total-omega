@@ -1129,3 +1129,15 @@ assert not ['memory.py']
 - `2026-10-23T09:44:02` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-23T09:44:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T09:44:02` Corrida terminada. Total usado hoy: 228.
+- `2026-10-23T09:49:59` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-23T09:50:01` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-23T09:50:01` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-23T09:50:21` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-23T09:50:21` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-23T09:50:51` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-23T09:50:51` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-23T09:51:51` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_extract_text_from_gemini_json` implementando una validación exhaustiva de los tipos de datos en la respuesta JSON recibida antes de acceder a sus claves, evitando `KeyError` o `AttributeError` ante respuestas malformadas o inesperadas de la API.
+- `2026-10-23T09:52:22` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-23T09:52:34` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-23T09:52:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T09:52:34` Corrida terminada. Total usado hoy: 232.
