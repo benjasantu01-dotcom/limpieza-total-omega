@@ -532,7 +532,10 @@ def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, target_directory: Path) -> None:
-    """Coordina todas las validaciones previas al aislamiento."""
+    """
+    Coordina todas las validaciones de seguridad previas a iniciar el proceso
+    de transferencia al sandbox de cuarentena.
+    """
     if not target_directory.is_dir():
         raise UnsafePathError("Destino de cuarentena debe ser un directorio.")
     
@@ -717,7 +720,10 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
-    """Transfiere archivo al destino final de forma atómica."""
+    """
+    Gestiona la escritura atómica del archivo de origen al destino final mediante
+    copia a un archivo temporal intermedio seguido de un reemplazo seguro.
+    """
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
     

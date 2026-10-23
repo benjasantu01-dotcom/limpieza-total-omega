@@ -233,8 +233,14 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Orquestador de seguridad: Valida identidad, protección, bloqueos y espacio antes de E/S.
-    Returns: True si es seguro proceder con la operación de disco, False de lo contrario.
+    Orquestador de seguridad que valida identidad, protección, bloqueos y espacio antes de E/S.
+    
+    Args:
+        junk_file: El objeto JunkFile a evaluar para su movimiento.
+        dest: La ruta absoluta de destino donde se pretende mover el archivo.
+        
+    Returns:
+        True si el archivo es seguro para mover, False en caso contrario.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -270,7 +276,16 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     return True
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[Path]) -> None:
-    """Realiza un escaneo recursivo limitado por profundidad y caché de rutas visitadas."""
+    """
+    Realiza un escaneo recursivo limitado por profundidad y caché de rutas visitadas.
+    
+    Args:
+        current_dir: Directorio actual a explorar.
+        found: Lista acumuladora donde se agregan los JunkFile encontrados.
+        depth: Nivel de profundidad de la recursión actual.
+        protected_cache: Conjunto de rutas excluidas para optimizar el escaneo.
+        visited: Conjunto de rutas ya exploradas para evitar ciclos.
+    """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
         resolved_dir = current_dir.resolve(strict=False)

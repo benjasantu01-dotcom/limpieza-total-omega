@@ -327,15 +327,19 @@ def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CD
 
 def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL) -> bool:
     """
-    Verifica mediante la API Win32 que el ejecutable del proceso no se encuentre en
-    una ubicación restringida. Obtiene la ruta real del binario y utiliza 
-    is_protected_path para asegurar que no tocamos procesos críticos.
+    Verifica que el ejecutable del proceso no se encuentre en una ubicación restringida.
+    
+    Precondiciones:
+        - handle: Debe ser un handle válido con permiso PROCESS_QUERY_LIMITED_INFORMATION o superior.
+        - psapi: Instancia del módulo psapi.dll de Win32.
+    
+    Retorna:
+        - True si el ejecutable existe, no es un symlink y no está en una ruta protegida.
     """
     if not handle or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
-        # Se maneja el error internamente: si no hay permiso, GetModuleFileNameExW devuelve 0
         if psapi.GetModuleFileNameExW(handle, None, buffer_path, 4096) <= 0:
             return False
     except (ctypes.WinError, OSError):
@@ -361,7 +365,12 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
         return False
 
 def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
-    """Crea un objeto ProcessMemory tras verificar accesibilidad y seguridad."""
+    """
+    Crea un objeto ProcessMemory tras verificar accesibilidad y seguridad del binario.
+    
+    Efectos laterales:
+        - Abre un handle de proceso mediante OpenProcess; este es cerrado en el bloque 'finally'.
+    """
     proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
     if proc_handle is None:
         return None
@@ -451,10 +460,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar el 'working set' de un proceso específico (Acción manual).
     
-    Realiza una validación exhaustiva de seguridad: primero comprueba que el
-    proceso no sea crítico, verifica que el handle sea válido, confirma que el
-    proceso sigue activo y, finalmente, utiliza _is_process_executable_safe 
-    para asegurar que no interactuamos con binarios en ubicaciones protegidas.
+    Efectos laterales:
+        - Realiza validación exhaustiva de seguridad (is_protected_path, ubicación de binario).
+        - Interactúa con APIs de Win32 para invocar EmptyWorkingSet sobre el proceso.
+    
+    Retorna:
+        - Tupla (bool, str) indicando éxito y mensaje explicativo.
     """
     if not _is_windows: return False, "Solo soportado en Windows."
     
