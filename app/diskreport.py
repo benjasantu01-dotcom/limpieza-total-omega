@@ -169,21 +169,21 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
-    Determina mediante heurísticas de seguridad si una entrada de directorio debe ser ignorada.
+    Evalúa si una entrada debe ser ignorada por seguridad o integridad.
+    Aplica filtros de caracteres maliciosos, límites de longitud y chequeos de protección.
     """
     name = entry.name
+    # Ignorar nombres invisibles o excesivamente largos (posible desbordamiento/ofuscación)
     if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
-    if any(c in name for c in SUSPICIOUS_CHARS):
-        return True
-    if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
+    # Bloquear caracteres RTL y caracteres prohibidos en sistemas de archivos Windows
+    if any(c in name for c in SUSPICIOUS_CHARS) or any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
         return True
 
     try:
-        # Resolvemos la ruta para validar contra el root antes de proceder
         path_obj = Path(entry.path).resolve(strict=False)
         
-        # Validación de escape de raíz (seguridad defensiva)
+        # Validación de escape de raíz (seguridad defensiva: no salir del directorio raíz)
         try:
             path_obj.relative_to(root_path)
         except ValueError:
@@ -192,9 +192,11 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if is_protected_path(path_obj):
             return True
 
+        # Los symlinks no se siguen para evitar ciclos infinitos o lectura de archivos fuera de scope
         if entry.is_symlink():
             return True
         
+        # Identificar atributos especiales en Windows (Re-parse points / Junctions)
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):

@@ -202,6 +202,16 @@ class ProblemCriterion(NamedTuple):
         except (ValueError, TypeError, KeyError):
             return None
 
+# Definición centralizada de criterios de salud
+_CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
+    ProblemCriterion("disk_free_percent", 10.0, "<", "{:.0f}% de disco libre"),
+    ProblemCriterion("suspicious_warnings", 0, ">", "{:d} archivo(s) sospechosos"),
+    ProblemCriterion("memory_available_percent", 15.0, "<", "{:.0f}% de RAM"),
+    ProblemCriterion("junk_mb", 1000.0, ">", "{:.0f} MB de basura"),
+    ProblemCriterion("duplicate_mb", 500.0, ">", "{:.0f} MB en duplicados"),
+    ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
+)
+
 class AreaExplanation(NamedTuple):
     """Mapeo para descripciones pedagógicas de áreas de la aplicación."""
     key: str
@@ -347,17 +357,8 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 def _evaluate_active_problems(metrics_tuple: tuple) -> tuple[str, ...]:
     """Calcula los problemas activos a partir de los valores crudos cacheables."""
     metrics_dict = dict(metrics_tuple)
-    # Definición de criterios de salud
-    criterios: tuple[ProblemCriterion, ...] = (
-        ProblemCriterion("disk_free_percent", 10.0, "<", "{:.0f}% de disco libre"),
-        ProblemCriterion("suspicious_warnings", 0, ">", "{:d} archivo(s) sospechosos"),
-        ProblemCriterion("memory_available_percent", 15.0, "<", "{:.0f}% de RAM"),
-        ProblemCriterion("junk_mb", 1000.0, ">", "{:.0f} MB de basura"),
-        ProblemCriterion("duplicate_mb", 500.0, ">", "{:.0f} MB en duplicados"),
-        ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
-    )
     return tuple(
-        msg for c in criterios 
+        msg for c in _CRITERIOS_SALUD 
         if (msg := c.format_if_triggered(metrics_dict.get(c.metric_key, -1.0))) is not None
     )
 

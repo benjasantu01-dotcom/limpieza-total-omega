@@ -5,18 +5,17 @@ Centraliza la gestión de activos visuales, paletas de colores, jerarquías
 tipográficas y sistemas de renderizado vectorial (SVG/Canvas).
 
 CONFIGURACIÓN Y ESTADOS:
-  - La paleta se expone vía MappingProxyType para garantizar inmutabilidad,
-    evitando efectos secundarios accidentales durante la ejecución.
+  - La paleta se expone mediante tipos de solo lectura para garantizar 
+    inmutabilidad y prevenir efectos secundarios durante la ejecución.
   - Los gradientes utilizan segmentación por agrupación de colores consecutivos 
     para optimizar el rendimiento de renderizado en el objeto Canvas.
   - Las funciones de dibujo capturan excepciones para mantener la estabilidad UI.
 
 NOTA DE SEGURIDAD:
   Las funciones de dibujo (Canvas) y generación de archivos (SVG) operan 
-  bajo principios de diseño defensivo, capturando excepciones de renderizado 
-  para evitar que una paleta mal configurada o una entrada inválida 
-  detengan el hilo principal de la aplicación. Las operaciones de disco 
-  utilizan validadores estrictos mediante el módulo 'safety'.
+  bajo principios de diseño defensivo, capturando excepciones para evitar que 
+  una paleta mal configurada detenga el hilo principal. Las operaciones de 
+  disco utilizan validadores estrictos mediante el módulo 'safety'.
 """
 
 from __future__ import annotations
@@ -407,9 +406,9 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     Renderiza el logo vectorial completo de Omega en un widget Canvas.
     
     :param canvas: Objeto Canvas de tkinter compatible.
-    :param size: Escala total en píxeles del logo.
-    :param canvas_x: Posición horizontal inicial en el canvas.
-    :param canvas_y: Posición vertical inicial en el canvas.
+    :param size: Escala total en píxeles del logo (default: 56.0).
+    :param canvas_x: Posición horizontal en el canvas.
+    :param canvas_y: Posición vertical en el canvas.
     """
     try:
         val_size = float(size)
@@ -425,7 +424,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra de degradado horizontal sobre un canvas."""
+    """Dibuja una barra de degradado horizontal sobre un widget Canvas."""
     try:
         w, h = max(1, int(width)), max(1, int(height))
         for s in get_gradient_segments(w, stops):
@@ -434,11 +433,11 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
-    Dibuja un anillo de progreso circular para representar métricas.
+    Dibuja un anillo de progreso circular para representar métricas de salud.
     
     :param percent: Valor numérico (0-100) a representar.
     :param size: Diámetro del anillo en píxeles.
-    :param thickness: Grosor del trazo circular.
+    :param thickness: Grosor del trazo circular (default: 14).
     """
     try:
         if percent is None: return
