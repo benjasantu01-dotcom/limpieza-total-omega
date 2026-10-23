@@ -58,13 +58,13 @@ class Grade(Enum):
         Convierte una puntuación numérica a su categoría alfabética equivalente.
         """
         try:
-            s = float(score)
+            val = float(score)
         except (TypeError, ValueError):
             return cls.F.value
-        if s >= 90: return cls.A.value
-        if s >= 80: return cls.B.value
-        if s >= 65: return cls.C.value
-        if s >= 50: return cls.D.value
+        if val >= 90: return cls.A.value
+        if val >= 80: return cls.B.value
+        if val >= 65: return cls.C.value
+        if val >= 50: return cls.D.value
         return cls.F.value
 
 class RecommendationRule(NamedTuple):
@@ -148,22 +148,22 @@ def _verify_pipeline_integrity(weights: Dict[str, int], pipeline: Tuple[Pipeline
         if sum(weights.values()) != 100:
             logging.error("Integridad de Pipeline fallida: Los pesos no suman 100.")
             return
-        pipeline_areas = {e.area for e in pipeline}
+        pipeline_areas = {entry.area for entry in pipeline}
         if set(weights.keys()) != pipeline_areas:
             logging.error("Integridad de Pipeline fallida: Desajuste de áreas.")
-    except Exception as e:
-        logging.error(f"Error crítico validando integridad del pipeline: {e}")
+    except Exception as error:
+        logging.error(f"Error crítico validando integridad del pipeline: {error}")
 
 _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
-def _msg_seguridad(m: SystemMetrics) -> str: return f"Se detectaron {m.suspicious_count} riesgos de seguridad."
-def _msg_disco(m: SystemMetrics) -> str: return f"Espacio libre en disco bajo: {m.disk_free_percent:.1f}%."
-def _msg_memoria(m: SystemMetrics) -> str: return "Memoria disponible baja, optimice sus procesos."
-def _msg_basura(m: SystemMetrics) -> str: return f"Acumulación de archivos temporales: {m.junk_mb:.0f} MB."
-def _msg_duplicados(m: SystemMetrics) -> str: return f"Recuperación posible: {m.duplicate_mb:.0f} MB en duplicados."
-def _msg_arranque(m: SystemMetrics) -> str: return f"Exceso de programas en arranque: {m.startup_count} entradas."
+def _msg_seguridad(metrics: SystemMetrics) -> str: return f"Se detectaron {metrics.suspicious_count} riesgos de seguridad."
+def _msg_disco(metrics: SystemMetrics) -> str: return f"Espacio libre en disco bajo: {metrics.disk_free_percent:.1f}%."
+def _msg_memoria(metrics: SystemMetrics) -> str: return "Memoria disponible baja, optimice sus procesos."
+def _msg_basura(metrics: SystemMetrics) -> str: return f"Acumulación de archivos temporales: {metrics.junk_mb:.0f} MB."
+def _msg_duplicados(metrics: SystemMetrics) -> str: return f"Recuperación posible: {metrics.duplicate_mb:.0f} MB en duplicados."
+def _msg_arranque(metrics: SystemMetrics) -> str: return f"Exceso de programas en arranque: {metrics.startup_count} entradas."
 
 _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
     "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_seguridad, lambda m, r: r < WARN_THRESHOLD_HIGH),),
@@ -281,8 +281,8 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verificación booleana de estado saludable de los datos."""
-        for f in self._FIELDS_TO_VALIDATE:
-            val = getattr(self, f)
+        for field_name in self._FIELDS_TO_VALIDATE:
+            val = getattr(self, field_name)
             if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
                 return False
         return True
@@ -306,7 +306,7 @@ def grade_for_score(score: float | int) -> str:
 def _sanitize_msg(msg: str | Any) -> str:
     """Filtro de seguridad para evitar inyección de rutas en los reportes de texto."""
     if not isinstance(msg, str): return ""
-    clean = "".join(c for c in msg if c in _ALLOWED_CHARS)
+    clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
     lower_msg = clean.lower()
     if any(term in lower_msg for term in _BLOCKED_TERMS):
         return ""
@@ -404,8 +404,8 @@ def _render_bar(points: int, max_val: int) -> str:
     """Generador visual de barras de progreso para reportes en texto."""
     if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0:
         return "." * 10
-    p = max(0, min(points, max_val))
-    return "#" * p + "." * (max_val - p)
+    percent_val = max(0, min(points, max_val))
+    return "#" * percent_val + "." * (max_val - percent_val)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Serializa el resultado de salud en una lista de líneas para informe legible."""

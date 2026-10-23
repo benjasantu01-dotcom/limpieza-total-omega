@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 220
 
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 97 | 7 | 26 | 12 | 114 |
-| 2026-10-23 | 103 | 8 | 21 | 10 | 106 |
+| 2026-10-22 | 95 | 7 | 24 | 12 | 114 |
+| 2026-10-23 | 106 | 8 | 22 | 10 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **46**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **36**
-- rendimiento: **28**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **20**
 - `browser.py`: **20**
 - `settings.py`: **18**
-- `scanner.py`: **16**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `quarantine.py`: **16**
-- `safety.py`: **15**
 - `branding.py`: **15**
-- `healthscore.py`: **13**
+- `scanner.py`: **15**
+- `healthscore.py`: **14**
+- `safety.py`: **14**
 - `startup.py`: **10**
-- `duplicates.py`: **8**
+- `duplicates.py`: **9**
 - `organizer.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T10:43:36` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `memory.py` mediante la adición de docstrings estructurados y específicos para funciones de bajo nivel que interactúan con APIs de Windows, aclarando el propósito y las precondiciones de cada operación.
+- `2026-10-23T10:42:19` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazó el uso de nombres de variables ambiguos (como `m`, `r` o `e`) por descriptores semánticos (`metrics`, `ratio`, `entry`), mejorando la mantenibilidad y legibilidad del motor analítico sin alterar su lógica funcional.
+- `2026-10-23T10:41:31` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad del flujo lógico mediante Type Hints explícitos, docstrings detalladas que explican el "porqué" de las estrategias de hashing (como la optimización para archivos pequeños) y la normalización de la terminología de tipos, facilitando el mantenimiento y la comprensión del proceso de detección.
 - `2026-10-23T10:33:06` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo agregando type hints de retorno y docstrings detallados en funciones críticas, y clarifiqué la lógica de `_is_excluded_path` con comentarios que explican el *porqué* de las exclusiones de seguridad.
 - `2026-10-23T10:32:48` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings detallados en las clases y funciones clave, especificando las precondiciones, el propósito de los tipos complejos y el flujo de los datos, mejorando así la mantenibilidad del módulo para otros colaboradores.
 - `2026-10-23T10:32:07` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings que especifican explícitamente los contratos de tipos y comportamientos esperados en las funciones de renderizado, y se reemplazó `MappingProxyType` con un esquema de tipos más robusto y verificable para asegurar la inmutabilidad de la configuración global, facilitando así la legibilidad y el mantenimiento.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T10:01:42` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en `_evaluate_rules` y `_render_bar` añadiendo chequeos de tipo y rango para prevenir errores de ejecución ante datos inesperados, mejorando la robustez del motor de diagnóstico.
 - `2026-10-23T10:01:13` **duplicates.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `suggest_keeper` y `_collect_candidates` mediante la validación explícita de entradas (valores `None` o listas vacías) y el manejo preventivo de excepciones durante la inspección de atributos de archivo, evitando fallos inesperados al procesar rutas inaccesibles o eliminadas durante el escaneo.
 - `2026-10-23T10:00:48` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y verificando el estado del generador, evitando que errores de sistema al iterar bloqueen el reporte completo o dejen estados inconsistentes.
-- `2026-10-23T09:51:51` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de `_extract_text_from_gemini_json` implementando una validación exhaustiva de los tipos de datos en la respuesta JSON recibida antes de acceder a sus claves, evitando `KeyError` o `AttributeError` ante respuestas malformadas o inesperadas de la API.
-- `2026-10-23T08:30:45` **startup.py** (seguridad defensiva): Se ha añadido una validación de longitud máxima de caracteres (`MAX_PATH`) en el parser del registro y en la lógica de resolución para prevenir posibles ataques por desbordamiento o procesamiento de rutas mal formadas que excedan los límites del sistema operativo (260 caracteres), reforzando la seguridad defensiva.
-- `2026-10-23T08:29:56` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` al implementar una comprobación estricta de metadatos (evitando archivos con enlaces físicos múltiples o permisos laxos) y se añadió una validación explícita para evitar que `_load_impl` procese rutas que hayan sido manipuladas o sean maliciosas antes de la lectura.

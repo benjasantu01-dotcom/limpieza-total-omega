@@ -1197,3 +1197,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-23T10:33:06` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo agregando type hints de retorno y docstrings detallados en funciones críticas, y clarifiqué la lógica de `_is_excluded_path` con comentarios que explican el *porqué* de las exclusiones de seguridad.
 - `2026-10-23T10:33:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T10:33:06` Corrida terminada. Total usado hoy: 248.
+- `2026-10-23T10:40:54` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-10-23T10:41:31` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y claridad del flujo lógico mediante Type Hints explícitos, docstrings detalladas que explican el "porqué" de las estrategias de hashing (como la optimización para archivos pequeños) y la normalización de la terminología de tipos, facilitando el mantenimiento y la comprensión del proceso de detección.
+- `2026-10-23T10:42:19` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se reemplazó el uso de nombres de variables ambiguos (como `m`, `r` o `e`) por descriptores semánticos (`metrics`, `ratio`, `entry`), mejorando la mantenibilidad y legibilidad del motor analítico sin alterar su lógica funcional.
+- `2026-10-23T10:42:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T10:42:41` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-23T10:43:18` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 13% del original (posible pérdida de código)
+- `2026-10-23T10:43:36` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo `memory.py` mediante la adición de docstrings estructurados y específicos para funciones de bajo nivel que interactúan con APIs de Windows, aclarando el propósito y las precondiciones de cada operación.
+- `2026-10-23T10:43:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T10:43:36` Corrida terminada. Total usado hoy: 252.
