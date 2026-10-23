@@ -190,6 +190,8 @@ class _SettingsManager:
                 finally:
                     f.close()
             
+            # Limitar acceso a solo el dueño: lectura/escritura (0o600)
+            os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
             os.replace(temp_path, resolved_path)
             self.clear()
             return True
@@ -339,6 +341,8 @@ def _is_file_secure_to_read(st: os.stat_result) -> bool:
     try:
         if not stat.S_ISREG(st.st_mode): return False
         if st.st_nlink != 1: return False
+        # Restringir a permisos de lectura/escritura únicamente para el dueño
+        if (st.st_mode & 0o777) > 0o600: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False

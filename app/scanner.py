@@ -293,6 +293,9 @@ class Scanner:
             return
         
         try:
+            # Re-verificación estricta de reparse points antes de operar
+            if self._is_reparse_point(entry):
+                return
             if entry.is_file(follow_symlinks=False):
                 if not self._is_relevant_extension(entry.name):
                     return

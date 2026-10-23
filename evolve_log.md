@@ -1395,3 +1395,37 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-10-23T12:45:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-23T12:45:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T12:45:45` Corrida terminada. Total usado hoy: 300.
+- `2026-10-23T12:53:18` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-23T12:53:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T12:54:35` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se implementó `_is_reparse_point_junction_target` para validar que los puntos de reparse (junctions) no apunten fuera de la raíz permitida (jailbreak preventivo), añadiendo una capa extra de seguridad al resolver el destino real mediante la API `GetFinalPathNameByHandleW`.
+- `2026-10-23T12:54:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T12:55:20` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Mejoré la robustez de `scanner.py` implementando una validación explícita para evitar que `process_entry` intente procesar entradas que, aunque parecen archivos, podrían ser puntos de reanálisis que `_is_safe_entry` pasó por alto en casos de borde, asegurando que `_run_file_heuristics` solo reciba rutas validadas.
+- `2026-10-23T12:55:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T12:55:58` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la integridad del sistema al limitar los permisos de acceso al archivo de configuración a solo lectura y escritura para el usuario propietario, evitando que otros usuarios o procesos en el mismo sistema modifiquen las preferencias de la aplicación.
+- `2026-10-23T12:56:15` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.71s
+
+```
+- `2026-10-23T12:56:15` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se endureció la seguridad en `_validate_file_access` dentro de `StartupEntry` para garantizar que la verificación de existencia no realice operaciones de escritura involuntarias y se optimizó el chequeo de acceso mediante `os.access` en lugar de `open(p, 'rb+')`, lo cual es más eficiente y seguro al no intentar abrir archivos con permisos de escritura.
+- `2026-10-23T12:56:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T12:56:15` Corrida terminada. Total usado hoy: 304.

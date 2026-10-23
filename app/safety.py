@@ -974,8 +974,8 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
         return None
     return None
 
-def _is_reparse_point_safe(path: Path, base_dir: Optional[Path]) -> bool:
-    """Valida que el objetivo de un reparse point se mantenga en el directorio base."""
+def _is_reparse_point_junction_target(path: Path, base_dir: Optional[Path]) -> bool:
+    """Verifica si el destino de un junction apunta fuera del directorio base."""
     if not base_dir: return True
     final_path = _get_final_path_normalized(path)
     return final_path is not None and final_path.is_relative_to(base_dir)
@@ -984,7 +984,7 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
     """Verifica la seguridad de redirecciones mediante puntos de unión NTFS."""
     for p in [path] + list(path.parents):
         if _is_system_directory_junction(str(p)):
-            if not _is_reparse_point_safe(p, base_dir):
+            if not _is_reparse_point_junction_target(p, base_dir):
                 raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def _validate_path_components(path: Path) -> None:

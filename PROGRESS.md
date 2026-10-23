@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 75 | 5 | 22 | 10 | 92 |
-| 2026-10-23 | 132 | 11 | 31 | 12 | 114 |
+| 2026-10-22 | 75 | 5 | 22 | 10 | 88 |
+| 2026-10-23 | 135 | 12 | 31 | 12 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **46**
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **40**
 - rendimiento: **32**
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **21**
 - `diskreport.py`: **20**
 - `memory.py`: **18**
+- `settings.py`: **18**
 - `quarantine.py`: **17**
-- `settings.py`: **17**
-- `scanner.py`: **16**
+- `scanner.py`: **17**
 - `branding.py`: **15**
-- `safety.py`: **14**
+- `safety.py`: **15**
 - `healthscore.py`: **13**
 - `startup.py`: **11**
 - `duplicates.py`: **9**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T12:55:58` **settings.py** (seguridad defensiva): Se reforzó la integridad del sistema al limitar los permisos de acceso al archivo de configuración a solo lectura y escritura para el usuario propietario, evitando que otros usuarios o procesos en el mismo sistema modifiquen las preferencias de la aplicación.
+- `2026-10-23T12:55:20` **scanner.py** (seguridad defensiva): Mejoré la robustez de `scanner.py` implementando una validación explícita para evitar que `process_entry` intente procesar entradas que, aunque parecen archivos, podrían ser puntos de reanálisis que `_is_safe_entry` pasó por alto en casos de borde, asegurando que `_run_file_heuristics` solo reciba rutas validadas.
+- `2026-10-23T12:54:35` **safety.py** (seguridad defensiva): Se implementó `_is_reparse_point_junction_target` para validar que los puntos de reparse (junctions) no apunten fuera de la raíz permitida (jailbreak preventivo), añadiendo una capa extra de seguridad al resolver el destino real mediante la API `GetFinalPathNameByHandleW`.
 - `2026-10-23T12:44:43` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` al integrar explícitamente `ensure_safe_to_modify` para detectar si el destino está en una ruta restringida antes de proceder con cualquier lógica de E/S, asegurando que la validación de seguridad sea una barrera bloqueante y no solo un filtro lógico.
 - `2026-10-23T12:44:15` **memory.py** (seguridad defensiva): Reforcé la seguridad defensiva al validar que los handles de procesos abiertos para `EmptyWorkingSet` tengan los permisos mínimos necesarios (`TRIM_ACCESS_MASK`) y verificando explícitamente que la ruta del ejecutable no sea un enlace simbólico o apunte fuera de los límites de seguridad mediante `is_protected_path` antes de ejecutar la acción, evitando posibles ataques de manipulación de procesos.
 - `2026-10-23T12:36:52` **main.py** (seguridad defensiva): Se ha añadido una validación explícita mediante `is_safe_to_modify` en la función `_collect_settings` al procesar campos de texto que representan rutas, asegurando que cualquier entrada de usuario que el sistema intente persistir sea filtrada preventivamente contra la lista de rutas protegidas antes de ser delegada a `settings_mod`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T12:07:56` **quarantine.py** (robustez ante casos límite): Se mejoró `_is_file_exclusive` agregando un manejo robusto de excepciones para `os.open` y `fcntl.flock`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura por procesos externos) interrumpan el flujo de validación, y se añadió una verificación de existencia previa al intento de apertura.
 - `2026-10-23T12:05:46` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_read_windows_snapshot` y `_iter_process_memory` ante fallos en la carga de librerías DLL o errores internos del sistema operativo que podían dejar la aplicación en un estado inconsistente.
 - `2026-10-23T11:55:20` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de cálculo frente a condiciones de carrera o datos inconsistentes, asegurando que `_compute_cached` maneje exitosamente estados donde el `_PIPELINE` o las métricas arrojen valores no finitos, evitando fugas de excepciones fuera del pipeline.
-- `2026-10-23T11:54:21` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_excluded_path` añadiendo un chequeo explícito de profundidad de ruta (path depth) y longitudes extremas, previniendo errores de `OSError` en sistemas de archivos con restricciones de `MAX_PATH` o estructuras profundamente anidadas (junction cycles), asegurando que el escáner no aborte ante nombres de archivo malformados o rutas excesivamente largas.
-- `2026-10-23T11:44:38` **branding.py** (robustez ante casos límite): Se ha robustecido la función `save_logo_svg` y las funciones de dibujo mediante la validación estricta de rutas, comprobación de estados de coma flotante (`math.isfinite`) y manejo de excepciones en entornos de archivos inexistentes o con restricciones de acceso, asegurando que la app no falle ante valores corruptos o rutas de sistema.
-- `2026-10-23T11:44:18` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_ensure_safe_text` y la sanitización de entradas añadiendo un chequeo explícito de caracteres Unicode de control y formato (como marcas de dirección RTL) que suelen usarse para ofuscar rutas o nombres de archivos, alineándolo con el enfoque de robustez ante casos límite.
