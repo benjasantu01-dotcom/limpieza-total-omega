@@ -8,38 +8,38 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 25
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 26
 - Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 19 | 1 | 8 | 2 | 56 |
+| 2026-10-21 | 18 | 1 | 7 | 2 | 54 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 29 | 1 | 9 | 4 | 25 |
+| 2026-10-23 | 30 | 1 | 9 | 5 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
-- seguridad defensiva: **41**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **31**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `settings.py`: **16**
 - `browser.py`: **16**
 - `memory.py`: **16**
 - `quarantine.py`: **16**
 - `branding.py`: **15**
+- `settings.py`: **15**
 - `safety.py`: **15**
 - `assistant.py`: **15**
+- `healthscore.py`: **11**
 - `scanner.py`: **11**
-- `healthscore.py`: **10**
 - `duplicates.py`: **9**
 - `startup.py`: **8**
 - `organizer.py`: **7**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T03:03:22` **healthscore.py** (robustez ante casos límite): Mejoré la robustez ante estados inesperados en `_calculate_area_contribution` y `_compute_cached` mediante la validación explícita de `weights` y el manejo preventivo de posibles divisiones por cero o desbordamientos durante el cálculo de puntos.
 - `2026-10-23T02:54:06` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante rutas extremadamente largas o inválidas (que pueden disparar `OSError` fuera del alcance de los bloques `try` actuales) y se ha añadido un mecanismo de validación de caracteres de control en las rutas procesadas para prevenir posibles inyecciones de rutas o fallos en el sistema de archivos subyacente.
 - `2026-10-23T02:53:31` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada (`Path` con caracteres inválidos o tipos inesperados) y condiciones de carrera en el sistema de archivos, envolviendo la creación de directorios y la escritura en un bloque de control mejorado que asegura la integridad de la ruta antes de intentar cualquier operación de disco.
 - `2026-10-23T02:52:56` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `AssistantConfig` y `_call_gemini` para manejar correctamente casos donde la configuración sea inesperadamente `None` o presente valores parciales, evitando que la app falle ante archivos de configuración corruptos o incompletos, manteniendo siempre la seguridad del motor local como fallback.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T02:12:08` **startup.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en el uso de `Optional` y `Sequence`) y se añadieron docstrings detallados en las funciones de procesamiento de carpetas y registro para clarificar el propósito de las validaciones de seguridad aplicadas, mejorando la legibilidad técnica del código sin alterar su lógica.
 - `2026-10-23T02:03:03` **scanner.py** (legibilidad y documentación): Se introdujeron anotaciones de tipo más precisas y se documentaron mediante Docstrings los parámetros y retornos de funciones clave, mejorando la legibilidad técnica y facilitando la mantenibilidad del motor heurístico.
 - `2026-10-23T02:02:34` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en funciones clave y la estandarización de las descripciones de los códigos de error, clarificando el propósito de las validaciones de seguridad sin alterar la lógica de ejecución.
-- `2026-10-23T01:56:10` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la lógica compleja de los validadores y renombradores con docstrings precisos, además de clarificar las firmas de los métodos `_validate_isolation_request` y `_write_temp_to_final` para reflejar mejor sus responsabilidades en la cadena de aislamiento.

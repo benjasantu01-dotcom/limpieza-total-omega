@@ -197,13 +197,13 @@ def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Calcula el score normalizado de memoria disponible."""
     val = float(available_percent) if isinstance(available_percent, (int, float)) else 0.0
     if _LIMIT_RAM_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
-    return _clamp(val / _LIMIT_RAM_PERCENT) if _LIMIT_RAM_PERCENT > 0 else 0.0
+    return _clamp(val / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Calcula el score normalizado de espacio en disco."""
     val = float(free_percent) if isinstance(free_percent, (int, float)) else 0.0
     if _LIMIT_DISK_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
-    return _clamp(val / _LIMIT_DISK_PERCENT) if _LIMIT_DISK_PERCENT > 0 else 0.0
+    return _clamp(val / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
     """Calcula el score normalizado de duplicados."""
@@ -325,6 +325,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Calcula el aporte de puntos de un área específica del pipeline."""
+    # Validación robusta de entrada de peso
+    weight = max(0, entry.weight)
     if entry.area not in WEIGHTS or not metrics.is_finite:
         return 0, []
         
@@ -337,11 +339,9 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
         
         recommendations = _evaluate_rules(metrics, entry.rules, area_ratio) if entry.rules else []
         
-        weight = max(0, entry.weight)
-        points = area_ratio * weight
-        
-        val_int = int(round(points))
-        val_int = int(_clamp(float(val_int), 0.0, float(weight)))
+        # Cálculo seguro de puntos evitando desbordamientos
+        points = area_ratio * float(weight)
+        val_int = int(_clamp(round(points), 0.0, float(weight)))
         
         return val_int, recommendations
     except Exception:
@@ -375,14 +375,14 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
             points, recs = _calculate_area_contribution(metrics, entry)
             metric_breakdown[entry.area] = points
             recommendations.extend(recs)
-            total_points += points
+            total_points += float(points)
         except Exception:
             continue
             
     if quarantined > 0:
         recommendations.append("Existen elementos en cuarentena.")
         
-    final_score = int(round(_clamp(total_points, 0.0, 100.0)))
+    final_score = int(_clamp(round(total_points), 0.0, 100.0))
     return HealthResult(
         score=final_score,
         grade=grade_for_score(final_score),

@@ -1531,3 +1531,11 @@ FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - Nam
 - `2026-10-23T02:54:06` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` ante rutas extremadamente largas o inválidas (que pueden disparar `OSError` fuera del alcance de los bloques `try` actuales) y se ha añadido un mecanismo de validación de caracteres de control en las rutas procesadas para prevenir posibles inyecciones de rutas o fallos en el sistema de archivos subyacente.
 - `2026-10-23T02:54:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T02:54:06` Corrida terminada. Total usado hoy: 68.
+- `2026-10-23T03:02:29` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-10-23T03:02:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-23T03:03:22` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez ante estados inesperados en `_calculate_area_contribution` y `_compute_cached` mediante la validación explícita de `weights` y el manejo preventivo de posibles divisiones por cero o desbordamientos durante el cálculo de puntos.
+- `2026-10-23T03:04:37` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez ante estados inconsistentes en la interfaz añadiendo una capa de validación en `_collect_settings` para manejar widgets no inicializados o eliminados prematuramente, asegurando que `AppSettings` siempre contenga datos válidos antes de la persistencia.
+- `2026-10-23T03:04:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T03:04:53` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-23T03:04:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T03:04:53` Corrida terminada. Total usado hoy: 72.
