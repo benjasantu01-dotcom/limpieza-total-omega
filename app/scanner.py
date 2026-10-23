@@ -293,7 +293,6 @@ class Scanner:
             return
         
         try:
-            # Re-verificación estricta de reparse points antes de operar
             if self._is_reparse_point(entry):
                 return
             if entry.is_file(follow_symlinks=False):
@@ -304,7 +303,7 @@ class Scanner:
             elif entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
         except (OSError, PermissionError, FileNotFoundError):
-            pass
+            logger.debug(f"Acceso denegado a {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta todas las heurísticas registradas sobre un archivo válido."""
@@ -316,7 +315,7 @@ class Scanner:
                 finding = check_fn(path, entry, self.now_ts)
                 if finding:
                     self.results.append(finding)
-            except (Exception, OSError) as e:
+            except (OSError, ValueError, AttributeError) as e:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
@@ -333,10 +332,10 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
                 res = check_fn(path, entry, now_ts)
                 if res:
                     findings.append(res)
-            except (Exception, OSError) as e:
+            except (OSError, ValueError, AttributeError) as e:
                 logger.debug(f"Heurística puntual {check_fn.__name__} fallida en {path}: {e}")
         return findings
-    except (OSError, PermissionError, Exception):
+    except (OSError, PermissionError):
         return []
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
@@ -358,7 +357,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     if entry: scanner.process_entry(entry, directory_stack, depth)
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError):
+            logger.debug(f"Error de acceso en directorio {current_dir}")
             continue
     return scanner.results
 

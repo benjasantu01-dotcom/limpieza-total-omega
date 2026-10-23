@@ -660,7 +660,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
                 
             if os.name == 'nt':
-                # Verifica estado mediante handle exclusivo antes de stat
                 handle = ctypes.windll.kernel32.CreateFileW(
                     _to_long_path(str(path)), 0, 0, None, 3, 0x00000080, None
                 )
@@ -675,8 +674,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             
             try:
                 return path.stat()
-            except OSError as e:
-                # Captura errores específicos de Windows durante el stat
+            except (OSError, FileNotFoundError, PermissionError) as e:
                 win_err = getattr(e, 'winerror', None)
                 if win_err == ERROR_ACCESS_DENIED or e.errno == errno.EACCES:
                     raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
@@ -685,7 +683,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 raise UnsafePathError(f"Error de acceso: {path.name} ({e})", SafetyValidationErrorCode.IO_ERROR)
         except UnsafePathError:
             raise
-        except OSError as e:
+        except (OSError, PermissionError) as e:
             win_err = getattr(e, 'winerror', None)
             if e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or win_err in (ERROR_SHARING_VIOLATION, 1920):
                 if attempt < max_retries - 1:
@@ -724,9 +722,9 @@ def _is_readonly(path_str: str) -> bool:
 
 def _validate_access_permissions(path: Path) -> None:
     """Verifica permisos de R/W efectivos para el proceso."""
-    if not path.exists():
-        raise UnsafePathError("Archivo inexistente, no se pueden validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED)
     try:
+        if not path.exists():
+            raise UnsafePathError("Archivo inexistente, no se pueden validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED)
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
         if not os.access(path, os.W_OK):
@@ -1024,9 +1022,7 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
     """Valida la integridad de archivos antes de operaciones de escritura."""
     if not p.exists():
         raise UnsafePathError(f"El archivo fue eliminado: {p.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-    if not os.access(p, os.W_OK):
-        raise UnsafePathError(f"Permisos de escritura insuficientes: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-        
+    
     _validate_access_permissions(p)
     if _is_file_in_use_by_system(str(p)):
         raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
