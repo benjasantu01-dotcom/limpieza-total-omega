@@ -236,7 +236,8 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Orquestador de seguridad que valida identidad, protección, bloqueos y espacio antes de E/S.
+    Orquestador de seguridad: valida identidad, protección, bloqueos y espacio antes de E/S.
+    Usa solo chequeos booleanos (`is_safe_to_modify`) para permitir flujos de control.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -355,14 +356,17 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina físicamente los archivos validados tras aplicar chequeos de seguridad (is_safe)."""
+    """
+    Elimina físicamente los archivos validados tras aplicar chequeos de seguridad.
+    Solo opera sobre archivos, evitando recursión accidental.
+    """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser()
         if not dest.exists() or not dest.is_dir(): return 0
         dest_res = dest.resolve(strict=False)
         
-        # Validación de seguridad de la carpeta base
+        # Validación de seguridad de la carpeta base antes de iterar
         if not is_safe_to_modify(dest_res): return 0
         
         count = 0
@@ -372,7 +376,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 item_res = item.resolve(strict=False)
                 if not item_res.is_relative_to(dest_res): continue
                 
-                # Validar de forma segura antes de borrar
+                # Validar seguridad individual antes de la eliminación física
                 if is_safe_to_modify(item_res):
                     item_res.unlink()
                     count += 1

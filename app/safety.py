@@ -1039,8 +1039,9 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
-    Función de acceso público para validar si una ruta es segura para ser modificada.
-    Lanza UnsafePathError si la validación falla.
+    Valida si una ruta es segura para ser modificada, aplicando restricciones
+    estrictas de sistema, permisos y saneamiento de rutas. Lanza UnsafePathError
+    en caso de violación de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
@@ -1083,7 +1084,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return p
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
-    """Versión booleana de `ensure_safe_to_modify` para comprobaciones de flujo."""
+    """Verificación booleana de seguridad de ruta (wrapper de ensure_safe_to_modify)."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
@@ -1091,7 +1092,10 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir
         return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
-    """Filtra una lista de rutas, retornando únicamente las que son seguras."""
+    """
+    Filtra una colección de rutas, devolviendo exclusivamente aquellas que 
+    superan las validaciones de seguridad de la aplicación.
+    """
     results: list[Path] = []
     if paths is None: return results
     for p in paths:
