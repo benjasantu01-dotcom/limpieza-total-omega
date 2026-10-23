@@ -290,8 +290,8 @@ SENSITIVE_EXTENSIONS: Final[set[str]] = {
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 }
 
-_SYSTEM_ROOT_PATHS: Final[set[Path]] = {
-    Path(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+_SYSTEM_ROOT_PATHS: Final[set[str]] = {
+    os.path.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 }
 
@@ -808,27 +808,27 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Determina si la ruta reside en una zona protegida del sistema.
-    Optimizado: realiza comparación de bajo costo (string/parts) antes de resolver.
+    Optimizado: realiza comparación por partes para evitar E/S innecesaria.
     """
     if not isinstance(path, (str, Path)) or not path: return True
-    path_str = str(path).strip().lower()
-    p_normalized = Path(path_str).absolute()
+    path_norm = os.path.normcase(os.path.abspath(str(path)))
+    path_parts = Path(path_norm).parts
             
-    # 1. Chequeo de ancestros contra rutas raíz del sistema (evita .resolve())
+    # 1. Chequeo de ancestros contra rutas raíz del sistema
     for root in _SYSTEM_ROOT_PATHS:
-        if str(p_normalized).startswith(str(root).lower()):
+        if path_norm.startswith(root):
             return True
             
     # 2. Chequeo por nombre de directorio sensible
-    if not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p_normalized.parts}):
+    if not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in path_parts}):
         return True
         
-    # 3. Atributos de archivos ocultos/sistema
-    attrs = _get_file_attrs(path_str)
+    # 3. Atributos de archivos ocultos/sistema (E/S mínima)
+    attrs = _get_file_attrs(path_norm)
     if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
         return True
             
-    return p_normalized == Path(p_normalized.anchor)
+    return len(path_parts) <= 1
 
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:

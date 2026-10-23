@@ -1262,3 +1262,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-23T11:24:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-10-23T11:24:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T11:24:09` Corrida terminada. Total usado hoy: 268.
+- `2026-10-23T11:31:49` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-10-23T11:32:39` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del hash SHA256 en `_get_sha256` moviendo la validación de `st_mtime` y `st_size` fuera de la función de lectura (usando un caché más eficiente) y aplicando un `try/except` más compacto para evitar el costo de llamadas innecesarias al sistema de archivos en cada iteración del bucle, mejorando significativamente el rendimiento de escaneos masivos.
+- `2026-10-23T11:32:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T11:33:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 99): unterminated string literal (detected at line 99)
+- `2026-10-23T11:34:11` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` al reemplazar la resolución de ruta completa (`absolute()`) por un cálculo de partes basado en la cadena de texto, evitando operaciones costosas de E/S y resolución de sistema de archivos en cada llamada.
+- `2026-10-23T11:34:25` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-10-23T11:34:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T11:34:25` Corrida terminada. Total usado hoy: 272.

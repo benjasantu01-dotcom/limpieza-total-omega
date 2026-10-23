@@ -275,16 +275,12 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """
-    Calcula hash SHA256 mediante streaming para optimizar uso de memoria con archivos grandes.
-    """
-    if not path.is_file(): return ""
-    
+    """Calcula hash SHA256 mediante streaming para optimizar uso de memoria."""
     try:
         st = path.stat()
-        # Uso de mtime + tamaño para identificar si el archivo cambió sin leer contenido
         cache_key = (str(path), st.st_mtime, st.st_size)
-        if cache_key in _HASH_CACHE: return _HASH_CACHE[cache_key]
+        if cache_key in _HASH_CACHE:
+            return _HASH_CACHE[cache_key]
         
         sha256_hash = hashlib.sha256()
         with open(path, "rb", buffering=CHUNK_SIZE) as f:
@@ -293,7 +289,7 @@ def _get_sha256(path: Path) -> str:
         res = sha256_hash.hexdigest()
         _HASH_CACHE[cache_key] = res
         return res
-    except (OSError, PermissionError, IOError, MemoryError):
+    except (OSError, IOError, MemoryError):
         return ""
 
 
