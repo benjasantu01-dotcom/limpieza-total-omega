@@ -367,27 +367,26 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
     
     try:
         f: io.StringIO = io.StringIO(csv_text.strip())
+        # DictReader puede fallar si la cabecera es incorrecta
         reader = csv.DictReader(f)
         
         if not reader.fieldnames or "Name" not in reader.fieldnames or "Value" not in reader.fieldnames:
             return []
         
         for row in reader:
-            try:
-                if not isinstance(row, dict): continue
-                
-                raw_name = row.get("Name")
-                raw_cmd = row.get("Value")
-                
-                if not (isinstance(raw_name, str) and raw_name.strip()) or \
-                   not (isinstance(raw_cmd, str) and raw_cmd.strip()):
-                    continue
-                
-                if _is_registry_entry_safe(raw_name, raw_cmd, seen_commands):
-                    seen_commands.add(raw_cmd.strip())
-                    parsed_entries.append(StartupEntry(name=raw_name.strip(), command=raw_cmd.strip(), source=source))
-            except Exception:
+            if not isinstance(row, dict):
                 continue
+                
+            raw_name = row.get("Name")
+            raw_cmd = row.get("Value")
+            
+            if not (isinstance(raw_name, str) and raw_name.strip()) or \
+               not (isinstance(raw_cmd, str) and raw_cmd.strip()):
+                continue
+            
+            if _is_registry_entry_safe(raw_name, raw_cmd, seen_commands):
+                seen_commands.add(raw_cmd.strip())
+                parsed_entries.append(StartupEntry(name=raw_name.strip(), command=raw_cmd.strip(), source=source))
             
     except (csv.Error, OSError, ValueError, TypeError):
         return parsed_entries
@@ -416,8 +415,10 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
             capture_output=True, text=True, timeout=10, check=False
         )
-        if process.stdout and process.stdout.strip():
-            return parse_registry_csv(process.stdout)
+        # Validación estricta de retorno: solo parsear si hubo salida válida
+        stdout = process.stdout
+        if stdout and stdout.strip():
+            return parse_registry_csv(stdout)
     except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
         return []
     return []

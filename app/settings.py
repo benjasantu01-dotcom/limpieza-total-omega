@@ -332,9 +332,7 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(st: os.stat_result) -> bool:
     """Comprueba permisos, metadatos y asegura que el archivo sea seguro de leer (solo reg)."""
     try:
-        # st_mode debe ser un archivo regular y NO un enlace simbólico
         if not stat.S_ISREG(st.st_mode): return False
-        # Si es un enlace simbólico, lstat ya lo hubiera detectado o st_nlink sería 1 pero S_ISLNK es True
         if st.st_nlink != 1: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
@@ -347,19 +345,18 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     try:
         resolved = file_path.resolve()
         if is_protected_path(str(resolved)) or not is_safe_to_modify(str(resolved)): return None
-        # Usamos lstat para verificar que no es symlink antes de abrir
         if not _is_file_secure_to_read(os.lstat(resolved)): return None
         
         with open(resolved, "rb") as f:
-            # Re-verificación mediante descriptor para mitigar race conditions TOCTOU
             try:
                 if not _is_file_secure_to_read(os.fstat(f.fileno())): return None
-            except OSError: pass
+            except OSError: return None
             
             content = f.read(MAX_SETTINGS_SIZE + 1)
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
             try:
-                data = json.loads(content.decode("utf-8"))
+                decoded = content.decode("utf-8")
+                data = json.loads(decoded)
             except (json.JSONDecodeError, UnicodeDecodeError):
                 return None
             return data if _is_dict(data) else None
