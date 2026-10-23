@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **170** (33.7% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 249
+- Sin respuesta de la IA (error o límite): 251
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 37 | 1 | 12 | 3 | 73 |
+| 2026-10-21 | 33 | 1 | 12 | 3 | 73 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 5 | 0 | 0 | 3 | 20 |
+| 2026-10-23 | 6 | 0 | 1 | 3 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **36**
 - legibilidad y documentación: **32**
 - robustez ante casos límite: **30**
-- rendimiento: **28**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `branding.py`: **16**
-- `browser.py`: **16**
-- `assistant.py`: **15**
-- `quarantine.py`: **15**
+- `diskreport.py`: **18**
+- `quarantine.py`: **16**
+- `branding.py`: **15**
 - `settings.py`: **15**
+- `browser.py`: **15**
 - `memory.py`: **15**
 - `safety.py`: **14**
+- `assistant.py`: **14**
 - `scanner.py`: **11**
 - `duplicates.py`: **11**
 - `healthscore.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T01:21:20` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_unlink` centralizando la validación de integridad y añadiendo una comprobación explícita de `is_protected_path` al inicio de `purge_item` para prevenir errores antes de intentar cualquier operación de disco.
 - `2026-10-23T01:10:54` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez del motor añadiendo validaciones de tipo y estado antes de procesar el pipeline en `_compute_cached`, evitando errores de ejecución si los datos de entrada o la estructura del pipeline son alterados, además de asegurar que la caché no falle ante entradas `None` o malformadas.
 - `2026-10-23T01:03:26` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de acceso a disco en bloques `try...except` más granulares y específicos, asegurando que las excepciones (como `PermissionError` o `FileNotFoundError` durante la enumeración) no interrumpan la ejecución global del escaneo ni propaguen errores inesperados.
 - `2026-10-23T01:01:33` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_rel_path` y `_resolve_browser_path` para prevenir errores de tipo y rutas malformadas antes de intentar operaciones de sistema, reforzando la integridad en el manejo de entradas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-22T13:57:33` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `_is_excluded_path` añadiendo validaciones explícitas contra rutas fuera del ámbito (directory traversal) y garantizando que las rutas resueltas mantengan su integridad antes de cualquier operación de escaneo, evitando así accesos no intencionados fuera del directorio raíz.
 - `2026-10-22T13:57:15` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_should_skip_entry` y `_sum_directory_recursive` mediante el uso de `is_protected_path` como barrera adicional para prevenir el acceso accidental a rutas sensibles, incluso si estas no forman parte explícita de `NEVER_TOUCH`.
 - `2026-10-22T13:56:08` **assistant.py** (seguridad defensiva): Se reforzó `_ensure_safe_text` y los validadores de entrada para prohibir explícitamente caracteres de control y metacaracteres de shell en el cuerpo de las consultas, previniendo inyecciones de comandos incluso en casos de consultas maliciosas altamente ofuscadas antes de que lleguen a cualquier motor de procesamiento.
-- `2026-10-22T13:47:20` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` añadiendo una comprobación explícita de existencia mediante `os.path.exists()` tras la creación del archivo temporal para prevenir condiciones de carrera, y se aseguró la integridad del descriptor de archivo tras el `flush` mediante `os.fsync`.

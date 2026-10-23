@@ -1035,6 +1035,9 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         raise ValueError("ID de ítem vacío o inválido.")
     base_path: Path = quarantine_dir(base)
     
+    if is_protected_path(base_path):
+        return False
+    
     items: List[QuarantineItem] = load_manifest(base)
     quarantine_item: Optional[QuarantineItem] = next((i for i in items if i.item_id == item_id), None)
     if quarantine_item is None:
@@ -1074,7 +1077,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     """Vacía el directorio de cuarentena, sincronizando el manifiesto final."""
     try:
         quarantine_root: Path = quarantine_dir(base).resolve()
-        if _is_filesystem_read_only(quarantine_root):
+        if _is_filesystem_read_only(quarantine_root) or is_protected_path(quarantine_root):
             return 0
             
         items: List[QuarantineItem] = load_manifest(base)
