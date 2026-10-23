@@ -63,21 +63,50 @@ _SVG_GRADIENT_STOPS: Final[str] = "\n".join(
     for o, c in zip(("0%", "55%", "100%"), ("#00f0c0", "#7c5cff", "#ff2d78"))
 )
 
+# Constantes de identidad corporativa
+APP_NAME: Final[str] = "Limpieza Total Omega"
+APP_SHORT_NAME: Final[str] = "Omega"
+APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
+APP_VERSION: Final[str] = "2.1.0"
+
+# Paleta Maestra
+C_BACKGROUND: Final[ColorHex] = "#0a0e17"
+C_SURFACE: Final[ColorHex] = "#141b2d"
+C_SURFACE_ALT: Final[ColorHex] = "#1e2740"
+C_SURFACE_HOVER: Final[ColorHex] = "#28324f"
+C_CARD: Final[ColorHex] = "#182135"
+C_ACCENT: Final[ColorHex] = "#00f0c0"
+C_ACCENT_HOVER: Final[ColorHex] = "#00d0a4"
+C_ACCENT_DIM: Final[ColorHex] = "#0a6b58"
+C_ACCENT2: Final[ColorHex] = "#7c5cff"
+C_ACCENT2_HOVER: Final[ColorHex] = "#6a48f0"
+C_ACCENT3: Final[ColorHex] = "#ff2d78"
+C_SUCCESS: Final[ColorHex] = "#22e39a"
+C_INFO: Final[ColorHex] = "#38bdf8"
+C_WARNING: Final[ColorHex] = "#ffb020"
+C_DANGER: Final[ColorHex] = "#ff4757"
+C_DANGER_HOVER: Final[ColorHex] = "#e02e3d"
+C_TEXT: Final[ColorHex] = "#f0f6fc"
+C_TEXT_MUTED: Final[ColorHex] = "#94a3b8"
+C_TEXT_DIM: Final[ColorHex] = "#5c6b85"
+C_BORDER: Final[ColorHex] = "#2a3654"
+C_GLOW: Final[ColorHex] = "#00f0c0"
+
 # Plantilla SVG parametrizada con marcadores de posición para inyección segura
-_SVG_TEMPLATE: Final[str] = """<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
+_SVG_TEMPLATE: Final[str] = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{{s}}" height="{{s}}" viewBox="0 0 128 128">
   <defs>
-    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}</linearGradient>
+    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{{stops}}</linearGradient>
     <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
-      <stop offset="0%" stop-color="{glow}" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="{glow}" stop-opacity="0"/>
+      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="128" height="128" rx="30" fill="{bg}"/>
+  <rect width="128" height="128" rx="30" fill="{C_SURFACE}"/>
   <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>
   <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z" fill="url(#omegaShield)"/>
-  <path d="M41 75 L75 41" stroke="{bg}" stroke-width="8" stroke-linecap="round"/>
-  <path d="M75 41 L89 38 L92 52 Z" fill="{bg}"/>
-  <text x="64" y="98" font-family="{font}" font-size="26" font-weight="bold" fill="{bg}" text-anchor="middle">&#937;</text>
+  <path d="M41 75 L75 41" stroke="{C_SURFACE}" stroke-width="8" stroke-linecap="round"/>
+  <path d="M75 41 L89 38 L92 52 Z" fill="{C_SURFACE}"/>
+  <text x="64" y="98" font-family="{UI_CONFIG.font_family}" font-size="26" font-weight="bold" fill="{C_SURFACE}" text-anchor="middle">&#937;</text>
 </svg>"""
 
 class CanvasElement(Protocol):
@@ -128,35 +157,6 @@ class FontSizesDict(TypedDict):
     body: int
     mono: int
     caption: int
-
-# Constantes de identidad corporativa
-APP_NAME: Final[str] = "Limpieza Total Omega"
-APP_SHORT_NAME: Final[str] = "Omega"
-APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
-APP_VERSION: Final[str] = "2.1.0"
-
-# Paleta Maestra
-C_BACKGROUND: Final[ColorHex] = "#0a0e17"
-C_SURFACE: Final[ColorHex] = "#141b2d"
-C_SURFACE_ALT: Final[ColorHex] = "#1e2740"
-C_SURFACE_HOVER: Final[ColorHex] = "#28324f"
-C_CARD: Final[ColorHex] = "#182135"
-C_ACCENT: Final[ColorHex] = "#00f0c0"
-C_ACCENT_HOVER: Final[ColorHex] = "#00d0a4"
-C_ACCENT_DIM: Final[ColorHex] = "#0a6b58"
-C_ACCENT2: Final[ColorHex] = "#7c5cff"
-C_ACCENT2_HOVER: Final[ColorHex] = "#6a48f0"
-C_ACCENT3: Final[ColorHex] = "#ff2d78"
-C_SUCCESS: Final[ColorHex] = "#22e39a"
-C_INFO: Final[ColorHex] = "#38bdf8"
-C_WARNING: Final[ColorHex] = "#ffb020"
-C_DANGER: Final[ColorHex] = "#ff4757"
-C_DANGER_HOVER: Final[ColorHex] = "#e02e3d"
-C_TEXT: Final[ColorHex] = "#f0f6fc"
-C_TEXT_MUTED: Final[ColorHex] = "#94a3b8"
-C_TEXT_DIM: Final[ColorHex] = "#5c6b85"
-C_BORDER: Final[ColorHex] = "#2a3654"
-C_GLOW: Final[ColorHex] = "#00f0c0"
 
 PALETTE: Final[PaletteDict] = MappingProxyType({
     "background": C_BACKGROUND, "surface": C_SURFACE, "surface_alt": C_SURFACE_ALT,
@@ -337,7 +337,7 @@ def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
 def logo_svg(size: int = 128) -> str:
     """Genera el contenido XML de un logo SVG basado en la identidad visual."""
     s = max(16, min(1024, int(size)))
-    return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS, glow=C_GLOW, bg=C_SURFACE, font=UI_CONFIG.font_family)
+    return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """Guarda el logo SVG en el sistema de archivos tras verificar permisos."""

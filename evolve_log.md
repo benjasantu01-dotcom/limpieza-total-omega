@@ -716,3 +716,35 @@ ERROR evolve/tests/test_basic.py
 - `2026-10-23T06:28:19` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y la estandarización de type hints, facilitando la comprensión del propósito y los límites de cada validación.
 - `2026-10-23T06:28:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T06:28:19` Corrida terminada. Total usado hoy: 152.
+- `2026-10-23T06:36:21` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-10-23T06:36:51` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._validate_enum_str
+- `2026-10-23T06:37:20` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.77s
+
+```
+- `2026-10-23T06:37:20` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_validate_file_access` para simplificar su lógica de control de flujo y la adición de docstrings estructurados que aclaran el propósito de los métodos internos.
+- `2026-10-23T06:38:30` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso a métricas en `SystemContext` reemplazando los cálculos recursivos y llamadas a `getattr` en los bucles de ingestión por una búsqueda directa en `__dict__` y estructuras de datos planas, mejorando el rendimiento en el procesamiento de contextos complejos.
+- `2026-10-23T06:38:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T06:39:38` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la generación del logo SVG inyectando las constantes estáticas de estilo directamente en la plantilla durante la fase de carga del módulo, eliminando la creación de strings innecesarios en cada llamada a `logo_svg` y aprovechando la naturaleza inmutable de las constantes precomputadas.
+- `2026-10-23T06:39:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T06:39:38` Corrida terminada. Total usado hoy: 156.

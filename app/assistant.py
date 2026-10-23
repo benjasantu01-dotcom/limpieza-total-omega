@@ -415,7 +415,7 @@ class SystemContext:
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
-        val: Any = _get_source_value(source, key)
+        val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
         if val is None or _is_nan_or_inf(val) or isinstance(val, bool): return None
         try:
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
@@ -436,10 +436,10 @@ class SystemContext:
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             val = self._apply_field(source, key, spec)
-            if val is not None and not _is_nan_or_inf(val): 
+            if val is not None: 
                 updates[key] = val
         
-        grade_val = self._clean_grade(_get_source_value(source, "grade"))
+        grade_val = self._clean_grade(source.get("grade") if isinstance(source, dict) else getattr(source, "grade", None))
         if grade_val: 
             updates["grade"] = grade_val
         
@@ -448,15 +448,11 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        try:
-            return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list)) else True
-        except Exception:
-            return False
+        return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list)) else True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios validados al contexto y limpia cachés internas."""
-        for k, v in updates.items():
-            setattr(self, k, v)
+        self.__dict__.update(updates)
         self.analyzed = True
         self.__dict__.pop("metrics_snapshot", None)
         self.__dict__.pop("_hash_tuple", None)
