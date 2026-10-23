@@ -67,6 +67,7 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
 class ExtStats:
     """
     Contenedor mutable de métricas para una extensión de archivo específica.
+    Usa __slots__ para optimizar memoria en recorridos de miles de archivos.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -75,7 +76,10 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Suma el tamaño de un archivo encontrado a la estadística acumulada."""
+        """
+        Incrementa las métricas de la extensión. 
+        Solo procesa valores positivos para mantener la integridad de los contadores.
+        """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -391,21 +395,22 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Escanea el disco consolidando todas las métricas en una estructura SummaryData."""
+    """
+    Realiza el escaneo recursivo del directorio, consolidando el tamaño total,
+    frecuencia por extensión y manteniendo un min-heap para los archivos más pesados.
+    """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    try:
-        for path, size in walk_files(directory, skip_protected):
-            stats.register_file(size, path.suffix)
-            
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-    except (PermissionError, OSError, Exception):
-        pass
+    # El bucle es robusto ante errores de acceso a archivos individuales
+    for path, size in walk_files(directory, skip_protected):
+        stats.register_file(size, path.suffix)
+        
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

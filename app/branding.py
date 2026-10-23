@@ -403,7 +403,14 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el logo completo Omega en un objeto Canvas de tkinter."""
+    """
+    Renderiza el logo vectorial completo de Omega en un widget Canvas.
+    
+    :param canvas: Objeto Canvas de tkinter compatible.
+    :param size: Escala total en píxeles del logo.
+    :param canvas_x: Posición horizontal inicial en el canvas.
+    :param canvas_y: Posición vertical inicial en el canvas.
+    """
     try:
         val_size = float(size)
         if not math.isfinite(val_size): return
@@ -426,7 +433,13 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un anillo de progreso circular para representar métricas de salud."""
+    """
+    Dibuja un anillo de progreso circular para representar métricas.
+    
+    :param percent: Valor numérico (0-100) a representar.
+    :param size: Diámetro del anillo en píxeles.
+    :param thickness: Grosor del trazo circular.
+    """
     try:
         if percent is None: return
         val = float(percent)

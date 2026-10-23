@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 3 | 0 | 2 | 0 | 9 |
+| 2026-10-21 | 2 | 0 | 1 | 0 | 7 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 56 | 2 | 12 | 5 | 65 |
+| 2026-10-23 | 60 | 2 | 12 | 5 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **43**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **35**
-- legibilidad y documentación: **35**
-- rendimiento: **27**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `assistant.py`: **18**
-- `quarantine.py`: **17**
 - `safety.py`: **17**
 - `settings.py`: **17**
+- `browser.py`: **17**
+- `quarantine.py`: **16**
 - `memory.py`: **16**
-- `browser.py`: **16**
-- `branding.py`: **14**
+- `branding.py`: **15**
 - `scanner.py`: **12**
 - `healthscore.py`: **11**
 - `organizer.py`: **9**
+- `duplicates.py`: **9**
 - `startup.py`: **9**
-- `duplicates.py`: **8**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T06:07:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo de trabajo en `duplicates.py`, agregando docstrings detallados en las funciones clave y eliminando la redundancia en la lógica de filtrado de archivos para asegurar que la intención de seguridad sea explícita y fácil de mantener.
+- `2026-10-23T06:07:31` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código en `diskreport.py` añadiendo tipos explícitos en los métodos de `GlobalStats` y consolidando el manejo de errores en `_collect_summary_data`, además de añadir docstrings detallados que explican la lógica de los acumuladores.
+- `2026-10-23T06:07:04` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad de la intención del código agregando docstrings de estilo Google a las funciones de escaneo y renombrando parámetros ambiguos (como `ctx` a `scan_ctx` y `it` a `dir_iterator`) para clarificar su rol en el recorrido recursivo.
+- `2026-10-23T06:06:37` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings estructuradas en las funciones geométricas y de dibujo, y se han aplicado Type Hints explícitos en los parámetros de configuración de las funciones `draw_logo` y `draw_ring` para aclarar sus propósitos.
 - `2026-10-23T05:57:39` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de evaluación de problemas mediante la extracción de `ProblemCriterion` desde el módulo global hacia el `SystemContext` y el uso de un `NamedTuple` para `ProblemCriterion` con lógica encapsulada, reduciendo la carga cognitiva en la sección de constantes.
 - `2026-10-23T05:57:14` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita de tipos y valores tras el `csv.DictReader` para evitar excepciones por datos malformados o entradas nulas, garantizando que el bucle procese solo estructuras de diccionario íntegras.
 - `2026-10-23T05:56:46` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `perform_atomic_write` añadiendo un manejo de excepciones más granular y específico para evitar que errores inesperados de E/S silencien la validación o corrompan el estado, asegurando que cualquier fallo en la escritura atómica sea detectado y no propague estados parciales.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T05:37:21` **main.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en el ciclo de vida de los componentes visuales mediante un chequeo de existencia más estricto (`winfo_exists`) antes de realizar operaciones de configuración o inserción, evitando excepciones en widgets que pudieran estar en proceso de destrucción durante operaciones asíncronas.
 - `2026-10-23T05:36:14` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y la integridad del pipeline introduciendo validaciones más estrictas contra `None` y valores extremos antes de que lleguen a los cálculos, asegurando que cualquier entrada maliciosa o corrupta sea degradada a valores seguros (0.0 o defaults) en lugar de permitir su propagación.
 - `2026-10-23T05:27:03` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_rel_path` y `_resolve_browser_path` añadiendo validaciones estrictas de tipo y contenido para prevenir manipulaciones indebidas de rutas, asegurando que `Path.joinpath` no sea invocado con argumentos maliciosos o vacíos que puedan escapar al sandbox.
-- `2026-10-23T05:25:42` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_sanitize_query` para manejar entradas nulas o maliciosas de forma explícita antes de cualquier procesamiento, y se añadió una validación defensiva en `_is_safe_path_input` para evitar que la validación de seguridad falle silenciosamente con entradas inesperadas.
-- `2026-10-23T04:04:32` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_file_access` incorporando un chequeo previo contra `is_protected_path` (que ya existía) pero añadiendo una validación explícita de `p.exists()` antes de cualquier intento de apertura de archivo, evitando excepciones innecesarias ante enlaces simbólicos rotos o rutas inexistentes que podrían comprometer la estabilidad del escaneo.
-- `2026-10-23T04:04:04` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` al reemplazar el uso de `os.lstat` seguido de `open` por una comprobación consistente mediante `os.fstat` una vez abierto el archivo, mitigando riesgos de condiciones de carrera (TOCTOU) y verificando atributos de seguridad antes de procesar el contenido.
-- `2026-10-23T03:55:27` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` implementando una validación de propiedad (ownership) que asegura que el archivo esté bajo el `base_root` antes de cualquier procesamiento, utilizando `pathlib.Path.is_relative_to` (o lógica equivalente segura) para prevenir ataques de escape de directorio mediante manipulación de rutas (`..`), garantizando que la navegación sea estrictamente descendente.
