@@ -172,7 +172,10 @@ def _is_target_extension(name: str) -> bool:
         return False
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Identifica ejecutables maliciosos cuya carga útil es nula (0 bytes)."""
+    """
+    Heurística: Identifica archivos ejecutables cuya carga útil es nula. 
+    Los archivos de 0 bytes no son funcionales y suelen ser marcadores de error o artefactos maliciosos.
+    """
     if not path or not _is_readable(path): return None
     size = _get_file_size(path)
     if size == 0:
@@ -180,14 +183,21 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Ti
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta el uso de doble extensión (ej: archivo.pdf.exe) para engañar al usuario."""
+    """
+    Heurística: Detecta el uso de doble extensión (e.g., 'documento.pdf.exe').
+    Técnica común para ocultar ejecutables engañando al usuario sobre el tipo de archivo real.
+    """
     if not path or not path.name: return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta ejecutables que suplantan nombres de procesos críticos del sistema."""
+    """
+    Heurística: Detecta ejecutables que intentan suplantar procesos críticos del sistema 
+    al utilizar nombres de archivos conocidos (e.g., 'svchost.exe') pero ubicados fuera 
+    de los directorios legítimos del sistema (System32).
+    """
     if not path or not path.name: return None
     if path.name.lower() in SYSTEM_LOOKALIKES:
         try:
@@ -198,7 +208,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Señala ejecutables recién descargados en carpetas volátiles como el Downloads."""
+    """
+    Heurística: Señala ejecutables recién descargados en carpetas volátiles (Downloads, Temp).
+    El contexto temporal permite priorizar la revisión de archivos de alto riesgo introducidos recientemente.
+    """
     if not path or not path.parent: return None
     if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
         return None

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 226
+- Rechazadas por guardia de seguridad: 49
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 2 | 0 | 0 | 0 | 4 |
+| 2026-10-21 | 0 | 0 | 0 | 0 | 2 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 61 | 2 | 13 | 6 | 66 |
+| 2026-10-23 | 62 | 2 | 14 | 8 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **43**
-- legibilidad y documentación: **40**
-- robustez ante casos límite: **35**
+- legibilidad y documentación: **41**
+- robustez ante casos límite: **33**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `assistant.py`: **18**
 - `safety.py`: **17**
 - `settings.py`: **17**
 - `browser.py`: **17**
 - `quarantine.py`: **16**
 - `memory.py`: **16**
-- `branding.py`: **15**
-- `scanner.py`: **12**
+- `branding.py`: **14**
+- `scanner.py`: **13**
 - `healthscore.py`: **12**
 - `organizer.py`: **9**
 - `duplicates.py`: **9**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T06:28:19` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y la estandarización de type hints, facilitando la comprensión del propósito y los límites de cada validación.
 - `2026-10-23T06:16:34` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en las clases clave (`SystemMetrics`, `PipelineEntry`, `RecommendationRule`) para explicar el propósito y contrato de cada estructura, y se han añadido type hints en funciones donde la inferencia era ambigua.
 - `2026-10-23T06:07:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo de trabajo en `duplicates.py`, agregando docstrings detallados en las funciones clave y eliminando la redundancia en la lógica de filtrado de archivos para asegurar que la intención de seguridad sea explícita y fácil de mantener.
 - `2026-10-23T06:07:31` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código en `diskreport.py` añadiendo tipos explícitos en los métodos de `GlobalStats` y consolidando el manejo de errores en `_collect_summary_data`, además de añadir docstrings detallados que explican la lógica de los acumuladores.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T05:45:55` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `stage_for_review` y `delete_reviewed` mediante el uso de `pathlib.Path.is_relative_to` (reemplazando comparaciones manuales de strings), validación explícita de tipos, y la incorporación de `ensure_safe_to_modify` para el destino en `stage_for_review` para prevenir inyecciones de rutas fuera del directorio de cuarentena.
 - `2026-10-23T05:38:22` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la validación explícita de `kernel32` y `psapi` antes de su uso, asegurando que cualquier fallo al cargar las DLLs de Windows resulte en un mensaje de error controlado en lugar de una excepción no capturada.
 - `2026-10-23T05:37:21` **main.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en el ciclo de vida de los componentes visuales mediante un chequeo de existencia más estricto (`winfo_exists`) antes de realizar operaciones de configuración o inserción, evitando excepciones en widgets que pudieran estar en proceso de destrucción durante operaciones asíncronas.
-- `2026-10-23T05:36:14` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y la integridad del pipeline introduciendo validaciones más estrictas contra `None` y valores extremos antes de que lleguen a los cálculos, asegurando que cualquier entrada maliciosa o corrupta sea degradada a valores seguros (0.0 o defaults) en lugar de permitir su propagación.
