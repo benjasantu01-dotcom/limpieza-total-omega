@@ -282,6 +282,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
 def _read_windows_snapshot() -> MemorySnapshot:
     """Consulta la API GlobalMemoryStatusEx mediante ctypes (Win32)."""
     try:
+        if not hasattr(ctypes, "windll"): return _EMPTY_SNAPSHOT
         kernel32 = ctypes.windll.kernel32
         if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
         mem_status = _create_mem_status_ex()
@@ -291,7 +292,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
                     total=BytesValue(mem_status.ullTotalPhys), 
                     available=BytesValue(mem_status.ullAvailPhys)
                 )
-    except (ctypes.ArgumentError, OSError, ValueError, AttributeError):
+    except (AttributeError, ctypes.ArgumentError, OSError, ValueError):
         pass
     return _EMPTY_SNAPSHOT
 
@@ -409,6 +410,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
         try:
+            if not hasattr(ctypes, "windll"): return []
             kernel32 = ctypes.windll.kernel32
             psapi = ctypes.windll.psapi
             pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))

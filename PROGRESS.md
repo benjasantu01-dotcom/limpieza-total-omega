@@ -16,15 +16,15 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 77 | 5 | 22 | 10 | 110 |
-| 2026-10-23 | 121 | 10 | 28 | 11 | 110 |
+| 2026-10-22 | 75 | 5 | 22 | 10 | 108 |
+| 2026-10-23 | 123 | 10 | 28 | 11 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **38**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -32,10 +32,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **20**
 - `browser.py`: **20**
 - `diskreport.py`: **19**
-- `settings.py`: **17**
-- `scanner.py`: **16**
-- `memory.py`: **16**
-- `quarantine.py`: **16**
+- `memory.py`: **17**
+- `quarantine.py`: **17**
+- `settings.py`: **16**
+- `scanner.py`: **15**
 - `branding.py`: **14**
 - `safety.py`: **14**
 - `healthscore.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T12:07:56` **quarantine.py** (robustez ante casos límite): Se mejoró `_is_file_exclusive` agregando un manejo robusto de excepciones para `os.open` y `fcntl.flock`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura por procesos externos) interrumpan el flujo de validación, y se añadió una verificación de existencia previa al intento de apertura.
+- `2026-10-23T12:05:46` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_read_windows_snapshot` y `_iter_process_memory` ante fallos en la carga de librerías DLL o errores internos del sistema operativo que podían dejar la aplicación en un estado inconsistente.
 - `2026-10-23T11:55:20` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de cálculo frente a condiciones de carrera o datos inconsistentes, asegurando que `_compute_cached` maneje exitosamente estados donde el `_PIPELINE` o las métricas arrojen valores no finitos, evitando fugas de excepciones fuera del pipeline.
 - `2026-10-23T11:54:21` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_excluded_path` añadiendo un chequeo explícito de profundidad de ruta (path depth) y longitudes extremas, previniendo errores de `OSError` en sistemas de archivos con restricciones de `MAX_PATH` o estructuras profundamente anidadas (junction cycles), asegurando que el escáner no aborte ante nombres de archivo malformados o rutas excesivamente largas.
 - `2026-10-23T11:44:38` **branding.py** (robustez ante casos límite): Se ha robustecido la función `save_logo_svg` y las funciones de dibujo mediante la validación estricta de rutas, comprobación de estados de coma flotante (`math.isfinite`) y manejo de excepciones en entornos de archivos inexistentes o con restricciones de acceso, asegurando que la app no falle ante valores corruptos o rutas de sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T11:12:30` **browser.py** (rendimiento): Optimizé el rendimiento de `_sum_directory_recursive` evitando llamadas redundantes a `os.path.normcase` y `str()` dentro del bucle de `os.scandir`, y reemplacé la verificación de `visited_dirs` por una estructura de datos local más eficiente, reduciendo el overhead en escaneos profundos.
 - `2026-10-23T11:03:18` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante docstrings estandarizados que clarifican el flujo de resolución de rutas (cache y validación), facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
 - `2026-10-23T11:02:12` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo mediante la inclusión de type hints explícitos en los retornos y la estandarización de docstrings siguiendo el estilo Google/NumPy para clarificar las responsabilidades de cada componente del motor heurístico.
-- `2026-10-23T10:53:50` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `safety.py` mediante la adición de docstrings estructuradas en las funciones de validación principales, detallando claramente el propósito funcional y los escenarios de error, además de tipado explícito en los iterables de `filter_safe_paths`.
-- `2026-10-23T10:51:37` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de Type Hints explícitos, la corrección de inconsistencias en docstrings, y la conversión de comentarios ambiguos en especificaciones técnicas claras que clarifican el flujo de seguridad, facilitando el mantenimiento del proyecto.

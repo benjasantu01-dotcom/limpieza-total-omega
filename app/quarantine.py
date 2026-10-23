@@ -155,6 +155,8 @@ def _is_file_exclusive(path: Path) -> bool:
     Comprueba si el archivo está libre para escritura. 
     En Windows, intenta abrir el archivo con acceso nulo exclusivo (CreateFileW).
     """
+    if not path.exists():
+        return False
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
         handle: int = k32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x00000080, None)

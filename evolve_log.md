@@ -1317,3 +1317,13 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-23T11:55:20` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el motor de cálculo frente a condiciones de carrera o datos inconsistentes, asegurando que `_compute_cached` maneje exitosamente estados donde el `_PIPELINE` o las métricas arrojen valores no finitos, evitando fugas de excepciones fuera del pipeline.
 - `2026-10-23T11:55:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T11:55:20` Corrida terminada. Total usado hoy: 280.
+- `2026-10-23T12:02:24` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-10-23T12:02:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T12:02:57` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-23T12:03:04` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-23T12:04:16` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-23T12:05:46` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_read_windows_snapshot` y `_iter_process_memory` ante fallos en la carga de librerías DLL o errores internos del sistema operativo que podían dejar la aplicación en un estado inconsistente.
+- `2026-10-23T12:07:00` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-23T12:07:56` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejoró `_is_file_exclusive` agregando un manejo robusto de excepciones para `os.open` y `fcntl.flock`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura por procesos externos) interrumpan el flujo de validación, y se añadió una verificación de existencia previa al intento de apertura.
+- `2026-10-23T12:07:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T12:07:56` Corrida terminada. Total usado hoy: 284.
