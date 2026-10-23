@@ -178,15 +178,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         return True
 
     try:
-        entry_path = Path(entry.path)
-        if is_protected_path(entry_path):
-            return True
-
-        # Verificar contención estricta para evitar escape de directorio
-        abs_entry = entry_path.resolve(strict=False)
-        try:
-            abs_entry.relative_to(root_path)
-        except ValueError:
+        if is_protected_path(Path(entry.path)):
             return True
 
         if entry.is_symlink():
@@ -372,11 +364,11 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
-        # Determina la subcarpeta de primer nivel bajo root
+        # Determina la subcarpeta de primer nivel bajo root evitando resolver la ruta completa
         try:
-            relative = path.relative_to(root)
-            if relative.parts:
-                top_folder = root / relative.parts[0]
+            parts = path.relative_to(root).parts
+            if parts:
+                top_folder = root / parts[0]
                 metrics = stats[str(top_folder)]
                 metrics.size += size
                 metrics.file_count += 1

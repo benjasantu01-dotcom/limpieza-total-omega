@@ -1470,3 +1470,10 @@ FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_fa
 - `2026-10-23T02:13:31` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetitivas a `os.path.normcase` y `str(Path)` dentro del bucle, y reemplacé la validación de `NEVER_TOUCH` por una búsqueda más eficiente utilizando el conjunto normalizado en `ScanContext`.
 - `2026-10-23T02:13:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T02:13:31` Corrida terminada. Total usado hoy: 52.
+- `2026-10-23T02:21:40` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-23T02:22:08` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` para reducir drásticamente el número de llamadas a `path.relative_to(root)` y las operaciones de resolución de rutas en el hot-path, utilizando un filtro de exclusión más directo y eficiente.
+- `2026-10-23T02:22:36` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-23T02:22:59` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.safe_get
+- `2026-10-23T02:23:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 19% del original (posible pérdida de código)
+- `2026-10-23T02:23:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T02:23:12` Corrida terminada. Total usado hoy: 56.
