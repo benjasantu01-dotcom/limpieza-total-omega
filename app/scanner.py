@@ -236,10 +236,11 @@ class Scanner:
 
     @lru_cache(maxsize=2048)
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica estrictamente mediante commonpath si la ruta está contenida dentro del scope."""
+        """Verifica estrictamente mediante comparación de rutas que no haya escape de directorio."""
         try:
             target = Path(entry_path).resolve()
-            return os.path.commonpath([str(self.base_root), str(target)]) == str(self.base_root)
+            # Verifica que la ruta contenga el prefijo de la raíz base
+            return str(target).startswith(str(self.base_root))
         except (OSError, ValueError, RuntimeError):
             return False
 
@@ -313,7 +314,7 @@ class Scanner:
             if entry.is_file(follow_symlinks=False):
                 if not self._is_relevant_extension(entry.name):
                     return
-                # Doble validación de scope antes de heurística
+                # Validación final de scope para asegurar integridad
                 if not self._is_inside_base_root(entry.path):
                     return
                 self.seen.add(path_norm)

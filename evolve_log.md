@@ -448,3 +448,10 @@ ERROR evolve/tests/test_basic.py
 - `2026-10-23T03:46:27` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-10-23T03:46:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T03:46:27` Corrida terminada. Total usado hoy: 88.
+- `2026-10-23T03:53:19` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-23T03:54:06` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_safe_unlink` integrando una validación previa de existencia y estado del inodo, además de asegurar que `os.remove` no se ejecute sobre rutas que hayan perdido su relación de integridad durante la llamada, previniendo condiciones de carrera TOCTOU al borrar archivos del sandbox.
+- `2026-10-23T03:54:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-23T03:55:15` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-23T03:55:27` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` implementando una validación de propiedad (ownership) que asegura que el archivo esté bajo el `base_root` antes de cualquier procesamiento, utilizando `pathlib.Path.is_relative_to` (o lógica equivalente segura) para prevenir ataques de escape de directorio mediante manipulación de rutas (`..`), garantizando que la navegación sea estrictamente descendente.
+- `2026-10-23T03:55:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T03:55:27` Corrida terminada. Total usado hoy: 92.

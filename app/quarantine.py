@@ -335,6 +335,9 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
     """Borrado controlado: garantiza sincronización mediante fsync del directorio contenedor."""
+    if not path.exists():
+        return False
+        
     if not _validate_file_for_unlink(path, expected_hash, expected_inode):
         return False
         
