@@ -276,16 +276,6 @@ _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]{1,64}$")
 _API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]{1,128}$")
 
-# Definición de umbrales para salud del sistema (Ordenado por impacto en el usuario)
-_CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
-    ProblemCriterion("disk_free_percent", 10.0, "<", "{:.0f}% de disco libre"),
-    ProblemCriterion("suspicious_warnings", 0, ">", "{:d} archivo(s) sospechosos"),
-    ProblemCriterion("memory_available_percent", 15.0, "<", "{:.0f}% de RAM"),
-    ProblemCriterion("junk_mb", 1000.0, ">", "{:.0f} MB de basura"),
-    ProblemCriterion("duplicate_mb", 500.0, ">", "{:.0f} MB en duplicados"),
-    ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
-)
-
 _EXPLANATION_MAP: Final[Dict[str, str]] = {
     "basura": "Archivos temporales y restos de instaladores: ocupan espacio innecesario sin aportar valor operativo.",
     "seguridad": "Archivos con señales de riesgo: extensiones inusuales o ejecutables sin firma, requieren revisión manual.",
@@ -357,8 +347,17 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 def _evaluate_active_problems(metrics_tuple: tuple) -> tuple[str, ...]:
     """Calcula los problemas activos a partir de los valores crudos cacheables."""
     metrics_dict = dict(metrics_tuple)
+    # Definición de criterios de salud
+    criterios: tuple[ProblemCriterion, ...] = (
+        ProblemCriterion("disk_free_percent", 10.0, "<", "{:.0f}% de disco libre"),
+        ProblemCriterion("suspicious_warnings", 0, ">", "{:d} archivo(s) sospechosos"),
+        ProblemCriterion("memory_available_percent", 15.0, "<", "{:.0f}% de RAM"),
+        ProblemCriterion("junk_mb", 1000.0, ">", "{:.0f} MB de basura"),
+        ProblemCriterion("duplicate_mb", 500.0, ">", "{:.0f} MB en duplicados"),
+        ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
+    )
     return tuple(
-        msg for c in _CRITERIOS_SALUD 
+        msg for c in criterios 
         if (msg := c.format_if_triggered(metrics_dict.get(c.metric_key, -1.0))) is not None
     )
 
@@ -388,7 +387,6 @@ class SystemContext:
     def active_problems(self) -> tuple[str, ...]:
         """Evalúa los criterios de salud contra los datos actuales y retorna los problemas activos."""
         if not self.analyzed: return ()
-        # Convertimos a tupla de items para que sea hashable y cacheable en _evaluate_active_problems
         return _evaluate_active_problems(tuple(sorted(self.metrics_snapshot.items())))
 
     @cached_property
@@ -422,7 +420,6 @@ class SystemContext:
         try:
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
             if valid_val is None: return None
-            # Asegurar que el tipo final sea consistente con el hint de la especificación
             return spec.type_hint(valid_val)
         except (ValueError, TypeError, Exception):
             return None
@@ -462,7 +459,6 @@ class SystemContext:
             setattr(self, k, v)
         self.analyzed = True
         self.__dict__.pop("metrics_snapshot", None)
-        # Nota: active_problems usa lru_cache externo, no requiere borrado aquí
         self.__dict__.pop("_hash_tuple", None)
 
     def ingest(self, source: Any) -> bool:
@@ -501,10 +497,8 @@ def _ensure_safe_text(text: Any) -> bool:
     """Desinfecta estricta sobre cadenas evitando inyecciones de comandos."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
-    # Rechazo estricto de metacaracteres de shell, control, y rutas protegidas
     if is_protected_path(text):
         return False
-    # Filtro reforzado contra inyecciones y caracteres invisibles/de control
     if any(c in text for c in "<>|&^$():;\n\r\t\"'\\`"):
         return False
     return not _is_safe_path_input(text)
@@ -665,7 +659,6 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     if not isinstance(raw_cfg, dict):
         return default
     
-    # Extraer de forma defensiva asegurando que el dict contenga lo necesario o sea ignorado
     api_key = raw_cfg.get("asistente_api_key", "")
     model = raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")
     metrics_val = raw_cfg.get("asistente_enviar_metricas", True)
@@ -684,7 +677,6 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     if not q or not _ensure_safe_text(q): return None
     full_prompt: str = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
     if len(full_prompt) > _MAX_PROMPT_LIMIT: return None
-    # Verificación final de seguridad estricta para evitar inyección en el payload completo
     if not _ensure_safe_text(full_prompt): return None
     payload_data: dict[str, Any] = {"contents": [{"parts": [{"text": full_prompt}]}]}
     if not _is_safe_payload_structure(payload_data): return None
@@ -723,13 +715,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload: Optional[bytes] = _build_payload(question, context_text)
     if not payload: return None
     
-    # Validar endpoint y URL base con reglas estrictas de inyección de parámetros
     target_url: str = _ENDPOINT_BASE.format(model=model)
     if not target_url.startswith(_API_HOST_ROOT) or any(c in target_url for c in "<>\"' \t\n\r&?="):
         return None
     
     try:
-        # Construcción segura de la URL con parámetros: no se permiten metacaracteres adicionales
         full_url: str = f"{target_url}?key={api_key}"
         req: urllib.request.Request = urllib.request.Request(
             full_url, 

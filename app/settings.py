@@ -190,7 +190,7 @@ class _SettingsManager:
             os.replace(temp_path, resolved_path)
             self.clear()
             return True
-        except (OSError, IOError, PermissionError):
+        except (OSError, IOError, PermissionError, ValueError, RuntimeError):
             return False
 
 _MANAGER = _SettingsManager()
@@ -356,7 +356,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             try:
                 decoded = content.decode("utf-8")
                 data = json.loads(decoded)
-            except (json.JSONDecodeError, UnicodeDecodeError):
+            except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
                 return None
             return data if _is_dict(data) else None
     except (OSError, IOError, PermissionError, MemoryError):
@@ -434,7 +434,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             _MANAGER._cached_settings = cleaned_settings
             return config_path
         return None
-    except (OSError, PermissionError, AttributeError, TypeError): return None
+    except (OSError, PermissionError, AttributeError, TypeError, ValueError): return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Aplica cambios parciales a la configuración actual y los persiste."""

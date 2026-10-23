@@ -380,7 +380,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
     
     try:
         f: io.StringIO = io.StringIO(csv_text.strip())
-        # DictReader puede fallar si la cabecera es incorrecta
         reader = csv.DictReader(f)
         
         if not reader.fieldnames or "Name" not in reader.fieldnames or "Value" not in reader.fieldnames:
@@ -393,13 +392,16 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             raw_name = row.get("Name")
             raw_cmd = row.get("Value")
             
-            if not (isinstance(raw_name, str) and raw_name.strip()) or \
-               not (isinstance(raw_cmd, str) and raw_cmd.strip()):
+            if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
+                continue
+                
+            n, c = raw_name.strip(), raw_cmd.strip()
+            if not n or not c:
                 continue
             
-            if _is_registry_entry_safe(raw_name, raw_cmd, seen_commands):
-                seen_commands.add(raw_cmd.strip())
-                parsed_entries.append(StartupEntry(name=raw_name.strip(), command=raw_cmd.strip(), source=source))
+            if _is_registry_entry_safe(n, c, seen_commands):
+                seen_commands.add(c)
+                parsed_entries.append(StartupEntry(name=n, command=c, source=source))
             
     except (csv.Error, OSError, ValueError, TypeError):
         return parsed_entries

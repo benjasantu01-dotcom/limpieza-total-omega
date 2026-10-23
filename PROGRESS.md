@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 49
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 233
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 3 | 0 | 2 | 1 | 12 |
+| 2026-10-21 | 3 | 0 | 2 | 0 | 9 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 52 | 2 | 12 | 5 | 65 |
+| 2026-10-23 | 56 | 2 | 12 | 5 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
-- manejo de errores y validación de entradas: **40**
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **35**
-- legibilidad y documentación: **34**
+- legibilidad y documentación: **35**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
+- `assistant.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
-- `assistant.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `memory.py`: **16**
 - `browser.py`: **16**
 - `branding.py`: **14**
-- `scanner.py`: **11**
+- `scanner.py`: **12**
 - `healthscore.py`: **11**
 - `organizer.py`: **9**
+- `startup.py`: **9**
 - `duplicates.py`: **8**
-- `startup.py`: **8**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T05:57:39` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de evaluación de problemas mediante la extracción de `ProblemCriterion` desde el módulo global hacia el `SystemContext` y el uso de un `NamedTuple` para `ProblemCriterion` con lógica encapsulada, reduciendo la carga cognitiva en la sección de constantes.
+- `2026-10-23T05:57:14` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita de tipos y valores tras el `csv.DictReader` para evitar excepciones por datos malformados o entradas nulas, garantizando que el bucle procese solo estructuras de diccionario íntegras.
+- `2026-10-23T05:56:46` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `perform_atomic_write` añadiendo un manejo de excepciones más granular y específico para evitar que errores inesperados de E/S silencien la validación o corrompan el estado, asegurando que cualquier fallo en la escritura atómica sea detectado y no propague estados parciales.
+- `2026-10-23T05:56:15` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_valid_path_structure` y `_is_valid_file_path` integrando verificaciones de nulidad y tipo más estrictas, y añade un manejo de excepciones más granular en `_get_file_size` para prevenir errores durante la lectura de atributos de archivos bloqueados.
 - `2026-10-23T05:47:57` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` implementando una validación temprana y exhaustiva de `base_dir`, asegurando que cualquier error en la resolución del directorio raíz (como rutas mal formadas o inaccesibles) sea capturado explícitamente como un `UnsafePathError` antes de proceder con el resto de la lógica.
 - `2026-10-23T05:46:57` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_exclusive` agregando un manejo explícito para el error `PermissionError` en POSIX (adicional a `OSError` e `IOError`), alineándolo con el resto de la suite de validación de seguridad para evitar caídas inesperadas en sistemas donde el acceso a descriptores de archivos sea restringido.
 - `2026-10-23T05:45:55` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `stage_for_review` y `delete_reviewed` mediante el uso de `pathlib.Path.is_relative_to` (reemplazando comparaciones manuales de strings), validación explícita de tipos, y la incorporación de `ensure_safe_to_modify` para el destino en `stage_for_review` para prevenir inyecciones de rutas fuera del directorio de cuarentena.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T04:04:32` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_file_access` incorporando un chequeo previo contra `is_protected_path` (que ya existía) pero añadiendo una validación explícita de `p.exists()` antes de cualquier intento de apertura de archivo, evitando excepciones innecesarias ante enlaces simbólicos rotos o rutas inexistentes que podrían comprometer la estabilidad del escaneo.
 - `2026-10-23T04:04:04` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` al reemplazar el uso de `os.lstat` seguido de `open` por una comprobación consistente mediante `os.fstat` una vez abierto el archivo, mitigando riesgos de condiciones de carrera (TOCTOU) y verificando atributos de seguridad antes de procesar el contenido.
 - `2026-10-23T03:55:27` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` implementando una validación de propiedad (ownership) que asegura que el archivo esté bajo el `base_root` antes de cualquier procesamiento, utilizando `pathlib.Path.is_relative_to` (o lógica equivalente segura) para prevenir ataques de escape de directorio mediante manipulación de rutas (`..`), garantizando que la navegación sea estrictamente descendente.
-- `2026-10-23T03:54:06` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_unlink` integrando una validación previa de existencia y estado del inodo, además de asegurar que `os.remove` no se ejecute sobre rutas que hayan perdido su relación de integridad durante la llamada, previniendo condiciones de carrera TOCTOU al borrar archivos del sandbox.
-- `2026-10-23T03:44:47` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de directorios en `on_build_report` y `on_save_report`, asegurando que ninguna ruta pase al módulo de reportes sin haber sido sanitizada y verificada contra `safety.py`.
-- `2026-10-23T03:34:29` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo recursivo en `_collect_candidates` añadiendo una validación explícita de `is_safe_to_modify` antes de seguir cualquier ruta encontrada por `scandir`, asegurando que el motor no atraviese estructuras inseguras incluso si `entry.is_dir` devuelve verdadero.
-- `2026-10-23T03:34:22` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo una validación de "escape de raíz" para asegurar que, incluso en presencia de enlaces simbólicos o puntos de reparse, el escáner no pueda salirse del directorio base solicitado, utilizando `pathlib.Path.resolve` y `Path.is_relative_to` para una validación robusta.

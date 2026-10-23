@@ -102,7 +102,7 @@ def _is_valid_file_path(path: Path) -> bool:
     try:
         p = Path(path)
         return p.is_file()
-    except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
+    except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError):
         return False
 
 def _is_readable(path: Path) -> bool:
@@ -129,8 +129,7 @@ def _get_file_size(path: Path) -> int:
     if not isinstance(path, Path):
         return -1
     try:
-        stat_result = path.stat()
-        return int(stat_result.st_size)
+        return int(path.stat().st_size)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError, TypeError):
         return -1
 
@@ -165,8 +164,9 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 
 def _is_target_extension(name: str) -> bool:
     """Comprueba si el archivo posee una extensión bajo monitoreo heurístico."""
+    if not isinstance(name, str) or not name: return False
     try:
-        if not name or RTL_CHAR_RE.search(name): return False
+        if RTL_CHAR_RE.search(name): return False
         return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
     except (ValueError, TypeError):
         return False
@@ -239,14 +239,13 @@ class Scanner:
         """Verifica estrictamente mediante comparación de rutas que no haya escape de directorio."""
         try:
             target = Path(entry_path).resolve()
-            # Verifica que la ruta contenga el prefijo de la raíz base
             return str(target).startswith(str(self.base_root))
         except (OSError, ValueError, RuntimeError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida que el nombre de archivo no contenga caracteres o patrones reservados por el SO."""
-        if not name: return True
+        if not isinstance(name, str) or not name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name) or "\0" in name)
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
@@ -314,7 +313,6 @@ class Scanner:
             if entry.is_file(follow_symlinks=False):
                 if not self._is_relevant_extension(entry.name):
                     return
-                # Validación final de scope para asegurar integridad
                 if not self._is_inside_base_root(entry.path):
                     return
                 self.seen.add(path_norm)
