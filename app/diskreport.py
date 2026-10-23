@@ -318,7 +318,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Generador iterativo para recorrer el sistema de archivos, restringido a la raíz original.
     """
-    root_path = _validate_root(directory)
+    try:
+        root_path = _validate_root(directory)
+    except (OSError, Exception):
+        return
+        
     if root_path is None: return
     
     visited_inodes: set[Inode] = set()
@@ -425,7 +429,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """Genera una lista de líneas de texto con un informe de uso para interfaz de usuario."""
-    root = _validate_root(directory)
+    try:
+        root = _validate_root(directory)
+    except (OSError, Exception):
+        root = None
+
     if root is None: 
         return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]
     

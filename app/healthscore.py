@@ -271,9 +271,6 @@ class SystemMetrics:
         }
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
-            if val is None:
-                setattr(self, field_name, 0.0)
-                continue
             min_v, max_v = limits.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
             setattr(self, field_name, sanitized)
@@ -339,12 +336,12 @@ def _calculate_area_contribution(metrics_tuple: Tuple[float, ...], area_idx: int
     if area_idx < 0 or area_idx >= len(_PIPELINE):
         return 0, ()
         
-    entry = _PIPELINE[area_idx]
-    keys = SystemMetrics._FIELDS_TO_VALIDATE
-    metrics = SystemMetrics(**dict(zip(keys, metrics_tuple)))
-    
-    weight = max(0, entry.weight)
     try:
+        entry = _PIPELINE[area_idx]
+        keys = SystemMetrics._FIELDS_TO_VALIDATE
+        metrics = SystemMetrics(**dict(zip(keys, metrics_tuple)))
+        
+        weight = max(0, entry.weight)
         if sys.getrecursionlimit() < _MAX_RECURSION_DEPTH or not metrics.is_finite:
             return 0, ()
 
