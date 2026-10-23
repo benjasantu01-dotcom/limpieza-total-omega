@@ -372,11 +372,18 @@ def _calculate_area_contribution(metrics: SystemMetrics, entry: PipelineEntry) -
 @lru_cache(maxsize=256)
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Implementación interna cacheable de la lógica de cómputo."""
+    if not _PIPELINE:
+        return HealthResult(0, "F", {}, ["Error: Pipeline no inicializado."])
+        
     keys = SystemMetrics._FIELDS_TO_VALIDATE
+    if len(metrics_tuple) != len(keys):
+        return HealthResult(0, "F", {}, ["Error: Inconsistencia de datos."])
+        
     metrics = SystemMetrics(**dict(zip(keys, metrics_tuple)))
+    metrics.quarantined_count = quarantined
     
-    if not metrics.is_finite or not _PIPELINE:
-        return HealthResult(0, "F", {}, ["Error: Inconsistencia en métricas o pipeline."])
+    if not metrics.is_finite:
+        return HealthResult(0, "F", {}, ["Error: Inconsistencia en métricas."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -411,8 +418,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos o corruptos."])
     
-    cache_key = tuple(getattr(metrics, f) for f in metrics._FIELDS_TO_VALIDATE)
-    return _compute_cached(cache_key, metrics.quarantined_count)
+    cache_key = tuple(float(getattr(metrics, f)) for f in metrics._FIELDS_TO_VALIDATE)
+    return _compute_cached(cache_key, int(metrics.quarantined_count))
 
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:

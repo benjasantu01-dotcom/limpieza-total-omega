@@ -1394,3 +1394,11 @@ FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_fa
 - `2026-10-23T01:03:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-23T01:03:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T01:03:46` Corrida terminada. Total usado hoy: 24.
+- `2026-10-23T01:10:24` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-10-23T01:10:54` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez del motor añadiendo validaciones de tipo y estado antes de procesar el pipeline en `_compute_cached`, evitando errores de ejecución si los datos de entrada o la estructura del pipeline son alterados, además de asegurar que la caché no falle ante entradas `None` o malformadas.
+- `2026-10-23T01:10:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T01:12:11` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de las validaciones de entrada en `main.py` mediante un refinamiento en `_safe_get_entry_value` y la centralización de la limpieza de datos en la interfaz de ajustes, asegurando que cualquier entrada del usuario sea sanitizada y verificada antes de procesarla, previniendo errores de conversión y ataques por inyección de rutas.
+- `2026-10-23T01:12:39` ➖ Sin cambios en memory.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_safe_int_conversion` y `format_bytes` para manejar valores inesperados de forma silenciosa y segura, evitando posibles excepciones de tipo `TypeError` o `ValueError` que podrían interrumpir el flujo del módulo.
+- `2026-10-23T01:12:50` ➖ Sin cambios en organizer.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez de `stage_for_review` mediante la validación explícita de tipos y la captura de errores en la resolución de rutas, evitando que una excepción en un archivo individual interrumpa el procesamiento del lote o deje el estado inconsistente.
+- `2026-10-23T01:12:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T01:12:50` Corrida terminada. Total usado hoy: 28.
