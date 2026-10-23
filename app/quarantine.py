@@ -165,7 +165,7 @@ def _is_file_exclusive(path: Path) -> bool:
             return True
         finally:
             os.close(fd)
-    except (OSError, IOError, AttributeError):
+    except (OSError, IOError, PermissionError, AttributeError):
         return False
 
 @dataclass

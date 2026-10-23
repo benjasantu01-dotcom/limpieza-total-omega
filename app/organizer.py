@@ -325,16 +325,17 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         dest_base = Path(review_dir).expanduser()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve(strict=False)
-        # Seguridad extra: no aceptar si el destino es un punto de reparse
-        if not is_safe_to_modify(dest_res) or is_protected_path(dest_res) or _has_forbidden_chars(dest_res) or dest_res.is_symlink(): return None
+        ensure_safe_to_modify(dest_res)
+        
+        if is_protected_path(dest_res) or _has_forbidden_chars(dest_res) or dest_res.is_symlink(): return None
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
             try:
                 if not _is_safe_for_disk_op(junk_file, dest_res): continue
                 target_path = _can_move_file(junk_file, dest_res)
-                if target_path and target_path != junk_file.path:
-                    if target_path.resolve(strict=False).is_relative_to(dest_res) and junk_file.path.exists():
+                if target_path and target_path.resolve(strict=False).is_relative_to(dest_res):
+                    if junk_file.path.exists():
                         shutil.move(str(junk_file.path.resolve(strict=True)), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
@@ -361,7 +362,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest_res.iterdir():
             try:
-                # Evitar seguir enlaces simbólicos dentro de la carpeta de revisión
                 if not item.is_file() or item.is_symlink() or _is_junction(item): continue
                 item_res = item.resolve(strict=False)
                 if not item_res.is_relative_to(dest_res): continue

@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 48
+- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 234
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 5 | 1 | 2 | 1 | 13 |
+| 2026-10-21 | 3 | 0 | 2 | 1 | 12 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 49 | 2 | 11 | 5 | 65 |
+| 2026-10-23 | 52 | 2 | 12 | 5 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
-- manejo de errores y validación de entradas: **37**
-- legibilidad y documentación: **35**
+- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **35**
-- rendimiento: **28**
+- legibilidad y documentación: **34**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
+- `quarantine.py`: **17**
+- `safety.py`: **17**
 - `assistant.py`: **17**
-- `quarantine.py`: **16**
-- `safety.py`: **16**
 - `settings.py`: **16**
 - `memory.py`: **16**
 - `browser.py`: **16**
-- `branding.py`: **15**
+- `branding.py`: **14**
 - `scanner.py`: **11**
 - `healthscore.py`: **11**
-- `startup.py`: **9**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `duplicates.py`: **8**
+- `startup.py`: **8**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T05:47:57` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` implementando una validación temprana y exhaustiva de `base_dir`, asegurando que cualquier error en la resolución del directorio raíz (como rutas mal formadas o inaccesibles) sea capturado explícitamente como un `UnsafePathError` antes de proceder con el resto de la lógica.
+- `2026-10-23T05:46:57` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_exclusive` agregando un manejo explícito para el error `PermissionError` en POSIX (adicional a `OSError` e `IOError`), alineándolo con el resto de la suite de validación de seguridad para evitar caídas inesperadas en sistemas donde el acceso a descriptores de archivos sea restringido.
+- `2026-10-23T05:45:55` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `stage_for_review` y `delete_reviewed` mediante el uso de `pathlib.Path.is_relative_to` (reemplazando comparaciones manuales de strings), validación explícita de tipos, y la incorporación de `ensure_safe_to_modify` para el destino en `stage_for_review` para prevenir inyecciones de rutas fuera del directorio de cuarentena.
 - `2026-10-23T05:38:22` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la validación explícita de `kernel32` y `psapi` antes de su uso, asegurando que cualquier fallo al cargar las DLLs de Windows resulte en un mensaje de error controlado en lugar de una excepción no capturada.
 - `2026-10-23T05:37:21` **main.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en el ciclo de vida de los componentes visuales mediante un chequeo de existencia más estricto (`winfo_exists`) antes de realizar operaciones de configuración o inserción, evitando excepciones en widgets que pudieran estar en proceso de destrucción durante operaciones asíncronas.
 - `2026-10-23T05:36:14` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y la integridad del pipeline introduciendo validaciones más estrictas contra `None` y valores extremos antes de que lleguen a los cálculos, asegurando que cualquier entrada maliciosa o corrupta sea degradada a valores seguros (0.0 o defaults) en lugar de permitir su propagación.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T03:44:47` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de directorios en `on_build_report` y `on_save_report`, asegurando que ninguna ruta pase al módulo de reportes sin haber sido sanitizada y verificada contra `safety.py`.
 - `2026-10-23T03:34:29` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo recursivo en `_collect_candidates` añadiendo una validación explícita de `is_safe_to_modify` antes de seguir cualquier ruta encontrada por `scandir`, asegurando que el motor no atraviese estructuras inseguras incluso si `entry.is_dir` devuelve verdadero.
 - `2026-10-23T03:34:22` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo una validación de "escape de raíz" para asegurar que, incluso en presencia de enlaces simbólicos o puntos de reparse, el escáner no pueda salirse del directorio base solicitado, utilizando `pathlib.Path.resolve` y `Path.is_relative_to` para una validación robusta.
-- `2026-10-23T03:33:57` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_cache_path` añadiendo un chequeo explícito de atributos de sistema ocultos (usando `kernel32`) para evitar que el escáner intente listar directorios de caché que residan inadvertidamente bajo rutas críticas protegidas por el SO, manteniendo la consistencia con las reglas de acceso seguro.
-- `2026-10-23T03:33:33` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` al normalizar la ruta de destino antes de cualquier validación y asegurar que el directorio padre sea verificado explícitamente, evitando condiciones de carrera o validaciones ambiguas.
-- `2026-10-23T03:24:45` **assistant.py** (seguridad defensiva): Se endureció `_ensure_safe_text` agregando una validación explícita mediante `is_protected_path` al inicio y refinando el filtrado de caracteres especiales para prevenir inyecciones en el motor remoto, garantizando que el asistente nunca procese datos que pudieran comprometer la seguridad del sistema.
