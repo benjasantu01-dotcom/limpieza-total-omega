@@ -211,7 +211,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
                 mtime = getattr(stats, "st_mtime", 0.0)
                 if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
                     return Suspicion(path, "Ejecutable reciente detectado en carpeta volátil", "info")
-    except (OSError, AttributeError, TypeError):
+    except (OSError, PermissionError, AttributeError, TypeError):
         return None
     return None
 

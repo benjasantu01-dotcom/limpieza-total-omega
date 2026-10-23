@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 75 | 5 | 22 | 10 | 108 |
-| 2026-10-23 | 123 | 10 | 28 | 11 | 112 |
+| 2026-10-22 | 75 | 5 | 22 | 10 | 104 |
+| 2026-10-23 | 125 | 10 | 29 | 12 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **43**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **39**
-- robustez ante casos límite: **38**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -34,8 +34,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
-- `settings.py`: **16**
-- `scanner.py`: **15**
+- `settings.py`: **17**
+- `scanner.py`: **16**
 - `branding.py`: **14**
 - `safety.py`: **14**
 - `healthscore.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T12:16:02` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la carga de configuración mediante la validación explícita de `st.st_size` previo a la lectura del archivo y la implementación de un manejo defensivo ante archivos con tamaño inesperado (ej. truncados o corruptos) en `_read_and_parse_json`.
+- `2026-10-23T12:14:40` **scanner.py** (robustez ante casos límite): Se mejora la robustez de `scanner.py` ante archivos bloqueados o en uso al envolver la lectura de metadatos en `check_recent_executable_in_downloads` con un bloque de manejo de errores específico, evitando que un `PermissionError` durante el escaneo detenga el proceso completo.
 - `2026-10-23T12:07:56` **quarantine.py** (robustez ante casos límite): Se mejoró `_is_file_exclusive` agregando un manejo robusto de excepciones para `os.open` y `fcntl.flock`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura por procesos externos) interrumpan el flujo de validación, y se añadió una verificación de existencia previa al intento de apertura.
 - `2026-10-23T12:05:46` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_read_windows_snapshot` y `_iter_process_memory` ante fallos en la carga de librerías DLL o errores internos del sistema operativo que podían dejar la aplicación en un estado inconsistente.
 - `2026-10-23T11:55:20` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de cálculo frente a condiciones de carrera o datos inconsistentes, asegurando que `_compute_cached` maneje exitosamente estados donde el `_PIPELINE` o las métricas arrojen valores no finitos, evitando fugas de excepciones fuera del pipeline.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T11:23:19` **main.py** (rendimiento): Se implementó un esquema de serialización de ejecución de tareas críticas en el `ThreadPoolExecutor` para evitar condiciones de carrera en el caché de estado y saturación de E/S, eliminando la necesidad de constantes recálculos al procesar múltiples solicitudes de UI simultáneas.
 - `2026-10-23T11:14:41` **duplicates.py** (rendimiento): Optimicé el rendimiento de la recolección de candidatos utilizando `os.scandir` con un filtro previo por tamaño y optimizando el almacenamiento en el diccionario `raw_map`, evitando iteraciones innecesarias sobre grupos de un solo archivo durante la fase de recolección.
 - `2026-10-23T11:12:30` **browser.py** (rendimiento): Optimizé el rendimiento de `_sum_directory_recursive` evitando llamadas redundantes a `os.path.normcase` y `str()` dentro del bucle de `os.scandir`, y reemplacé la verificación de `visited_dirs` por una estructura de datos local más eficiente, reduciendo el overhead en escaneos profundos.
-- `2026-10-23T11:03:18` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante docstrings estandarizados que clarifican el flujo de resolución de rutas (cache y validación), facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
-- `2026-10-23T11:02:12` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo mediante la inclusión de type hints explícitos en los retornos y la estandarización de docstrings siguiendo el estilo Google/NumPy para clarificar las responsabilidades de cada componente del motor heurístico.

@@ -1327,3 +1327,13 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-23T12:07:56` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejoró `_is_file_exclusive` agregando un manejo robusto de excepciones para `os.open` y `fcntl.flock`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura por procesos externos) interrumpan el flujo de validación, y se añadió una verificación de existencia previa al intento de apertura.
 - `2026-10-23T12:07:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T12:07:56` Corrida terminada. Total usado hoy: 284.
+- `2026-10-23T12:12:34` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-10-23T12:12:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-23T12:12:42` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-23T12:13:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-23T12:14:11` ➖ Sin cambios en safety.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido una verificación de "reparse points" circulares y de profundidad en `_validate_path_components` para evitar ataques de recursión infinita en el sistema de archivos, mejorando la robustez frente a estructuras de directorios maliciosas o recursivas que podrían causar bloqueos de ejecución o desbordamiento de pila.
+- `2026-10-23T12:14:40` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez de `scanner.py` ante archivos bloqueados o en uso al envolver la lectura de metadatos en `check_recent_executable_in_downloads` con un bloque de manejo de errores específico, evitando que un `PermissionError` durante el escaneo detenga el proceso completo.
+- `2026-10-23T12:15:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-23T12:16:02` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en la carga de configuración mediante la validación explícita de `st.st_size` previo a la lectura del archivo y la implementación de un manejo defensivo ante archivos con tamaño inesperado (ej. truncados o corruptos) en `_read_and_parse_json`.
+- `2026-10-23T12:16:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T12:16:02` Corrida terminada. Total usado hoy: 288.

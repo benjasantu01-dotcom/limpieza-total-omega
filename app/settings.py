@@ -352,11 +352,14 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         if not resolved.exists() or not resolved.is_file(): return None
         if is_protected_path(str(resolved)) or not is_safe_to_modify(str(resolved)): return None
         
+        st = resolved.stat()
+        if not _is_file_secure_to_read(st): return None
+        
         with open(resolved, "rb") as f:
             try:
-                if not _is_file_secure_to_read(os.fstat(f.fileno())): return None
                 content = f.read(MAX_SETTINGS_SIZE + 1)
-                if not content or len(content) > MAX_SETTINGS_SIZE: return None
+                # Validación de tamaño post-lectura ante inconsistencias de metadatos
+                if not content or len(content) > MAX_SETTINGS_SIZE or len(content) != st.st_size: return None
                 
                 decoded = content.decode("utf-8")
                 data = json.loads(decoded)
@@ -395,7 +398,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         try:
             if primary_path.exists():
                 st = primary_path.stat()
-                if st.st_mtime == _MANAGER._last_mtime:
+                if st.st_mtime == _MANAGER._last_mtime and st.st_size == (len(json.dumps(_MANAGER._cached_settings)) if _MANAGER._cached_settings else 0):
                     return _MANAGER._cached_settings.copy()
         except (OSError, PermissionError): pass
     
