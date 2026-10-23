@@ -321,6 +321,7 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
     """Evalúa las reglas registradas y retorna solo las que disparan advertencias."""
+    if not isinstance(rules, tuple): return []
     ratio = _clamp(normalized_ratio)
     findings: List[str] = []
     for rule in rules:

@@ -53,6 +53,7 @@ _full_hash_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
     """Verifica si el path es un punto de reanálisis (Junction o Symlink) usando Win32 API."""
+    if not isinstance(path, Path): return True
     if path.is_symlink():
         return True
     try:
@@ -89,6 +90,7 @@ class DuplicateGroup:
 
 def _safe_path_check(path: Path) -> bool:
     """Valida la integridad de un path frente a restricciones de seguridad."""
+    if path is None: return False
     return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
 
 
@@ -99,7 +101,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo del archivo, utilizando caché para rendimiento."""
-    if path in _full_hash_cache: return _full_hash_cache[path]
+    if path is None or path in _full_hash_cache: return _full_hash_cache.get(path)
     if not path.is_file() or not _safe_path_check(path): return None
     try:
         hasher = hashlib.sha256()
@@ -115,7 +117,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un hash SHA256 basado solo en los primeros bytes para filtrado rápido."""
-    if path in _partial_cache: return _partial_cache[path]
+    if path is None or path in _partial_cache: return _partial_cache.get(path)
     if not path.is_file() or not _safe_path_check(path): return None
     try:
         with open(path, "rb") as f:
@@ -130,6 +132,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa rutas según el tamaño en bytes, filtrando elementos no procesables."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
+    if paths is None: return groups_by_size
     for item in paths:
         if not item: continue
         path = Path(item)
@@ -158,7 +161,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 p = Path(os.path.realpath(d))
                 if p.exists() and _safe_path_check(p):
                     queue.append((p, 0))
-            except OSError: continue
+            except (OSError, RuntimeError): continue
             
     visited: set[Tuple[int, int]] = set()
     
@@ -177,13 +180,15 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     if entry.is_dir(follow_symlinks=False):
                         queue.append((Path(os.path.realpath(path)), depth + 1))
                     elif entry.is_file(follow_symlinks=False):
-                        stat = entry.stat(follow_symlinks=False)
-                        if stat.st_size >= min_size and _is_valid_candidate(path, stat.st_size):
-                            inode = (stat.st_dev, stat.st_ino)
-                            if inode not in visited:
-                                if not (skip_protected and is_protected_path(path)):
-                                    visited.add(inode)
-                                    raw_map[stat.st_size].append(path)
+                        try:
+                            stat = entry.stat(follow_symlinks=False)
+                            if stat.st_size >= min_size and _is_valid_candidate(path, stat.st_size):
+                                inode = (stat.st_dev, stat.st_ino)
+                                if inode not in visited:
+                                    if not (skip_protected and is_protected_path(path)):
+                                        visited.add(inode)
+                                        raw_map[stat.st_size].append(path)
+                        except OSError: continue
         except (OSError, PermissionError): continue
     return {sz: paths for sz, paths in raw_map.items() if len(paths) > 1}
 
@@ -192,7 +197,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hash a una lista de rutas y agrupa los resultados coincidentes."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if (d := hash_func(path)): groups[d].append(path)
+        if path and (d := hash_func(path)): groups[d].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
 
@@ -226,12 +231,13 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Calcula el total de bytes que podrían liberarse si se eliminan las copias sobrantes."""
+    if not groups: return 0
     return sum(g.wasted_bytes for g in groups)
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """Sugiere el archivo más antiguo del grupo para mantener como original (protección de datos)."""
-    if not group or not group.paths: return None
+    if group is None or not group.paths: return None
     candidates = []
     for p in group.paths:
         try: candidates.append((p.stat().st_mtime, p))
@@ -241,6 +247,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera una representación legible del grupo para el informe de salida."""
+    if not group: return []
     keeper = suggest_keeper(group)
     mb = round(group.size_bytes / 1048576, 2)
     wasted = round(group.wasted_bytes / 1048576, 2)
