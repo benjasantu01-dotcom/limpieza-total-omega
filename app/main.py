@@ -44,6 +44,7 @@ Caché de validación de rutas mediante LRU para reducir llamadas al sistema.
 Caché local de métricas calculadas para evitar overhead de re-escaneo en duplicados.
 Consolidación de logs mediante batching asíncrono para reducir colisiones UI.
 Caché de configuración con TTL y validación de integridad diferida.
+Serialización de tareas pesadas mediante colas de ejecución protegidas.
 
 Instalar dependencias:
     pip install customtkinter
@@ -261,6 +262,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
         self._executor_lock = threading.Lock()
         self._worker_lock = threading.Lock()
+        self._task_queue_lock = threading.Lock() # Serializador de operaciones
         
         self._init_component_registry()
         self._setup_application()
@@ -1274,16 +1276,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def run_async(self, fn: AsyncCallback, target: Optional[str] = None) -> None:
         """Envía una tarea al pool de ejecución validando la seguridad del objetivo."""
-        with self._executor_lock:
-            if self._closing or self._executor is None or not self._check_widget_integrity(self): return
-            
-            if target and not self._is_safe_disk_operation(target):
-                self.log("Acción denegada: la ruta destino no es segura.", self._current_tab())
-                return
-            
-            self._set_busy(True)
-            tab = self._current_tab()
-            self._executor.submit(self._worker_thread_logic, fn, tab)
+        with self._task_queue_lock:
+            with self._executor_lock:
+                if self._closing or self._executor is None or not self._check_widget_integrity(self): return
+                
+                if target and not self._is_safe_disk_operation(target):
+                    self.log("Acción denegada: la ruta destino no es segura.", self._current_tab())
+                    return
+                
+                self._set_busy(True)
+                tab = self._current_tab()
+                self._executor.submit(self._worker_thread_logic, fn, tab)
 
     def _current_tab(self) -> str:
         """Devuelve el nombre de la pestaña activa en el tabview."""

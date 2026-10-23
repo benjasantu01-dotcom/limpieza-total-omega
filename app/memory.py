@@ -313,7 +313,6 @@ def read_snapshot() -> MemorySnapshot:
 
 def _is_process_accessible(pid: int, access_mask: int, kernel32: ctypes.CDLL) -> Optional[wintypes.HANDLE]:
     """Intenta abrir un proceso con permisos específicos mediante OpenProcess."""
-    if _is_system_process(pid): return None
     handle = kernel32.OpenProcess(access_mask, False, pid)
     return handle if handle is not None and handle != 0 and handle != INVALID_HANDLE_VALUE else None
 
@@ -362,6 +361,10 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
 
 def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
     """Crea instancia ProcessMemory verificando seguridad y accesibilidad del binario."""
+    # Pre-filtrado para evitar llamadas a OpenProcess innecesarias
+    if _is_system_process(pid):
+        return None
+
     proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
     if proc_handle is None:
         return None
@@ -391,9 +394,7 @@ def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS
         count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
         for i in range(count):
             pid_val = int(pids[i])
-            if pid_val <= 0 or _is_system_process(pid_val):
-                continue
-                
+            # La validación se delega a _process_from_pid para consistencia
             proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
             if proc:
                 yield proc

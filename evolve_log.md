@@ -1255,3 +1255,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-23T11:14:41` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de la recolección de candidatos utilizando `os.scandir` con un filtro previo por tamaño y optimizando el almacenamiento en el diccionario `raw_map`, evitando iteraciones innecesarias sobre grupos de un solo archivo durante la fase de recolección.
 - `2026-10-23T11:14:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T11:14:41` Corrida terminada. Total usado hoy: 264.
+- `2026-10-23T11:21:37` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-23T11:22:10` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 54% del original (posible pérdida de código)
+- `2026-10-23T11:23:19` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un esquema de serialización de ejecución de tareas críticas en el `ThreadPoolExecutor` para evitar condiciones de carrera en el caché de estado y saturación de E/S, eliminando la necesidad de constantes recálculos al procesar múltiples solicitudes de UI simultáneas.
+- `2026-10-23T11:23:57` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el acceso a los procesos mediante la pre-validación de `_is_system_process` antes de realizar llamadas costosas a `OpenProcess` y `GetModuleFileNameExW`, reduciendo la carga de I/O y el tiempo de ejecución en `top_memory_processes`.
+- `2026-10-23T11:24:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-23T11:24:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T11:24:09` Corrida terminada. Total usado hoy: 268.
