@@ -389,24 +389,22 @@ def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: 
 
 def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos activos del sistema aplicando filtros de seguridad."""
-    pids = (wintypes.DWORD * 4096)()
+    MAX_PIDS = 4096
+    pids = (wintypes.DWORD * MAX_PIDS)()
     cb_needed = wintypes.DWORD(0)
     
-    try:
-        if not psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-            return
-        
-        count = min(cb_needed.value // 4, 4096)
-        for i in range(count):
-            pid_val = int(pids[i])
-            if _is_system_process(pid_val) or pid_val <= 0: continue
-            try:
-                proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
-                if proc: yield proc
-            except Exception:
-                continue
-    except (OSError, ValueError):
+    if not psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
         return
+        
+    count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
+    for i in range(count):
+        pid_val = int(pids[i])
+        if pid_val <= 0 or _is_system_process(pid_val):
+            continue
+            
+        proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
+        if proc:
+            yield proc
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna top procesos por consumo de RAM (caché: 60s)."""

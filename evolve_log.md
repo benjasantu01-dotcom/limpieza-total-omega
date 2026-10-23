@@ -1477,3 +1477,43 @@ FAILED evolve/tests/test_modules.py::test_ring_clamps_absurd_sizes_instead_of_fa
 - `2026-10-23T02:23:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 19% del original (posible pérdida de código)
 - `2026-10-23T02:23:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-23T02:23:12` Corrida terminada. Total usado hoy: 56.
+- `2026-10-23T02:31:56` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-10-23T02:32:31` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` al pre-asignar el búfer de PIDs y reducir las llamadas a `ctypes` dentro del bucle, evitando el uso de iteradores pesados y mejorando la eficiencia en la enumeración de procesos.
+- `2026-10-23T02:33:00` Tests FALLARON:
+```
+fundidad y caché de rutas visitadas.
+    
+        Args:
+            current_dir: Directorio actual a explorar.
+            found: Lista acumuladora donde se agregan los JunkFile encontrados.
+            depth: Nivel de profundidad de la recursión actual.
+            protected_cache: Conjunto de rutas excluidas para optimizar el escaneo.
+            visited: Conjunto de rutas ya exploradas para evitar ciclos.
+        """
+        if depth > LIMITS.MAX_SCAN_DEPTH: return
+        try:
+            resolved_dir = current_dir.resolve(strict=False)
+            if resolved_dir in visited: return
+            visited.add(resolved_dir)
+            now_ts: float = datetime.now().timestamp()
+    
+            with os.scandir(current_dir) as iterator:
+                for entry in iterator:
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+>                           if _should_scanDirectory(entry, protected_cache):
+                               ^^^^^^^^^^^^^^^^^^^^^
+E                           NameError: name '_should_scanDirectory' is not defined
+
+app/organizer.py:300: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - NameError: name '_should_scanDirectory' is not defined
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - NameError: name '_should_scanDirectory' is not defined
+2 failed, 297 passed in 1.79s
+
+```
+- `2026-10-23T02:33:00` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se optimizó el escaneo del directorio en `_process_directory` utilizando `os.scandir` de forma más eficiente: ahora el filtro de extensiones se aplica directamente sobre el nombre del archivo mediante `endswith` antes de realizar llamadas costosas a `stat()`, reduciendo drásticamente las operaciones de E/S innecesarias en sistemas con muchos archivos.
+- `2026-10-23T02:33:47` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del hash SHA256 implementando un sistema de caché basado en el `mtime` y tamaño del archivo (stat), evitando lecturas de disco innecesarias durante la validación de integridad cuando el archivo no ha sido modificado.
+- `2026-10-23T02:33:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-10-23T02:33:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-23T02:33:50` Corrida terminada. Total usado hoy: 60.

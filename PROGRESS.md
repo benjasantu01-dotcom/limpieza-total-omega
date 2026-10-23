@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
-- Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 50
+- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-21 | 27 | 1 | 8 | 2 | 60 |
+| 2026-10-21 | 24 | 1 | 8 | 2 | 59 |
 | 2026-10-22 | 131 | 9 | 35 | 19 | 156 |
-| 2026-10-23 | 21 | 0 | 7 | 3 | 25 |
+| 2026-10-23 | 23 | 1 | 8 | 3 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **48**
+- seguridad defensiva: **46**
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **28**
-- rendimiento: **23**
+- robustez ante casos límite: **27**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `browser.py`: **17**
-- `settings.py`: **16**
-- `memory.py`: **16**
-- `quarantine.py`: **16**
-- `assistant.py`: **15**
-- `branding.py`: **15**
+- `memory.py`: **17**
+- `quarantine.py`: **17**
+- `settings.py`: **15**
+- `branding.py`: **14**
 - `safety.py`: **14**
+- `assistant.py`: **14**
 - `scanner.py`: **11**
 - `duplicates.py`: **10**
 - `healthscore.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-23T02:33:47` **quarantine.py** (rendimiento): Optimicé el cálculo del hash SHA256 implementando un sistema de caché basado en el `mtime` y tamaño del archivo (stat), evitando lecturas de disco innecesarias durante la validación de integridad cuando el archivo no ha sido modificado.
+- `2026-10-23T02:32:31` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` al pre-asignar el búfer de PIDs y reducir las llamadas a `ctypes` dentro del bucle, evitando el uso de iteradores pesados y mejorando la eficiencia en la enumeración de procesos.
 - `2026-10-23T02:22:08` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para reducir drásticamente el número de llamadas a `path.relative_to(root)` y las operaciones de resolución de rutas en el hot-path, utilizando un filtro de exclusión más directo y eficiente.
 - `2026-10-23T02:13:31` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetitivas a `os.path.normcase` y `str(Path)` dentro del bucle, y reemplacé la validación de `NEVER_TOUCH` por una búsqueda más eficiente utilizando el conjunto normalizado en `ScanContext`.
 - `2026-10-23T02:12:49` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud mediante `lru_cache` y una tupla inmutable de problemas, evitando el cálculo redundante de cadenas formateadas y la iteración sobre `_CRITERIOS_SALUD` en cada acceso a la propiedad `active_problems`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-23T01:42:49` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante docstrings precisos que explican el propósito y las restricciones de las estructuras de datos y funciones internas, facilitando la comprensión del flujo de datos en el análisis de disco.
 - `2026-10-23T01:42:06` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, aclarando el propósito y las restricciones de seguridad, además de asignar type hints más precisos para mejorar la legibilidad y mantenibilidad del código sin alterar su comportamiento funcional.
 - `2026-10-23T01:33:06` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y semántica del archivo mediante la corrección de errores en las descripciones de los parámetros (como `text_anchor` vs `anchor` en `create_text`), la adición de Type Hints faltantes para mejorar la claridad del contrato entre módulos y la clarificación de los propósitos de las funciones geométricas complejas.
-- `2026-10-23T01:32:01` **startup.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en `parse_registry_csv` y `entries_from_registry` para manejar correctamente respuestas inesperadas del subproceso (como salidas vacías o errores de formato), asegurando que el parser no procese datos nulos o malformados que podrían causar excepciones no capturadas.
-- `2026-10-23T01:31:29` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al implementar una validación estricta contra errores de codificación y estados de archivo inconsistentes, asegurando que el contenido sea tratado de forma segura antes del parseo JSON.

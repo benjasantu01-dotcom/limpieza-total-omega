@@ -66,7 +66,7 @@ DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para mejorar throughput de I/O
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float]] = {}
-_HASH_CACHE: Dict[Tuple[str, float], str] = {}
+_HASH_CACHE: Dict[Tuple[str, float, int], str] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -278,8 +278,9 @@ def _get_sha256(path: Path) -> str:
     if not path.is_file(): return ""
     
     try:
-        stat = path.stat()
-        cache_key = (str(path), stat.st_mtime)
+        st = path.stat()
+        # Uso de mtime + tamaño para identificar si el archivo cambió sin leer contenido
+        cache_key = (str(path), st.st_mtime, st.st_size)
         if cache_key in _HASH_CACHE: return _HASH_CACHE[cache_key]
         
         sha256_hash = hashlib.sha256()
