@@ -274,7 +274,8 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
     try:
         real = candidate.resolve(strict=True)
         real_norm = os.path.normcase(str(real))
-        # Verificación explícita de sandbox tras resolución del path real
+        # Verificación explícita de seguridad adicional para rutas de sistema
+        if not is_safe_to_modify(real): return False
         if not _is_within_sandbox(real_norm, base_norm): return False
         if _is_system_hidden(str(real), kernel): return False
         

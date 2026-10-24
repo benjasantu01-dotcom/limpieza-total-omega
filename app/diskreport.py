@@ -164,15 +164,13 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if not directory:
         return None
     try:
-        p = Path(directory).expanduser()
-        resolved_path = p.resolve(strict=False)
-        
-        if not resolved_path.exists() or not resolved_path.is_dir():
+        p = Path(directory).expanduser().resolve(strict=False)
+        if not p.exists() or not p.is_dir():
             return None
-        if is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
+        if is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
-        return resolved_path
+        return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
         return None
 
@@ -183,24 +181,21 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     Verifica caracteres peligrosos, rutas fuera de raíz (jail-break) y atributos de sistema.
     """
     name = entry.name
-    if not name or any(ord(c) < 32 for c in name) or len(name) > 255 or len(entry.path) > 32767:
+    if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
         
     if any(c in name for c in SUSPICIOUS_CHARS) or any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
         return True
 
     try:
+        # Resolvemos contra la raíz validada para evitar escapes (jailbreak)
+        entry_path = Path(entry.path).resolve(strict=False)
+        entry_path.relative_to(root_path)
+
         if not (entry.is_file(follow_symlinks=False) or entry.is_dir(follow_symlinks=False)):
             return True
 
-        path_obj = Path(entry.path).resolve(strict=False)
-        
-        try:
-            path_obj.relative_to(root_path)
-        except ValueError:
-            return True
-
-        if is_protected_path(path_obj):
+        if is_protected_path(entry_path):
             return True
 
         if entry.is_symlink():
@@ -212,7 +207,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
                 return True
         
         return False
-    except (OSError, PermissionError, AttributeError, TypeError, RuntimeError, FileNotFoundError):
+    except (OSError, PermissionError, AttributeError, ValueError, RuntimeError):
         return True
             
 def _get_local_windows_drives() -> List[str]:
@@ -322,15 +317,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Generador iterativo que recorre archivos bajo la raíz dada, evitando recursión circular.
     """
-    try:
-        root_path = _validate_root(directory)
-    except (OSError, Exception):
-        return
-        
+    root_path = _validate_root(directory)
     if root_path is None: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
@@ -347,13 +338,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(entry.path)
+                                    stack.append(Path(entry.path))
                             except (OSError, PermissionError):
                                 continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 st = entry.stat(follow_symlinks=False)
-                                if st and hasattr(st, 'st_size') and st.st_size >= 0:
+                                if st and st.st_size >= 0:
                                     yield Path(entry.path), st.st_size
                             except (OSError, PermissionError):
                                 continue

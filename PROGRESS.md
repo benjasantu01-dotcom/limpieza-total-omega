@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 38 | 2 | 11 | 2 | 57 |
+| 2026-10-22 | 38 | 2 | 11 | 2 | 53 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 23 | 2 | 6 | 1 | 12 |
+| 2026-10-24 | 26 | 2 | 7 | 1 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **45**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **40**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
+- `browser.py`: **20**
 - `assistant.py`: **19**
-- `browser.py`: **19**
 - `memory.py`: **17**
 - `safety.py`: **16**
 - `scanner.py`: **16**
 - `settings.py`: **16**
 - `quarantine.py`: **16**
-- `branding.py`: **14**
+- `branding.py`: **15**
 - `healthscore.py`: **14**
 - `startup.py`: **12**
 - `organizer.py`: **10**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T02:00:38` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad en `walk_files` y `_is_excluded_path` para prevenir la resolución de rutas fuera del ámbito permitido (jail-break) mediante la validación estricta de `resolve()` y el uso de `path_obj.parts` para evitar manipulaciones mediante caracteres de control o intentos de escape, asegurando que `diskreport.py` sea robusto frente a rutas maliciosas.
+- `2026-10-24T02:00:26` **browser.py** (seguridad defensiva): Reforcé la seguridad de `_is_valid_cache_path` añadiendo una verificación explícita mediante `is_safe_to_modify` sobre la ruta resuelta, garantizando que ninguna ruta de sistema sea procesada accidentalmente incluso si supera los chequeos de sandbox previos.
+- `2026-10-24T01:59:44` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación adicional mediante `ensure_safe_to_modify` antes de escribir en disco, garantizando que el flujo de salida cumpla con las políticas de protección de rutas incluso tras la verificación inicial booleana.
 - `2026-10-24T01:50:31` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia ante errores de lectura de disco al incluir un manejo de excepciones más granular en `_read_and_parse_json` y `_load_impl`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura) bloqueen la inicialización de la aplicación, fallando de forma segura hacia los valores por defecto.
 - `2026-10-24T01:49:31` **safety.py** (robustez ante casos límite): Se añadió una validación en `_validate_preconditions` para detectar si el padre de una ruta es un volumen de solo lectura, previniendo errores de I/O bloqueantes antes de intentar operaciones de archivo.
 - `2026-10-24T01:40:08` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia en la función `_atomic_isolate_file` para verificar la existencia del archivo de destino antes de intentar escribir, mitigando una condición de carrera (race condition) donde el archivo podría ser recreado por otro proceso justo antes de la operación de `os.replace`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T00:58:58` **main.py** (rendimiento): Implementé la carga perezosa de los componentes de salud (`_lazy_init_health_ui`) en la pestaña "Salud", evitando que los widgets de las barras de progreso y tarjetas de métricas se instancien innecesariamente durante el inicio de la aplicación o si el usuario nunca accede a dicha pestaña, reduciendo así la huella de memoria y el tiempo de renderizado inicial.
 - `2026-10-24T00:51:03` **healthscore.py** (rendimiento): Optimicé el cálculo del score eliminando la reconstrucción innecesaria del objeto `SystemMetrics` dentro de `_calculate_area_contribution`, utilizando directamente la tupla de métricas para evitar llamadas a `__post_init__` y validaciones redundantes en cada paso del pipeline.
 - `2026-10-24T00:50:20` **duplicates.py** (rendimiento): Se optimizó el rendimiento de `_collect_candidates` mediante la utilización de un generador en el filtrado inicial, evitando la creación de listas intermedias y reduciendo la presión sobre el recolector de basura al procesar directorios grandes.
-- `2026-10-24T00:48:27` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando el uso repetido de `os.path.normcase` sobre rutas ya validadas y simplificando la lógica de chequeo en el loop principal, reduciendo drásticamente las llamadas al sistema en estructuras de directorios profundas.
-- `2026-10-24T00:40:38` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando llamadas redundantes a `getattr` en bucles por el uso de `metrics_snapshot`, y se eliminó la recreación innecesaria de la tupla de ordenamiento en `active_problems` mediante el uso de la propiedad cacheada.
-- `2026-10-24T00:38:55` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato Google Style) en las funciones públicas, clarificando los efectos secundarios y las dependencias de datos para elevar la calidad de la documentación del proyecto.

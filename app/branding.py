@@ -353,6 +353,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         parent = dest_path.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
+            
+        # Refuerzo: asegurar explícitamente que la ruta final es segura antes de escribir
+        ensure_safe_to_modify(dest_path)
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError): 
