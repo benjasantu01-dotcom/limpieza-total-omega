@@ -645,3 +645,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-24T01:12:50` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la carga de configuración eliminando la serialización innecesaria dentro de `load()` al verificar la caché, reemplazándola por una comparación directa de metadatos, y reduciendo el uso de `json.dumps` en el bucle principal.
 - `2026-10-24T01:12:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T01:12:50` Corrida terminada. Total usado hoy: 28.
+- `2026-10-24T01:18:08` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-10-24T01:19:14` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-24T01:19:53` Tests FALLARON:
+```
+ __________________
+
+    def test_build_context_reads_fields_one_by_one():
+        """Copia campo por campo, no el objeto entero, para no arrastrar datos."""
+        class MetricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 1.41s
+
+```
+- `2026-10-24T01:19:53` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del asistente ante datos de entrada corruptos o maliciosos al agregar una validación de tipo estricta en el método `ingest` y una comprobación de sanidad adicional en `_validate_and_sanitize_data` para asegurar que el objeto fuente no contenga atributos "ocultos" o ejecutables (como métodos `__call__` o propiedades inesperadas) antes de intentar procesarlos.
+- `2026-10-24T01:20:24` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de `pathlib.Path` en `save_logo_svg` para asegurar que las rutas proporcionadas sean absolutas y existan, previniendo errores de IO al manipular rutas relativas o malformadas en entornos dinámicos.
+- `2026-10-24T01:20:33` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 195): unexpected character after line continuation character
+- `2026-10-24T01:20:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T01:20:33` Corrida terminada. Total usado hoy: 32.

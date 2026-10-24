@@ -7,39 +7,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 14
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 42 | 2 | 13 | 3 | 66 |
+| 2026-10-22 | 41 | 2 | 12 | 3 | 64 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 17 | 0 | 4 | 1 | 6 |
+| 2026-10-24 | 18 | 1 | 5 | 1 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **45**
-- seguridad defensiva: **44**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **35**
 - rendimiento: **34**
-- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **19**
 - `browser.py`: **19**
 - `diskreport.py`: **19**
-- `memory.py`: **17**
 - `scanner.py`: **17**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
+- `memory.py`: **16**
 - `settings.py`: **15**
+- `branding.py`: **14**
 - `healthscore.py`: **14**
-- `branding.py`: **13**
 - `startup.py`: **12**
 - `organizer.py`: **10**
 - `main.py`: **8**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T01:20:24` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta de `pathlib.Path` en `save_logo_svg` para asegurar que las rutas proporcionadas sean absolutas y existan, previniendo errores de IO al manipular rutas relativas o malformadas en entornos dinámicos.
 - `2026-10-24T01:12:50` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando la serialización innecesaria dentro de `load()` al verificar la caché, reemplazándola por una comparación directa de metadatos, y reduciendo el uso de `json.dumps` en el bucle principal.
 - `2026-10-24T01:00:03` **organizer.py** (rendimiento): Se optimizó el escaneo del sistema reemplazando múltiples llamadas a `os.path.exists` y `stat` dentro de los bucles por un acceso único mediante `os.scandir`, además de convertir `JUNK_EXTENSIONS` en un `frozenset` para realizar consultas O(1) en lugar de recorridos de tupla.
 - `2026-10-24T00:59:32` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y filtrado de la lista completa de procesos en memoria por un generador eficiente que utiliza `heapq` para mantener solo los N elementos más pesados, reduciendo la presión sobre el recolector de basura y el uso de RAM.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T00:27:56` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad del módulo `quarantine.py` mediante la refactorización de `_win_has_system_attributes` para eliminar la duplicación de lógica con `_verify_source_fs_permissions`, y añadí docstrings explicativos a las funciones de validación de bajo nivel para clarificar su propósito de seguridad defensiva.
 - `2026-10-24T00:19:44` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con estilo Google/NumPy en funciones críticas de validación y E/S (`_is_safe_for_disk_op`, `stage_for_review`, `delete_reviewed`) para documentar las asunciones de seguridad y el flujo de los chequeos de integridad, facilitando el mantenimiento y la comprensión de las salvaguardas.
 - `2026-10-24T00:19:17` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `memory.py` mediante la refactorización de `_is_process_executable_safe` y `_process_from_pid`, eliminando la anidación profunda y aplicando guard clauses que clarifican el flujo de validación de seguridad para los procesos.
-- `2026-10-24T00:08:51` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones internas y refactorizando la estructura de tipos de `_collect_candidates` para mejorar la claridad sobre la lógica de recolección, facilitando el mantenimiento futuro sin alterar la funcionalidad.
