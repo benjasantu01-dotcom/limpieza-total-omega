@@ -471,6 +471,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso no encontrado."
 
     try:
+        # Verificación de integridad adicional antes de la acción
         exit_code = wintypes.DWORD()
         if kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."

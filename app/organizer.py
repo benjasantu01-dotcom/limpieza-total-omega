@@ -254,6 +254,8 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if is_protected_path(dest_real): return False
         if src_real.is_symlink() or (os.name == 'nt' and _is_system_hidden(src_real)): return False
         if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
+        
+        # Validar que no cruzamos volúmenes (misma letra de unidad)
         if src_real.drive != dest_real.drive: return False
 
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False

@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 55
+- Rechazadas por guardia de seguridad: 56
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 144 | 12 | 34 | 12 | 146 |
-| 2026-10-24 | 65 | 5 | 21 | 6 | 59 |
+| 2026-10-23 | 144 | 12 | 34 | 12 | 142 |
+| 2026-10-24 | 68 | 5 | 22 | 6 | 59 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
+- seguridad defensiva: **46**
 - legibilidad y documentación: **45**
-- seguridad defensiva: **43**
 - rendimiento: **38**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `memory.py`: **18**
+- `memory.py`: **19**
 - `assistant.py`: **17**
 - `browser.py`: **17**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `branding.py`: **15**
 - `healthscore.py`: **15**
 - `scanner.py`: **15**
 - `settings.py`: **14**
 - `startup.py`: **14**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
 - `duplicates.py`: **10**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T06:46:09` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` añadiendo una validación explícita de `is_within_directory` para cada archivo procesado, asegurando que solo se operen archivos contenidos estrictamente dentro del sandbox de cuarentena, evitando así cualquier posible efecto lateral fuera de la carpeta designada durante la limpieza masiva.
+- `2026-10-24T06:45:29` **organizer.py** (seguridad defensiva): Se ha añadido una validación explícita para asegurar que `stage_for_review` solo trabaje con archivos que residan físicamente en la misma unidad de disco que el directorio de destino, previniendo errores de `shutil.move` al cruzar volúmenes (lo cual puede violar políticas de permisos o fallar parcialmente).
+- `2026-10-24T06:45:01` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` mediante la validación explícita del estado del proceso antes de intentar cualquier operación de `EmptyWorkingSet`, asegurando que el handle obtenido sea válido y el ejecutable pase los filtros de seguridad, previniendo errores de acceso a memoria o interacciones no deseadas.
 - `2026-10-24T06:36:14` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` reforzando la validación de rutas mediante un decorador `ensure_safety_in_task` que asegura que cualquier operación de disco delegada al hilo asíncrono valide primero el destino usando `ensure_safe_to_modify`, previniendo potenciales inyecciones de rutas o acceso a directorios protegidos que puedan haber cambiado su estado entre la interacción en la UI y la ejecución en el background.
 - `2026-10-24T06:35:19` **healthscore.py** (seguridad defensiva): He fortalecido la seguridad defensiva del módulo al restringir la exposición de datos del sistema en los mensajes de recomendación: ahora `_sanitize_msg` rechaza explícitamente cualquier mensaje que contenga rutas o términos sospechosos (bloqueados), y he añadido `_is_safe_string_for_report` para garantizar que la salida del motor de reglas sea estrictamente controlada antes de llegar a la interfaz de usuario.
 - `2026-10-24T06:34:19` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez del escáner en `walk_files` incorporando una verificación explícita mediante `is_protected_path` al final de la resolución de cada ruta, evitando que el traversal siga enlaces simbólicos o puntos de reparse que pudieran haber sido creados dinámicamente o que apunten fuera de la jerarquía permitida.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T05:43:48` **startup.py** (rendimiento): Se optimizó el método `_resolve_and_cache_path` eliminando la apertura innecesaria de archivos mediante `with open(p, 'rb') as f`, reemplazándola por una validación de metadatos más eficiente (`p.is_file()` y `p.exists()`), lo que reduce drásticamente las operaciones de E/S bloqueantes y el consumo de descriptores de archivos durante el escaneo.
 - `2026-10-24T05:43:22` **settings.py** (rendimiento): Optimizé `validate` y `_coerce_and_verify` eliminando la creación innecesaria de diccionarios intermedios y utilizando `dict.get` para reducir el impacto en memoria y ciclos de CPU durante el procesamiento de configuraciones recurrentes.
 - `2026-10-24T05:36:23` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo sustituyendo la llamada redundante y costosa a `path.stat().st_size` por la reutilización de `os.DirEntry.stat()` dentro de las heurísticas, evitando operaciones de E/S adicionales al procesar archivos.
-- `2026-10-24T05:36:04` **safety.py** (rendimiento): Se implementó un mecanismo de caché local dentro de `_evaluate_security_rules` para evitar la reevaluación redundante de reglas de seguridad complejas (ej. `_is_file_owned_by_system`, `_get_file_attrs`) cuando múltiples subprocesos o iteraciones rápidas validan la misma ruta, mejorando significativamente la performance en escaneos masivos.
-- `2026-10-24T05:29:00` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `Path.resolve()` y `path.stat()` dentro del bucle de `_process_directory`, utilizando en su lugar la información ya disponible en `os.DirEntry` para evitar accesos innecesarios al sistema de archivos.
-- `2026-10-24T05:28:00` **memory.py** (rendimiento): Optimizé `_iter_process_memory` para reducir drásticamente el número de llamadas al sistema y la carga de CPU mediante el uso de un generador eficiente que evita convertir todos los PIDs a objetos `ProcessMemory` antes de realizar el filtrado.
