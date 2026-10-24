@@ -509,3 +509,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-24T11:12:44` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `purge_all` implementando una validación de inodo (y hash si está disponible) antes de cada eliminación, garantizando que solo se borren archivos registrados y verificados, evitando la eliminación accidental de archivos no trackeados que pudieran haber sido colocados manualmente en la carpeta.
 - `2026-10-24T11:12:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T11:12:44` Corrida terminada. Total usado hoy: 264.
+- `2026-10-24T11:18:48` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-24T11:19:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-24T11:20:04` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-24T11:20:32` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha robustecido el escáner implementando una validación estricta de rutas mediante `os.path.realpath` para prevenir la evasión de los filtros de seguridad a través de enlaces simbólicos o puntos de reanálisis que pueden apuntar fuera de la raíz permitida, asegurando que el recorrido se mantenga estrictamente dentro de los límites del `base_root` incluso ante estructuras de archivos complejas.
+- `2026-10-24T11:20:56` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones estrictas de metadatos (evitar enlaces simbólicos y asegurar que el dueño del archivo coincida con el usuario actual) para prevenir ataques de sustitución de archivos o enlaces maliciosos durante la lectura y escritura.
+- `2026-10-24T11:20:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T11:20:56` Corrida terminada. Total usado hoy: 268.

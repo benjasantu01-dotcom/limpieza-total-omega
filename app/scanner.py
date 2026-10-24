@@ -219,13 +219,15 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.base_root_norm: str = os.path.normcase(str(base_root.absolute()))
+        # Normalización estricta para garantizar aislamiento
+        self.base_root_norm: str = os.path.normcase(os.path.realpath(base_root))
         self.now_ts: float = datetime.now().timestamp()
 
     @lru_cache(maxsize=1024)
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Valida, mediante normalización de rutas, si el archivo pertenece al árbol de escaneo."""
-        return os.path.normcase(os.path.abspath(entry_path)).startswith(self.base_root_norm)
+        """Valida, mediante normalización real, si el archivo pertenece al árbol de escaneo."""
+        real_path = os.path.normcase(os.path.realpath(entry_path))
+        return real_path.startswith(self.base_root_norm)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Verifica nombres de archivo con caracteres o patrones prohibidos por Windows."""
@@ -263,7 +265,7 @@ class Scanner:
         if current_depth >= SCAN_LIMITS.max_depth or entry is None or not entry.path:
             return
         
-        path_norm: str = os.path.normcase(entry.path)
+        path_norm: str = os.path.normcase(os.path.realpath(entry.path))
         if path_norm not in self.seen:
             self.seen.add(path_norm)
             directory_stack.append((entry.path, current_depth + 1))
@@ -279,7 +281,7 @@ class Scanner:
         if entry is None or not entry.path or not self._is_safe_entry(entry):
             return
             
-        path_norm: str = os.path.normcase(entry.path)
+        path_norm: str = os.path.normcase(os.path.realpath(entry.path))
         if path_norm in self.seen:
             return
         
@@ -333,6 +335,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         base_path = Path(directory)
         if not base_path.exists() or not base_path.is_dir():
             return []
+        # Normalizamos la ruta base para validar contra el root en todo el proceso
         base_path = base_path.resolve(strict=True)
         if base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
             return []
@@ -341,7 +344,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
     
     directory_stack: DirectoryStack = [(str(base_path), 0)]
-    scanner.seen.add(os.path.normcase(str(base_path)))
+    scanner.seen.add(os.path.normcase(os.path.realpath(str(base_path))))
     while directory_stack:
         current_dir, depth = directory_stack.pop()
         try:

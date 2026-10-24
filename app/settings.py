@@ -172,7 +172,7 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
         Realiza una escritura atómica mediante un archivo temporal y fsync para 
-        asegurar la integridad de los datos, verificando permisos del directorio padre.
+        asegurar la integridad de los datos, verificando permisos y dueños del archivo.
         """
         if not isinstance(serialized, str) or len(str(config_path)) > 260: return False
         try:
@@ -181,9 +181,12 @@ class _SettingsManager:
             
             resolved_path = config_path.resolve()
             if is_protected_path(str(resolved_path)) or not is_safe_to_modify(str(resolved_path)): return False
+            
+            # Prevenir ataques de enlace simbólico (debe ser archivo real y link único)
             if resolved_path.exists():
-                st = resolved_path.stat()
-                if st.st_nlink != 1 or not stat.S_ISREG(st.st_mode): return False
+                st = resolved_path.lstat()
+                if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+                if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             
             temp_path = resolved_path.with_suffix(".tmp")
             with open(temp_path, "w", encoding="utf-8") as f:
@@ -339,11 +342,11 @@ def validate(raw_values: Any) -> AppSettings:
                 config[key_enum.value] = validated_val
     return config # type: ignore
 
-def _is_file_secure_to_read(st: os.stat_result) -> bool:
-    """Comprueba permisos, metadatos y asegura que el archivo sea seguro de leer (solo reg)."""
+def _is_file_secure_to_read(st: os.stat_result, file_path: Path) -> bool:
+    """Comprueba permisos, metadatos y asegura que el archivo sea seguro de leer (sin enlaces sospechosos)."""
     try:
         if not stat.S_ISREG(st.st_mode): return False
-        if st.st_nlink != 1: return False
+        if st.st_nlink != 1: return False # Prevenir enlaces simbólicos a archivos compartidos
         if (st.st_mode & 0o777) > 0o600: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
@@ -355,8 +358,8 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Carga, verifica y parsea el archivo JSON de configuración con mitigación TOCTOU."""
     try:
         if not _Validators._is_safe_path(str(file_path)): return None
-        st = file_path.stat()
-        if not _is_file_secure_to_read(st): return None
+        st = file_path.lstat()
+        if not _is_file_secure_to_read(st, file_path): return None
         
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
