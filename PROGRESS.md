@@ -8,34 +8,34 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 13 | 0 | 3 | 0 | 18 |
+| 2026-10-22 | 11 | 0 | 2 | 0 | 17 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 48 | 3 | 15 | 4 | 50 |
+| 2026-10-24 | 50 | 3 | 17 | 4 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **36**
-- rendimiento: **30**
+- robustez ante casos límite: **34**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `memory.py`: **18**
-- `quarantine.py`: **17**
+- `diskreport.py`: **20**
 - `safety.py`: **17**
+- `browser.py`: **17**
+- `memory.py`: **17**
 - `assistant.py`: **16**
-- `browser.py`: **16**
+- `quarantine.py`: **16**
 - `settings.py`: **15**
 - `scanner.py`: **15**
 - `healthscore.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T05:14:18` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la iteración `os.scandir` manual por una lógica que reduce las llamadas repetitivas a `path.resolve()` y `is_protected_path` al procesar directorios, consolidando los chequeos dentro del bucle de `scandir` para minimizar la carga de E/S.
+- `2026-10-24T05:13:23` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo reemplazando la resolución de rutas mediante `Path.resolve()` (que es costosa en I/O) por `os.path.normcase(os.path.abspath())` y reduje la creación innecesaria de objetos `Path` dentro de los bucles críticos de `detect_profiles` y `directory_size`.
 - `2026-10-24T05:03:42` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante docstrings descriptivos que clarifican el flujo de validación y el propósito de cada etapa (sanitización, resolución y validación), facilitando el mantenimiento a futuro.
 - `2026-10-24T04:53:59` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_file_id` y `_get_security_descriptor`, delegando la gestión de recursos críticos (handles de archivos) a gestores de contexto `try...finally` estructurados y añadiendo docstrings técnicos que explican la mitigación de riesgos de nivel de sistema operativo.
 - `2026-10-24T04:53:10` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `quarantine.py` mediante la adición de docstrings estructurados y la clarificación de la intención funcional de los métodos auxiliares de validación, facilitando el mantenimiento al explicar el "porqué" detrás de las restricciones de seguridad y operaciones de I/O.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T04:22:49` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `scanner.py` centralizando la validación de la existencia y accesibilidad de archivos en la función `_is_readable`, asegurando que `_get_file_size` y `_safe_stat` sean resilientes ante `FileNotFoundError` o `PermissionError` inesperados, evitando que el escaneo se interrumpa prematuramente.
 - `2026-10-24T04:22:22` **safety.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_get_file_id` y `_get_file_attrs` sustituyendo las capturas genéricas de excepciones por un conjunto acotado de errores esperados en APIs de Windows (ctypes) para evitar el silenciamiento de errores críticos que podrían estar ocultando fallas lógicas.
 - `2026-10-24T04:12:04` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_process_from_pid` añadiendo validaciones preventivas para evitar errores en llamadas `ctypes` cuando el handle es inválido o la API falla, asegurando que no se intente operar sobre estados de memoria inexistentes o nulos.
-- `2026-10-24T04:03:18` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_setup_application` y `_on_closing` para garantizar que la aplicación cierre limpiamente los recursos y reporte fallos de inicialización críticos al usuario sin dejar procesos "zombis" o ventanas huérfanas en estado inconsistente.
-- `2026-10-24T04:02:23` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_cached` y `_calculate_area_contribution` mediante una validación de tipo más estricta en el `cache_key` y la captura de errores en el acceso al pipeline, evitando que un fallo en un área detenga el procesamiento completo del score.

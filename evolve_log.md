@@ -1060,3 +1060,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-24T05:04:06` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext.__hash__, SystemContext._hash_tuple, SystemContext.is_valid_structure
 - `2026-10-24T05:04:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T05:04:06` Corrida terminada. Total usado hoy: 120.
+- `2026-10-24T05:12:21` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-10-24T05:12:52` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: FontSizesDict
+- `2026-10-24T05:13:23` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo reemplazando la resolución de rutas mediante `Path.resolve()` (que es costosa en I/O) por `os.path.normcase(os.path.abspath())` y reduje la creación innecesaria de objetos `Path` dentro de los bucles críticos de `detect_profiles` y `directory_size`.
+- `2026-10-24T05:14:18` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` reemplazando la iteración `os.scandir` manual por una lógica que reduce las llamadas repetitivas a `path.resolve()` y `is_protected_path` al procesar directorios, consolidando los chequeos dentro del bucle de `scandir` para minimizar la carga de E/S.
+- `2026-10-24T05:14:24` 🛑 Propuesta bloqueada por la guardia en duplicates.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: group_by_size
+- `2026-10-24T05:14:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T05:14:24` Corrida terminada. Total usado hoy: 124.

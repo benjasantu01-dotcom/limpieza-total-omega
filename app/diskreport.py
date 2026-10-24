@@ -187,39 +187,17 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
+def _is_excluded_path(name: str, full_path: str) -> bool:
     """
-    Filtro de seguridad para determinar si un archivo o directorio debe omitirse.
-    Verifica caracteres peligrosos, rutas fuera de raíz (jail-break) y atributos de sistema.
+    Filtro de seguridad rápido para nombres de archivos y rutas.
     """
-    name = entry.name
     if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
-        
     if any(c in name for c in SUSPICIOUS_CHARS) or any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
         return True
-
-    try:
-        entry_path = Path(entry.path).resolve(strict=False)
-        entry_path.relative_to(root_path)
-
-        if not (entry.is_file(follow_symlinks=False) or entry.is_dir(follow_symlinks=False)):
-            return True
-
-        if is_protected_path(entry_path):
-            return True
-
-        if entry.is_symlink():
-            return True
-        
-        if os.name == 'nt':
-            st = entry.stat(follow_symlinks=False)
-            if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
-                return True
-        
-        return False
-    except (OSError, PermissionError, AttributeError, ValueError, RuntimeError):
+    if is_protected_path(Path(full_path)):
         return True
+    return False
             
 def _get_local_windows_drives() -> List[str]:
     """Retorna una lista de unidades montadas en Windows, filtrando las protegidas."""
@@ -325,12 +303,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Generador iterativo que recorre archivos bajo la raíz dada, evitando recursión circular.
-    
-    Yields:
-        Tupla (ruta_archivo, tamaño_en_bytes).
-    """
+    """Generador iterativo optimizado para recorrer archivos."""
     root_path = _validate_root(directory)
     if root_path is None: return
     
@@ -342,29 +315,21 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    try:
-                        if skip_protected and _is_excluded_path(entry, root_path):
-                            continue
-                        
-                        if entry.is_dir(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(Path(entry.path))
-                            except (OSError, PermissionError):
-                                continue
-                        elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                if st and st.st_size >= 0:
-                                    yield Path(entry.path), st.st_size
-                            except (OSError, PermissionError):
-                                continue
-                    except (PermissionError, FileNotFoundError, OSError):
+                    if skip_protected and _is_excluded_path(entry.name, entry.path):
                         continue
-        except (OSError, PermissionError, FileNotFoundError, NotADirectoryError, ValueError): 
+                    
+                    try:
+                        st = entry.stat(follow_symlinks=False)
+                        if entry.is_dir(follow_symlinks=False):
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(Path(entry.path))
+                        elif entry.is_file(follow_symlinks=False):
+                            yield Path(entry.path), st.st_size
+                    except (OSError, PermissionError):
+                        continue
+        except (OSError, PermissionError, FileNotFoundError, NotADirectoryError):
             continue
 
 
