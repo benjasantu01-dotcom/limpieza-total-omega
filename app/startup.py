@@ -161,15 +161,13 @@ class StartupEntry:
         Realiza chequeo de seguridad final (path protegido) y verifica que el archivo sea accesible.
         """
         try:
+            # Validamos contra is_protected_path tanto la ruta inicial como la resuelta
             if is_protected_path(p) or p.is_symlink() or not is_safe_to_modify(p) or not p.exists():
                 return False
             if not p.is_file():
                 return False
-            # Verificación de exclusividad: intenta abrir en modo lectura/escritura sin modificar.
-            try:
-                with open(p, 'rb+') as f:
-                    pass
-            except (OSError, PermissionError):
+            # Verificación de exclusividad: intenta abrir en modo solo lectura para no alterar el estado.
+            with open(p, 'rb') as f:
                 pass
             return True
         except (OSError, PermissionError, FileNotFoundError, AttributeError):

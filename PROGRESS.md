@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 38 | 2 | 11 | 2 | 45 |
+| 2026-10-22 | 38 | 2 | 11 | 2 | 41 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 29 | 2 | 8 | 1 | 16 |
+| 2026-10-24 | 30 | 2 | 8 | 1 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **46**
 - legibilidad y documentación: **45**
 - robustez ante casos límite: **40**
 - rendimiento: **34**
@@ -40,13 +40,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **16**
 - `branding.py`: **15**
 - `healthscore.py`: **14**
-- `startup.py`: **12**
+- `startup.py`: **13**
 - `organizer.py`: **10**
 - `main.py`: **8**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T02:30:53` **startup.py** (seguridad defensiva): Mejoré la seguridad en `_validate_file_access` asegurándome de que el intento de apertura de archivo sea explícitamente de solo lectura y añadiendo una validación de `is_protected_path` sobre la ruta resuelta, previniendo así posibles escapes fuera de los directorios permitidos tras la resolución simbólica.
 - `2026-10-24T02:23:07` **safety.py** (seguridad defensiva): Se introdujo la verificación `_validate_no_reparse_traversal` para detectar puntos de reparse (junctions) durante el recorrido de los componentes de la ruta, impidiendo ataques de redirección mediante enlaces simbólicos o de directorio que puedan saltar fuera del alcance (`jail`) permitido.
 - `2026-10-24T02:21:59` **quarantine.py** (seguridad defensiva): Se ha mejorado `_check_path_syntax_integrity` para incluir una validación estricta contra rutas que contengan el carácter `~` (tilde) en posiciones intermedias, ya que podrían intentar evadir la expansión de rutas o engañar a los parsers, y se fortaleció la verificación de longitud de caracteres utilizando `os.fspath` para asegurar consistencia entre distintas versiones de Python y sistemas de archivos, previniendo inyecciones de rutas complejas.
 - `2026-10-24T02:15:54` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` reforzando la validación de rutas mediante `os.path.realpath` para prevenir evasiones mediante enlaces simbólicos o rutas relativas, asegurando que el ejecutable analizado sea resuelto canónicamente antes de compararlo con `is_protected_path`.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T01:20:24` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta de `pathlib.Path` en `save_logo_svg` para asegurar que las rutas proporcionadas sean absolutas y existan, previniendo errores de IO al manipular rutas relativas o malformadas en entornos dinámicos.
 - `2026-10-24T01:12:50` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando la serialización innecesaria dentro de `load()` al verificar la caché, reemplazándola por una comparación directa de metadatos, y reduciendo el uso de `json.dumps` en el bucle principal.
 - `2026-10-24T01:00:03` **organizer.py** (rendimiento): Se optimizó el escaneo del sistema reemplazando múltiples llamadas a `os.path.exists` y `stat` dentro de los bucles por un acceso único mediante `os.scandir`, además de convertir `JUNK_EXTENSIONS` en un `frozenset` para realizar consultas O(1) en lugar de recorridos de tupla.
-- `2026-10-24T00:59:32` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y filtrado de la lista completa de procesos en memoria por un generador eficiente que utiliza `heapq` para mantener solo los N elementos más pesados, reduciendo la presión sobre el recolector de basura y el uso de RAM.
