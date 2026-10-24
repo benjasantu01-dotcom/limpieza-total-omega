@@ -347,9 +347,12 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             try:
                 if not _is_safe_for_disk_op(junk_file, dest_res): continue
                 target_path = _can_move_file(junk_file, dest_res)
-                if target_path and target_path.resolve(strict=False).is_relative_to(dest_res):
-                    if junk_file.path.exists():
-                        shutil.move(str(junk_file.path.resolve(strict=True)), str(target_path))
+                if target_path and junk_file.path.exists():
+                    try:
+                        if target_path.resolve(strict=False).is_relative_to(dest_res):
+                            shutil.move(str(junk_file.path.resolve(strict=True)), str(target_path))
+                    except (ValueError, OSError):
+                        continue
             except (OSError, shutil.Error, PermissionError) as e:
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
         return dest_res

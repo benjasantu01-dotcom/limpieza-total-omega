@@ -595,7 +595,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         serializable_items: List[Dict[str, Any]] = [item.to_dict() for item in items]
         encoded_content: bytes = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
     except (TypeError, ValueError) as e:
-        raise RuntimeError(f"Error al serializar metadatos de cuarentena: {e}")
+        raise OSError(f"Error al serializar metadatos de cuarentena: {e}")
 
     temp_name: Optional[str] = None
     try:
@@ -621,7 +621,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         if temp_name and os.path.exists(temp_name):
             try: os.unlink(temp_name)
             except OSError: pass
-        raise RuntimeError(f"Falla al persistir manifiesto en disco: {e}")
+        raise OSError(f"Falla al persistir manifiesto en disco: {e}")
 
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:

@@ -184,7 +184,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
 
-def _safe_int_conversion(value: Optional[str | int], multiplier: int = 1) -> BytesValue:
+def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
     """Normaliza strings o enteros a BytesValue, aplicando un factor de escala."""
     if isinstance(value, int): return BytesValue(max(0, value * multiplier))
     if not isinstance(value, str): return BytesValue(0)
@@ -194,7 +194,7 @@ def _safe_int_conversion(value: Optional[str | int], multiplier: int = 1) -> Byt
     try:
         val = int(digits) * multiplier
         return BytesValue(val) if val >= 0 else BytesValue(0)
-    except (ValueError, OverflowError):
+    except (ValueError, OverflowError, TypeError):
         return BytesValue(0)
 
 _is_windows: bool = os.name == "nt"

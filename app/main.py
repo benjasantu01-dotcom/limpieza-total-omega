@@ -1010,11 +1010,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _update_entry_fields(self, widget: ctk.CTkEntry, key: str, default: int, row: int, col: int) -> None:
         """Inicializa widgets de entrada con valores persistidos de la configuración."""
-        try:
-            widget.insert(0, str(self.settings.get(key, default)))
-            widget.grid(row=row, column=col, sticky="w")
-        except (tk.TclError, AttributeError):
-            pass
+        if self._check_widget_integrity(widget):
+            try:
+                widget.insert(0, str(self.settings.get(key, default)))
+                widget.grid(row=row, column=col, sticky="w")
+            except (tk.TclError, AttributeError):
+                pass
 
     def _build_ia_settings(self, tab: ctk.CTk) -> None:
         """Configura los controles específicos para el asistente de IA."""
@@ -2198,7 +2199,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 for clave, variable in self.setting_vars.items():
                     if clave in settings_mod.DEFAULTS:
                         try:
-                            variable.set(settings_mod.DEFAULTS[clave])
+                            if self._check_widget_integrity(variable):
+                                variable.set(settings_mod.DEFAULTS[clave])
                         except (tk.TclError, RuntimeError, Exception):
                             continue
                 
