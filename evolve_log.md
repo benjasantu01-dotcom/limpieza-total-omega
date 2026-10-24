@@ -462,3 +462,42 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-24T10:51:00` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha robustecido `save_logo_svg` implementando una validación de seguridad de doble capa: primero, se asegura de que el directorio padre exista y sea seguro mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, y segundo, se garantiza que la ruta resuelta no sea un directorio ni un enlace simbólico que apunte fuera de las áreas permitidas.
 - `2026-10-24T10:51:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T10:51:00` Corrida terminada. Total usado hoy: 256.
+- `2026-10-24T10:58:29` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-24T10:58:58` Tests FALLARON:
+```
+includes_the_sa0')
+
+    def test_summarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:325: in summarize
+    total_mb = round(total_cache_bytes(current_caches) / BYTES_TO_MB, 2)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:319: in total_cache_bytes
+    return sum(c.bytes_found for c in caches) if isinstance(caches, (list, tuple, set)) else 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7f50d92b8b50>
+
+>   return sum(c.bytes_found for c in caches) if isinstance(caches, (list, tuple, set)) else 0
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:319: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.66s
+
+```
+- `2026-10-24T10:58:58` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva mediante la restricción del ámbito de escaneo: ahora `_sum_directory_recursive` valida explícitamente que cada sub-directorio visitado no sea un punto de reparse (junction o symlink) antes de descender, evitando la posibilidad de fugas de alcance o recursión infinita en rutas externas a `LOCALAPPDATA`.
+- `2026-10-24T10:59:24` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). He robustecido la seguridad defensiva al reemplazar el uso de `path.parts` (que es inestable frente a rutas relativas o mal formadas) por `path.relative_to(root)` en `largest_folders`, garantizando que solo procesamos archivos efectivamente contenidos bajo el directorio base y mejorando la resiliencia ante errores de resolución de rutas.
+- `2026-10-24T10:59:51` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` integrando `is_protected_path` directamente en el filtrado de archivos, garantizando que el escaneo no solo valide directorios, sino también cada archivo individual encontrado contra la lista de rutas protegidas, manteniendo la consistencia con las reglas de seguridad.
+- `2026-10-24T11:00:05` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha restringido el espacio de memoria de `SystemMetrics` eliminando `quarantined_count` de la lógica de cómputo del `cache_key` y el pipeline principal, evitando que cualquier manipulación externa de conteos de cuarentena pueda invalidar innecesariamente el estado analítico, reforzando la inmutabilidad lógica de las métricas.
+- `2026-10-24T11:00:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T11:00:05` Corrida terminada. Total usado hoy: 260.

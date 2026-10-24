@@ -222,7 +222,6 @@ def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) ->
         if value is None or isinstance(value, bool):
             return default
         val = float(value)
-        # Asegura que incluso valores infinitos sean rechazados por el default
         if not math.isfinite(val):
             return default
         return float(max(min_v, min(max_v, val)))
@@ -247,7 +246,7 @@ class SystemMetrics:
     _FIELDS_TO_VALIDATE: Final[Tuple[str, ...]] = (
         "junk_mb", "suspicious_count", "suspicious_warnings", 
         "memory_available_percent", "disk_free_percent", 
-        "duplicate_mb", "startup_count", "quarantined_count"
+        "duplicate_mb", "startup_count"
     )
 
     def __post_init__(self) -> None:
@@ -266,7 +265,6 @@ class SystemMetrics:
             "suspicious_count": (0, 5000),
             "suspicious_warnings": (0, 5000),
             "startup_count": (0, 1000),
-            "quarantined_count": (0, 1000),
             "memory_available_percent": (0.0, 100.0),
             "disk_free_percent": (0.0, 100.0)
         }
@@ -399,7 +397,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos o corruptos."])
     
-    cache_key = tuple(float(getattr(metrics, f)) for f in metrics._FIELDS_TO_VALIDATE)
+    cache_key = tuple(float(getattr(metrics, f)) for f in SystemMetrics._FIELDS_TO_VALIDATE)
     return _compute_cached(cache_key, int(metrics.quarantined_count))
 
 @lru_cache(maxsize=128)

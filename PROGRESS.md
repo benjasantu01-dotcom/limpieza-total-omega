@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
-- Rechazadas por tests: 21
+- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 100 | 10 | 23 | 7 | 108 |
-| 2026-10-24 | 110 | 11 | 29 | 11 | 95 |
+| 2026-10-23 | 100 | 10 | 23 | 7 | 104 |
+| 2026-10-24 | 113 | 12 | 29 | 11 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **45**
+- seguridad defensiva: **43**
 - rendimiento: **40**
-- seguridad defensiva: **40**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `assistant.py`: **17**
 - `browser.py`: **16**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
 - `scanner.py`: **16**
+- `healthscore.py`: **15**
 - `organizer.py`: **15**
 - `settings.py`: **15**
-- `healthscore.py`: **14**
+- `duplicates.py`: **14**
 - `branding.py`: **13**
-- `duplicates.py`: **13**
 - `main.py`: **10**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T11:00:05` **healthscore.py** (seguridad defensiva): Se ha restringido el espacio de memoria de `SystemMetrics` eliminando `quarantined_count` de la lógica de cómputo del `cache_key` y el pipeline principal, evitando que cualquier manipulación externa de conteos de cuarentena pueda invalidar innecesariamente el estado analítico, reforzando la inmutabilidad lógica de las métricas.
+- `2026-10-24T10:59:51` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` integrando `is_protected_path` directamente en el filtrado de archivos, garantizando que el escaneo no solo valide directorios, sino también cada archivo individual encontrado contra la lista de rutas protegidas, manteniendo la consistencia con las reglas de seguridad.
+- `2026-10-24T10:59:24` **diskreport.py** (seguridad defensiva): He robustecido la seguridad defensiva al reemplazar el uso de `path.parts` (que es inestable frente a rutas relativas o mal formadas) por `path.relative_to(root)` en `largest_folders`, garantizando que solo procesamos archivos efectivamente contenidos bajo el directorio base y mejorando la resiliencia ante errores de resolución de rutas.
 - `2026-10-24T10:51:00` **branding.py** (seguridad defensiva): Se ha robustecido `save_logo_svg` implementando una validación de seguridad de doble capa: primero, se asegura de que el directorio padre exista y sea seguro mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, y segundo, se garantiza que la ruta resuelta no sea un directorio ni un enlace simbólico que apunte fuera de las áreas permitidas.
 - `2026-10-24T10:50:24` **assistant.py** (seguridad defensiva): Reforcé la seguridad de `assistant.py` implementando un chequeo explícito de integridad en `_is_safe_payload_structure` para detectar recursiones profundas o tipos de datos maliciosos en el `json` antes de enviarlo, evitando posibles ataques de inyección mediante serialización de objetos complejos.
 - `2026-10-24T10:49:16` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos mediante la implementación de una validación de existencia y permisos de escritura en la carpeta contenedora antes de cualquier intento de persistencia.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T10:09:56` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` ante entradas malformadas o tipos inesperados durante la ingesta de datos, añadiendo una validación de tipo más estricta que impide la propagación de valores `NaN`, `Inf` o booleanos en las métricas numéricas, protegiendo así la integridad de `SystemContext`.
 - `2026-10-24T10:09:05` **settings.py** (rendimiento): Optimizé `_read_and_parse_json` y `load` para evitar llamadas redundantes a `Path.resolve()` y `path.exists()` (que realizan I/O costoso) mediante la validación previa de la cadena de texto y el uso eficiente de la caché del `_MANAGER`.
 - `2026-10-24T10:08:36` **scanner.py** (rendimiento): Optimicé el rendimiento del proceso de escaneo mediante el reemplazo de `os.path.abspath` y `os.path.normcase` recurrentes por la caché LRU en `_is_inside_base_root`, evitando el recálculo innecesario de rutas absolutas durante la traversal del árbol de directorios.
-- `2026-10-24T09:59:33` **safety.py** (rendimiento): Optimicé el rendimiento de `_evaluate_security_rules` reemplazando la lógica de validación secuencial completa por un `any` con `generator expression` y moví la creación de `SecurityDescriptor` detrás del chequeo de caché para evitar llamadas costosas a la API de Windows cuando la ruta ya ha sido validada exitosamente en la misma iteración.
-- `2026-10-24T09:58:32` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` evitando lecturas repetidas de disco mediante la consolidación del caché de hashes usando una tupla `(path, mtime, size)`, reduciendo drásticamente la I/O en validaciones masivas.
-- `2026-10-24T09:57:50` **organizer.py** (rendimiento): Optimizé el rendimiento del escaneo reemplazando la evaluación repetitiva de `tuple(JUNK_EXTENSIONS)` dentro del loop principal por el uso directo del conjunto pre-compilado `JUNK_EXTENSIONS`, y reduciendo llamadas redundantes a `Path.resolve()` en el proceso recursivo.

@@ -99,7 +99,7 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Determina si un archivo es apto para el análisis evitando archivos vacíos o de sistema."""
-    return st_size > 0 and not is_system_or_hidden(path)
+    return st_size > 0 and not is_system_or_hidden(path) and not is_protected_path(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
@@ -163,14 +163,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if entry.is_dir(follow_symlinks=False):
                             queue.append((Path(entry.path), depth + 1))
                         elif entry.is_file(follow_symlinks=False):
+                            path = Path(entry.path)
                             stat = entry.stat(follow_symlinks=False)
-                            if stat.st_size >= min_size and _is_valid_candidate(Path(entry.path), stat.st_size):
+                            if stat.st_size >= min_size and _is_valid_candidate(path, stat.st_size):
+                                if skip_protected and is_protected_path(path): continue
                                 inode = (stat.st_dev, stat.st_ino)
                                 if inode not in visited:
-                                    path = Path(entry.path)
-                                    if not (skip_protected and is_protected_path(path)):
-                                        visited.add(inode)
-                                        raw_map[stat.st_size].append(path)
+                                    visited.add(inode)
+                                    raw_map[stat.st_size].append(path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
