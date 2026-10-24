@@ -180,7 +180,6 @@ def base_directories() -> List[Path]:
     p = Path(local_env)
     if p.exists() and p.is_dir() and os.access(p, os.R_OK):
         try:
-            # Usamos abspath y normcase para evitar resolve() innecesario
             norm_p = os.path.normcase(os.path.abspath(p))
             if is_safe_to_modify(p) and not is_protected_path(p):
                 return [p]
@@ -227,7 +226,6 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     if norm_path in scan_ctx.visited_dirs or not os.access(root_path, os.R_OK):
         return ScanResult(0, True)
     
-    # Doble chequeo de seguridad antes de procesar el directorio actual
     if not _is_within_sandbox(norm_path, scan_ctx.sandbox_base_norm) or is_protected_path(Path(root_path)):
         return ScanResult(0, True)
     
@@ -264,7 +262,6 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
     if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): return False
     kernel = _get_kernel32()
     
-    # Validar sin resolve() para evitar I/O redundante
     cand_abs = os.path.abspath(str(candidate))
     cand_norm = os.path.normcase(cand_abs)
     
@@ -296,11 +293,14 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         scan_ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
         
         for browser_key, relative_path in browser_map.items():
-            candidate = _resolve_browser_path(base, relative_path)
-            if candidate != Path() and _is_valid_cache_path(candidate, base_norm):
-                scan_res = _sum_directory_recursive(str(candidate), scan_ctx, 0)
-                if scan_res.success and scan_res.bytes_found > 0:
-                    found.append(BrowserCache(str(browser_key), candidate, scan_res.bytes_found))
+            try:
+                candidate = _resolve_browser_path(base, relative_path)
+                if candidate != Path() and _is_valid_cache_path(candidate, base_norm):
+                    scan_res = _sum_directory_recursive(str(candidate), scan_ctx, 0)
+                    if scan_res.success and scan_res.bytes_found > 0:
+                        found.append(BrowserCache(str(browser_key), candidate, scan_res.bytes_found))
+            except (OSError, PermissionError, ValueError):
+                continue
     
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found

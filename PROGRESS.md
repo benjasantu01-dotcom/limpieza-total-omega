@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 54
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 131 | 12 | 32 | 9 | 124 |
-| 2026-10-24 | 70 | 6 | 22 | 7 | 91 |
+| 2026-10-23 | 128 | 12 | 31 | 9 | 124 |
+| 2026-10-24 | 73 | 6 | 22 | 7 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- legibilidad y documentación: **40**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **42**
 - rendimiento: **38**
+- legibilidad y documentación: **37**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `memory.py`: **18**
-- `safety.py`: **17**
-- `quarantine.py`: **16**
 - `assistant.py`: **16**
+- `browser.py`: **16**
+- `safety.py`: **16**
 - `scanner.py`: **15**
-- `browser.py`: **15**
+- `quarantine.py`: **15**
 - `settings.py`: **14**
-- `organizer.py`: **13**
 - `startup.py`: **13**
 - `branding.py`: **13**
 - `healthscore.py`: **13**
-- `duplicates.py`: **10**
+- `organizer.py`: **12**
+- `duplicates.py`: **11**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T08:27:06` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` mediante la validación explícita del estado del objeto `group` y se añadieron guardas para evitar errores `AttributeError` o `IndexError` al procesar grupos vacíos o con rutas inexistentes.
+- `2026-10-24T08:26:35` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`) durante la iteración y el acceso a rutas, evitando que un error de lectura en un subdirectorio interrumpa el informe completo.
+- `2026-10-24T08:26:08` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` añadiendo validaciones explícitas de entrada (`None`/vacío) y capturando posibles excepciones durante la iteración sobre los navegadores para asegurar que un error en una ruta específica no aborte el escaneo de todo el sistema.
 - `2026-10-24T06:56:52` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo un chequeo explícito de la longitud de la ruta (máximo 260 caracteres para evitar ataques de desbordamiento en APIs de Windows) y validando que el archivo de configuración no sea un enlace simbólico ni un hard link, asegurando que la app trabaje siempre sobre el archivo real y evitando manipulación fuera de la carpeta esperada.
 - `2026-10-24T06:54:55` **safety.py** (seguridad defensiva): Mejoré la robustez de `_is_volume_readonly` añadiendo un manejo de excepciones más granular y asegurando que las rutas de red (UNC) no intenten validarse con operaciones de volumen locales que fallarían, previniendo errores de IO innecesarios en entornos con unidades de red mapeadas.
 - `2026-10-24T06:46:09` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` añadiendo una validación explícita de `is_within_directory` para cada archivo procesado, asegurando que solo se operen archivos contenidos estrictamente dentro del sandbox de cuarentena, evitando así cualquier posible efecto lateral fuera de la carpeta designada durante la limpieza masiva.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T06:24:54` **assistant.py** (seguridad defensiva): Reforcé la validación de entrada en `_build_payload` y `_call_gemini` mediante la implementación de una restricción adicional de longitud y caracteres para asegurar que ningún campo del payload, especialmente la concatenación del prompt, pueda exceder los límites establecidos o contener secuencias peligrosas antes de la serialización JSON.
 - `2026-10-24T06:05:21` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de acceso en `_atomic_isolate_file` mediante la validación explícita del estado del archivo justo antes de cada operación crítica de I/O, evitando el uso de estados desactualizados tras llamadas a funciones externas.
 - `2026-10-24T05:54:22` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la validación de `SystemMetrics` evitando la construcción de una instancia parcial o inválida mediante un `__new__` controlado y añadiendo verificaciones estrictas en el `lru_cache` para prevenir errores si `metrics_tuple` llega con longitudes inesperadas.
-- `2026-10-24T05:45:37` **branding.py** (robustez ante casos límite): Se ha robustecido `save_logo_svg` y las funciones de renderizado vectorial contra entradas malformadas, normalizando rutas, verificando la existencia de directorios padres antes de intentar operaciones y evitando cálculos geométricos con valores no finitos que podrían causar fallos en el motor de dibujo.
-- `2026-10-24T05:45:00` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y sus métodos de validación para evitar fallos por objetos con estructuras recursivas o tipos inesperados, asegurando que cualquier entrada maliciosa o corrupta no pueda inyectar atributos ni causar errores en tiempo de ejecución.
-- `2026-10-24T05:43:48` **startup.py** (rendimiento): Se optimizó el método `_resolve_and_cache_path` eliminando la apertura innecesaria de archivos mediante `with open(p, 'rb') as f`, reemplazándola por una validación de metadatos más eficiente (`p.is_file()` y `p.exists()`), lo que reduce drásticamente las operaciones de E/S bloqueantes y el consumo de descriptores de archivos durante el escaneo.

@@ -239,7 +239,9 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """Sugiere el archivo más antiguo como original para minimizar riesgo de datos."""
-    if group is None or not group.paths: return None
+    if not isinstance(group, DuplicateGroup) or not group.paths: 
+        return None
+        
     candidates = []
     for p in group.paths:
         try: 
@@ -248,7 +250,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         except (OSError, PermissionError): continue
     
     if not candidates:
-        return group.paths[0]
+        return group.paths[0] if group.paths else None
     return min(candidates, key=lambda x: x[0])[1]
 
 

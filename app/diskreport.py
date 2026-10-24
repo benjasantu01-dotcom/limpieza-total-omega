@@ -416,8 +416,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception:
-        return ["Error: Fallo inesperado durante el escaneo del sistema de archivos."]
+    except (OSError, PermissionError):
+        return ["Error: Fallo inesperado durante el acceso al sistema de archivos."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]
