@@ -749,9 +749,12 @@ class IsolationManager:
         """Verifica que el archivo no haya cambiado entre chequeos."""
         if not source.exists():
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
-        if source.stat().st_ino != original_stat.st_ino:
+        
+        # Re-check actual stat without relying on cached stat object
+        current_stat = source.stat()
+        if current_stat.st_ino != original_stat.st_ino:
             raise RuntimeError("Integridad comprometida: archivo reemplazado (TOCTOU).")
-        if source.stat().st_nlink > 1:
+        if current_stat.st_nlink > 1:
             raise UnsafePathError("Aislamiento denegado: múltiples enlaces físicos.")
         
         dest_res: Path = dest.resolve()
@@ -779,15 +782,14 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if _win_has_system_attributes(source):
         raise UnsafePathError("Aislamiento bloqueado: archivo de sistema detectado.")
     
+    # Captura estado inicial
     try:
-        if not destination.parent.exists():
-            raise OSError("Directorio de cuarentena inaccesible.")
-        
-        stat_orig: os.stat_result = _check_io_error_context(source.stat)
-        if stat_orig.st_size != original_size or stat_orig.st_nlink > 1:
-            raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
+        stat_orig: os.stat_result = source.stat()
     except OSError as e:
         raise RuntimeError(f"No se pudo obtener estado de archivo: {e}")
+    
+    if stat_orig.st_size != original_size or stat_orig.st_nlink > 1:
+        raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
     
     IsolationManager.validate_atomicity(source, stat_orig, destination)
     
@@ -800,6 +802,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
 
     _validate_integrity_before_move(source, original_size, stat_orig.st_ino)
 
+    # Re-check state immediately before write
     final_check: os.stat_result = source.stat()
     if final_check.st_ino != stat_orig.st_ino or final_check.st_size != original_size or final_check.st_nlink > 1:
         raise RuntimeError("Integridad comprometida: el archivo fue modificado (TOCTOU).")
@@ -810,6 +813,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         
         h, i = _write_temp_to_final(source, destination)
+        
+        # Verify final state matches intent
         if destination.stat().st_ino != i:
             raise RuntimeError("Integridad comprometida: el inodo destino no coincide tras la operación.")
         return h, i

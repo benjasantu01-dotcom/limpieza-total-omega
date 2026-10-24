@@ -1101,3 +1101,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-24T05:54:22` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la validación de `SystemMetrics` evitando la construcción de una instancia parcial o inválida mediante un `__new__` controlado y añadiendo verificaciones estrictas en el `lru_cache` para prevenir errores si `metrics_tuple` llega con longitudes inesperadas.
 - `2026-10-24T05:54:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T05:54:22` Corrida terminada. Total usado hoy: 140.
+- `2026-10-24T06:03:12` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-10-24T06:04:04` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._apply_card_updates, LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._is_safe_target_dir, LimpiezaTotalOmegaApp._safe_validate_inputs, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._validate_process_state, LimpiezaTotalOmegaApp._verify_disk_path
+- `2026-10-24T06:04:29` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-24T06:04:54` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-24T06:05:21` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de acceso en `_atomic_isolate_file` mediante la validación explícita del estado del archivo justo antes de cada operación crítica de I/O, evitando el uso de estados desactualizados tras llamadas a funciones externas.
+- `2026-10-24T06:05:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T06:05:21` Corrida terminada. Total usado hoy: 144.

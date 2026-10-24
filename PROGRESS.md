@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 53
+- Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 3 | 0 | 0 | 0 | 11 |
+| 2026-10-22 | 0 | 0 | 0 | 0 | 10 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 59 | 3 | 19 | 5 | 54 |
+| 2026-10-24 | 60 | 3 | 20 | 5 | 56 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **45**
-- seguridad defensiva: **41**
 - rendimiento: **38**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `memory.py`: **18**
-- `scanner.py`: **16**
 - `assistant.py`: **16**
 - `browser.py`: **16**
+- `quarantine.py`: **16**
 - `safety.py`: **16**
-- `settings.py`: **15**
-- `startup.py`: **15**
 - `branding.py`: **15**
-- `quarantine.py`: **15**
+- `scanner.py`: **15**
 - `healthscore.py`: **14**
+- `settings.py`: **14**
+- `startup.py`: **14**
 - `organizer.py`: **12**
 - `duplicates.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T06:05:21` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de acceso en `_atomic_isolate_file` mediante la validación explícita del estado del archivo justo antes de cada operación crítica de I/O, evitando el uso de estados desactualizados tras llamadas a funciones externas.
 - `2026-10-24T05:54:22` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la validación de `SystemMetrics` evitando la construcción de una instancia parcial o inválida mediante un `__new__` controlado y añadiendo verificaciones estrictas en el `lru_cache` para prevenir errores si `metrics_tuple` llega con longitudes inesperadas.
 - `2026-10-24T05:45:37` **branding.py** (robustez ante casos límite): Se ha robustecido `save_logo_svg` y las funciones de renderizado vectorial contra entradas malformadas, normalizando rutas, verificando la existencia de directorios padres antes de intentar operaciones y evitando cálculos geométricos con valores no finitos que podrían causar fallos en el motor de dibujo.
 - `2026-10-24T05:45:00` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y sus métodos de validación para evitar fallos por objetos con estructuras recursivas o tipos inesperados, asegurando que cualquier entrada maliciosa o corrupta no pueda inyectar atributos ni causar errores en tiempo de ejecución.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T05:03:42` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante docstrings descriptivos que clarifican el flujo de validación y el propósito de cada etapa (sanitización, resolución y validación), facilitando el mantenimiento a futuro.
 - `2026-10-24T04:53:59` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_file_id` y `_get_security_descriptor`, delegando la gestión de recursos críticos (handles de archivos) a gestores de contexto `try...finally` estructurados y añadiendo docstrings técnicos que explican la mitigación de riesgos de nivel de sistema operativo.
 - `2026-10-24T04:53:10` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `quarantine.py` mediante la adición de docstrings estructurados y la clarificación de la intención funcional de los métodos auxiliares de validación, facilitando el mantenimiento al explicar el "porqué" detrás de las restricciones de seguridad y operaciones de I/O.
-- `2026-10-24T04:52:28` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados que explican el "porqué" de las validaciones, tipado explícito en variables críticas y simplificación de la estructura en `_process_directory` para clarificar la lógica de escaneo.
