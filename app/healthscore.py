@@ -341,10 +341,10 @@ def _calculate_area_contribution(metrics_tuple: Tuple[float, ...], area_idx: int
             return 0, ()
         
         entry = _PIPELINE[area_idx]
-        metrics = SystemMetrics()
-        for i, key in enumerate(SystemMetrics._FIELDS_TO_VALIDATE): 
-            if i < len(metrics_tuple):
-                setattr(metrics, key, metrics_tuple[i])
+        
+        # Mapeo directo para evitar crear instancia completa de SystemMetrics innecesariamente
+        m_args = {k: metrics_tuple[i] for i, k in enumerate(SystemMetrics._FIELDS_TO_VALIDATE)}
+        metrics = SystemMetrics(**m_args)
         
         weight = max(0, entry.weight)
         raw_ratio = entry.scorer(metrics)

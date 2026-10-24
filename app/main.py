@@ -46,6 +46,7 @@ Consolidación de logs mediante batching asíncrono para reducir colisiones UI.
 Caché de configuración con TTL y validación de integridad diferida.
 Serialización de tareas pesadas mediante colas de ejecución protegidas.
 Carga perezosa de componentes de UI de salud para optimizar el inicio.
+Memoización de digests de estado para prevenir re-procesamiento innecesario del asistente.
 
 Instalar dependencias:
     pip install customtkinter
@@ -1376,6 +1377,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Callback: Ejecuta el análisis integral de salud del sistema."""
         self._lazy_init_health_ui()
 
+        # Digest de estado actual para evitar reprocesamiento
         current_digest = (
             len(self._get_cached("junk") or []),
             len(self._get_cached("suspicions") or []),

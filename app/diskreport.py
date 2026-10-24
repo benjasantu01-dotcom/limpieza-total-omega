@@ -198,8 +198,6 @@ def _is_excluded_path(name: str, full_path: str) -> bool:
         return True
     if any(c in name for c in SUSPICIOUS_CHARS) or any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
         return True
-    if is_protected_path(Path(full_path)):
-        return True
     return False
             
 def _get_local_windows_drives() -> List[str]:
@@ -307,10 +305,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre archivos evitando bucles de enlaces y rutas protegidas.
-    
-    Args:
-        directory: Ruta raíz donde iniciar.
-        skip_protected: Si es True, utiliza _is_excluded_path para omitir rutas sensibles.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -332,11 +326,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         if entry.is_dir(follow_symlinks=False):
                             inode = (st.st_dev, st.st_ino)
-                            if inode not in visited_inodes and not is_protected_path(path_obj):
+                            if inode not in visited_inodes and (not skip_protected or not is_protected_path(path_obj)):
                                 visited_inodes.add(inode)
                                 stack.append(path_obj)
                         elif entry.is_file(follow_symlinks=False):
-                            if not is_protected_path(path_obj):
+                            if not skip_protected or not is_protected_path(path_obj):
                                 yield path_obj, st.st_size
                     except (OSError, PermissionError):
                         continue

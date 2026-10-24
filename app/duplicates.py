@@ -155,7 +155,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Exploración recursiva (BFS) para recolectar archivos candidatos."""
+    """Exploración recursiva (BFS) para recolectar archivos candidatos usando atributos de DirEntry."""
     if not directories: return {}
     
     raw_map: Dict[int, List[Path]] = defaultdict(list)
@@ -173,14 +173,15 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if entry.is_dir(follow_symlinks=False):
                             queue.append((Path(entry.path), depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            path = Path(entry.path)
                             stat = entry.stat(follow_symlinks=False)
-                            if stat.st_size >= min_size and _is_valid_candidate(path, stat.st_size):
-                                if skip_protected and is_protected_path(path): continue
-                                inode = (stat.st_dev, stat.st_ino)
-                                if inode not in visited:
-                                    visited.add(inode)
-                                    raw_map[stat.st_size].append(path)
+                            if stat.st_size >= min_size:
+                                path = Path(entry.path)
+                                if _is_valid_candidate(path, stat.st_size):
+                                    if skip_protected and is_protected_path(path): continue
+                                    inode = (stat.st_dev, stat.st_ino)
+                                    if inode not in visited:
+                                        visited.add(inode)
+                                        raw_map[stat.st_size].append(path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

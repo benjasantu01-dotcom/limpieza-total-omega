@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 204
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 69 | 6 | 18 | 3 | 76 |
-| 2026-10-24 | 142 | 13 | 34 | 15 | 128 |
+| 2026-10-23 | 66 | 6 | 17 | 3 | 76 |
+| 2026-10-24 | 146 | 13 | 34 | 15 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **48**
 - legibilidad y documentación: **48**
-- rendimiento: **35**
-- robustez ante casos límite: **30**
+- rendimiento: **39**
+- robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **20**
-- `diskreport.py`: **18**
-- `quarantine.py`: **17**
-- `safety.py`: **17**
+- `diskreport.py`: **19**
 - `settings.py`: **17**
 - `organizer.py`: **17**
-- `scanner.py`: **15**
+- `duplicates.py`: **16**
+- `quarantine.py`: **16**
+- `safety.py`: **16**
 - `assistant.py`: **15**
 - `browser.py`: **15**
-- `duplicates.py`: **15**
+- `scanner.py`: **14**
+- `healthscore.py`: **14**
 - `branding.py`: **13**
-- `healthscore.py`: **13**
 - `startup.py`: **11**
-- `main.py`: **8**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T14:14:25` **main.py** (rendimiento): Se implementó un sistema de "Dirty Flag" y memoización de estado en `on_full_analysis` para evitar el re-procesamiento innecesario del asistente y la actualización redundante de la UI cuando los datos subyacentes no han cambiado, optimizando el rendimiento general del dashboard.
+- `2026-10-24T14:13:28` **healthscore.py** (rendimiento): Se ha optimizado el rendimiento del motor de cálculo mediante la eliminación de la recreación redundante de objetos `SystemMetrics` dentro de `_calculate_area_contribution`, permitiendo el paso directo de métricas individuales, lo que reduce la carga del recolector de basura y mejora la eficiencia del cacheo.
+- `2026-10-24T14:12:57` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` para obtener el tamaño y el inodo en una sola llamada al sistema, evitando múltiples llamadas a `.stat()` y `is_file()` dentro del bucle de exploración.
+- `2026-10-24T14:12:28` **diskreport.py** (rendimiento): Optimizé `walk_files` y `_collect_summary_data` para evitar llamadas redundantes a `is_protected_path` sobre la misma ruta, consolidando la lógica de seguridad y reduciendo la carga de cómputo durante el recorrido recursivo del sistema de archivos.
 - `2026-10-24T14:03:39` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.abspath` y `os.path.normcase` dentro del bucle de `scandir`, calculando la ruta normalizada solo una vez por entrada y aprovechando `os.DirEntry.path` para reducir las llamadas al sistema operativo.
 - `2026-10-24T14:03:27` **branding.py** (rendimiento): Optimicé el rendimiento de la generación de gradientes en `branding.py` mediante la implementación de un caché de resultados de `gradient_colors` (`lru_cache`) y reduciendo la complejidad computacional en `get_gradient_segments`, evitando recrear tuplas innecesarias en cada frame de dibujo.
 - `2026-10-24T13:53:41` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings explicativos a las funciones de validación compleja (`_is_file_secure_to_read` y `_read_and_parse_json`) y normalizando la nomenclatura de variables internas para hacer explícitas las intenciones de seguridad ante condiciones de carrera (TOCTOU).
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T13:32:29` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de hashing y refinando los *type hints* para especificar las estructuras de datos devueltas, facilitando el mantenimiento y la comprensión de la lógica de procesamiento en tres etapas.
 - `2026-10-24T13:32:06` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato Google Style) en las clases y métodos clave, clarificando las responsabilidades de los acumuladores de estado y asegurando que las intenciones de los parámetros sean explícitas para mejorar la mantenibilidad.
 - `2026-10-24T13:31:36` **browser.py** (legibilidad y documentación): Se añadió un bloque `docstring` detallado al módulo para clarificar la lógica de escaneo recursivo y se normalizaron los nombres de variables internas en `_sum_directory_recursive` para mejorar la legibilidad y coherencia técnica.
-- `2026-10-24T13:23:08` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado para clarificar el flujo de control en la lógica geométrica del escudo, facilitando la comprensión de los parámetros de escalado (`s`) que antes resultaban ambiguos en los cálculos de los métodos de dibujo (`_draw_shield_stripes`, `_draw_shield_icon_decorations`).
-- `2026-10-24T13:21:56` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_reserved_device_name` y `_is_path_suspicious` mediante la validación estricta de tipos y el manejo de excepciones, evitando errores inesperados al procesar rutas malformadas del registro.
-- `2026-10-24T13:21:29` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` implementando validaciones de tipo explícitas adicionales y capturando errores de `json.load` de forma más granular para asegurar que cualquier dato corrupto o malicioso (como diccionarios anidados inesperados) sea descartado en lugar de comprometer el estado del sistema.
-- `2026-10-24T13:13:03` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del escaneo implementando validaciones de tipo y presencia para los objetos `os.DirEntry` y las rutas en los métodos críticos del `Scanner`, asegurando que el motor no intente procesar referencias nulas o atributos ausentes, y unificando el manejo de errores en `process_entry` mediante un bloque de try-except más preciso.
