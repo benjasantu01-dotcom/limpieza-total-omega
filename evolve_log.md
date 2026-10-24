@@ -590,3 +590,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-23T23:36:06` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-23T23:46:17` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-23T23:56:28` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-24T00:06:48` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-10-24T00:07:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-24T00:07:53` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros complejos y docstrings que explican el "porqué" de las validaciones de seguridad, facilitando el mantenimiento y la auditoría de las reglas de exclusión.
+- `2026-10-24T00:08:40` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en clases clave (`ExtStats`, `GlobalStats`, `FolderMetrics`, `SummaryData`) y la clarificación de los propósitos de las funciones de soporte, facilitando la comprensión del flujo de datos sin alterar la lógica.
+- `2026-10-24T00:08:51` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones internas y refactorizando la estructura de tipos de `_collect_candidates` para mejorar la claridad sobre la lógica de recolección, facilitando el mantenimiento futuro sin alterar la funcionalidad.
+- `2026-10-24T00:08:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T00:08:51` Corrida terminada. Total usado hoy: 4.

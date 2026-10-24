@@ -114,12 +114,13 @@ BROWSER_CACHE_PATHS: BrowserMap = {
 }
 
 def _is_valid_rel_path(p: Any) -> TypeGuard[str]:
-    """Valida que una ruta relativa no contenga secuencias de escape ni caracteres prohibidos."""
+    """
+    Valida que una ruta relativa no contenga secuencias de escape ni caracteres prohibidos.
+    El uso de '..' está prohibido para prevenir ataques de Directory Traversal hacia el sistema.
+    """
     if not isinstance(p, str) or not p.strip(): return False
-    # No rutas absolutas, no traversals, no caracteres inválidos
     if os.path.isabs(p) or p.startswith(('\\', '/')): return False
     if '..' in p or any(c in p for c in PATH_FORBIDDEN_CHARS): return False
-    # Evitar caracteres de control y asegurar que los segmentos no sean vacíos
     if any(ord(c) < 32 for c in p): return False
     return all(len(s) > 0 for s in p.split('\\'))
 
@@ -196,7 +197,8 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str) -> bool:
     """
-    Valida si una entrada de directorio debe ser ignorada.
+    Valida si una entrada de directorio debe ser ignorada por reglas de seguridad.
+    Incluye chequeo de longitud de path para prevenir Buffer Overflows en APIs antiguas.
     """
     if entry.name.lower() in scan_ctx.never_touch_lower: return True
     if len(entry.path) >= MAX_PATH_LEN or any(c in entry.path for c in PATH_FORBIDDEN_CHARS): return True
@@ -210,7 +212,10 @@ def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str
     return False
 
 def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
-    """Obtiene el tamaño de un archivo individual evitando duplicados físicos mediante (dev, ino)."""
+    """
+    Obtiene el tamaño de un archivo individual evitando duplicados físicos mediante (dev, ino).
+    Esto es crucial cuando existen enlaces duros dentro de las cachés.
+    """
     try:
         st = entry.stat(follow_symlinks=False)
         if st.st_size > 0:
@@ -224,7 +229,7 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
     Calcula el tamaño total de un directorio de forma recursiva y segura.
-    Implementa límites de profundidad y validaciones en cada iteración del árbol.
+    Implementa límites de profundidad (MAX_SCAN_DEPTH) para prevenir recursión infinita.
     """
     if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
     
@@ -285,7 +290,6 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve la ruta completa de un caché a partir del perfil base, validando integridad."""
     if not _is_valid_rel_path(rel_str): return Path()
-    # Construcción segura evitando saltos de directorio mediante limpieza de segmentos
     segments = rel_str.split("\\")
     target = real_base.joinpath(*segments)
     # Re-validar contra el Sandbox tras la resolución completa para evitar escapes
