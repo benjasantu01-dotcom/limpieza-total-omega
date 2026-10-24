@@ -95,7 +95,7 @@ class StartupEntry:
     @property
     def is_valid(self) -> bool:
         """Valida si la estructura base del comando es técnicamente segura."""
-        if not self.command or len(self.command) > MAX_PATH_LEN or self._is_path_suspicious(self.command):
+        if not self.command or not isinstance(self.command, str) or len(self.command) > MAX_PATH_LEN or self._is_path_suspicious(self.command):
             return False
         if self._is_reserved_device_name(self.command):
             return False
@@ -103,9 +103,9 @@ class StartupEntry:
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
         """Determina si la ruta es un nombre reservado del sistema operativo."""
+        if not isinstance(path_str, str) or "\0" in path_str:
+            return True
         try:
-            if not isinstance(path_str, str) or "\0" in path_str:
-                return True
             if path_str.upper().startswith(("\\\\.\\", "\\\\?\\")):
                 return True
             return Path(path_str).stem.upper() in RESERVED_DEVICE_NAMES

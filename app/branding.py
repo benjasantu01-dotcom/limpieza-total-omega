@@ -386,7 +386,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Dibuja las franjas internas del logo usando gradientes segmentados."""
+    """Dibuja las franjas internas del escudo usando gradientes segmentados."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -398,12 +398,14 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except Exception: pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Dibuja detalles decorativos (líneas, texto) sobre la base del escudo."""
+    """Dibuja detalles decorativos (líneas, icono Omega) sobre la base del escudo."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         ts = max(8, int(UI_CONFIG.header_size * scale))
+        # Línea de corte y triángulo decorativo
         canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
         canvas.create_polygon(x+75*scale, y+41*scale, x+89*scale, y+38*scale, x+92*scale, y+52*scale, fill=C_BACKGROUND, outline="")
+        # Glifo Omega centralizado
         canvas.create_text(x+64*scale, y+96*scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center")
     except Exception: pass
 
@@ -415,6 +417,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         s = max(0.1, min(10.0, val_size / 128.0))
         poly = _get_scaled_poly(s, canvas_x, canvas_y)
         if not poly: return
+        # Fondo brillante (aura) y silueta principal
         canvas.create_oval(canvas_x+(64-75)*s, canvas_y+(58-75)*s, canvas_x+(64+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, s)

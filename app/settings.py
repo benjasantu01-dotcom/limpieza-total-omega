@@ -361,14 +361,12 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         st = file_path.lstat()
         if not _is_file_secure_to_read(st, file_path): return None
         
-        with open(file_path, "rb") as f:
-            content = f.read(MAX_SETTINGS_SIZE + 1)
-            if not content or len(content) > MAX_SETTINGS_SIZE: return None
-            
-            decoded = content.decode("utf-8")
-            data = json.loads(decoded)
-            return data if _is_dict(data) else None
-    except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            if not isinstance(data, dict): return None
+            # Aseguramos que solo contenga valores primitivos para evitar inyecciones de objetos
+            return data if all(isinstance(v, (str, int, float, bool)) or v is None for v in data.values()) else None
+    except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
