@@ -186,34 +186,34 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
 _verify_pipeline_integrity(WEIGHTS, _PIPELINE)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Calcula el score normalizado de archivos basura."""
+    """Calcula el score normalizado (0.0-1.0) basado en MB de archivos basura."""
     return _JUNK_SCORER(float(junk_mb) if isinstance(junk_mb, (int, float)) else 0.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula salud: Penaliza según hallazgos sospechosos y advertencias de seguridad."""
+    """Calcula salud: Penaliza según cantidad de archivos sospechosos y advertencias de seguridad."""
     s_count = max(0, int(suspicious_count))
     w_count = max(0, int(warnings))
     penalization = (s_count * 0.05) + (w_count * 0.25)
     return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula el score normalizado de memoria disponible."""
+    """Calcula el score normalizado (0.0-1.0) basado en % de memoria disponible."""
     val = float(available_percent) if isinstance(available_percent, (int, float)) else 0.0
     if _LIMIT_RAM_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
     return _clamp(val / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Calcula el score normalizado de espacio en disco."""
+    """Calcula el score normalizado (0.0-1.0) basado en % de espacio libre en disco."""
     val = float(free_percent) if isinstance(free_percent, (int, float)) else 0.0
     if _LIMIT_DISK_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
     return _clamp(val / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula el score normalizado de duplicados."""
+    """Calcula el score normalizado (0.0-1.0) basado en MB de archivos duplicados."""
     return _DUP_SCORER(float(duplicate_mb) if isinstance(duplicate_mb, (int, float)) else 0.0)
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula el score normalizado de programas en inicio."""
+    """Calcula el score normalizado (0.0-1.0) basado en cantidad de apps en inicio."""
     return _STARTUP_SCORER(float(startup_count) if isinstance(startup_count, (int, float)) else 0.0)
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:

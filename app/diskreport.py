@@ -97,7 +97,7 @@ class ExtStats:
 
 class GlobalStats:
     """
-    Agregador global durante el recorrido recursivo.
+    Agregador global durante el recorrido recursivo del sistema de archivos.
     
     Mantiene el total del volumen escaneado y clasifica el uso por extensión
     usando un diccionario de objetos ExtStats.
@@ -110,6 +110,10 @@ class GlobalStats:
     def register_file(self, size: int, suffix: str) -> None:
         """
         Registra un archivo y actualiza los totales y el mapa de extensiones.
+        
+        Args:
+            size: Tamaño del archivo en bytes.
+            suffix: Extensión del archivo incluyendo el punto.
         """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
@@ -121,6 +125,10 @@ class GlobalStats:
 class FolderMetrics:
     """
     Contenedor de métricas para el análisis de directorios.
+    
+    Attributes:
+        size: Bytes totales acumulados.
+        file_count: Cantidad total de archivos procesados.
     """
     __slots__ = ('size', 'file_count')
     
@@ -135,9 +143,7 @@ class FolderMetrics:
 
 
 class SummaryData(NamedTuple):
-    """
-    Estructura inmutable con el resultado consolidado de un escaneo.
-    """
+    """Estructura inmutable con el resultado consolidado de un escaneo."""
     total_bytes: int
     total_files: int
     ext_stats: Dict[str, ExtStats]
@@ -160,9 +166,11 @@ def _validate_limit(limit: Any) -> int:
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
-    Normaliza la ruta a un objeto Path absoluto y valida acceso.
+    Normaliza la ruta a un objeto Path absoluto y valida acceso de lectura.
     
-    Retorna None si la ruta no existe, es un archivo, o está protegida.
+    Returns:
+        Objeto Path validado o None si la ruta es inválida, no existe, 
+        está protegida o no permite acceso de lectura.
     """
     if not directory:
         return None
@@ -180,7 +188,11 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _is_excluded_path(name: str, full_path: str) -> bool:
     """
-    Verifica si una ruta debe ser excluida del análisis por seguridad.
+    Verifica si una ruta debe ser excluida del análisis por seguridad o formato.
+    
+    Args:
+        name: Nombre del archivo o directorio.
+        full_path: Ruta completa absoluta.
     """
     if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
@@ -293,7 +305,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo que recorre archivos evitando bucles de enlaces y rutas protegidas."""
+    """
+    Generador recursivo que recorre archivos evitando bucles de enlaces y rutas protegidas.
+    
+    Args:
+        directory: Ruta raíz donde iniciar.
+        skip_protected: Si es True, utiliza _is_excluded_path para omitir rutas sensibles.
+    """
     root_path = _validate_root(directory)
     if root_path is None: return
     
@@ -327,7 +345,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Retorna los N archivos más grandes en la ruta dada."""
+    """Retorna los N archivos más grandes encontrados en la ruta."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
@@ -335,7 +353,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Retorna los tipos de archivo por extensión que más ocupan."""
+    """Retorna una lista de ExtensionUsage ordenados por mayor uso de bytes."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -344,7 +362,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Agrega y reporta el uso de carpetas de primer nivel debajo de la ruta."""
+    """Agrega y reporta el uso de carpetas de primer nivel dentro del directorio base."""
     root = _validate_root(directory)
     if root is None: return []
     
@@ -366,7 +384,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
-    """Devuelve (bytes totales, número total de archivos) en el árbol."""
+    """Devuelve (bytes totales, número total de archivos) en el árbol dado."""
     root = _validate_root(directory)
     if root is None: return (0, 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -376,6 +394,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Función interna que centraliza el recorrido y la agregación de métricas.
+    
+    Usa un min-heap para mantener los 'limit' archivos más grandes de forma eficiente.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -396,7 +416,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Crea una representación textual del reporte para la interfaz de usuario."""
+    """Crea una representación textual legible del reporte para la interfaz de usuario."""
     root = _validate_root(directory)
 
     if root is None: 

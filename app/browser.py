@@ -219,7 +219,14 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     return 0
 
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Calcula el tamaño total de un directorio de forma recursiva y segura."""
+    """
+    Calcula recursivamente el peso en bytes de un directorio, aplicando filtros
+    de seguridad para evitar rutas prohibidas, enlaces simbólicos y puntos de reparse.
+    
+    Implementa un límite de profundidad 'MAX_SCAN_DEPTH' para prevenir recursión infinita
+    en sistemas de archivos complejos y utiliza 'ScanContext' para mantener el estado
+    de seguridad compartido durante el recorrido.
+    """
     if not root_path or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
@@ -237,13 +244,14 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     scan_ctx.visited_dirs.add(norm_path)
     total_bytes = 0
     try:
-        with os.scandir(root_path) as dir_iterator:
-            for entry in dir_iterator:
+        with os.scandir(root_path) as iterator:
+            for entry in iterator:
                 entry_norm = os.path.normcase(os.path.abspath(entry.path))
                 if _should_skip_entry(entry, scan_ctx, entry_norm): continue
+                
                 if entry.is_dir(follow_symlinks=False):
-                    res = _sum_directory_recursive(entry.path, scan_ctx, depth + 1)
-                    total_bytes += res.bytes_found
+                    subdir_result = _sum_directory_recursive(entry.path, scan_ctx, depth + 1)
+                    total_bytes += subdir_result.bytes_found
                 else:
                     total_bytes += _process_file_in_dir(entry, scan_ctx)
         return ScanResult(total_bytes, True)
