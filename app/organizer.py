@@ -286,7 +286,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         resolved_dir = current_dir.resolve(strict=False)
         if resolved_dir in visited: return
         visited.add(resolved_dir)
-        now_ts: float = datetime.now().timestamp()
         
         with os.scandir(current_dir) as iterator:
             for entry in iterator:
@@ -295,10 +294,9 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
+                        if entry.name.lower().endswith(tuple(JUNK_EXTENSIONS)):
                             stats = entry.stat(follow_symlinks=False)
-                            # Validar que el archivo sea menor al límite permitido y no sea un sistema/oculto
-                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
+                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue

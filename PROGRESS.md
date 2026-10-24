@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 11 | 0 | 2 | 0 | 17 |
+| 2026-10-22 | 9 | 0 | 1 | 0 | 16 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 50 | 3 | 17 | 4 | 50 |
+| 2026-10-24 | 52 | 3 | 18 | 4 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **34**
-- rendimiento: **32**
+- rendimiento: **34**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `safety.py`: **17**
+- `memory.py`: **18**
 - `browser.py`: **17**
-- `memory.py`: **17**
 - `assistant.py`: **16**
 - `quarantine.py`: **16**
-- `settings.py`: **15**
+- `safety.py`: **16**
 - `scanner.py`: **15**
 - `healthscore.py`: **14**
+- `settings.py`: **14**
 - `startup.py`: **14**
 - `branding.py`: **14**
-- `organizer.py`: **11**
+- `organizer.py`: **12**
 - `duplicates.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T05:29:00` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `Path.resolve()` y `path.stat()` dentro del bucle de `_process_directory`, utilizando en su lugar la información ya disponible en `os.DirEntry` para evitar accesos innecesarios al sistema de archivos.
+- `2026-10-24T05:28:00` **memory.py** (rendimiento): Optimizé `_iter_process_memory` para reducir drásticamente el número de llamadas al sistema y la carga de CPU mediante el uso de un generador eficiente que evita convertir todos los PIDs a objetos `ProcessMemory` antes de realizar el filtrado.
 - `2026-10-24T05:14:18` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la iteración `os.scandir` manual por una lógica que reduce las llamadas repetitivas a `path.resolve()` y `is_protected_path` al procesar directorios, consolidando los chequeos dentro del bucle de `scandir` para minimizar la carga de E/S.
 - `2026-10-24T05:13:23` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo reemplazando la resolución de rutas mediante `Path.resolve()` (que es costosa en I/O) por `os.path.normcase(os.path.abspath())` y reduje la creación innecesaria de objetos `Path` dentro de los bucles críticos de `detect_profiles` y `directory_size`.
 - `2026-10-24T05:03:42` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante docstrings descriptivos que clarifican el flujo de validación y el propósito de cada etapa (sanitización, resolución y validación), facilitando el mantenimiento a futuro.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T04:23:32` **startup.py** (manejo de errores y validación de entradas): Mejoré el robustecimiento de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV tenga las columnas esperadas antes de procesar sus valores, evitando errores de `KeyError` o procesamiento de datos parciales/corruptos provenientes de una ejecución de PowerShell potencialmente fallida o inesperada.
 - `2026-10-24T04:23:19` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al implementar una validación estricta de la integridad del JSON mediante un bloque `try-except` que captura explícitamente `json.JSONDecodeError` y `UnicodeDecodeError`, asegurando que archivos malformados no provoquen errores de ejecución silenciosos ni estados inconsistentes.
 - `2026-10-24T04:22:49` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `scanner.py` centralizando la validación de la existencia y accesibilidad de archivos en la función `_is_readable`, asegurando que `_get_file_size` y `_safe_stat` sean resilientes ante `FileNotFoundError` o `PermissionError` inesperados, evitando que el escaneo se interrumpa prematuramente.
-- `2026-10-24T04:22:22` **safety.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_get_file_id` y `_get_file_attrs` sustituyendo las capturas genéricas de excepciones por un conjunto acotado de errores esperados en APIs de Windows (ctypes) para evitar el silenciamiento de errores críticos que podrían estar ocultando fallas lógicas.
-- `2026-10-24T04:12:04` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_process_from_pid` añadiendo validaciones preventivas para evitar errores en llamadas `ctypes` cuando el handle es inválido o la API falla, asegurando que no se intente operar sobre estados de memoria inexistentes o nulos.
