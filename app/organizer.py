@@ -220,14 +220,19 @@ def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
         return False
 
 def _can_write_to_destination(dest_real: Path, size: int) -> bool:
-    """Comprueba disponibilidad de espacio y permisos en la carpeta destino."""
+    """Comprueba disponibilidad de espacio y permisos usando APIs de bajo nivel."""
     target_dir = dest_real.parent if dest_real.exists() else dest_real
     if not target_dir.is_dir() or not os.access(target_dir, os.W_OK):
         return False
     try:
-        usage = shutil.disk_usage(target_dir)
-        return usage.free >= (size + LIMITS.MIN_FREE_SPACE_BYTES)
-    except OSError:
+        if os.name == 'nt':
+            free_bytes = ctypes.c_ulonglong(0)
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(target_dir), None, None, ctypes.byref(free_bytes))
+            return free_bytes.value >= (size + LIMITS.MIN_FREE_SPACE_BYTES)
+        else:
+            stat = os.statvfs(target_dir)
+            return (stat.f_bavail * stat.f_frsize) >= (size + LIMITS.MIN_FREE_SPACE_BYTES)
+    except (OSError, AttributeError, TypeError):
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
