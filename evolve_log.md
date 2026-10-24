@@ -816,3 +816,14 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-24T14:14:25` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un sistema de "Dirty Flag" y memoización de estado en `on_full_analysis` para evitar el re-procesamiento innecesario del asistente y la actualización redundante de la UI cuando los datos subyacentes no han cambiado, optimizando el rendimiento general del dashboard.
 - `2026-10-24T14:14:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T14:14:25` Corrida terminada. Total usado hoy: 336.
+- `2026-10-24T14:21:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-24T14:22:32` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el acceso a los procesos en `_iter_process_memory` mediante la pre-validación de PIDs mediante un conjunto (`SYSTEM_CRITICAL_PIDS`) y evitando llamadas costosas a `GetModuleFileNameExW` (que implica I/O y carga de módulos) para procesos que ya superan el umbral de consumo o están protegidos, mejorando significativamente la velocidad de escaneo.
+- `2026-10-24T14:22:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-24T14:23:04` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la recursión del escaneo de directorios convirtiendo la lista `JUNK_EXTENSIONS` en un conjunto (`frozenset`) pre-definido y reduciendo las llamadas redundantes a `Path` y `stat` dentro del bucle `os.scandir`, mejorando la velocidad de procesamiento en directorios con gran cantidad de archivos.
+- `2026-10-24T14:24:04` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-24T14:24:22` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-24T14:25:12` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Se ha optimizado `_get_sha256` evitando el re-cálculo innecesario del hash para archivos que ya fueron procesados y cuya marca de tiempo (mtime) y tamaño no han cambiado, mejorando drásticamente el rendimiento en las iteraciones de la cuarentena.
+- `2026-10-24T14:25:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-24T14:25:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-10-24T14:25:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T14:25:23` Corrida terminada. Total usado hoy: 340.

@@ -347,15 +347,13 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
 
 def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS, get_filename_func: Any) -> Optional[ProcessMemory]:
     """Helper para crear ProcessMemory verificando seguridad y accesibilidad."""
-    if _is_system_process(pid):
-        return None
-
     proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
     if not proc_handle:
         return None
     
     try:
         ws = _query_working_set_bytes(pid, proc_handle, psapi, pmc)
+        # Pre-filtro: solo procesar si consume mas de 10MB para ahorrar I/O
         if ws is None or ws <= (10 * BYTES_IN_MB):
             return None
             
@@ -380,7 +378,8 @@ def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS
     count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     for i in range(count):
         pid = int(pids[i])
-        if _is_system_process(pid):
+        # Validación rápida de PIDs del sistema antes de abrir el proceso
+        if pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid():
             continue
         proc = _process_from_pid(pid, kernel32, psapi, pmc, get_filename_func)
         if proc:
