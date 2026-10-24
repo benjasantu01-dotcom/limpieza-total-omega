@@ -222,31 +222,23 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     """
     Calcula recursivamente el peso en bytes de un directorio, aplicando filtros
     de seguridad para evitar rutas prohibidas, enlaces simbólicos y puntos de reparse.
-    
-    Implementa un límite de profundidad 'MAX_SCAN_DEPTH' para prevenir recursión infinita
-    en sistemas de archivos complejos y utiliza 'ScanContext' para mantener el estado
-    de seguridad compartido durante el recorrido.
     """
     if not root_path or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
-    try:
-        abs_path = os.path.abspath(root_path)
-        norm_path = os.path.normcase(abs_path)
-        if len(abs_path) > 260 or norm_path in scan_ctx.visited_dirs or not os.access(root_path, os.R_OK):
-            return ScanResult(0, True)
-    except (OSError, ValueError):
+    root_norm = os.path.normcase(os.path.abspath(root_path))
+    if root_norm in scan_ctx.visited_dirs or not os.access(root_path, os.R_OK):
         return ScanResult(0, True)
     
-    if not _is_within_sandbox(norm_path, scan_ctx.sandbox_base_norm) or is_protected_path(Path(root_path)):
+    if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm) or is_protected_path(Path(root_path)):
         return ScanResult(0, True)
     
-    scan_ctx.visited_dirs.add(norm_path)
+    scan_ctx.visited_dirs.add(root_norm)
     total_bytes = 0
     try:
         with os.scandir(root_path) as iterator:
             for entry in iterator:
-                entry_norm = os.path.normcase(os.path.abspath(entry.path))
+                entry_norm = os.path.normcase(entry.path)
                 if _should_skip_entry(entry, scan_ctx, entry_norm): continue
                 
                 if entry.is_dir(follow_symlinks=False):

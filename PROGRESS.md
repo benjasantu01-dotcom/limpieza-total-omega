@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 205
+- Rechazadas por guardia de seguridad: 52
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 72 | 6 | 18 | 3 | 77 |
-| 2026-10-24 | 140 | 13 | 33 | 14 | 128 |
+| 2026-10-23 | 69 | 6 | 18 | 3 | 76 |
+| 2026-10-24 | 142 | 13 | 34 | 15 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **48**
 - legibilidad y documentación: **48**
-- robustez ante casos límite: **33**
-- rendimiento: **33**
+- rendimiento: **35**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
+- `memory.py`: **20**
 - `diskreport.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
@@ -37,15 +37,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **17**
 - `scanner.py`: **15**
 - `assistant.py`: **15**
+- `browser.py`: **15**
 - `duplicates.py`: **15**
-- `healthscore.py`: **14**
-- `browser.py`: **14**
-- `branding.py`: **12**
+- `branding.py`: **13**
+- `healthscore.py`: **13**
 - `startup.py`: **11**
-- `main.py`: **9**
+- `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T14:03:39` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.abspath` y `os.path.normcase` dentro del bucle de `scandir`, calculando la ruta normalizada solo una vez por entrada y aprovechando `os.DirEntry.path` para reducir las llamadas al sistema operativo.
+- `2026-10-24T14:03:27` **branding.py** (rendimiento): Optimicé el rendimiento de la generación de gradientes en `branding.py` mediante la implementación de un caché de resultados de `gradient_colors` (`lru_cache`) y reduciendo la complejidad computacional en `get_gradient_segments`, evitando recrear tuplas innecesarias en cada frame de dibujo.
 - `2026-10-24T13:53:41` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings explicativos a las funciones de validación compleja (`_is_file_secure_to_read` y `_read_and_parse_json`) y normalizando la nomenclatura de variables internas para hacer explícitas las intenciones de seguridad ante condiciones de carrera (TOCTOU).
 - `2026-10-24T13:52:57` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `safety.py` mediante una reorganización de los tipos de datos y la adición de `DocStrings` estructurados en los métodos críticos, clarificando la jerarquía de validación y facilitando el mantenimiento futuro.
 - `2026-10-24T13:44:07` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de funciones privadas y se refinaron los docstrings para documentar el "porqué" técnico de los bloqueos de seguridad y el manejo de excepciones, mejorando la mantenibilidad sin alterar la lógica.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T13:21:56` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_reserved_device_name` y `_is_path_suspicious` mediante la validación estricta de tipos y el manejo de excepciones, evitando errores inesperados al procesar rutas malformadas del registro.
 - `2026-10-24T13:21:29` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` implementando validaciones de tipo explícitas adicionales y capturando errores de `json.load` de forma más granular para asegurar que cualquier dato corrupto o malicioso (como diccionarios anidados inesperados) sea descartado en lugar de comprometer el estado del sistema.
 - `2026-10-24T13:13:03` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del escaneo implementando validaciones de tipo y presencia para los objetos `os.DirEntry` y las rutas en los métodos críticos del `Scanner`, asegurando que el motor no intente procesar referencias nulas o atributos ausentes, y unificando el manejo de errores en `process_entry` mediante un bloque de try-except más preciso.
-- `2026-10-24T13:12:51` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` y sus helpers introduciendo validaciones defensivas contra `None` y tipos incorrectos, además de asegurar que `_validate_path_components` y `_validate_structural_safety` lancen errores específicos en lugar de fallar silenciosamente ante entradas malformadas.
-- `2026-10-24T13:11:29` **quarantine.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `quarantine_file` para evitar estados inconsistentes cuando `_atomic_isolate_file` falla, asegurando que la limpieza de archivos temporales sea explícita y que las excepciones de I/O no dejen al sistema en un estado de incertidumbre.

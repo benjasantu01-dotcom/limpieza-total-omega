@@ -302,6 +302,7 @@ def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, .
     segments.append(ColorSegment(curr, start, len(colors)))
     return tuple(segments)
 
+@lru_cache(maxsize=64)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
     """Genera una lista de colores interpolados basada en puntos de control (stops)."""
     n = max(1, int(steps))
