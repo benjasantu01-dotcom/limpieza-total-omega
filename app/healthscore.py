@@ -269,7 +269,7 @@ class SystemMetrics:
             "disk_free_percent": (0.0, 100.0)
         }
         for field_name in self._FIELDS_TO_VALIDATE:
-            val = getattr(self, field_name)
+            val = getattr(self, field_name, 0.0)
             min_v, max_v = limits.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
             setattr(self, field_name, sanitized)
@@ -278,7 +278,7 @@ class SystemMetrics:
     def is_finite(self) -> bool:
         """Verificación booleana de estado saludable de los datos."""
         for field_name in self._FIELDS_TO_VALIDATE:
-            val = getattr(self, field_name)
+            val = getattr(self, field_name, 0.0)
             if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
                 return False
         return True
@@ -341,9 +341,10 @@ def _calculate_area_contribution(metrics_tuple: Tuple[float, ...], area_idx: int
             return 0, ()
         
         entry = _PIPELINE[area_idx]
-        metrics = SystemMetrics.__new__(SystemMetrics)
+        metrics = SystemMetrics()
         for i, key in enumerate(SystemMetrics._FIELDS_TO_VALIDATE): 
-            setattr(metrics, key, metrics_tuple[i])
+            if i < len(metrics_tuple):
+                setattr(metrics, key, metrics_tuple[i])
         
         weight = max(0, entry.weight)
         raw_ratio = entry.scorer(metrics)
@@ -397,7 +398,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos o corruptos."])
     
-    cache_key = tuple(float(getattr(metrics, f)) for f in SystemMetrics._FIELDS_TO_VALIDATE)
+    cache_key = tuple(float(getattr(metrics, f, 0.0)) for f in SystemMetrics._FIELDS_TO_VALIDATE)
     return _compute_cached(cache_key, int(metrics.quarantined_count))
 
 @lru_cache(maxsize=128)

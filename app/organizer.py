@@ -351,6 +351,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Calcula el nombre del destino evitando colisiones y manteniendo metadatos."""
     try:
+        if not isinstance(junk_file.modified, datetime): return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         return _generate_unique_target(dest_base / safe_name)
     except (OSError, AttributeError, ValueError, OverflowError): 

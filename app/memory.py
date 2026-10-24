@@ -329,27 +329,19 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
-        chars_copied = get_filename_func(handle, None, buffer_path, 4096)
-        if chars_copied <= 0:
+        if get_filename_func(handle, None, buffer_path, 4096) <= 0:
             return False
-    except (ctypes.WinError, OSError):
-        return False
-    
-    exe_str = buffer_path.value.strip()
-    if not exe_str: 
-        return False
         
-    try:
-        executable_path = Path(os.path.realpath(exe_str))
-        if not executable_path.exists(): 
+        exe_str = buffer_path.value.strip()
+        if not exe_str: 
             return False
             
-        file_stat = executable_path.stat()
-        if (file_stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
+        executable_path = Path(os.path.realpath(exe_str))
+        if not executable_path.exists() or executable_path.is_symlink(): 
             return False
             
         return not is_protected_path(executable_path)
-    except (OSError, AttributeError, RuntimeError, ValueError, TypeError):
+    except (OSError, RuntimeError, ValueError, TypeError):
         return False
 
 def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS, get_filename_func: Any) -> Optional[ProcessMemory]:
