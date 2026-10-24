@@ -234,7 +234,10 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path) -> bool:
-        """Validación base: comprueba existencia, tipo, y coincidencias de inodo/UID."""
+        """
+        Validación base: comprueba existencia, tipo, y coincidencias de inodo/UID.
+        Verifica que el archivo no sea un enlace simbólico y mantenga su tamaño original.
+        """
         if not stored_path.exists(): return False
         try:
             _check_for_reparse_points(stored_path)
@@ -306,7 +309,10 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     return not _is_file_exclusive(path)
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> bool:
-    """Pre-validación antes de eliminar: asegura que el archivo es el correcto y no fue reemplazado."""
+    """
+    Pre-validación antes de eliminar: asegura que el archivo es el correcto,
+    que no ha sido modificado y que no está bloqueado por el sistema.
+    """
     try:
         ensure_safe_to_modify(path)
         _check_for_reparse_points(path)
@@ -327,7 +333,10 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
         return False
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
-    """Borrado controlado: aplica fsync sobre el directorio para asegurar la persistencia en disco."""
+    """
+    Borrado controlado: aplica fsync sobre el directorio para asegurar la persistencia en disco,
+    validando la integridad del archivo antes de proceder.
+    """
     if not path.exists():
         return False
         

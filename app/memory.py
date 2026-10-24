@@ -353,17 +353,15 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
 
 def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
     """Helper para crear ProcessMemory verificando seguridad y accesibilidad."""
-    # Verificación temprana de PID para ahorrar llamadas al sistema
     if _is_system_process(pid):
         return None
 
     proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
-    if proc_handle is None:
+    if not proc_handle:
         return None
     
     try:
         ws = _query_working_set_bytes(pid, proc_handle, psapi, pmc)
-        # Filtro de peso antes de comprobaciones costosas de ruta
         if ws is None or ws <= (10 * BYTES_IN_MB):
             return None
             
@@ -374,8 +372,7 @@ def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: 
     except (ctypes.WinError, OSError, ValueError, RuntimeError):
         return None
     finally:
-        if proc_handle is not None and proc_handle != INVALID_HANDLE_VALUE:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)
 
 def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera todos los procesos y filtra aquellos que consumen RAM significante."""
@@ -471,7 +468,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso no encontrado."
 
     try:
-        # Verificación de integridad adicional antes de la acción
         exit_code = wintypes.DWORD()
         if kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
@@ -485,5 +481,4 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.WinError, OSError, Exception):
         return False, "Error inesperado al intentar interactuar con el proceso."
     finally:
-        if proc_handle is not None and proc_handle != INVALID_HANDLE_VALUE:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)

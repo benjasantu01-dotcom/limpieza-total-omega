@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 216
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 120 | 11 | 25 | 9 | 123 |
-| 2026-10-24 | 84 | 7 | 25 | 7 | 93 |
+| 2026-10-23 | 116 | 11 | 25 | 9 | 123 |
+| 2026-10-24 | 87 | 7 | 26 | 7 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **48**
-- legibilidad y documentación: **39**
-- robustez ante casos límite: **36**
-- rendimiento: **32**
+- legibilidad y documentación: **42**
+- robustez ante casos límite: **34**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `memory.py`: **18**
-- `assistant.py`: **16**
+- `memory.py`: **19**
 - `safety.py`: **16**
 - `browser.py`: **16**
-- `settings.py`: **15**
-- `quarantine.py`: **15**
+- `quarantine.py`: **16**
+- `assistant.py`: **15**
 - `scanner.py`: **15**
-- `branding.py`: **13**
+- `organizer.py`: **14**
+- `settings.py`: **14**
 - `healthscore.py`: **13**
-- `organizer.py`: **13**
-- `startup.py`: **12**
+- `branding.py`: **12**
 - `duplicates.py`: **12**
+- `startup.py`: **11**
 - `main.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T09:18:22` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en funciones críticas y la clarificación de tipos en las firmas, facilitando el mantenimiento y la comprensión de las salvaguardas de seguridad.
+- `2026-10-24T09:17:42` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de función y clase para clarificar las responsabilidades de seguridad y los riesgos, incluyendo la eliminación de redundancias explicativas en favor de detalles técnicos precisos sobre el manejo de rutas y los chequeos de integridad.
+- `2026-10-24T09:17:13` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `memory.py` mediante la refactorización de `_is_process_executable_safe` y `_process_from_pid`, extrayendo la lógica de validación de rutas y privilegios para reducir el anidamiento y clarificar el flujo de control, manteniendo estrictamente el comportamiento funcional.
 - `2026-10-24T09:07:22` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo las convenciones de PEP 257, se ha añadido tipado explícito en funciones auxiliares que carecían de él y se ha extraído la lógica de comparación de archivos de `suggest_keeper` a una función interna más clara para mejorar la mantenibilidad del código.
 - `2026-10-24T09:06:56` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad del código y la seguridad de tipos añadiendo `docstrings` completos con los detalles necesarios para el equipo, clarificando las responsabilidades de los acumuladores `ExtStats` y `FolderMetrics` mediante type hints explícitos.
 - `2026-10-24T08:58:10` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, normalización del estilo de docstrings y la simplificación de la lógica de recursión mediante la extracción del chequeo de profundidad, cumpliendo con los estándares de calidad del proyecto.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T08:37:33` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_safe_int_conversion` y `_extract_process_info` mediante la captura explícita de `TypeError` y un manejo de errores más defensivo, evitando que valores inesperados interrumpan el flujo de escaneo de procesos.
 - `2026-10-24T08:37:04` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `widget.winfo_exists()` antes de realizar operaciones de manipulación directa sobre widgets en los métodos de `AppSettings`, previniendo errores de `TclError` y `AttributeError` al intentar actualizar widgets que ya fueron destruidos en el ciclo de vida de la aplicación.
 - `2026-10-24T08:27:06` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` mediante la validación explícita del estado del objeto `group` y se añadieron guardas para evitar errores `AttributeError` o `IndexError` al procesar grupos vacíos o con rutas inexistentes.
-- `2026-10-24T08:26:35` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`) durante la iteración y el acceso a rutas, evitando que un error de lectura en un subdirectorio interrumpa el informe completo.
-- `2026-10-24T08:26:08` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` añadiendo validaciones explícitas de entrada (`None`/vacío) y capturando posibles excepciones durante la iteración sobre los navegadores para asegurar que un error en una ruta específica no aborte el escaneo de todo el sistema.
-- `2026-10-24T06:56:52` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo un chequeo explícito de la longitud de la ruta (máximo 260 caracteres para evitar ataques de desbordamiento en APIs de Windows) y validando que el archivo de configuración no sea un enlace simbólico ni un hard link, asegurando que la app trabaje siempre sobre el archivo real y evitando manipulación fuera de la carpeta esperada.

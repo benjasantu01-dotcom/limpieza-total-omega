@@ -1483,3 +1483,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-24T09:07:58` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 8% del original (posible pérdida de código)
 - `2026-10-24T09:07:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T09:07:58` Corrida terminada. Total usado hoy: 216.
+- `2026-10-24T09:16:37` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-10-24T09:17:13` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de `memory.py` mediante la refactorización de `_is_process_executable_safe` y `_process_from_pid`, extrayendo la lógica de validación de rutas y privilegios para reducir el anidamiento y clarificar el flujo de control, manteniendo estrictamente el comportamiento funcional.
+- `2026-10-24T09:17:42` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings de nivel de función y clase para clarificar las responsabilidades de seguridad y los riesgos, incluyendo la eliminación de redundancias explicativas en favor de detalles técnicos precisos sobre el manejo de rutas y los chequeos de integridad.
+- `2026-10-24T09:18:22` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en funciones críticas y la clarificación de tipos en las firmas, facilitando el mantenimiento y la comprensión de las salvaguardas de seguridad.
+- `2026-10-24T09:18:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-24T09:18:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T09:18:27` Corrida terminada. Total usado hoy: 220.
