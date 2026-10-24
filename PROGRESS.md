@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 225
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 24 | 1 | 8 | 1 | 28 |
+| 2026-10-22 | 22 | 1 | 6 | 1 | 28 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 31 | 2 | 8 | 2 | 49 |
+| 2026-10-24 | 35 | 2 | 8 | 2 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
-- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **38**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `assistant.py`: **18**
 - `browser.py`: **18**
-- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `memory.py`: **16**
-- `scanner.py`: **15**
+- `quarantine.py`: **16**
 - `settings.py`: **15**
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
+- `scanner.py`: **14**
 - `branding.py`: **14**
 - `startup.py`: **12**
 - `organizer.py`: **10**
-- `duplicates.py`: **8**
-- `main.py`: **7**
+- `duplicates.py`: **9**
+- `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T04:03:18` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_setup_application` y `_on_closing` para garantizar que la aplicación cierre limpiamente los recursos y reporte fallos de inicialización críticos al usuario sin dejar procesos "zombis" o ventanas huérfanas en estado inconsistente.
+- `2026-10-24T04:02:23` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_cached` y `_calculate_area_contribution` mediante una validación de tipo más estricta en el `cache_key` y la captura de errores en el acceso al pipeline, evitando que un fallo en un área detenga el procesamiento completo del score.
+- `2026-10-24T04:01:57` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez frente a errores inesperados durante el acceso a archivos añadiendo un manejo de excepciones más granular en `suggest_keeper` y validaciones de tipo/existencia más estrictas en las funciones de hashing, evitando así que una falla de I/O en un archivo único interrumpa el procesamiento de grupos completos.
+- `2026-10-24T04:01:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `summarize` implementando capturas de excepciones más granulares y verificaciones preventivas, evitando que errores de acceso a archivos específicos interrumpan el procesamiento global del reporte.
 - `2026-10-24T03:52:42` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y sus validadores asociados para asegurar que ante datos mal formados o tipos inesperados, el asistente falle de forma silenciosa y segura en lugar de interrumpir la ejecución o aceptar estados inválidos, centralizando la lógica de validación de colecciones en `_is_input_too_deep_or_complex` para evitar desbordamientos.
 - `2026-10-24T02:30:53` **startup.py** (seguridad defensiva): Mejoré la seguridad en `_validate_file_access` asegurándome de que el intento de apertura de archivo sea explícitamente de solo lectura y añadiendo una validación de `is_protected_path` sobre la ruta resuelta, previniendo así posibles escapes fuera de los directorios permitidos tras la resolución simbólica.
 - `2026-10-24T02:23:07` **safety.py** (seguridad defensiva): Se introdujo la verificación `_validate_no_reparse_traversal` para detectar puntos de reparse (junctions) durante el recorrido de los componentes de la ruta, impidiendo ataques de redirección mediante enlaces simbólicos o de directorio que puedan saltar fuera del alcance (`jail`) permitido.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T01:50:31` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia ante errores de lectura de disco al incluir un manejo de excepciones más granular en `_read_and_parse_json` y `_load_impl`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura) bloqueen la inicialización de la aplicación, fallando de forma segura hacia los valores por defecto.
 - `2026-10-24T01:49:31` **safety.py** (robustez ante casos límite): Se añadió una validación en `_validate_preconditions` para detectar si el padre de una ruta es un volumen de solo lectura, previniendo errores de I/O bloqueantes antes de intentar operaciones de archivo.
 - `2026-10-24T01:40:08` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia en la función `_atomic_isolate_file` para verificar la existencia del archivo de destino antes de intentar escribir, mitigando una condición de carrera (race condition) donde el archivo podría ser recreado por otro proceso justo antes de la operación de `os.replace`.
-- `2026-10-24T01:39:01` **memory.py** (robustez ante casos límite): Se reforzó `_is_process_executable_safe` añadiendo una validación explícita mediante `try-except` envolviendo la lectura de atributos de archivo para prevenir excepciones ante archivos bloqueados o inaccesibles, asegurando que el módulo sea robusto frente a errores de E/S durante el inventario de procesos.
-- `2026-10-24T01:29:00` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `summarize` implementando un manejo explícito de `OSError` al intentar leer atributos de archivos/carpetas que pueden haber sido eliminados o bloqueados por otros procesos durante el escaneo (condición de carrera típica en sistemas de archivos).
-- `2026-10-24T01:20:24` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta de `pathlib.Path` en `save_logo_svg` para asegurar que las rutas proporcionadas sean absolutas y existan, previniendo errores de IO al manipular rutas relativas o malformadas en entornos dinámicos.
-- `2026-10-24T01:12:50` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando la serialización innecesaria dentro de `load()` al verificar la caché, reemplazándola por una comparación directa de metadatos, y reduciendo el uso de `json.dumps` en el bucle principal.

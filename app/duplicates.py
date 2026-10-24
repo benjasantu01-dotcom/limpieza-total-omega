@@ -107,7 +107,9 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo del archivo. 
     Usa caché para evitar lecturas redundantes de archivos ya procesados en la misma sesión.
     """
-    if path is None or path in _full_hash_cache: return _full_hash_cache.get(path)
+    if path is None or not path.exists() or path in _full_hash_cache: 
+        return _full_hash_cache.get(path) if path in _full_hash_cache else None
+    
     if not path.is_file() or not _safe_path_check(path): return None
     try:
         hasher = hashlib.sha256()
@@ -117,13 +119,15 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un hash SHA256 sobre los primeros bytes para reducir I/O en archivos grandes."""
-    if path is None or path in _partial_cache: return _partial_cache.get(path)
+    if path is None or not path.exists() or path in _partial_cache: 
+        return _partial_cache.get(path) if path in _partial_cache else None
+        
     if not path.is_file() or not _safe_path_check(path): return None
     try:
         with open(path, "rb") as f:
@@ -131,7 +135,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             digest_val = hashlib.sha256(header).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -140,12 +144,12 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_size
     for item in (Path(p) for p in paths if p):
-        if _safe_path_check(item) and item.is_file():
+        if _safe_path_check(item) and item.exists() and item.is_file():
             try:
                 st = item.stat()
                 if _is_valid_candidate(item, st.st_size):
                     groups_by_size[st.st_size].append(item)
-            except OSError: continue
+            except (OSError, PermissionError): continue
     return groups_by_size
 
 
@@ -176,7 +180,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                     if not (skip_protected and is_protected_path(path)):
                                         visited.add(inode)
                                         raw_map[stat.st_size].append(path)
-                        except OSError: continue
+                        except (OSError, PermissionError): continue
         except (OSError, PermissionError): continue
     return {sz: paths for sz, paths in raw_map.items() if len(paths) > 1}
 
@@ -232,9 +236,14 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if group is None or not group.paths: return None
     candidates = []
     for p in group.paths:
-        try: candidates.append((p.stat().st_mtime, p))
-        except OSError: continue
-    return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
+        try: 
+            if p.exists():
+                candidates.append((p.stat().st_mtime, p))
+        except (OSError, PermissionError): continue
+    
+    if not candidates:
+        return group.paths[0]
+    return min(candidates, key=lambda x: x[0])[1]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:

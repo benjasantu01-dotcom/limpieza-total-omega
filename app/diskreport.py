@@ -410,30 +410,30 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        stats.register_file(size, path.suffix)
-        
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+        try:
+            stats.register_file(size, path.suffix)
+            
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size, path))
+        except (AttributeError, TypeError):
+            continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """Genera una vista textual del informe de uso para ser presentada en la UI."""
-    try:
-        root = _validate_root(directory)
-    except (OSError, Exception):
-        root = None
+    root = _validate_root(directory)
 
     if root is None: 
         return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError, RuntimeError, Exception):
+    except Exception:
         return ["Error: Fallo inesperado durante el escaneo del sistema de archivos."]
         
     if data.total_files == 0: 

@@ -348,10 +348,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except Exception as e:
             logging.critical("Error fatal al inicializar la aplicación: %s", e)
             try:
-                messagebox.showerror("Error de inicio", "La aplicación no pudo inicializarse.")
+                # Usar messagebox de tkinter estándar si ctk falla
+                tk.messagebox.showerror("Error de inicio", f"La aplicación no pudo inicializarse.\n{str(e)[:50]}")
                 self.destroy()
             except Exception:
-                raise
+                pass
 
     def _on_closing(self) -> None:
         """Gestiona el cierre ordenado de hilos, cancelando el pool y liberando recursos."""
@@ -362,7 +363,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._executor = None
         
         if executor:
-            executor.shutdown(wait=False, cancel_futures=True)
+            try:
+                executor.shutdown(wait=False, cancel_futures=True)
+            except Exception:
+                pass
         
         try:
             self.quit()

@@ -333,23 +333,21 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=32)
 def _calculate_area_contribution(metrics_tuple: Tuple[float, ...], area_idx: int) -> Tuple[int, Tuple[str, ...]]:
     """Calcula el aporte de puntos de un área específica del pipeline con cacheo."""
-    if area_idx < 0 or area_idx >= len(_PIPELINE):
-        return 0, ()
-        
     try:
+        if area_idx < 0 or area_idx >= len(_PIPELINE):
+            return 0, ()
+        
         entry = _PIPELINE[area_idx]
         keys = SystemMetrics._FIELDS_TO_VALIDATE
-        # Uso de __new__ para omitir validación redundante ya que los datos vienen de cache_key
         metrics = SystemMetrics.__new__(SystemMetrics)
         for i, key in enumerate(keys): setattr(metrics, key, metrics_tuple[i])
         
         weight = max(0, entry.weight)
-        if sys.getrecursionlimit() < _MAX_RECURSION_DEPTH or not metrics.is_finite:
+        if not metrics.is_finite:
             return 0, ()
 
         raw_ratio = entry.scorer(metrics)
         area_ratio = _clamp(float(raw_ratio))
-        
         recommendations = _evaluate_rules(metrics, entry.rules, area_ratio) if entry.rules else []
         
         points = area_ratio * float(weight)
@@ -365,17 +363,18 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
     Motor de cómputo cacheado del HealthResult. Evita re-procesar los mismos 
     datos de sistema idénticos entre iteraciones.
     """
-    if not _PIPELINE:
-        return HealthResult(0, "F", {}, ["Error: Pipeline no inicializado."])
+    if not _PIPELINE or not isinstance(metrics_tuple, tuple):
+        return HealthResult(0, "F", {}, ["Error: Pipeline o métricas no válidas."])
         
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
     total_points = 0.0
     
-    for i, entry in enumerate(_PIPELINE):
+    for i in range(len(_PIPELINE)):
         try:
             points, recs = _calculate_area_contribution(metrics_tuple, i)
-            metric_breakdown[entry.area] = points
+            area_name = _PIPELINE[i].area
+            metric_breakdown[area_name] = points
             recommendations.extend(recs)
             total_points += float(points)
         except Exception:
