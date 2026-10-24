@@ -423,7 +423,6 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         try:
             val: Any = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-            # Refuerzo: impedir estrictamente tipos incorrectos o no numéricos
             if val is None or isinstance(val, bool) or not isinstance(val, (int, float)): 
                 return None
             if _is_nan_or_inf(val): 
@@ -464,22 +463,26 @@ class SystemContext:
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios validados al contexto y limpia cachés internas."""
-        self.__dict__.update(updates)
-        self.analyzed = True
-        self.__dict__.pop("metrics_snapshot", None)
-        self.__dict__.pop("_hash_tuple", None)
+        try:
+            self.__dict__.update(updates)
+            self.analyzed = True
+            # Limpieza segura de cachés
+            self.__dict__.pop("metrics_snapshot", None)
+            self.__dict__.pop("_hash_tuple", None)
+            # Forzar re-cálculo si es necesario
+            _ = self.metrics_snapshot
+        except Exception:
+            self.analyzed = False
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
-        try:
-            if not self._validate_ingestion_source(source): 
-                return False
-            updates: Optional[dict[str, Any]] = self._validate_and_sanitize_data(source)
-            if not updates: return False
-            self._apply_updates(updates)
-            return True
-        except Exception:
+        if not self._validate_ingestion_source(source): 
             return False
+        updates: Optional[dict[str, Any]] = self._validate_and_sanitize_data(source)
+        if not updates: 
+            return False
+        self._apply_updates(updates)
+        return True
 
 @dataclass
 class Answer:

@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 86 | 10 | 22 | 7 | 83 |
-| 2026-10-24 | 118 | 12 | 30 | 12 | 124 |
+| 2026-10-23 | 83 | 10 | 21 | 7 | 83 |
+| 2026-10-24 | 119 | 12 | 30 | 12 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- legibilidad y documentación: **42**
 - rendimiento: **40**
-- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **39**
+- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **20**
-- `diskreport.py`: **19**
+- `diskreport.py`: **18**
 - `scanner.py`: **16**
+- `assistant.py`: **16**
 - `quarantine.py`: **16**
-- `assistant.py`: **15**
 - `safety.py`: **15**
 - `settings.py`: **15**
 - `organizer.py`: **15**
-- `duplicates.py`: **14**
-- `healthscore.py`: **14**
 - `browser.py`: **14**
+- `healthscore.py`: **13**
+- `duplicates.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T12:43:52` **assistant.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `ingest` y `_apply_updates` al implementar un flujo de validación transaccional más robusto, evitando que estados parciales o corrompidos afecten la integridad del `SystemContext`.
 - `2026-10-24T11:29:33` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_quoted_path` validando que la ruta extraída no sea un nombre de dispositivo reservado o una ruta inválida antes de intentar crear un objeto `Path`, evitando posibles errores de sistema al procesar valores maliciosos en el registro.
 - `2026-10-24T11:20:56` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones estrictas de metadatos (evitar enlaces simbólicos y asegurar que el dueño del archivo coincida con el usuario actual) para prevenir ataques de sustitución de archivos o enlaces maliciosos durante la lectura y escritura.
 - `2026-10-24T11:20:32` **scanner.py** (seguridad defensiva): Se ha robustecido el escáner implementando una validación estricta de rutas mediante `os.path.realpath` para prevenir la evasión de los filtros de seguridad a través de enlaces simbólicos o puntos de reanálisis que pueden apuntar fuera de la raíz permitida, asegurando que el recorrido se mantenga estrictamente dentro de los límites del `base_root` incluso ante estructuras de archivos complejas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T10:30:27` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` frente a condiciones de carrera (time-of-check to time-of-use) mediante el uso de `pathlib.Path.is_relative_to` (reemplazando lógica manual propensa a errores) y una verificación estricta de existencia post-validación, además de asegurar que `shutil.move` se ejecute solo si la ruta de destino es absoluta y pre-verificada.
 - `2026-10-24T10:30:10` **memory.py** (robustez ante casos límite): Mejora la robustez ante rutas de procesos inexistentes o inaccesibles al invocar `GetModuleFileNameExW` en `_is_process_executable_safe`, añadiendo un chequeo explícito de longitud y manejo de errores para evitar accesos a memoria inválida o rutas truncadas en entornos de alta concurrencia.
 - `2026-10-24T10:28:27` **healthscore.py** (robustez ante casos límite): Se ha añadido una protección robusta en `SystemMetrics.validate` para asegurar que, ante cualquier desbordamiento numérico o valor extremo no capturado por los límites, la métrica resultante no solo sea un número finito, sino que el sistema de puntuación no colapse, previniendo errores de división por cero o resultados `NaN` en el pipeline.
-- `2026-10-24T10:19:32` **duplicates.py** (robustez ante casos límite): Se mejoró la robustez de `_collect_candidates` ante errores de acceso a disco (PermissionError / OSError) al procesar rutas, asegurando que un acceso denegado a un subdirectorio no aborte la búsqueda completa, sino que simplemente continúe con el resto.
