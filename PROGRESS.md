@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 221
+- Rechazadas por guardia de seguridad: 49
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 18 | 1 | 3 | 1 | 23 |
+| 2026-10-22 | 17 | 1 | 3 | 0 | 21 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 41 | 3 | 11 | 3 | 50 |
+| 2026-10-24 | 44 | 3 | 12 | 3 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **47**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **38**
-- rendimiento: **31**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `safety.py`: **17**
+- `memory.py`: **18**
 - `assistant.py`: **17**
 - `browser.py`: **17**
-- `memory.py`: **17**
 - `quarantine.py`: **16**
+- `safety.py`: **16**
 - `healthscore.py`: **15**
 - `settings.py`: **15**
 - `scanner.py`: **15**
 - `branding.py`: **14**
 - `startup.py`: **13**
 - `organizer.py`: **10**
-- `duplicates.py`: **9**
-- `main.py`: **8**
+- `duplicates.py`: **10**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T04:44:13` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` mediante docstrings de nivel de función más detallados, el uso de comentarios explicativos para las constantes de máscara de acceso Win32 y la unificación de la lógica de conversión de memoria para evitar redundancias.
+- `2026-10-24T04:43:42` **main.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en métodos críticos de gestión de estado y concurrencia, aclarando el propósito de los bloqueos de hilos y la lógica de invalidación de caché, lo cual facilita el mantenimiento del bucle autónomo sin alterar el comportamiento funcional.
+- `2026-10-24T04:42:12` **duplicates.py** (legibilidad y documentación): Se ha añadido un docstring detallado a `_collect_candidates` para explicar la lógica de recursión y el uso de inodos (dev/ino) para prevenir el procesamiento redundante de enlaces físicos, mejorando la claridad técnica sin alterar la funcionalidad.
 - `2026-10-24T04:33:19` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, docstrings detallados en funciones críticas y la refactorización de `ExtStats` para un mejor manejo de tipos, facilitando la comprensión del flujo de datos en el análisis de disco.
 - `2026-10-24T04:23:32` **startup.py** (manejo de errores y validación de entradas): Mejoré el robustecimiento de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV tenga las columnas esperadas antes de procesar sus valores, evitando errores de `KeyError` o procesamiento de datos parciales/corruptos provenientes de una ejecución de PowerShell potencialmente fallida o inesperada.
 - `2026-10-24T04:23:19` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al implementar una validación estricta de la integridad del JSON mediante un bloque `try-except` que captura explícitamente `json.JSONDecodeError` y `UnicodeDecodeError`, asegurando que archivos malformados no provoquen errores de ejecución silenciosos ni estados inconsistentes.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T04:01:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `summarize` implementando capturas de excepciones más granulares y verificaciones preventivas, evitando que errores de acceso a archivos específicos interrumpan el procesamiento global del reporte.
 - `2026-10-24T03:52:42` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y sus validadores asociados para asegurar que ante datos mal formados o tipos inesperados, el asistente falle de forma silenciosa y segura en lugar de interrumpir la ejecución o aceptar estados inválidos, centralizando la lógica de validación de colecciones en `_is_input_too_deep_or_complex` para evitar desbordamientos.
 - `2026-10-24T02:30:53` **startup.py** (seguridad defensiva): Mejoré la seguridad en `_validate_file_access` asegurándome de que el intento de apertura de archivo sea explícitamente de solo lectura y añadiendo una validación de `is_protected_path` sobre la ruta resuelta, previniendo así posibles escapes fuera de los directorios permitidos tras la resolución simbólica.
-- `2026-10-24T02:23:07` **safety.py** (seguridad defensiva): Se introdujo la verificación `_validate_no_reparse_traversal` para detectar puntos de reparse (junctions) durante el recorrido de los componentes de la ruta, impidiendo ataques de redirección mediante enlaces simbólicos o de directorio que puedan saltar fuera del alcance (`jail`) permitido.
-- `2026-10-24T02:21:59` **quarantine.py** (seguridad defensiva): Se ha mejorado `_check_path_syntax_integrity` para incluir una validación estricta contra rutas que contengan el carácter `~` (tilde) en posiciones intermedias, ya que podrían intentar evadir la expansión de rutas o engañar a los parsers, y se fortaleció la verificación de longitud de caracteres utilizando `os.fspath` para asegurar consistencia entre distintas versiones de Python y sistemas de archivos, previniendo inyecciones de rutas complejas.
-- `2026-10-24T02:15:54` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` reforzando la validación de rutas mediante `os.path.realpath` para prevenir evasiones mediante enlaces simbólicos o rutas relativas, asegurando que el ejecutable analizado sea resuelto canónicamente antes de compararlo con `is_protected_path`.

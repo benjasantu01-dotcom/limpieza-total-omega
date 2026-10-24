@@ -261,9 +261,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._closing = False
         self._tasks_running = 0
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
-        self._executor_lock = threading.Lock()
-        self._worker_lock = threading.Lock()
-        self._task_queue_lock = threading.Lock() # Serializador de operaciones
+        
+        # Bloqueos para sincronización de hilos y acceso a recursos compartidos
+        self._executor_lock = threading.Lock()   # Protege acceso al pool de ejecución
+        self._worker_lock = threading.Lock()    # Serializa ejecución de tareas de fondo
+        self._task_queue_lock = threading.Lock() # Serializa despacho de tareas asíncronas
         
         self._init_component_registry()
         self._setup_application()
