@@ -54,7 +54,12 @@ FileRecord: TypeAlias = Tuple[int, Path]
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """
     Intenta obtener los atributos de un archivo/directorio sin seguir symlinks.
-    Retorna None en caso de error de acceso, archivo inexistente o problemas de permisos.
+    
+    Args:
+        path: Ruta a verificar.
+        
+    Returns:
+        os.stat_result si es accesible, None en caso contrario.
     """
     if not path:
         return None
@@ -79,7 +84,12 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Incrementa las métricas si el tamaño es un valor válido no negativo."""
+        """
+        Incrementa las métricas si el tamaño es un valor válido no negativo.
+        
+        Args:
+            size: Tamaño en bytes del archivo.
+        """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -100,7 +110,10 @@ class GlobalStats:
     def register_file(self, size: int, suffix: str) -> None:
         """
         Registra un archivo en las estadísticas globales.
-        Normaliza extensiones a minúsculas y gestiona casos sin extensión explícita.
+        
+        Args:
+            size: Tamaño en bytes del archivo.
+            suffix: Extensión del archivo (incluyendo punto).
         """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
@@ -132,9 +145,6 @@ class FolderMetrics:
 class SummaryData(NamedTuple):
     """
     Snapshot de resultados de un escaneo completo.
-    
-    Permite encapsular la información recolectada por GlobalStats y el heap
-    de archivos pesados, facilitando el transporte entre el escáner y la interfaz.
     """
     total_bytes: int
     total_files: int
@@ -159,7 +169,9 @@ def _validate_limit(limit: Any) -> int:
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Resuelve y normaliza una ruta, verificando que no sea un recurso protegido.
-    Retorna un objeto Path absoluto o None si la ruta es inaccesible.
+    
+    Returns:
+        Objeto Path absoluto o None si la ruta es inaccesible o restringida.
     """
     if not directory:
         return None
@@ -188,7 +200,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         return True
 
     try:
-        # Resolvemos contra la raíz validada para evitar escapes (jailbreak)
         entry_path = Path(entry.path).resolve(strict=False)
         entry_path.relative_to(root_path)
 
@@ -316,6 +327,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre archivos bajo la raíz dada, evitando recursión circular.
+    
+    Yields:
+        Tupla (ruta_archivo, tamaño_en_bytes).
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -404,7 +418,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Función de utilidad central que ejecuta el recorrido y agrupa datos.
-    Utiliza un min-heap de tamaño fijo para mantener el top-N de archivos.
+    
+    Usa un min-heap de tamaño fijo para mantener el top-N de archivos de forma eficiente.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

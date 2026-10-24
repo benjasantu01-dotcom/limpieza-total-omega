@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 47
+- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 18 | 1 | 4 | 1 | 26 |
+| 2026-10-22 | 18 | 1 | 3 | 1 | 23 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 40 | 2 | 9 | 3 | 50 |
+| 2026-10-24 | 41 | 3 | 11 | 3 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **38**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `safety.py`: **17**
 - `assistant.py`: **17**
 - `browser.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T04:33:19` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, docstrings detallados en funciones críticas y la refactorización de `ExtStats` para un mejor manejo de tipos, facilitando la comprensión del flujo de datos en el análisis de disco.
 - `2026-10-24T04:23:32` **startup.py** (manejo de errores y validación de entradas): Mejoré el robustecimiento de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV tenga las columnas esperadas antes de procesar sus valores, evitando errores de `KeyError` o procesamiento de datos parciales/corruptos provenientes de una ejecución de PowerShell potencialmente fallida o inesperada.
 - `2026-10-24T04:23:19` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al implementar una validación estricta de la integridad del JSON mediante un bloque `try-except` que captura explícitamente `json.JSONDecodeError` y `UnicodeDecodeError`, asegurando que archivos malformados no provoquen errores de ejecución silenciosos ni estados inconsistentes.
 - `2026-10-24T04:22:49` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `scanner.py` centralizando la validación de la existencia y accesibilidad de archivos en la función `_is_readable`, asegurando que `_get_file_size` y `_safe_stat` sean resilientes ante `FileNotFoundError` o `PermissionError` inesperados, evitando que el escaneo se interrumpa prematuramente.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T02:23:07` **safety.py** (seguridad defensiva): Se introdujo la verificación `_validate_no_reparse_traversal` para detectar puntos de reparse (junctions) durante el recorrido de los componentes de la ruta, impidiendo ataques de redirección mediante enlaces simbólicos o de directorio que puedan saltar fuera del alcance (`jail`) permitido.
 - `2026-10-24T02:21:59` **quarantine.py** (seguridad defensiva): Se ha mejorado `_check_path_syntax_integrity` para incluir una validación estricta contra rutas que contengan el carácter `~` (tilde) en posiciones intermedias, ya que podrían intentar evadir la expansión de rutas o engañar a los parsers, y se fortaleció la verificación de longitud de caracteres utilizando `os.fspath` para asegurar consistencia entre distintas versiones de Python y sistemas de archivos, previniendo inyecciones de rutas complejas.
 - `2026-10-24T02:15:54` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` reforzando la validación de rutas mediante `os.path.realpath` para prevenir evasiones mediante enlaces simbólicos o rutas relativas, asegurando que el ejecutable analizado sea resuelto canónicamente antes de compararlo con `is_protected_path`.
-- `2026-10-24T02:00:38` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad en `walk_files` y `_is_excluded_path` para prevenir la resolución de rutas fuera del ámbito permitido (jail-break) mediante la validación estricta de `resolve()` y el uso de `path_obj.parts` para evitar manipulaciones mediante caracteres de control o intentos de escape, asegurando que `diskreport.py` sea robusto frente a rutas maliciosas.
