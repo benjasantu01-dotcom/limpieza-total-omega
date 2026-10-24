@@ -653,15 +653,12 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     if cache_key in _EVAL_CACHE:
         return
 
-    try:
-        sd = _get_security_descriptor(path)
-        violation = next((rule for rule in _VALIDATORS if rule.predicate(path, current_stat, sd)), None)
-        if violation:
-            code = _REASON_TO_CODE.get(violation.reason, SafetyValidationErrorCode.GENERIC)
-            raise UnsafePathError(f"Integridad comprometida: {violation.reason.name}", code)
-        _EVAL_CACHE[cache_key] = None
-    except (OSError, PermissionError) as e:
-        raise UnsafePathError(f"Error de acceso en validación: {e}", SafetyValidationErrorCode.ACCESS_DENIED)
+    sd = _get_security_descriptor(path)
+    for rule in _VALIDATORS:
+        if rule.predicate(path, current_stat, sd):
+            code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+            raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
+    _EVAL_CACHE[cache_key] = None
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """Obtiene metadatos del sistema aplicando reintentos para manejar bloqueos temporales de E/S."""

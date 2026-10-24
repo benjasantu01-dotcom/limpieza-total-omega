@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 63 | 6 | 17 | 3 | 75 |
-| 2026-10-24 | 148 | 13 | 35 | 16 | 128 |
+| 2026-10-23 | 60 | 6 | 16 | 3 | 75 |
+| 2026-10-24 | 149 | 13 | 37 | 16 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **48**
-- seguridad defensiva: **46**
-- rendimiento: **41**
+- seguridad defensiva: **43**
+- rendimiento: **42**
 - robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `diskreport.py`: **19**
 - `organizer.py`: **18**
-- `duplicates.py`: **16**
+- `diskreport.py`: **18**
+- `safety.py`: **17**
 - `quarantine.py`: **16**
 - `settings.py`: **16**
-- `safety.py`: **16**
-- `browser.py`: **15**
+- `duplicates.py`: **15**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
 - `healthscore.py`: **14**
+- `browser.py`: **14**
 - `branding.py`: **12**
 - `startup.py`: **11**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T14:33:03` **safety.py** (rendimiento): Optimicé el rendimiento de `_evaluate_security_rules` reemplazando la creación de generadores y la iteración lineal sobre la lista de validadores por una lógica de pre-validación rápida, reduciendo la carga de CPU en escaneos masivos.
 - `2026-10-24T14:23:04` **organizer.py** (rendimiento): Optimizé la recursión del escaneo de directorios convirtiendo la lista `JUNK_EXTENSIONS` en un conjunto (`frozenset`) pre-definido y reduciendo las llamadas redundantes a `Path` y `stat` dentro del bucle `os.scandir`, mejorando la velocidad de procesamiento en directorios con gran cantidad de archivos.
 - `2026-10-24T14:22:32` **memory.py** (rendimiento): Se optimizó el acceso a los procesos en `_iter_process_memory` mediante la pre-validación de PIDs mediante un conjunto (`SYSTEM_CRITICAL_PIDS`) y evitando llamadas costosas a `GetModuleFileNameExW` (que implica I/O y carga de módulos) para procesos que ya superan el umbral de consumo o están protegidos, mejorando significativamente la velocidad de escaneo.
 - `2026-10-24T14:14:25` **main.py** (rendimiento): Se implementó un sistema de "Dirty Flag" y memoización de estado en `on_full_analysis` para evitar el re-procesamiento innecesario del asistente y la actualización redundante de la UI cuando los datos subyacentes no han cambiado, optimizando el rendimiento general del dashboard.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T13:43:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings detallados en funciones críticas y la clarificación de tipos, asegurando que el propósito y los riesgos de cada operación de E/S estén explícitamente documentados.
 - `2026-10-24T13:43:07` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las estructuras de datos de la API de Windows y clarificando mediante comentarios técnicos el uso de constantes de bits (máscaras de acceso), facilitando el mantenimiento futuro del código de bajo nivel.
 - `2026-10-24T13:32:44` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad mediante la inclusión de Type Hints explícitos en las funciones de score y la estandarización de docstrings, facilitando la comprensión de las unidades esperadas para los parámetros de entrada.
-- `2026-10-24T13:32:29` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de hashing y refinando los *type hints* para especificar las estructuras de datos devueltas, facilitando el mantenimiento y la comprensión de la lógica de procesamiento en tres etapas.

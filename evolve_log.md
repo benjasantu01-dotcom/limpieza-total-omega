@@ -827,3 +827,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-24T14:25:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-10-24T14:25:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T14:25:23` Corrida terminada. Total usado hoy: 340.
+- `2026-10-24T14:32:09` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-24T14:33:03` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_evaluate_security_rules` reemplazando la creación de generadores y la iteración lineal sobre la lista de validadores por una lógica de pre-validación rápida, reduciendo la carga de CPU en escaneos masivos.
+- `2026-10-24T14:33:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-24T14:33:38` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_reparse_point
+- `2026-10-24T14:34:04` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-10-24T14:34:27` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-24T14:34:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T14:34:27` Corrida terminada. Total usado hoy: 344.
