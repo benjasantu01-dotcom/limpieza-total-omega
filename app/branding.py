@@ -345,7 +345,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     try:
         dest_path = Path(destination).resolve()
         
-        # Validar seguridad antes de realizar cualquier operación de I/O
+        # Validación de seguridad proactiva antes de intentar cualquier operación
         if not is_safe_to_modify(dest_path):
             return None
             
@@ -357,7 +357,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
             except (OSError, PermissionError):
                 return None
             
-        # Refuerzo: asegurar explícitamente que la ruta final es segura antes de escribir
+        # Asegurar explícitamente que la ruta final es segura antes de escribir
         ensure_safe_to_modify(dest_path)
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
