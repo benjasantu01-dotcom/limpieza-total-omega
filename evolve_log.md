@@ -402,3 +402,54 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-24T10:30:27` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `stage_for_review` y `delete_reviewed` frente a condiciones de carrera (time-of-check to time-of-use) mediante el uso de `pathlib.Path.is_relative_to` (reemplazando lógica manual propensa a errores) y una verificación estricta de existencia post-validación, además de asegurar que `shutil.move` se ejecute solo si la ruta de destino es absoluta y pre-verificada.
 - `2026-10-24T10:30:27` Rotación — log: 1215 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T10:30:27` Corrida terminada. Total usado hoy: 248.
+- `2026-10-24T10:38:07` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-10-24T10:38:54` Tests FALLARON:
+```
+replace: src should be string, bytes or os.PathLike, not int
+
+app/quarantine.py:619: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - TypeError: replace: src should be string, bytes or os.PathLike, not int
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - TypeError: replace: src should be string, bytes or os.PathLike, not int
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - TypeError: replace: src should be string, bytes or os.PathLike, not int
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - TypeError: replace: src should be string, bytes or os.PathLike, not int
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - TypeError: replace: src should be string, bytes or os.PathLike, not int
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - TypeError: replace: src should be string, bytes or os.PathLike, not int
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - TypeError: replace: src should be string, bytes or os.PathLike, not int
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - TypeError: replace: src should be string, bytes or os.PathLike, not int
+8 failed, 291 passed in 1.86s
+
+```
+- `2026-10-24T10:38:54` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación de concurrencia mediante `os.open` con flags exclusivos (`O_EXCL | O_CREAT`) al crear el archivo temporal de manifiesto y en la copia de archivos, previniendo condiciones de carrera donde un atacante o proceso externo podría manipular archivos durante las ventanas de I/O, además de asegurar que las rutas temporales no sean forzadas mediante enlaces simbólicos.
+- `2026-10-24T10:39:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-10-24T10:40:08` Tests FALLARON:
+```
+a'))
+E        +    where <function save at 0x7f170c7c3920> = settings.save
+E        +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+
+evolve/tests/test_assistant.py:60: AssertionError
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert None is not None
+ +  where None = <function save at 0x7f170c7c3920>({'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}, PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta'))
+ +    where <function save at 0x7f170c7c3920> = settings.save
+ +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+2 failed, 297 passed in 1.71s
+
+```
+- `2026-10-24T10:40:08` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha implementado una validación de "integridad de directorio padre" en `ensure_safe_to_modify` para detectar si el directorio contenedor de un archivo o carpeta ha sido eliminado o desplazado durante la ejecución, mitigando una condición de carrera común en entornos de alta concurrencia.
+- `2026-10-24T10:40:19` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-24T10:40:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T10:40:19` Corrida terminada. Total usado hoy: 252.
