@@ -977,3 +977,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-24T04:03:18` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `_setup_application` y `_on_closing` para garantizar que la aplicación cierre limpiamente los recursos y reporte fallos de inicialización críticos al usuario sin dejar procesos "zombis" o ventanas huérfanas en estado inconsistente.
 - `2026-10-24T04:03:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T04:03:18` Corrida terminada. Total usado hoy: 96.
+- `2026-10-24T04:11:17` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-10-24T04:11:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-24T04:11:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-24T04:12:04` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_process_executable_safe` y `_process_from_pid` añadiendo validaciones preventivas para evitar errores en llamadas `ctypes` cuando el handle es inválido o la API falla, asegurando que no se intente operar sobre estados de memoria inexistentes o nulos.
+- `2026-10-24T04:12:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-24T04:13:17` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `quarantine.py` ante errores de entrada y estados inesperados, centralizando la validación de parámetros en funciones de entrada clave y reemplazando posibles excepciones genéricas por capturas específicas que aseguren la integridad del sandbox.
+- `2026-10-24T04:13:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-10-24T04:13:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T04:13:23` Corrida terminada. Total usado hoy: 100.

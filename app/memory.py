@@ -313,6 +313,7 @@ def _is_process_accessible(pid: int, access_mask: int, kernel32: ctypes.CDLL) ->
 def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Consulta consumo real del proceso llamando a GetProcessMemoryInfo."""
     try:
+        if handle is None: return None
         if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
@@ -322,7 +323,7 @@ def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CD
 
 def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL) -> bool:
     """Verifica que el ejecutable del proceso resida en una ruta autorizada."""
-    if not handle or not hasattr(psapi, "GetModuleFileNameExW"): 
+    if handle is None or not hasattr(psapi, "GetModuleFileNameExW"): 
         return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
@@ -357,7 +358,7 @@ def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: 
         return None
 
     proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
-    if not proc_handle:
+    if proc_handle is None:
         return None
     
     try:
@@ -372,7 +373,8 @@ def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: 
     except (ctypes.WinError, OSError, ValueError, RuntimeError):
         return None
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle is not None and proc_handle != INVALID_HANDLE_VALUE:
+            kernel32.CloseHandle(proc_handle)
 
 def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos activos del sistema aplicando filtros de seguridad."""

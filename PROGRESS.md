@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 15
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 22 | 1 | 6 | 1 | 28 |
+| 2026-10-22 | 20 | 1 | 5 | 1 | 27 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 35 | 2 | 8 | 2 | 49 |
+| 2026-10-24 | 36 | 2 | 9 | 3 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **38**
-- rendimiento: **34**
+- legibilidad y documentación: **37**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `assistant.py`: **18**
 - `browser.py`: **18**
+- `assistant.py`: **17**
+- `memory.py`: **17**
 - `safety.py`: **16**
-- `memory.py`: **16**
 - `quarantine.py`: **16**
-- `settings.py`: **15**
 - `healthscore.py`: **15**
+- `settings.py`: **14**
 - `scanner.py`: **14**
 - `branding.py`: **14**
 - `startup.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T04:12:04` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_process_from_pid` añadiendo validaciones preventivas para evitar errores en llamadas `ctypes` cuando el handle es inválido o la API falla, asegurando que no se intente operar sobre estados de memoria inexistentes o nulos.
 - `2026-10-24T04:03:18` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_setup_application` y `_on_closing` para garantizar que la aplicación cierre limpiamente los recursos y reporte fallos de inicialización críticos al usuario sin dejar procesos "zombis" o ventanas huérfanas en estado inconsistente.
 - `2026-10-24T04:02:23` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_cached` y `_calculate_area_contribution` mediante una validación de tipo más estricta en el `cache_key` y la captura de errores en el acceso al pipeline, evitando que un fallo en un área detenga el procesamiento completo del score.
 - `2026-10-24T04:01:57` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez frente a errores inesperados durante el acceso a archivos añadiendo un manejo de excepciones más granular en `suggest_keeper` y validaciones de tipo/existencia más estrictas en las funciones de hashing, evitando así que una falla de I/O en un archivo único interrumpa el procesamiento de grupos completos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T01:59:44` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación adicional mediante `ensure_safe_to_modify` antes de escribir en disco, garantizando que el flujo de salida cumpla con las políticas de protección de rutas incluso tras la verificación inicial booleana.
 - `2026-10-24T01:50:31` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia ante errores de lectura de disco al incluir un manejo de excepciones más granular en `_read_and_parse_json` y `_load_impl`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura) bloqueen la inicialización de la aplicación, fallando de forma segura hacia los valores por defecto.
 - `2026-10-24T01:49:31` **safety.py** (robustez ante casos límite): Se añadió una validación en `_validate_preconditions` para detectar si el padre de una ruta es un volumen de solo lectura, previniendo errores de I/O bloqueantes antes de intentar operaciones de archivo.
-- `2026-10-24T01:40:08` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia en la función `_atomic_isolate_file` para verificar la existencia del archivo de destino antes de intentar escribir, mitigando una condición de carrera (race condition) donde el archivo podría ser recreado por otro proceso justo antes de la operación de `os.replace`.
