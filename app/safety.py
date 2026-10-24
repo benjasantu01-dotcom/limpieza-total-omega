@@ -52,7 +52,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int]:
     para detectar cambios de identidad entre llamadas (mitigación TOCTOU).
     Utiliza un handle temporal de apertura para extraer metadatos de volumen.
     """
-    if os.name != 'nt': return (0, 0, 0)
+    if os.name != 'nt' or not path_str: return (0, 0, 0)
     info = BY_HANDLE_FILE_INFORMATION()
     kernel32 = ctypes.windll.kernel32
     try:

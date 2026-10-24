@@ -953,21 +953,26 @@ def quarantine_file(
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     
-    file_hash, file_inode = _atomic_isolate_file(p_source, destination, st_info.st_size)
-    
-    if not destination.exists() or destination.stat().st_ino != file_inode or _get_sha256(destination) != file_hash:
-        raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
-            
-    item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, reason, st_info.st_size, base)
+    try:
+        file_hash, file_inode = _atomic_isolate_file(p_source, destination, st_info.st_size)
         
-    if p_source.exists() and not os.path.samefile(p_source, destination):
-        try:
-            _check_io_error_context(p_source.unlink)
-        except OSError as e:
-            raise RuntimeError(f"Aislamiento exitoso, falla al remover original: {e}")
-                
-    _verify_transaction_integrity(item, destination)
-    return item
+        if not destination.exists() or destination.stat().st_ino != file_inode or _get_sha256(destination) != file_hash:
+            raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
+            
+        item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, reason, st_info.st_size, base)
+            
+        if p_source.exists() and not os.path.samefile(p_source, destination):
+            try:
+                _check_io_error_context(p_source.unlink)
+            except OSError as e:
+                raise RuntimeError(f"Aislamiento exitoso, falla al remover original: {e}")
+                    
+        _verify_transaction_integrity(item, destination)
+        return item
+    except Exception as e:
+        if destination.exists():
+            _safe_unlink(destination)
+        raise RuntimeError(f"Error durante proceso de cuarentena: {e}")
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems de cuarentena, ordenados por fecha."""

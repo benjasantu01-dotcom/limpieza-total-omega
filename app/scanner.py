@@ -130,7 +130,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Obtiene metadatos de archivo de forma segura, ignorando enlaces simbólicos y rutas protegidas."""
-    if entry is None:
+    if entry is None or not hasattr(entry, 'path'):
         return None
     try:
         if entry.is_symlink():
@@ -226,8 +226,11 @@ class Scanner:
     @lru_cache(maxsize=1024)
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Valida, mediante normalización real, si el archivo pertenece al árbol de escaneo."""
-        real_path = os.path.normcase(os.path.realpath(entry_path))
-        return real_path.startswith(self.base_root_norm)
+        try:
+            real_path = os.path.normcase(os.path.realpath(entry_path))
+            return real_path.startswith(self.base_root_norm)
+        except (OSError, RuntimeError):
+            return False
 
     def _has_invalid_name(self, name: str) -> bool:
         """Verifica nombres de archivo con caracteres o patrones prohibidos por Windows."""
@@ -240,7 +243,7 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Aplica filtros de seguridad (estructura y reanálisis) antes de procesar una entrada."""
-        if entry is None or not entry.path:
+        if entry is None or not hasattr(entry, 'path') or not entry.path:
             return False
         
         path_str: str = entry.path
@@ -265,10 +268,13 @@ class Scanner:
         if current_depth >= SCAN_LIMITS.max_depth or entry is None or not entry.path:
             return
         
-        path_norm: str = os.path.normcase(os.path.realpath(entry.path))
-        if path_norm not in self.seen:
-            self.seen.add(path_norm)
-            directory_stack.append((entry.path, current_depth + 1))
+        try:
+            path_norm: str = os.path.normcase(os.path.realpath(entry.path))
+            if path_norm not in self.seen:
+                self.seen.add(path_norm)
+                directory_stack.append((entry.path, current_depth + 1))
+        except (OSError, RuntimeError):
+            pass
 
     @staticmethod
     @lru_cache(maxsize=1024)
@@ -278,25 +284,22 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Procesa una entrada: bifurca en directorio para recursión o archivo para heurísticas."""
-        if entry is None or not entry.path or not self._is_safe_entry(entry):
+        if entry is None or not hasattr(entry, 'path') or not entry.path or not self._is_safe_entry(entry):
             return
             
-        path_norm: str = os.path.normcase(os.path.realpath(entry.path))
-        if path_norm in self.seen:
-            return
-        
         try:
-            if self._is_reparse_point(entry):
+            path_norm: str = os.path.normcase(os.path.realpath(entry.path))
+            if path_norm in self.seen:
                 return
+            
             if entry.is_file(follow_symlinks=False):
-                if not self._is_relevant_extension(entry.name):
-                    return
-                self.seen.add(path_norm)
-                self._run_file_heuristics(Path(entry.path), entry)
+                if self._is_relevant_extension(entry.name):
+                    self.seen.add(path_norm)
+                    self._run_file_heuristics(Path(entry.path), entry)
             elif entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
-        except (OSError, PermissionError, FileNotFoundError):
-            logger.debug(f"Acceso denegado a {entry.path}")
+        except (OSError, PermissionError, FileNotFoundError, AttributeError):
+            logger.debug(f"Error procesando entrada: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Aplica todas las heurísticas registradas a un archivo individual."""
@@ -344,7 +347,11 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
     
     directory_stack: DirectoryStack = [(str(base_path), 0)]
-    scanner.seen.add(os.path.normcase(os.path.realpath(str(base_path))))
+    try:
+        scanner.seen.add(os.path.normcase(os.path.realpath(str(base_path))))
+    except (OSError, RuntimeError):
+        return []
+
     while directory_stack:
         current_dir, depth = directory_stack.pop()
         try:
