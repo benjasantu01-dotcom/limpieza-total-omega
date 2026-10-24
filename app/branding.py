@@ -414,7 +414,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     """Renderiza el logo vectorial completo de Omega en un widget Canvas."""
     try:
         val_size = float(size)
-        if not math.isfinite(val_size): return
+        if not math.isfinite(val_size) or val_size <= 0: return
         s = max(0.1, min(10.0, val_size / 128.0))
         poly = _get_scaled_poly(s, canvas_x, canvas_y)
         if not poly: return

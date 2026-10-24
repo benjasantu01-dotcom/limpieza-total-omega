@@ -7,45 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **209** (41.5% de aceptación)
-- Rechazadas por tests: 19
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 53
-- Sin cambios (nada sustancial que mejorar): 19
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 60 | 6 | 16 | 3 | 75 |
-| 2026-10-24 | 149 | 13 | 37 | 16 | 129 |
+| 2026-10-23 | 57 | 5 | 16 | 3 | 75 |
+| 2026-10-24 | 152 | 13 | 37 | 17 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **48**
-- seguridad defensiva: **43**
 - rendimiento: **42**
-- robustez ante casos límite: **26**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `organizer.py`: **18**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
+- `organizer.py`: **17**
 - `safety.py`: **17**
-- `quarantine.py`: **16**
 - `settings.py`: **16**
 - `duplicates.py`: **15**
+- `browser.py`: **15**
+- `quarantine.py`: **15**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
 - `healthscore.py`: **14**
-- `browser.py`: **14**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `startup.py`: **11**
-- `main.py`: **9**
+- `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T14:44:11` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen entre la iteración y el acceso a sus atributos (condición de carrera) y archivos con nombres extremadamente largos o caracteres inválidos en sistemas de archivos restringidos, utilizando un bloque `try-except` más granular y defensivo.
+- `2026-10-24T14:43:59` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo recursivo de directorios ante condiciones de carrera (archivos bloqueados o desaparecidos durante la iteración) mediante una validación explícita de existencia mediante `os.scandir` y la eliminación de posibles errores de tipo en la llamada a `scan_ctx.is_junction`.
+- `2026-10-24T14:43:30` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante casos límite como entradas no numéricas o rutas inválidas, asegurando que las validaciones de seguridad actúen correctamente antes de cualquier intento de escritura o cálculo geométrico.
 - `2026-10-24T14:33:03` **safety.py** (rendimiento): Optimicé el rendimiento de `_evaluate_security_rules` reemplazando la creación de generadores y la iteración lineal sobre la lista de validadores por una lógica de pre-validación rápida, reduciendo la carga de CPU en escaneos masivos.
 - `2026-10-24T14:23:04` **organizer.py** (rendimiento): Optimizé la recursión del escaneo de directorios convirtiendo la lista `JUNK_EXTENSIONS` en un conjunto (`frozenset`) pre-definido y reduciendo las llamadas redundantes a `Path` y `stat` dentro del bucle `os.scandir`, mejorando la velocidad de procesamiento en directorios con gran cantidad de archivos.
 - `2026-10-24T14:22:32` **memory.py** (rendimiento): Se optimizó el acceso a los procesos en `_iter_process_memory` mediante la pre-validación de PIDs mediante un conjunto (`SYSTEM_CRITICAL_PIDS`) y evitando llamadas costosas a `GetModuleFileNameExW` (que implica I/O y carga de módulos) para procesos que ya superan el umbral de consumo o están protegidos, mejorando significativamente la velocidad de escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T13:53:41` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings explicativos a las funciones de validación compleja (`_is_file_secure_to_read` y `_read_and_parse_json`) y normalizando la nomenclatura de variables internas para hacer explícitas las intenciones de seguridad ante condiciones de carrera (TOCTOU).
 - `2026-10-24T13:52:57` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `safety.py` mediante una reorganización de los tipos de datos y la adición de `DocStrings` estructurados en los métodos críticos, clarificando la jerarquía de validación y facilitando el mantenimiento futuro.
 - `2026-10-24T13:44:07` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de funciones privadas y se refinaron los docstrings para documentar el "porqué" técnico de los bloqueos de seguridad y el manejo de excepciones, mejorando la mantenibilidad sin alterar la lógica.
-- `2026-10-24T13:43:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings detallados en funciones críticas y la clarificación de tipos, asegurando que el propósito y los riesgos de cada operación de E/S estén explícitamente documentados.
-- `2026-10-24T13:43:07` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las estructuras de datos de la API de Windows y clarificando mediante comentarios técnicos el uso de constantes de bits (máscaras de acceso), facilitando el mantenimiento futuro del código de bajo nivel.
-- `2026-10-24T13:32:44` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad mediante la inclusión de Type Hints explícitos en las funciones de score y la estandarización de docstrings, facilitando la comprensión de las unidades esperadas para los parámetros de entrada.

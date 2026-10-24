@@ -209,6 +209,7 @@ def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str
 def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     """Obtiene el tamaño de un archivo individual evitando duplicados físicos mediante (dev, ino)."""
     try:
+        if not entry.is_file(): return 0
         st = entry.stat(follow_symlinks=False)
         if st.st_size > 0:
             file_id = (st.st_dev, st.st_ino)
@@ -227,7 +228,7 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
         return ScanResult(0, True)
     
     root_norm = os.path.normcase(os.path.abspath(root_path))
-    if root_norm in scan_ctx.visited_dirs or not os.access(root_path, os.R_OK):
+    if root_norm in scan_ctx.visited_dirs or not os.path.isdir(root_path) or not os.access(root_path, os.R_OK):
         return ScanResult(0, True)
     
     if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm) or is_protected_path(Path(root_path)):
@@ -238,14 +239,17 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     try:
         with os.scandir(root_path) as iterator:
             for entry in iterator:
-                entry_norm = os.path.normcase(entry.path)
-                if _should_skip_entry(entry, scan_ctx, entry_norm): continue
-                
-                if entry.is_dir(follow_symlinks=False):
-                    subdir_result = _sum_directory_recursive(entry.path, scan_ctx, depth + 1)
-                    total_bytes += subdir_result.bytes_found
-                else:
-                    total_bytes += _process_file_in_dir(entry, scan_ctx)
+                try:
+                    entry_norm = os.path.normcase(entry.path)
+                    if _should_skip_entry(entry, scan_ctx, entry_norm): continue
+                    
+                    if entry.is_dir(follow_symlinks=False):
+                        subdir_result = _sum_directory_recursive(entry.path, scan_ctx, depth + 1)
+                        total_bytes += subdir_result.bytes_found
+                    else:
+                        total_bytes += _process_file_in_dir(entry, scan_ctx)
+                except (OSError, PermissionError):
+                    continue
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError): return ScanResult(0, False)
 
