@@ -45,6 +45,7 @@ Caché local de métricas calculadas para evitar overhead de re-escaneo en dupli
 Consolidación de logs mediante batching asíncrono para reducir colisiones UI.
 Caché de configuración con TTL y validación de integridad diferida.
 Serialización de tareas pesadas mediante colas de ejecución protegidas.
+Carga perezosa de componentes de UI de salud para optimizar el inicio.
 
 Instalar dependencias:
     pip install customtkinter

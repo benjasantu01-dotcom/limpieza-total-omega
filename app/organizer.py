@@ -52,14 +52,13 @@ SYSTEM_CRITICAL_NAMES: Final[frozenset[str]] = frozenset({"pagefile.sys", "hiber
 JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
 })
-JUNK_EXTENSIONS_TUPLE: Final[tuple[str, ...]] = tuple(JUNK_EXTENSIONS)
 
 @dataclass(frozen=True)
 class ScanSettings:
     """Configuración inmutable para el proceso de escaneo de archivos."""
     max_depth: int = LIMITS.MAX_SCAN_DEPTH
     max_size: int = LIMITS.MAX_FILE_SIZE_BYTES
-    extensions: tuple[str, ...] = JUNK_EXTENSIONS_TUPLE
+    extensions: frozenset[str] = JUNK_EXTENSIONS
 
 class SortConfig(NamedTuple):
     """Mapea un campo de ordenamiento con su función de extracción de metadatos."""
@@ -124,8 +123,6 @@ def is_valid_junk_extension(filename: str) -> bool:
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """Extrae atributos de archivo nativos de Windows; devuelve 0 ante errores de acceso."""
     try:
-        if isinstance(entry, os.DirEntry):
-            return entry.stat(follow_symlinks=False).st_file_attributes
         return entry.stat(follow_symlinks=False).st_file_attributes
     except (OSError, AttributeError, ValueError):
         return 0
@@ -133,9 +130,8 @@ def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
 def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     """Detecta puntos de reparse (Junctions) para prevenir bucles de recursión en el escaneo."""
     try:
-        if isinstance(entry, os.DirEntry):
-            return entry.is_symlink() or bool(_get_win_attributes(entry) & LIMITS.WIN_ATTR_JUNCTION)
-        return entry.is_symlink() or bool(_get_win_attributes(entry) & LIMITS.WIN_ATTR_JUNCTION)
+        if entry.is_symlink(): return True
+        return bool(_get_win_attributes(entry) & LIMITS.WIN_ATTR_JUNCTION)
     except (OSError, AttributeError):
         return True
 
@@ -294,7 +290,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        if entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
+                        if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
                             stats = entry.stat(follow_symlinks=False)
                             if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and stats.st_mtime <= (now_ts + 3600) and not _is_system_hidden(entry):
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))

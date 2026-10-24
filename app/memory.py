@@ -254,11 +254,6 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     except (ValueError, TypeError, IndexError):
         return None
 
-def _filter_and_sort_processes(processes: Iterator[ProcessMemory], limit: int) -> List[ProcessMemory]:
-    """Ordena colecciones mediante heap para obtener los N procesos más pesados."""
-    if not isinstance(limit, int) or limit < 0: return []
-    return heapq.nlargest(limit, processes)
-
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Parser puro: procesa volcado de procesos (CSV) y retorna top procesos."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text: 
@@ -268,16 +263,14 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if len(lines) < 2:
         return []
     
+    # Procesamiento eficiente mediante generador para evitar listas intermedias masivas
     def _gen() -> Iterator[ProcessMemory]:
         for line in lines[1:]:
-            try:
-                proc = _extract_process_info(line)
-                if proc: 
-                    yield proc
-            except Exception:
-                continue
+            proc = _extract_process_info(line)
+            if proc: 
+                yield proc
             
-    return _filter_and_sort_processes(_gen(), limit)
+    return heapq.nlargest(limit, _gen())
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Consulta la API GlobalMemoryStatusEx mediante ctypes (Win32)."""
@@ -390,12 +383,9 @@ def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS
             
         count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
         for i in range(count):
-            try:
-                proc = _process_from_pid(int(pids[i]), kernel32, psapi, pmc)
-                if proc:
-                    yield proc
-            except (ValueError, TypeError, Exception):
-                continue
+            proc = _process_from_pid(int(pids[i]), kernel32, psapi, pmc)
+            if proc:
+                yield proc
     except Exception:
         pass
 
@@ -411,7 +401,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             kernel32 = ctypes.windll.kernel32
             psapi = ctypes.windll.psapi
             pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
-            candidates = _filter_and_sort_processes(_iter_process_memory(kernel32, psapi, pmc), limit)
+            # Uso eficiente de heap para obtener los N elementos más pesados directamente
+            candidates = heapq.nlargest(limit, _iter_process_memory(kernel32, psapi, pmc))
             _CACHE_TOP_PROC = CacheEntry(now, candidates)
         except (AttributeError, OSError):
             pass
