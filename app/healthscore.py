@@ -158,11 +158,11 @@ _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
-def _msg_seguridad(metrics: SystemMetrics) -> str: return f"Se detectaron {metrics.suspicious_count} riesgos de seguridad."
-def _msg_disco(metrics: SystemMetrics) -> str: return f"Espacio libre en disco bajo: {metrics.disk_free_percent:.1f}%."
+def _msg_seguridad(metrics: SystemMetrics) -> str: return f"Riesgos de seguridad detectados: {metrics.suspicious_count}."
+def _msg_disco(metrics: SystemMetrics) -> str: return f"Espacio libre en disco bajo: {metrics.disk_free_percent:.1f} porciento."
 def _msg_memoria(metrics: SystemMetrics) -> str: return "Memoria disponible baja, optimice sus procesos."
-def _msg_basura(metrics: SystemMetrics) -> str: return f"Acumulación de archivos temporales: {metrics.junk_mb:.0f} MB."
-def _msg_duplicados(metrics: SystemMetrics) -> str: return f"Recuperación posible: {metrics.duplicate_mb:.0f} MB en duplicados."
+def _msg_basura(metrics: SystemMetrics) -> str: return f"Acumulacion de archivos temporales: {metrics.junk_mb:.0f} MB."
+def _msg_duplicados(metrics: SystemMetrics) -> str: return f"Recuperacion posible: {metrics.duplicate_mb:.0f} MB en duplicados."
 def _msg_arranque(metrics: SystemMetrics) -> str: return f"Exceso de programas en arranque: {metrics.startup_count} entradas."
 
 _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
@@ -300,12 +300,16 @@ def grade_for_score(score: float | int) -> str:
     """Wrapper para obtener la categoría de nota según el puntaje."""
     return Grade.from_score(score)
 
+def _is_safe_string_for_report(text: str) -> bool:
+    """Verifica si el mensaje es seguro para mostrarse al usuario."""
+    t_low = text.lower()
+    return not any(term in t_low for term in _BLOCKED_TERMS)
+
 def _sanitize_msg(msg: str | Any) -> str:
     """Filtro de seguridad para evitar inyección de rutas en los reportes de texto."""
     if not isinstance(msg, str): return ""
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
-    lower_msg = clean.lower()
-    if any(term in lower_msg for term in _BLOCKED_TERMS):
+    if not _is_safe_string_for_report(clean):
         return ""
     return clean.strip()[:_MAX_MSG_LEN]
 

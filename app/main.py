@@ -179,6 +179,15 @@ def ensure_safety(func: Callable) -> Callable:
             raise
     return wrapper
 
+def ensure_safety_in_task(func: Callable) -> Callable:
+    """Decorador para tareas asíncronas: valida el objetivo antes de ejecutar."""
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if hasattr(self, 'target_path') and self.target_path:
+            safety.ensure_safe_to_modify(Path(self.target_path))
+        return func(self, *args, **kwargs)
+    return wrapper
+
 def safe_ui_operation(func: Callable) -> Callable:
     """
     Decorador: Capa de aislamiento para operaciones sobre widgets de UI.
