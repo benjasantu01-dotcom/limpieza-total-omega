@@ -330,8 +330,11 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Escaneo recursivo de directorios utilizando una pila interna y control de duplicados."""
     if directory is None: return []
     try:
-        base_path: Path = Path(directory).resolve(strict=True)
-        if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
+        base_path = Path(directory)
+        if not base_path.exists() or not base_path.is_dir():
+            return []
+        base_path = base_path.resolve(strict=True)
+        if base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
             return []
         scanner: Scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):

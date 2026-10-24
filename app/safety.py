@@ -55,16 +55,16 @@ def _get_file_id(path_str: str) -> tuple[int, int, int]:
     if os.name != 'nt': return (0, 0, 0)
     info = BY_HANDLE_FILE_INFORMATION()
     kernel32 = ctypes.windll.kernel32
-    # Apertura sin privilegios, solo para lectura de metadatos de handle.
-    handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0, None, 3, 0x00000080, None)
-    if handle == -1: return (0, 0, 0)
     try:
-        if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
-            return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow)
-    except (ctypes.ArgumentError, AttributeError):
+        handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0, None, 3, 0x00000080, None)
+        if handle == -1: return (0, 0, 0)
+        try:
+            if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
+                return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow)
+        finally:
+            kernel32.CloseHandle(handle)
+    except (OSError, ctypes.ArgumentError, AttributeError):
         pass
-    finally:
-        kernel32.CloseHandle(handle)
     return (0, 0, 0)
 
 class SafetyAction(Enum):
@@ -432,7 +432,7 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
             
         kernel32.CloseHandle(handle)
         return False
-    except (OSError, ctypes.ArgumentError, AttributeError):
+    except (OSError, ctypes.ArgumentError, AttributeError, PermissionError):
         return True
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:

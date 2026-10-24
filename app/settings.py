@@ -179,7 +179,6 @@ class _SettingsManager:
             if is_protected_path(str(resolved_path)) or not is_safe_to_modify(str(resolved_path)): return False
             if resolved_path.exists():
                 st = resolved_path.stat()
-                # Verificar que sea un archivo regular y no un enlace (nlink=1)
                 if st.st_nlink != 1 or not stat.S_ISREG(st.st_mode): return False
             
             temp_path = resolved_path.with_suffix(".tmp")
@@ -191,7 +190,6 @@ class _SettingsManager:
                 finally:
                     f.close()
             
-            # Limitar acceso a solo el dueño: lectura/escritura (0o600)
             os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
             os.replace(temp_path, resolved_path)
             self.clear()
@@ -340,7 +338,6 @@ def _is_file_secure_to_read(st: os.stat_result) -> bool:
     try:
         if not stat.S_ISREG(st.st_mode): return False
         if st.st_nlink != 1: return False
-        # Restringir a permisos de lectura/escritura únicamente para el dueño
         if (st.st_mode & 0o777) > 0o600: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
@@ -369,10 +366,8 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
                 decoded = content.decode("utf-8")
                 data = json.loads(decoded)
                 return data if _is_dict(data) else None
-            except (json.JSONDecodeError, UnicodeDecodeError):
+            except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
                 return None
-            finally:
-                f.close()
     except (OSError, IOError, PermissionError, MemoryError):
         return None
 
@@ -390,14 +385,14 @@ def _load_impl(file_path_str: str, mtime: float, size: int) -> AppSettings:
         data = _read_and_parse_json(Path(file_path_str))
         if data is not None:
             return _coerce_and_verify(validate(data))
-    except (OSError, PermissionError): pass
+    except (OSError, PermissionError, ValueError, TypeError):
+        pass
     return dict(DEFAULTS) # type: ignore
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga y valida la configuración desde disco o retorna los valores por defecto."""
     primary_path = settings_path(custom_base)
     
-    # Check cache de instancia antes de tocar disco
     if _MANAGER._cached_settings:
         try:
             if primary_path.exists():
