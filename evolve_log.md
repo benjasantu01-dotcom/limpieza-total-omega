@@ -749,3 +749,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-24T02:15:54` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` reforzando la validación de rutas mediante `os.path.realpath` para prevenir evasiones mediante enlaces simbólicos o rutas relativas, asegurando que el ejecutable analizado sea resuelto canónicamente antes de compararlo con `is_protected_path`.
 - `2026-10-24T02:15:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T02:15:54` Corrida terminada. Total usado hoy: 52.
+- `2026-10-24T02:19:18` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-24T02:20:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-24T02:21:09` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-24T02:21:59` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado `_check_path_syntax_integrity` para incluir una validación estricta contra rutas que contengan el carácter `~` (tilde) en posiciones intermedias, ya que podrían intentar evadir la expansión de rutas o engañar a los parsers, y se fortaleció la verificación de longitud de caracteres utilizando `os.fspath` para asegurar consistencia entre distintas versiones de Python y sistemas de archivos, previniendo inyecciones de rutas complejas.
+- `2026-10-24T02:22:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-24T02:23:07` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo la verificación `_validate_no_reparse_traversal` para detectar puntos de reparse (junctions) durante el recorrido de los componentes de la ruta, impidiendo ataques de redirección mediante enlaces simbólicos o de directorio que puedan saltar fuera del alcance (`jail`) permitido.
+- `2026-10-24T02:23:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T02:23:07` Corrida terminada. Total usado hoy: 56.

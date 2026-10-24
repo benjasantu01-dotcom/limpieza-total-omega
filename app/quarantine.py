@@ -360,11 +360,13 @@ def _check_path_syntax_integrity(path: Path) -> None:
     if path is None:
         raise UnsafePathError("Ruta nula recibida.")
         
-    path_str: str = str(path)
+    path_str: str = os.fspath(path)
     if len(path_str) > 260:
         raise UnsafePathError("Ruta de sistema demasiado larga.")
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control.")
+    if "~" in path_str[1:]:
+        raise UnsafePathError("Inyección de tilde detectada.")
     if len(path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva.")
     if ":" in path.name:

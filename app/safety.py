@@ -1023,6 +1023,23 @@ def _validate_path_components(path: Path) -> None:
                         raise UnsafePathError(f"Punto de reparse inaccesible: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
             except (OSError, RuntimeError):
                 continue
+    
+    # Nueva validación contra traversal en componentes reparse
+    _validate_no_reparse_traversal(path)
+
+def _validate_no_reparse_traversal(path: Path) -> None:
+    """Impide que la navegación de subdirectorios mediante reparse points salte el jail."""
+    try:
+        current = Path(path.anchor)
+        for part in path.parts[1:]:
+            current = current / part
+            if current.is_symlink() or _is_system_directory_junction(str(current)):
+                # Si el reparse point no resuelve dentro del árbol esperado, abortar.
+                if not str(current.resolve()).startswith(str(path.anchor)):
+                    raise UnsafePathError(f"Intento de escape mediante reparse point: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+    except Exception as e:
+        if not isinstance(e, UnsafePathError): return
+        raise
 
 def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Valida la integridad de archivos antes de operaciones de escritura."""
