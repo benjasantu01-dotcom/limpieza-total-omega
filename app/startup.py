@@ -249,7 +249,12 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Identifica rutas de inicio de sistema y usuario, filtrando rutas protegidas."""
+    """
+    Identifica las rutas estándar de inicio del sistema y usuario en Windows.
+
+    Returns:
+        List[Path]: Lista de objetos Path validados y no protegidos.
+    """
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -301,7 +306,15 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEntries:
-    """Escanea carpetas de inicio y retorna la lista consolidada."""
+    """
+    Escanea carpetas de inicio y retorna la lista consolidada de entradas.
+
+    Args:
+        folders: Iterador de rutas a escanear (opcional).
+
+    Returns:
+        StartupEntries: Lista de objetos StartupEntry encontrados.
+    """
     found_entries: StartupEntries = []
     scan_folders = folders if folders is not None else startup_folders()
     processed_paths: Set[str] = set()
@@ -354,7 +367,16 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Convierte el output CSV de PowerShell en objetos StartupEntry."""
+    """
+    Convierte el output CSV crudo generado por PowerShell en objetos StartupEntry.
+
+    Args:
+        csv_text: String multilínea con formato CSV proveniente de PowerShell.
+        source: Identificador de la fuente (default "registro").
+
+    Returns:
+        StartupEntries: Lista filtrada de entradas validadas.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -392,7 +414,12 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
-    """Extrae programas del Registro vía subproceso PowerShell."""
+    """
+    Extrae programas del Registro de Windows mediante la ejecución de un subproceso PowerShell.
+
+    Returns:
+        StartupEntries: Lista de entradas detectadas y validadas.
+    """
     if os.name != "nt":
         return []
     
@@ -422,7 +449,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
 
 
 def list_startup_entries() -> StartupEntries:
-    """Consolida fuentes de inicio eliminando duplicados."""
+    """Consolida las fuentes de inicio (carpetas y registro) eliminando duplicados."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
@@ -441,7 +468,10 @@ def list_startup_entries() -> StartupEntries:
 
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:
-    """Calcula severidad del impacto basado en cantidad de entradas."""
+    """
+    Calcula un nivel de severidad ("ok", "info", "warning", "danger") 
+    basado en la cantidad total de programas de inicio detectados.
+    """
     count = len(entries) if isinstance(entries, list) else sum(1 for _ in entries)
     if count <= 5: return "ok"
     if count <= 10: return "info"
@@ -450,7 +480,7 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera reporte de texto final."""
+    """Genera un reporte de texto legible por el usuario final."""
     entries_list = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         
