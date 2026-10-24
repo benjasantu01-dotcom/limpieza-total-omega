@@ -198,10 +198,8 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str) -> bool:
     """
     Valida si una entrada de directorio debe ser ignorada por reglas de seguridad.
-    Incluye chequeo de longitud de path para prevenir Buffer Overflows en APIs antiguas.
     """
     if entry.name.lower() in scan_ctx.never_touch_lower: return True
-    if len(entry.path) >= MAX_PATH_LEN or any(c in entry.path for c in PATH_FORBIDDEN_CHARS): return True
     if not _is_within_sandbox(norm_path, scan_ctx.sandbox_base_norm): return True
     if is_protected_path(Path(entry.path)): return True
     
@@ -214,7 +212,6 @@ def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str
 def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     """
     Obtiene el tamaño de un archivo individual evitando duplicados físicos mediante (dev, ino).
-    Esto es crucial cuando existen enlaces duros dentro de las cachés.
     """
     try:
         st = entry.stat(follow_symlinks=False)
@@ -231,13 +228,11 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     Calcula el tamaño total de un directorio de forma recursiva y segura.
     Implementa límites de profundidad (MAX_SCAN_DEPTH) para prevenir recursión infinita.
     """
-    if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
+    if depth > MAX_SCAN_DEPTH: return ScanResult(0, True)
     
     norm_path = os.path.normcase(root_path)
     if norm_path in scan_ctx.visited_dirs or not os.access(root_path, os.R_OK):
         return ScanResult(0, True)
-    
-    if not _is_within_sandbox(norm_path, scan_ctx.sandbox_base_norm): return ScanResult(0, True)
     
     scan_ctx.visited_dirs.add(norm_path)
     total_bytes = 0

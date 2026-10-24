@@ -339,7 +339,9 @@ def _calculate_area_contribution(metrics_tuple: Tuple[float, ...], area_idx: int
     try:
         entry = _PIPELINE[area_idx]
         keys = SystemMetrics._FIELDS_TO_VALIDATE
-        metrics = SystemMetrics(**dict(zip(keys, metrics_tuple)))
+        # Uso de __new__ para omitir validación redundante ya que los datos vienen de cache_key
+        metrics = SystemMetrics.__new__(SystemMetrics)
+        for i, key in enumerate(keys): setattr(metrics, key, metrics_tuple[i])
         
         weight = max(0, entry.weight)
         if sys.getrecursionlimit() < _MAX_RECURSION_DEPTH or not metrics.is_finite:

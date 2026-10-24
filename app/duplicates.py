@@ -139,14 +139,12 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa rutas según el tamaño en bytes, filtrando elementos no aptos para el análisis."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_size
-    for item in paths:
-        if not item: continue
-        path = Path(item)
-        if _safe_path_check(path) and path.is_file():
+    for item in (Path(p) for p in paths if p):
+        if _safe_path_check(item) and item.is_file():
             try:
-                st = path.stat()
-                if _is_valid_candidate(path, st.st_size):
-                    groups_by_size[st.st_size].append(path)
+                st = item.stat()
+                if _is_valid_candidate(item, st.st_size):
+                    groups_by_size[st.st_size].append(item)
             except OSError: continue
     return groups_by_size
 
@@ -156,28 +154,18 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     if not directories: return {}
     
     raw_map: Dict[int, List[Path]] = defaultdict(list)
-    queue: deque[Tuple[Path, int]] = deque()
-    
-    for d in directories:
-        if d:
-            p = Path(d)
-            if p.exists() and _safe_path_check(p):
-                queue.append((p, 0))
-            
-    # Registro de inodos para evitar ciclos o duplicación en el escaneo (dev_id, inode_id)
+    queue: deque[Tuple[Path, int]] = deque((Path(d), 0) for d in directories if d and Path(d).exists())
     visited: set[Tuple[int, int]] = set()
     
     while queue:
         current_dir, depth = queue.popleft()
-        if depth > MAX_RECURSION_DEPTH: continue
+        if depth > MAX_RECURSION_DEPTH or not _safe_path_check(current_dir): continue
             
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     if entry.is_dir(follow_symlinks=False):
-                        path = Path(entry.path)
-                        if _safe_path_check(path):
-                            queue.append((path, depth + 1))
+                        queue.append((Path(entry.path), depth + 1))
                     elif entry.is_file(follow_symlinks=False):
                         try:
                             stat = entry.stat(follow_symlinks=False)

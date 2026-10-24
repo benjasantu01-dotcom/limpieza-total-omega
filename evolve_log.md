@@ -619,3 +619,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-24T00:40:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-10-24T00:40:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T00:40:54` Corrida terminada. Total usado hoy: 16.
+- `2026-10-24T00:47:36` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-24T00:48:27` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando el uso repetido de `os.path.normcase` sobre rutas ya validadas y simplificando la lógica de chequeo en el loop principal, reduciendo drásticamente las llamadas al sistema en estructuras de directorios profundas.
+- `2026-10-24T00:48:54` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-24T00:49:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-24T00:50:20` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el rendimiento de `_collect_candidates` mediante la utilización de un generador en el filtrado inicial, evitando la creación de listas intermedias y reduciendo la presión sobre el recolector de basura al procesar directorios grandes.
+- `2026-10-24T00:51:03` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score eliminando la reconstrucción innecesaria del objeto `SystemMetrics` dentro de `_calculate_area_contribution`, utilizando directamente la tupla de métricas para evitar llamadas a `__post_init__` y validaciones redundantes en cada paso del pipeline.
+- `2026-10-24T00:51:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T00:51:03` Corrida terminada. Total usado hoy: 20.
