@@ -532,8 +532,8 @@ def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt."""
     if context.is_empty: return ""
     snap: MetricsDict = context.metrics_snapshot
-    res: Iterator[str] = (f"{k}: {val:.{p}f}{u}" for k, u, p in _CONTEXT_SCHEMA if (val := snap.get(k, -1.0)) >= 0)
-    return "\n".join(filter(_ensure_safe_text, res))
+    lines = (f"{k}: {snap[k]:.{p}f}{u}" for k, u, p in _CONTEXT_SCHEMA if k in snap and (val := snap[k]) >= 0)
+    return "\n".join(filter(_ensure_safe_text, lines))
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea métricas numéricas convirtiéndolas a strings legibles."""
