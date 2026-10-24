@@ -60,6 +60,8 @@ def _get_file_id(path_str: str) -> tuple[int, int, int]:
     try:
         if ctypes.windll.kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
             return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow)
+    except (ctypes.ArgumentError, AttributeError):
+        pass
     finally:
         ctypes.windll.kernel32.CloseHandle(handle)
     return (0, 0, 0)
@@ -116,7 +118,7 @@ class SecurityDescriptor(NamedTuple):
                 is_readonly=bool(attrs & Win32Attr.READONLY),
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
-        except (OSError, ctypes.ArgumentError, AttributeError, ValueError, MemoryError, PermissionError):
+        except (OSError, ValueError):
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
@@ -189,7 +191,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 return Win32Attr.SYSTEM
             return INVALID_FILE_ATTRIBUTES
         return attrs
-    except (AttributeError, ctypes.ArgumentError, OSError, MemoryError, ValueError, TypeError, SystemError):
+    except (AttributeError, ctypes.ArgumentError, OSError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):
@@ -339,7 +341,7 @@ def _is_virtual_drive(path_str: str) -> bool:
         if res > 0:
             device_path = buf.value
             return device_path.startswith("\\DosDevices\\") or device_path.startswith("\\??\\")
-    except (AttributeError, OSError, ctypes.ArgumentError, MemoryError, TypeError):
+    except (AttributeError, OSError, ctypes.ArgumentError):
         return True 
     return False
 
@@ -361,7 +363,7 @@ def _is_file_owned_by_system(path_str: str) -> bool:
                     return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
             finally:
                 kernel32.LocalFree(sid_ptr)
-    except (AttributeError, OSError, ctypes.ArgumentError, PermissionError, MemoryError, SystemError):
+    except (AttributeError, OSError, ctypes.ArgumentError):
         pass
     return False
 
@@ -427,7 +429,7 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
             
         kernel32.CloseHandle(handle)
         return False
-    except (OSError, ctypes.ArgumentError, AttributeError, MemoryError, PermissionError):
+    except (OSError, ctypes.ArgumentError, AttributeError):
         return True
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
@@ -440,7 +442,7 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
     try:
         h_module = ctypes.windll.kernel32.GetModuleHandleW(path_str)
         return h_module != 0
-    except (OSError, ctypes.ArgumentError, MemoryError): return False
+    except (OSError, ctypes.ArgumentError): return False
 
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
@@ -454,7 +456,7 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
         flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & 0x80000)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, MemoryError): pass
+    except (AttributeError, OSError, ctypes.ArgumentError): pass
     return False
 
 @lru_cache(maxsize=128)
@@ -481,7 +483,7 @@ def _is_volume_removable_media(path_str: Optional[str]) -> bool:
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         return _get_drive_type(root) == DRIVE_REMOVABLE
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, MemoryError): pass
+    except (AttributeError, OSError, ctypes.ArgumentError): pass
     return False
 
 @lru_cache(maxsize=128)
@@ -494,7 +496,7 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
         flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & (0x10 | 0x20000))
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, MemoryError): pass
+    except (AttributeError, OSError, ctypes.ArgumentError): pass
     return False
 
 @lru_cache(maxsize=1024)
@@ -543,7 +545,7 @@ def _validate_drive_restrictions(target_path: Path) -> None:
             raise UnsafePathError("Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED)
         if _is_virtual_drive(str(target_path)):
             raise UnsafePathError("Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
-    except (AttributeError, OSError, ctypes.ArgumentError, MemoryError):
+    except (AttributeError, OSError, ctypes.ArgumentError):
         pass
 
 # Predicados cacheados para alto rendimiento
@@ -974,7 +976,7 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
                 return _normalize_resolved(buf.value)
         finally:
             kernel32.CloseHandle(handle)
-    except (OSError, AttributeError, ctypes.ArgumentError, MemoryError):
+    except (OSError, AttributeError, ctypes.ArgumentError):
         return None
     return None
 
@@ -1107,7 +1109,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
-    except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, MemoryError, AttributeError):
+    except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, AttributeError):
         return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
@@ -1120,7 +1122,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     for p in paths:
         if p is None: continue
         try: results.append(ensure_safe_to_modify(p, allow_sensitive=allow_sensitive, base_dir=base_dir))
-        except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, MemoryError, AttributeError): continue
+        except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, AttributeError): continue
     return results
 
 def describe_protection(path: PathLike) -> str:

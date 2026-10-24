@@ -385,6 +385,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         f: io.StringIO = io.StringIO(csv_text.strip())
         reader = csv.DictReader(f)
         
+        # Validación de columnas necesarias antes de procesar
         if not reader.fieldnames or "Name" not in reader.fieldnames or "Value" not in reader.fieldnames:
             return []
         

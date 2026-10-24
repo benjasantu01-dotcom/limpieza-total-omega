@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 20 | 1 | 5 | 1 | 27 |
+| 2026-10-22 | 18 | 1 | 4 | 1 | 26 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 36 | 2 | 9 | 3 | 50 |
+| 2026-10-24 | 40 | 2 | 9 | 3 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **40**
 - legibilidad y documentación: **37**
-- rendimiento: **33**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `browser.py`: **18**
+- `diskreport.py`: **19**
+- `safety.py`: **17**
 - `assistant.py`: **17**
+- `browser.py`: **17**
 - `memory.py`: **17**
-- `safety.py`: **16**
 - `quarantine.py`: **16**
 - `healthscore.py`: **15**
-- `settings.py`: **14**
-- `scanner.py`: **14**
+- `settings.py`: **15**
+- `scanner.py`: **15**
 - `branding.py`: **14**
-- `startup.py`: **12**
+- `startup.py`: **13**
 - `organizer.py`: **10**
 - `duplicates.py`: **9**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T04:23:32` **startup.py** (manejo de errores y validación de entradas): Mejoré el robustecimiento de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV tenga las columnas esperadas antes de procesar sus valores, evitando errores de `KeyError` o procesamiento de datos parciales/corruptos provenientes de una ejecución de PowerShell potencialmente fallida o inesperada.
+- `2026-10-24T04:23:19` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al implementar una validación estricta de la integridad del JSON mediante un bloque `try-except` que captura explícitamente `json.JSONDecodeError` y `UnicodeDecodeError`, asegurando que archivos malformados no provoquen errores de ejecución silenciosos ni estados inconsistentes.
+- `2026-10-24T04:22:49` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `scanner.py` centralizando la validación de la existencia y accesibilidad de archivos en la función `_is_readable`, asegurando que `_get_file_size` y `_safe_stat` sean resilientes ante `FileNotFoundError` o `PermissionError` inesperados, evitando que el escaneo se interrumpa prematuramente.
+- `2026-10-24T04:22:22` **safety.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_get_file_id` y `_get_file_attrs` sustituyendo las capturas genéricas de excepciones por un conjunto acotado de errores esperados en APIs de Windows (ctypes) para evitar el silenciamiento de errores críticos que podrían estar ocultando fallas lógicas.
 - `2026-10-24T04:12:04` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_process_from_pid` añadiendo validaciones preventivas para evitar errores en llamadas `ctypes` cuando el handle es inválido o la API falla, asegurando que no se intente operar sobre estados de memoria inexistentes o nulos.
 - `2026-10-24T04:03:18` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_setup_application` y `_on_closing` para garantizar que la aplicación cierre limpiamente los recursos y reporte fallos de inicialización críticos al usuario sin dejar procesos "zombis" o ventanas huérfanas en estado inconsistente.
 - `2026-10-24T04:02:23` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_cached` y `_calculate_area_contribution` mediante una validación de tipo más estricta en el `cache_key` y la captura de errores en el acceso al pipeline, evitando que un fallo en un área detenga el procesamiento completo del score.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T02:21:59` **quarantine.py** (seguridad defensiva): Se ha mejorado `_check_path_syntax_integrity` para incluir una validación estricta contra rutas que contengan el carácter `~` (tilde) en posiciones intermedias, ya que podrían intentar evadir la expansión de rutas o engañar a los parsers, y se fortaleció la verificación de longitud de caracteres utilizando `os.fspath` para asegurar consistencia entre distintas versiones de Python y sistemas de archivos, previniendo inyecciones de rutas complejas.
 - `2026-10-24T02:15:54` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` reforzando la validación de rutas mediante `os.path.realpath` para prevenir evasiones mediante enlaces simbólicos o rutas relativas, asegurando que el ejecutable analizado sea resuelto canónicamente antes de compararlo con `is_protected_path`.
 - `2026-10-24T02:00:38` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad en `walk_files` y `_is_excluded_path` para prevenir la resolución de rutas fuera del ámbito permitido (jail-break) mediante la validación estricta de `resolve()` y el uso de `path_obj.parts` para evitar manipulaciones mediante caracteres de control o intentos de escape, asegurando que `diskreport.py` sea robusto frente a rutas maliciosas.
-- `2026-10-24T02:00:26` **browser.py** (seguridad defensiva): Reforcé la seguridad de `_is_valid_cache_path` añadiendo una verificación explícita mediante `is_safe_to_modify` sobre la ruta resuelta, garantizando que ninguna ruta de sistema sea procesada accidentalmente incluso si supera los chequeos de sandbox previos.
-- `2026-10-24T01:59:44` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación adicional mediante `ensure_safe_to_modify` antes de escribir en disco, garantizando que el flujo de salida cumpla con las políticas de protección de rutas incluso tras la verificación inicial booleana.
-- `2026-10-24T01:50:31` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia ante errores de lectura de disco al incluir un manejo de excepciones más granular en `_read_and_parse_json` y `_load_impl`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura) bloqueen la inicialización de la aplicación, fallando de forma segura hacia los valores por defecto.
-- `2026-10-24T01:49:31` **safety.py** (robustez ante casos límite): Se añadió una validación en `_validate_preconditions` para detectar si el padre de una ruta es un volumen de solo lectura, previniendo errores de I/O bloqueantes antes de intentar operaciones de archivo.

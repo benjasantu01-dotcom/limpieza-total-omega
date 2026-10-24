@@ -369,9 +369,11 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
                 decoded = content.decode("utf-8")
                 data = json.loads(decoded)
                 return data if _is_dict(data) else None
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return None
             finally:
                 f.close()
-    except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, UnicodeDecodeError):
+    except (OSError, IOError, PermissionError, MemoryError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:

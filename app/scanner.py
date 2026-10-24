@@ -111,10 +111,11 @@ def _is_readable(path: Path) -> bool:
     """Verifica si el sistema operativo permite lectura en la ruta indicada."""
     if not isinstance(path, (Path, str)):
         return False
-    if _cached_is_protected(str(path)):
-        return False
     try:
-        return os.access(str(path), os.R_OK)
+        p = Path(path)
+        if _cached_is_protected(str(p)):
+            return False
+        return os.access(str(p), os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError, TypeError):
         return False
 
@@ -130,12 +131,10 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _get_file_size(path: Path) -> int:
     """Retorna tamaño en bytes, devolviendo -1 en caso de error de acceso."""
-    if not isinstance(path, Path):
-        return -1
-    if _cached_is_protected(str(path)):
+    if not isinstance(path, Path) or not _is_readable(path):
         return -1
     try:
-        return int(path.lstat().st_size)
+        return int(path.stat().st_size)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError, TypeError):
         return -1
 
