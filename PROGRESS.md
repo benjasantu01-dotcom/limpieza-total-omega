@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 213
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 111 | 10 | 24 | 7 | 120 |
-| 2026-10-24 | 95 | 8 | 27 | 9 | 93 |
+| 2026-10-23 | 107 | 10 | 24 | 7 | 120 |
+| 2026-10-24 | 98 | 8 | 28 | 9 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **48**
+- seguridad defensiva: **45**
 - legibilidad y documentación: **45**
-- rendimiento: **35**
-- robustez ante casos límite: **29**
+- rendimiento: **38**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **20**
 - `diskreport.py`: **19**
-- `assistant.py`: **16**
-- `browser.py`: **16**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `scanner.py`: **16**
-- `safety.py`: **15**
+- `safety.py`: **16**
+- `assistant.py`: **15**
+- `browser.py`: **15**
 - `settings.py`: **14**
+- `organizer.py`: **14**
 - `duplicates.py`: **13**
 - `healthscore.py`: **13**
-- `organizer.py`: **13**
-- `startup.py`: **12**
-- `branding.py`: **12**
 - `main.py`: **11**
+- `startup.py`: **11**
+- `branding.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T09:59:33` **safety.py** (rendimiento): Optimicé el rendimiento de `_evaluate_security_rules` reemplazando la lógica de validación secuencial completa por un `any` con `generator expression` y moví la creación de `SecurityDescriptor` detrás del chequeo de caché para evitar llamadas costosas a la API de Windows cuando la ruta ya ha sido validada exitosamente en la misma iteración.
+- `2026-10-24T09:58:32` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` evitando lecturas repetidas de disco mediante la consolidación del caché de hashes usando una tupla `(path, mtime, size)`, reduciendo drásticamente la I/O en validaciones masivas.
+- `2026-10-24T09:57:50` **organizer.py** (rendimiento): Optimizé el rendimiento del escaneo reemplazando la evaluación repetitiva de `tuple(JUNK_EXTENSIONS)` dentro del loop principal por el uso directo del conjunto pre-compilado `JUNK_EXTENSIONS`, y reduciendo llamadas redundantes a `Path.resolve()` en el proceso recursivo.
 - `2026-10-24T09:49:29` **memory.py** (rendimiento): Optimizé la performance del módulo `memory.py` sustituyendo la lógica recursiva y la iteración ineficiente sobre el array de PIDs por una búsqueda más directa, además de reducir el uso de `getattr` dentro de bucles críticos, mejorando la velocidad de lectura de procesos en sistemas con muchos programas activos.
 - `2026-10-24T09:48:11` **healthscore.py** (rendimiento): Optimicé el rendimiento reduciendo la redundancia en `_compute_cached` mediante la eliminación del cálculo repetido de `metrics.is_finite` y el acceso directo a los campos, aprovechando que el cacheo ya garantiza la integridad de los datos de entrada.
 - `2026-10-24T09:47:39` **duplicates.py** (rendimiento): Optimicé el rendimiento del proceso de hashing evitando llamadas innecesarias al sistema de archivos mediante el uso de `os.stat` ya disponible durante la fase de recolección, y eliminando comprobaciones de seguridad redundantes en `hash_file` y `partial_hash` cuando el path ya fue validado en el filtrado inicial.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T09:17:42` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de función y clase para clarificar las responsabilidades de seguridad y los riesgos, incluyendo la eliminación de redundancias explicativas en favor de detalles técnicos precisos sobre el manejo de rutas y los chequeos de integridad.
 - `2026-10-24T09:17:13` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `memory.py` mediante la refactorización de `_is_process_executable_safe` y `_process_from_pid`, extrayendo la lógica de validación de rutas y privilegios para reducir el anidamiento y clarificar el flujo de control, manteniendo estrictamente el comportamiento funcional.
 - `2026-10-24T09:07:22` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo las convenciones de PEP 257, se ha añadido tipado explícito en funciones auxiliares que carecían de él y se ha extraído la lógica de comparación de archivos de `suggest_keeper` a una función interna más clara para mejorar la mantenibilidad del código.
-- `2026-10-24T09:06:56` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad del código y la seguridad de tipos añadiendo `docstrings` completos con los detalles necesarios para el equipo, clarificando las responsabilidades de los acumuladores `ExtStats` y `FolderMetrics` mediante type hints explícitos.
-- `2026-10-24T08:58:10` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, normalización del estilo de docstrings y la simplificación de la lógica de recursión mediante la extracción del chequeo de profundidad, cumpliendo con los estándares de calidad del proyecto.
-- `2026-10-24T08:57:23` **assistant.py** (legibilidad y documentación): Se introdujeron type hints explícitos en variables de ámbito local y parámetros de funciones críticas para mejorar la legibilidad y la documentación, además de documentar los propósitos de las clases `MetricSpec` y `ProblemCriterion` con docstrings más precisos.

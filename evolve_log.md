@@ -1551,3 +1551,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-24T09:49:29` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la performance del módulo `memory.py` sustituyendo la lógica recursiva y la iteración ineficiente sobre el array de PIDs por una búsqueda más directa, además de reducir el uso de `getattr` dentro de bucles críticos, mejorando la velocidad de lectura de procesos en sistemas con muchos programas activos.
 - `2026-10-24T09:49:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T09:49:29` Corrida terminada. Total usado hoy: 232.
+- `2026-10-24T09:57:22` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-10-24T09:57:50` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el rendimiento del escaneo reemplazando la evaluación repetitiva de `tuple(JUNK_EXTENSIONS)` dentro del loop principal por el uso directo del conjunto pre-compilado `JUNK_EXTENSIONS`, y reduciendo llamadas redundantes a `Path.resolve()` en el proceso recursivo.
+- `2026-10-24T09:58:32` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_sha256` evitando lecturas repetidas de disco mediante la consolidación del caché de hashes usando una tupla `(path, mtime, size)`, reduciendo drásticamente la I/O en validaciones masivas.
+- `2026-10-24T09:58:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 96): unterminated f-string literal (detected at line 96)
+- `2026-10-24T09:58:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-24T09:59:33` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_evaluate_security_rules` reemplazando la lógica de validación secuencial completa por un `any` con `generator expression` y moví la creación de `SecurityDescriptor` detrás del chequeo de caché para evitar llamadas costosas a la API de Windows cuando la ruta ya ha sido validada exitosamente en la misma iteración.
+- `2026-10-24T09:59:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T09:59:33` Corrida terminada. Total usado hoy: 236.

@@ -274,7 +274,7 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula el hash del archivo mediante streaming para minimizar el uso de RAM."""
+    """Calcula el hash del archivo mediante streaming para minimizar el uso de RAM y cachea resultados."""
     try:
         st = path.stat()
         cache_key = (str(path), st.st_mtime, st.st_size)

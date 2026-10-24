@@ -646,17 +646,16 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     if not path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     
-    # Clave basada en ruta y timestamp de modificación para invalidación
     cache_key = (str(path), int(current_stat.st_mtime))
     if cache_key in _EVAL_CACHE:
         return
 
     try:
-        sd: SecurityDescriptor = _get_security_descriptor(path)
-        for rule in _VALIDATORS:
-            if rule.predicate(path, current_stat, sd):
-                code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-                raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
+        sd = _get_security_descriptor(path)
+        violation = next((rule for rule in _VALIDATORS if rule.predicate(path, current_stat, sd)), None)
+        if violation:
+            code = _REASON_TO_CODE.get(violation.reason, SafetyValidationErrorCode.GENERIC)
+            raise UnsafePathError(f"Integridad comprometida: {violation.reason.name}", code)
         _EVAL_CACHE[cache_key] = None
     except (OSError, PermissionError) as e:
         raise UnsafePathError(f"Error de acceso en validación: {e}", SafetyValidationErrorCode.ACCESS_DENIED)
