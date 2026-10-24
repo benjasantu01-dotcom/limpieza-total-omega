@@ -133,7 +133,7 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae el contenido de una ruta entrecomillada realizando chequeos de seguridad."""
+        """Extracts and validates a path string from quoted input."""
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -159,13 +159,10 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """Verifica permisos de acceso, protección de ruta y existencia real del archivo."""
         try:
-            if is_protected_path(p) or p.is_symlink() or not is_safe_to_modify(p) or not p.exists():
-                return False
-            if not p.is_file():
-                return False
-            with open(p, 'rb') as f:
-                pass
-            return True
+            return (p.exists() and p.is_file() and 
+                    not is_protected_path(p) and 
+                    not p.is_symlink() and 
+                    is_safe_to_modify(p))
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 

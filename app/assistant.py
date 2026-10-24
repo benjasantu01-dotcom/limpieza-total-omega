@@ -452,7 +452,10 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list)) else True
+        if not isinstance(source, (dict, object)): return False
+        if isinstance(source, (dict, list)):
+            return not _is_input_too_deep_or_complex(source)
+        return True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios validados al contexto y limpia cachés internas."""

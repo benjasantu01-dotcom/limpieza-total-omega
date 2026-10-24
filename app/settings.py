@@ -324,16 +324,14 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 def validate(raw_values: Any) -> AppSettings:
     """
     Valida iterativamente el diccionario bruto recibido contra el esquema definido.
-    Omitirá cualquier campo que no cumpla con las restricciones de tipo o rango.
     """
     if not _is_dict(raw_values): return dict(DEFAULTS)
     config = dict(DEFAULTS)
     for key_str, raw_val in raw_values.items():
         if (key_enum := _KEY_TO_ENUM.get(key_str)):
-            try:
-                validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
-                if validated_val is not None: config[key_enum.value] = validated_val
-            except (ValueError, TypeError, AttributeError, KeyError): continue
+            validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
+            if validated_val is not None:
+                config[key_enum.value] = validated_val
     return config # type: ignore
 
 def _is_file_secure_to_read(st: os.stat_result) -> bool:
@@ -378,14 +376,9 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura coherencia lógica de dependencias (ej. validación cruzada API)."""
-    final = dict(DEFAULTS)
-    for key, val in settings.items():
-        key_enum = ConfigKey(key) if key in _KEY_TO_ENUM else None
-        if key_enum and val is not None and _is_valid_type(val, key_enum):
-            final[key] = val
-    if final.get("asistente_activado") and not (final.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
-        final["asistente_activado"] = False
-    return final # type: ignore
+    if settings.get("asistente_activado") and not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
+        settings["asistente_activado"] = False
+    return settings
 
 @lru_cache(maxsize=4)
 def _load_impl(file_path_str: str, mtime: float, size: int) -> AppSettings:
@@ -462,12 +455,10 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     modified = False
     for k, v in changes.items():
         if (key_enum := _KEY_TO_ENUM.get(k)):
-            try:
-                val = _VALIDATOR_MAP[key_enum].func(key_enum, v)
-                if val is not None and val != current.get(k):
-                    current[k] = val
-                    modified = True
-            except (ValueError, TypeError, KeyError): continue
+            val = _VALIDATOR_MAP[key_enum].func(key_enum, v)
+            if val is not None and val != current.get(k):
+                current[k] = val
+                modified = True
     if modified: save(current, custom_base)
     return current
 
