@@ -222,9 +222,10 @@ def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) ->
         if value is None or isinstance(value, bool):
             return default
         val = float(value)
-        if not math.isfinite(val) or val < min_v or val > max_v:
+        # Asegura que incluso valores infinitos sean rechazados por el default
+        if not math.isfinite(val):
             return default
-        return val
+        return float(max(min_v, min(max_v, val)))
     except (ValueError, TypeError):
         return default
 

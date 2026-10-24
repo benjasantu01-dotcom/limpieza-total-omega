@@ -324,27 +324,22 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
         return None
     try:
-        dest_base = Path(review_dir).expanduser()
+        dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        dest_res = dest_base.resolve(strict=False)
         
-        if not is_safe_to_modify(dest_res) or is_protected_path(dest_res) or _has_forbidden_chars(dest_res):
+        if not is_safe_to_modify(dest_base) or is_protected_path(dest_base) or _has_forbidden_chars(dest_base):
             return None
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
             try:
-                if not _is_safe_for_disk_op(junk_file, dest_res): continue
-                target_path = _can_move_file(junk_file, dest_res)
+                if not _is_safe_for_disk_op(junk_file, dest_base): continue
+                target_path = _can_move_file(junk_file, dest_base)
                 if target_path and junk_file.path.exists():
-                    try:
-                        if target_path.resolve(strict=False).is_relative_to(dest_res):
-                            shutil.move(str(junk_file.path.resolve(strict=True)), str(target_path))
-                    except (ValueError, OSError):
-                        continue
+                    shutil.move(str(junk_file.path), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
-        return dest_res
+        return dest_base
     except (OSError, ValueError, RuntimeError, TypeError):
         return None
 
@@ -360,22 +355,20 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """Elimina físicamente los archivos validados tras aplicar chequeos de seguridad."""
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
-        dest = Path(review_dir).expanduser()
+        dest = Path(review_dir).expanduser().resolve()
         if not dest.exists() or not dest.is_dir(): return 0
-        dest_res = dest.resolve(strict=False)
         
-        if not is_safe_to_modify(dest_res) or is_protected_path(dest_res): return 0
+        if not is_safe_to_modify(dest) or is_protected_path(dest): return 0
         
         count = 0
-        for item in dest_res.iterdir():
+        for item in dest.iterdir():
             try:
                 if not item.is_file() or item.is_symlink() or _is_junction(item): continue
-                item_res = item.resolve(strict=False)
-                if not item_res.is_relative_to(dest_res): continue
+                if not item.is_relative_to(dest): continue
                 
-                # Validar seguridad individual antes de la eliminación física
-                if is_safe_to_modify(item_res) and not is_protected_path(item_res):
-                    item_res.unlink()
+                # Validación de seguridad estricta antes de borrar
+                if is_safe_to_modify(item) and not is_protected_path(item):
+                    item.unlink()
                     count += 1
             except (OSError, PermissionError) as e:
                 logger.warning(f"No se pudo eliminar {item}: {e}")

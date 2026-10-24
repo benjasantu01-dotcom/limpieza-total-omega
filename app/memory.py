@@ -329,7 +329,8 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
-        if get_filename_func(handle, None, buffer_path, 4096) <= 0:
+        chars_copied = get_filename_func(handle, None, buffer_path, 4096)
+        if chars_copied <= 0:
             return False
     except (ctypes.WinError, OSError):
         return False
