@@ -334,13 +334,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _calculate_area_contribution(metrics_tuple: Tuple[float, ...], area_idx: int) -> Tuple[int, Tuple[str, ...]]:
     """Calcula el aporte de puntos de un área específica del pipeline con cacheo."""
     try:
-        if area_idx < 0 or area_idx >= len(_PIPELINE):
+        if area_idx < 0 or area_idx >= len(_PIPELINE) or len(metrics_tuple) != len(SystemMetrics._FIELDS_TO_VALIDATE):
             return 0, ()
         
         entry = _PIPELINE[area_idx]
-        keys = SystemMetrics._FIELDS_TO_VALIDATE
         metrics = SystemMetrics.__new__(SystemMetrics)
-        for i, key in enumerate(keys): setattr(metrics, key, metrics_tuple[i])
+        for i, key in enumerate(SystemMetrics._FIELDS_TO_VALIDATE): 
+            setattr(metrics, key, metrics_tuple[i])
         
         weight = max(0, entry.weight)
         if not metrics.is_finite:

@@ -1094,3 +1094,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-24T05:45:37` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido `save_logo_svg` y las funciones de renderizado vectorial contra entradas malformadas, normalizando rutas, verificando la existencia de directorios padres antes de intentar operaciones y evitando cálculos geométricos con valores no finitos que podrían causar fallos en el motor de dibujo.
 - `2026-10-24T05:45:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T05:45:37` Corrida terminada. Total usado hoy: 136.
+- `2026-10-24T05:52:59` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-10-24T05:53:25` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-24T05:53:49` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-10-24T05:54:10` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-24T05:54:22` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la validación de `SystemMetrics` evitando la construcción de una instancia parcial o inválida mediante un `__new__` controlado y añadiendo verificaciones estrictas en el `lru_cache` para prevenir errores si `metrics_tuple` llega con longitudes inesperadas.
+- `2026-10-24T05:54:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T05:54:22` Corrida terminada. Total usado hoy: 140.
