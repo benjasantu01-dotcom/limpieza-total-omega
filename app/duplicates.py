@@ -103,12 +103,9 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """
-    Calcula el hash SHA256 completo del contenido del archivo.
-    Utiliza un caché interno (_full_hash_cache) para evitar lecturas de disco redundantes 
-    sobre el mismo archivo durante una única sesión de ejecución.
-    """
-    if not isinstance(path, Path) or not path.is_file(): return None
+    """Calcula el hash SHA256 completo, verificando seguridad de acceso antes de leer."""
+    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.is_file(): 
+        return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
         hasher = hashlib.sha256()
@@ -123,12 +120,9 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """
-    Calcula un hash SHA256 sobre los primeros N bytes (definidos por PARTIAL_READ_BYTES).
-    Esta técnica permite descartar archivos distintos rápidamente sin leer todo su contenido,
-    optimizando el tiempo de escaneo en archivos de gran tamaño.
-    """
-    if not isinstance(path, Path) or not path.is_file(): return None
+    """Calcula el hash parcial (primeros N bytes) de forma segura."""
+    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.is_file(): 
+        return None
     if path in _partial_cache: return _partial_cache[path]
     try:
         with open(path, "rb") as f:
@@ -176,7 +170,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size >= min_size:
                                 path = Path(entry.path)
-                                if _is_valid_candidate(path, stat.st_size):
+                                if _is_valid_candidate(path, stat.st_size) and is_safe_to_modify(path):
                                     if skip_protected and is_protected_path(path): continue
                                     inode = (stat.st_dev, stat.st_ino)
                                     if inode not in visited:
@@ -248,7 +242,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
-        if p.exists():
+        if p.exists() and is_safe_to_modify(p):
             candidates.append((_get_mtime(p), p))
     
     if not candidates:

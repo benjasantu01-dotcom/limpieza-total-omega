@@ -843,3 +843,9 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-24T14:44:11` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen entre la iteración y el acceso a sus atributos (condición de carrera) y archivos con nombres extremadamente largos o caracteres inválidos en sistemas de archivos restringidos, utilizando un bloque `try-except` más granular y defensivo.
 - `2026-10-24T14:44:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T14:44:11` Corrida terminada. Total usado hoy: 348.
+- `2026-10-24T14:52:32` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-24T14:52:59` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de acceso a disco en la etapa de recolección de candidatos y lectura de hashes, integrando una validación explícita mediante `is_safe_to_modify` dentro de los bloques `try-except` para asegurar que archivos bloqueados, inexistentes o con permisos denegados no interrumpan el flujo de análisis.
+- `2026-10-24T14:53:28` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del sistema de métricas ante posibles valores no numéricos o `NaN` en `SystemMetrics` mediante la adición de un chequeo explícito en `_compute_cached` y `compute_score`, garantizando que la caché no reciba datos malformados que puedan provocar comportamientos impredecibles durante el cómputo del `HealthResult`.
+- `2026-10-24T14:53:28` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-24T14:53:28` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T14:53:28` Corrida terminada. Total usado hoy: 350.

@@ -364,6 +364,9 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
     Motor de cómputo cacheado del HealthResult. Evita re-procesar los mismos 
     datos de sistema idénticos entre iteraciones.
     """
+    if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in metrics_tuple):
+        return HealthResult(0, "F", {}, ["Error: Métricas no numéricas en pipeline."])
+    
     if not _PIPELINE or not isinstance(metrics_tuple, tuple):
         return HealthResult(0, "F", {}, ["Error: Pipeline o métricas no válidas."])
         
