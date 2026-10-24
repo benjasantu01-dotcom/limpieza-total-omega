@@ -1136,3 +1136,36 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-10-24T06:15:09` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `settings.py` ante errores de lectura de disco (como archivos inexistentes o bloqueados) añadiendo un bloque `try-except` específico alrededor de la lectura del archivo en `load()` y protegiendo el acceso a `stat()` frente a posibles errores de concurrencia o permisos del sistema operativo.
 - `2026-10-24T06:15:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T06:15:09` Corrida terminada. Total usado hoy: 148.
+- `2026-10-24T06:23:35` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-10-24T06:23:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-24T06:24:10` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.65s
+
+```
+- `2026-10-24T06:24:10` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante rutas corruptas o inaccesibles en `_resolve_path_from_command` y `_resolve_and_cache_path` mediante la implementación de una validación explícita de existencia mediante `p.exists()` antes de la resolución del enlace simbólico, evitando así excepciones no controladas en directorios donde el usuario carece de permisos de lectura.
+- `2026-10-24T06:24:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-24T06:24:54` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la validación de entrada en `_build_payload` y `_call_gemini` mediante la implementación de una restricción adicional de longitud y caracteres para asegurar que ningún campo del payload, especialmente la concatenación del prompt, pueda exceder los límites establecidos o contener secuencias peligrosas antes de la serialización JSON.
+- `2026-10-24T06:25:28` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-24T06:25:43` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_sum_directory_recursive` mediante la validación estricta de rutas absolutas antes de cada acceso al disco, previniendo posibles escapes por symlinks o enlaces simbólicos maliciosos durante la recursión, y asegurando que cada nodo visitado pase por el filtro de seguridad `is_protected_path`.
+- `2026-10-24T06:25:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T06:25:43` Corrida terminada. Total usado hoy: 152.

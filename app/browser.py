@@ -227,6 +227,10 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     if norm_path in scan_ctx.visited_dirs or not os.access(root_path, os.R_OK):
         return ScanResult(0, True)
     
+    # Doble chequeo de seguridad antes de procesar el directorio actual
+    if not _is_within_sandbox(norm_path, scan_ctx.sandbox_base_norm) or is_protected_path(Path(root_path)):
+        return ScanResult(0, True)
+    
     scan_ctx.visited_dirs.add(norm_path)
     total_bytes = 0
     try:
