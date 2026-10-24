@@ -392,7 +392,6 @@ class SystemContext:
     def active_problems(self) -> tuple[str, ...]:
         """Evalúa los criterios de salud contra los datos actuales y retorna los problemas activos."""
         if not self.analyzed: return ()
-        # Convertimos a tupla ordenada para que el lru_cache de la función sea efectivo
         return _evaluate_active_problems(tuple(sorted(self.metrics_snapshot.items())))
 
     @cached_property
@@ -421,12 +420,11 @@ class SystemContext:
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
-        val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-        if val is None or _is_nan_or_inf(val) or isinstance(val, bool): return None
         try:
+            val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+            if val is None or _is_nan_or_inf(val) or isinstance(val, bool): return None
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
-            if valid_val is None: return None
-            return spec.type_hint(valid_val)
+            return spec.type_hint(valid_val) if valid_val is not None else None
         except (ValueError, TypeError, Exception):
             return None
 
@@ -465,12 +463,15 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
-        if not self._validate_ingestion_source(source): 
+        try:
+            if not self._validate_ingestion_source(source): 
+                return False
+            updates = self._validate_and_sanitize_data(source)
+            if not updates: return False
+            self._apply_updates(updates)
+            return True
+        except Exception:
             return False
-        updates = self._validate_and_sanitize_data(source)
-        if not updates: return False
-        self._apply_updates(updates)
-        return True
 
 @dataclass
 class Answer:
