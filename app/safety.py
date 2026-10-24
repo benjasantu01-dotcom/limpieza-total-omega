@@ -449,15 +449,14 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
 
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
-    """Verifica el estado de escritura del volumen raíz."""
+    """Verifica el estado de escritura del volumen raíz, ignorando rutas de red."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
+    if _is_unc_path(path_str): return False
     try:
         drive = os.path.splitdrive(path_str)[0]
-        if not drive: return False
-        root = drive + "\\"
-        if not os.path.exists(root): return False
+        if not drive or not os.path.exists(drive + "\\"): return False
         flags = ctypes.c_ulong()
-        if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
+        if ctypes.windll.kernel32.GetVolumeInformationW(drive + "\\", None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & 0x80000)
     except (AttributeError, OSError, ctypes.ArgumentError): pass
     return False

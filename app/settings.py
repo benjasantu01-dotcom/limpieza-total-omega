@@ -173,12 +173,13 @@ class _SettingsManager:
         Realiza una escritura atómica mediante un archivo temporal y fsync para 
         asegurar la integridad de los datos, evitando la corrupción ante fallos.
         """
-        if not isinstance(serialized, str): return False
+        if not isinstance(serialized, str) or len(str(config_path)) > 260: return False
         try:
             resolved_path = config_path.resolve()
             if is_protected_path(str(resolved_path)) or not is_safe_to_modify(str(resolved_path)): return False
             if resolved_path.exists():
                 st = resolved_path.stat()
+                # Verificar que sea un archivo regular y no un enlace (nlink=1)
                 if st.st_nlink != 1 or not stat.S_ISREG(st.st_mode): return False
             
             temp_path = resolved_path.with_suffix(".tmp")
@@ -247,7 +248,7 @@ class _Validators:
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
         """Valida que la cadena sea una ruta absoluta, libre de caracteres de control y fuera de zonas protegidas."""
-        if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
+        if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         if is_protected_path(path_str): return False
         try:
@@ -281,7 +282,7 @@ class _Validators:
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
-        if not path_string or "\0" in path_string or len(path_string) > 2048: return None
+        if not path_string or "\0" in path_string or len(path_string) > 260: return None
         return path_string if _Validators._is_safe_path(path_string) else None
 
     @staticmethod
@@ -350,6 +351,7 @@ def _is_file_secure_to_read(st: os.stat_result) -> bool:
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Carga, verifica y parsea el archivo JSON de configuración con mitigación TOCTOU."""
     try:
+        if len(str(file_path)) > 260: return None
         resolved = file_path.resolve()
         if not resolved.exists() or not resolved.is_file(): return None
         if is_protected_path(str(resolved)) or not is_safe_to_modify(str(resolved)): return None
