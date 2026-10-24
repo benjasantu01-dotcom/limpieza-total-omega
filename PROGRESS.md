@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 38 | 2 | 11 | 2 | 53 |
+| 2026-10-22 | 38 | 2 | 11 | 2 | 49 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 26 | 2 | 7 | 1 | 12 |
+| 2026-10-24 | 27 | 2 | 7 | 1 | 15 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **45**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **40**
 - rendimiento: **34**
 
@@ -33,7 +33,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `browser.py`: **20**
 - `assistant.py`: **19**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `safety.py`: **16**
 - `scanner.py`: **16**
 - `settings.py`: **16**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T02:15:54` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` reforzando la validación de rutas mediante `os.path.realpath` para prevenir evasiones mediante enlaces simbólicos o rutas relativas, asegurando que el ejecutable analizado sea resuelto canónicamente antes de compararlo con `is_protected_path`.
 - `2026-10-24T02:00:38` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad en `walk_files` y `_is_excluded_path` para prevenir la resolución de rutas fuera del ámbito permitido (jail-break) mediante la validación estricta de `resolve()` y el uso de `path_obj.parts` para evitar manipulaciones mediante caracteres de control o intentos de escape, asegurando que `diskreport.py` sea robusto frente a rutas maliciosas.
 - `2026-10-24T02:00:26` **browser.py** (seguridad defensiva): Reforcé la seguridad de `_is_valid_cache_path` añadiendo una verificación explícita mediante `is_safe_to_modify` sobre la ruta resuelta, garantizando que ninguna ruta de sistema sea procesada accidentalmente incluso si supera los chequeos de sandbox previos.
 - `2026-10-24T01:59:44` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación adicional mediante `ensure_safe_to_modify` antes de escribir en disco, garantizando que el flujo de salida cumpla con las políticas de protección de rutas incluso tras la verificación inicial booleana.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T00:59:32` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y filtrado de la lista completa de procesos en memoria por un generador eficiente que utiliza `heapq` para mantener solo los N elementos más pesados, reduciendo la presión sobre el recolector de basura y el uso de RAM.
 - `2026-10-24T00:58:58` **main.py** (rendimiento): Implementé la carga perezosa de los componentes de salud (`_lazy_init_health_ui`) en la pestaña "Salud", evitando que los widgets de las barras de progreso y tarjetas de métricas se instancien innecesariamente durante el inicio de la aplicación o si el usuario nunca accede a dicha pestaña, reduciendo así la huella de memoria y el tiempo de renderizado inicial.
 - `2026-10-24T00:51:03` **healthscore.py** (rendimiento): Optimicé el cálculo del score eliminando la reconstrucción innecesaria del objeto `SystemMetrics` dentro de `_calculate_area_contribution`, utilizando directamente la tupla de métricas para evitar llamadas a `__post_init__` y validaciones redundantes en cada paso del pipeline.
-- `2026-10-24T00:50:20` **duplicates.py** (rendimiento): Se optimizó el rendimiento de `_collect_candidates` mediante la utilización de un generador en el filtrado inicial, evitando la creación de listas intermedias y reduciendo la presión sobre el recolector de basura al procesar directorios grandes.

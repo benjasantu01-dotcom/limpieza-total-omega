@@ -336,17 +336,18 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
     if not exe_str: 
         return False
         
-    executable_path = Path(exe_str)
     try:
+        # Resolver ruta canónica para evitar ataques mediante enlaces simbólicos
+        executable_path = Path(os.path.realpath(exe_str))
         if not executable_path.exists(): 
             return False
             
-        # Validación de punteros simbólicos y protección de ruta con resiliencia a errores de E/S
+        # Validación de puntos de reparse (junctions/symlinks detectados por stat)
         file_stat = executable_path.stat()
-        if (file_stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT) or executable_path.is_symlink():
+        if (file_stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
             return False
             
-        return not is_protected_path(executable_path.resolve())
+        return not is_protected_path(executable_path)
     except (OSError, AttributeError, RuntimeError, ValueError, TypeError):
         return False
 
