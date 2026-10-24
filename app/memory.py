@@ -328,11 +328,9 @@ def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CD
     return None
 
 def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL) -> bool:
-    """
-    Verifica que el ejecutable del proceso resida en una ruta autorizada.
-    Requiere handle de proceso con permisos de consulta.
-    """
-    if not handle or not hasattr(psapi, "GetModuleFileNameExW"): return False
+    """Verifica que el ejecutable del proceso resida en una ruta autorizada."""
+    if not handle or not hasattr(psapi, "GetModuleFileNameExW"): 
+        return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
@@ -342,22 +340,19 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
         return False
     
     exe_str = buffer_path.value.strip()
-    if not exe_str: return False
+    if not exe_str: 
+        return False
+        
+    executable_path = Path(exe_str)
+    if not executable_path.exists(): 
+        return False
         
     try:
-        executable_path = Path(exe_str)
-        if not executable_path.exists(): return False
-        
-        try:
-            st = executable_path.stat()
-            if executable_path.is_symlink() or (st.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
-                return False
-        except (OSError, AttributeError):
+        # Validación de punteros simbólicos y protección de ruta
+        if executable_path.is_symlink() or (executable_path.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
             return False
-            
-        abs_path = executable_path.resolve()
-        return not is_protected_path(abs_path)
-    except (OSError, RuntimeError, ValueError, TypeError):
+        return not is_protected_path(executable_path.resolve())
+    except (OSError, AttributeError, RuntimeError, ValueError, TypeError):
         return False
 
 def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
@@ -366,20 +361,22 @@ def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: 
         return None
 
     proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
-    if proc_handle is None:
+    if not proc_handle:
         return None
     
     try:
         ws = _query_working_set_bytes(pid, proc_handle, psapi, pmc)
-        if ws is not None and ws > (10 * BYTES_IN_MB):
-            if not _is_process_executable_safe(pid, proc_handle, psapi):
-                return None
-        return ProcessMemory(f"PID {pid}", pid, ws) if ws is not None else None
+        if ws is None or ws <= (10 * BYTES_IN_MB):
+            return None
+            
+        if not _is_process_executable_safe(pid, proc_handle, psapi):
+            return None
+            
+        return ProcessMemory(f"PID {pid}", pid, ws)
     except (ctypes.WinError, OSError, ValueError, RuntimeError):
         return None
     finally:
-        if proc_handle is not None and proc_handle != INVALID_HANDLE_VALUE:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)
 
 def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos activos del sistema aplicando filtros de seguridad."""
@@ -394,8 +391,7 @@ def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS
         count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
         for i in range(count):
             try:
-                pid_val = int(pids[i])
-                proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
+                proc = _process_from_pid(int(pids[i]), kernel32, psapi, pmc)
                 if proc:
                     yield proc
             except (ValueError, TypeError, Exception):

@@ -237,7 +237,9 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Orquestador de seguridad: valida identidad, protección, bloqueos y espacio antes de E/S.
-    Usa chequeos booleanos y ensure_safe_to_modify para garantizar aislamiento del destino.
+    
+    Verifica que el archivo no sea de sistema, no esté bloqueado por procesos 
+    activos y que el destino sea una ruta segura (pasando por `ensure_safe_to_modify`).
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -324,7 +326,12 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve archivos validados a la carpeta de revisión manteniendo integridad de ruta."""
+    """
+    Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
+    
+    Aplica filtros de seguridad `is_safe_to_modify` sobre el directorio destino 
+    y cada archivo, utilizando `shutil.move` para asegurar integridad atómica.
+    """
     if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
         return None
     try:
@@ -361,7 +368,9 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina físicamente los archivos validados tras aplicar chequeos de seguridad.
-    Solo opera sobre archivos, evitando recursión accidental.
+    
+    Se asegura de operar únicamente dentro de `review_dir` (previene escapes de ruta) 
+    y verifica `is_safe_to_modify` para cada archivo antes de ejecutar `unlink()`.
     """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
