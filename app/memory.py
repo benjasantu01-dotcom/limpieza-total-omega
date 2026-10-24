@@ -53,13 +53,14 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
-# Máscaras de acceso Win32 para interactuar con el subsistema de procesos:
-# QUERY_LIMITED_INFORMATION: Mínimo privilegio para obtener info básica sin elevar.
-# SET_QUOTA | QUERY_INFORMATION: Privilegios necesarios para llamar a EmptyWorkingSet.
+# Máscaras de acceso Win32:
+# 0x0400 (PROCESS_QUERY_INFORMATION): Requerido para leer memoria.
+# 0x1000 (PROCESS_QUERY_LIMITED_INFORMATION): Acceso mínimo para PIDs de sistema.
+# 0x020000 | 0x0400 (PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION): Privilegios para EmptyWorkingSet.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
-TRIM_ACCESS_MASK: Final[int] = 0x00020000 | PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION
+TRIM_ACCESS_MASK: Final[int] = 0x020000 | PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION
 
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
 INVALID_HANDLE_VALUE: Final[int] = -1
@@ -111,8 +112,8 @@ class MEMORYSTATUSEX(ctypes.Structure):
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
     """Estructura para la API GetProcessMemoryInfo de Windows (detalle de proceso)."""
-    _fields_: List[Tuple[str, Any]] = [
-        ("cb", ctypes.c_size_t),
+    _fields_: List[Tuple[str, ctypes.c_size_t | wintypes.DWORD]] = [
+        ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
         ("PeakWorkingSetSize", ctypes.c_size_t),
         ("WorkingSetSize", ctypes.c_size_t),

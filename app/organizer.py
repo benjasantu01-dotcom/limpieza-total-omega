@@ -162,7 +162,10 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _try_open_win_file(path: Path) -> bool:
-    """Usa CreateFileW para testear acceso exclusivo (archivo bloqueado)."""
+    """
+    Intenta abrir un archivo en Windows usando acceso de solo lectura compartido 
+    para determinar si otro proceso mantiene un bloqueo exclusivo.
+    """
     try:
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0x00000001, None, 3, 0x00000080, None
@@ -211,7 +214,10 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
     return bool(_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK)
 
 def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
-    """Verifica que el archivo actual coincide con los metadatos capturados al inicio."""
+    """
+    Verifica mediante inodos y dispositivos que el archivo físico en disco 
+    sigue siendo la misma entidad que el objeto `JunkFile` capturado originalmente.
+    """
     try:
         stat_result = src_real.stat()
         return (junk_file._ino is None or stat_result.st_ino == junk_file._ino) and \
@@ -220,7 +226,7 @@ def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
         return False
 
 def _can_write_to_destination(dest_real: Path, size: int) -> bool:
-    """Comprueba disponibilidad de espacio y permisos usando APIs de bajo nivel."""
+    """Comprueba disponibilidad de espacio y permisos de escritura mediante APIs de sistema."""
     target_dir = dest_real.parent if dest_real.exists() else dest_real
     if not target_dir.is_dir() or not os.access(target_dir, os.W_OK):
         return False
@@ -237,8 +243,8 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Orquestador maestro de seguridad para E/S: valida rutas, permisos y bloqueos
-    antes de realizar cualquier movimiento de archivo.
+    Orquestador de seguridad para E/S: realiza validaciones encadenadas para 
+    asegurar que mover el archivo no viole la integridad del sistema ni la seguridad del usuario.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
