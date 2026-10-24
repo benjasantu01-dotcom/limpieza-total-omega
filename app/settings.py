@@ -172,10 +172,13 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
         Realiza una escritura atómica mediante un archivo temporal y fsync para 
-        asegurar la integridad de los datos, evitando la corrupción ante fallos.
+        asegurar la integridad de los datos, verificando permisos del directorio padre.
         """
         if not isinstance(serialized, str) or len(str(config_path)) > 260: return False
         try:
+            parent_dir = config_path.parent
+            if not parent_dir.exists() or not os.access(parent_dir, os.W_OK): return False
+            
             resolved_path = config_path.resolve()
             if is_protected_path(str(resolved_path)) or not is_safe_to_modify(str(resolved_path)): return False
             if resolved_path.exists():

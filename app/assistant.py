@@ -332,6 +332,7 @@ def _validate_response_length(text: Any) -> str:
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     """Verifica de forma recursiva que la estructura de datos sea segura y contenga solo tipos permitidos."""
     if depth > _MAX_NESTING_DEPTH: return False
+    # Permitir únicamente tipos atómicos básicos
     if val is None or isinstance(val, (int, float, bool, str)): return True
     if isinstance(val, (list, tuple, set)):
         if len(val) > _MAX_COLLECTION_SIZE: return False

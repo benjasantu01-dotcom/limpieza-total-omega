@@ -345,17 +345,16 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     try:
         dest_path = Path(destination).resolve()
         
-        # Validación de seguridad proactiva antes de intentar cualquier operación
-        if not is_safe_to_modify(dest_path):
-            return None
-            
+        # Validación: no permitir escribir si es un directorio existente
         if dest_path.is_dir(): return None
+        
+        # Validación de seguridad: el padre debe ser seguro
         parent = dest_path.parent
+        if not is_safe_to_modify(parent):
+            return None
+        
         if not parent.exists():
-            try:
-                parent.mkdir(parents=True, exist_ok=True)
-            except (OSError, PermissionError):
-                return None
+            parent.mkdir(parents=True, exist_ok=True)
             
         # Asegurar explícitamente que la ruta final es segura antes de escribir
         ensure_safe_to_modify(dest_path)

@@ -453,3 +453,12 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-24T10:40:19` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-10-24T10:40:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T10:40:19` Corrida terminada. Total usado hoy: 252.
+- `2026-10-24T10:48:19` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-10-24T10:49:16` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos mediante la implementación de una validación de existencia y permisos de escritura en la carpeta contenedora antes de cualquier intento de persistencia.
+- `2026-10-24T10:49:42` ➖ Sin cambios en startup.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una validación robusta contra errores de permiso y denegación de acceso en `entries_from_folders` mediante un bloque `try-except` más granular y una comprobación de existencia más segura, evitando que la iteración se detenga prematuramente ante carpetas bloqueadas o inaccesibles del sistema.
+- `2026-10-24T10:50:24` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad de `assistant.py` implementando un chequeo explícito de integridad en `_is_safe_payload_structure` para detectar recursiones profundas o tipos de datos maliciosos en el `json` antes de enviarlo, evitando posibles ataques de inyección mediante serialización de objetos complejos.
+- `2026-10-24T10:50:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-24T10:50:37` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-24T10:51:00` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha robustecido `save_logo_svg` implementando una validación de seguridad de doble capa: primero, se asegura de que el directorio padre exista y sea seguro mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, y segundo, se garantiza que la ruta resuelta no sea un directorio ni un enlace simbólico que apunte fuera de las áreas permitidas.
+- `2026-10-24T10:51:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T10:51:00` Corrida terminada. Total usado hoy: 256.

@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 207
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 100 | 10 | 23 | 7 | 112 |
-| 2026-10-24 | 107 | 11 | 29 | 10 | 95 |
+| 2026-10-23 | 100 | 10 | 23 | 7 | 108 |
+| 2026-10-24 | 110 | 11 | 29 | 11 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **45**
 - rendimiento: **40**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
 - `diskreport.py`: **18**
-- `assistant.py`: **16**
+- `assistant.py`: **17**
 - `browser.py`: **16**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
 - `scanner.py`: **16**
 - `organizer.py`: **15**
+- `settings.py`: **15**
 - `healthscore.py`: **14**
-- `settings.py`: **14**
+- `branding.py`: **13**
 - `duplicates.py`: **13**
-- `branding.py`: **12**
 - `main.py`: **10**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T10:51:00` **branding.py** (seguridad defensiva): Se ha robustecido `save_logo_svg` implementando una validación de seguridad de doble capa: primero, se asegura de que el directorio padre exista y sea seguro mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, y segundo, se garantiza que la ruta resuelta no sea un directorio ni un enlace simbólico que apunte fuera de las áreas permitidas.
+- `2026-10-24T10:50:24` **assistant.py** (seguridad defensiva): Reforcé la seguridad de `assistant.py` implementando un chequeo explícito de integridad en `_is_safe_payload_structure` para detectar recursiones profundas o tipos de datos maliciosos en el `json` antes de enviarlo, evitando posibles ataques de inyección mediante serialización de objetos complejos.
+- `2026-10-24T10:49:16` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos mediante la implementación de una validación de existencia y permisos de escritura en la carpeta contenedora antes de cualquier intento de persistencia.
 - `2026-10-24T10:30:27` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` frente a condiciones de carrera (time-of-check to time-of-use) mediante el uso de `pathlib.Path.is_relative_to` (reemplazando lógica manual propensa a errores) y una verificación estricta de existencia post-validación, además de asegurar que `shutil.move` se ejecute solo si la ruta de destino es absoluta y pre-verificada.
 - `2026-10-24T10:30:10` **memory.py** (robustez ante casos límite): Mejora la robustez ante rutas de procesos inexistentes o inaccesibles al invocar `GetModuleFileNameExW` en `_is_process_executable_safe`, añadiendo un chequeo explícito de longitud y manejo de errores para evitar accesos a memoria inválida o rutas truncadas en entornos de alta concurrencia.
 - `2026-10-24T10:28:27` **healthscore.py** (robustez ante casos límite): Se ha añadido una protección robusta en `SystemMetrics.validate` para asegurar que, ante cualquier desbordamiento numérico o valor extremo no capturado por los límites, la métrica resultante no solo sea un número finito, sino que el sistema de puntuación no colapse, previniendo errores de división por cero o resultados `NaN` en el pipeline.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T09:59:33` **safety.py** (rendimiento): Optimicé el rendimiento de `_evaluate_security_rules` reemplazando la lógica de validación secuencial completa por un `any` con `generator expression` y moví la creación de `SecurityDescriptor` detrás del chequeo de caché para evitar llamadas costosas a la API de Windows cuando la ruta ya ha sido validada exitosamente en la misma iteración.
 - `2026-10-24T09:58:32` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` evitando lecturas repetidas de disco mediante la consolidación del caché de hashes usando una tupla `(path, mtime, size)`, reduciendo drásticamente la I/O en validaciones masivas.
 - `2026-10-24T09:57:50` **organizer.py** (rendimiento): Optimizé el rendimiento del escaneo reemplazando la evaluación repetitiva de `tuple(JUNK_EXTENSIONS)` dentro del loop principal por el uso directo del conjunto pre-compilado `JUNK_EXTENSIONS`, y reduciendo llamadas redundantes a `Path.resolve()` en el proceso recursivo.
-- `2026-10-24T09:49:29` **memory.py** (rendimiento): Optimizé la performance del módulo `memory.py` sustituyendo la lógica recursiva y la iteración ineficiente sobre el array de PIDs por una búsqueda más directa, además de reducir el uso de `getattr` dentro de bucles críticos, mejorando la velocidad de lectura de procesos en sistemas con muchos programas activos.
-- `2026-10-24T09:48:11` **healthscore.py** (rendimiento): Optimicé el rendimiento reduciendo la redundancia en `_compute_cached` mediante la eliminación del cálculo repetido de `metrics.is_finite` y el acceso directo a los campos, aprovechando que el cacheo ya garantiza la integridad de los datos de entrada.
-- `2026-10-24T09:47:39` **duplicates.py** (rendimiento): Optimicé el rendimiento del proceso de hashing evitando llamadas innecesarias al sistema de archivos mediante el uso de `os.stat` ya disponible durante la fase de recolección, y eliminando comprobaciones de seguridad redundantes en `hash_file` y `partial_hash` cuando el path ya fue validado en el filtrado inicial.
