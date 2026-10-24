@@ -805,28 +805,31 @@ def is_drive_root(path: PathLike) -> bool:
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
     """
-    Determina si la ruta reside en una zona protegida del sistema.
-    Optimizado: realiza comparación por partes para evitar E/S innecesaria.
+    Determina si la ruta reside en una zona protegida del sistema mediante
+    verificaciones estructurales, de nombre y atributos.
     """
     if not isinstance(path, (str, Path)) or not path: return True
-    path_norm = os.path.normcase(os.path.abspath(str(path)))
-    path_parts = Path(path_norm).parts
-            
-    # 1. Chequeo de ancestros contra rutas raíz del sistema
-    for root in _SYSTEM_ROOT_PATHS:
-        if path_norm.startswith(root):
+    
+    try:
+        norm_str = os.path.normcase(os.path.abspath(str(path)))
+        parts = Path(norm_str).parts
+        
+        # 1. Protección por jerarquía estricta
+        if any(norm_str.startswith(r) for r in _SYSTEM_ROOT_PATHS):
             return True
             
-    # 2. Chequeo por nombre de directorio sensible
-    if not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in path_parts}):
-        return True
+        # 2. Protección por lista negra de nombres de directorio
+        if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in parts):
+            return True
         
-    # 3. Atributos de archivos ocultos/sistema (E/S mínima)
-    attrs = _get_file_attrs(path_norm)
-    if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
-        return True
+        # 3. Protección por atributos de sistema
+        attrs = _get_file_attrs(norm_str)
+        if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
+            return True
             
-    return len(path_parts) <= 1
+        return len(parts) <= 1
+    except (OSError, AttributeError, ValueError):
+        return True
 
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:

@@ -93,27 +93,31 @@ def _check_path_for_junctions(path: Path) -> None:
     """
     _check_for_reparse_points(path)
 
+def _win_has_system_attributes(path: Path) -> bool:
+    """Consulta atributos críticos (OCULTO/SISTEMA) en Windows vía Win32 API."""
+    if os.name != 'nt': return False
+    try:
+        attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        # 0x02: HIDDEN, 0x04: SYSTEM, 0x100: TEMPORARY
+        return attrs != -1 and bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
+    except (OSError, AttributeError):
+        return True
+
 def _verify_source_fs_permissions(path: Path) -> None:
     """
     Valida que la ruta origen sea un archivo estándar local y no esté en una ruta UNC.
-    Las rutas UNC introducen riesgos de seguridad al conectarse a recursos de red remotos.
     """
     p_str: str = str(path)
     if p_str.startswith(r"\\") or p_str.startswith("//"):
         raise UnsafePathError("Operaciones en rutas UNC no permitidas.")
     _check_path_for_junctions(path)
-    if os.name == 'nt':
-        try:
-            attrs: int = ctypes.windll.kernel32.GetFileAttributesW(p_str)
-            if attrs != -1 and (attrs & 0x02 or attrs & 0x04 or attrs & 0x100):
-                raise UnsafePathError("Archivo protegido por atributos de sistema o temporal.")
-        except (OSError, AttributeError):
-            pass
+    if _win_has_system_attributes(path):
+        raise UnsafePathError("Archivo protegido por atributos de sistema o temporal.")
 
 def _is_filesystem_read_only(path: Path) -> bool:
     """
     Determina si un directorio es de solo lectura mediante una prueba de creación.
-    Este método es más confiable que 'os.access' en escenarios de sistemas de archivos virtuales.
+    Este método es más confiable que 'os.access' en sistemas de archivos virtuales.
     """
     if not path.exists(): return True
     if not os.access(path, os.W_OK):
@@ -129,7 +133,7 @@ def _is_filesystem_read_only(path: Path) -> bool:
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """
     Ejecuta una función de I/O con reintento exponencial ante bloqueos transitorios.
-    El uso de reintentos ayuda a manejar bloqueos temporales típicos de antivirus.
+    Mitiga bloqueos temporales típicos durante escaneos de otros antivirus.
     """
     max_retries: int = 3
     for i in range(max_retries):
@@ -140,15 +144,6 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
                 raise e
             time.sleep(0.1 * (2 ** i))
     raise RuntimeError("Fallo inesperado en reintentos de I/O.")
-
-def _win_has_system_attributes(path: Path) -> bool:
-    """Consulta atributos de sistema (OCULTO/SISTEMA) en Windows vía Win32 API."""
-    if os.name != 'nt': return False
-    try:
-        attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        return attrs != -1 and bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
-    except (OSError, AttributeError):
-        return True
 
 def _is_file_exclusive(path: Path) -> bool:
     """
@@ -296,7 +291,7 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_in_use_by_system(path: Path) -> bool:
-    """Verifica si el archivo está siendo bloqueado por procesos externos o atributos críticos."""
+    """Verifica si el archivo está siendo bloqueado por procesos o atributos críticos."""
     if not path.exists():
         return False
     
@@ -479,11 +474,6 @@ def _validate_quarantine_path(path: Path, base: Path) -> Path:
         raise UnsafePathError("Acceso fuera del sandbox detectado.")
     return path
 
-def _check_windows_file_attributes(path: Path) -> None:
-    """Bloquea archivos con atributos de sistema/ocultos en Windows."""
-    if _win_has_system_attributes(path):
-        raise UnsafePathError("Archivo con atributos del sistema/oculto no permitido.")
-
 def _check_device_consistency(source: Path, target_directory: Path) -> None:
     """Verifica que el origen y destino residan en el mismo volumen (Atomicidad)."""
     try:
@@ -543,7 +533,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
         raise UnsafePathError("Destino de cuarentena debe ser un directorio.")
     
     _check_path_syntax_integrity(source_path)
-    _check_windows_file_attributes(source_path)
+    _verify_source_fs_permissions(source_path)
     _check_for_reparse_points(source_path)
     
     try:
@@ -665,7 +655,7 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("Directorio destino no seguro.")
     _check_device_consistency(source, destination.parent.resolve())
-    _check_windows_file_attributes(destination)
+    _verify_source_fs_permissions(destination)
     if not source.is_file():
         raise OSError("Archivo origen inaccesible.")
     
@@ -796,7 +786,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     
-    # Nueva validación de seguridad contra archivos de sistema/ocultos persistentes
     if _win_has_system_attributes(source):
         raise UnsafePathError("Aislamiento bloqueado: archivo de sistema detectado.")
     
