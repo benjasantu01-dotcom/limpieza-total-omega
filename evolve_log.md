@@ -691,3 +691,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-24T01:34:10` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-10-24T01:34:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T01:34:10` Corrida terminada. Total usado hoy: 36.
+- `2026-10-24T01:38:31` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-10-24T01:39:01` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó `_is_process_executable_safe` añadiendo una validación explícita mediante `try-except` envolviendo la lectura de atributos de archivo para prevenir excepciones ante archivos bloqueados o inaccesibles, asegurando que el módulo sea robusto frente a errores de E/S durante el inventario de procesos.
+- `2026-10-24T01:39:26` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-24T01:40:08` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de redundancia en la función `_atomic_isolate_file` para verificar la existencia del archivo de destino antes de intentar escribir, mitigando una condición de carrera (race condition) donde el archivo podría ser recreado por otro proceso justo antes de la operación de `os.replace`.
+- `2026-10-24T01:40:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-24T01:40:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T01:40:11` Corrida terminada. Total usado hoy: 40.

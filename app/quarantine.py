@@ -726,6 +726,11 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
     
     try:
         _perform_secure_copy(source, temp_dest, source_hash)
+        
+        # Doble chequeo de existencia antes de reemplazar
+        if destination.exists():
+             raise FileExistsError("Colisión de ruta detectada antes del reemplazo.")
+             
         os.replace(temp_dest, destination)
         
         try:
