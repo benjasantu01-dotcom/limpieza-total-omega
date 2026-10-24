@@ -322,14 +322,14 @@ def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CD
         return None
     return None
 
-def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL) -> bool:
+def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL, get_filename_func: Any) -> bool:
     """Valida la seguridad de la ruta del ejecutable del proceso dado."""
-    if handle is None or not hasattr(psapi, "GetModuleFileNameExW"): 
+    if handle is None: 
         return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
-        if psapi.GetModuleFileNameExW(handle, None, buffer_path, 4096) <= 0:
+        if get_filename_func(handle, None, buffer_path, 4096) <= 0:
             return False
     except (ctypes.WinError, OSError):
         return False
@@ -351,7 +351,7 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
     except (OSError, AttributeError, RuntimeError, ValueError, TypeError):
         return False
 
-def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
+def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS, get_filename_func: Any) -> Optional[ProcessMemory]:
     """Helper para crear ProcessMemory verificando seguridad y accesibilidad."""
     if _is_system_process(pid):
         return None
@@ -365,7 +365,7 @@ def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: 
         if ws is None or ws <= (10 * BYTES_IN_MB):
             return None
             
-        if not _is_process_executable_safe(pid, proc_handle, psapi):
+        if not _is_process_executable_safe(pid, proc_handle, psapi, get_filename_func):
             return None
             
         return ProcessMemory(f"PID {pid}", pid, ws)
@@ -374,26 +374,23 @@ def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: 
     finally:
         kernel32.CloseHandle(proc_handle)
 
-def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
+def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS, get_filename_func: Any) -> Iterator[ProcessMemory]:
     """Enumera todos los procesos y filtra aquellos que consumen RAM significante."""
     MAX_PIDS = 4096
     pids = (wintypes.DWORD * MAX_PIDS)()
     cb_needed = wintypes.DWORD(0)
     
-    try:
-        if not psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-            return
+    if not psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+        return
             
-        count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
-        for i in range(count):
-            pid = int(pids[i])
-            if _is_system_process(pid):
-                continue
-            proc = _process_from_pid(pid, kernel32, psapi, pmc)
-            if proc:
-                yield proc
-    except Exception:
-        pass
+    count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
+    for i in range(count):
+        pid = int(pids[i])
+        if _is_system_process(pid):
+            continue
+        proc = _process_from_pid(pid, kernel32, psapi, pmc, get_filename_func)
+        if proc:
+            yield proc
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna lista de los procesos más pesados (caché de 60 segundos)."""
@@ -403,11 +400,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
         try:
-            if not hasattr(ctypes, "windll"): return []
             kernel32 = ctypes.windll.kernel32
             psapi = ctypes.windll.psapi
             pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
-            candidates = heapq.nlargest(limit, _iter_process_memory(kernel32, psapi, pmc))
+            get_filename_func = psapi.GetModuleFileNameExW
+            candidates = heapq.nlargest(limit, _iter_process_memory(kernel32, psapi, pmc, get_filename_func))
             _CACHE_TOP_PROC = CacheEntry(now, candidates)
         except (AttributeError, OSError):
             pass
@@ -472,7 +469,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
         
-        if not _is_process_executable_safe(target_pid, proc_handle, psapi):
+        if not _is_process_executable_safe(target_pid, proc_handle, psapi, psapi.GetModuleFileNameExW):
             return False, "Proceso protegido o ubicación insegura."
             
         if psapi.EmptyWorkingSet(proc_handle) == 0:

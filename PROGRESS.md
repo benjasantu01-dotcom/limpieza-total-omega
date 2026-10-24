@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 15
+- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 113 | 11 | 25 | 7 | 120 |
-| 2026-10-24 | 92 | 8 | 27 | 8 | 93 |
+| 2026-10-23 | 111 | 10 | 24 | 7 | 120 |
+| 2026-10-24 | 95 | 8 | 27 | 9 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **48**
 - legibilidad y documentación: **45**
-- rendimiento: **32**
-- robustez ante casos límite: **31**
+- rendimiento: **35**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **20**
 - `diskreport.py`: **19**
-- `memory.py`: **19**
-- `safety.py`: **16**
 - `assistant.py`: **16**
 - `browser.py`: **16**
 - `quarantine.py`: **16**
 - `scanner.py`: **16**
-- `settings.py`: **15**
+- `safety.py`: **15**
+- `settings.py`: **14**
+- `duplicates.py`: **13**
+- `healthscore.py`: **13**
 - `organizer.py`: **13**
 - `startup.py`: **12**
 - `branding.py`: **12**
-- `duplicates.py`: **12**
-- `healthscore.py`: **12**
 - `main.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T09:49:29` **memory.py** (rendimiento): Optimizé la performance del módulo `memory.py` sustituyendo la lógica recursiva y la iteración ineficiente sobre el array de PIDs por una búsqueda más directa, además de reducir el uso de `getattr` dentro de bucles críticos, mejorando la velocidad de lectura de procesos en sistemas con muchos programas activos.
+- `2026-10-24T09:48:11` **healthscore.py** (rendimiento): Optimicé el rendimiento reduciendo la redundancia en `_compute_cached` mediante la eliminación del cálculo repetido de `metrics.is_finite` y el acceso directo a los campos, aprovechando que el cacheo ya garantiza la integridad de los datos de entrada.
+- `2026-10-24T09:47:39` **duplicates.py** (rendimiento): Optimicé el rendimiento del proceso de hashing evitando llamadas innecesarias al sistema de archivos mediante el uso de `os.stat` ya disponible durante la fase de recolección, y eliminando comprobaciones de seguridad redundantes en `hash_file` y `partial_hash` cuando el path ya fue validado en el filtrado inicial.
 - `2026-10-24T09:38:49` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso de `relative_to` (que realiza múltiples comprobaciones de ruta) dentro del bucle principal, utilizando `path.parts` directamente para identificar la subcarpeta de primer nivel y reduciendo el costo de memoria y CPU.
 - `2026-10-24T09:37:41` **assistant.py** (rendimiento): Optimicé el rendimiento de `context_as_text` reemplazando la creación de una tupla intermedia costosa y el filtrado redundante por una operación de generación directa sobre `metrics_snapshot`, aprovechando la estructura ya validada del objeto.
 - `2026-10-24T09:28:50` **startup.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de funciones, se clarificó la documentación de los métodos de la clase `StartupEntry` y se refactorizó la lógica de validación en `_validate_file_access` para mejorar la legibilidad y asegurar una jerarquía de chequeos más coherente.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T09:06:56` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad del código y la seguridad de tipos añadiendo `docstrings` completos con los detalles necesarios para el equipo, clarificando las responsabilidades de los acumuladores `ExtStats` y `FolderMetrics` mediante type hints explícitos.
 - `2026-10-24T08:58:10` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, normalización del estilo de docstrings y la simplificación de la lógica de recursión mediante la extracción del chequeo de profundidad, cumpliendo con los estándares de calidad del proyecto.
 - `2026-10-24T08:57:23` **assistant.py** (legibilidad y documentación): Se introdujeron type hints explícitos en variables de ámbito local y parámetros de funciones críticas para mejorar la legibilidad y la documentación, además de documentar los propósitos de las clases `MetricSpec` y `ProblemCriterion` con docstrings más precisos.
-- `2026-10-24T08:48:02` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación temprana y exhaustiva en `_read_and_parse_json` para capturar errores de tipo y contenido antes de procesar el JSON, y optimicé el manejo de excepciones en `_load_impl` para evitar el silenciamiento excesivo de errores operativos, garantizando que ante cualquier anomalía se retorne el estado seguro (`DEFAULTS`).
-- `2026-10-24T08:47:45` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` mediante la validación proactiva de la entrada y la captura de errores en la inicialización, evitando que rutas malformadas o inaccesibles provoquen fallos silenciosos durante la recursión.
-- `2026-10-24T08:47:17` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_locked_by_other_process` y `_get_file_id` integrando la captura de `OSError` y `PermissionError` ante errores de acceso a bajo nivel, asegurando que el módulo gestione excepciones de E/S de manera explícita sin abortar el flujo de la aplicación.
