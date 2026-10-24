@@ -161,10 +161,10 @@ class _SettingsManager:
         self.path_cache: dict[Optional[str], Path] = {}
         self._cached_settings: Optional[AppSettings] = None
         self._last_mtime: float = 0.0
+        self._last_size: int = 0
 
     def clear(self) -> None:
         """Limpia las memorias caché para forzar una recarga limpia desde el disco."""
-        self.settings_cache.clear()
         self._cached_settings = None
         _load_impl.cache_clear()
 
@@ -362,7 +362,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         with open(resolved, "rb") as f:
             try:
                 content = f.read(MAX_SETTINGS_SIZE + 1)
-                # Validación de tamaño post-lectura ante inconsistencias de metadatos
                 if not content or len(content) > MAX_SETTINGS_SIZE or len(content) != st.st_size: return None
                 
                 decoded = content.decode("utf-8")
@@ -402,7 +401,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         try:
             if primary_path.exists():
                 st = primary_path.stat()
-                if st.st_mtime == _MANAGER._last_mtime and st.st_size == (len(json.dumps(_MANAGER._cached_settings)) if _MANAGER._cached_settings else 0):
+                if st.st_mtime == _MANAGER._last_mtime and st.st_size == _MANAGER._last_size:
                     return _MANAGER._cached_settings.copy()
         except (OSError, PermissionError): pass
     
@@ -412,6 +411,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             settings = _load_impl(str(primary_path), st.st_mtime, st.st_size).copy() # type: ignore
             _MANAGER._cached_settings = settings
             _MANAGER._last_mtime = st.st_mtime
+            _MANAGER._last_size = st.st_size
             return settings
     except (OSError, PermissionError): pass
     return dict(DEFAULTS) # type: ignore
@@ -444,6 +444,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if len(serialized_bytes) > MAX_SETTINGS_SIZE: return None
         if _MANAGER.perform_atomic_write(config_path, serialized):
             _MANAGER._cached_settings = cleaned_settings
+            _MANAGER._last_size = len(serialized_bytes)
             return config_path
         return None
     except (OSError, PermissionError, AttributeError, TypeError, ValueError): return None

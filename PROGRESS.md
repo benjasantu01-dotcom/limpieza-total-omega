@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 46 | 2 | 13 | 3 | 66 |
+| 2026-10-22 | 42 | 2 | 13 | 3 | 66 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 16 | 0 | 2 | 1 | 5 |
+| 2026-10-24 | 17 | 0 | 4 | 1 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **45**
+- seguridad defensiva: **44**
+- rendimiento: **34**
 - robustez ante casos límite: **34**
-- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **20**
-- `diskreport.py`: **20**
 - `assistant.py`: **19**
+- `browser.py`: **19**
+- `diskreport.py`: **19**
 - `memory.py`: **17**
 - `scanner.py`: **17**
 - `quarantine.py`: **16**
 - `safety.py`: **16**
-- `branding.py`: **14**
-- `settings.py`: **14**
+- `settings.py`: **15**
 - `healthscore.py`: **14**
+- `branding.py`: **13**
 - `startup.py`: **12**
 - `organizer.py`: **10**
-- `duplicates.py`: **9**
 - `main.py`: **8**
+- `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T01:12:50` **settings.py** (rendimiento): Optimizé la carga de configuración eliminando la serialización innecesaria dentro de `load()` al verificar la caché, reemplazándola por una comparación directa de metadatos, y reduciendo el uso de `json.dumps` en el bucle principal.
 - `2026-10-24T01:00:03` **organizer.py** (rendimiento): Se optimizó el escaneo del sistema reemplazando múltiples llamadas a `os.path.exists` y `stat` dentro de los bucles por un acceso único mediante `os.scandir`, además de convertir `JUNK_EXTENSIONS` en un `frozenset` para realizar consultas O(1) en lugar de recorridos de tupla.
 - `2026-10-24T00:59:32` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y filtrado de la lista completa de procesos en memoria por un generador eficiente que utiliza `heapq` para mantener solo los N elementos más pesados, reduciendo la presión sobre el recolector de basura y el uso de RAM.
 - `2026-10-24T00:58:58` **main.py** (rendimiento): Implementé la carga perezosa de los componentes de salud (`_lazy_init_health_ui`) en la pestaña "Salud", evitando que los widgets de las barras de progreso y tarjetas de métricas se instancien innecesariamente durante el inicio de la aplicación o si el usuario nunca accede a dicha pestaña, reduciendo así la huella de memoria y el tiempo de renderizado inicial.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T00:19:44` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con estilo Google/NumPy en funciones críticas de validación y E/S (`_is_safe_for_disk_op`, `stage_for_review`, `delete_reviewed`) para documentar las asunciones de seguridad y el flujo de los chequeos de integridad, facilitando el mantenimiento y la comprensión de las salvaguardas.
 - `2026-10-24T00:19:17` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `memory.py` mediante la refactorización de `_is_process_executable_safe` y `_process_from_pid`, eliminando la anidación profunda y aplicando guard clauses que clarifican el flujo de validación de seguridad para los procesos.
 - `2026-10-24T00:08:51` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones internas y refactorizando la estructura de tipos de `_collect_candidates` para mejorar la claridad sobre la lógica de recolección, facilitando el mantenimiento futuro sin alterar la funcionalidad.
-- `2026-10-24T00:08:40` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en clases clave (`ExtStats`, `GlobalStats`, `FolderMetrics`, `SummaryData`) y la clarificación de los propósitos de las funciones de soporte, facilitando la comprensión del flujo de datos sin alterar la lógica.
