@@ -1108,3 +1108,31 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-24T06:05:21` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de acceso en `_atomic_isolate_file` mediante la validación explícita del estado del archivo justo antes de cada operación crítica de I/O, evitando el uso de estados desactualizados tras llamadas a funciones externas.
 - `2026-10-24T06:05:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T06:05:21` Corrida terminada. Total usado hoy: 144.
+- `2026-10-24T06:13:24` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-10-24T06:13:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-24T06:14:27` Tests FALLARON:
+```
+expla0')
+
+    def test_describe_protection_explains_the_reason(tmp_path):
+>       assert "protegida" in safety.describe_protection(tmp_path / "Windows" / "x.txt")
+E       AssertionError: assert 'protegida' in 'Diagnóstico no disponible.'
+E        +  where 'Diagnóstico no disponible.' = <function describe_protection at 0x7f46781111c0>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+E        +    where <function describe_protection at 0x7f46781111c0> = safety.describe_protection
+
+evolve/tests/test_safety.py:165: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7f4678111080>(12345)
+ +    where <function is_safe_to_modify at 0x7f4678111080> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - AssertionError: assert 'protegida' in 'Diagnóstico no disponible.'
+ +  where 'Diagnóstico no disponible.' = <function describe_protection at 0x7f46781111c0>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f46781111c0> = safety.describe_protection
+2 failed, 297 passed in 1.49s
+
+```
+- `2026-10-24T06:14:27` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_get_path_stat_robust` y `_evaluate_security_rules` ante errores de concurrencia y estados inconsistentes del sistema de archivos, asegurando que las operaciones de I/O que fallan transitoriamente (como el bloqueo momentáneo de un archivo por otro proceso) sean tratadas con un manejo de excepciones más granular y reintentos más seguros, evitando errores fatales.
+- `2026-10-24T06:14:53` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-24T06:15:09` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `settings.py` ante errores de lectura de disco (como archivos inexistentes o bloqueados) añadiendo un bloque `try-except` específico alrededor de la lectura del archivo en `load()` y protegiendo el acceso a `stat()` frente a posibles errores de concurrencia o permisos del sistema operativo.
+- `2026-10-24T06:15:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T06:15:09` Corrida terminada. Total usado hoy: 148.
