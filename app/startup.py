@@ -149,6 +149,7 @@ class StartupEntry:
             if len(path_str) > MAX_PATH_LEN:
                 return ""
             p: Path = Path(path_str)
+            # Validamos existencia básica antes de operar con la ruta
             if not p.parts or is_protected_path(p):
                 return ""
             return str(p)

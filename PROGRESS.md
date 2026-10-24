@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 193
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 100 | 10 | 23 | 7 | 96 |
-| 2026-10-24 | 117 | 12 | 30 | 12 | 97 |
+| 2026-10-23 | 100 | 10 | 23 | 7 | 92 |
+| 2026-10-24 | 118 | 12 | 30 | 12 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **47**
+- seguridad defensiva: **48**
 - legibilidad y documentación: **45**
 - rendimiento: **40**
 - robustez ante casos límite: **36**
@@ -41,11 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **15**
 - `duplicates.py`: **14**
 - `branding.py`: **13**
+- `startup.py`: **11**
 - `main.py`: **10**
-- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T11:29:33` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_quoted_path` validando que la ruta extraída no sea un nombre de dispositivo reservado o una ruta inválida antes de intentar crear un objeto `Path`, evitando posibles errores de sistema al procesar valores maliciosos en el registro.
 - `2026-10-24T11:20:56` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones estrictas de metadatos (evitar enlaces simbólicos y asegurar que el dueño del archivo coincida con el usuario actual) para prevenir ataques de sustitución de archivos o enlaces maliciosos durante la lectura y escritura.
 - `2026-10-24T11:20:32` **scanner.py** (seguridad defensiva): Se ha robustecido el escáner implementando una validación estricta de rutas mediante `os.path.realpath` para prevenir la evasión de los filtros de seguridad a través de enlaces simbólicos o puntos de reanálisis que pueden apuntar fuera de la raíz permitida, asegurando que el recorrido se mantenga estrictamente dentro de los límites del `base_root` incluso ante estructuras de archivos complejas.
 - `2026-10-24T11:12:44` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `purge_all` implementando una validación de inodo (y hash si está disponible) antes de cada eliminación, garantizando que solo se borren archivos registrados y verificados, evitando la eliminación accidental de archivos no trackeados que pudieran haber sido colocados manualmente en la carpeta.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T10:30:10` **memory.py** (robustez ante casos límite): Mejora la robustez ante rutas de procesos inexistentes o inaccesibles al invocar `GetModuleFileNameExW` en `_is_process_executable_safe`, añadiendo un chequeo explícito de longitud y manejo de errores para evitar accesos a memoria inválida o rutas truncadas en entornos de alta concurrencia.
 - `2026-10-24T10:28:27` **healthscore.py** (robustez ante casos límite): Se ha añadido una protección robusta en `SystemMetrics.validate` para asegurar que, ante cualquier desbordamiento numérico o valor extremo no capturado por los límites, la métrica resultante no solo sea un número finito, sino que el sistema de puntuación no colapse, previniendo errores de división por cero o resultados `NaN` en el pipeline.
 - `2026-10-24T10:19:32` **duplicates.py** (robustez ante casos límite): Se mejoró la robustez de `_collect_candidates` ante errores de acceso a disco (PermissionError / OSError) al procesar rutas, asegurando que un acceso denegado a un subdirectorio no aborte la búsqueda completa, sino que simplemente continúe con el resto.
-- `2026-10-24T10:18:56` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `_sum_directory_recursive` intente procesar rutas extremadamente largas (superior a `MAX_PATH` de Windows) o nombres de archivo inválidos mediante la validación de `os.path.normpath` y manejo de excepciones durante el acceso, mitigando fallos por nombres de ruta mal formados.
