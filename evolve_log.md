@@ -1559,3 +1559,44 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-24T09:59:33` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_evaluate_security_rules` reemplazando la lógica de validación secuencial completa por un `any` con `generator expression` y moví la creación de `SecurityDescriptor` detrás del chequeo de caché para evitar llamadas costosas a la API de Windows cuando la ruta ya ha sido validada exitosamente en la misma iteración.
 - `2026-10-24T09:59:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T09:59:33` Corrida terminada. Total usado hoy: 236.
+- `2026-10-24T10:07:34` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-10-24T10:08:36` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del proceso de escaneo mediante el reemplazo de `os.path.abspath` y `os.path.normcase` recurrentes por la caché LRU en `_is_inside_base_root`, evitando el recálculo innecesario de rutas absolutas durante la traversal del árbol de directorios.
+- `2026-10-24T10:09:05` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `_read_and_parse_json` y `load` para evitar llamadas redundantes a `Path.resolve()` y `path.exists()` (que realizan I/O costoso) mediante la validación previa de la cadena de texto y el uso eficiente de la caché del `_MANAGER`.
+- `2026-10-24T10:09:33` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.16s
+
+```
+- `2026-10-24T10:09:33` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el método `StartupEntry.executable` para evitar redundancias y llamadas costosas al sistema de archivos mediante el uso eficiente de las cachés `_exec_cache` y `_checked_exists`, reduciendo las invocaciones innecesarias a `_resolve_path_from_command`.
+- `2026-10-24T10:09:56` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `ingest` ante entradas malformadas o tipos inesperados durante la ingesta de datos, añadiendo una validación de tipo más estricta que impide la propagación de valores `NaN`, `Inf` o booleanos en las métricas numéricas, protegiendo así la integridad de `SystemContext`.
+- `2026-10-24T10:09:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T10:09:56` Corrida terminada. Total usado hoy: 240.

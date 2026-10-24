@@ -166,6 +166,7 @@ class _SettingsManager:
     def clear(self) -> None:
         """Limpia las memorias caché para forzar una recarga limpia desde el disco."""
         self._cached_settings = None
+        self._last_mtime = 0.0
         _load_impl.cache_clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
@@ -350,27 +351,18 @@ def _is_file_secure_to_read(st: os.stat_result) -> bool:
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Carga, verifica y parsea el archivo JSON de configuración con mitigación TOCTOU."""
     try:
-        if len(str(file_path)) > 260: return None
-        resolved = file_path.resolve()
-        if not resolved.exists() or not resolved.is_file(): return None
-        if is_protected_path(str(resolved)) or not is_safe_to_modify(str(resolved)): return None
+        if not _Validators._is_safe_path(str(file_path)): return None
+        st = file_path.stat()
+        if not _is_file_secure_to_read(st): return None
         
-        try:
-            st = resolved.stat()
-            if not _is_file_secure_to_read(st): return None
-        except (OSError, PermissionError): return None
-        
-        with open(resolved, "rb") as f:
-            try:
-                content = f.read(MAX_SETTINGS_SIZE + 1)
-                if not content or len(content) > MAX_SETTINGS_SIZE: return None
-                
-                decoded = content.decode("utf-8")
-                data = json.loads(decoded)
-                return data if _is_dict(data) else None
-            except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
-                return None
-    except (OSError, IOError, PermissionError, MemoryError):
+        with open(file_path, "rb") as f:
+            content = f.read(MAX_SETTINGS_SIZE + 1)
+            if not content or len(content) > MAX_SETTINGS_SIZE: return None
+            
+            decoded = content.decode("utf-8")
+            data = json.loads(decoded)
+            return data if _is_dict(data) else None
+    except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
@@ -382,30 +374,22 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
 @lru_cache(maxsize=4)
 def _load_impl(file_path_str: str, mtime: float, size: int) -> AppSettings:
     """Implementación cacheable de carga de configuración."""
-    if not _Validators._is_safe_path(file_path_str): return dict(DEFAULTS) # type: ignore
-    try:
-        data = _read_and_parse_json(Path(file_path_str))
-        if data is not None:
-            return _coerce_and_verify(validate(data))
-    except (OSError, PermissionError, ValueError, TypeError):
-        pass
+    data = _read_and_parse_json(Path(file_path_str))
+    if data is not None:
+        return _coerce_and_verify(validate(data))
     return dict(DEFAULTS) # type: ignore
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga y valida la configuración desde disco o retorna los valores por defecto."""
     primary_path = settings_path(custom_base)
     
-    if _MANAGER._cached_settings:
-        try:
-            if primary_path.exists():
-                st = primary_path.stat()
-                if st.st_mtime == _MANAGER._last_mtime and st.st_size == _MANAGER._last_size:
-                    return _MANAGER._cached_settings.copy()
-        except (OSError, PermissionError): pass
-    
     try:
         if primary_path.exists() and primary_path.is_file():
             st = primary_path.stat()
+            # Si los metadatos coinciden, retornamos el caché sin tocar disco
+            if st.st_mtime == _MANAGER._last_mtime and st.st_size == _MANAGER._last_size and _MANAGER._cached_settings:
+                return _MANAGER._cached_settings.copy()
+            
             settings = _load_impl(str(primary_path), st.st_mtime, st.st_size).copy() # type: ignore
             _MANAGER._cached_settings = settings
             _MANAGER._last_mtime = st.st_mtime

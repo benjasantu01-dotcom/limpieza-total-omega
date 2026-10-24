@@ -422,7 +422,11 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         try:
             val: Any = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-            if val is None or _is_nan_or_inf(val) or isinstance(val, bool): return None
+            # Refuerzo: impedir estrictamente tipos incorrectos o no numéricos
+            if val is None or isinstance(val, bool) or not isinstance(val, (int, float)): 
+                return None
+            if _is_nan_or_inf(val): 
+                return None
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
             return spec.type_hint(valid_val) if valid_val is not None else None
         except (ValueError, TypeError, Exception):

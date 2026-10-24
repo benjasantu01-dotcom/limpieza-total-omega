@@ -222,6 +222,7 @@ class Scanner:
         self.base_root_norm: str = os.path.normcase(str(base_root.absolute()))
         self.now_ts: float = datetime.now().timestamp()
 
+    @lru_cache(maxsize=1024)
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Valida, mediante normalización de rutas, si el archivo pertenece al árbol de escaneo."""
         return os.path.normcase(os.path.abspath(entry_path)).startswith(self.base_root_norm)
