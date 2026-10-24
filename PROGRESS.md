@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 210
+- Rechazadas por guardia de seguridad: 50
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 83 | 10 | 21 | 7 | 83 |
-| 2026-10-24 | 119 | 12 | 30 | 12 | 127 |
+| 2026-10-23 | 83 | 10 | 20 | 5 | 82 |
+| 2026-10-24 | 122 | 12 | 30 | 13 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
+- manejo de errores y validación de entradas: **42**
 - rendimiento: **40**
 - legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **16**
 - `assistant.py`: **16**
 - `quarantine.py`: **16**
+- `browser.py`: **15**
 - `safety.py`: **15**
 - `settings.py`: **15**
 - `organizer.py`: **15**
-- `browser.py`: **14**
+- `duplicates.py`: **14**
+- `branding.py`: **13**
 - `healthscore.py`: **13**
-- `duplicates.py`: **13**
-- `branding.py`: **12**
 - `startup.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T12:52:00` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y la validación de parámetros en las funciones `hash_file`, `partial_hash` y `suggest_keeper`, reemplazando capturas genéricas por un flujo que verifica la existencia y accesibilidad antes de realizar operaciones, evitando así fallos en tiempo de ejecución.
+- `2026-10-24T12:51:23` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` mediante la validación explícita de `root_path` y el manejo preventivo de errores de tipo, evitando que rutas `None` o inválidas generen excepciones de acceso en las llamadas a `os.path`.
+- `2026-10-24T12:50:57` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` validando la entrada `destination` con `filter_safe_paths` antes de cualquier operación, asegurando que no se intente operar sobre rutas bloqueadas o inválidas desde el inicio.
 - `2026-10-24T12:43:52` **assistant.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `ingest` y `_apply_updates` al implementar un flujo de validación transaccional más robusto, evitando que estados parciales o corrompidos afecten la integridad del `SystemContext`.
 - `2026-10-24T11:29:33` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_quoted_path` validando que la ruta extraída no sea un nombre de dispositivo reservado o una ruta inválida antes de intentar crear un objeto `Path`, evitando posibles errores de sistema al procesar valores maliciosos en el registro.
 - `2026-10-24T11:20:56` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones estrictas de metadatos (evitar enlaces simbólicos y asegurar que el dueño del archivo coincida con el usuario actual) para prevenir ataques de sustitución de archivos o enlaces maliciosos durante la lectura y escritura.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T10:51:00` **branding.py** (seguridad defensiva): Se ha robustecido `save_logo_svg` implementando una validación de seguridad de doble capa: primero, se asegura de que el directorio padre exista y sea seguro mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, y segundo, se garantiza que la ruta resuelta no sea un directorio ni un enlace simbólico que apunte fuera de las áreas permitidas.
 - `2026-10-24T10:50:24` **assistant.py** (seguridad defensiva): Reforcé la seguridad de `assistant.py` implementando un chequeo explícito de integridad en `_is_safe_payload_structure` para detectar recursiones profundas o tipos de datos maliciosos en el `json` antes de enviarlo, evitando posibles ataques de inyección mediante serialización de objetos complejos.
 - `2026-10-24T10:49:16` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos mediante la implementación de una validación de existencia y permisos de escritura en la carpeta contenedora antes de cualquier intento de persistencia.
-- `2026-10-24T10:30:27` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` frente a condiciones de carrera (time-of-check to time-of-use) mediante el uso de `pathlib.Path.is_relative_to` (reemplazando lógica manual propensa a errores) y una verificación estricta de existencia post-validación, además de asegurar que `shutil.move` se ejecute solo si la ruta de destino es absoluta y pre-verificada.
-- `2026-10-24T10:30:10` **memory.py** (robustez ante casos límite): Mejora la robustez ante rutas de procesos inexistentes o inaccesibles al invocar `GetModuleFileNameExW` en `_is_process_executable_safe`, añadiendo un chequeo explícito de longitud y manejo de errores para evitar accesos a memoria inválida o rutas truncadas en entornos de alta concurrencia.
-- `2026-10-24T10:28:27` **healthscore.py** (robustez ante casos límite): Se ha añadido una protección robusta en `SystemMetrics.validate` para asegurar que, ante cualquier desbordamiento numérico o valor extremo no capturado por los límites, la métrica resultante no solo sea un número finito, sino que el sistema de puntuación no colapse, previniendo errores de división por cero o resultados `NaN` en el pipeline.

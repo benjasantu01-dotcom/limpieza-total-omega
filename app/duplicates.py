@@ -104,6 +104,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo del archivo usando caché de sesión."""
+    if not isinstance(path, Path) or not path.is_file(): return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
         hasher = hashlib.sha256()
@@ -113,12 +114,13 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError):
         return None
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un hash SHA256 sobre los primeros bytes para reducir I/O en archivos grandes."""
+    if not isinstance(path, Path) or not path.is_file(): return None
     if path in _partial_cache: return _partial_cache[path]
     try:
         with open(path, "rb") as f:
@@ -126,7 +128,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             digest_val = hashlib.sha256(header).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError):
         return None
 
 
@@ -222,6 +224,8 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_mtime(path: Path) -> float:
     """Obtiene el tiempo de modificación de un archivo de forma segura."""
+    if not isinstance(path, Path) or not path.exists():
+        return float('inf')
     try:
         return path.stat().st_mtime
     except (OSError, PermissionError):

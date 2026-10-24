@@ -220,7 +220,7 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
 
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
     """Calcula el tamaño total de un directorio de forma recursiva y segura."""
-    if depth > MAX_SCAN_DEPTH:
+    if not root_path or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
     try:

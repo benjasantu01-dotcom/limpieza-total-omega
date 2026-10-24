@@ -345,6 +345,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     try:
         dest_path = Path(destination).resolve()
         
+        # Validación inicial usando filter_safe_paths
+        if not filter_safe_paths([dest_path]): return None
+        
         # Validación: no permitir escribir si es un directorio existente
         if dest_path.is_dir(): return None
         
