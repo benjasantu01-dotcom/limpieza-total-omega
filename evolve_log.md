@@ -849,3 +849,4 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-24T14:53:28` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-10-24T14:53:28` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T14:53:28` Corrida terminada. Total usado hoy: 350.
+- `2026-10-24T15:02:42` Presupuesto diario agotado (350 usados). Corte hasta mañana.
