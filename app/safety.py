@@ -50,20 +50,21 @@ def _get_file_id(path_str: str) -> tuple[int, int, int]:
     """
     Obtiene identificadores únicos (Serial de volumen e índices de nodo) 
     para detectar cambios de identidad entre llamadas (mitigación TOCTOU).
+    Utiliza un handle temporal de apertura para extraer metadatos de volumen.
     """
     if os.name != 'nt': return (0, 0, 0)
     info = BY_HANDLE_FILE_INFORMATION()
-    handle = ctypes.windll.kernel32.CreateFileW(
-        _to_long_path(path_str), 0, 0, None, 3, 0x00000080, None
-    )
+    kernel32 = ctypes.windll.kernel32
+    # Apertura sin privilegios, solo para lectura de metadatos de handle.
+    handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0, None, 3, 0x00000080, None)
     if handle == -1: return (0, 0, 0)
     try:
-        if ctypes.windll.kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
+        if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
             return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow)
     except (ctypes.ArgumentError, AttributeError):
         pass
     finally:
-        ctypes.windll.kernel32.CloseHandle(handle)
+        kernel32.CloseHandle(handle)
     return (0, 0, 0)
 
 class SafetyAction(Enum):
@@ -98,7 +99,10 @@ class SecurityDescriptor(NamedTuple):
 
     @classmethod
     def from_path(cls, path_str: str) -> SecurityDescriptor:
-        """Fabrica un descriptor consultando atributos y estado de bloqueo del archivo."""
+        """
+        Fabrica un descriptor consultando atributos y estado de bloqueo del archivo.
+        Implementa una lógica de fallback para rutas inaccesibles por restricciones de permisos.
+        """
         if not path_str:
             return cls(0, True, True, True, True)
         try:
@@ -370,7 +374,6 @@ def _is_file_owned_by_system(path_str: str) -> bool:
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Filtra caracteres prohibidos en el sistema de archivos y secuencias BIDI maliciosas."""
     if not isinstance(path_str, str) or not path_str: return True
-    # Detecta caracteres de control y secuencias RTL/LTR (Bidi)
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
 def _is_path_empty_or_whitespace(path_str: str) -> bool:
@@ -662,17 +665,18 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
                 
             if os.name == 'nt':
-                handle = ctypes.windll.kernel32.CreateFileW(
+                kernel32 = ctypes.windll.kernel32
+                handle = kernel32.CreateFileW(
                     _to_long_path(str(path)), 0, 0, None, 3, 0x00000080, None
                 )
                 if handle == -1:
-                    err = ctypes.windll.kernel32.GetLastError()
+                    err = kernel32.GetLastError()
                     if err == ERROR_SHARING_VIOLATION:
                         raise UnsafePathError(f"Archivo bloqueado: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
                     if err == ERROR_FILE_NOT_FOUND:
                         raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
                 else:
-                    ctypes.windll.kernel32.CloseHandle(handle)
+                    kernel32.CloseHandle(handle)
             
             try:
                 return path.stat()

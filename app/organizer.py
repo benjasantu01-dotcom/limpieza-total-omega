@@ -159,7 +159,10 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _try_open_win_file(path: Path) -> bool:
-    """Intenta abrir un archivo mediante API Win32 para detectar bloqueos exclusivos."""
+    """
+    Intenta abrir un archivo mediante API Win32 (CreateFileW) para determinar 
+    si el archivo está siendo bloqueado por otro proceso (uso exclusivo).
+    """
     try:
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0x00000001, None, 3, 0x00000080, None
@@ -183,7 +186,10 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Evita errores de lógica donde una carpeta se mueve dentro de sí misma."""
+    """
+    Verifica que el destino no sea un subdirectorio del origen para evitar 
+    que una operación de movimiento se vuelva recursiva o autodestructiva.
+    """
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -209,8 +215,8 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
 
 def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
     """
-    Confirma identidad mediante inodo y dispositivo. 
-    Previene race conditions si el archivo fue reemplazado desde el escaneo inicial.
+    Confirma identidad mediante inodo y dispositivo para prevenir race conditions 
+    en caso de que el archivo haya sido reemplazado tras el escaneo inicial.
     """
     try:
         stat_result = src_real.stat()
@@ -233,9 +239,6 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Orquestador de seguridad: valida identidad, protección, bloqueos y espacio antes de E/S.
-    
-    Verifica que el archivo no sea de sistema, no esté bloqueado por procesos 
-    activos y que el destino sea una ruta segura (pasando por `ensure_safe_to_modify`).
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -244,7 +247,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        # Validar explícitamente destino antes de cualquier operación
         ensure_safe_to_modify(dest_real)
 
         if src_real == dest_real or src_real.parent == dest_real: return False
@@ -275,7 +277,10 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     return True
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[Path]) -> None:
-    """Realiza un escaneo recursivo limitado por profundidad y caché de rutas visitadas."""
+    """
+    Realiza un escaneo recursivo limitado por profundidad.
+    Filtra archivos que no cumplen los criterios de tamaño o que son archivos de sistema ocultos.
+    """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
         resolved_dir = current_dir.resolve(strict=False)
@@ -292,7 +297,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                     elif entry.is_file(follow_symlinks=False):
                         if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
                             stats = entry.stat(follow_symlinks=False)
-                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and stats.st_mtime <= (now_ts + 3600) and not _is_system_hidden(entry):
+                            # Validar que el archivo sea menor al límite permitido y no sea un sistema/oculto
+                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
@@ -324,9 +330,7 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Mueve archivos candidatos a una carpeta de cuarentena para revisión humana.
-    
-    Aplica filtros de seguridad `is_safe_to_modify` sobre el directorio destino 
-    y cada archivo, utilizando `shutil.move` para asegurar integridad atómica.
+    Asegura integridad atómica mediante shutil.move tras validar rutas.
     """
     if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
         return None
@@ -335,7 +339,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve(strict=False)
         
-        # Validaciones de seguridad previas a cualquier iteración
         if not is_safe_to_modify(dest_res) or is_protected_path(dest_res) or _has_forbidden_chars(dest_res):
             return None
         
@@ -364,9 +367,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina físicamente los archivos validados tras aplicar chequeos de seguridad.
-    
-    Se asegura de operar únicamente dentro de `review_dir` (previene escapes de ruta) 
-    y verifica `is_safe_to_modify` para cada archivo antes de ejecutar `unlink()`.
+    Verifica que cada archivo esté contenido en el directorio de revisión.
     """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
@@ -374,7 +375,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         if not dest.exists() or not dest.is_dir(): return 0
         dest_res = dest.resolve(strict=False)
         
-        # Validación de seguridad estricta para asegurar que operamos en la carpeta correcta
         if not is_safe_to_modify(dest_res) or is_protected_path(dest_res): return 0
         
         count = 0
