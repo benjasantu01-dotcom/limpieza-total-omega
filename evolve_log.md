@@ -681,3 +681,13 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-24T01:20:33` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 195): unexpected character after line continuation character
 - `2026-10-24T01:20:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T01:20:33` Corrida terminada. Total usado hoy: 32.
+- `2026-10-24T01:28:19` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-10-24T01:29:00` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `summarize` implementando un manejo explícito de `OSError` al intentar leer atributos de archivos/carpetas que pueden haber sido eliminados o bloqueados por otros procesos durante el escaneo (condición de carrera típica en sistemas de archivos).
+- `2026-10-24T01:29:23` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-24T01:29:49` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-10-24T01:30:49` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-24T01:31:52` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-24T01:32:58` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-24T01:34:10` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-24T01:34:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T01:34:10` Corrida terminada. Total usado hoy: 36.
