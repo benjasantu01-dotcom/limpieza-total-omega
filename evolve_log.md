@@ -698,3 +698,34 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-24T01:40:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-24T01:40:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T01:40:11` Corrida terminada. Total usado hoy: 40.
+- `2026-10-24T01:48:41` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-10-24T01:49:31` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación en `_validate_preconditions` para detectar si el padre de una ruta es un volumen de solo lectura, previniendo errores de I/O bloqueantes antes de intentar operaciones de archivo.
+- `2026-10-24T01:50:00` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-24T01:50:31` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró la resiliencia ante errores de lectura de disco al incluir un manejo de excepciones más granular en `_read_and_parse_json` y `_load_impl`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura) bloqueen la inicialización de la aplicación, fallando de forma segura hacia los valores por defecto.
+- `2026-10-24T01:50:54` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.99s
+
+```
+- `2026-10-24T01:50:54` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejora `StartupEntry._is_reserved_device_name` y `_resolve_and_cache_path` para manejar archivos inexistentes o con rutas mal formadas de manera resiliente, evitando que excepciones de sistema (ej. `OSError` por nombres de archivo inválidos en Windows) interrumpan el escaneo de inicio.
+- `2026-10-24T01:50:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T01:50:54` Corrida terminada. Total usado hoy: 44.

@@ -356,13 +356,15 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         if not resolved.exists() or not resolved.is_file(): return None
         if is_protected_path(str(resolved)) or not is_safe_to_modify(str(resolved)): return None
         
-        st = resolved.stat()
-        if not _is_file_secure_to_read(st): return None
+        try:
+            st = resolved.stat()
+            if not _is_file_secure_to_read(st): return None
+        except (OSError, PermissionError): return None
         
         with open(resolved, "rb") as f:
             try:
                 content = f.read(MAX_SETTINGS_SIZE + 1)
-                if not content or len(content) > MAX_SETTINGS_SIZE or len(content) != st.st_size: return None
+                if not content or len(content) > MAX_SETTINGS_SIZE: return None
                 
                 decoded = content.decode("utf-8")
                 data = json.loads(decoded)
@@ -387,9 +389,11 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
 def _load_impl(file_path_str: str, mtime: float, size: int) -> AppSettings:
     """Implementación cacheable de carga de configuración."""
     if not _Validators._is_safe_path(file_path_str): return dict(DEFAULTS) # type: ignore
-    data = _read_and_parse_json(Path(file_path_str))
-    if data is not None:
-        return _coerce_and_verify(validate(data))
+    try:
+        data = _read_and_parse_json(Path(file_path_str))
+        if data is not None:
+            return _coerce_and_verify(validate(data))
+    except (OSError, PermissionError): pass
     return dict(DEFAULTS) # type: ignore
 
 def load(custom_base: PathLike | None = None) -> AppSettings:

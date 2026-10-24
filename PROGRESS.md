@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-22 | 38 | 2 | 11 | 2 | 61 |
+| 2026-10-22 | 38 | 2 | 11 | 2 | 57 |
 | 2026-10-23 | 144 | 12 | 34 | 12 | 148 |
-| 2026-10-24 | 21 | 1 | 6 | 1 | 11 |
+| 2026-10-24 | 23 | 2 | 6 | 1 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **45**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **40**
-- robustez ante casos límite: **38**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `browser.py`: **19**
 - `memory.py`: **17**
+- `safety.py`: **16**
 - `scanner.py`: **16**
+- `settings.py`: **16**
 - `quarantine.py`: **16**
-- `safety.py`: **15**
-- `settings.py`: **15**
 - `branding.py`: **14**
 - `healthscore.py`: **14**
 - `startup.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T01:50:31` **settings.py** (robustez ante casos límite): Se mejoró la resiliencia ante errores de lectura de disco al incluir un manejo de excepciones más granular en `_read_and_parse_json` y `_load_impl`, evitando que fallos transitorios en el sistema de archivos (como bloqueos de lectura) bloqueen la inicialización de la aplicación, fallando de forma segura hacia los valores por defecto.
+- `2026-10-24T01:49:31` **safety.py** (robustez ante casos límite): Se añadió una validación en `_validate_preconditions` para detectar si el padre de una ruta es un volumen de solo lectura, previniendo errores de I/O bloqueantes antes de intentar operaciones de archivo.
 - `2026-10-24T01:40:08` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia en la función `_atomic_isolate_file` para verificar la existencia del archivo de destino antes de intentar escribir, mitigando una condición de carrera (race condition) donde el archivo podría ser recreado por otro proceso justo antes de la operación de `os.replace`.
 - `2026-10-24T01:39:01` **memory.py** (robustez ante casos límite): Se reforzó `_is_process_executable_safe` añadiendo una validación explícita mediante `try-except` envolviendo la lectura de atributos de archivo para prevenir excepciones ante archivos bloqueados o inaccesibles, asegurando que el módulo sea robusto frente a errores de E/S durante el inventario de procesos.
 - `2026-10-24T01:29:00` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `summarize` implementando un manejo explícito de `OSError` al intentar leer atributos de archivos/carpetas que pueden haber sido eliminados o bloqueados por otros procesos durante el escaneo (condición de carrera típica en sistemas de archivos).
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T00:48:27` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando el uso repetido de `os.path.normcase` sobre rutas ya validadas y simplificando la lógica de chequeo en el loop principal, reduciendo drásticamente las llamadas al sistema en estructuras de directorios profundas.
 - `2026-10-24T00:40:38` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando llamadas redundantes a `getattr` en bucles por el uso de `metrics_snapshot`, y se eliminó la recreación innecesaria de la tupla de ordenamiento en `active_problems` mediante el uso de la propiedad cacheada.
 - `2026-10-24T00:38:55` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato Google Style) en las funciones públicas, clarificando los efectos secundarios y las dependencias de datos para elevar la calidad de la documentación del proyecto.
-- `2026-10-24T00:29:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings detallados en las funciones de heurística y métodos de la clase `Scanner`, aclarando la lógica de filtrado y los objetivos técnicos de cada chequeo para facilitar el mantenimiento del equipo de desarrollo.
-- `2026-10-24T00:29:19` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `is_protected_path` para utilizar una estructura de control más clara y eficiente, eliminando redundancias en la evaluación de atributos y consolidando las constantes del sistema para facilitar futuras expansiones.
