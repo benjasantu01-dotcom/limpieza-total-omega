@@ -343,7 +343,10 @@ def validate(raw_values: Any) -> AppSettings:
     return config # type: ignore
 
 def _is_file_secure_to_read(st: os.stat_result, file_path: Path) -> bool:
-    """Comprueba permisos, metadatos y asegura que el archivo sea seguro de leer (sin enlaces sospechosos)."""
+    """
+    Verifica que el archivo sea un archivo regular, propiedad del usuario,
+    sin permisos excesivos y dentro de los límites de tamaño permitidos.
+    """
     try:
         if not stat.S_ISREG(st.st_mode): return False
         if st.st_nlink != 1: return False # Prevenir enlaces simbólicos a archivos compartidos
@@ -355,7 +358,10 @@ def _is_file_secure_to_read(st: os.stat_result, file_path: Path) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    """Carga, verifica y parsea el archivo JSON de configuración con mitigación TOCTOU."""
+    """
+    Carga el archivo tras validar metadatos (TOCTOU check) y parsea el JSON,
+    asegurando que el contenido sea un diccionario de valores simples.
+    """
     try:
         if not _Validators._is_safe_path(str(file_path)): return None
         st = file_path.lstat()

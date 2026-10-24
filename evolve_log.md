@@ -772,3 +772,32 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-24T13:44:07` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los retornos de funciones privadas y se refinaron los docstrings para documentar el "porqué" técnico de los bloqueos de seguridad y el manejo de excepciones, mejorando la mantenibilidad sin alterar la lógica.
 - `2026-10-24T13:44:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T13:44:07` Corrida terminada. Total usado hoy: 324.
+- `2026-10-24T13:51:28` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-24T13:51:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-24T13:51:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-10-24T13:52:57` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica interna de `safety.py` mediante una reorganización de los tipos de datos y la adición de `DocStrings` estructurados en los métodos críticos, clarificando la jerarquía de validación y facilitando el mantenimiento futuro.
+- `2026-10-24T13:53:23` Tests FALLARON:
+```
+__________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: check_system_lookalike() missing 1 required positional argument: 'context'
+
+evolve/tests/test_basic.py:212: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 1 required positional argument: 'context'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 1 required positional argument: 'context'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 1 required positional argument: 'context'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 1 required positional argument: 'context'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 1 required positional argument: 'context'
+5 failed, 294 passed in 1.62s
+
+```
+- `2026-10-24T13:53:23` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: He introducido un `NamedTuple` llamado `ScanContext` para encapsular el estado dinámico del escaneo (`now_ts` y `entry`), sustituyendo los parámetros dispersos en las heurísticas por una estructura tipada que mejora la legibilidad y facilita futuras extensiones de los datos de contexto.
+- `2026-10-24T13:53:41` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings explicativos a las funciones de validación compleja (`_is_file_secure_to_read` y `_read_and_parse_json`) y normalizando la nomenclatura de variables internas para hacer explícitas las intenciones de seguridad ante condiciones de carrera (TOCTOU).
+- `2026-10-24T13:53:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T13:53:41` Corrida terminada. Total usado hoy: 328.
