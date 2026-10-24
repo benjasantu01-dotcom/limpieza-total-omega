@@ -1079,3 +1079,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-24T05:29:00` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `Path.resolve()` y `path.stat()` dentro del bucle de `_process_directory`, utilizando en su lugar la información ya disponible en `os.DirEntry` para evitar accesos innecesarios al sistema de archivos.
 - `2026-10-24T05:29:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T05:29:00` Corrida terminada. Total usado hoy: 128.
+- `2026-10-24T05:32:40` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-10-24T05:33:43` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-24T05:35:00` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché para `_get_sha256` utilizando la tupla `(ruta, mtime, tamaño)` como clave, lo que evita lecturas repetitivas y pesadas del disco al realizar validaciones de integridad recurrentes en el manifiesto.
+- `2026-10-24T05:35:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-10-24T05:36:04` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché local dentro de `_evaluate_security_rules` para evitar la reevaluación redundante de reglas de seguridad complejas (ej. `_is_file_owned_by_system`, `_get_file_attrs`) cuando múltiples subprocesos o iteraciones rápidas validan la misma ruta, mejorando significativamente la performance en escaneos masivos.
+- `2026-10-24T05:36:23` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo sustituyendo la llamada redundante y costosa a `path.stat().st_size` por la reutilización de `os.DirEntry.stat()` dentro de las heurísticas, evitando operaciones de E/S adicionales al procesar archivos.
+- `2026-10-24T05:36:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T05:36:23` Corrida terminada. Total usado hoy: 132.

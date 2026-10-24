@@ -637,19 +637,28 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.VIRTUAL_DRIVE: SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED,
 }
 
+_EVAL_CACHE: Final[dict[tuple[str, int], None]] = {}
+
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     """
     Ejecuta el conjunto de reglas de integridad sobre la ruta y lanza UnsafePathError ante hallazgos.
+    Usa caché de estado para evitar reevaluación innecesaria de la misma ruta.
     """
     if not path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     
+    # Clave basada en ruta y timestamp de modificación para invalidación
+    cache_key = (str(path), int(current_stat.st_mtime))
+    if cache_key in _EVAL_CACHE:
+        return
+
     try:
         sd: SecurityDescriptor = _get_security_descriptor(path)
         for rule in _VALIDATORS:
             if rule.predicate(path, current_stat, sd):
                 code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
+        _EVAL_CACHE[cache_key] = None
     except (OSError, PermissionError) as e:
         raise UnsafePathError(f"Error de acceso en validación: {e}", SafetyValidationErrorCode.ACCESS_DENIED)
 

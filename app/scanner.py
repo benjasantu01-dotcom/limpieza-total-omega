@@ -129,15 +129,6 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
     except (AttributeError, OSError, PermissionError, FileNotFoundError):
         return 0
 
-def _get_file_size(path: Path) -> int:
-    """Retorna tamaño en bytes, devolviendo -1 en caso de error de acceso."""
-    if not isinstance(path, Path) or not _is_readable(path):
-        return -1
-    try:
-        return int(path.stat().st_size)
-    except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError, TypeError):
-        return -1
-
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Obtiene metadatos de archivo de forma segura, ignorando enlaces simbólicos."""
     if entry is None:
@@ -174,10 +165,11 @@ def _is_target_extension(name: str) -> bool:
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Heurística: Identifica archivos ejecutables cuya carga útil es nula (0 bytes)."""
-    if not path or not _is_readable(path): return None
-    size = _get_file_size(path)
-    if size == 0:
-        return Suspicion(path, "Ejecutable vacío detectado", "warning")
+    if entry:
+        try:
+            if entry.stat(follow_symlinks=False).st_size == 0:
+                return Suspicion(path, "Ejecutable vacío detectado", "warning")
+        except (OSError, PermissionError): pass
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
@@ -306,9 +298,6 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta iterativamente todos los chequeos de seguridad registrados sobre un archivo."""
-        if not _is_readable(path):
-            return
-
         for check_fn in ALL_CHECKS:
             try:
                 finding = check_fn(path, entry, self.now_ts)
