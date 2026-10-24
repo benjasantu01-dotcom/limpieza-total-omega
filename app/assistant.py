@@ -132,7 +132,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     """Accede defensivamente a atributos del objeto evitando llamadas a métodos ejecutables."""
     if not _is_safe_key(name): return default
     try:
-        val = getattr(obj, name, default)
+        val: Any = getattr(obj, name, default)
         return val if not callable(val) else default
     except Exception:
         return default
@@ -163,7 +163,7 @@ class AssistantConfig(NamedTuple):
 
 @dataclass(frozen=True)
 class MetricSpec:
-    """Define las restricciones de tipo y rango para una métrica numérica."""
+    """Define las restricciones de tipo, rango mínimo y máximo para una métrica numérica."""
     type_hint: type
     min_val: float
     max_val: float
@@ -173,7 +173,7 @@ class MetricSpec:
         return isinstance(val, (int, float)) and not isinstance(val, bool) and _check_metric_integrity(val)
 
 class ProblemCriterion(NamedTuple):
-    """Regla declarativa para la evaluación de problemas basados en umbrales."""
+    """Regla declarativa para comparar una métrica contra un umbral y disparar una descripción."""
     metric_key: str
     threshold: float
     operator: str
@@ -360,7 +360,7 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 @lru_cache(maxsize=16)
 def _evaluate_active_problems(metrics_items: tuple) -> tuple[str, ...]:
     """Calcula los problemas activos a partir de los valores crudos cacheables."""
-    metrics_dict = dict(metrics_items)
+    metrics_dict: Dict[str, float] = dict(metrics_items)
     return tuple(
         msg for c in _CRITERIOS_SALUD 
         if (msg := c.format_if_triggered(metrics_dict.get(c.metric_key, -1.0))) is not None
@@ -421,7 +421,7 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         try:
-            val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+            val: Any = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
             if val is None or _is_nan_or_inf(val) or isinstance(val, bool): return None
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
             return spec.type_hint(valid_val) if valid_val is not None else None
@@ -439,11 +439,11 @@ class SystemContext:
         """Extrae y valida métricas numéricas y texto de calificación de una fuente."""
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
-            val = self._apply_field(source, key, spec)
+            val: Any = self._apply_field(source, key, spec)
             if val is not None: 
                 updates[key] = val
         
-        grade_val = self._clean_grade(source.get("grade") if isinstance(source, dict) else getattr(source, "grade", None))
+        grade_val: str = self._clean_grade(source.get("grade") if isinstance(source, dict) else getattr(source, "grade", None))
         if grade_val: 
             updates["grade"] = grade_val
         
@@ -469,7 +469,7 @@ class SystemContext:
         try:
             if not self._validate_ingestion_source(source): 
                 return False
-            updates = self._validate_and_sanitize_data(source)
+            updates: Optional[dict[str, Any]] = self._validate_and_sanitize_data(source)
             if not updates: return False
             self._apply_updates(updates)
             return True
@@ -531,8 +531,8 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt."""
     if context.is_empty: return ""
-    snap = context.metrics_snapshot
-    res = (f"{k}: {val:.{p}f}{u}" for k, u, p in _CONTEXT_SCHEMA if (val := snap.get(k, -1.0)) >= 0)
+    snap: MetricsDict = context.metrics_snapshot
+    res: Iterator[str] = (f"{k}: {val:.{p}f}{u}" for k, u, p in _CONTEXT_SCHEMA if (val := snap.get(k, -1.0)) >= 0)
     return "\n".join(filter(_ensure_safe_text, res))
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
@@ -558,16 +558,16 @@ def _format_problem_message(problems: tuple[str, ...], score: int | str) -> str:
 @_safe_handler_wrapper
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre memoria RAM usando contexto validado."""
-    snap = ctx.metrics_snapshot
-    mem_pct = snap.get("memory_available_percent", DEFAULT_RAM_PCT)
-    total_gb = snap.get("memory_total_gb", 0.0)
+    snap: MetricsDict = ctx.metrics_snapshot
+    mem_pct: float = snap.get("memory_available_percent", DEFAULT_RAM_PCT)
+    total_gb: float = snap.get("memory_total_gb", 0.0)
     msg: str = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
     if mem_pct < 15:
         msg += " Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses."
     else:
         msg += " Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
     msg += " No busques un 'liberador de RAM': la PC queda más lenta."
-    startup_count = int(snap.get("startup_count", 0))
+    startup_count: int = int(snap.get("startup_count", 0))
     if startup_count > 12:
         msg += f" Sí te conviene mirar los {startup_count} programas de inicio."
     return Answer(msg, notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
@@ -575,12 +575,12 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 @_safe_handler_wrapper
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre almacenamiento y limpieza."""
-    snap = ctx.metrics_snapshot
-    junk = snap.get("junk_mb", 0.0)
-    dup = snap.get("duplicate_mb", 0.0)
-    cache = snap.get("browser_cache_mb", 0.0)
-    free = snap.get("disk_free_percent", 100.0)
-    recuperable = junk + dup + cache
+    snap: MetricsDict = ctx.metrics_snapshot
+    junk: float = snap.get("junk_mb", 0.0)
+    dup: float = snap.get("duplicate_mb", 0.0)
+    cache: float = snap.get("browser_cache_mb", 0.0)
+    free: float = snap.get("disk_free_percent", 100.0)
+    recuperable: float = junk + dup + cache
     msg: str = f"Tenés {free:.0f}% libre en disco. Podés recuperar cerca de {recuperable:.0f} MB."
     msg += f" (incluye {junk:.0f} MB de basura, {dup:.0f} MB de duplicados{f', {cache:.0f} MB caché' if cache > 0 else ''})."
     if free < 10:
@@ -591,9 +591,9 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
 @_safe_handler_wrapper
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre archivos sospechosos y seguridad."""
-    snap = ctx.metrics_snapshot
-    count = int(snap.get("suspicious_count", 0.0))
-    warn = int(snap.get("suspicious_warnings", 0.0))
+    snap: MetricsDict = ctx.metrics_snapshot
+    count: int = int(snap.get("suspicious_count", 0.0))
+    warn: int = int(snap.get("suspicious_warnings", 0.0))
     if count == 0:
         texto: str = "No hay archivos sospechosos. La app nunca borra sola, todo va a revisión."
     else:
@@ -616,7 +616,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
 @_safe_handler_wrapper
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre aplicaciones de arranque."""
-    count = int(ctx.metrics_snapshot.get("startup_count", 0.0))
+    count: int = int(ctx.metrics_snapshot.get("startup_count", 0.0))
     estado: str = f"Tenés {count} programas que arrancan con Windows."
     valoracion: str = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
     cierre: str = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
@@ -669,9 +669,9 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     if not isinstance(raw_cfg, dict):
         return default
     
-    api_key = raw_cfg.get("asistente_api_key", "")
-    model = raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")
-    metrics_val = raw_cfg.get("asistente_enviar_metricas", True)
+    api_key: Any = raw_cfg.get("asistente_api_key", "")
+    model: Any = raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")
+    metrics_val: Any = raw_cfg.get("asistente_enviar_metricas", True)
     
     return AssistantConfig(
         api_key=str(api_key) if isinstance(api_key, str) else "",
@@ -692,38 +692,38 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     payload_data: dict[str, Any] = {"contents": [{"parts": [{"text": full_prompt}]}]}
     if not _is_safe_payload_structure(payload_data): return None
     try:
-        encoded = json.dumps(payload_data).encode("utf-8")
+        encoded: bytes = json.dumps(payload_data).encode("utf-8")
         if len(encoded) > _MAX_RESPONSE_BYTES: return None
         return encoded
     except (TypeError, ValueError):
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae de manera segura el contenido textual de la respuesta JSON del motor remoto."""
+    """Extracte de manera segura el contenido textual de la respuesta JSON del motor remoto."""
     if not isinstance(data, dict) or not _is_safe_payload_structure(data):
         return None
     
-    candidates = data.get("candidates")
+    candidates: Any = data.get("candidates")
     if not isinstance(candidates, list) or not candidates:
         return None
         
-    first = candidates[0]
+    first: Any = candidates[0]
     if not isinstance(first, dict) or first.get("finishReason") != "STOP":
         return None
         
-    content = first.get("content")
+    content: Any = first.get("content")
     if not isinstance(content, dict):
         return None
         
-    parts = content.get("parts")
+    parts: Any = content.get("parts")
     if not isinstance(parts, list) or not parts:
         return None
         
-    first_part = parts[0]
+    first_part: Any = parts[0]
     if not isinstance(first_part, dict):
         return None
         
-    text_val = first_part.get("text")
+    text_val: Any = first_part.get("text")
     if isinstance(text_val, str):
         sanitized: str = _validate_response_length(text_val)
         return sanitized if _ensure_safe_text(sanitized) else None
@@ -754,7 +754,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             if res.status != 200: 
                 return None
             # Validación adicional de respuesta remota
-            content_length = res.headers.get("Content-Length")
+            content_length: Any = res.headers.get("Content-Length")
             if content_length and int(content_length) > _MAX_RESPONSE_BYTES: 
                 return None
             raw_res: bytes = res.read(_MAX_RESPONSE_BYTES + 1)

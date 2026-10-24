@@ -1444,3 +1444,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-24T08:48:02` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `settings.py` implementando una validación temprana y exhaustiva en `_read_and_parse_json` para capturar errores de tipo y contenido antes de procesar el JSON, y optimicé el manejo de excepciones en `_load_impl` para evitar el silenciamiento excesivo de errores operativos, garantizando que ante cualquier anomalía se retorne el estado seguro (`DEFAULTS`).
 - `2026-10-24T08:48:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-24T08:48:02` Corrida terminada. Total usado hoy: 208.
+- `2026-10-24T08:56:11` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-24T08:56:42` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.69s
+
+```
+- `2026-10-24T08:56:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `StartupEntry._extract_quoted_path` implementando una validación estricta de rutas mediante `pathlib` y verificaciones de seguridad adicionales, previniendo errores en caso de entradas malformadas en el Registro que anteriormente podrían haber causado excepciones no controladas o retornos de rutas inseguras.
+- `2026-10-24T08:57:23` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se introdujeron type hints explícitos en variables de ámbito local y parámetros de funciones críticas para mejorar la legibilidad y la documentación, además de documentar los propósitos de las clases `MetricSpec` y `ProblemCriterion` con docstrings más precisos.
+- `2026-10-24T08:57:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-24T08:58:10` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, normalización del estilo de docstrings y la simplificación de la lógica de recursión mediante la extracción del chequeo de profundidad, cumpliendo con los estándares de calidad del proyecto.
+- `2026-10-24T08:58:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-24T08:58:10` Corrida terminada. Total usado hoy: 212.

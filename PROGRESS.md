@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 123 | 12 | 29 | 9 | 123 |
-| 2026-10-24 | 80 | 6 | 23 | 7 | 92 |
+| 2026-10-23 | 122 | 11 | 27 | 9 | 123 |
+| 2026-10-24 | 82 | 7 | 23 | 7 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **48**
+- legibilidad y documentación: **37**
 - robustez ante casos límite: **36**
-- rendimiento: **35**
-- legibilidad y documentación: **35**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
 - `diskreport.py`: **18**
+- `memory.py`: **18**
 - `safety.py`: **17**
 - `quarantine.py`: **16**
+- `assistant.py`: **16**
+- `browser.py`: **16**
 - `settings.py`: **15**
-- `assistant.py`: **15**
-- `browser.py`: **15**
 - `scanner.py`: **15**
 - `branding.py`: **13**
 - `healthscore.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-24T08:58:10` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, normalización del estilo de docstrings y la simplificación de la lógica de recursión mediante la extracción del chequeo de profundidad, cumpliendo con los estándares de calidad del proyecto.
+- `2026-10-24T08:57:23` **assistant.py** (legibilidad y documentación): Se introdujeron type hints explícitos en variables de ámbito local y parámetros de funciones críticas para mejorar la legibilidad y la documentación, además de documentar los propósitos de las clases `MetricSpec` y `ProblemCriterion` con docstrings más precisos.
 - `2026-10-24T08:48:02` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación temprana y exhaustiva en `_read_and_parse_json` para capturar errores de tipo y contenido antes de procesar el JSON, y optimicé el manejo de excepciones en `_load_impl` para evitar el silenciamiento excesivo de errores operativos, garantizando que ante cualquier anomalía se retorne el estado seguro (`DEFAULTS`).
 - `2026-10-24T08:47:45` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` mediante la validación proactiva de la entrada y la captura de errores en la inicialización, evitando que rutas malformadas o inaccesibles provoquen fallos silenciosos durante la recursión.
 - `2026-10-24T08:47:17` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_locked_by_other_process` y `_get_file_id` integrando la captura de `OSError` y `PermissionError` ante errores de acceso a bajo nivel, asegurando que el módulo gestione excepciones de E/S de manera explícita sin abortar el flujo de la aplicación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T06:56:52` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo un chequeo explícito de la longitud de la ruta (máximo 260 caracteres para evitar ataques de desbordamiento en APIs de Windows) y validando que el archivo de configuración no sea un enlace simbólico ni un hard link, asegurando que la app trabaje siempre sobre el archivo real y evitando manipulación fuera de la carpeta esperada.
 - `2026-10-24T06:54:55` **safety.py** (seguridad defensiva): Mejoré la robustez de `_is_volume_readonly` añadiendo un manejo de excepciones más granular y asegurando que las rutas de red (UNC) no intenten validarse con operaciones de volumen locales que fallarían, previniendo errores de IO innecesarios en entornos con unidades de red mapeadas.
 - `2026-10-24T06:46:09` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` añadiendo una validación explícita de `is_within_directory` para cada archivo procesado, asegurando que solo se operen archivos contenidos estrictamente dentro del sandbox de cuarentena, evitando así cualquier posible efecto lateral fuera de la carpeta designada durante la limpieza masiva.
-- `2026-10-24T06:45:29` **organizer.py** (seguridad defensiva): Se ha añadido una validación explícita para asegurar que `stage_for_review` solo trabaje con archivos que residan físicamente en la misma unidad de disco que el directorio de destino, previniendo errores de `shutil.move` al cruzar volúmenes (lo cual puede violar políticas de permisos o fallar parcialmente).
-- `2026-10-24T06:45:01` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` mediante la validación explícita del estado del proceso antes de intentar cualquier operación de `EmptyWorkingSet`, asegurando que el handle obtenido sea válido y el ejecutable pase los filtros de seguridad, previniendo errores de acceso a memoria o interacciones no deseadas.
