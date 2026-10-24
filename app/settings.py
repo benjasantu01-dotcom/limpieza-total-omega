@@ -241,6 +241,7 @@ class _Validators:
 
     @staticmethod
     def _check_path_safety(p: Path) -> bool:
+        """Wrapper para validación de seguridad de rutas Path."""
         return p.is_absolute() and _Validators._run_safety_checks(str(p))
 
     @staticmethod
@@ -285,6 +286,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
+        """Valida si una cadena pertenece al conjunto permitido para claves de tipo Enum."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
