@@ -319,40 +319,32 @@ def _is_file_in_use_by_system(path: Path) -> bool:
             
     return not _is_file_exclusive(path)
 
-def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> bool:
+def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> None:
     """Pre-validación antes de eliminar: asegura que el archivo mantenga integridad."""
-    try:
-        ensure_safe_to_modify(path)
-        _check_for_reparse_points(path)
-        if is_protected_path(path) or ":" in path.name:
-            return False
-            
-        st: os.stat_result = path.stat()
-        if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode):
-            return False
-        if hasattr(os, 'getuid') and st.st_uid != os.getuid():
-            return False
+    ensure_safe_to_modify(path)
+    _check_for_reparse_points(path)
+    if is_protected_path(path) or ":" in path.name:
+        raise UnsafePathError("Ruta protegida o ADS detectado.")
         
-        if expected_hash and _get_sha256(path) != expected_hash:
-            return False
-        
-        return not _is_file_in_use_by_system(path)
-    except (OSError, PermissionError, UnsafePathError):
-        return False
+    st: os.stat_result = path.stat()
+    if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode):
+        raise UnsafePathError("Inconsistencia en inodo o enlaces.")
+    if hasattr(os, 'getuid') and st.st_uid != os.getuid():
+        raise UnsafePathError("Error de propiedad de archivo.")
+    
+    if expected_hash and _get_sha256(path) != expected_hash:
+        raise UnsafePathError("Falla de integridad: hash mismatch.")
+    
+    if _is_file_in_use_by_system(path):
+        raise UnsafePathError("Archivo en uso por el sistema.")
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
     """Borrado controlado con fsync sobre el directorio para asegurar la persistencia."""
     if not path.exists():
         return False
         
-    if not _validate_file_for_unlink(path, expected_hash, expected_inode):
-        return False
-        
     try:
-        # Validación extra de propiedad antes de unlink (defensa ante TOCTOU)
-        if hasattr(os, 'getuid') and path.stat().st_uid != os.getuid():
-            return False
-
+        _validate_file_for_unlink(path, expected_hash, expected_inode)
         parent: Path = path.parent
         _check_io_error_context(path.unlink)
         
@@ -364,7 +356,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
             except OSError:
                 pass
         return True
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, UnsafePathError):
         return False
 
 def _check_path_syntax_integrity(path: Path) -> None:

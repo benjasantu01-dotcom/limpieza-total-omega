@@ -1015,3 +1015,23 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-25T11:33:59` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_windows_snapshot` y `trim_working_set` añadiendo verificaciones explícitas de errores y un manejo de excepciones más granular para evitar fallos silenciosos o bloqueos por tipos de datos inválidos.
 - `2026-10-25T11:33:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T11:33:59` Corrida terminada. Total usado hoy: 272.
+- `2026-10-25T11:41:49` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-25T11:42:26` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-25T11:43:18` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_unlink` y `_is_item_purgable` centralizando la validación de integridad mediante una excepción específica, asegurando que cualquier fallo de estado sea capturado como `UnsafePathError` en lugar de fallos genéricos, cumpliendo con el enfoque de manejo de errores.
+- `2026-10-25T11:43:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-10-25T11:44:19` Tests FALLARON:
+```
+irectorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - OSError: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - OSError: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - OSError: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - OSError: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - OSError: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - OSError: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - OSError: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+70 failed, 229 passed in 2.14s
+
+```
+- `2026-10-25T11:44:19` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo una gestión de errores más robusta y específica en `_get_file_id` y `_get_file_attrs`, asegurando que el uso de la API de Windows no silencie excepciones críticas de sistema mediante el uso de un manejo de excepciones explícito en lugar de capturas genéricas.
+- `2026-10-25T11:44:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T11:44:19` Corrida terminada. Total usado hoy: 276.
