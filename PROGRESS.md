@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 192
+- Sin cambios (nada sustancial que mejorar): 26
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 84 | 7 | 15 | 11 | 63 |
-| 2026-10-25 | 136 | 16 | 29 | 14 | 129 |
+| 2026-10-24 | 84 | 7 | 15 | 11 | 59 |
+| 2026-10-25 | 138 | 16 | 29 | 15 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,13 +25,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **45**
 - rendimiento: **43**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **38**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **20**
+- `browser.py`: **19**
 - `quarantine.py`: **19**
-- `browser.py`: **18**
 - `diskreport.py`: **18**
 - `scanner.py`: **18**
 - `duplicates.py`: **17**
@@ -40,12 +40,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **16**
 - `safety.py`: **15**
 - `assistant.py`: **15**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `main.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T13:55:56` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación del estado de los archivos (`is_symlink` y atributos de sistema) antes de intentar cualquier lectura de metadatos o acceso recursivo, evitando el seguimiento de enlaces simbólicos malintencionados o rutas críticas fuera del sandbox.
+- `2026-10-25T13:55:27` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la creación recursiva de directorios `parent.mkdir(parents=True, exist_ok=True)` por una verificación manual basada en `is_safe_to_modify`, garantizando que la estructura de carpetas no contenga rutas protegidas antes de realizar cualquier operación de escritura.
 - `2026-10-25T13:45:54` **settings.py** (robustez ante casos límite): Se reforzó la robustez del cargador de configuración ante errores de lectura mediante la implementación de un mecanismo de "fallback" explícito al encontrar archivos corruptos, evitando que errores de permiso o formato malicioso bloqueen el acceso a la app.
 - `2026-10-25T13:45:20` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` implementando una validación explícita para archivos "en uso" (bloqueados por otros procesos) en `_safe_stat`, evitando así que las heurísticas intenten acceder a descriptores de archivo inaccesibles que disparan excepciones innecesarias durante escaneos masivos.
 - `2026-10-25T13:44:51` **safety.py** (robustez ante casos límite): Mejora la robustez de `_is_file_locked_by_other_process` mediante la implementación de una estrategia de reintentos con *backoff* exponencial, mitigando errores transitorios de E/S comunes en entornos de alta concurrencia o cuando un archivo está siendo liberado por un proceso en segundo plano.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T13:05:11` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando el parseo redundante de rutas y comprobaciones de sistema mediante el uso de una caché estática en `_MANAGER`, asegurando que `settings_path()` solo resuelva la ruta cuando sea estrictamente necesario.
 - `2026-10-25T13:04:58` **scanner.py** (rendimiento): Optimicé el método `_is_relevant_extension` y el filtrado de archivos mediante el uso de un conjunto de extensiones normalizadas, evitando el uso repetitivo de `Path(name).suffix` y llamadas a `lower()` que, siendo operaciones de strings frecuentes en un escaneo de disco, impactan significativamente en el rendimiento del bucle principal.
 - `2026-10-25T12:57:00` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño de los archivos en cuarentena y la gestión del manifiesto mediante la implementación de un mecanismo de "cálculo en demanda" con caché, evitando recargas innecesarias de JSON y recorridos redundantes del disco.
-- `2026-10-25T12:54:52` **memory.py** (rendimiento): Se optimizó el proceso de recolección de procesos pesados en `_iter_process_memory` reemplazando la instanciación innecesaria de objetos `ProcessMemory` durante el filtrado por una lógica de generación diferida, reduciendo el consumo de memoria y CPU al evitar procesar PIDs descartables.
-- `2026-10-25T12:43:57` **diskreport.py** (rendimiento): Optimicé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y mejorar la eficiencia del bucle principal al consolidar la lógica de registro, reduciendo la carga de objetos y el uso de CPU durante el escaneo recursivo.

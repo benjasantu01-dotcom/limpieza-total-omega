@@ -195,6 +195,7 @@ def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str
     if is_protected_path(Path(entry.path)): return True
     
     try:
+        # Validación de seguridad: no seguir links y verificar atributos de sistema
         if entry.is_symlink() or scan_ctx.is_junction(entry.path) or _is_system_hidden(entry.path, scan_ctx.kernel32): 
             return True
     except OSError: return True
@@ -203,7 +204,8 @@ def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str
 def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     """Calcula el tamaño de un archivo individual evitando conteos múltiples por hardlinks."""
     try:
-        if not entry.is_file(): return 0
+        # Verificar is_symlink previo a cualquier lectura estadística
+        if not entry.is_file() or entry.is_symlink(): return 0
         st = entry.stat(follow_symlinks=False)
         if st.st_size > 0:
             file_id = (st.st_dev, st.st_ino)
@@ -220,10 +222,15 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     
     root_norm = os.path.normcase(os.path.abspath(root_path))
     
+    # Pre-check de seguridad estricto
     if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm) or root_norm in scan_ctx.visited_dirs:
         return ScanResult(0, True)
 
     if not os.path.isdir(root_path) or not os.access(root_path, os.R_OK) or is_protected_path(Path(root_path)):
+        return ScanResult(0, True)
+
+    # Verificar si es link antes de entrar
+    if os.path.islink(root_path) or _IS_JUNCTION_FN(root_path):
         return ScanResult(0, True)
     
     scan_ctx.visited_dirs.add(root_norm)

@@ -350,14 +350,17 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if not filter_safe_paths([dest_path]): return None
         if dest_path.is_dir(): return None
         
-        # Validación de integridad: el padre debe existir y ser seguro
+        # Validación de integridad: el padre debe ser seguro
         parent = dest_path.parent
         if not filter_safe_paths([parent]):
             return None
-        
-        # Crear directorios solo si la ruta no está en la blocklist (via safety)
+            
+        # Crear directorios solo si la ruta padre es segura
         if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
+            if is_safe_to_modify(parent):
+                parent.mkdir(parents=True, exist_ok=True)
+            else:
+                return None
             
         # Asegurar explícitamente que la operación de escritura es permitida y segura
         if not is_safe_to_modify(dest_path):

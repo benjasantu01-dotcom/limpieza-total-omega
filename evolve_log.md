@@ -1224,3 +1224,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-25T13:46:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-10-25T13:46:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T13:46:19` Corrida terminada. Total usado hoy: 324.
+- `2026-10-25T13:54:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-25T13:54:54` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad de la función `_is_safe_payload_structure` para prevenir ataques de denegación de servicio (DoS) por complejidad arbitraria, integrando el chequeo de profundidad y tamaño de forma más robusta y consistente con los patrones defensivos del archivo.
+- `2026-10-25T13:55:27` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` reemplazando la creación recursiva de directorios `parent.mkdir(parents=True, exist_ok=True)` por una verificación manual basada en `is_safe_to_modify`, garantizando que la estructura de carpetas no contenga rutas protegidas antes de realizar cualquier operación de escritura.
+- `2026-10-25T13:55:56` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación del estado de los archivos (`is_symlink` y atributos de sistema) antes de intentar cualquier lectura de metadatos o acceso recursivo, evitando el seguimiento de enlaces simbólicos malintencionados o rutas críticas fuera del sandbox.
+- `2026-10-25T13:56:11` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-10-25T13:56:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T13:56:11` Corrida terminada. Total usado hoy: 328.
