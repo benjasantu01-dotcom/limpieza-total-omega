@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 143 | 13 | 35 | 16 | 125 |
-| 2026-10-25 | 66 | 8 | 15 | 5 | 78 |
+| 2026-10-24 | 139 | 13 | 35 | 16 | 125 |
+| 2026-10-25 | 69 | 8 | 15 | 5 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **49**
+- manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
-- rendimiento: **42**
+- rendimiento: **38**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **34**
+- legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
+- `memory.py`: **20**
 - `quarantine.py`: **19**
+- `settings.py`: **18**
 - `diskreport.py`: **18**
-- `healthscore.py`: **17**
-- `settings.py`: **17**
 - `safety.py`: **17**
-- `duplicates.py`: **16**
 - `organizer.py`: **16**
 - `browser.py`: **16**
+- `healthscore.py`: **16**
+- `duplicates.py`: **15**
 - `branding.py`: **13**
-- `assistant.py`: **12**
+- `assistant.py`: **13**
 - `scanner.py`: **12**
-- `main.py`: **8**
-- `startup.py`: **7**
+- `startup.py`: **8**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T07:29:00` **assistant.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad mediante la adición de Type Hints en la interfaz pública y una reestructuración de la clase `SystemContext` para separar claramente la lógica de ingestión de datos de la lógica de negocio de los criterios de salud, facilitando la comprensión del flujo de datos.
+- `2026-10-25T07:28:19` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_quoted_path` implementando una validación estricta de límites antes de realizar operaciones de sistema (como convertir a `Path`), evitando excepciones innecesarias ante rutas malformadas o excesivamente largas.
+- `2026-10-25T07:27:52` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_load_impl` al añadir validaciones explícitas contra archivos demasiado grandes o con estructuras maliciosas (como diccionarios anidados profundos) antes de procesarlos, asegurando que el parser de JSON no sea una vía de entrada para denegación de servicio o errores inesperados.
 - `2026-10-25T07:19:27` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez del escáner implementando una validación explícita de `os.DirEntry` y protecciones adicionales contra errores de acceso durante la iteración en `_handle_directory` y `process_entry`, asegurando que el estado del stack sea consistente incluso ante fallos inesperados de E/S.
 - `2026-10-25T07:19:03` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión robusta de excepciones en la función `_get_file_id` para evitar que fallos en la API de bajo nivel o condiciones de carrera (TOCTOU) resulten en identificadores nulos erróneos que podrían invalidar las comprobaciones de integridad.
 - `2026-10-25T07:17:53` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` y `restore_item` agregando chequeos explícitos para capturar casos donde los argumentos recibidos podrían ser inconsistentes o nulos, asegurando que la excepción sea informativa y no genérica antes de tocar el sistema de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T05:26:14` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación explícita de "punto de unión" antes de cualquier operación, asegurando que la resolución de rutas no atraviese los límites del directorio raíz incluso en casos donde los enlaces NTFS podrían ser manipulados tras la validación inicial.
 - `2026-10-25T05:19:35` **quarantine.py** (seguridad defensiva): Se ha añadido una validación de `os.fsync` y control de errores más estricta en el método `_atomic_isolate_file`, asegurando que, ante una falla de E/S inesperada durante el movimiento de archivos al sandbox, el sistema garantice un estado consistente y limpio antes de propagar cualquier excepción hacia arriba.
 - `2026-10-25T05:19:09` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` implementando una validación estricta de la ruta destino (`item.is_relative_to(dest)`) y verificando la integridad del archivo antes de la eliminación, asegurando que solo se borren archivos que realmente pertenecen al directorio de cuarentena y no fueron sustituidos por enlaces simbólicos o junctions.
-- `2026-10-25T05:18:42` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` validando la integridad del buffer de ruta antes de pasarlo a `is_protected_path`, garantizando que solo rutas absolutas y válidas sean analizadas tras la obtención del nombre del módulo.
-- `2026-10-25T05:18:13` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` reforzando la validación de rutas mediante `is_safe_to_modify` antes de cualquier operación de escritura (específicamente en el borrado de cuarentena y borrado de archivos revisados), garantizando que incluso si el decorador `ensure_safety` falla o se omite, la lógica interna tenga un filtro booleano adicional.
-- `2026-10-25T05:06:06` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor de reportes implementando una validación estricta en `_sanitize_msg` para detectar la presencia de rutas potencialmente sensibles (nombres de archivos o directorios) antes de incluir cualquier mensaje en el informe final, garantizando que el asistente nunca filtre información sensible de la estructura del sistema.

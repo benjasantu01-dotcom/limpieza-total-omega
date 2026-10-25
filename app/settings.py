@@ -376,7 +376,10 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             if not isinstance(data, dict): return None
-            return data if all(isinstance(v, (str, int, float, bool)) or v is None for v in data.values()) else None
+            # Valida profundidad plana y tipos de datos simples (previniendo JSON bombas/anidación excesiva)
+            if len(data) > 64: return None
+            if not all(isinstance(v, (str, int, float, bool)) or v is None for v in data.values()): return None
+            return data
     except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError):
         return None
 

@@ -422,6 +422,8 @@ class SystemContext:
         """Validación de seguridad para impedir inyecciones en el campo de grado."""
         return _ensure_safe_text(self.grade) if self.grade else True
 
+    # -- Lógica de Ingestión y Validación (Separada de lógica de negocio) --
+
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         try:
@@ -472,8 +474,6 @@ class SystemContext:
             # Limpieza segura de cachés
             self.__dict__.pop("metrics_snapshot", None)
             self.__dict__.pop("_hash_tuple", None)
-            # Forzar re-cálculo si es necesario
-            _ = self.metrics_snapshot
         except Exception:
             self.analyzed = False
 
@@ -772,8 +772,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, OSError, ValueError):
         return None
 
-def ask(question: str, context: SystemContext | None = None,
-        base: str | Path | None = None) -> Answer:
+def ask(question: str, context: Optional[SystemContext] = None,
+        base: Optional[Union[str, Path]] = None) -> Answer:
     """Punto de acceso único que orquesta los motores local y remoto."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")

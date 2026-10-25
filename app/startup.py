@@ -142,12 +142,10 @@ class StartupEntry:
             
         path_str: str = raw_command[1:end_quote].strip()
         
-        if not path_str or ".." in path_str or self._is_path_suspicious(path_str) or self._is_reserved_device_name(path_str):
+        if not path_str or ".." in path_str or self._is_path_suspicious(path_str) or self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
             return ""
             
         try:
-            if len(path_str) > MAX_PATH_LEN:
-                return ""
             p: Path = Path(path_str)
             # Validamos existencia básica antes de operar con la ruta
             if not p.parts or is_protected_path(p):
