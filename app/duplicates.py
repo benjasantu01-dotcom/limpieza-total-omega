@@ -92,7 +92,7 @@ class DuplicateGroup:
 def _safe_path_check(path: Path) -> bool:
     """Valida la integridad de un path frente a restricciones de seguridad y enlaces simbólicos."""
     if path is None: return False
-    # Siempre verificar seguridad antes de tocar la ruta
+    # La seguridad exige chequear explícitamente ambos filtros de `safety.py`
     return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
 
 
@@ -103,7 +103,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo, verificando seguridad de acceso antes de leer."""
-    if not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
+    if not isinstance(path, Path) or not path.exists() or not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
@@ -120,7 +120,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash parcial (primeros N bytes) de forma segura."""
-    if not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
+    if not isinstance(path, Path) or not path.exists() or not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     try:
@@ -138,7 +138,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_size
     for item in (Path(p) for p in paths if p):
-        if _safe_path_check(item) and item.is_file():
+        if item.exists() and _safe_path_check(item) and item.is_file():
             try:
                 st = item.stat()
                 if _is_valid_candidate(item, st.st_size):
@@ -234,7 +234,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_mtime(path: Path) -> float:
     """Obtiene el tiempo de modificación de un archivo de forma segura."""
-    if not isinstance(path, Path) or not _safe_path_check(path):
+    if not isinstance(path, Path) or not path.exists() or not _safe_path_check(path):
         return float('inf')
     try:
         return path.stat().st_mtime
@@ -249,7 +249,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
-        if _safe_path_check(p):
+        if p.exists() and _safe_path_check(p):
             candidates.append((_get_mtime(p), p))
     
     if not candidates:

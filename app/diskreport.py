@@ -283,20 +283,18 @@ def format_size(num: Union[int, float, None]) -> str:
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
-    """Obtiene el uso de disco del punto de montaje provisto."""
+    """Obtiene el uso de disco del punto de montaje provisto, validando seguridad."""
     if mount is None:
         return None
     try:
         p = Path(mount).resolve(strict=False)
-        if p.exists() and not is_protected_path(p):
-            usage = shutil.disk_usage(p)
-            # Re-verificar seguridad tras resolución de ruta
-            if is_protected_path(p):
-                return None
-            return DriveUsage(str(p), usage.total, usage.used, usage.free)
+        # Seguridad: verificar antes de llamar a shutil.disk_usage
+        if not p.exists() or is_protected_path(p):
+            return None
+        usage = shutil.disk_usage(p)
+        return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
         return None
-    return None
 
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
@@ -325,12 +323,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry.name, entry.path):
                             continue
                         
-                        # 2. Obtener stat, manejando fallos si el archivo desapareció
-                        st = entry.stat(follow_symlinks=False)
-                        
-                        # 3. Doble validación de seguridad
+                        # 2. Doble validación de seguridad antes de procesar el objeto
                         if skip_protected and is_protected_path(Path(entry.path)):
                             continue
+                        
+                        # 3. Obtener stat, manejando fallos si el archivo desapareció
+                        st = entry.stat(follow_symlinks=False)
                             
                         # 4. Procesar según tipo
                         if entry.is_dir(follow_symlinks=False):

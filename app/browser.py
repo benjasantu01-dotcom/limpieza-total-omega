@@ -276,10 +276,14 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
     return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Resuelve rutas absolutas a partir de perfiles detectados."""
+    """Resuelve rutas absolutas a partir de perfiles detectados de forma segura."""
     if not _is_valid_rel_path(rel_str): return Path()
-    target = real_base.joinpath(*rel_str.split("\\"))
-    return target if target.exists() and target.is_dir() else Path()
+    try:
+        target = real_base.joinpath(*rel_str.split("\\")).resolve()
+        if not str(target).startswith(str(real_base.resolve())): return Path()
+        return target if target.exists() and target.is_dir() else Path()
+    except (OSError, RuntimeError):
+        return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Escanea perfiles para consolidar hallazgos de caché ordenados por tamaño."""

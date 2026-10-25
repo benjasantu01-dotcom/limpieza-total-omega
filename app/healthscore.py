@@ -284,14 +284,15 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _is_safe_string_for_report(text: str) -> bool:
-    """Verifica si el mensaje es seguro para mostrarse al usuario."""
+    """Verifica si el mensaje contiene términos protegidos o rutas sensibles."""
     t_low = text.lower()
     return not any(term in t_low for term in _BLOCKED_TERMS)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Filtro de seguridad para evitar inyección de rutas en los reportes de texto."""
+    """Filtro de seguridad que asegura que solo caracteres permitidos pasen al reporte."""
     if not isinstance(msg, str): return ""
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
+    # Verificación extra de integridad: rechazar si hay indicios de paths bloqueados
     if not _is_safe_string_for_report(clean):
         return ""
     return clean.strip()[:_MAX_MSG_LEN]
@@ -320,7 +321,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Motor de cómputo cacheado del HealthResult."""
-    # Reconstrucción inyectiva mínima para el pipeline
     m_args = {k: metrics_tuple[i] for i, k in enumerate(SystemMetrics._FIELDS_TO_VALIDATE)}
     metrics = SystemMetrics(**m_args)
     
@@ -337,7 +337,6 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
         recs = _evaluate_rules(metrics, entry.rules, area_ratio)
         recommendations.extend(recs)
         
-        # Uso de max(1) para evitar división por cero si el peso fuera 0 (aunque aquí es fijo)
         points = area_ratio * float(entry.weight)
         val_int = int(_clamp(round(points), 0.0, float(entry.weight)))
         
