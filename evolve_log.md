@@ -1447,3 +1447,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-25T04:15:58` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del método `ingest` y la carga de datos evitando fallos silenciosos por tipos de datos inesperados en el `source`, añadiendo una validación explícita para asegurar que el objeto fuente tenga atributos accesibles antes de intentar procesarlos, cumpliendo así con el enfoque de robustez ante casos límite.
 - `2026-10-25T04:15:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T04:15:58` Corrida terminada. Total usado hoy: 100.
+- `2026-10-25T04:24:00` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-25T04:24:47` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo geométrico agregando validaciones de entrada más estrictas y manejando casos límite como el escalado a cero, evitando excepciones silenciosas o valores inconsistentes en el canvas.
+- `2026-10-25T04:25:15` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una validación de profundidad y ciclos en la recursión mediante `ScanContext` para prevenir ataques de desbordamiento de pila o bucles infinitos en sistemas con estructuras de archivos complejas, asegurando que el escaneo siempre termine.
+- `2026-10-25T04:25:41` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez del recorrido de archivos mediante la implementación de `os.scandir` con un manejo defensivo ante la posible eliminación o bloqueo de archivos/directorios mientras el bucle está iterando (casos límite de concurrencia y permisos dinámicos).
+- `2026-10-25T04:25:48` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-25T04:25:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T04:25:48` Corrida terminada. Total usado hoy: 104.

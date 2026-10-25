@@ -62,6 +62,7 @@ class ScanContext:
     visited_files: Set[tuple[int, int]]
     visited_dirs: VisitedDirs
     never_touch_lower: frozenset[str]
+    max_depth: int = 20  # Límite anti-recursión infinita
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     """
@@ -213,7 +214,7 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
 
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
     """Calcula el peso total recursivo aplicado de filtros de seguridad."""
-    if not root_path or depth > MAX_SCAN_DEPTH:
+    if not root_path or depth > scan_ctx.max_depth:
         return ScanResult(0, True)
     
     abs_path = os.path.abspath(root_path)

@@ -346,21 +346,20 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     try:
         dest_path = Path(destination).resolve()
         
-        # Validación inicial usando filter_safe_paths
+        # Validación de seguridad: rutas protegidas o bloqueadas
         if not filter_safe_paths([dest_path]): return None
-        
-        # Validación: no permitir escribir si es un directorio existente
         if dest_path.is_dir(): return None
         
-        # Validación de seguridad: el padre debe ser seguro
+        # Validación de integridad: el padre debe existir y ser seguro
         parent = dest_path.parent
         if not is_safe_to_modify(parent):
             return None
         
+        # Crear directorios solo si la ruta no está en la blocklist (via safety)
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
             
-        # Asegurar explícitamente que la ruta final es segura antes de escribir
+        # Asegurar explícitamente que la operación es segura
         ensure_safe_to_modify(dest_path)
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
@@ -403,10 +402,8 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     try:
         if not math.isfinite(scale) or scale <= 0: return
         ts = max(8, int(UI_CONFIG.header_size * scale))
-        # Línea de corte y triángulo decorativo
         canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
         canvas.create_polygon(x+75*scale, y+41*scale, x+89*scale, y+38*scale, x+92*scale, y+52*scale, fill=C_BACKGROUND, outline="")
-        # Glifo Omega centralizado
         canvas.create_text(x+64*scale, y+96*scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center")
     except Exception: pass
 
@@ -418,7 +415,6 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         s = max(0.1, min(10.0, val_size / 128.0))
         poly = _get_scaled_poly(s, canvas_x, canvas_y)
         if not poly: return
-        # Fondo brillante (aura) y silueta principal
         canvas.create_oval(canvas_x+(64-75)*s, canvas_y+(58-75)*s, canvas_x+(64+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
