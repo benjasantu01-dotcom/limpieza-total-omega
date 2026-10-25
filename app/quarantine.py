@@ -65,7 +65,7 @@ __all__: Tuple[str, ...] = (
 DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para mejorar throughput de I/O
-_MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float]] = {}
+_MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
 _HASH_CACHE: Dict[Tuple[str, float, int], str] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
@@ -562,7 +562,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y cachea el manifiesto para mejorar performance."""
+    """Carga y cachea el manifiesto con control de frescura para mejorar performance."""
     try:
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError):
@@ -570,17 +570,18 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         
     m_path: Path = _manifest_path(base_dir)
     if not m_path.exists():
-        _MANIFEST_CACHE[base_dir] = ([], 0.0)
+        _MANIFEST_CACHE[base_dir] = ([], 0.0, 0)
         return []
 
     try:
-        current_mtime: float = m_path.stat().st_mtime
+        st = m_path.stat()
+        current_mtime, current_size = st.st_mtime, st.st_size
     except OSError:
         return []
 
     if not force_reload and base_dir in _MANIFEST_CACHE:
-        cached_items, cached_mtime = _MANIFEST_CACHE[base_dir]
-        if cached_mtime == current_mtime:
+        cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
+        if cached_mtime == current_mtime and cached_size == current_size:
             return cached_items
         
     try:
@@ -596,10 +597,10 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             if item:
                 items.append(item)
                     
-        _MANIFEST_CACHE[base_dir] = (items, current_mtime)
+        _MANIFEST_CACHE[base_dir] = (items, current_mtime, current_size)
         return items
     except (OSError, json.JSONDecodeError, ValueError):
-        _MANIFEST_CACHE[base_dir] = ([], 0.0)
+        _MANIFEST_CACHE[base_dir] = ([], 0.0, 0)
         return []
 
 
@@ -635,7 +636,8 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         except OSError:
             pass
         
-        _MANIFEST_CACHE[base_path] = (items, target_path.stat().st_mtime)
+        st = target_path.stat()
+        _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size)
         return target_path
     except (OSError, IOError) as e:
         if temp_name and os.path.exists(temp_name):
@@ -1155,10 +1157,9 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
 
 
-def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR, items: Optional[List[QuarantineItem]] = None) -> int:
-    """Calcula el espacio ocupado por ítems en cuarentena."""
-    manifest_items = items if items is not None else load_manifest(base)
-    return sum(item.size_bytes for item in manifest_items)
+def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
+    """Calcula el espacio ocupado por ítems en cuarentena usando el caché de carga."""
+    return sum(item.size_bytes for item in load_manifest(base))
 
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:

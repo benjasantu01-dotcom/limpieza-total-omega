@@ -355,24 +355,6 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, psapi: ctypes.CDLL) 
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 
-def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
-    """Helper que orquesta la validación, apertura y medición de un proceso por su PID."""
-    h_process = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
-    if not h_process:
-        return None
-    
-    try:
-        ws = _query_working_set_bytes(pid, h_process, psapi, pmc)
-        if ws is None or ws <= (10 * BYTES_IN_MB):
-            return None
-            
-        if not _is_process_executable_safe(h_process, psapi):
-            return None
-            
-        return ProcessMemory(f"PID {pid}", pid, ws)
-    finally:
-        kernel32.CloseHandle(h_process)
-
 def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos mediante EnumProcesses y filtra aquellos significativos."""
     MAX_PIDS = 4096
@@ -387,9 +369,17 @@ def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS
         pid = int(pids[i])
         if pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid():
             continue
-        proc = _process_from_pid(pid, kernel32, psapi, pmc)
-        if proc:
-            yield proc
+            
+        h_process = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
+        if not h_process:
+            continue
+        
+        try:
+            ws = _query_working_set_bytes(pid, h_process, psapi, pmc)
+            if ws is not None and ws > (10 * BYTES_IN_MB) and _is_process_executable_safe(h_process, psapi):
+                yield ProcessMemory(f"PID {pid}", pid, ws)
+        finally:
+            kernel32.CloseHandle(h_process)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna los procesos más pesados. Implementa caché de 60 segundos para evitar sobrecarga."""

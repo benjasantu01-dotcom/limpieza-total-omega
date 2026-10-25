@@ -1127,3 +1127,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T12:44:40` ➖ Sin cambios en healthscore.py (enfoque: rendimiento). Motivo: Se ha optimizado el rendimiento del proceso de resumen y renderizado mediante el uso de `lru_cache` y la pre-computación de constantes para evitar la generación innecesaria de strings y cálculos repetitivos durante la serialización del informe.
 - `2026-10-25T12:44:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T12:44:40` Corrida terminada. Total usado hoy: 300.
+- `2026-10-25T12:53:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-25T12:54:19` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de **invalidación inteligente de caché mediante digests de estado** en la función `on_full_analysis`, evitando el re-procesamiento innecesario del contexto de la IA y el redibujo de componentes de salud si el estado del sistema no ha cambiado significativamente desde la última ejecución.
+- `2026-10-25T12:54:52` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de procesos pesados en `_iter_process_memory` reemplazando la instanciación innecesaria de objetos `ProcessMemory` durante el filtrado por una lógica de generación diferida, reduciendo el consumo de memoria y CPU al evitar procesar PIDs descartables.
+- `2026-10-25T12:55:19` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-25T12:56:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-25T12:56:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-25T12:57:00` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de los archivos en cuarentena y la gestión del manifiesto mediante la implementación de un mecanismo de "cálculo en demanda" con caché, evitando recargas innecesarias de JSON y recorridos redundantes del disco.
+- `2026-10-25T12:57:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T12:57:00` Corrida terminada. Total usado hoy: 304.
