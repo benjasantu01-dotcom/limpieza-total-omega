@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 135 | 12 | 32 | 16 | 121 |
-| 2026-10-25 | 77 | 8 | 19 | 5 | 79 |
+| 2026-10-24 | 134 | 12 | 32 | 16 | 118 |
+| 2026-10-25 | 81 | 8 | 19 | 5 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
-- legibilidad y documentación: **43**
-- rendimiento: **36**
-- robustez ante casos límite: **34**
+- legibilidad y documentación: **44**
+- rendimiento: **39**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
 - `quarantine.py`: **20**
+- `memory.py`: **20**
 - `safety.py`: **18**
+- `browser.py`: **18**
 - `diskreport.py`: **18**
 - `settings.py`: **17**
-- `browser.py`: **17**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `organizer.py`: **16**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
+- `branding.py`: **13**
 - `scanner.py`: **13**
-- `branding.py`: **12**
-- `startup.py`: **8**
+- `startup.py`: **9**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T08:09:45` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` evitando la reinicialización redundante de `ScanContext` y reduciendo el uso de `os.path.abspath` y `Path.resolve()` dentro de los bucles, centralizando la normalización de rutas y utilizando `frozenset` para búsquedas eficientes.
+- `2026-10-25T08:09:33` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación repetitiva de listas y tuplas dentro del bucle mediante una pre-calculación de las pendientes RGB (delta) y aplicando la fórmula de interpolación lineal directamente, reduciendo significativamente la carga de CPU en renderizados frecuentes.
+- `2026-10-25T08:09:00` **assistant.py** (rendimiento): Se optimizó el acceso a las métricas en `SystemContext` reemplazando la creación dinámica de tuplas y ordenamiento en el método `active_problems` por una propiedad cacheada `_cached_active_problems` que solo se invalida cuando cambian los datos, evitando cálculos repetitivos en cada acceso a la propiedad.
+- `2026-10-25T08:08:24` **startup.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones clave (`startup_folders`, `_process_folder_entry`, `entries_from_folders`) para clarificar la intención técnica y mejorar la legibilidad del flujo de datos, manteniendo estrictamente la funcionalidad existente.
 - `2026-10-25T07:59:38` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el módulo `Scanner` para clarificar la lógica de estado del recorrido y mejorar la mantenibilidad, sin alterar la funcionalidad.
 - `2026-10-25T07:59:04` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la refactorización de `is_within_directory` y `_get_final_path_normalized`, extrayendo la lógica compleja de manejo de Handles de Windows a un contexto claro, lo cual facilita el mantenimiento y la auditoría de seguridad sin alterar el comportamiento.
 - `2026-10-25T07:50:05` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `IsolationManager` y la clarificación de las validaciones de inodos y TOCTOU en el flujo de aislamiento, facilitando la comprensión del "porqué" de cada barrera de seguridad sin alterar la lógica.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T07:29:00` **assistant.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad mediante la adición de Type Hints en la interfaz pública y una reestructuración de la clase `SystemContext` para separar claramente la lógica de ingestión de datos de la lógica de negocio de los criterios de salud, facilitando la comprensión del flujo de datos.
 - `2026-10-25T07:28:19` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_quoted_path` implementando una validación estricta de límites antes de realizar operaciones de sistema (como convertir a `Path`), evitando excepciones innecesarias ante rutas malformadas o excesivamente largas.
 - `2026-10-25T07:27:52` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_load_impl` al añadir validaciones explícitas contra archivos demasiado grandes o con estructuras maliciosas (como diccionarios anidados profundos) antes de procesarlos, asegurando que el parser de JSON no sea una vía de entrada para denegación de servicio o errores inesperados.
-- `2026-10-25T07:19:27` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez del escáner implementando una validación explícita de `os.DirEntry` y protecciones adicionales contra errores de acceso durante la iteración en `_handle_directory` y `process_entry`, asegurando que el estado del stack sea consistente incluso ante fallos inesperados de E/S.
-- `2026-10-25T07:19:03` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión robusta de excepciones en la función `_get_file_id` para evitar que fallos en la API de bajo nivel o condiciones de carrera (TOCTOU) resulten en identificadores nulos erróneos que podrían invalidar las comprobaciones de integridad.
-- `2026-10-25T07:17:53` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` y `restore_item` agregando chequeos explícitos para capturar casos donde los argumentos recibidos podrían ser inconsistentes o nulos, asegurando que la excepción sea informativa y no genérica antes de tocar el sistema de archivos.
-- `2026-10-25T07:09:32` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_process_accessible` y `_query_working_set_bytes` reemplazando los bloques `try-except` genéricos por capturas específicas de `ctypes.WinError` y `OSError`, asegurando además que los punteros y handles sean validados explícitamente antes de su uso.

@@ -218,16 +218,12 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     if not root_path or depth > scan_ctx.max_depth:
         return ScanResult(0, True)
     
-    abs_path = os.path.abspath(root_path)
-    root_norm = os.path.normcase(abs_path)
+    root_norm = os.path.normcase(os.path.abspath(root_path))
     
-    if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm):
+    if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm) or root_norm in scan_ctx.visited_dirs:
         return ScanResult(0, True)
 
-    if root_norm in scan_ctx.visited_dirs or not os.path.isdir(root_path) or not os.access(root_path, os.R_OK):
-        return ScanResult(0, True)
-    
-    if is_protected_path(Path(root_path)):
+    if not os.path.isdir(root_path) or not os.access(root_path, os.R_OK) or is_protected_path(Path(root_path)):
         return ScanResult(0, True)
     
     scan_ctx.visited_dirs.add(root_norm)
@@ -270,8 +266,7 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
     cand_abs = os.path.abspath(str(candidate))
     cand_norm = os.path.normcase(cand_abs)
     
-    if not is_safe_to_modify(candidate): return False
-    if not _is_within_sandbox(cand_norm, base_norm): return False
+    if not is_safe_to_modify(candidate) or not _is_within_sandbox(cand_norm, base_norm): return False
     if _is_system_hidden(cand_abs, kernel): return False
     
     return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
@@ -280,8 +275,8 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve rutas absolutas a partir de perfiles detectados, verificando contención en el sandbox."""
     if not _is_valid_rel_path(rel_str): return Path()
     try:
-        target = real_base.joinpath(*rel_str.split("\\")).resolve()
-        if not str(target).startswith(str(real_base.resolve())): return Path()
+        target = real_base.joinpath(*rel_str.split("\\"))
+        if not str(target).startswith(str(real_base)): return Path()
         return target if target.exists() and target.is_dir() else Path()
     except (OSError, RuntimeError):
         return Path()
@@ -298,18 +293,15 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists() or not os.access(base, os.R_OK): continue
-        base_norm = os.path.normcase(os.path.abspath(base))
+        base_norm = os.path.normcase(str(base.resolve()))
         scan_ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
         
         for browser_key, relative_path in browser_map.items():
-            try:
-                candidate = _resolve_browser_path(base, relative_path)
-                if candidate != Path() and _is_valid_cache_path(candidate, base_norm):
-                    scan_res = _sum_directory_recursive(str(candidate), scan_ctx, 0)
-                    if scan_res.success and scan_res.bytes_found > 0:
-                        found.append(BrowserCache(str(browser_key), candidate, scan_res.bytes_found))
-            except (OSError, PermissionError, ValueError):
-                continue
+            candidate = _resolve_browser_path(base, relative_path)
+            if candidate != Path() and _is_valid_cache_path(candidate, base_norm):
+                scan_res = _sum_directory_recursive(str(candidate), scan_ctx, 0)
+                if scan_res.success and scan_res.bytes_found > 0:
+                    found.append(BrowserCache(str(browser_key), candidate, scan_res.bytes_found))
     
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found

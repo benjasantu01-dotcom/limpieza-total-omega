@@ -392,11 +392,16 @@ class SystemContext:
         """Snapshot cacheado de las métricas numéricas para acceso eficiente."""
         return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k, -1.0)) != -1.0}
 
+    @cached_property
+    def _cached_active_problems(self) -> tuple[str, ...]:
+        """Versión cacheada de active_problems, invalidada al cambiar metrics_snapshot."""
+        if not self.analyzed: return ()
+        return _evaluate_active_problems(tuple(sorted(self.metrics_snapshot.items())))
+
     @property
     def active_problems(self) -> tuple[str, ...]:
         """Evalúa los criterios de salud contra los datos actuales y retorna los problemas activos."""
-        if not self.analyzed: return ()
-        return _evaluate_active_problems(tuple(sorted(self.metrics_snapshot.items())))
+        return self._cached_active_problems
 
     @cached_property
     def _hash_tuple(self) -> tuple:
@@ -473,6 +478,7 @@ class SystemContext:
             self.analyzed = True
             # Limpieza segura de cachés
             self.__dict__.pop("metrics_snapshot", None)
+            self.__dict__.pop("_cached_active_problems", None)
             self.__dict__.pop("_hash_tuple", None)
         except Exception:
             self.analyzed = False

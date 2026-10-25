@@ -273,7 +273,12 @@ def startup_folders() -> List[Path]:
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
-    """Valida la integridad de una entrada individual de carpeta de inicio."""
+    """
+    Valida la integridad de una entrada individual de carpeta de inicio.
+    
+    Verifica que sea un archivo ejecutable, no un enlace simbólico y que no esté
+    dentro de una ruta protegida.
+    """
     try:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
@@ -296,7 +301,11 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEntries:
-    """Escanea carpetas de inicio y retorna objetos StartupEntry válidos."""
+    """
+    Escanea las carpetas de inicio proporcionadas y retorna objetos StartupEntry válidos.
+    
+    Si no se proveen carpetas, utiliza las determinadas por `startup_folders`.
+    """
     found_entries: StartupEntries = []
     scan_folders = folders if folders is not None else startup_folders()
     processed_paths: Set[str] = set()
