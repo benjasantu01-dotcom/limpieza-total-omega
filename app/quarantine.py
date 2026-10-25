@@ -820,6 +820,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         
         # Fuerza persistencia del directorio padre antes de escribir
         try:
+            if not destination.parent.exists():
+                destination.parent.mkdir(parents=True, exist_ok=True)
             dir_fd: int = os.open(str(destination.parent), os.O_RDONLY)
             try: os.fsync(dir_fd)
             finally: os.close(dir_fd)

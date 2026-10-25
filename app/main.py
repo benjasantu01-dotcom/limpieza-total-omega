@@ -1279,9 +1279,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     fn()
                 else:
                     raise RuntimeError("Directorio de trabajo actual eliminado o inaccesible.")
-            except Exception as e:
+            except (safety.UnsafePathError, PermissionError, FileNotFoundError, OSError) as e:
                 if not self._closing:
                     self._validate_and_log_error(e, tab)
+            except Exception as e:
+                logging.error("Error crítico no manejado en %s: %s", tab, e)
+                if not self._closing:
+                    self.log(f"Error crítico: operación interrumpida.", tab)
 
     def _worker_thread_logic(self, fn: AsyncCallback, tab: str) -> None:
         """Envoltorio de ejecución para hilos trabajadores en el pool."""

@@ -133,7 +133,7 @@ def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
 def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     """Detecta si la ruta es un punto de reparse para evitar recursión infinita."""
     try:
-        if entry.is_symlink(): return True
+        if isinstance(entry, Path) and entry.is_symlink(): return True
         return bool(_get_win_attributes(entry) & LIMITS.WIN_ATTR_JUNCTION)
     except (OSError, AttributeError):
         return True
