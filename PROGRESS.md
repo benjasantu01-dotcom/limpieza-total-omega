@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 49
+- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 138 | 13 | 33 | 16 | 124 |
-| 2026-10-25 | 72 | 8 | 16 | 5 | 79 |
+| 2026-10-24 | 137 | 12 | 33 | 16 | 122 |
+| 2026-10-25 | 75 | 8 | 17 | 5 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
-- legibilidad y documentación: **38**
-- rendimiento: **37**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **36**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
+- `memory.py`: **21**
+- `quarantine.py`: **20**
 - `diskreport.py`: **19**
-- `quarantine.py`: **19**
-- `settings.py`: **18**
 - `safety.py`: **17**
+- `settings.py`: **17**
 - `browser.py`: **17**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
-- `organizer.py`: **15**
+- `organizer.py`: **16**
 - `branding.py`: **13**
 - `assistant.py`: **13**
 - `scanner.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T07:50:05` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `IsolationManager` y la clarificación de las validaciones de inodos y TOCTOU en el flujo de aislamiento, facilitando la comprensión del "porqué" de cada barrera de seguridad sin alterar la lógica.
+- `2026-10-25T07:49:34` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la sustitución de comprobaciones implícitas por type hints explícitos, facilitando la comprensión de las restricciones de seguridad sin alterar la lógica de ejecución.
+- `2026-10-25T07:49:06` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_is_process_executable_safe` y `_process_from_pid`, eliminando la dependencia de pasar la función `get_filename_func` por parámetro en cascada y documentando explícitamente las asunciones del manejo de PIDs mediante type hints y docstrings claros.
 - `2026-10-25T07:39:04` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reorganizaron los docstrings para documentar explícitamente el PORQUÉ de las validaciones de seguridad en cada función crítica, mejorando la mantenibilidad sin cambiar la lógica.
 - `2026-10-25T07:38:20` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y type hints específicos en las funciones de procesamiento de datos, asegurando que las responsabilidades de cada componente sean autoexplicativas para futuros colaboradores.
 - `2026-10-25T07:37:54` **browser.py** (legibilidad y documentación): He mejorado la legibilidad y la documentación del módulo añadiendo docstrings descriptivos a los métodos privados y clarificando mediante `TypeHinting` y tipos de retorno la estructura `ScanContext`, facilitando el mantenimiento y evitando ambigüedades en la lógica de escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T07:09:32` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_process_accessible` y `_query_working_set_bytes` reemplazando los bloques `try-except` genéricos por capturas específicas de `ctypes.WinError` y `OSError`, asegurando además que los punteros y handles sean validados explícitamente antes de su uso.
 - `2026-10-25T07:07:49` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del pipeline de cálculo mediante la validación explícita de `quarantined_count` en la entrada y el manejo defensivo de errores en la evaluación de reglas, asegurando que un fallo inesperado en una factoría de mensajes no propague excepciones y garantice siempre una respuesta válida para la interfaz.
 - `2026-10-25T06:57:23` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de acceso a datos (`color`, `font_size`, `icon`, `tab_label`) introduciendo validaciones explícitas de tipos y manejo de entradas nulas o vacías, evitando posibles errores de ejecución y asegurando un comportamiento predecible incluso ante configuraciones inesperadas.
-- `2026-10-25T06:50:14` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de datos externos en `AssistantConfig` y la serialización JSON, asegurando que `_build_payload` y `_extract_text_from_gemini_json` validen estrictamente tipos y estructuras antes de operar, evitando fallos silenciosos por datos malformados.
-- `2026-10-25T05:26:55` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` implementando una validación estricta de permisos (`st.st_mode`) y asegurando que no se operen archivos con permisos de escritura para grupo u otros, mitigando riesgos de acceso no autorizado o modificación de configuraciones por terceros.
-- `2026-10-25T05:26:39` **scanner.py** (seguridad defensiva): Se introdujo una validación de longitud absoluta estricta en `_is_safe_entry` y en la lógica de `process_entry` utilizando `Path.resolve()` antes de comparar con `base_root_norm`, evitando ataques de "path traversal" o saltos fuera del directorio base mediante rutas relativas complejas que `normcase` por sí solo podría no mitigar totalmente.

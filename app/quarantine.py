@@ -760,7 +760,10 @@ class IsolationManager:
     
     @staticmethod
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
-        """Verifica que el archivo no haya cambiado entre chequeos."""
+        """
+        Verifica que el archivo no haya cambiado entre chequeos iniciales y el proceso de aislamiento.
+        Compara inodos y rutas para mitigar ataques de Time-of-Check to Time-of-Use (TOCTOU).
+        """
         if not source.exists():
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
         

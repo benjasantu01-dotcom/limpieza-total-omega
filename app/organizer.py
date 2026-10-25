@@ -285,7 +285,10 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     return True
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[Path]) -> None:
-    """Explora recursivamente el sistema de archivos buscando archivos candidatos a limpieza."""
+    """
+    Explora recursivamente el sistema de archivos buscando archivos candidatos a limpieza.
+    Utiliza un caché de rutas protegidas y un set de visitados para prevenir ciclos.
+    """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
         resolved_dir = current_dir.resolve(strict=False)
@@ -366,7 +369,11 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina físicamente los archivos validados tras aplicar chequeos de seguridad."""
+    """
+    Elimina físicamente los archivos validados tras aplicar chequeos de seguridad.
+    Verifica que cada ítem resida efectivamente bajo la carpeta de cuarentena para 
+    evitar borrados fuera del ámbito autorizado.
+    """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
