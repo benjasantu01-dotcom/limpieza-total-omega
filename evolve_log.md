@@ -574,3 +574,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T07:50:05` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `IsolationManager` y la clarificación de las validaciones de inodos y TOCTOU en el flujo de aislamiento, facilitando la comprensión del "porqué" de cada barrera de seguridad sin alterar la lógica.
 - `2026-10-25T07:50:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T07:50:05` Corrida terminada. Total usado hoy: 184.
+- `2026-10-25T07:57:44` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-10-25T07:58:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 122): unterminated string literal (detected at line 122)
+- `2026-10-25T07:59:04` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la refactorización de `is_within_directory` y `_get_final_path_normalized`, extrayendo la lógica compleja de manejo de Handles de Windows a un contexto claro, lo cual facilita el mantenimiento y la auditoría de seguridad sin alterar el comportamiento.
+- `2026-10-25T07:59:38` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el módulo `Scanner` para clarificar la lógica de estado del recorrido y mejorar la mantenibilidad, sin alterar la funcionalidad.
+- `2026-10-25T07:59:54` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-25T07:59:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T07:59:54` Corrida terminada. Total usado hoy: 188.

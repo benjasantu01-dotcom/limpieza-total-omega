@@ -846,6 +846,29 @@ def is_protected_path(path: PathLike) -> bool:
     except (OSError, AttributeError, ValueError):
         return True
 
+def _get_final_path_normalized(p: Path) -> Path:
+    """
+    Resuelve el path final en Windows usando Handles para saltar puntos de unión
+    (junctions) y enlaces simbólicos. Si no es Windows, usa Path.resolve().
+    """
+    if os.name != 'nt':
+        return p.resolve()
+    
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.CreateFileW(
+        _to_long_path(str(p)), 0, 0, None, 3, 0x02000000, None
+    )
+    if handle == -1:
+        return p.resolve(strict=False)
+    
+    try:
+        buf = ctypes.create_unicode_buffer(1024)
+        if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
+            return Path(buf.value)
+    finally:
+        kernel32.CloseHandle(handle)
+    return p.resolve(strict=False)
+
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
     """Verifica contención de rutas evitando escapes mediante jail y resolución de enlaces."""
@@ -855,22 +878,8 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         p_path = normalize(parent)
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
         
-        def _get_final_path(p: Path) -> Path:
-            if not p.exists(): return p.resolve(strict=False)
-            if os.name != 'nt': return p.resolve()
-            kernel32 = ctypes.windll.kernel32
-            handle = kernel32.CreateFileW(_to_long_path(str(p)), 0, 0, None, 3, 0x02000000, None)
-            if handle == -1: return p.resolve(strict=False)
-            try:
-                buf = ctypes.create_unicode_buffer(1024)
-                if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
-                    return Path(buf.value)
-            finally:
-                kernel32.CloseHandle(handle)
-            return p.resolve(strict=False)
-
-        final_c = _get_final_path(c_path)
-        final_p = _get_final_path(p_path)
+        final_c = _get_final_path_normalized(c_path)
+        final_p = _get_final_path_normalized(p_path)
         
         return final_c.is_relative_to(final_p) if allow_equal else (final_c.is_relative_to(final_p) and final_c != final_p)
     except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError): return False
@@ -976,34 +985,12 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     if is_drive_root(target_path):
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
 
-def _get_final_path_normalized(path: Path) -> Optional[Path]:
-    """Resuelve rutas finales resolviendo junctions y enlaces NTFS mediante Handles."""
-    if os.name != 'nt': return _normalize_resolved(str(path))
-    try:
-        kernel32 = ctypes.windll.kernel32
-        handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
-        if handle == -1: return None
-        try:
-            buf = ctypes.create_unicode_buffer(1024)
-            if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
-                return _normalize_resolved(buf.value)
-        finally:
-            kernel32.CloseHandle(handle)
-    except (OSError, AttributeError, ctypes.ArgumentError):
-        return None
-    return None
-
-def _is_reparse_point_junction_target(path: Path, base_dir: Optional[Path]) -> bool:
-    """Verifica si el destino de un junction apunta fuera del directorio base."""
-    if not base_dir: return True
-    final_path = _get_final_path_normalized(path)
-    return final_path is not None and final_path.is_relative_to(base_dir)
-
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Verifica la seguridad de redirecciones mediante puntos de unión NTFS."""
     for p in [path] + list(path.parents):
         if _is_system_directory_junction(str(p)):
-            if not _is_reparse_point_junction_target(p, base_dir):
+            final_path = _get_final_path_normalized(p)
+            if base_dir and not final_path.is_relative_to(base_dir):
                 raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def _validate_path_components(path: Path) -> None:

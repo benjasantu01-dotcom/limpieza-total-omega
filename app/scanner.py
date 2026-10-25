@@ -214,7 +214,13 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 )
 
 class Scanner:
-    """Controlador central del motor de escaneo; mantiene el estado del recorrido y evita ciclos."""
+    """
+    Controlador central del motor de escaneo.
+    
+    Gestiona el estado del recorrido (DFS) para prevenir ciclos mediante la normalización 
+    de rutas y el seguimiento de entradas ya visitadas, además de centralizar 
+    los resultados del escaneo.
+    """
     
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
@@ -244,7 +250,11 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Aplica filtros de seguridad (estructura y reanálisis) antes de procesar una entrada."""
+        """
+        Aplica filtros de seguridad (estructura y reanálisis) antes de procesar una entrada.
+        
+        Utiliza 'safe_cache' para memorizar rutas validadas durante la iteración actual.
+        """
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         
@@ -287,7 +297,12 @@ class Scanner:
         return False
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Procesa una entrada: bifurca en directorio para recursión o archivo para heurísticas."""
+        """
+        Procesa una entrada del sistema de archivos:
+        
+        Si es archivo, lo deriva al motor de heurísticas. Si es directorio,
+        lo añade a la pila si no ha sido visitado previamente.
+        """
         if not isinstance(entry, os.DirEntry) or not entry.path or not self._is_safe_entry(entry):
             return
             
