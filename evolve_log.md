@@ -1119,3 +1119,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T12:34:47` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-10-25T12:34:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T12:34:47` Corrida terminada. Total usado hoy: 296.
+- `2026-10-25T12:42:52` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-25T12:43:23` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.abspath` y `os.path.normcase` dentro de cada iteración del bucle, pre-calculando el caso base y utilizando `Path.joinpath` de forma eficiente.
+- `2026-10-25T12:43:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-25T12:43:57` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y mejorar la eficiencia del bucle principal al consolidar la lógica de registro, reduciendo la carga de objetos y el uso de CPU durante el escaneo recursivo.
+- `2026-10-25T12:44:22` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-25T12:44:40` ➖ Sin cambios en healthscore.py (enfoque: rendimiento). Motivo: Se ha optimizado el rendimiento del proceso de resumen y renderizado mediante el uso de `lru_cache` y la pre-computación de constantes para evitar la generación innecesaria de strings y cálculos repetitivos durante la serialización del informe.
+- `2026-10-25T12:44:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T12:44:40` Corrida terminada. Total usado hoy: 300.

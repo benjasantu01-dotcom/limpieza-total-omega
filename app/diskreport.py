@@ -106,18 +106,17 @@ class GlobalStats:
         self.total_files: int = 0
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
-    def register_file(self, size: int, suffix: str) -> None:
+    def register_file(self, size: int, ext: str) -> None:
         """
         Registra un archivo y actualiza los totales y el mapa de extensiones.
         
         Args:
             size: Tamaño del archivo en bytes.
-            suffix: Extensión del archivo incluyendo el punto.
+            ext: Extensión normalizada del archivo.
         """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1
-            ext: str = (suffix.lower() if suffix else "(sin extensión)")
             self.ext_stats[ext].add(size)
 
 
@@ -317,8 +316,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        full_path = Path(entry.path)
-                        if skip_protected and (is_protected_path(full_path) or _is_excluded_path(entry.name, entry.path)):
+                        if skip_protected and (is_protected_path(Path(entry.path)) or _is_excluded_path(entry.name, entry.path)):
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
@@ -329,7 +327,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            yield full_path, st.st_size
+                            yield Path(entry.path), st.st_size
                             
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
@@ -387,26 +385,19 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Centraliza el recorrido y la agregación de métricas.
-    
-    Args:
-        directory: Directorio raíz a analizar.
-        skip_protected: Si se debe excluir rutas protegidas.
-        limit: Tamaño del heap para almacenar los archivos más grandes.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            stats.register_file(size, path.suffix)
-            
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-        except (AttributeError, TypeError, OSError):
-            continue
+        ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+        stats.register_file(size, ext)
+        
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
