@@ -160,7 +160,8 @@ def _is_target_extension(name: str) -> bool:
     if not isinstance(name, str) or not name: return False
     try:
         if RTL_CHAR_RE.search(name): return False
-        return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
+        _, ext = os.path.splitext(name)
+        return ext.lower() in SUSPICIOUS_ALL_EXTS
     except (ValueError, TypeError):
         return False
 
@@ -295,9 +296,11 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Verifica si la extensión del archivo es candidata a ser analizada por heurísticas usando caché."""
-        if name in self.seen_exts: return True
-        if _is_target_extension(name):
-            self.seen_exts.add(name)
+        _, ext = os.path.splitext(name)
+        ext_low = ext.lower()
+        if ext_low in self.seen_exts: return True
+        if ext_low in SUSPICIOUS_ALL_EXTS:
+            self.seen_exts.add(ext_low)
             return True
         return False
 

@@ -1136,3 +1136,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T12:57:00` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de los archivos en cuarentena y la gestión del manifiesto mediante la implementación de un mecanismo de "cálculo en demanda" con caché, evitando recargas innecesarias de JSON y recorridos redundantes del disco.
 - `2026-10-25T12:57:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T12:57:00` Corrida terminada. Total usado hoy: 304.
+- `2026-10-25T13:03:15` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-25T13:03:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 99): unterminated string literal (detected at line 99)
+- `2026-10-25T13:04:31` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: BY_HANDLE_FILE_INFORMATION
+- `2026-10-25T13:04:58` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `_is_relevant_extension` y el filtrado de archivos mediante el uso de un conjunto de extensiones normalizadas, evitando el uso repetitivo de `Path(name).suffix` y llamadas a `lower()` que, siendo operaciones de strings frecuentes en un escaneo de disco, impactan significativamente en el rendimiento del bucle principal.
+- `2026-10-25T13:05:11` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando el parseo redundante de rutas y comprobaciones de sistema mediante el uso de una caché estática en `_MANAGER`, asegurando que `settings_path()` solo resuelva la ruta cuando sea estrictamente necesario.
+- `2026-10-25T13:05:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T13:05:11` Corrida terminada. Total usado hoy: 308.

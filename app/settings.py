@@ -157,7 +157,7 @@ class _SettingsManager:
     a disco mediante el uso de cachés sincronizadas por metadatos (mtime/size).
     """
     def __init__(self) -> None:
-        self.path_cache: dict[Optional[str], Path] = {}
+        self.path_cache: dict[str, Path] = {}
         self._cached_settings: Optional[AppSettings] = None
         self._last_mtime: float = 0.0
         self._last_size: int = 0
@@ -368,7 +368,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     asegurando que el contenido sea un diccionario de valores simples.
     """
     try:
-        # Verificar seguridad antes de acceder a la ruta
         if not _Validators._is_safe_path(str(file_path)): return None
         st = file_path.lstat()
         if not _is_file_secure_to_read(st, file_path): return None
@@ -376,7 +375,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             
-        # Validar estructura post-parseo: asegurar dict, tamaño limitado y tipos primitivos
         if not isinstance(data, dict): return None
         if len(data) > 64: return None
         if not all(isinstance(v, (str, int, float, bool)) or v is None for v in data.values()): return None
@@ -412,7 +410,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve la ruta absoluta del archivo de configuración, asegurando existencia."""
-    cache_key = str(custom_base) if custom_base else None
+    cache_key = str(custom_base) if custom_base else "DEFAULT"
     if cache_key in _MANAGER.path_cache:
         return _MANAGER.path_cache[cache_key]
     try:

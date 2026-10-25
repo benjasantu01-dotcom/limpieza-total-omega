@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 93 | 8 | 16 | 11 | 72 |
-| 2026-10-25 | 124 | 14 | 26 | 13 | 127 |
+| 2026-10-24 | 91 | 8 | 16 | 11 | 70 |
+| 2026-10-25 | 126 | 14 | 28 | 13 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **47**
+- seguridad defensiva: **45**
 - legibilidad y documentación: **45**
-- rendimiento: **41**
+- rendimiento: **43**
 - robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **20**
 - `quarantine.py`: **20**
-- `diskreport.py`: **19**
-- `browser.py`: **18**
+- `diskreport.py`: **18**
 - `healthscore.py`: **17**
+- `settings.py`: **17**
+- `browser.py`: **17**
 - `duplicates.py`: **17**
+- `scanner.py`: **17**
 - `organizer.py`: **16**
-- `settings.py`: **16**
-- `scanner.py`: **16**
 - `safety.py`: **15**
 - `assistant.py`: **14**
 - `branding.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T13:05:11` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando el parseo redundante de rutas y comprobaciones de sistema mediante el uso de una caché estática en `_MANAGER`, asegurando que `settings_path()` solo resuelva la ruta cuando sea estrictamente necesario.
+- `2026-10-25T13:04:58` **scanner.py** (rendimiento): Optimicé el método `_is_relevant_extension` y el filtrado de archivos mediante el uso de un conjunto de extensiones normalizadas, evitando el uso repetitivo de `Path(name).suffix` y llamadas a `lower()` que, siendo operaciones de strings frecuentes en un escaneo de disco, impactan significativamente en el rendimiento del bucle principal.
 - `2026-10-25T12:57:00` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño de los archivos en cuarentena y la gestión del manifiesto mediante la implementación de un mecanismo de "cálculo en demanda" con caché, evitando recargas innecesarias de JSON y recorridos redundantes del disco.
 - `2026-10-25T12:54:52` **memory.py** (rendimiento): Se optimizó el proceso de recolección de procesos pesados en `_iter_process_memory` reemplazando la instanciación innecesaria de objetos `ProcessMemory` durante el filtrado por una lógica de generación diferida, reduciendo el consumo de memoria y CPU al evitar procesar PIDs descartables.
 - `2026-10-25T12:43:57` **diskreport.py** (rendimiento): Optimicé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y mejorar la eficiencia del bucle principal al consolidar la lógica de registro, reduciendo la carga de objetos y el uso de CPU durante el escaneo recursivo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T12:13:01` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante docstrings explícitos en el pipeline de evaluación y la clarificación de tipos en las funciones de cómputo, facilitando el mantenimiento y la comprensión de la lógica de negocio sin alterar su funcionamiento.
 - `2026-10-25T12:06:00` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la firma de las funciones (que carecían de ellas o eran ambiguas) y la especificación de docstrings que explican el rol de los componentes internos y el uso de `__slots__` para optimizar memoria en una herramienta de análisis de disco.
 - `2026-10-25T12:05:34` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings detallados a las funciones internas que carecían de ellos y clarificando la jerarquía de los contextos de seguridad, para facilitar el mantenimiento y evitar regresiones en futuras iteraciones.
-- `2026-10-25T11:53:11` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del motor de escaneo implementando validaciones de tipo y de estado en los parámetros de entrada (`path`, `entry`) dentro del método `process_entry`, asegurando que `entry.path` sea tratado de forma segura antes de realizar llamadas a sistema, evitando posibles excepciones de tipo `AttributeError` o `TypeError` al evaluar archivos mal formados.
-- `2026-10-25T11:43:18` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_unlink` y `_is_item_purgable` centralizando la validación de integridad mediante una excepción específica, asegurando que cualquier fallo de estado sea capturado como `UnsafePathError` en lugar de fallos genéricos, cumpliendo con el enfoque de manejo de errores.
