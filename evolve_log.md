@@ -717,3 +717,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-25T09:41:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-10-25T09:41:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T09:41:45` Corrida terminada. Total usado hoy: 228.
+- `2026-10-25T09:49:50` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-25T09:50:38` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_safe_unlink` al añadir una validación de propiedad explícita mediante `st_uid` (cuando está disponible) antes de cualquier operación de borrado, evitando el riesgo de borrar archivos que, por una condición de carrera o manipulación externa, pudieran haber cambiado de propietario dentro del sandbox.
+- `2026-10-25T09:51:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-25T09:52:02` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para prevenir la navegación hacia puntos de reparse (junctions o symlinks) que apunten fuera de la jerarquía permitida, fortaleciendo el aislamiento del "jail" de seguridad al verificar el destino real del enlace antes de permitir la operación.
+- `2026-10-25T09:52:17` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo frente a puntos de reanálisis (Junctions) mediante la integración de la validación `is_symlink` y la verificación de atributos Win32 dentro de `_safe_stat`, asegurando que el escáner no siga enlaces recursivos o volúmenes montados inesperados que podrían causar ciclos o acceso fuera de la ruta raíz.
+- `2026-10-25T09:52:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T09:52:17` Corrida terminada. Total usado hoy: 232.

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 184
+- Sin respuesta de la IA (error o límite): 180
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 124 | 11 | 29 | 16 | 96 |
-| 2026-10-25 | 98 | 10 | 22 | 10 | 88 |
+| 2026-10-24 | 124 | 11 | 29 | 16 | 92 |
+| 2026-10-25 | 101 | 10 | 23 | 10 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
+- seguridad defensiva: **48**
 - rendimiento: **45**
-- seguridad defensiva: **45**
 - legibilidad y documentación: **44**
 - robustez ante casos límite: **37**
 
@@ -31,21 +31,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `memory.py`: **20**
 - `diskreport.py`: **19**
+- `quarantine.py`: **19**
 - `duplicates.py`: **18**
+- `safety.py`: **18**
 - `settings.py`: **18**
-- `quarantine.py`: **18**
 - `healthscore.py`: **17**
-- `safety.py`: **17**
 - `organizer.py`: **17**
 - `browser.py`: **17**
+- `scanner.py`: **16**
 - `assistant.py`: **15**
-- `scanner.py`: **15**
 - `branding.py`: **12**
 - `main.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T09:52:17` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo frente a puntos de reanálisis (Junctions) mediante la integración de la validación `is_symlink` y la verificación de atributos Win32 dentro de `_safe_stat`, asegurando que el escáner no siga enlaces recursivos o volúmenes montados inesperados que podrían causar ciclos o acceso fuera de la ruta raíz.
+- `2026-10-25T09:52:02` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la navegación hacia puntos de reparse (junctions o symlinks) que apunten fuera de la jerarquía permitida, fortaleciendo el aislamiento del "jail" de seguridad al verificar el destino real del enlace antes de permitir la operación.
+- `2026-10-25T09:50:38` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_safe_unlink` al añadir una validación de propiedad explícita mediante `st_uid` (cuando está disponible) antes de cualquier operación de borrado, evitando el riesgo de borrar archivos que, por una condición de carrera o manipulación externa, pudieran haber cambiado de propietario dentro del sandbox.
 - `2026-10-25T09:41:08` **main.py** (seguridad defensiva): Mejoré la seguridad en el manejo de rutas de configuración dentro de `main.py` mediante la implementación de una validación explícita en `_safe_validate_inputs` que utiliza `safety.is_safe_to_modify` para cualquier parámetro que contenga la palabra "carpeta", previniendo que el usuario inyecte rutas fuera del alcance permitido del Home.
 - `2026-10-25T09:40:05` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo `healthscore.py` al restringir estrictamente las entradas que utiliza `_sanitize_msg` y el `SystemMetrics` mediante la adición de una comprobación de seguridad ante cualquier dato no numérico inesperado durante la deserialización, evitando la propagación de valores o tipos inyectados.
 - `2026-10-25T09:30:58` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `duplicates.py` mediante la implementación de `contextlib.suppress` para manejar errores de acceso a disco en la lectura de atributos, evitando que excepciones inesperadas rompan el flujo de análisis, y se reforzó la validación de seguridad asegurando que el chequeo `_safe_path_check` se realice antes de cualquier llamada a `stat()` o `open()`, evitando condiciones de carrera.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T08:50:28` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_safe_stat` al añadir un manejo explícito para errores de `FileNotFoundError` durante la iteración y el acceso a metadatos, evitando que la eliminación de un archivo temporal por otro proceso mientras la app escanea interrumpa la ejecución.
 - `2026-10-25T08:49:23` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y la carga de datos del asistente mediante la validación del origen de datos, previniendo que un diccionario con valores inesperados (como `None` o estructuras anidadas profundas) provoque excepciones en tiempo de ejecución o fallos en la integridad del `SystemContext`.
 - `2026-10-25T08:39:58` **settings.py** (rendimiento): Optimizé la gestión de memoria eliminando la caché de lru_cache en `_load_impl` para evitar redundancias con la caché del estado del Singleton `_MANAGER`, asegurando que `load()` sea más rápido al delegar completamente la validez de la carga a los metadatos de archivo (size/mtime) que ya gestiona la instancia `_MANAGER`.
-- `2026-10-25T08:39:29` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner mediante la centralización de la normalización de rutas y la eliminación de llamadas redundantes a `os.path.realpath` y `resolve()` dentro del bucle crítico, reemplazándolas por una gestión más eficiente basada en el `path` ya disponible en `os.DirEntry`.
-- `2026-10-25T08:29:18` **organizer.py** (rendimiento): Optimizé el rendimiento del escaneo recursivo sustituyendo las llamadas frecuentes a `Path()` y `.resolve()` dentro de `_process_directory` por operaciones con strings y atributos de `os.DirEntry`, evitando instanciaciones innecesarias de objetos pesados en el bucle principal.
-- `2026-10-25T08:28:51` **memory.py** (rendimiento): Optimizé la carga de procesos en `top_memory_processes` y `_iter_process_memory` pre-cargando los punteros a funciones de la API de Windows fuera del bucle crítico, reduciendo la sobrecarga de resolución de símbolos (ctypes) en cada iteración.

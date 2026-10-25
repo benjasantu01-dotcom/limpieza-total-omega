@@ -349,6 +349,10 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         return False
         
     try:
+        # Validación extra de propiedad antes de unlink (defensa ante TOCTOU)
+        if hasattr(os, 'getuid') and path.stat().st_uid != os.getuid():
+            return False
+
         parent: Path = path.parent
         _check_io_error_context(path.unlink)
         

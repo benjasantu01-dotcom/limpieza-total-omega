@@ -134,11 +134,12 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if entry is None:
         return None
     try:
-        if entry.is_symlink():
+        # Validación explícita contra reparse points/symlinks antes del stat
+        if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
         if not entry.is_file(follow_symlinks=False):
             return None
-        if _cached_is_protected(entry.path) or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
+        if _cached_is_protected(entry.path):
             return None
         return entry.stat(follow_symlinks=False)
     except (OSError, PermissionError, AttributeError, FileNotFoundError):
@@ -167,7 +168,8 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Ti
     """Heurística: Identifica ejecutables cuya carga útil es nula (0 bytes), a menudo usados en malware rudimentario."""
     if entry:
         try:
-            if entry.stat(follow_symlinks=False).st_size == 0:
+            stats = _safe_stat(entry)
+            if stats and stats.st_size == 0:
                 return Suspicion(path, "Ejecutable vacío detectado", "warning")
         except (OSError, PermissionError, FileNotFoundError): pass
     return None
@@ -263,8 +265,8 @@ class Scanner:
         
         try:
             if self._has_invalid_name(entry.name): return False
-            if entry.is_symlink(): return False
-            if self._is_reparse_point(entry): return False
+            # Bloqueo estricto contra symlinks y reparse points
+            if entry.is_symlink() or self._is_reparse_point(entry): return False
             if _cached_is_protected(path_str): return False
             if not _is_valid_path_structure(path_str): return False
             if not self._is_inside_base_root(path_str): return False
@@ -355,6 +357,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         if not base_path.exists() or not base_path.is_dir():
             return []
         base_path = base_path.resolve(strict=True)
+        # Impedir el escaneo de raíz en caso de que sea symlink
         if base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
             return []
         scanner: Scanner = Scanner(base_root=base_path)

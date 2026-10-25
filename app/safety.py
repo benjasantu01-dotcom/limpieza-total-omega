@@ -1034,7 +1034,9 @@ def _validate_no_reparse_traversal(path: Path) -> None:
         for part in path.parts[1:]:
             current = current / part
             if current.is_symlink() or _is_system_directory_junction(str(current)):
-                if not str(current.resolve()).startswith(str(path.anchor)):
+                # Verificación crítica: el destino real del punto de reparse debe estar bajo la raíz
+                target = _get_final_path_normalized(current)
+                if not target.is_relative_to(Path(path.anchor)):
                     raise UnsafePathError(f"Intento de escape mediante reparse point: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     except Exception as e:
         if not isinstance(e, UnsafePathError): return
