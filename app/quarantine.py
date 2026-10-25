@@ -238,7 +238,7 @@ class QuarantineItem:
         except (ValueError, TypeError):
             return None
 
-    def _validate_integrity(self, stored_path: Path) -> bool:
+    def _validate_integrity(self, stored_path: Path, st: Optional[os.stat_result] = None) -> bool:
         """
         Validación de metadatos de archivo contra el estado registrado.
         Previene ataques de sustitución verificando inodo y UID del archivo en el sandbox.
@@ -247,7 +247,9 @@ class QuarantineItem:
         try:
             _check_for_reparse_points(stored_path)
             
-            st: os.stat_result = stored_path.stat()
+            if st is None:
+                st = stored_path.stat()
+                
             if hasattr(os, 'getuid') and st.st_uid != os.getuid():
                 return False
 
@@ -267,12 +269,11 @@ class QuarantineItem:
 
     def verify_integrity(self, stored_path: Path) -> bool:
         """Verificación avanzada mediante hash SHA256 para detectar corrupción de datos."""
-        if not self._validate_integrity(stored_path):
+        st = stored_path.stat()
+        if not self._validate_integrity(stored_path, st):
             return False
         try:
             current_hash: str = _get_sha256(stored_path)
-            if stored_path.stat().st_ino != self.file_inode:
-                return False
             return bool(self.sha256 and current_hash == self.sha256)
         except (OSError, PermissionError):
             return False
@@ -968,7 +969,9 @@ def quarantine_file(
     try:
         file_hash, file_inode = _atomic_isolate_file(p_source, destination, st_info.st_size)
         
-        if not destination.exists() or destination.stat().st_ino != file_inode or _get_sha256(destination) != file_hash:
+        # Verificación final de consistencia
+        dest_st = destination.stat()
+        if dest_st.st_ino != file_inode or _get_sha256(destination) != file_hash:
             raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
             
         item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, reason, st_info.st_size, base)

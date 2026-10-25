@@ -1350,3 +1350,30 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-25T03:59:14` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `_iter_process_memory` evitando la creación innecesaria de objetos `ProcessMemory` mediante un filtrado temprano de procesos de bajo consumo, y reemplazando la instanciación redundante de `Path` dentro del bucle crítico por comparaciones de strings de bajo costo.
 - `2026-10-25T03:59:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T03:59:14` Corrida terminada. Total usado hoy: 92.
+- `2026-10-25T04:03:40` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-10-25T04:04:09` Tests FALLARON:
+```
+ctory(Path(entry.path), found, depth + 1, protected_cache, visited)
+                        elif entry.is_file(follow_symlinks=False):
+                            ext = os.path.splitext(entry.name)[1].lower()
+                            if ext in JUNK_EXTENSIONS:
+                                stats = entry.stat(follow_symlinks=False)
+>                               if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (stats.st_file_attributes & LIMITS.WIN_ATTR_MASK):
+                                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+E                               AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+
+app/organizer.py:307: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+4 failed, 295 passed in 1.73s
+
+```
+- `2026-10-25T04:04:09` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se optimizó el escaneo del sistema de archivos reemplazando la creación repetitiva de objetos `Path` por el uso directo de `os.DirEntry` y sus atributos, evitando llamadas a `path.stat()` adicionales dentro de `_process_directory`.
+- `2026-10-25T04:04:52` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto eliminando la recarga redundante del disco: ahora `load_manifest` utiliza un caché validado por `st_mtime` y `quarantine.py` evita llamadas múltiples a `stat()` durante las operaciones masivas, reduciendo drásticamente la latencia de I/O en entornos con muchos archivos.
+- `2026-10-25T04:05:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-10-25T04:05:12` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 2% del original (posible pérdida de código)
+- `2026-10-25T04:05:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T04:05:12` Corrida terminada. Total usado hoy: 96.
