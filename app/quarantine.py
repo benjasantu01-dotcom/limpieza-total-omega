@@ -842,6 +842,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             raise RuntimeError("Integridad comprometida: el inodo destino no coincide tras la operación.")
         return h, i
     except Exception as e:
+        # Asegurar estado limpio en caso de fallo intermedio
         if destination.exists() and not os.path.samefile(source, destination):
             _safe_unlink(destination)
         if temp_dest and temp_dest.exists():

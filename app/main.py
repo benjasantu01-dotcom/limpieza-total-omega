@@ -1597,6 +1597,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Validación de seguridad extra previa al borrado
+            if not safety.is_safe_to_modify(Path.home()):
+                return
             try:
                 self.set_status("Vaciando la carpeta de revisión...")
                 n = delete_reviewed()
@@ -1765,6 +1768,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Validación adicional antes de purgar
+            if not safety.is_safe_to_modify(Path.home()):
+                return
             actual = quarantine.list_items()
             if not actual:
                 self._safe_run_ui_callback(lambda: self.log("La cuarentena ya estaba vacía.", "Cuarentena"))

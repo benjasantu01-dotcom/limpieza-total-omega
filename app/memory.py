@@ -346,11 +346,11 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
         if get_filename_func(handle, None, buffer_path, 4096) <= 0:
             return False
         
-        exe_str = buffer_path.value.strip()
-        if not exe_str: 
+        exe_path_str = buffer_path.value.strip()
+        if not exe_path_str: 
             return False
             
-        return not is_protected_path(Path(exe_str))
+        return not is_protected_path(Path(exe_path_str).absolute())
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 

@@ -377,14 +377,15 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
+                # Verificación estricta: debe ser archivo, no enlace, estar en la carpeta de cuarentena,
+                # pasar los filtros de seguridad y no estar bloqueado.
                 if not item.is_file() or item.is_symlink() or _is_junction(item): continue
-                if not item.is_relative_to(dest): continue
+                if not item.resolve().is_relative_to(dest): continue
                 
-                # Validación de seguridad estricta antes de borrar y verificar existencia actual
                 if item.exists() and is_safe_to_modify(item) and not is_protected_path(item):
                     item.unlink()
                     count += 1
-            except (OSError, PermissionError) as e:
+            except (OSError, PermissionError, ValueError) as e:
                 logger.warning(f"No se pudo eliminar {item}: {e}")
                 continue
         return count
