@@ -370,16 +370,15 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     asegurando que el contenido sea un diccionario de valores simples.
     """
     try:
+        # Validación robusta de ruta antes de tocar el sistema de archivos
         if not _Validators._is_safe_path(str(file_path)): return None
         st = file_path.lstat()
-        # Verificación estricta de integridad antes de abrir
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return None
         if not _is_file_secure_to_read(st, file_path): return None
         
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             if not isinstance(data, dict): return None
-            # Aseguramos que solo contenga valores primitivos para evitar inyecciones de objetos
             return data if all(isinstance(v, (str, int, float, bool)) or v is None for v in data.values()) else None
     except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError):
         return None

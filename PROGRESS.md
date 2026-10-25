@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 9 | 0 | 3 | 0 | 30 |
+| 2026-10-23 | 9 | 0 | 3 | 0 | 26 |
 | 2026-10-24 | 154 | 13 | 37 | 17 | 129 |
-| 2026-10-25 | 45 | 7 | 12 | 5 | 43 |
+| 2026-10-25 | 48 | 7 | 12 | 5 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **44**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **35**
-- seguridad defensiva: **35**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -38,15 +38,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **17**
 - `healthscore.py`: **16**
 - `duplicates.py`: **16**
-- `settings.py`: **15**
-- `assistant.py`: **12**
-- `branding.py`: **12**
+- `settings.py`: **16**
+- `assistant.py`: **13**
+- `branding.py`: **13**
 - `scanner.py`: **12**
 - `startup.py`: **8**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T04:56:38` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` reemplazando la verificación directa de `is_safe_to_modify(parent)` por un chequeo mediante `filter_safe_paths`, asegurando consistencia con las políticas globales de seguridad de la aplicación al validar recursivamente la ruta del directorio padre antes de realizar cualquier operación de escritura.
+- `2026-10-25T04:56:07` **assistant.py** (seguridad defensiva): Se endureció la seguridad en `_ensure_safe_text` añadiendo una validación explícita contra la inyección de caracteres de escape ANSI y secuencias de control, además de refinar la lógica de `_is_safe_path_input` para asegurar que cualquier cadena de entrada que contenga patrones prohibidos sea rechazada categóricamente antes de procesar el contexto.
+- `2026-10-25T04:55:03` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de carga de archivos (`_read_and_parse_json`) añadiendo una validación explícita para prevenir el uso de rutas que contienen caracteres de control o longitudes excesivas mediante `_Validators._is_safe_path`, cerrando así una posible brecha de acceso a rutas mal formadas durante el inicio de la app.
 - `2026-10-25T04:47:47` **safety.py** (robustez ante casos límite): Se introdujo una comprobación crítica para evitar race conditions y comportamientos impredecibles al validar archivos que cambian de tipo (ej. de archivo regular a directorio o enlace) durante la ejecución, añadiendo una verificación de tipo persistente en `_check_file_integrity` y robusteciendo la limpieza de la caché de evaluación de seguridad.
 - `2026-10-25T04:45:27` **quarantine.py** (robustez ante casos límite): Se introdujo una mejora robusta en `_is_file_exclusive` para el caso de Windows al utilizar el flag `FILE_SHARE_DELETE` (0x00000004) junto con los accesos adecuados en `CreateFileW`, permitiendo detectar de forma más precisa si el archivo está siendo bloqueado exclusivamente por otros procesos (como antivirus o indexadores) sin causar falsos negativos en condiciones de alta carga de E/S.
 - `2026-10-25T04:36:43` **organizer.py** (robustez ante casos límite): Se ha añadido `item.exists()` dentro del bucle de borrado en `delete_reviewed` y `stage_for_review` para prevenir excepciones por condiciones de carrera (Race Conditions) donde el archivo podría ser eliminado o movido por otro proceso entre la validación y la ejecución.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T03:59:14` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` evitando la creación innecesaria de objetos `ProcessMemory` mediante un filtrado temprano de procesos de bajo consumo, y reemplazando la instanciación redundante de `Path` dentro del bucle crítico por comparaciones de strings de bajo costo.
 - `2026-10-25T03:54:25` **healthscore.py** (rendimiento): Se optimizó el rendimiento del motor de cálculo eliminando la recreación innecesaria de objetos `SystemMetrics` dentro de los bucles de análisis y utilizando directamente los valores normalizados, aprovechando el cacheo de `_compute_cached` sin redundancia de serialización.
 - `2026-10-25T03:53:58` **duplicates.py** (rendimiento): Se introdujo una pre-filtración en `_process_large_file_subset` que permite omitir el cálculo de `hash_file` completo para grupos de archivos que ya resultaron únicos tras el `partial_hash`, evitando lecturas de disco innecesarias en archivos grandes.
-- `2026-10-25T03:45:10` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` y las funciones dependientes eliminando la conversión redundante a `Path` dentro del loop crítico de `walk_files`, utilizando directamente los strings de `os.scandir` para las operaciones necesarias, reduciendo significativamente la carga de creación de objetos en recorridos de discos grandes.
-- `2026-10-25T03:44:59` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` reutilizando el `ScanContext` y los IDs de archivos visitados a través de todas las búsquedas de cachés de un mismo usuario, evitando re-procesar los mismos nodos de directorios en múltiples iteraciones.
-- `2026-10-25T03:44:34` **branding.py** (rendimiento): Se ha optimizado el acceso a colores y tamaños mediante la eliminación de chequeos innecesarios y la simplificación de las estructuras de control (`if` condicionales) en funciones de acceso frecuente, reduciendo la carga de cómputo en llamadas repetitivas de renderizado.

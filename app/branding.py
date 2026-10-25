@@ -352,7 +352,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         
         # Validación de integridad: el padre debe existir y ser seguro
         parent = dest_path.parent
-        if not is_safe_to_modify(parent):
+        if not filter_safe_paths([parent]):
             return None
         
         # Crear directorios solo si la ruta no está en la blocklist (via safety)

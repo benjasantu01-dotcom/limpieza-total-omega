@@ -516,11 +516,10 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if is_protected_path(text):
         return False
-    # Evitar inyección de caracteres de control o comandos
+    # Evitar inyección de caracteres de control, formato, comandos shell o escape ANSI
     if any(c in text for c in "<>|&^$():;\n\r\t\"'\\`"):
         return False
-    # Verificación adicional de caracteres ocultos de formato
-    if _REGEX_UNICODE_FORMAT.search(text):
+    if _REGEX_ANSI_ESCAPE.search(text) or _REGEX_UNICODE_FORMAT.search(text):
         return False
     return not _is_safe_path_input(text)
 

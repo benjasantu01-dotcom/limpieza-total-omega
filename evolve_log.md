@@ -1469,3 +1469,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-25T04:47:58` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-10-25T04:47:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T04:47:58` Corrida terminada. Total usado hoy: 112.
+- `2026-10-25T04:54:27` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-10-25T04:55:03` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de carga de archivos (`_read_and_parse_json`) añadiendo una validación explícita para prevenir el uso de rutas que contienen caracteres de control o longitudes excesivas mediante `_Validators._is_safe_path`, cerrando así una posible brecha de acceso a rutas mal formadas durante el inicio de la app.
+- `2026-10-25T04:55:29` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-25T04:56:07` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad en `_ensure_safe_text` añadiendo una validación explícita contra la inyección de caracteres de escape ANSI y secuencias de control, además de refinar la lógica de `_is_safe_path_input` para asegurar que cualquier cadena de entrada que contenga patrones prohibidos sea rechazada categóricamente antes de procesar el contexto.
+- `2026-10-25T04:56:38` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` reemplazando la verificación directa de `is_safe_to_modify(parent)` por un chequeo mediante `filter_safe_paths`, asegurando consistencia con las políticas globales de seguridad de la aplicación al validar recursivamente la ruta del directorio padre antes de realizar cualquier operación de escritura.
+- `2026-10-25T04:56:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T04:56:38` Corrida terminada. Total usado hoy: 116.
