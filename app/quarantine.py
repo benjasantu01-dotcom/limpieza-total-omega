@@ -547,6 +547,10 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _verify_source_fs_permissions(source_path)
     _check_for_reparse_points(source_path)
     
+    # Pre-validación final antes de la operación real (TOCTOU mitigación)
+    if _win_has_system_attributes(source_path):
+        raise UnsafePathError("Aislamiento denegado: archivo con atributos de sistema.")
+    
     try:
         resolved_source: Path = source_path.resolve(strict=True)
     except (OSError, RuntimeError) as e:
