@@ -73,9 +73,8 @@ class ExtStats:
     """
     Acumulador de métricas para una extensión de archivo específica.
     
-    Attributes:
-        total_bytes: Suma acumulada de bytes para esta extensión.
-        count: Cantidad total de archivos encontrados con esta extensión.
+    __slots__ se utiliza para reducir el impacto en memoria al procesar
+    miles de extensiones durante el escaneo.
     """
     __slots__ = ('total_bytes', 'count')
     

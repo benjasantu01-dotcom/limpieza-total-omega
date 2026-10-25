@@ -189,7 +189,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str) -> bool:
-    """Filtro de seguridad para ignorar entradas protegidas o fuera de alcance."""
+    """Determina si un nodo del sistema de archivos debe ser ignorado por seguridad."""
     if entry.name.lower() in scan_ctx.never_touch_lower: return True
     if not _is_within_sandbox(norm_path, scan_ctx.sandbox_base_norm): return True
     if is_protected_path(Path(entry.path)): return True
@@ -201,7 +201,7 @@ def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str
     return False
 
 def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
-    """Extrae tamaño de archivo controlando duplicados físicos vía dev/inode."""
+    """Calcula el tamaño de un archivo individual evitando conteos múltiples por hardlinks."""
     try:
         if not entry.is_file(): return 0
         st = entry.stat(follow_symlinks=False)
@@ -214,7 +214,7 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     return 0
 
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Calcula el peso total de un directorio respetando restricciones de seguridad y profundidad."""
+    """Calcula el tamaño acumulado de una jerarquía de directorios de forma recursiva."""
     if not root_path or depth > scan_ctx.max_depth:
         return ScanResult(0, True)
     
@@ -259,7 +259,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
-    """Validación previa de integridad antes de iniciar el escaneo de una carpeta de caché."""
+    """Verifica si una ruta es apta para ser escaneada como caché de navegador."""
     if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): return False
     kernel = _get_kernel32()
     
@@ -272,7 +272,7 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
     return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Resuelve rutas absolutas a partir de perfiles detectados, verificando contención en el sandbox."""
+    """Combina el directorio base del usuario con la ruta relativa conocida de un navegador."""
     if not _is_valid_rel_path(rel_str): return Path()
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
@@ -312,7 +312,7 @@ def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
     return sum(c.size_bytes for c in caches) if isinstance(caches, (list, tuple, set)) else 0
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Formatea los resultados para mostrar en la interfaz de usuario."""
+    """Formatea los resultados del escaneo para su visualización en la interfaz."""
     current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches: return ["No se detectaron cachés de navegador en este sistema."]
     total_mb = round(total_cache_bytes(current_caches) / BYTES_TO_MB, 2)
