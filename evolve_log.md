@@ -588,3 +588,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T08:09:45` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el rendimiento de `detect_profiles` evitando la reinicialización redundante de `ScanContext` y reduciendo el uso de `os.path.abspath` y `Path.resolve()` dentro de los bucles, centralizando la normalización de rutas y utilizando `frozenset` para búsquedas eficientes.
 - `2026-10-25T08:09:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T08:09:45` Corrida terminada. Total usado hoy: 192.
+- `2026-10-25T08:18:09` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-25T08:18:39` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-25T08:19:12` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de la detección de duplicados implementando una validación previa de duplicidad en `_collect_candidates` mediante un `set` de tamaños, evitando procesar archivos con tamaños únicos que nunca podrán formar un grupo, reduciendo drásticamente las llamadas a hashing innecesarias.
+- `2026-10-25T08:19:39` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.safe_get
+- `2026-10-25T08:20:36` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimizé la gestión de la caché de configuración reemplazando el acceso al diccionario global por el uso de `lru_cache` y un flag de expiración para evitar redundancia en las lecturas de `settings.py` durante el ciclo de vida de la aplicación.
+- `2026-10-25T08:20:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T08:20:36` Corrida terminada. Total usado hoy: 196.

@@ -122,28 +122,18 @@ HEALTH_AREAS: Tuple[HealthMetricConfig, ...] = (
 # Raíces prohibidas para evitar escalada de privilegios o daños al SO
 PROTECTED_ROOTS: List[str] = ["windows", "system32", "program files", "programdata", "boot"]
 
-# Caché de settings con TTL de 60 segundos para evitar acceso constante a disco
-_SETTINGS_CACHE: Dict[str, Any] = {"data": None, "last_load": 0}
-
+@lru_cache(maxsize=1)
 def get_cached_settings() -> Dict[str, Any]:
     """
     Recupera la configuración desde `settings.py`.
-    Utiliza una caché temporal de 60 segundos para mejorar la latencia de acceso.
+    Utiliza memoización con LRU para evitar re-lecturas innecesarias de disco.
     """
-    now = time.time()
-    if _SETTINGS_CACHE["data"] and (now - _SETTINGS_CACHE["last_load"] < 60):
-        return _SETTINGS_CACHE["data"]
-
     try:
         raw = settings_mod.load()
-        if isinstance(raw, dict):
-            _SETTINGS_CACHE["data"] = raw
-            _SETTINGS_CACHE["last_load"] = now
-            return raw
+        return raw if isinstance(raw, dict) else settings_mod.reset()
     except Exception as e:
         logging.warning("Fallo al cargar configuración, usando valores de fábrica: %s", e)
-    
-    return settings_mod.reset()
+        return settings_mod.reset()
 
 class AppSettings(TypedDict, total=False):
     """Contrato de tipos para la configuración persistente del usuario."""
@@ -2125,8 +2115,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             def task() -> None:
                 try:
                     self.settings = settings_mod.update(propuestos)
-                    _SETTINGS_CACHE["data"] = self.settings
-                    _SETTINGS_CACHE["last_load"] = time.time()
+                    # Invalidar la caché de settings para forzar recarga
+                    get_cached_settings.cache_clear()
                     
                     ruta = settings_mod.settings_path()
                     if ruta:
@@ -2205,8 +2195,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task() -> None:
             try:
                 self.settings = settings_mod.reset()
-                _SETTINGS_CACHE["data"] = self.settings
-                _SETTINGS_CACHE["last_load"] = time.time()
+                get_cached_settings.cache_clear()
                 
                 for clave, variable in self.setting_vars.items():
                     if clave in settings_mod.DEFAULTS:

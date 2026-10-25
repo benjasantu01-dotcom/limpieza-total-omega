@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 134 | 12 | 32 | 16 | 118 |
-| 2026-10-25 | 81 | 8 | 19 | 5 | 79 |
+| 2026-10-24 | 132 | 12 | 31 | 16 | 117 |
+| 2026-10-25 | 83 | 8 | 20 | 5 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
 - legibilidad y documentación: **44**
-- rendimiento: **39**
-- robustez ante casos límite: **33**
+- rendimiento: **41**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `memory.py`: **20**
-- `safety.py`: **18**
+- `quarantine.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `settings.py`: **17**
-- `duplicates.py`: **16**
+- `safety.py`: **17**
+- `duplicates.py`: **17**
 - `healthscore.py`: **16**
 - `organizer.py`: **16**
 - `assistant.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **13**
 - `startup.py`: **9**
-- `main.py`: **7**
+- `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T08:20:36` **main.py** (rendimiento): Optimizé la gestión de la caché de configuración reemplazando el acceso al diccionario global por el uso de `lru_cache` y un flag de expiración para evitar redundancia en las lecturas de `settings.py` durante el ciclo de vida de la aplicación.
+- `2026-10-25T08:19:12` **duplicates.py** (rendimiento): Optimizé el rendimiento de la detección de duplicados implementando una validación previa de duplicidad en `_collect_candidates` mediante un `set` de tamaños, evitando procesar archivos con tamaños únicos que nunca podrán formar un grupo, reduciendo drásticamente las llamadas a hashing innecesarias.
 - `2026-10-25T08:09:45` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` evitando la reinicialización redundante de `ScanContext` y reduciendo el uso de `os.path.abspath` y `Path.resolve()` dentro de los bucles, centralizando la normalización de rutas y utilizando `frozenset` para búsquedas eficientes.
 - `2026-10-25T08:09:33` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación repetitiva de listas y tuplas dentro del bucle mediante una pre-calculación de las pendientes RGB (delta) y aplicando la fórmula de interpolación lineal directamente, reduciendo significativamente la carga de CPU en renderizados frecuentes.
 - `2026-10-25T08:09:00` **assistant.py** (rendimiento): Se optimizó el acceso a las métricas en `SystemContext` reemplazando la creación dinámica de tuplas y ordenamiento en el método `active_problems` por una propiedad cacheada `_cached_active_problems` que solo se invalida cuando cambian los datos, evitando cálculos repetitivos en cada acceso a la propiedad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T07:38:20` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y type hints específicos en las funciones de procesamiento de datos, asegurando que las responsabilidades de cada componente sean autoexplicativas para futuros colaboradores.
 - `2026-10-25T07:37:54` **browser.py** (legibilidad y documentación): He mejorado la legibilidad y la documentación del módulo añadiendo docstrings descriptivos a los métodos privados y clarificando mediante `TypeHinting` y tipos de retorno la estructura `ScanContext`, facilitando el mantenimiento y evitando ambigüedades en la lógica de escaneo.
 - `2026-10-25T07:29:00` **assistant.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad mediante la adición de Type Hints en la interfaz pública y una reestructuración de la clase `SystemContext` para separar claramente la lógica de ingestión de datos de la lógica de negocio de los criterios de salud, facilitando la comprensión del flujo de datos.
-- `2026-10-25T07:28:19` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_quoted_path` implementando una validación estricta de límites antes de realizar operaciones de sistema (como convertir a `Path`), evitando excepciones innecesarias ante rutas malformadas o excesivamente largas.
-- `2026-10-25T07:27:52` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_load_impl` al añadir validaciones explícitas contra archivos demasiado grandes o con estructuras maliciosas (como diccionarios anidados profundos) antes de procesarlos, asegurando que el parser de JSON no sea una vía de entrada para denegación de servicio o errores inesperados.

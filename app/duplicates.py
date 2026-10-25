@@ -154,8 +154,10 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Exploración recursiva (BFS) para recolectar archivos candidatos usando atributos de DirEntry."""
+    """Exploración recursiva (BFS) optimizada usando un set de tamaños para ignorar archivos únicos."""
     raw_map: Dict[int, List[Path]] = defaultdict(list)
+    size_counts: Dict[int, int] = defaultdict(int)
+    
     if not directories: return raw_map
     queue: deque[Tuple[Path, int]] = deque()
     for d in directories:
@@ -188,11 +190,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                     if inode not in visited:
                                         visited.add(inode)
                                         raw_map[stat.st_size].append(path)
+                                        size_counts[stat.st_size] += 1
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
             continue
-    return {sz: paths for sz, paths in raw_map.items() if len(paths) > 1}
+    return {sz: paths for sz, paths in raw_map.items() if size_counts[sz] > 1}
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
