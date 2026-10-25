@@ -1260,3 +1260,34 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-10-25T02:54:14` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `validate` mediante un manejo de errores más específico en los validadores, evitando que claves ausentes o mal formadas en el JSON rompan la estructura de configuración y asegurando que siempre se devuelva un objeto `AppSettings` íntegro.
 - `2026-10-25T02:54:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T02:54:14` Corrida terminada. Total usado hoy: 68.
+- `2026-10-25T03:02:37` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-10-25T03:03:07` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.10s
+
+```
+- `2026-10-25T03:03:07` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `StartupEntry.executable` capturando excepciones específicas en `_resolve_path_from_command` y evitando el uso de variables globales/atributos potencialmente nulos antes de su validación, asegurando que la propiedad retorne siempre un string válido o vacío.
+- `2026-10-25T03:03:27` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): el archivo se encogió al 18% del original (posible pérdida de código)
+- `2026-10-25T03:03:56` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-25T03:04:16` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la clarificación de las responsabilidades de los tipos y funciones, y se ha encapsulado el manejo de las flags de atributos de archivo en una clase de solo lectura para evitar confusiones, mejorando la legibilidad del código sin alterar su lógica.
+- `2026-10-25T03:04:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T03:04:16` Corrida terminada. Total usado hoy: 72.
