@@ -1340,3 +1340,13 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-25T03:45:10` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_summary_data` y las funciones dependientes eliminando la conversión redundante a `Path` dentro del loop crítico de `walk_files`, utilizando directamente los strings de `os.scandir` para las operaciones necesarias, reduciendo significativamente la carga de creación de objetos en recorridos de discos grandes.
 - `2026-10-25T03:45:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T03:45:10` Corrida terminada. Total usado hoy: 88.
+- `2026-10-25T03:53:27` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-25T03:53:58` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se introdujo una pre-filtración en `_process_large_file_subset` que permite omitir el cálculo de `hash_file` completo para grupos de archivos que ya resultaron únicos tras el `partial_hash`, evitando lecturas de disco innecesarias en archivos grandes.
+- `2026-10-25T03:54:25` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el rendimiento del motor de cálculo eliminando la recreación innecesaria de objetos `SystemMetrics` dentro de los bucles de análisis y utilizando directamente los valores normalizados, aprovechando el cacheo de `_compute_cached` sin redundancia de serialización.
+- `2026-10-25T03:55:25` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-25T03:56:28` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-25T03:57:34` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-25T03:58:46` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-25T03:59:14` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `_iter_process_memory` evitando la creación innecesaria de objetos `ProcessMemory` mediante un filtrado temprano de procesos de bajo consumo, y reemplazando la instanciación redundante de `Path` dentro del bucle crítico por comparaciones de strings de bajo costo.
+- `2026-10-25T03:59:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T03:59:14` Corrida terminada. Total usado hoy: 92.

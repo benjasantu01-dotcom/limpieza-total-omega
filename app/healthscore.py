@@ -317,43 +317,27 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
     return findings
 
-@lru_cache(maxsize=32)
-def _calculate_area_contribution(metrics_tuple: Tuple[float, ...], area_idx: int) -> Tuple[int, Tuple[str, ...]]:
-    """Calcula el aporte de puntos de un área específica del pipeline con cacheo."""
-    if area_idx < 0 or area_idx >= len(_PIPELINE):
-        return 0, ()
-    try:
-        entry = _PIPELINE[area_idx]
-        m_args = {k: metrics_tuple[i] for i, k in enumerate(SystemMetrics._FIELDS_TO_VALIDATE)}
-        metrics = SystemMetrics(**m_args)
-        weight = max(0, entry.weight)
-        raw_ratio = entry.scorer(metrics)
-        area_ratio = _clamp(float(raw_ratio))
-        recommendations = _evaluate_rules(metrics, entry.rules, area_ratio) if entry.rules else []
-        points = area_ratio * float(weight)
-        val_int = int(_clamp(round(points), 0.0, float(weight)))
-        return val_int, tuple(recommendations)
-    except Exception:
-        return 0, ()
-
 @lru_cache(maxsize=128)
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Motor de cómputo cacheado del HealthResult."""
-    if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in metrics_tuple):
-        return HealthResult(0, "F", {}, ["Error: Métricas corruptas."])
-    if not _PIPELINE:
-        return HealthResult(0, "F", {}, ["Error: Pipeline no configurado."])
-        
+    # Reconstrucción inyectiva mínima para el pipeline
+    m_args = {k: metrics_tuple[i] for i, k in enumerate(SystemMetrics._FIELDS_TO_VALIDATE)}
+    metrics = SystemMetrics(**m_args)
+    
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
     total_points = 0.0
     
-    for i in range(len(_PIPELINE)):
-        points, recs = _calculate_area_contribution(metrics_tuple, i)
-        area_name = _PIPELINE[i].area
-        metric_breakdown[area_name] = points
+    for entry in _PIPELINE:
+        area_ratio = entry.scorer(metrics)
+        recs = _evaluate_rules(metrics, entry.rules, area_ratio)
         recommendations.extend(recs)
-        total_points += float(points)
+        
+        points = area_ratio * float(entry.weight)
+        val_int = int(_clamp(round(points), 0.0, float(entry.weight)))
+        
+        metric_breakdown[entry.area] = val_int
+        total_points += float(val_int)
             
     if quarantined > 0:
         recommendations.append("Existen elementos en cuarentena.")

@@ -202,7 +202,8 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
-        final.update(_group_paths_by_hash(subset, hash_file))
+        if len(subset) > 1:
+            final.update(_group_paths_by_hash(subset, hash_file))
     return final
 
 
