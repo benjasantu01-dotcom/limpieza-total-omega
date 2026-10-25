@@ -405,7 +405,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 _MANAGER._last_mtime = st.st_mtime
                 _MANAGER._last_size = st.st_size
                 return settings.copy()
-    except (OSError, PermissionError): pass
+    except (OSError, PermissionError): 
+        # Fallback silencioso: retornamos DEFAULTS si el archivo no se pudo leer
+        pass
     return dict(DEFAULTS) # type: ignore
 
 def settings_path(custom_base: PathLike | None = None) -> Path:

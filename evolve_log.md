@@ -1217,3 +1217,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-25T13:35:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
 - `2026-10-25T13:35:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T13:35:31` Corrida terminada. Total usado hoy: 320.
+- `2026-10-25T13:43:58` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-25T13:44:51` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejora la robustez de `_is_file_locked_by_other_process` mediante la implementación de una estrategia de reintentos con *backoff* exponencial, mitigando errores transitorios de E/S comunes en entornos de alta concurrencia o cuando un archivo está siendo liberado por un proceso en segundo plano.
+- `2026-10-25T13:45:20` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scanner.py` implementando una validación explícita para archivos "en uso" (bloqueados por otros procesos) en `_safe_stat`, evitando así que las heurísticas intenten acceder a descriptores de archivo inaccesibles que disparan excepciones innecesarias durante escaneos masivos.
+- `2026-10-25T13:45:54` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez del cargador de configuración ante errores de lectura mediante la implementación de un mecanismo de "fallback" explícito al encontrar archivos corruptos, evitando que errores de permiso o formato malicioso bloqueen el acceso a la app.
+- `2026-10-25T13:46:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-25T13:46:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T13:46:19` Corrida terminada. Total usado hoy: 324.

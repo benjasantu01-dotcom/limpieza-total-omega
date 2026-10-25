@@ -27,6 +27,8 @@ logger: Final = logging.getLogger(__name__)
 
 # Constantes de API de Windows para control de acceso (Win32 API)
 FILE_ATTRIBUTE_REPARSE_POINT: Final = 0x400
+# Código de error de Windows para archivo en uso (Sharing Violation)
+ERROR_SHARING_VIOLATION: Final = 32
 
 class ScannerLimits(NamedTuple):
     """
@@ -130,11 +132,10 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Obtiene metadatos de archivo de forma segura, ignorando enlaces simbólicos y rutas protegidas."""
+    """Obtiene metadatos de archivo de forma segura, ignorando enlaces simbólicos, archivos bloqueados y rutas protegidas."""
     if entry is None:
         return None
     try:
-        # Validación explícita contra reparse points/symlinks antes del stat
         if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
             return None
         if not entry.is_file(follow_symlinks=False):
@@ -142,7 +143,12 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if _cached_is_protected(entry.path):
             return None
         return entry.stat(follow_symlinks=False)
-    except (OSError, PermissionError, AttributeError, FileNotFoundError):
+    except OSError as e:
+        # Si el archivo está en uso por otro proceso, ignorar silenciosamente
+        if hasattr(e, 'winerror') and e.winerror == ERROR_SHARING_VIOLATION:
+            return None
+        return None
+    except (PermissionError, AttributeError, FileNotFoundError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:

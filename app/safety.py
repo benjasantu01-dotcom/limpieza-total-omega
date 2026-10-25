@@ -418,23 +418,25 @@ def _is_system_directory_junction(path_str: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
-    """Valida exclusividad de acceso intentando abrir el archivo sin permisos de escritura."""
+    """Valida exclusividad de acceso intentando abrir el archivo con reintentos."""
     if not isinstance(path_str, str) or os.name != 'nt' or not os.path.isabs(path_str): return False
     if os.path.isdir(path_str) or not os.path.exists(path_str): return False
     
-    try:
-        kernel32 = ctypes.windll.kernel32
-        handle = kernel32.CreateFileW(
-            _to_long_path(path_str), 0, 0, None, 3, 0x00000080, None
-        )
-        if handle == -1: 
-            err = kernel32.GetLastError()
-            return err in (ERROR_SHARING_VIOLATION, ERROR_INVALID_NAME)
-            
-        kernel32.CloseHandle(handle)
-        return False
-    except (OSError, ctypes.ArgumentError, AttributeError, PermissionError):
+    kernel32 = ctypes.windll.kernel32
+    path_long = _to_long_path(path_str)
+    
+    for attempt in range(3):
+        handle = kernel32.CreateFileW(path_long, 0, 0, None, 3, 0x00000080, None)
+        if handle != -1:
+            kernel32.CloseHandle(handle)
+            return False
+        
+        err = kernel32.GetLastError()
+        if err == ERROR_SHARING_VIOLATION:
+            time.sleep(0.05 * (2 ** attempt))
+            continue
         return True
+    return True
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
     """Extrae metadatos de seguridad para un objeto path."""
