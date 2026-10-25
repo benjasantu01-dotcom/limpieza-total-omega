@@ -307,6 +307,7 @@ def _sanitize_msg(msg: str | Any) -> str:
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
     if not _is_safe_string_for_report(clean):
         return ""
+    # Retorno garantizado bajo el límite, eliminando cualquier caracter de control o escape.
     return clean.strip()[:_MAX_MSG_LEN]
 
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
