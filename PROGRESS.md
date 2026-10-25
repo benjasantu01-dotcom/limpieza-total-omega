@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 54 | 5 | 15 | 3 | 57 |
+| 2026-10-23 | 54 | 5 | 15 | 3 | 53 |
 | 2026-10-24 | 154 | 13 | 37 | 17 | 129 |
-| 2026-10-25 | 11 | 0 | 2 | 1 | 6 |
+| 2026-10-25 | 13 | 1 | 2 | 1 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **48**
-- seguridad defensiva: **43**
+- seguridad defensiva: **45**
 - rendimiento: **42**
 - robustez ante casos límite: **36**
 
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **23**
 - `diskreport.py`: **20**
 - `organizer.py`: **18**
+- `safety.py`: **18**
 - `duplicates.py`: **17**
-- `safety.py`: **17**
+- `settings.py`: **17**
 - `quarantine.py`: **17**
-- `settings.py`: **16**
 - `browser.py`: **16**
 - `assistant.py`: **15**
 - `healthscore.py`: **15**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T01:02:24` **settings.py** (seguridad defensiva): Reforcé la integridad del proceso de escritura atómica añadiendo `os.replace` (que es una operación atómica a nivel de sistema operativo en Windows y POSIX) y asegurando explícitamente que el archivo temporal sea eliminado en caso de error, evitando dejar basura en el sistema de archivos.
+- `2026-10-25T01:01:19` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_within_directory` incorporando un chequeo explícito de existencia antes de la resolución del path final, evitando así posibles errores de `OSError` cuando se manipulan rutas que ya no existen, manteniendo la integridad del "jail" de seguridad.
 - `2026-10-25T00:52:35` **quarantine.py** (seguridad defensiva): Reforcé la seguridad del método `_atomic_isolate_file` añadiendo una validación explícita para evitar que `source` sea un directorio (protección redundante contra errores de tipo), y apliqué un `os.fsync` sobre el directorio padre inmediatamente después de la creación del archivo, para asegurar la persistencia de los metadatos de archivo antes de finalizar la transacción.
 - `2026-10-25T00:51:22` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` reforzando la validación del ejecutable mediante `is_protected_path` antes de cualquier interacción, asegurando que incluso en procesos no críticos, no se intente actuar sobre rutas que violen las políticas de seguridad del sistema.
 - `2026-10-25T00:41:45` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_safe_path_check` para asegurar que el escaneo no siga enlaces simbólicos fuera de las rutas permitidas, validando explícitamente el acceso mediante `is_safe_to_modify` antes de cualquier operación de I/O, siguiendo la lógica estricta de no tocar zonas protegidas ni seguir puntos de reanálisis.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T00:11:18` **memory.py** (robustez ante casos límite): Mejora la robustez de `_is_process_executable_safe` añadiendo una comprobación explícita para evitar errores `OSError` cuando la ruta del ejecutable contiene caracteres inválidos o el proceso ya ha terminado antes de poder leer su información de módulo, reforzando la tolerancia a fallos ante procesos efímeros o en estado de cierre.
 - `2026-10-24T14:53:28` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema de métricas ante posibles valores no numéricos o `NaN` en `SystemMetrics` mediante la adición de un chequeo explícito en `_compute_cached` y `compute_score`, garantizando que la caché no reciba datos malformados que puedan provocar comportamientos impredecibles durante el cómputo del `HealthResult`.
 - `2026-10-24T14:52:59` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a disco en la etapa de recolección de candidatos y lectura de hashes, integrando una validación explícita mediante `is_safe_to_modify` dentro de los bloques `try-except` para asegurar que archivos bloqueados, inexistentes o con permisos denegados no interrumpan el flujo de análisis.
-- `2026-10-24T14:44:11` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen entre la iteración y el acceso a sus atributos (condición de carrera) y archivos con nombres extremadamente largos o caracteres inválidos en sistemas de archivos restringidos, utilizando un bloque `try-except` más granular y defensivo.
-- `2026-10-24T14:43:59` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo recursivo de directorios ante condiciones de carrera (archivos bloqueados o desaparecidos durante la iteración) mediante una validación explícita de existencia mediante `os.scandir` y la eliminación de posibles errores de tipo en la llamada a `scan_ctx.is_junction`.

@@ -171,10 +171,12 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Realiza una escritura atómica mediante un archivo temporal y fsync para 
-        asegurar la integridad de los datos, verificando permisos y dueños del archivo.
+        Realiza una escritura atómica mediante un archivo temporal y fsync, 
+        asegurando integridad y limpieza de residuos en caso de fallo.
         """
         if not isinstance(serialized, str) or len(str(config_path)) > 260: return False
+        
+        temp_path = config_path.with_suffix(".tmp")
         try:
             parent_dir = config_path.parent
             if not parent_dir.exists() or not os.access(parent_dir, os.W_OK): return False
@@ -188,20 +190,19 @@ class _SettingsManager:
                 if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             
-            temp_path = resolved_path.with_suffix(".tmp")
             with open(temp_path, "w", encoding="utf-8") as f:
-                try:
-                    f.write(serialized)
-                    f.flush()
-                    os.fsync(f.fileno())
-                finally:
-                    f.close()
+                f.write(serialized)
+                f.flush()
+                os.fsync(f.fileno())
             
             os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
             os.replace(temp_path, resolved_path)
             self.clear()
             return True
         except (OSError, IOError, PermissionError, ValueError, RuntimeError):
+            if temp_path.exists():
+                try: os.remove(temp_path)
+                except OSError: pass
             return False
 
 _MANAGER = _SettingsManager()

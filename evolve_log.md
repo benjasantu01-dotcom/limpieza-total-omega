@@ -945,3 +945,57 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-25T00:52:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-25T00:52:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T00:52:43` Corrida terminada. Total usado hoy: 20.
+- `2026-10-25T01:00:23` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-25T01:01:19` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `is_within_directory` incorporando un chequeo explícito de existencia antes de la resolución del path final, evitando así posibles errores de `OSError` cuando se manipulan rutas que ya no existen, manteniendo la integridad del "jail" de seguridad.
+- `2026-10-25T01:01:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-25T01:01:51` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-25T01:02:24` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Reforcé la integridad del proceso de escritura atómica añadiendo `os.replace` (que es una operación atómica a nivel de sistema operativo en Windows y POSIX) y asegurando explícitamente que el archivo temporal sea eliminado en caso de error, evitando dejar basura en el sistema de archivos.
+- `2026-10-25T01:02:40` Tests FALLARON:
+```
+e == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff:
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff:
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+4 failed, 295 passed in 1.88s
+
+```
+- `2026-10-25T01:02:40` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva al integrar `is_safe_to_modify` dentro de la resolución de rutas en `StartupEntry`, asegurando que no se intente acceder o procesar archivos en ubicaciones restringidas, aplicando un filtro de seguridad proactivo antes de cualquier intento de validación del ejecutable.
+- `2026-10-25T01:02:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T01:02:40` Corrida terminada. Total usado hoy: 24.

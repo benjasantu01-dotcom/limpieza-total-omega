@@ -847,17 +847,18 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
         
         def _get_final_path(p: Path) -> Path:
+            if not p.exists(): return p.resolve(strict=False)
             if os.name != 'nt': return p.resolve()
             kernel32 = ctypes.windll.kernel32
             handle = kernel32.CreateFileW(_to_long_path(str(p)), 0, 0, None, 3, 0x02000000, None)
-            if handle == -1: return p.resolve()
+            if handle == -1: return p.resolve(strict=False)
             try:
                 buf = ctypes.create_unicode_buffer(1024)
                 if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
                     return Path(buf.value)
             finally:
                 kernel32.CloseHandle(handle)
-            return p.resolve()
+            return p.resolve(strict=False)
 
         final_c = _get_final_path(c_path)
         final_p = _get_final_path(p_path)
