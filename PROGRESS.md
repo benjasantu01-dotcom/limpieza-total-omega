@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 25 | 3 | 6 | 1 | 39 |
+| 2026-10-23 | 23 | 2 | 6 | 1 | 38 |
 | 2026-10-24 | 154 | 13 | 37 | 17 | 129 |
-| 2026-10-25 | 28 | 3 | 6 | 4 | 39 |
+| 2026-10-25 | 29 | 4 | 8 | 4 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **45**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **43**
 - rendimiento: **35**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `diskreport.py`: **19**
 - `quarantine.py`: **18**
+- `diskreport.py`: **18**
 - `settings.py`: **17**
 - `organizer.py`: **17**
+- `safety.py`: **17**
 - `browser.py`: **16**
-- `safety.py`: **16**
-- `healthscore.py`: **15**
 - `duplicates.py`: **15**
+- `healthscore.py`: **14**
 - `scanner.py`: **13**
 - `assistant.py`: **12**
 - `branding.py`: **11**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T03:34:18` **safety.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros y retornos de las funciones críticas de `safety.py` y se reemplazaron las comparaciones de bits manuales por el método `has_flag` del `SecurityDescriptor` para mejorar la legibilidad y evitar errores de lógica en las validaciones de atributos.
 - `2026-10-25T03:24:48` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_win_has_system_attributes` para separar la consulta de atributos de la lógica de evaluación, y añadí docstrings explicativos en las validaciones críticas para clarificar las salvaguardas de seguridad.
 - `2026-10-25T03:23:30` **memory.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en las funciones clave de bajo nivel para aclarar el propósito de cada etapa del procesamiento de memoria y garantizar la mantenibilidad del código.
 - `2026-10-25T03:14:10` **healthscore.py** (legibilidad y documentación): Mejora de la mantenibilidad y legibilidad mediante la documentación explícita de `SystemMetrics` y la centralización de los límites de validación, facilitando futuras auditorías de seguridad al separar claramente la configuración del motor de la lógica de negocio.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T02:43:17` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_run` para capturar excepciones específicas durante tareas asíncronas, evitando que una falla en una operación de disco interrumpa el hilo trabajador o deje la interfaz en un estado inconsistente sin informar al usuario.
 - `2026-10-25T02:33:38` **healthscore.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `_calculate_area_contribution` para prevenir el uso de índices fuera de rango o estructuras corruptas, y se mejoró la validación en `compute_score` asegurando que el proceso de cálculo nunca retorne resultados inconsistentes si la entrada está malformada.
 - `2026-10-25T02:33:24` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validación de parámetros y manejo de casos vacíos, asegurando que no se operen sobre objetos nulos o mal formados, siguiendo el enfoque de manejo de errores y validación.
-- `2026-10-25T02:32:32` **browser.py** (manejo de errores y validación de entradas): Corregí una referencia a una variable inexistente (`BOURSER_CACHE_PATHS`) en `detect_profiles` y añadí una validación robusta de tipo para el parámetro `bases` asegurando que el bucle principal no falle ante entradas mal formadas.

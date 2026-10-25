@@ -102,9 +102,6 @@ class SecurityDescriptor(NamedTuple):
     def from_path(cls, path_str: str) -> SecurityDescriptor:
         """
         Constructor factoría que extrae atributos y estado de bloqueo de un archivo.
-        
-        Implementa lógica de tolerancia a fallos ante errores de acceso (OS),
-        marcando rutas inaccesibles como protegidas por defecto (Fail-Secure).
         """
         if not path_str:
             return cls(0, True, True, True, True)
@@ -576,7 +573,7 @@ def _check_sys_hidden(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bo
 @lru_cache(maxsize=2048)
 def _check_offline(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.OFFLINE)
 @lru_cache(maxsize=2048)
-def _check_enc_comp(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return bool(sd.attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))
+def _check_enc_comp(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.COMPRESSED) or sd.has_flag(Win32Attr.ENCRYPTED)
 @lru_cache(maxsize=2048)
 def _check_sparse(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.SPARSE_FILE)
 @lru_cache(maxsize=2048)
@@ -1069,11 +1066,6 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Realiza la validación jerárquica de una ruta para asegurar que sea segura para su modificación.
-    
-    Se compone de: normalización, validación estructural, precauciones de seguridad,
-    límites de alcance, y verificación de integridad (TOCTOU).
-    
-    Lanza UnsafePathError ante cualquier violación de las reglas de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)

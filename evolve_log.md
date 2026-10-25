@@ -1305,3 +1305,31 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T03:24:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 119): unterminated string literal (detected at line 119)
 - `2026-10-25T03:24:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T03:24:51` Corrida terminada. Total usado hoy: 80.
+- `2026-10-25T03:33:07` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-25T03:34:18` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los parámetros y retornos de las funciones críticas de `safety.py` y se reemplazaron las comparaciones de bits manuales por el método `has_flag` del `SecurityDescriptor` para mejorar la legibilidad y evitar errores de lógica en las validaciones de atributos.
+- `2026-10-25T03:34:45` Tests FALLARON:
+```
+__________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: check_system_lookalike() missing 1 required positional argument: 'context'
+
+evolve/tests/test_basic.py:212: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 1 required positional argument: 'context'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 1 required positional argument: 'context'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 1 required positional argument: 'context'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 1 required positional argument: 'context'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 1 required positional argument: 'context'
+5 failed, 294 passed in 1.71s
+
+```
+- `2026-10-25T03:34:45` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se introdujo un `NamedTuple` llamado `ScanContext` para encapsular los parámetros de ejecución (`now_ts` y `entry`), mejorando la claridad de la firma de las funciones de heurística y facilitando la documentación del flujo de datos en el análisis.
+- `2026-10-25T03:35:11` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-25T03:35:20` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-25T03:35:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T03:35:20` Corrida terminada. Total usado hoy: 84.
