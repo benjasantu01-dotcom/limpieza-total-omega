@@ -1032,7 +1032,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ctk.CTkSwitch(
             parent, text=texto,
             variable=self.setting_vars[var_key],
-            progress_color=branding.color("accent2"),
+            progress_color=branding.color("accent"),
             button_color=branding.color("text"),
             text_color=branding.color("text"),
         ).grid(row=0, column=0, sticky="w", padx=(0, 20), pady=6)

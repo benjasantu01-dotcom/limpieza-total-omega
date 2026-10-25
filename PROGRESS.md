@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 186
+- Sin respuesta de la IA (error o límite): 184
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 124 | 11 | 29 | 16 | 100 |
-| 2026-10-25 | 96 | 10 | 22 | 10 | 86 |
+| 2026-10-24 | 124 | 11 | 29 | 16 | 96 |
+| 2026-10-25 | 98 | 10 | 22 | 10 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **45**
+- seguridad defensiva: **45**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **43**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
@@ -34,18 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `settings.py`: **18**
 - `quarantine.py`: **18**
+- `healthscore.py`: **17**
 - `safety.py`: **17**
 - `organizer.py`: **17**
 - `browser.py`: **17**
-- `healthscore.py`: **16**
 - `assistant.py`: **15**
 - `scanner.py`: **15**
 - `branding.py`: **12**
-- `main.py`: **9**
+- `main.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T09:41:08` **main.py** (seguridad defensiva): Mejoré la seguridad en el manejo de rutas de configuración dentro de `main.py` mediante la implementación de una validación explícita en `_safe_validate_inputs` que utiliza `safety.is_safe_to_modify` para cualquier parámetro que contenga la palabra "carpeta", previniendo que el usuario inyecte rutas fuera del alcance permitido del Home.
+- `2026-10-25T09:40:05` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo `healthscore.py` al restringir estrictamente las entradas que utiliza `_sanitize_msg` y el `SystemMetrics` mediante la adición de una comprobación de seguridad ante cualquier dato no numérico inesperado durante la deserialización, evitando la propagación de valores o tipos inyectados.
 - `2026-10-25T09:30:58` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `duplicates.py` mediante la implementación de `contextlib.suppress` para manejar errores de acceso a disco en la lectura de atributos, evitando que excepciones inesperadas rompan el flujo de análisis, y se reforzó la validación de seguridad asegurando que el chequeo `_safe_path_check` se realice antes de cualquier llamada a `stat()` o `open()`, evitando condiciones de carrera.
 - `2026-10-25T09:30:49` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `walk_files` y `drive_usage` verificando explícitamente mediante `is_protected_path` antes de procesar cualquier ruta, asegurando que no se sigan puntos de reparse o enlaces simbólicos (junctions) que podrían desbordar el recorrido o acceder fuera de los límites permitidos, utilizando `path.resolve()` solo para validaciones de existencia y no para resolución de rutas dinámicas.
 - `2026-10-25T09:21:02` **startup.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_resolve_and_cache_path` agregando un manejo explícito para `OSError` y `PermissionError` al intentar resolver rutas mediante `pathlib`, evitando que errores transitorios de acceso al sistema de archivos detengan el inventario de inicio.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T08:39:29` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner mediante la centralización de la normalización de rutas y la eliminación de llamadas redundantes a `os.path.realpath` y `resolve()` dentro del bucle crítico, reemplazándolas por una gestión más eficiente basada en el `path` ya disponible en `os.DirEntry`.
 - `2026-10-25T08:29:18` **organizer.py** (rendimiento): Optimizé el rendimiento del escaneo recursivo sustituyendo las llamadas frecuentes a `Path()` y `.resolve()` dentro de `_process_directory` por operaciones con strings y atributos de `os.DirEntry`, evitando instanciaciones innecesarias de objetos pesados en el bucle principal.
 - `2026-10-25T08:28:51` **memory.py** (rendimiento): Optimizé la carga de procesos en `top_memory_processes` y `_iter_process_memory` pre-cargando los punteros a funciones de la API de Windows fuera del bucle crítico, reduciendo la sobrecarga de resolución de símbolos (ctypes) en cada iteración.
-- `2026-10-25T08:20:36` **main.py** (rendimiento): Optimizé la gestión de la caché de configuración reemplazando el acceso al diccionario global por el uso de `lru_cache` y un flag de expiración para evitar redundancia en las lecturas de `settings.py` durante el ciclo de vida de la aplicación.
-- `2026-10-25T08:19:12` **duplicates.py** (rendimiento): Optimizé el rendimiento de la detección de duplicados implementando una validación previa de duplicidad en `_collect_candidates` mediante un `set` de tamaños, evitando procesar archivos con tamaños únicos que nunca podrán formar un grupo, reduciendo drásticamente las llamadas a hashing innecesarias.
