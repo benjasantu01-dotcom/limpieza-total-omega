@@ -293,6 +293,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists() or not os.access(base, os.R_OK): continue
         base_norm = os.path.normcase(os.path.abspath(base))
+        # Compartimos el contexto a través de todas las carpetas del mismo usuario
         scan_ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
         
         for browser_key, relative_path in browser_map.items():

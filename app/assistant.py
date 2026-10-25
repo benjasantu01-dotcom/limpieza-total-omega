@@ -314,6 +314,9 @@ _VALIDATORS: Final[ValidationSpec] = {
     "score": MetricSpec(int, 0, 100),
 }
 
+# Claves validadas pre-calculadas para rendimiento
+_VALID_METRIC_KEYS: Final[set[str]] = set(_VALIDATORS.keys())
+
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """Convierte cualquier valor a float asegurando que el resultado sea finito, real y no negativo."""
     try:
@@ -387,7 +390,7 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> MetricsDict:
         """Snapshot cacheado de las métricas numéricas para acceso eficiente."""
-        return {k: float(v) for k in _VALIDATORS if (v := getattr(self, k, -1.0)) != -1.0}
+        return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k, -1.0)) != -1.0}
 
     @property
     def active_problems(self) -> tuple[str, ...]:

@@ -205,19 +205,19 @@ def app_title() -> str:
 
 def color(name: Optional[str]) -> ColorHex: 
     """Acceso seguro a un color de la paleta corporativa por nombre."""
-    return PALETTE.get(name, "#808080") if name else "#808080"
+    return PALETTE.get(name, "#808080")
 
 def font_size(name: Optional[str]) -> int: 
     """Retorna el tamaño de fuente configurado para una categoría dada."""
-    return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size
+    return FONT_SIZES.get(name, UI_CONFIG.body_size)
 
 def icon(section: Optional[str]) -> str: 
     """Retorna el glifo Unicode asociado a una sección de la aplicación."""
-    return ICONS.get(section, "\u2022") if section else "\u2022"
+    return ICONS.get(section, "\u2022")
 
 def tab_label(section: Optional[str]) -> str: 
     """Formatea la etiqueta de una pestaña combinando icono y texto."""
-    return f"{icon(section)}  {section}" if section else "\u2022  Desconocido"
+    return f"{icon(section)}  {section or 'Desconocido'}"
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
     """Valida y normaliza una cadena de texto a un enum de tipo SeverityType."""

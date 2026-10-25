@@ -1333,3 +1333,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-25T03:35:20` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-10-25T03:35:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T03:35:20` Corrida terminada. Total usado hoy: 84.
+- `2026-10-25T03:43:18` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-10-25T03:43:59` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el acceso a `_VALIDATORS` en `SystemContext.metrics_snapshot` mediante la pre-compilación del set de claves permitidas, evitando iteraciones repetitivas y búsquedas costosas en diccionarios durante el uso frecuente del asistente.
+- `2026-10-25T03:44:34` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado el acceso a colores y tamaños mediante la eliminación de chequeos innecesarios y la simplificación de las estructuras de control (`if` condicionales) en funciones de acceso frecuente, reduciendo la carga de cómputo en llamadas repetitivas de renderizado.
+- `2026-10-25T03:44:59` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `detect_profiles` reutilizando el `ScanContext` y los IDs de archivos visitados a través de todas las búsquedas de cachés de un mismo usuario, evitando re-procesar los mismos nodos de directorios en múltiples iteraciones.
+- `2026-10-25T03:45:10` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_summary_data` y las funciones dependientes eliminando la conversión redundante a `Path` dentro del loop crítico de `walk_files`, utilizando directamente los strings de `os.scandir` para las operaciones necesarias, reduciendo significativamente la carga de creación de objetos en recorridos de discos grandes.
+- `2026-10-25T03:45:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T03:45:10` Corrida terminada. Total usado hoy: 88.

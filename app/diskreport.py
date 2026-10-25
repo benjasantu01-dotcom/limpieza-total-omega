@@ -313,7 +313,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if root_path is None: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     while stack:
         current_dir = stack.pop()
@@ -325,19 +325,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     
                     try:
                         st = entry.stat(follow_symlinks=False)
-                        path_obj = Path(entry.path)
                         
                         # Doble validación de seguridad tras resolver la ruta individual
-                        if skip_protected and is_protected_path(path_obj):
+                        if skip_protected and is_protected_path(Path(entry.path)):
                             continue
                             
                         if entry.is_dir(follow_symlinks=False):
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(path_obj)
+                                stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            yield path_obj, st.st_size
+                            yield Path(entry.path), st.st_size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, NotADirectoryError):
