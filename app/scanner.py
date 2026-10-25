@@ -33,15 +33,15 @@ class ScannerLimits(NamedTuple):
     Parámetros de configuración para el motor de escaneo.
     
     Attributes:
-        max_path: Longitud máxima permitida de ruta (caracteres).
-        recent_hours: Ventana temporal (en horas) para considerar un archivo como 'reciente'.
-        reparse_point_attr_mask: Máscara bitwise para identificar puntos de reanálisis.
-        max_depth: Profundidad máxima del árbol de directorios a explorar para evitar recursión infinita.
+        path_length_limit: Longitud máxima permitida de ruta (caracteres).
+        recent_file_window_hours: Ventana temporal (en horas) para considerar un archivo como 'reciente'.
+        reparse_point_mask: Máscara bitwise para identificar puntos de reanálisis (Junctions/Symlinks).
+        max_recursion_depth: Profundidad máxima del árbol de directorios a explorar para evitar recursión infinita.
     """
-    max_path: int = 260
-    recent_hours: int = 24
-    reparse_point_attr_mask: int = FILE_ATTRIBUTE_REPARSE_POINT
-    max_depth: int = 50
+    path_length_limit: int = 260
+    recent_file_window_hours: int = 24
+    reparse_point_mask: int = FILE_ATTRIBUTE_REPARSE_POINT
+    max_recursion_depth: int = 50
 
 SCAN_LIMITS: Final = ScannerLimits()
 
@@ -135,7 +135,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
     try:
         # Validación explícita contra reparse points/symlinks antes del stat
-        if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
+        if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
             return None
         if not entry.is_file(follow_symlinks=False):
             return None
@@ -149,7 +149,7 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Verifica límites de longitud, caracteres NUL y patrones prohibidos (UNC/RTL) en la ruta."""
     if not isinstance(path_str, str) or not path_str.strip():
         return False
-    if len(path_str) > SCAN_LIMITS.max_path or "\0" in path_str:
+    if len(path_str) > SCAN_LIMITS.path_length_limit or "\0" in path_str:
         return False
     if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
         return False
@@ -202,7 +202,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
             stats = _safe_stat(entry)
             if stats:
                 mtime = getattr(stats, "st_mtime", 0.0)
-                if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
+                if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
                     return Suspicion(path, "Ejecutable reciente detectado en carpeta volátil", "info")
     except (OSError, PermissionError, AttributeError, TypeError, FileNotFoundError):
         return None
@@ -219,9 +219,9 @@ class Scanner:
     """
     Controlador central del motor de escaneo.
     
-    Gestiona el estado del recorrido (DFS) para prevenir ciclos mediante la normalización 
-    de rutas y el seguimiento de entradas ya visitadas, además de centralizar 
-    los resultados del escaneo.
+    Gestiona el estado del recorrido DFS mediante 'seen' para prevenir ciclos, 
+    'safe_cache' para memorizar validaciones de rutas y 'seen_exts' para 
+    optimizar la filtración inicial de archivos candidatos.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -248,13 +248,14 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si una entrada es un punto de reanálisis usando atributos de Win32."""
-        return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
+        return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Aplica filtros de seguridad (estructura y reanálisis) antes de procesar una entrada.
+        Realiza comprobaciones de seguridad jerárquicas antes de acceder a la entrada.
         
-        Utiliza 'safe_cache' para memorizar rutas validadas durante la iteración actual.
+        Verifica: nombres inválidos, puntos de reanálisis, rutas protegidas globalmente,
+        formato de ruta y que la entrada se mantenga dentro del árbol base definido.
         """
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
@@ -265,7 +266,6 @@ class Scanner:
         
         try:
             if self._has_invalid_name(entry.name): return False
-            # Bloqueo estricto contra symlinks y reparse points
             if entry.is_symlink() or self._is_reparse_point(entry): return False
             if _cached_is_protected(path_str): return False
             if not _is_valid_path_structure(path_str): return False
@@ -277,8 +277,12 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Gestiona la pila de directorios para búsqueda DFS, respetando el límite de profundidad."""
-        if current_depth >= SCAN_LIMITS.max_depth or not isinstance(entry, os.DirEntry) or not entry.path:
+        """
+        Gestiona la adición de directorios válidos a la pila para búsqueda DFS.
+        
+        Implementa un control de profundidad máxima para prevenir desbordamientos.
+        """
+        if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
         
         try:
@@ -299,10 +303,10 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """
-        Procesa una entrada del sistema de archivos:
+        Procesa una entrada del sistema de archivos mediante DFS.
         
-        Si es archivo, lo deriva al motor de heurísticas. Si es directorio,
-        lo añade a la pila si no ha sido visitado previamente.
+        Si es archivo candidato, lo envía a las heurísticas. Si es directorio,
+        lo añade a la pila de procesamiento si es seguro y no ha sido visitado.
         """
         if not isinstance(entry, os.DirEntry) or not hasattr(entry, 'path') or entry.path is None:
             return
@@ -323,7 +327,7 @@ class Scanner:
             logger.debug(f"Error accediendo a entrada: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Aplica todas las heurísticas registradas a un archivo individual."""
+        """Ejecuta secuencialmente todas las heurísticas registradas contra un archivo."""
         for check_fn in ALL_CHECKS:
             try:
                 finding = check_fn(path, entry, self.now_ts)

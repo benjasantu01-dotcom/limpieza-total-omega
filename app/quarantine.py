@@ -241,44 +241,54 @@ class QuarantineItem:
 
     def _validate_integrity(self, stored_path: Path, st: Optional[os.stat_result] = None) -> bool:
         """
-        Validación de metadatos de archivo contra el estado registrado.
-        Previene ataques de sustitución verificando inodo y UID del archivo en el sandbox.
+        Realiza una validación de bajo nivel sobre los atributos del archivo en sandbox.
+        Compara UID, inodo y tamaño del archivo actual contra los registros originales 
+        del manifiesto para detectar sustitución o manipulación externa.
         """
         if not stored_path.exists(): return False
         try:
             _check_for_reparse_points(stored_path)
             
-            if st is None:
-                st = stored_path.stat()
-                
-            if hasattr(os, 'getuid') and st.st_uid != os.getuid():
+            # Obtener estado de sistema si no fue proporcionado externamente
+            file_stat = st if st is not None else stored_path.stat()
+            
+            # Verificación de identidad POSIX (seguridad de dueño)
+            if hasattr(os, 'getuid') and file_stat.st_uid != os.getuid():
                 return False
 
-            if self.file_inode != 0 and st.st_ino != self.file_inode:
+            # Verificación de inodo: detecta si el archivo fue reemplazado o movido
+            if self.file_inode != 0 and file_stat.st_ino != self.file_inode:
                 return False
             
-            if st.st_nlink > 1:
+            # Verificación de enlaces: evita ataques por enlaces físicos persistentes
+            if file_stat.st_nlink > 1:
                 return False
             
             return (
                 stored_path.is_file() and 
-                st.st_size == self.size_bytes and
-                st.st_size > 0
+                file_stat.st_size == self.size_bytes and
+                file_stat.st_size > 0
             )
         except (OSError, PermissionError):
             return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
-        """Verificación avanzada mediante hash SHA256 para detectar corrupción de datos."""
+        """
+        Verifica el contenido completo del archivo mediante un hash SHA256.
+        Combina la validación de metadatos (`_validate_integrity`) con una suma de
+        verificación de datos para garantizar la integridad lógica absoluta.
+        """
         try:
-            st = stored_path.stat()
+            st: os.stat_result = stored_path.stat()
         except OSError:
             return False
             
         if not self._validate_integrity(stored_path, st):
             return False
+        
         try:
             current_hash: str = _get_sha256(stored_path)
+            # Asegura que el hash registrado coincida y no esté vacío
             return bool(self.sha256 and current_hash == self.sha256)
         except (OSError, PermissionError):
             return False
