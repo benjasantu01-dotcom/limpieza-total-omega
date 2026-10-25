@@ -339,10 +339,11 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
             return False
             
         executable_path = Path(os.path.realpath(exe_str))
-        if not executable_path.exists() or executable_path.is_symlink(): 
+        # Defensa activa: no operamos sobre nada que sea protegido o sospechoso
+        if not executable_path.exists() or executable_path.is_symlink() or is_protected_path(executable_path): 
             return False
             
-        return not is_protected_path(executable_path)
+        return True
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 

@@ -938,3 +938,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-25T00:43:15` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `main.py` al implementar un filtrado de rutas más estricto y centralizado, asegurando que cualquier entrada del usuario (`entries` de UI y selectores de carpeta) se sanitice y valide contra el módulo `safety` antes de que cualquier operación asíncrona intente interactuar con el sistema de archivos.
 - `2026-10-25T00:43:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T00:43:15` Corrida terminada. Total usado hoy: 16.
+- `2026-10-25T00:50:10` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-25T00:51:22` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `memory.py` reforzando la validación del ejecutable mediante `is_protected_path` antes de cualquier interacción, asegurando que incluso en procesos no críticos, no se intente actuar sobre rutas que violen las políticas de seguridad del sistema.
+- `2026-10-25T00:51:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-25T00:52:35` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Reforcé la seguridad del método `_atomic_isolate_file` añadiendo una validación explícita para evitar que `source` sea un directorio (protección redundante contra errores de tipo), y apliqué un `os.fsync` sobre el directorio padre inmediatamente después de la creación del archivo, para asegurar la persistencia de los metadatos de archivo antes de finalizar la transacción.
+- `2026-10-25T00:52:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-25T00:52:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T00:52:43` Corrida terminada. Total usado hoy: 20.

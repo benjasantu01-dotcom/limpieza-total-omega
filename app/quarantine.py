@@ -782,6 +782,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     
+    if not source.is_file():
+        raise UnsafePathError("Solo se admiten archivos regulares para aislamiento.")
+    
     if _win_has_system_attributes(source):
         raise UnsafePathError("Aislamiento bloqueado: archivo de sistema detectado.")
     
@@ -815,6 +818,14 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         if destination.exists():
             raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         
+        # Fuerza persistencia del directorio padre antes de escribir
+        try:
+            dir_fd: int = os.open(str(destination.parent), os.O_RDONLY)
+            try: os.fsync(dir_fd)
+            finally: os.close(dir_fd)
+        except OSError:
+            pass
+
         h, i = _write_temp_to_final(source, destination)
         
         # Verify final state matches intent
