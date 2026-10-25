@@ -283,9 +283,12 @@ def _read_windows_snapshot() -> MemorySnapshot:
         if not hasattr(ctypes, "windll"): return _EMPTY_SNAPSHOT
         kernel32 = ctypes.windll.kernel32
         if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
+        
         mem_status = _create_mem_status_ex()
+        # Verificar retorno de la función (0 indica fallo en Win32)
         if kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
-            if mem_status.ullTotalPhys > 0 and mem_status.ullAvailPhys <= mem_status.ullTotalPhys:
+            # Validar que los valores devueltos sean físicamente coherentes
+            if 0 < mem_status.ullTotalPhys and mem_status.ullAvailPhys <= mem_status.ullTotalPhys:
                 return MemorySnapshot(
                     total=BytesValue(mem_status.ullTotalPhys), 
                     available=BytesValue(mem_status.ullAvailPhys)
@@ -341,7 +344,6 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, psapi: ctypes.CDLL) -> 
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
-        # psapi.GetModuleFileNameExW es la función estándar de Windows para obtener la ruta.
         if psapi.GetModuleFileNameExW(handle, None, buffer_path, 4096) <= 0:
             return False
         
@@ -397,7 +399,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
         try:
-            # Precarga de funciones para reducir sobrecarga en el loop de iteración
             kernel32 = ctypes.windll.kernel32
             psapi = ctypes.windll.psapi
             pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
@@ -459,8 +460,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "Acceso denegado o proceso no encontrado."
 
         try:
+            # Validar que el proceso realmente exista antes de operar
             exit_code = wintypes.DWORD()
-            if kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+            if kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) == 0:
+                return False, "No se pudo verificar el estado del proceso."
+                
+            if exit_code.value != STILL_ACTIVE_EXIT_CODE:
                 return False, "El proceso no está activo."
             
             if not _is_process_executable_safe(proc_handle, psapi):

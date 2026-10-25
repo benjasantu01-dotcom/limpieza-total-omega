@@ -352,7 +352,7 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
         score=final_score,
         grade=grade_for_score(final_score),
         breakdown=metric_breakdown,
-        recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+        recommendations=[r for r in recommendations if r] or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

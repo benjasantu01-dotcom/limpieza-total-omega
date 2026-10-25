@@ -64,6 +64,7 @@ def is_junction(path: Path) -> bool:
 
 def is_system_or_hidden(path: Path) -> bool:
     """Verifica si el archivo posee atributos de sistema u oculto (Win32)."""
+    if not isinstance(path, Path): return True
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)))
@@ -100,6 +101,7 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Determina si un archivo es apto para el análisis evitando archivos vacíos o de sistema."""
+    if path is None: return False
     return st_size > 0 and _safe_path_check(path) and not is_system_or_hidden(path)
 
 
@@ -108,7 +110,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo. 
     Usa caché local para evitar lecturas de disco redundantes en el mismo ciclo.
     """
-    if not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
+    if path is None or not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
@@ -119,13 +121,13 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un fingerprint rápido leyendo solo los primeros N bytes."""
-    if not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
+    if path is None or not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     try:
@@ -134,7 +136,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             digest_val = hashlib.sha256(header).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -159,9 +161,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     if not directories: return raw_map
     queue: deque[Tuple[Path, int]] = deque()
-    for d in directories:
-        if d and _safe_path_check(Path(d)):
-            queue.append((Path(d), 0))
+    for d in (Path(d) for d in directories if d):
+        if _safe_path_check(d):
+            queue.append((d, 0))
     
     visited: set[Tuple[int, int]] = set()
     
@@ -201,6 +203,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """Refina grupos mediante hashing en dos etapas: parcial (rápido) y completo (preciso)."""
+    if not paths: return {}
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
@@ -211,12 +214,14 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona la estrategia de hash según el peso del archivo para optimizar rendimiento."""
+    if not paths: return []
     results = _group_paths_by_hash(paths, hash_file) if size <= PARTIAL_READ_BYTES else _process_large_file_subset(paths)
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """Flujo principal de detección de duplicados en el árbol de archivos dado."""
+    if not directories: return []
     _partial_cache.clear()
     _full_hash_cache.clear()
     size_map = _collect_candidates(directories, min_size, skip_protected)
@@ -232,7 +237,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_mtime(path: Path) -> float:
     """Obtiene el tiempo de modificación de un archivo de forma segura."""
-    if not isinstance(path, Path) or not _safe_path_check(path):
+    if path is None or not isinstance(path, Path) or not _safe_path_check(path):
         return float('inf')
     with suppress(OSError, PermissionError):
         return path.stat().st_mtime

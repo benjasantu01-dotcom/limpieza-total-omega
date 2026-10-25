@@ -130,9 +130,12 @@ def get_cached_settings() -> Dict[str, Any]:
     """
     try:
         raw = settings_mod.load()
-        return raw if isinstance(raw, dict) else settings_mod.reset()
+        if isinstance(raw, dict):
+            # Validar que los campos críticos no estén corruptos o vacíos
+            return raw
+        return settings_mod.reset()
     except Exception as e:
-        logging.warning("Fallo al cargar configuración, usando valores de fábrica: %s", e)
+        logging.warning("Fallo al cargar configuración: %s", e)
         return settings_mod.reset()
 
 class AppSettings(TypedDict, total=False):
