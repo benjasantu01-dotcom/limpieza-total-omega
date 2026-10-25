@@ -21,6 +21,7 @@ import os
 import ctypes
 from collections import defaultdict, deque
 from collections.abc import Sequence, Iterable, Callable
+from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Union, TypeAlias, Tuple
@@ -55,20 +56,18 @@ _full_hash_cache: Dict[Path, str] = {}
 def is_junction(path: Path) -> bool:
     """Verifica si el path es un punto de reanálisis (Junction o Symlink) usando Win32 API."""
     if not isinstance(path, Path): return True
-    try:
+    with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
-    except (AttributeError, OSError, RuntimeError):
-        return False
+    return False
 
 
 def is_system_or_hidden(path: Path) -> bool:
     """Verifica si el archivo posee atributos de sistema u oculto (Win32)."""
-    try:
+    with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)))
-    except (AttributeError, OSError, RuntimeError):
-        return False
+    return False
 
 
 @dataclass
@@ -101,7 +100,7 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Determina si un archivo es apto para el análisis evitando archivos vacíos o de sistema."""
-    return st_size > 0 and not is_system_or_hidden(path) and _safe_path_check(path)
+    return st_size > 0 and _safe_path_check(path) and not is_system_or_hidden(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
@@ -109,7 +108,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo. 
     Usa caché local para evitar lecturas de disco redundantes en el mismo ciclo.
     """
-    if not isinstance(path, Path) or not path.exists() or not _safe_path_check(path) or not path.is_file(): 
+    if not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
@@ -126,7 +125,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un fingerprint rápido leyendo solo los primeros N bytes."""
-    if not isinstance(path, Path) or not path.exists() or not _safe_path_check(path) or not path.is_file(): 
+    if not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     try:
@@ -144,7 +143,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_size
     for item in (Path(p) for p in paths if p):
-        if item.exists() and _safe_path_check(item) and item.is_file():
+        if _safe_path_check(item) and item.is_file():
             try:
                 st = item.stat()
                 if _is_valid_candidate(item, st.st_size):
@@ -161,10 +160,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     if not directories: return raw_map
     queue: deque[Tuple[Path, int]] = deque()
     for d in directories:
-        if d:
-            p = Path(d)
-            if p.exists() and _safe_path_check(p):
-                queue.append((p, 0))
+        if d and _safe_path_check(Path(d)):
+            queue.append((Path(d), 0))
     
     visited: set[Tuple[int, int]] = set()
     
@@ -176,25 +173,21 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        path = Path(entry.path)
+                        if not _safe_path_check(path): continue
                         if entry.is_dir(follow_symlinks=False):
-                            path = Path(entry.path)
-                            if _safe_path_check(path):
-                                queue.append((path, depth + 1))
+                            queue.append((path, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat(follow_symlinks=False)
-                            if stat.st_size >= min_size:
-                                path = Path(entry.path)
-                                if _is_valid_candidate(path, stat.st_size):
-                                    if skip_protected and is_protected_path(path): continue
-                                    inode = (stat.st_dev, stat.st_ino)
-                                    if inode not in visited:
-                                        visited.add(inode)
-                                        raw_map[stat.st_size].append(path)
-                                        size_counts[stat.st_size] += 1
-                    except (OSError, PermissionError):
-                        continue
-        except (OSError, PermissionError):
-            continue
+                            if stat.st_size >= min_size and _is_valid_candidate(path, stat.st_size):
+                                if skip_protected and is_protected_path(path): continue
+                                inode = (stat.st_dev, stat.st_ino)
+                                if inode not in visited:
+                                    visited.add(inode)
+                                    raw_map[stat.st_size].append(path)
+                                    size_counts[stat.st_size] += 1
+                    except (OSError, PermissionError): continue
+        except (OSError, PermissionError): continue
     return {sz: paths for sz, paths in raw_map.items() if size_counts[sz] > 1}
 
 
@@ -218,10 +211,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona la estrategia de hash según el peso del archivo para optimizar rendimiento."""
-    if size <= PARTIAL_READ_BYTES:
-        results = _group_paths_by_hash(paths, hash_file)
-    else:
-        results = _process_large_file_subset(paths)
+    results = _group_paths_by_hash(paths, hash_file) if size <= PARTIAL_READ_BYTES else _process_large_file_subset(paths)
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
 
 
@@ -237,18 +227,16 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Calcula el total de bytes que podrían liberarse al eliminar copias."""
-    if not groups: return 0
-    return sum(g.wasted_bytes for g in groups)
+    return sum(g.wasted_bytes for g in groups) if groups else 0
 
 
 def _get_mtime(path: Path) -> float:
     """Obtiene el tiempo de modificación de un archivo de forma segura."""
-    if not isinstance(path, Path) or not path.exists() or not _safe_path_check(path):
+    if not isinstance(path, Path) or not _safe_path_check(path):
         return float('inf')
-    try:
+    with suppress(OSError, PermissionError):
         return path.stat().st_mtime
-    except (OSError, PermissionError):
-        return float('inf')
+    return float('inf')
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
@@ -256,14 +244,8 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not isinstance(group, DuplicateGroup) or not group.paths: 
         return None
         
-    candidates: List[Tuple[float, Path]] = []
-    for p in group.paths:
-        if p.exists() and _safe_path_check(p):
-            candidates.append((_get_mtime(p), p))
-    
-    if not candidates:
-        return group.paths[0]
-    return min(candidates, key=lambda x: x[0])[1]
+    candidates = [( _get_mtime(p), p) for p in group.paths if _safe_path_check(p)]
+    return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:

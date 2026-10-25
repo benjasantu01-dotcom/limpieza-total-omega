@@ -671,3 +671,42 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T09:21:24` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad de `assistant.py` implementando una validación estricta de la estructura del objeto `source` antes de cualquier operación de ingesta, evitando que objetos complejos o arbitrarios inyecten estados no deseados en `SystemContext`.
 - `2026-10-25T09:21:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T09:21:24` Corrida terminada. Total usado hoy: 220.
+- `2026-10-25T09:29:23` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-10-25T09:29:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-25T09:30:21` Tests FALLARON:
+```
+includes_the_sa0')
+
+    def test_summarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:320: in summarize
+    total_mb = round(total_cache_bytes(current_caches) / BYTES_TO_MB, 2)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:314: in total_cache_bytes
+    return sum(c.bytes_found for c in caches) if isinstance(caches, (list, tuple, set)) else 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7f7c50e2e8f0>
+
+>   return sum(c.bytes_found for c in caches) if isinstance(caches, (list, tuple, set)) else 0
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:314: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.40s
+
+```
+- `2026-10-25T09:30:21` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_resolve_browser_path` añadiendo una normalización de rutas y una validación explícita mediante `is_safe_to_modify` para asegurar que las rutas resueltas dinámicamente no escapen del sandbox o apunten a ubicaciones protegidas antes de ser procesadas por el resto del módulo.
+- `2026-10-25T09:30:49` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `walk_files` y `drive_usage` verificando explícitamente mediante `is_protected_path` antes de procesar cualquier ruta, asegurando que no se sigan puntos de reparse o enlaces simbólicos (junctions) que podrían desbordar el recorrido o acceder fuera de los límites permitidos, utilizando `path.resolve()` solo para validaciones de existencia y no para resolución de rutas dinámicas.
+- `2026-10-25T09:30:58` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `duplicates.py` mediante la implementación de `contextlib.suppress` para manejar errores de acceso a disco en la lectura de atributos, evitando que excepciones inesperadas rompan el flujo de análisis, y se reforzó la validación de seguridad asegurando que el chequeo `_safe_path_check` se realice antes de cualquier llamada a `stat()` o `open()`, evitando condiciones de carrera.
+- `2026-10-25T09:30:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T09:30:58` Corrida terminada. Total usado hoy: 224.

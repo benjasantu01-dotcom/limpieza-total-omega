@@ -287,7 +287,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None:
         return None
     try:
-        p = Path(mount).resolve(strict=False)
+        p = Path(mount).expanduser().resolve(strict=False)
         if not p.exists() or is_protected_path(p):
             return None
         usage = shutil.disk_usage(p)
@@ -318,10 +318,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry.name, entry.path):
-                            continue
-                        
-                        if skip_protected and is_protected_path(Path(entry.path)):
+                        full_path = Path(entry.path)
+                        if skip_protected and (is_protected_path(full_path) or _is_excluded_path(entry.name, entry.path)):
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
@@ -332,7 +330,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            yield Path(entry.path), st.st_size
+                            yield full_path, st.st_size
                             
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
