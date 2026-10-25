@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 145 | 13 | 35 | 16 | 127 |
-| 2026-10-25 | 63 | 8 | 14 | 5 | 78 |
+| 2026-10-24 | 143 | 13 | 35 | 16 | 125 |
+| 2026-10-25 | 66 | 8 | 15 | 5 | 78 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **46**
-- rendimiento: **44**
+- rendimiento: **42**
 - robustez ante casos límite: **36**
 - legibilidad y documentación: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
+- `quarantine.py`: **19**
 - `diskreport.py`: **18**
-- `quarantine.py`: **18**
-- `browser.py`: **17**
 - `healthscore.py`: **17**
 - `settings.py`: **17**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
 - `organizer.py`: **16**
-- `safety.py`: **16**
-- `assistant.py`: **13**
+- `browser.py`: **16**
 - `branding.py`: **13**
-- `scanner.py`: **11**
+- `assistant.py`: **12**
+- `scanner.py`: **12**
 - `main.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T07:19:27` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez del escáner implementando una validación explícita de `os.DirEntry` y protecciones adicionales contra errores de acceso durante la iteración en `_handle_directory` y `process_entry`, asegurando que el estado del stack sea consistente incluso ante fallos inesperados de E/S.
+- `2026-10-25T07:19:03` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión robusta de excepciones en la función `_get_file_id` para evitar que fallos en la API de bajo nivel o condiciones de carrera (TOCTOU) resulten en identificadores nulos erróneos que podrían invalidar las comprobaciones de integridad.
+- `2026-10-25T07:17:53` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` y `restore_item` agregando chequeos explícitos para capturar casos donde los argumentos recibidos podrían ser inconsistentes o nulos, asegurando que la excepción sea informativa y no genérica antes de tocar el sistema de archivos.
 - `2026-10-25T07:09:32` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_process_accessible` y `_query_working_set_bytes` reemplazando los bloques `try-except` genéricos por capturas específicas de `ctypes.WinError` y `OSError`, asegurando además que los punteros y handles sean validados explícitamente antes de su uso.
 - `2026-10-25T07:07:49` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del pipeline de cálculo mediante la validación explícita de `quarantined_count` en la entrada y el manejo defensivo de errores en la evaluación de reglas, asegurando que un fallo inesperado en una factoría de mensajes no propague excepciones y garantice siempre una respuesta válida para la interfaz.
 - `2026-10-25T06:57:23` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de acceso a datos (`color`, `font_size`, `icon`, `tab_label`) introduciendo validaciones explícitas de tipos y manejo de entradas nulas o vacías, evitando posibles errores de ejecución y asegurando un comportamiento predecible incluso ante configuraciones inesperadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T05:18:42` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` validando la integridad del buffer de ruta antes de pasarlo a `is_protected_path`, garantizando que solo rutas absolutas y válidas sean analizadas tras la obtención del nombre del módulo.
 - `2026-10-25T05:18:13` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` reforzando la validación de rutas mediante `is_safe_to_modify` antes de cualquier operación de escritura (específicamente en el borrado de cuarentena y borrado de archivos revisados), garantizando que incluso si el decorador `ensure_safety` falla o se omite, la lógica interna tenga un filtro booleano adicional.
 - `2026-10-25T05:06:06` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor de reportes implementando una validación estricta en `_sanitize_msg` para detectar la presencia de rutas potencialmente sensibles (nombres de archivos o directorios) antes de incluir cualquier mensaje en el informe final, garantizando que el asistente nunca filtre información sensible de la estructura del sistema.
-- `2026-10-25T05:05:54` **duplicates.py** (seguridad defensiva): Se introdujo un chequeo explícito de `is_protected_path` dentro de la función `_safe_path_check` y se añadió una validación de existencia `path.exists()` antes de realizar operaciones de acceso en los métodos de hashing, reforzando la defensa contra rutas que podrían haber sido eliminadas o bloqueadas entre el descubrimiento y el procesamiento.
-- `2026-10-25T05:05:31` **diskreport.py** (seguridad defensiva): Reforcé la integridad del proceso de escaneo en `walk_files` y `drive_usage` asegurando que la validación de rutas mediante `is_protected_path` sea un filtro previo y obligatorio, evitando el procesamiento de rutas potencialmente peligrosas antes de realizar operaciones de IO (`os.scandir` o `shutil.disk_usage`).
-- `2026-10-25T05:05:05` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de rutas (`resolve`) y el manejo de excepciones de I/O en la resolución de directorios, asegurando que `_resolve_browser_path` sea totalmente resistente a ataques de Path Traversal y errores de acceso inesperados.

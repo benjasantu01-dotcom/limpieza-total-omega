@@ -270,7 +270,11 @@ class QuarantineItem:
 
     def verify_integrity(self, stored_path: Path) -> bool:
         """Verificación avanzada mediante hash SHA256 para detectar corrupción de datos."""
-        st = stored_path.stat()
+        try:
+            st = stored_path.stat()
+        except OSError:
+            return False
+            
         if not self._validate_integrity(stored_path, st):
             return False
         try:
@@ -916,14 +920,15 @@ def _validate_input_path(source: PathLike) -> Path:
     if source is None:
         raise ValueError("Ruta de origen nula.")
     
-    p_source: Path = Path(str(source))
-    if not str(p_source).strip():
+    path_val = str(source).strip()
+    if not path_val:
         raise ValueError("Ruta de origen vacía.")
     
-    if str(p_source).startswith(r"\\") or str(p_source).startswith("//"):
+    p_source: Path = Path(path_val)
+    if path_val.startswith(r"\\") or path_val.startswith("//"):
         raise UnsafePathError("Rutas UNC no permitidas.")
         
-    if len(str(p_source)) > 260:
+    if len(path_val) > 260:
         raise UnsafePathError("Ruta de entrada excede límites del sistema.")
         
     if not p_source.is_absolute():

@@ -245,7 +245,7 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Aplica filtros de seguridad (estructura y reanálisis) antes de procesar una entrada."""
-        if entry is None or not hasattr(entry, 'path') or not entry.path:
+        if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         
         path_str: str = entry.path
@@ -267,7 +267,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Gestiona la pila de directorios para búsqueda DFS, respetando el límite de profundidad."""
-        if current_depth >= SCAN_LIMITS.max_depth or entry is None or not entry.path:
+        if current_depth >= SCAN_LIMITS.max_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
         
         try:
@@ -276,7 +276,7 @@ class Scanner:
                 self.seen.add(path_norm)
                 directory_stack.append((entry.path, current_depth + 1))
         except (OSError, RuntimeError):
-            pass
+            logger.debug(f"Error procesando directorio para el stack: {entry.path}")
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Verifica si la extensión del archivo es candidata a ser analizada por heurísticas usando caché."""
@@ -288,7 +288,7 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Procesa una entrada: bifurca en directorio para recursión o archivo para heurísticas."""
-        if entry is None or not hasattr(entry, 'path') or not entry.path or not self._is_safe_entry(entry):
+        if not isinstance(entry, os.DirEntry) or not entry.path or not self._is_safe_entry(entry):
             return
             
         try:
