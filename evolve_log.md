@@ -650,3 +650,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T08:50:28` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_safe_stat` al añadir un manejo explícito para errores de `FileNotFoundError` durante la iteración y el acceso a metadatos, evitando que la eliminación de un archivo temporal por otro proceso mientras la app escanea interrumpa la ejecución.
 - `2026-10-25T08:50:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T08:50:28` Corrida terminada. Total usado hoy: 208.
+- `2026-10-25T08:58:53` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-25T08:59:18` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-25T08:59:46` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante casos límite en la función `_compute_cached` y el manejo de métricas, evitando que errores inesperados en las funciones `scorer` o en las reglas de recomendación interrumpan el flujo de análisis, asegurando siempre un retorno válido para la interfaz.
+- `2026-10-25T09:01:02` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado `on_stage` para realizar una validación de seguridad de forma más robusta antes de mover archivos, asegurando que cada archivo individual pase por `is_safe_to_modify` dentro de la tarea asíncrona, evitando que una lista parcial de archivos potencialmente bloqueados interrumpa la operación o permita el acceso a rutas protegidas si la validación inicial fuera insuficiente.
+- `2026-10-25T09:01:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-25T09:01:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T09:01:25` Corrida terminada. Total usado hoy: 212.

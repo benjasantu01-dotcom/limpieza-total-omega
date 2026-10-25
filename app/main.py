@@ -1549,23 +1549,33 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
         
-        aptos = [jf for jf in junk if self._is_safe_path(jf.path)]
+        # Validación inicial visual antes de la tarea asíncrona
+        aptos_iniciales = [jf for jf in junk if self._is_safe_path(jf.path)]
         
-        if not aptos:
+        if not aptos_iniciales:
             messagebox.showwarning("Sin candidatos seguros", "Todos los archivos encontrados están en rutas protegidas.")
             return
 
         if not self._confirm(
             "Mover a revisión",
-            f"Se van a MOVER {len(aptos)} archivos seguros a la carpeta de revisión.\n\n"
-            "No se borra nada: podés verlos y decidir después. ¿Seguimos?",
+            f"Se van a intentar MOVER {len(aptos_iniciales)} archivo(s) a la carpeta de revisión.\n\n"
+            "Solo se moverán los archivos que pasen las comprobaciones de seguridad. ¿Seguimos?",
         ):
             return
 
         def task() -> None:
             self.set_status("Moviendo a revisión...")
+            confirmados = []
+            for jf in junk:
+                # Verificación estricta de seguridad en el hilo de trabajo antes de cada movimiento
+                if self._is_safe_path(jf.path):
+                    confirmados.append(jf)
+            
+            if not confirmados:
+                self.log("Ningún archivo pasó el filtro de seguridad.", "Limpieza")
+                return
+
             try:
-                confirmados = [jf for jf in aptos if self._is_safe_path(jf.path)]
                 dest = stage_for_review(confirmados)
                 self.log(f"Movidos {len(confirmados)} archivos a: {dest}", "Limpieza")
                 self._invalidate_cache("junk")
