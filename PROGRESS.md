@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 53
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 198
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 54 | 5 | 15 | 3 | 65 |
+| 2026-10-23 | 54 | 5 | 15 | 3 | 61 |
 | 2026-10-24 | 154 | 13 | 37 | 17 | 129 |
-| 2026-10-25 | 7 | 0 | 1 | 0 | 4 |
+| 2026-10-25 | 9 | 0 | 1 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **48**
 - rendimiento: **42**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `organizer.py`: **18**
+- `duplicates.py`: **17**
 - `safety.py`: **17**
-- `duplicates.py`: **16**
 - `settings.py`: **16**
 - `browser.py`: **16**
 - `quarantine.py`: **16**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T00:41:45` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_safe_path_check` para asegurar que el escaneo no siga enlaces simbólicos fuera de las rutas permitidas, validando explícitamente el acceso mediante `is_safe_to_modify` antes de cualquier operación de I/O, siguiendo la lógica estricta de no tocar zonas protegidas ni seguir puntos de reanálisis.
+- `2026-10-25T00:41:09` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `drive_usage` añadiendo chequeos adicionales de `is_protected_path` ante posibles rutas resueltas que puedan haber mutado o apuntar a destinos fuera del ámbito original, fortaleciendo la integridad del recorrido frente a cambios en el sistema de archivos durante la ejecución.
 - `2026-10-25T00:32:37` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de la ruta normalizada contra `base_norm` ANTES de intentar acceder al disco, evitando que el iterador `os.scandir` pueda ser engañado por enlaces simbólicos o puntos de reparse que apunten fuera del sandbox permitido, garantizando que el escaneo permanezca estrictamente dentro de `LOCALAPPDATA`.
 - `2026-10-25T00:31:28` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_build_payload` y `_call_gemini` añadiendo validaciones estrictas de los datos de entrada, evitando que cualquier cadena potencialmente maliciosa (aunque pase el primer filtro) sea interpolada directamente en el prompt final, y asegurando que las claves de API y nombres de modelo sigan patrones estrictos antes de construir cualquier URL.
 - `2026-10-25T00:22:07` **settings.py** (robustez ante casos límite): Se reforzó la robustez en la carga inicial de archivos de configuración mediante un chequeo de integridad que detecta archivos vacíos (size 0) o archivos excesivamente grandes (potencial ataque de denegación de servicio por memoria) antes de cualquier operación de I/O, previniendo fallos en `_read_and_parse_json`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T14:43:59` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo recursivo de directorios ante condiciones de carrera (archivos bloqueados o desaparecidos durante la iteración) mediante una validación explícita de existencia mediante `os.scandir` y la eliminación de posibles errores de tipo en la llamada a `scan_ctx.is_junction`.
 - `2026-10-24T14:43:30` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante casos límite como entradas no numéricas o rutas inválidas, asegurando que las validaciones de seguridad actúen correctamente antes de cualquier intento de escritura o cálculo geométrico.
 - `2026-10-24T14:33:03` **safety.py** (rendimiento): Optimicé el rendimiento de `_evaluate_security_rules` reemplazando la creación de generadores y la iteración lineal sobre la lista de validadores por una lógica de pre-validación rápida, reduciendo la carga de CPU en escaneos masivos.
-- `2026-10-24T14:23:04` **organizer.py** (rendimiento): Optimizé la recursión del escaneo de directorios convirtiendo la lista `JUNK_EXTENSIONS` en un conjunto (`frozenset`) pre-definido y reduciendo las llamadas redundantes a `Path` y `stat` dentro del bucle `os.scandir`, mejorando la velocidad de procesamiento en directorios con gran cantidad de archivos.
-- `2026-10-24T14:22:32` **memory.py** (rendimiento): Se optimizó el acceso a los procesos en `_iter_process_memory` mediante la pre-validación de PIDs mediante un conjunto (`SYSTEM_CRITICAL_PIDS`) y evitando llamadas costosas a `GetModuleFileNameExW` (que implica I/O y carga de módulos) para procesos que ya superan el umbral de consumo o están protegidos, mejorando significativamente la velocidad de escaneo.

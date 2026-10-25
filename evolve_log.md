@@ -928,3 +928,13 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-25T00:32:37` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de la ruta normalizada contra `base_norm` ANTES de intentar acceder al disco, evitando que el iterador `os.scandir` pueda ser engañado por enlaces simbólicos o puntos de reparse que apunten fuera del sandbox permitido, garantizando que el escaneo permanezca estrictamente dentro de `LOCALAPPDATA`.
 - `2026-10-25T00:32:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T00:32:37` Corrida terminada. Total usado hoy: 12.
+- `2026-10-25T00:40:00` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-10-25T00:41:09` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `drive_usage` añadiendo chequeos adicionales de `is_protected_path` ante posibles rutas resueltas que puedan haber mutado o apuntar a destinos fuera del ámbito original, fortaleciendo la integridad del recorrido frente a cambios en el sistema de archivos durante la ejecución.
+- `2026-10-25T00:41:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-25T00:41:45` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `_safe_path_check` para asegurar que el escaneo no siga enlaces simbólicos fuera de las rutas permitidas, validando explícitamente el acceso mediante `is_safe_to_modify` antes de cualquier operación de I/O, siguiendo la lógica estricta de no tocar zonas protegidas ni seguir puntos de reanálisis.
+- `2026-10-25T00:41:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-25T00:41:49` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-25T00:42:24` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-10-25T00:43:15` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `main.py` al implementar un filtrado de rutas más estricto y centralizado, asegurando que cualquier entrada del usuario (`entries` de UI y selectores de carpeta) se sanitice y valide contra el módulo `safety` antes de que cualquier operación asíncrona intente interactuar con el sistema de archivos.
+- `2026-10-25T00:43:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T00:43:15` Corrida terminada. Total usado hoy: 16.

@@ -55,8 +55,6 @@ _full_hash_cache: Dict[Path, str] = {}
 def is_junction(path: Path) -> bool:
     """Verifica si el path es un punto de reanálisis (Junction o Symlink) usando Win32 API."""
     if not isinstance(path, Path): return True
-    if path.is_symlink():
-        return True
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
@@ -94,17 +92,18 @@ class DuplicateGroup:
 def _safe_path_check(path: Path) -> bool:
     """Valida la integridad de un path frente a restricciones de seguridad y enlaces simbólicos."""
     if path is None: return False
+    # Siempre verificar seguridad antes de tocar la ruta
     return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Determina si un archivo es apto para el análisis evitando archivos vacíos o de sistema."""
-    return st_size > 0 and not is_system_or_hidden(path) and not is_protected_path(path)
+    return st_size > 0 and not is_system_or_hidden(path) and _safe_path_check(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo, verificando seguridad de acceso antes de leer."""
-    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.is_file(): 
+    if not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
@@ -121,7 +120,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash parcial (primeros N bytes) de forma segura."""
-    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.is_file(): 
+    if not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     try:
@@ -150,27 +149,34 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Exploración recursiva (BFS) para recolectar archivos candidatos usando atributos de DirEntry."""
-    if not directories: return {}
-    
     raw_map: Dict[int, List[Path]] = defaultdict(list)
-    queue: deque[Tuple[Path, int]] = deque((Path(d), 0) for d in directories if d and Path(d).exists())
+    queue: deque[Tuple[Path, int]] = deque()
+    for d in directories:
+        if d:
+            p = Path(d)
+            if p.exists() and _safe_path_check(p):
+                queue.append((p, 0))
+    
     visited: set[Tuple[int, int]] = set()
     
     while queue:
         current_dir, depth = queue.popleft()
-        if depth > MAX_RECURSION_DEPTH or not _safe_path_check(current_dir): continue
+        if depth > MAX_RECURSION_DEPTH: continue
             
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        # No seguir symlinks ni junction points para prevenir loops y escapes de seguridad
                         if entry.is_dir(follow_symlinks=False):
-                            queue.append((Path(entry.path), depth + 1))
+                            path = Path(entry.path)
+                            if _safe_path_check(path):
+                                queue.append((path, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size >= min_size:
                                 path = Path(entry.path)
-                                if _is_valid_candidate(path, stat.st_size) and is_safe_to_modify(path):
+                                if _is_valid_candidate(path, stat.st_size):
                                     if skip_protected and is_protected_path(path): continue
                                     inode = (stat.st_dev, stat.st_ino)
                                     if inode not in visited:
@@ -227,7 +233,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_mtime(path: Path) -> float:
     """Obtiene el tiempo de modificación de un archivo de forma segura."""
-    if not isinstance(path, Path) or not path.exists():
+    if not isinstance(path, Path) or not _safe_path_check(path):
         return float('inf')
     try:
         return path.stat().st_mtime
@@ -242,7 +248,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         
     candidates: List[Tuple[float, Path]] = []
     for p in group.paths:
-        if p.exists() and is_safe_to_modify(p):
+        if _safe_path_check(p):
             candidates.append((_get_mtime(p), p))
     
     if not candidates:
