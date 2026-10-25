@@ -192,6 +192,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
+            # resolve() puede fallar por permisos; tratamos esto como una ruta no accesible
             p = p.resolve(strict=False)
             if not self._validate_file_access(p):
                 _EXISTS_CACHE[path_string] = False

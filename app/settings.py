@@ -368,17 +368,19 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     asegurando que el contenido sea un diccionario de valores simples.
     """
     try:
+        # Verificar seguridad antes de acceder a la ruta
         if not _Validators._is_safe_path(str(file_path)): return None
         st = file_path.lstat()
         if not _is_file_secure_to_read(st, file_path): return None
         
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            if not isinstance(data, dict): return None
-            # Valida profundidad plana y tipos de datos simples (previniendo JSON bombas/anidación excesiva)
-            if len(data) > 64: return None
-            if not all(isinstance(v, (str, int, float, bool)) or v is None for v in data.values()): return None
-            return data
+            
+        # Validar estructura post-parseo: asegurar dict, tamaño limitado y tipos primitivos
+        if not isinstance(data, dict): return None
+        if len(data) > 64: return None
+        if not all(isinstance(v, (str, int, float, bool)) or v is None for v in data.values()): return None
+        return data
     except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError):
         return None
 
