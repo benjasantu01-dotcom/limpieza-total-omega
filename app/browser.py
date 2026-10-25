@@ -80,7 +80,7 @@ def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     return decorator
 
 class ScanResult(NamedTuple):
-    """Resultado del cálculo de tamaño recursivo."""
+    """Resultado del cálculo de tamaño recursivo: total en bytes y éxito de operación."""
     bytes_found: int
     success: bool
 
@@ -98,6 +98,7 @@ SYSTEM_HIDDEN_FLAGS: int = (
 )
 
 def _is_junction_default(path: str) -> bool:
+    """Fallback por defecto si os.path.isjunction no está disponible (Linux/OSX)."""
     return False
 
 _IS_JUNCTION_FN: JunctionChecker = getattr(os.path, 'isjunction', _is_junction_default)
@@ -158,7 +159,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     return dll if hasattr(dll, 'GetFileAttributesW') else None
 
 def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
-    """Detecta rutas de red que no deben procesarse."""
+    """Detecta rutas de red (UNC) que no deben procesarse."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def _is_within_sandbox(path_norm: str, base_norm: str) -> bool:
@@ -213,7 +214,7 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     return 0
 
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Calcula el peso total recursivo aplicado de filtros de seguridad."""
+    """Calcula el peso total de un directorio respetando restricciones de seguridad y profundidad."""
     if not root_path or depth > scan_ctx.max_depth:
         return ScanResult(0, True)
     
@@ -262,7 +263,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
-    """Validación de integridad para identificar carpetas de caché válidas."""
+    """Validación previa de integridad antes de iniciar el escaneo de una carpeta de caché."""
     if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): return False
     kernel = _get_kernel32()
     
@@ -276,7 +277,7 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
     return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Resuelve rutas absolutas a partir de perfiles detectados de forma segura."""
+    """Resuelve rutas absolutas a partir de perfiles detectados, verificando contención en el sandbox."""
     if not _is_valid_rel_path(rel_str): return Path()
     try:
         target = real_base.joinpath(*rel_str.split("\\")).resolve()
@@ -286,7 +287,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Escanea perfiles para consolidar hallazgos de caché ordenados por tamaño."""
+    """Escanea perfiles para consolidar hallazgos de caché ordenados por tamaño (de mayor a menor)."""
     raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
@@ -298,7 +299,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists() or not os.access(base, os.R_OK): continue
         base_norm = os.path.normcase(os.path.abspath(base))
-        # Compartimos el contexto a través de todas las carpetas del mismo usuario
         scan_ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
         
         for browser_key, relative_path in browser_map.items():
@@ -315,7 +315,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     return found
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
-    """Calcula la suma total en bytes de los hallazgos."""
+    """Calcula la suma total en bytes de los hallazgos de caché procesados."""
     return sum(c.size_bytes for c in caches) if isinstance(caches, (list, tuple, set)) else 0
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:

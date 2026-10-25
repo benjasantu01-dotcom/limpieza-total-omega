@@ -192,7 +192,7 @@ def _is_excluded_path(name: str, full_path: str) -> bool:
     
     Args:
         name: Nombre del archivo o directorio.
-        full_path: Ruta completa absoluta (parámetro reservado para extensiones futuras).
+        full_path: Ruta completa absoluta.
     """
     if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
@@ -288,7 +288,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).resolve(strict=False)
-        # Seguridad: verificar antes de llamar a shutil.disk_usage
         if not p.exists() or is_protected_path(p):
             return None
         usage = shutil.disk_usage(p)
@@ -319,18 +318,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # 1. Validar nombre/path antes de stat
                         if skip_protected and _is_excluded_path(entry.name, entry.path):
                             continue
                         
-                        # 2. Doble validación de seguridad antes de procesar el objeto
                         if skip_protected and is_protected_path(Path(entry.path)):
                             continue
                         
-                        # 3. Obtener stat, manejando fallos si el archivo desapareció
                         st = entry.stat(follow_symlinks=False)
                             
-                        # 4. Procesar según tipo
                         if entry.is_dir(follow_symlinks=False):
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
@@ -394,10 +389,12 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Función interna que centraliza el recorrido y la agregación de métricas.
+    Centraliza el recorrido y la agregación de métricas.
     
-    Utiliza un min-heap de tamaño fijo (limit) para mantener track de los archivos
-    más grandes. Al usar un heap de tamaño N, el costo de insertar es O(log N).
+    Args:
+        directory: Directorio raíz a analizar.
+        skip_protected: Si se debe excluir rutas protegidas.
+        limit: Tamaño del heap para almacenar los archivos más grandes.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -407,7 +404,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             stats.register_file(size, path.suffix)
             
             if limit > 0:
-                # Mantener solo los N mayores encontrados hasta el momento
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size, path))
                 elif size > top_heap[0][0]:

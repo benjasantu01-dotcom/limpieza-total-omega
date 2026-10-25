@@ -90,9 +90,12 @@ class DuplicateGroup:
 
 
 def _safe_path_check(path: Path) -> bool:
-    """Valida la integridad de un path frente a restricciones de seguridad y enlaces simbólicos."""
+    """
+    Validación de seguridad compuesta.
+    Necesaria para prevenir accesos a rutas prohibidas, archivos de sistema 
+    y recursión infinita mediante puntos de reanálisis (junctions).
+    """
     if path is None: return False
-    # La seguridad exige chequear explícitamente ambos filtros de `safety.py`
     return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
 
 
@@ -102,7 +105,10 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo, verificando seguridad de acceso antes de leer."""
+    """
+    Calcula el hash SHA256 completo. 
+    Usa caché local para evitar lecturas de disco redundantes en el mismo ciclo.
+    """
     if not isinstance(path, Path) or not path.exists() or not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
@@ -119,7 +125,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula el hash parcial (primeros N bytes) de forma segura."""
+    """Calcula un fingerprint rápido leyendo solo los primeros N bytes."""
     if not isinstance(path, Path) or not path.exists() or not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _partial_cache: return _partial_cache[path]
