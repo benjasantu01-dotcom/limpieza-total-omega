@@ -1454,3 +1454,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-25T04:25:48` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-10-25T04:25:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T04:25:48` Corrida terminada. Total usado hoy: 104.
+- `2026-10-25T04:34:09` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-10-25T04:34:49` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_compute_cached` y `_evaluate_rules` implementando una protección explícita contra divisiones por cero y estados inesperados durante la ejecución de las reglas, asegurando que cualquier error en una factory externa no degrade el informe global.
+- `2026-10-25T04:35:55` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `main.py` ante errores de entrada y concurrencia implementando una limpieza más agresiva de la caché de tareas y validando explícitamente la existencia de las rutas en los métodos de callback asíncronos para evitar condiciones de carrera donde el directorio de trabajo desaparece durante la ejecución del pool.
+- `2026-10-25T04:36:32` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-25T04:36:43` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha añadido `item.exists()` dentro del bucle de borrado en `delete_reviewed` y `stage_for_review` para prevenir excepciones por condiciones de carrera (Race Conditions) donde el archivo podría ser eliminado o movido por otro proceso entre la validación y la ejecución.
+- `2026-10-25T04:36:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T04:36:43` Corrida terminada. Total usado hoy: 108.

@@ -329,10 +329,15 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
     total_points = 0.0
     
     for entry in _PIPELINE:
-        area_ratio = entry.scorer(metrics)
+        try:
+            area_ratio = entry.scorer(metrics)
+        except Exception:
+            area_ratio = 0.0
+            
         recs = _evaluate_rules(metrics, entry.rules, area_ratio)
         recommendations.extend(recs)
         
+        # Uso de max(1) para evitar división por cero si el peso fuera 0 (aunque aquí es fijo)
         points = area_ratio * float(entry.weight)
         val_int = int(_clamp(round(points), 0.0, float(entry.weight)))
         

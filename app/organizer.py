@@ -380,8 +380,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 if not item.is_file() or item.is_symlink() or _is_junction(item): continue
                 if not item.is_relative_to(dest): continue
                 
-                # Validación de seguridad estricta antes de borrar
-                if is_safe_to_modify(item) and not is_protected_path(item):
+                # Validación de seguridad estricta antes de borrar y verificar existencia actual
+                if item.exists() and is_safe_to_modify(item) and not is_protected_path(item):
                     item.unlink()
                     count += 1
             except (OSError, PermissionError) as e:
