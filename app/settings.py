@@ -157,7 +157,6 @@ class _SettingsManager:
     a disco mediante el uso de cachés sincronizadas por metadatos (mtime/size).
     """
     def __init__(self) -> None:
-        self.settings_cache: dict[str, tuple[float, int, AppSettings]] = {}
         self.path_cache: dict[Optional[str], Path] = {}
         self._cached_settings: Optional[AppSettings] = None
         self._last_mtime: float = 0.0
@@ -167,7 +166,7 @@ class _SettingsManager:
         """Limpia las memorias caché para forzar una recarga limpia desde el disco."""
         self._cached_settings = None
         self._last_mtime = 0.0
-        _load_impl.cache_clear()
+        self._last_size = 0
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
@@ -389,14 +388,6 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         settings["asistente_activado"] = False
     return settings
 
-@lru_cache(maxsize=4)
-def _load_impl(file_path_str: str, mtime: float, size: int) -> AppSettings:
-    """Implementación cacheable de carga de configuración."""
-    data = _read_and_parse_json(Path(file_path_str))
-    if data is not None:
-        return _coerce_and_verify(validate(data))
-    return dict(DEFAULTS) # type: ignore
-
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga y valida la configuración desde disco o retorna los valores por defecto."""
     primary_path = settings_path(custom_base)
@@ -407,11 +398,13 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if st.st_mtime == _MANAGER._last_mtime and st.st_size == _MANAGER._last_size and _MANAGER._cached_settings:
                 return _MANAGER._cached_settings.copy()
             
-            settings = _load_impl(str(primary_path), st.st_mtime, st.st_size).copy() # type: ignore
-            _MANAGER._cached_settings = settings
-            _MANAGER._last_mtime = st.st_mtime
-            _MANAGER._last_size = st.st_size
-            return settings
+            data = _read_and_parse_json(primary_path)
+            if data is not None:
+                settings = _coerce_and_verify(validate(data))
+                _MANAGER._cached_settings = settings
+                _MANAGER._last_mtime = st.st_mtime
+                _MANAGER._last_size = st.st_size
+                return settings.copy()
     except (OSError, PermissionError): pass
     return dict(DEFAULTS) # type: ignore
 

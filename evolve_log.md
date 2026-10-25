@@ -602,3 +602,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T08:30:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-10-25T08:30:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T08:30:06` Corrida terminada. Total usado hoy: 200.
+- `2026-10-25T08:38:31` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-25T08:39:02` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-10-25T08:39:29` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escáner mediante la centralización de la normalización de rutas y la eliminación de llamadas redundantes a `os.path.realpath` y `resolve()` dentro del bucle crítico, reemplazándolas por una gestión más eficiente basada en el `path` ya disponible en `os.DirEntry`.
+- `2026-10-25T08:39:58` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la gestión de memoria eliminando la caché de lru_cache en `_load_impl` para evitar redundancias con la caché del estado del Singleton `_MANAGER`, asegurando que `load()` sea más rápido al delegar completamente la validez de la carga a los metadatos de archivo (size/mtime) que ya gestiona la instancia `_MANAGER`.
+- `2026-10-25T08:40:09` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.35s
+
+```
+- `2026-10-25T08:40:09` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha optimizado `_resolve_and_cache_path` y `_resolve_path_from_command` utilizando un mecanismo de "fail-fast" mediante el uso de `os.path.exists` antes de la costosa instanciación de objetos `Path` y la resolución de rutas, minimizando llamadas innecesarias al sistema de archivos y reduciendo la presión sobre la caché en rutas inválidas.
+- `2026-10-25T08:40:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T08:40:09` Corrida terminada. Total usado hoy: 204.

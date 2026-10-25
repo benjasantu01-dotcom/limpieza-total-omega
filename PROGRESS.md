@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **215** (42.7% de aceptación)
-- Rechazadas por tests: 19
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 130 | 11 | 30 | 16 | 117 |
-| 2026-10-25 | 85 | 8 | 21 | 6 | 80 |
+| 2026-10-24 | 128 | 11 | 30 | 16 | 115 |
+| 2026-10-25 | 87 | 9 | 21 | 6 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **47**
+- seguridad defensiva: **45**
+- rendimiento: **45**
 - legibilidad y documentación: **44**
-- rendimiento: **43**
 - robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
 - `quarantine.py`: **19**
-- `browser.py`: **18**
-- `diskreport.py`: **18**
 - `safety.py`: **17**
+- `diskreport.py`: **17**
 - `duplicates.py`: **17**
+- `settings.py`: **17**
 - `organizer.py`: **17**
+- `browser.py`: **17**
 - `healthscore.py`: **16**
-- `settings.py`: **16**
 - `assistant.py`: **14**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `branding.py`: **12**
 - `startup.py`: **9**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T08:39:58` **settings.py** (rendimiento): Optimizé la gestión de memoria eliminando la caché de lru_cache en `_load_impl` para evitar redundancias con la caché del estado del Singleton `_MANAGER`, asegurando que `load()` sea más rápido al delegar completamente la validez de la carga a los metadatos de archivo (size/mtime) que ya gestiona la instancia `_MANAGER`.
+- `2026-10-25T08:39:29` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner mediante la centralización de la normalización de rutas y la eliminación de llamadas redundantes a `os.path.realpath` y `resolve()` dentro del bucle crítico, reemplazándolas por una gestión más eficiente basada en el `path` ya disponible en `os.DirEntry`.
 - `2026-10-25T08:29:18` **organizer.py** (rendimiento): Optimizé el rendimiento del escaneo recursivo sustituyendo las llamadas frecuentes a `Path()` y `.resolve()` dentro de `_process_directory` por operaciones con strings y atributos de `os.DirEntry`, evitando instanciaciones innecesarias de objetos pesados en el bucle principal.
 - `2026-10-25T08:28:51` **memory.py** (rendimiento): Optimizé la carga de procesos en `top_memory_processes` y `_iter_process_memory` pre-cargando los punteros a funciones de la API de Windows fuera del bucle crítico, reduciendo la sobrecarga de resolución de símbolos (ctypes) en cada iteración.
 - `2026-10-25T08:20:36` **main.py** (rendimiento): Optimizé la gestión de la caché de configuración reemplazando el acceso al diccionario global por el uso de `lru_cache` y un flag de expiración para evitar redundancia en las lecturas de `settings.py` durante el ciclo de vida de la aplicación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T07:50:05` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `IsolationManager` y la clarificación de las validaciones de inodos y TOCTOU en el flujo de aislamiento, facilitando la comprensión del "porqué" de cada barrera de seguridad sin alterar la lógica.
 - `2026-10-25T07:49:34` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la sustitución de comprobaciones implícitas por type hints explícitos, facilitando la comprensión de las restricciones de seguridad sin alterar la lógica de ejecución.
 - `2026-10-25T07:49:06` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_is_process_executable_safe` y `_process_from_pid`, eliminando la dependencia de pasar la función `get_filename_func` por parámetro en cascada y documentando explícitamente las asunciones del manejo de PIDs mediante type hints y docstrings claros.
-- `2026-10-25T07:39:04` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reorganizaron los docstrings para documentar explícitamente el PORQUÉ de las validaciones de seguridad en cada función crítica, mejorando la mantenibilidad sin cambiar la lógica.
-- `2026-10-25T07:38:20` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y type hints específicos en las funciones de procesamiento de datos, asegurando que las responsabilidades de cada componente sean autoexplicativas para futuros colaboradores.

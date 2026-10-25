@@ -131,7 +131,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Obtiene metadatos de archivo de forma segura, ignorando enlaces simbólicos y rutas protegidas."""
-    if entry is None or not hasattr(entry, 'path'):
+    if entry is None:
         return None
     try:
         if entry.is_symlink():
@@ -235,8 +235,7 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Valida, mediante resolución real, si el archivo pertenece al árbol de escaneo."""
         try:
-            real_path = os.path.normcase(str(Path(entry_path).resolve()))
-            return real_path.startswith(self.base_root_norm)
+            return os.path.normcase(os.path.realpath(entry_path)).startswith(self.base_root_norm)
         except (OSError, RuntimeError):
             return False
 
@@ -307,14 +306,12 @@ class Scanner:
             return
             
         try:
-            path_norm: str = os.path.normcase(str(Path(entry.path).resolve()))
-            if path_norm in self.seen:
-                return
-            
             if entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
-                    self.seen.add(path_norm)
-                    self._run_file_heuristics(Path(entry.path), entry)
+                    path_norm: str = os.path.normcase(os.path.realpath(entry.path))
+                    if path_norm not in self.seen:
+                        self.seen.add(path_norm)
+                        self._run_file_heuristics(Path(entry.path), entry)
             elif entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
         except (OSError, PermissionError, FileNotFoundError, AttributeError, RuntimeError):
@@ -357,7 +354,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         base_path = Path(directory)
         if not base_path.exists() or not base_path.is_dir():
             return []
-        # Normalizamos la ruta base para validar contra el root en todo el proceso
         base_path = base_path.resolve(strict=True)
         if base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
             return []
