@@ -75,14 +75,26 @@ class Grade(Enum):
         return cls.F.value
 
 class RecommendationRule(NamedTuple):
-    """Define una regla de diagnóstico con una condición de disparo y un mensaje dinámico."""
+    """
+    Define una regla de diagnóstico: 
+    - area: Identificador del componente evaluado.
+    - threshold: Punto de corte para disparo.
+    - message_factory: Función que genera el texto de recomendación.
+    - check: Predicado lógico para evaluar si la regla dispara una advertencia.
+    """
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Configuración de una unidad de procesamiento en el pipeline de salud."""
+    """
+    Configuración de una unidad de procesamiento en el pipeline de salud:
+    - area: Nombre de la métrica asociada.
+    - weight: Contribución porcentual (0-100) al puntaje final.
+    - scorer: Lógica de normalización.
+    - rules: Colección de reglas de diagnóstico asociadas.
+    """
     area: MetricKey
     weight: int
     scorer: Callable[[SystemMetrics], NormalizedRatio]

@@ -323,28 +323,28 @@ def _is_process_accessible(pid: int, access_mask: int, kernel32: ctypes.CDLL) ->
         pass
     return None
 
-def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
+def _query_working_set_bytes(pid: int, h_process: wintypes.HANDLE, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Invoca GetProcessMemoryInfo para obtener el WorkingSet del proceso."""
-    if handle is None: return None
+    if h_process is None: return None
     try:
-        if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
+        if psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
     except (ctypes.WinError, OSError, ValueError):
         return None
     return None
 
-def _is_process_executable_safe(handle: wintypes.HANDLE, psapi: ctypes.CDLL) -> bool:
+def _is_process_executable_safe(h_process: wintypes.HANDLE, psapi: ctypes.CDLL) -> bool:
     """
     Verifica que el ejecutable asociado al handle del proceso no esté en zonas protegidas.
     Utiliza GetModuleFileNameExW para obtener la ruta del ejecutable.
     """
-    if handle is None: 
+    if h_process is None: 
         return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
-        if psapi.GetModuleFileNameExW(handle, None, buffer_path, 4096) <= 0:
+        if psapi.GetModuleFileNameExW(h_process, None, buffer_path, 4096) <= 0:
             return False
         
         exe_path_str = buffer_path.value.strip()
@@ -357,21 +357,21 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, psapi: ctypes.CDLL) -> 
 
 def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
     """Helper que orquesta la validación, apertura y medición de un proceso por su PID."""
-    proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
-    if not proc_handle:
+    h_process = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
+    if not h_process:
         return None
     
     try:
-        ws = _query_working_set_bytes(pid, proc_handle, psapi, pmc)
+        ws = _query_working_set_bytes(pid, h_process, psapi, pmc)
         if ws is None or ws <= (10 * BYTES_IN_MB):
             return None
             
-        if not _is_process_executable_safe(proc_handle, psapi):
+        if not _is_process_executable_safe(h_process, psapi):
             return None
             
         return ProcessMemory(f"PID {pid}", pid, ws)
     finally:
-        kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(h_process)
 
 def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos mediante EnumProcesses y filtra aquellos significativos."""
@@ -455,26 +455,26 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         psapi, kernel32 = ctypes.windll.psapi, ctypes.windll.kernel32
-        proc_handle = _is_process_accessible(target_pid, TRIM_ACCESS_MASK, kernel32)
-        if not proc_handle:
+        h_process = _is_process_accessible(target_pid, TRIM_ACCESS_MASK, kernel32)
+        if not h_process:
             return False, "Acceso denegado o proceso no encontrado."
 
         try:
             # Validar que el proceso realmente exista antes de operar
             exit_code = wintypes.DWORD()
-            if kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) == 0:
+            if kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0:
                 return False, "No se pudo verificar el estado del proceso."
                 
             if exit_code.value != STILL_ACTIVE_EXIT_CODE:
                 return False, "El proceso no está activo."
             
-            if not _is_process_executable_safe(proc_handle, psapi):
+            if not _is_process_executable_safe(h_process, psapi):
                 return False, "Proceso protegido o ubicación insegura."
                 
-            if psapi.EmptyWorkingSet(proc_handle) == 0:
+            if psapi.EmptyWorkingSet(h_process) == 0:
                 return False, "El sistema operativo rechazó la operación de limpieza."
             return True, f"Working set liberado. {TRIM_WARNING}"
         finally:
-            kernel32.CloseHandle(proc_handle)
+            kernel32.CloseHandle(h_process)
     except (ctypes.WinError, OSError, Exception):
         return False, "Error inesperado al intentar interactuar con el proceso."

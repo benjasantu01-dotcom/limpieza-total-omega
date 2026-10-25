@@ -90,7 +90,7 @@ from organizer import (
 )
 from scanner import scan_directory, run_windows_defender_quick_scan
 
-# Type Aliases para mejorar la claridad de las firmas y estructuras
+# Type Aliases para mejorar la claridad de las firmas y estructuras de UI
 AsyncCallback: TypeAlias = Callable[[], Any]
 LogEntry: TypeAlias = Tuple[str, str]
 HealthMetricConfig: TypeAlias = Tuple[str, str]
@@ -131,7 +131,6 @@ def get_cached_settings() -> Dict[str, Any]:
     try:
         raw = settings_mod.load()
         if isinstance(raw, dict):
-            # Validar que los campos críticos no estén corruptos o vacíos
             return raw
         return settings_mod.reset()
     except Exception as e:
@@ -159,8 +158,9 @@ logging.basicConfig(
 def ensure_safety(func: Callable) -> Callable:
     """
     Decorador: Aplica una pre-condición de seguridad invocando `ensure_safe_to_modify`
-    sobre el Home del usuario antes de operaciones de escritura. 
-    Lanza UnsafePathError si la ruta no pasa la validación de `safety.py`.
+    sobre el Home del usuario antes de operaciones de escritura o modificaciones. 
+    Lanza UnsafePathError si la ruta no pasa la validación de `safety.py`,
+    asegurando que las operaciones críticas aborten antes de cualquier acceso al disco.
     """
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -174,7 +174,10 @@ def ensure_safety(func: Callable) -> Callable:
     return wrapper
 
 def ensure_safety_in_task(func: Callable) -> Callable:
-    """Decorador para tareas asíncronas: valida el objetivo antes de ejecutar."""
+    """
+    Decorador: Valida la integridad del destino antes de una tarea asíncrona.
+    Verifica si la instancia tiene un atributo 'target_path' y asegura su seguridad.
+    """
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         if hasattr(self, 'target_path') and self.target_path:
@@ -186,12 +189,12 @@ def safe_ui_operation(func: Callable) -> Callable:
     """
     Decorador: Capa de aislamiento para operaciones sobre widgets de UI.
     Captura excepciones de ciclo de vida (TclError/RuntimeError) si el widget
-    ya fue destruido, evitando la interrupción del bucle de eventos principal.
+    ya fue destruido, evitando la interrupción del bucle de eventos principal 
+    cuando los procesos asíncronos intentan actualizar componentes eliminados.
     """
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Optional[Any]:
         try:
-            # Validar que args[0] sea un widget existente si está presente
             if args and hasattr(args[0], 'winfo_exists') and not args[0].winfo_exists():
                 return None
             return func(*args, **kwargs)
@@ -202,8 +205,8 @@ def safe_ui_operation(func: Callable) -> Callable:
 
 def validated_ui_operation(func: Callable) -> Callable:
     """
-    Decorador: Verifica el estado `_closing` de la instancia antes de ejecutar
-    callbacks. Previene lógica residual post-cierre o en ventanas eliminadas.
+    Decorador: Verifica el estado `_closing` de la clase App y la existencia del widget 
+    antes de ejecutar callbacks, evitando race conditions en el cierre del hilo principal.
     """
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Optional[Any]:
         if getattr(self, '_closing', False) or (hasattr(self, 'winfo_exists') and not self.winfo_exists()):
@@ -265,7 +268,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._tasks_running = 0
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
         
-        # Bloqueos para sincronización de hilos y acceso a recursos compartidos
         self._executor_lock = threading.Lock()   # Protege acceso al pool de ejecución
         self._worker_lock = threading.Lock()    # Serializa ejecución de tareas de fondo
         self._task_queue_lock = threading.Lock() # Serializa despacho de tareas asíncronas
@@ -353,7 +355,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except Exception as e:
             logging.critical("Error fatal al inicializar la aplicación: %s", e)
             try:
-                # Usar messagebox de tkinter estándar si ctk falla
                 tk.messagebox.showerror("Error de inicio", f"La aplicación no pudo inicializarse.\n{str(e)[:50]}")
                 self.destroy()
             except Exception:
@@ -1552,7 +1553,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
         
-        # Validación inicial visual antes de la tarea asíncrona
         aptos_iniciales = [jf for jf in junk if self._is_safe_path(jf.path)]
         
         if not aptos_iniciales:
@@ -1570,7 +1570,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Moviendo a revisión...")
             confirmados = []
             for jf in junk:
-                # Verificación estricta de seguridad en el hilo de trabajo antes de cada movimiento
                 if self._is_safe_path(jf.path):
                     confirmados.append(jf)
             
@@ -1600,7 +1599,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Validación de seguridad extra previa al borrado
             if not safety.is_safe_to_modify(Path.home()):
                 return
             try:
@@ -1771,7 +1769,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Validación adicional antes de purgar
             if not safety.is_safe_to_modify(Path.home()):
                 return
             actual = quarantine.list_items()
@@ -2035,7 +2032,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             for tab, lines in sanitized_data.items():
                 for line in lines:
                     if any(os.path.exists(p) for p in line.split() if p.startswith(('C:\\', '/'))):
-                         # Si la línea contiene una ruta absoluta, se verifica su seguridad
                          for part in line.split():
                              if part.startswith(('C:\\', '/')):
                                  try:
@@ -2128,7 +2124,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             def task() -> None:
                 try:
                     self.settings = settings_mod.update(propuestos)
-                    # Invalidar la caché de settings para forzar recarga
                     get_cached_settings.cache_clear()
                     
                     ruta = settings_mod.settings_path()
@@ -2177,7 +2172,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _safe_validate_inputs(self, propuestos: AppSettings) -> bool:
         """Valida que los inputs de configuración sean seguros."""
-        # Se verifica explícitamente cualquier ruta de configuración cargada por el usuario
         for clave in propuestos:
             if "carpeta" in clave.lower() and isinstance(propuestos[clave], str):
                 path_val = Path(propuestos[clave])
