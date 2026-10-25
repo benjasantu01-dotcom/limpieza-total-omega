@@ -227,9 +227,9 @@ class Scanner:
 
     @lru_cache(maxsize=1024)
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Valida, mediante normalización real, si el archivo pertenece al árbol de escaneo."""
+        """Valida, mediante resolución real, si el archivo pertenece al árbol de escaneo."""
         try:
-            real_path = os.path.normcase(os.path.realpath(entry_path))
+            real_path = os.path.normcase(str(Path(entry_path).resolve()))
             return real_path.startswith(self.base_root_norm)
         except (OSError, RuntimeError):
             return False
@@ -292,7 +292,7 @@ class Scanner:
             return
             
         try:
-            path_norm: str = os.path.normcase(os.path.realpath(entry.path))
+            path_norm: str = os.path.normcase(str(Path(entry.path).resolve()))
             if path_norm in self.seen:
                 return
             

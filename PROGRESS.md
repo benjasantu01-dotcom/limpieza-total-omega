@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 187
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 9 | 0 | 3 | 0 | 18 |
+| 2026-10-23 | 9 | 0 | 3 | 0 | 14 |
 | 2026-10-24 | 154 | 13 | 37 | 17 | 129 |
-| 2026-10-25 | 56 | 7 | 12 | 5 | 44 |
+| 2026-10-25 | 59 | 7 | 13 | 5 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **45**
+- seguridad defensiva: **48**
 - rendimiento: **44**
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **36**
@@ -34,19 +34,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **20**
 - `quarantine.py`: **20**
 - `organizer.py`: **18**
+- `safety.py`: **18**
 - `browser.py`: **18**
 - `healthscore.py`: **17**
-- `safety.py`: **17**
 - `duplicates.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `assistant.py`: **13**
 - `branding.py`: **13**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `startup.py`: **8**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T05:26:55` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` implementando una validación estricta de permisos (`st.st_mode`) y asegurando que no se operen archivos con permisos de escritura para grupo u otros, mitigando riesgos de acceso no autorizado o modificación de configuraciones por terceros.
+- `2026-10-25T05:26:39` **scanner.py** (seguridad defensiva): Se introdujo una validación de longitud absoluta estricta en `_is_safe_entry` y en la lógica de `process_entry` utilizando `Path.resolve()` antes de comparar con `base_root_norm`, evitando ataques de "path traversal" o saltos fuera del directorio base mediante rutas relativas complejas que `normcase` por sí solo podría no mitigar totalmente.
+- `2026-10-25T05:26:14` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación explícita de "punto de unión" antes de cualquier operación, asegurando que la resolución de rutas no atraviese los límites del directorio raíz incluso en casos donde los enlaces NTFS podrían ser manipulados tras la validación inicial.
 - `2026-10-25T05:19:35` **quarantine.py** (seguridad defensiva): Se ha añadido una validación de `os.fsync` y control de errores más estricta en el método `_atomic_isolate_file`, asegurando que, ante una falla de E/S inesperada durante el movimiento de archivos al sandbox, el sistema garantice un estado consistente y limpio antes de propagar cualquier excepción hacia arriba.
 - `2026-10-25T05:19:09` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` implementando una validación estricta de la ruta destino (`item.is_relative_to(dest)`) y verificando la integridad del archivo antes de la eliminación, asegurando que solo se borren archivos que realmente pertenecen al directorio de cuarentena y no fueron sustituidos por enlaces simbólicos o junctions.
 - `2026-10-25T05:18:42` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` validando la integridad del buffer de ruta antes de pasarlo a `is_protected_path`, garantizando que solo rutas absolutas y válidas sean analizadas tras la obtención del nombre del módulo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T04:56:07` **assistant.py** (seguridad defensiva): Se endureció la seguridad en `_ensure_safe_text` añadiendo una validación explícita contra la inyección de caracteres de escape ANSI y secuencias de control, además de refinar la lógica de `_is_safe_path_input` para asegurar que cualquier cadena de entrada que contenga patrones prohibidos sea rechazada categóricamente antes de procesar el contexto.
 - `2026-10-25T04:55:03` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de carga de archivos (`_read_and_parse_json`) añadiendo una validación explícita para prevenir el uso de rutas que contienen caracteres de control o longitudes excesivas mediante `_Validators._is_safe_path`, cerrando así una posible brecha de acceso a rutas mal formadas durante el inicio de la app.
 - `2026-10-25T04:47:47` **safety.py** (robustez ante casos límite): Se introdujo una comprobación crítica para evitar race conditions y comportamientos impredecibles al validar archivos que cambian de tipo (ej. de archivo regular a directorio o enlace) durante la ejecución, añadiendo una verificación de tipo persistente en `_check_file_integrity` y robusteciendo la limpieza de la caché de evaluación de seguridad.
-- `2026-10-25T04:45:27` **quarantine.py** (robustez ante casos límite): Se introdujo una mejora robusta en `_is_file_exclusive` para el caso de Windows al utilizar el flag `FILE_SHARE_DELETE` (0x00000004) junto con los accesos adecuados en `CreateFileW`, permitiendo detectar de forma más precisa si el archivo está siendo bloqueado exclusivamente por otros procesos (como antivirus o indexadores) sin causar falsos negativos en condiciones de alta carga de E/S.
-- `2026-10-25T04:36:43` **organizer.py** (robustez ante casos límite): Se ha añadido `item.exists()` dentro del bucle de borrado en `delete_reviewed` y `stage_for_review` para prevenir excepciones por condiciones de carrera (Race Conditions) donde el archivo podría ser eliminado o movido por otro proceso entre la validación y la ejecución.
-- `2026-10-25T04:34:49` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `_compute_cached` y `_evaluate_rules` implementando una protección explícita contra divisiones por cero y estados inesperados durante la ejecución de las reglas, asegurando que cualquier error en una factory externa no degrade el informe global.

@@ -184,10 +184,10 @@ class _SettingsManager:
             resolved_path = config_path.resolve()
             if is_protected_path(str(resolved_path)) or not is_safe_to_modify(str(resolved_path)): return False
             
-            # Prevenir ataques de enlace simbólico (debe ser archivo real y link único)
             if resolved_path.exists():
                 st = resolved_path.lstat()
                 if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+                if (st.st_mode & 0o077) != 0: return False # Prohibir permisos laxos (grupo/otros)
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             
             with open(temp_path, "w", encoding="utf-8") as f:
@@ -356,9 +356,8 @@ def _is_file_secure_to_read(st: os.stat_result, file_path: Path) -> bool:
     """
     try:
         if not stat.S_ISREG(st.st_mode): return False
-        if st.st_nlink != 1: return False # Prevenir enlaces simbólicos a archivos compartidos
-        if (st.st_mode & 0o777) > 0o600: return False
-        if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
+        if st.st_nlink != 1: return False
+        if (st.st_mode & 0o077) != 0: return False # Prohibir permisos laxos (grupo/otros)
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
@@ -370,10 +369,8 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     asegurando que el contenido sea un diccionario de valores simples.
     """
     try:
-        # Validación robusta de ruta antes de tocar el sistema de archivos
         if not _Validators._is_safe_path(str(file_path)): return None
         st = file_path.lstat()
-        if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return None
         if not _is_file_secure_to_read(st, file_path): return None
         
         with open(file_path, "r", encoding="utf-8") as f:
@@ -404,7 +401,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     try:
         if primary_path.exists() and primary_path.is_file():
             st = primary_path.stat()
-            # Si los metadatos coinciden, retornamos el caché sin tocar disco
             if st.st_mtime == _MANAGER._last_mtime and st.st_size == _MANAGER._last_size and _MANAGER._cached_settings:
                 return _MANAGER._cached_settings.copy()
             

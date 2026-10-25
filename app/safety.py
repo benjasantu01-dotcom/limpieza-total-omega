@@ -1092,6 +1092,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         except (TypeError, ValueError, OSError) as e:
             raise UnsafePathError(f"Directorio base inválido: {e}", SafetyValidationErrorCode.IO_ERROR)
     
+    # Verificación de reparse points antes de cualquier otra validación profunda
+    if os.name == 'nt' and _is_system_directory_junction(str(p)):
+         _validate_ntfs_reparse_redirection(p, base)
+
     _validate_path_components(p)
     _validate_preconditions(p, base_dir)
     
