@@ -1192,3 +1192,28 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T13:26:45` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `main.py` ante errores de entrada en `on_trim_process` y `on_restore_quarantine`, implementando un filtrado más estricto de caracteres y validaciones adicionales de estado en los widgets, evitando que la aplicación intente procesar datos mal formados o rutas inexistentes que podrían disparar excepciones no controladas en el hilo principal.
 - `2026-10-25T13:26:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T13:26:45` Corrida terminada. Total usado hoy: 316.
+- `2026-10-25T13:33:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-25T13:34:18` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite en la enumeración de procesos mediante la adición de un chequeo de coherencia en el tamaño del buffer y un manejo más estricto de las excepciones durante la interacción con handles de procesos, asegurando que fallos en procesos individuales no interrumpan la recolección total de datos.
+- `2026-10-25T13:34:44` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_process_directory` y `_is_safe_for_disk_op` añadiendo verificaciones explícitas de existencia y accesibilidad antes de realizar operaciones de E/S, previniendo excepciones innecesarias ante archivos que desaparecen (race conditions) durante el escaneo o movimiento.
+- `2026-10-25T13:35:27` Tests FALLARON:
+```
+ NameError: name '_check_path_junctions' is not defined
+
+app/quarantine.py:119: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name '_check_path_junctions' is not defined
+9 failed, 290 passed in 1.84s
+
+```
+- `2026-10-25T13:35:27` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del método `purge_all` ante condiciones de carrera y sistemas de archivos volátiles, añadiendo una validación de `path.exists()` antes de cada operación individual de purga y asegurando que solo se intente purgar archivos que coincidan estrictamente con el registro del manifiesto, previniendo errores de concurrencia al iterar sobre el directorio.
+- `2026-10-25T13:35:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-10-25T13:35:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T13:35:31` Corrida terminada. Total usado hoy: 320.

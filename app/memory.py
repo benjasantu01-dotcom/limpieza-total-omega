@@ -364,7 +364,11 @@ def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS
     if not psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
         return
             
-    count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
+    count = cb_needed.value // ctypes.sizeof(wintypes.DWORD)
+    # Validar coherencia del buffer retornado
+    if count <= 0 or count > MAX_PIDS:
+        return
+        
     for i in range(count):
         pid = int(pids[i])
         if pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid():
@@ -378,6 +382,8 @@ def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS
             ws = _query_working_set_bytes(pid, h_process, psapi, pmc)
             if ws is not None and ws > (10 * BYTES_IN_MB) and _is_process_executable_safe(h_process, psapi):
                 yield ProcessMemory(f"PID {pid}", pid, ws)
+        except Exception:
+            continue
         finally:
             kernel32.CloseHandle(h_process)
 

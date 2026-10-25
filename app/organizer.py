@@ -179,7 +179,7 @@ def _try_open_win_file(path: Path) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Determina si un archivo está en uso exclusivo usando lógica específica del SO."""
-    if not path or not path.is_file(): return True
+    if not path or not path.exists() or not path.is_file(): return True
     if not os.access(path, os.R_OK): return True
     if os.name == 'nt':
         return not _try_open_win_file(path)
@@ -248,6 +248,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
+        # Validación de existencia inmediata previa a resolución
         if not junk_file.path.exists() or not junk_file.path.is_file(): return False
         
         src_real = junk_file.path.resolve(strict=True)
@@ -302,9 +303,13 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
                         if os.path.splitext(entry.name)[1].lower() in JUNK_EXTENSIONS:
-                            stats = entry.stat(follow_symlinks=False)
-                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
-                                found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                            # Verificación doble por cambio de estado del archivo
+                            try:
+                                stats = entry.stat(follow_symlinks=False)
+                                if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
+                                    found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                            except (OSError, PermissionError):
+                                continue
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
@@ -321,7 +326,7 @@ def scan_for_junk(directories: Optional[Sequence[Union[str, Path]]] = None) -> L
     for d in filter(None, scan_list):
         try:
             p = Path(d).expanduser()
-            if p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
+            if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
                 _process_directory(p, found, 0, protected_cache, visited)
         except (OSError, RuntimeError):
             continue
