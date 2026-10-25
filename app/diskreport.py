@@ -192,7 +192,7 @@ def _is_excluded_path(name: str, full_path: str) -> bool:
     
     Args:
         name: Nombre del archivo o directorio.
-        full_path: Ruta completa absoluta.
+        full_path: Ruta completa absoluta (parámetro reservado para extensiones futuras).
     """
     if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
@@ -395,7 +395,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Función interna que centraliza el recorrido y la agregación de métricas.
     
-    Usa un min-heap para mantener los 'limit' archivos más grandes de forma eficiente.
+    Utiliza un min-heap de tamaño fijo (limit) para mantener track de los archivos
+    más grandes. Al usar un heap de tamaño N, el costo de insertar es O(log N).
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -405,6 +406,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             stats.register_file(size, path.suffix)
             
             if limit > 0:
+                # Mantener solo los N mayores encontrados hasta el momento
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size, path))
                 elif size > top_heap[0][0]:

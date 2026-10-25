@@ -35,12 +35,20 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
 _MAX_MSG_LEN: Final[int] = 128
 _MAX_RECURSION_DEPTH: Final[int] = 5
 
+# Límites de validación para métricas del sistema
+_METRIC_LIMITS: Final[Dict[str, Tuple[float, float]]] = {
+    "junk_mb": (0.0, 1048576.0),
+    "duplicate_mb": (0.0, 1048576.0),
+    "suspicious_count": (0, 5000),
+    "suspicious_warnings": (0, 5000),
+    "startup_count": (0, 1000),
+    "memory_available_percent": (0.0, 100.0),
+    "disk_free_percent": (0.0, 100.0)
+}
+
 class Scorer(Protocol):
     """
     Protocolo funcional para transformar SystemMetrics en un ratio de salud [0.0, 1.0].
-    
-    Las implementaciones deben ser puras (sin efectos secundarios/IO), manejar 
-    valores atípicos y garantizar consistencia en la salida (siempre devuelve float).
     """
     def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
@@ -54,9 +62,7 @@ class Grade(Enum):
 
     @classmethod
     def from_score(cls, score: float | int) -> str:
-        """
-        Convierte una puntuación numérica a su categoría alfabética equivalente.
-        """
+        """Convierte una puntuación numérica a su categoría alfabética equivalente."""
         try:
             val = float(score)
         except (TypeError, ValueError):
@@ -68,20 +74,14 @@ class Grade(Enum):
         return cls.F.value
 
 class RecommendationRule(NamedTuple):
-    """
-    Define una regla de diagnóstico con una condición de disparo y un mensaje 
-    dinámico para el usuario.
-    """
+    """Define una regla de diagnóstico con una condición de disparo y un mensaje dinámico."""
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """
-    Configuración de una unidad de procesamiento en el pipeline de salud.
-    Contiene la lógica de ponderación, el normalizador y las reglas asociadas.
-    """
+    """Configuración de una unidad de procesamiento en el pipeline de salud."""
     area: MetricKey
     weight: int
     scorer: Callable[[SystemMetrics], NormalizedRatio]
@@ -115,10 +115,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     return float(max(min_val, min(max_val, value)))
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """
-    Fábrica que genera normalizadores lineales donde 1.0 es el valor óptimo.
-    Si inverse es True, 0.0 es el límite crítico y 1.0 es valor cero.
-    """
+    """Fábrica que genera normalizadores lineales donde 1.0 es el valor óptimo."""
     def scorer(val: float) -> NormalizedRatio:
         if not math.isfinite(val) or limit <= 0.0: return 0.0
         ratio = val / limit
@@ -140,10 +137,7 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 }
 
 def _verify_pipeline_integrity(weights: Dict[str, int], pipeline: Tuple[PipelineEntry, ...]) -> None:
-    """
-    Validación de pre-arranque para asegurar que la suma de pesos sea 100% 
-    y que existan reglas para todas las métricas definidas.
-    """
+    """Validación de pre-arranque para asegurar que los pesos sumen 100 y coincidan con el pipeline."""
     try:
         if sum(weights.values()) != 100:
             logging.error("Integridad de Pipeline fallida: Los pesos no suman 100.")
@@ -186,34 +180,34 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
 _verify_pipeline_integrity(WEIGHTS, _PIPELINE)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Calcula el score normalizado (0.0-1.0) basado en MB de archivos basura."""
+    """Calcula el score normalizado basado en MB de archivos basura."""
     return _JUNK_SCORER(float(junk_mb) if isinstance(junk_mb, (int, float)) else 0.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula salud: Penaliza según cantidad de archivos sospechosos y advertencias de seguridad."""
+    """Calcula salud: Penaliza según archivos sospechosos y advertencias."""
     s_count = max(0, int(suspicious_count))
     w_count = max(0, int(warnings))
     penalization = (s_count * 0.05) + (w_count * 0.25)
     return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula el score normalizado (0.0-1.0) basado en % de memoria disponible."""
+    """Calcula el score normalizado basado en % de memoria disponible."""
     val = float(available_percent) if isinstance(available_percent, (int, float)) else 0.0
     if _LIMIT_RAM_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
     return _clamp(val / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Calcula el score normalizado (0.0-1.0) basado en % de espacio libre en disco."""
+    """Calcula el score normalizado basado en % de espacio libre en disco."""
     val = float(free_percent) if isinstance(free_percent, (int, float)) else 0.0
     if _LIMIT_DISK_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
     return _clamp(val / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula el score normalizado (0.0-1.0) basado en MB de archivos duplicados."""
+    """Calcula el score normalizado basado en MB de archivos duplicados."""
     return _DUP_SCORER(float(duplicate_mb) if isinstance(duplicate_mb, (int, float)) else 0.0)
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula el score normalizado (0.0-1.0) basado en cantidad de apps en inicio."""
+    """Calcula el score normalizado basado en cantidad de apps en inicio."""
     return _STARTUP_SCORER(float(startup_count) if isinstance(startup_count, (int, float)) else 0.0)
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
@@ -250,7 +244,6 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
-        """Inicializa métricas asegurando integridad de tipos y rangos tras creación."""
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
@@ -258,19 +251,10 @@ class SystemMetrics:
         return getattr(self, field_name, default)
 
     def validate(self) -> None:
-        """Normaliza todas las métricas a rangos seguros definidos."""
-        limits = {
-            "junk_mb": (0.0, 1048576.0),
-            "duplicate_mb": (0.0, 1048576.0),
-            "suspicious_count": (0, 5000),
-            "suspicious_warnings": (0, 5000),
-            "startup_count": (0, 1000),
-            "memory_available_percent": (0.0, 100.0),
-            "disk_free_percent": (0.0, 100.0)
-        }
+        """Normaliza todas las métricas según los rangos definidos en _METRIC_LIMITS."""
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name, 0.0)
-            min_v, max_v = limits.get(field_name, (0.0, 1e9))
+            min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
             setattr(self, field_name, sanitized)
 
