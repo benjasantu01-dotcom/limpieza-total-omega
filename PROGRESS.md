@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 24
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 25
 - Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 87 | 8 | 16 | 11 | 70 |
-| 2026-10-25 | 129 | 15 | 28 | 13 | 127 |
+| 2026-10-24 | 85 | 8 | 15 | 11 | 69 |
+| 2026-10-25 | 131 | 15 | 28 | 14 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **45**
 - rendimiento: **43**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `memory.py`: **19**
+- `quarantine.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `settings.py`: **17**
 - `duplicates.py`: **17**
 - `scanner.py`: **17**
-- `healthscore.py`: **16**
-- `safety.py`: **15**
+- `healthscore.py`: **17**
 - `organizer.py`: **15**
 - `assistant.py`: **15**
+- `safety.py`: **14**
 - `branding.py`: **13**
-- `main.py`: **9**
+- `main.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T13:26:45` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `main.py` ante errores de entrada en `on_trim_process` y `on_restore_quarantine`, implementando un filtrado más estricto de caracteres y validaciones adicionales de estado en los widgets, evitando que la aplicación intente procesar datos mal formados o rutas inexistentes que podrían disparar excepciones no controladas en el hilo principal.
+- `2026-10-25T13:24:52` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite al añadir validación explícita de `metrics` dentro del pipeline y asegurar que la lógica de cálculo nunca propague excepciones (aísla fallos en los `scorer` de forma preventiva).
 - `2026-10-25T13:15:17` **browser.py** (robustez ante casos límite): Se ha mejorado `_resolve_browser_path` para prevenir la resolución de rutas mediante "path traversal" usando `resolve()` sobre la base, y se añadió una validación explícita para asegurar que la ruta resuelta permanezca dentro de `LOCALAPPDATA`, mitigando intentos de escape del sandbox.
 - `2026-10-25T13:15:07` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante el caso límite de rutas con permisos denegados o sistemas de archivos de solo lectura, añadiendo una validación explícita mediante `is_safe_to_modify` previa a la escritura y refinando el manejo de excepciones para evitar el silenciamiento de errores críticos de sistema.
 - `2026-10-25T13:14:36` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_ensure_safe_text` y sus helpers asociados para prevenir inyecciones y errores de validación, centralizando la lógica de sanitización para garantizar que cualquier cadena procesada por el asistente sea estrictamente segura, previniendo fallos por caracteres inesperados que podrían romper la interfaz o la lógica de procesamiento.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T12:24:49` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos críticos de `Scanner` y se han clarificado los nombres de los atributos de `ScannerLimits` para eliminar ambigüedades, facilitando la comprensión del mantenimiento del estado durante el recorrido del sistema de archivos.
 - `2026-10-25T12:23:17` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones críticas de validación de integridad (`_validate_integrity` y `verify_integrity`) mediante la adición de docstrings técnicos explicativos y se han añadido anotaciones de tipo más precisas para reducir la ambigüedad en el manejo de estados de archivo.
 - `2026-10-25T12:15:53` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `organizer.py` mediante la adición de docstrings detallados en funciones clave, la estandarización de tipos con `Final` donde faltaba, y la extracción de lógica compleja de filtrado en `_process_directory` hacia una estructura más legible, asegurando que el código sea autodocumentado y robusto sin alterar su comportamiento funcional.
-- `2026-10-25T12:15:34` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de la API de Win32, la clarificación de los propósitos de los parámetros en los docstrings y la estandarización de los nombres de los manejadores de procesos.
-- `2026-10-25T12:14:25` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` mediante la implementación de `TypeAlias` para estructuras complejas de la UI y la adición de docstrings técnicos detallados en los decoradores de seguridad, facilitando la comprensión del flujo de control ante auditorías.

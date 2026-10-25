@@ -1184,3 +1184,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T13:15:17` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado `_resolve_browser_path` para prevenir la resolución de rutas mediante "path traversal" usando `resolve()` sobre la base, y se añadió una validación explícita para asegurar que la ruta resuelta permanezca dentro de `LOCALAPPDATA`, mitigando intentos de escape del sandbox.
 - `2026-10-25T13:15:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T13:15:17` Corrida terminada. Total usado hoy: 312.
+- `2026-10-25T13:23:34` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-25T13:24:01` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `walk_files` ante archivos bloqueados o inaccesibles (muy común en Windows durante escaneos de disco) envolviendo la obtención de `st_ino` y `st_dev` en un bloque `try-except` adicional para evitar abortar el recorrido completo del directorio si `os.stat` falla parcialmente tras el `scandir`.
+- `2026-10-25T13:24:23` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-25T13:24:52` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor ante casos límite al añadir validación explícita de `metrics` dentro del pipeline y asegurar que la lógica de cálculo nunca propague excepciones (aísla fallos en los `scorer` de forma preventiva).
+- `2026-10-25T13:25:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-25T13:26:45` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `main.py` ante errores de entrada en `on_trim_process` y `on_restore_quarantine`, implementando un filtrado más estricto de caracteres y validaciones adicionales de estado en los widgets, evitando que la aplicación intente procesar datos mal formados o rutas inexistentes que podrían disparar excepciones no controladas en el hilo principal.
+- `2026-10-25T13:26:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T13:26:45` Corrida terminada. Total usado hoy: 316.

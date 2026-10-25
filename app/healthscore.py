@@ -226,7 +226,6 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
     """Sanitiza métricas numéricas evitando valores fuera de rango o NaN."""
     try:
-        # Aseguramos que solo tipos numéricos sean procesados, evitando inyecciones de objetos
         if not isinstance(value, (int, float, bool)):
             return default
         val = float(value)
@@ -335,7 +334,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Motor de cómputo cacheado del HealthResult."""
     m_args = {k: metrics_tuple[i] for i, k in enumerate(SystemMetrics._FIELDS_TO_VALIDATE)}
-    metrics = SystemMetrics(**m_args)
+    try:
+        metrics = SystemMetrics(**m_args)
+    except Exception:
+        return HealthResult(0, "F", {}, ["Error: Fallo crítico en validación de métricas."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}

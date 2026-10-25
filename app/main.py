@@ -1729,7 +1729,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
         
+        # Sanitización estricta del ID
         clean_id = "".join(c for c in raw_id if c.isalnum() or c == "-")
+        if not clean_id:
+            self.log("ID inválido.", "Cuarentena")
+            return
         
         def task() -> None:
             try:
@@ -1842,10 +1846,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @ensure_safety
     def on_trim_process(self) -> None:
         """Intento de liberación de working set de un proceso."""
-        raw_pid = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None)
+        raw_val = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None)
         try:
-            pid = int(raw_pid)
-        except (TypeError, ValueError):
+            pid = int(raw_val)
+        except (TypeError, ValueError, AttributeError):
             self.log("Error: El PID debe ser un valor numérico.", "Memoria")
             return
         
