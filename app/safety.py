@@ -55,7 +55,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     info = BY_HANDLE_FILE_INFORMATION()
     kernel32 = ctypes.windll.kernel32
     try:
-        # Abre con acceso nulo, solo para consultar metadatos sin bloquear ni requerir permisos de lectura
         handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 3, None, 3, 0x00000080, None)
         if handle == -1: return (0, 0, 0, 0)
         try:
@@ -65,7 +64,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         finally:
             kernel32.CloseHandle(handle)
     except (OSError, ctypes.ArgumentError, AttributeError, ValueError):
-        # Ante error de sistema, devolvemos un ID nulo que obligará al sistema a fallar por seguridad
         return (0, 0, 0, 0)
     return (0, 0, 0, 0)
 
@@ -347,13 +345,15 @@ def _is_virtual_drive(path_str: str) -> bool:
             device_path = buf.value
             return device_path.startswith("\\DosDevices\\") or device_path.startswith("\\??\\")
     except (AttributeError, OSError, ctypes.ArgumentError):
-        return True 
+        return False 
     return False
 
 def _is_file_owned_by_system(path_str: str) -> bool:
     """Verifica la propiedad SID del archivo contra cuentas críticas (SYSTEM/TrustedInstaller)."""
     if os.name != 'nt' or not isinstance(path_str, str) or not os.path.exists(path_str): return False
     try:
+        path_obj = Path(path_str)
+        if not path_obj.exists(): return False
         advapi32 = ctypes.windll.advapi32
         kernel32 = ctypes.windll.kernel32
         sid_ptr = ctypes.c_void_p()
