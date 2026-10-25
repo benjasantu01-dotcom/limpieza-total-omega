@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **215** (42.7% de aceptación)
-- Rechazadas por tests: 20
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 21
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 132 | 12 | 31 | 16 | 117 |
-| 2026-10-25 | 83 | 8 | 20 | 5 | 80 |
+| 2026-10-24 | 130 | 11 | 30 | 16 | 117 |
+| 2026-10-25 | 85 | 8 | 21 | 6 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **48**
+- seguridad defensiva: **47**
 - legibilidad y documentación: **44**
-- rendimiento: **41**
-- robustez ante casos límite: **31**
+- rendimiento: **43**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
+- `memory.py`: **21**
 - `quarantine.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
-- `settings.py`: **17**
 - `safety.py`: **17**
 - `duplicates.py`: **17**
+- `organizer.py`: **17**
 - `healthscore.py`: **16**
-- `organizer.py`: **16**
+- `settings.py`: **16**
 - `assistant.py`: **14**
-- `branding.py`: **13**
 - `scanner.py`: **13**
+- `branding.py`: **12**
 - `startup.py`: **9**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T08:29:18` **organizer.py** (rendimiento): Optimizé el rendimiento del escaneo recursivo sustituyendo las llamadas frecuentes a `Path()` y `.resolve()` dentro de `_process_directory` por operaciones con strings y atributos de `os.DirEntry`, evitando instanciaciones innecesarias de objetos pesados en el bucle principal.
+- `2026-10-25T08:28:51` **memory.py** (rendimiento): Optimizé la carga de procesos en `top_memory_processes` y `_iter_process_memory` pre-cargando los punteros a funciones de la API de Windows fuera del bucle crítico, reduciendo la sobrecarga de resolución de símbolos (ctypes) en cada iteración.
 - `2026-10-25T08:20:36` **main.py** (rendimiento): Optimizé la gestión de la caché de configuración reemplazando el acceso al diccionario global por el uso de `lru_cache` y un flag de expiración para evitar redundancia en las lecturas de `settings.py` durante el ciclo de vida de la aplicación.
 - `2026-10-25T08:19:12` **duplicates.py** (rendimiento): Optimizé el rendimiento de la detección de duplicados implementando una validación previa de duplicidad en `_collect_candidates` mediante un `set` de tamaños, evitando procesar archivos con tamaños únicos que nunca podrán formar un grupo, reduciendo drásticamente las llamadas a hashing innecesarias.
 - `2026-10-25T08:09:45` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` evitando la reinicialización redundante de `ScanContext` y reduciendo el uso de `os.path.abspath` y `Path.resolve()` dentro de los bucles, centralizando la normalización de rutas y utilizando `frozenset` para búsquedas eficientes.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T07:49:06` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_is_process_executable_safe` y `_process_from_pid`, eliminando la dependencia de pasar la función `get_filename_func` por parámetro en cascada y documentando explícitamente las asunciones del manejo de PIDs mediante type hints y docstrings claros.
 - `2026-10-25T07:39:04` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reorganizaron los docstrings para documentar explícitamente el PORQUÉ de las validaciones de seguridad en cada función crítica, mejorando la mantenibilidad sin cambiar la lógica.
 - `2026-10-25T07:38:20` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y type hints específicos en las funciones de procesamiento de datos, asegurando que las responsabilidades de cada componente sean autoexplicativas para futuros colaboradores.
-- `2026-10-25T07:37:54` **browser.py** (legibilidad y documentación): He mejorado la legibilidad y la documentación del módulo añadiendo docstrings descriptivos a los métodos privados y clarificando mediante `TypeHinting` y tipos de retorno la estructura `ScanContext`, facilitando el mantenimiento y evitando ambigüedades en la lógica de escaneo.
-- `2026-10-25T07:29:00` **assistant.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad mediante la adición de Type Hints en la interfaz pública y una reestructuración de la clase `SystemContext` para separar claramente la lógica de ingestión de datos de la lógica de negocio de los criterios de salud, facilitando la comprensión del flujo de datos.

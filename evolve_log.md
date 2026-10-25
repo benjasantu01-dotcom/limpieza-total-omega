@@ -595,3 +595,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T08:20:36` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimizé la gestión de la caché de configuración reemplazando el acceso al diccionario global por el uso de `lru_cache` y un flag de expiración para evitar redundancia en las lecturas de `settings.py` durante el ciclo de vida de la aplicación.
 - `2026-10-25T08:20:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T08:20:36` Corrida terminada. Total usado hoy: 196.
+- `2026-10-25T08:28:19` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-10-25T08:28:51` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la carga de procesos en `top_memory_processes` y `_iter_process_memory` pre-cargando los punteros a funciones de la API de Windows fuera del bucle crítico, reduciendo la sobrecarga de resolución de símbolos (ctypes) en cada iteración.
+- `2026-10-25T08:29:18` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el rendimiento del escaneo recursivo sustituyendo las llamadas frecuentes a `Path()` y `.resolve()` dentro de `_process_directory` por operaciones con strings y atributos de `os.DirEntry`, evitando instanciaciones innecesarias de objetos pesados en el bucle principal.
+- `2026-10-25T08:29:59` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé `_get_sha256` mediante la introducción de un cache de `st_mtime` y `st_size` para evitar cálculos de hash redundantes sobre archivos que no han cambiado, mejorando el rendimiento en operaciones de lista y auditoría.
+- `2026-10-25T08:30:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-10-25T08:30:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T08:30:06` Corrida terminada. Total usado hoy: 200.

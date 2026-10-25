@@ -397,6 +397,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
         try:
+            # Precarga de funciones para reducir sobrecarga en el loop de iteración
             kernel32 = ctypes.windll.kernel32
             psapi = ctypes.windll.psapi
             pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))

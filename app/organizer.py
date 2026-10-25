@@ -276,8 +276,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
     try:
-        p = Path(entry.path)
-        if is_protected_path(p) or not is_safe_to_modify(p):
+        if is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path)):
             protected_cache.add(entry.path)
             return False
     except (OSError, RuntimeError):
@@ -287,7 +286,6 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[Path]) -> None:
     """
     Explora recursivamente el sistema de archivos buscando archivos candidatos a limpieza.
-    Utiliza un caché de rutas protegidas y un set de visitados para prevenir ciclos.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
@@ -302,9 +300,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        # Validación de extensión y tamaño más eficiente antes de instanciar Path
-                        ext = os.path.splitext(entry.name)[1].lower()
-                        if ext in JUNK_EXTENSIONS:
+                        if os.path.splitext(entry.name)[1].lower() in JUNK_EXTENSIONS:
                             stats = entry.stat(follow_symlinks=False)
                             if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
