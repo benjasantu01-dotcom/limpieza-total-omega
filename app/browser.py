@@ -275,8 +275,12 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Combina el directorio base del usuario con la ruta relativa conocida de un navegador."""
     if not _is_valid_rel_path(rel_str): return Path()
     try:
-        target = real_base.joinpath(*rel_str.split("\\"))
-        if not str(target).startswith(str(real_base)): return Path()
+        # Usamos resolve() para normalizar y evitar path traversal tipo '..\..\Windows'
+        target = real_base.joinpath(*rel_str.split("\\")).resolve()
+        base_resolved = real_base.resolve()
+        
+        # Validar explícitamente que la ruta resultante siga bajo el sandbox
+        if not str(target).startswith(str(base_resolved)): return Path()
         return target if target.exists() and target.is_dir() else Path()
     except (OSError, RuntimeError):
         return Path()

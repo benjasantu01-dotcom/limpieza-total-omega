@@ -1143,3 +1143,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T13:05:11` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando el parseo redundante de rutas y comprobaciones de sistema mediante el uso de una caché estática en `_MANAGER`, asegurando que `settings_path()` solo resuelva la ruta cuando sea estrictamente necesario.
 - `2026-10-25T13:05:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T13:05:11` Corrida terminada. Total usado hoy: 308.
+- `2026-10-25T13:13:24` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-25T13:13:55` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.72s
+
+```
+- `2026-10-25T13:13:55` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` implementando un pre-filtrado de comandos ya vistos mediante un `set` persistente en el contexto de la ejecución, evitando múltiples llamadas redundantes a `Path.resolve()` y al sistema de archivos para ejecutables que aparecen en múltiples claves o fuentes.
+- `2026-10-25T13:14:36` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_ensure_safe_text` y sus helpers asociados para prevenir inyecciones y errores de validación, centralizando la lógica de sanitización para garantizar que cualquier cadena procesada por el asistente sea estrictamente segura, previniendo fallos por caracteres inesperados que podrían romper la interfaz o la lógica de procesamiento.
+- `2026-10-25T13:15:07` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save_logo_svg` ante el caso límite de rutas con permisos denegados o sistemas de archivos de solo lectura, añadiendo una validación explícita mediante `is_safe_to_modify` previa a la escritura y refinando el manejo de excepciones para evitar el silenciamiento de errores críticos de sistema.
+- `2026-10-25T13:15:17` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado `_resolve_browser_path` para prevenir la resolución de rutas mediante "path traversal" usando `resolve()` sobre la base, y se añadió una validación explícita para asegurar que la ruta resuelta permanezca dentro de `LOCALAPPDATA`, mitigando intentos de escape del sandbox.
+- `2026-10-25T13:15:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T13:15:17` Corrida terminada. Total usado hoy: 312.

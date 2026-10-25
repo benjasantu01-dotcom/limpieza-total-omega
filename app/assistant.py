@@ -513,9 +513,12 @@ class Answer:
 def _is_safe_path_input(text: str) -> bool:
     """Verifica si el texto parece contener rutas o caracteres de control maliciosos."""
     if not isinstance(text, str): return False
-    if _contains_forbidden_patterns(text): return True
-    if is_protected_path(text): return True
-    return bool(_REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text))
+    # Filtro básico: evitar inyecciones estructurales o de traversal
+    if _REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text):
+        return False
+    if is_protected_path(text):
+        return False
+    return True
 
 def _contains_forbidden_patterns(text: str) -> bool:
     """Verifica si el texto contiene patrones de seguridad prohibidos."""
@@ -532,7 +535,9 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if _REGEX_ANSI_ESCAPE.search(text) or _REGEX_UNICODE_FORMAT.search(text):
         return False
-    return not _is_safe_path_input(text)
+    if _contains_forbidden_patterns(text):
+        return False
+    return _is_safe_path_input(text)
 
 def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     """Acceso seguro a atributos validando contra lista blanca para evitar ataques de introspección."""

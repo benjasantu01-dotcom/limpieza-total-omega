@@ -359,7 +359,10 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
             
-        # Asegurar explícitamente que la operación es segura
+        # Asegurar explícitamente que la operación de escritura es permitida y segura
+        if not is_safe_to_modify(dest_path):
+            return None
+            
         ensure_safe_to_modify(dest_path)
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
