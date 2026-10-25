@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 96 | 10 | 18 | 12 | 76 |
-| 2026-10-25 | 119 | 14 | 25 | 10 | 124 |
+| 2026-10-24 | 95 | 10 | 17 | 12 | 74 |
+| 2026-10-25 | 121 | 14 | 26 | 10 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
-- legibilidad y documentación: **44**
-- rendimiento: **37**
-- robustez ante casos límite: **35**
+- legibilidad y documentación: **45**
+- rendimiento: **38**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `memory.py`: **19**
-- `healthscore.py`: **18**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
+- `healthscore.py`: **17**
 - `duplicates.py`: **17**
 - `organizer.py`: **16**
 - `settings.py`: **16**
 - `scanner.py`: **16**
+- `assistant.py`: **15**
 - `safety.py`: **15**
-- `assistant.py`: **14**
 - `branding.py`: **12**
 - `main.py`: **10**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T12:34:27` **assistant.py** (rendimiento): Optimizé `local_answer` para evitar el parseo completo mediante `_TOKEN_REGEX.findall()` en cada consulta, implementando un chequeo directo de pertenencia de palabras clave que reduce el procesamiento de cadenas y el uso de memoria en el bucle principal.
+- `2026-10-25T12:33:45` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `StartupEntry` y funciones auxiliares, clarificando las precondiciones de seguridad y el manejo de excepciones en la resolución de rutas.
 - `2026-10-25T12:24:49` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos críticos de `Scanner` y se han clarificado los nombres de los atributos de `ScannerLimits` para eliminar ambigüedades, facilitando la comprensión del mantenimiento del estado durante el recorrido del sistema de archivos.
 - `2026-10-25T12:23:17` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones críticas de validación de integridad (`_validate_integrity` y `verify_integrity`) mediante la adición de docstrings técnicos explicativos y se han añadido anotaciones de tipo más precisas para reducir la ambigüedad en el manejo de estados de archivo.
 - `2026-10-25T12:15:53` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `organizer.py` mediante la adición de docstrings detallados en funciones clave, la estandarización de tipos con `Final` donde faltaba, y la extracción de lógica compleja de filtrado en `_process_directory` hacia una estructura más legible, asegurando que el código sea autodocumentado y robusto sin alterar su comportamiento funcional.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T11:33:59` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_windows_snapshot` y `trim_working_set` añadiendo verificaciones explícitas de errores y un manejo de excepciones más granular para evitar fallos silenciosos o bloqueos por tipos de datos inválidos.
 - `2026-10-25T11:33:47` **main.py** (manejo de errores y validación de entradas): Se implementó un manejo de errores robusto en la inicialización de la configuración (`get_cached_settings`) y en la recolección de ajustes (`_collect_settings`) para prevenir fallas silenciosas o estados inconsistentes cuando el usuario ingresa datos malformados, cumpliendo con el enfoque de validación de entradas.
 - `2026-10-25T11:32:41` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `compute_score` implementando una validación temprana más estricta sobre el contenido de los resultados, asegurando que las listas de recomendaciones siempre contengan strings no vacíos y evitando posibles errores de desbordamiento en la renderización de barras.
-- `2026-10-25T11:32:12` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo `duplicates.py` mediante la adición de validaciones explícitas de entrada (`None`/vacíos) y la mejora en el manejo de excepciones durante la iteración de directorios, evitando que errores de acceso a subdirectorios interrumpan la búsqueda global.
-- `2026-10-25T11:23:39` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` ante excepciones imprevistas capturando posibles errores de `Path.relative_to` y mejorando la validación del acceso a archivos individuales, evitando que fallos parciales interrumpan el reporte completo.

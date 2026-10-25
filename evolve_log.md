@@ -1111,3 +1111,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T12:24:49` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos críticos de `Scanner` y se han clarificado los nombres de los atributos de `ScannerLimits` para eliminar ambigüedades, facilitando la comprensión del mantenimiento del estado durante el recorrido del sistema de archivos.
 - `2026-10-25T12:24:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T12:24:49` Corrida terminada. Total usado hoy: 292.
+- `2026-10-25T12:32:41` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-10-25T12:33:16` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-25T12:33:45` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `StartupEntry` y funciones auxiliares, clarificando las precondiciones de seguridad y el manejo de excepciones en la resolución de rutas.
+- `2026-10-25T12:34:27` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `local_answer` para evitar el parseo completo mediante `_TOKEN_REGEX.findall()` en cada consulta, implementando un chequeo directo de pertenencia de palabras clave que reduce el procesamiento de cadenas y el uso de memoria en el bucle principal.
+- `2026-10-25T12:34:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-25T12:34:47` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-25T12:34:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T12:34:47` Corrida terminada. Total usado hoy: 296.

@@ -94,7 +94,10 @@ class StartupEntry:
 
     @property
     def is_valid(self) -> bool:
-        """Valida si la estructura base del comando es técnicamente segura."""
+        """
+        Valida que la cadena del comando cumpla con las restricciones básicas:
+        no nulo, longitud aceptable, sin caracteres de control o nombres reservados.
+        """
         if not self.command or not isinstance(self.command, str) or len(self.command) > MAX_PATH_LEN or self._is_path_suspicious(self.command):
             return False
         if self._is_reserved_device_name(self.command):
@@ -102,7 +105,10 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Determina si la ruta es un nombre reservado del sistema operativo."""
+        """
+        Detecta si un string de ruta corresponde a un dispositivo de hardware
+        reservado (ej. COM1, NUL) que no debe abrirse como archivo.
+        """
         if not isinstance(path_str, str) or "\0" in path_str:
             return True
         try:
@@ -113,26 +119,32 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Detecta caracteres no permitidos o protocolos de red potencialmente peligrosos."""
+        """
+        Verifica la presencia de caracteres peligrosos para la shell o
+        protocolos de red (UNC) no soportados para ejecución local.
+        """
         if not isinstance(path_string, str):
             return True
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Filtra extensiones permitidas y descarta enlaces simbólicos."""
+        """Valida que la ruta sea un archivo ejecutable permitido y no un symlink."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Elimina caracteres de control y espacios sobrantes del comando crudo."""
+        """Limpia el comando eliminando caracteres de control no imprimibles."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae la ruta de un ejecutable envuelto en comillas de forma segura."""
+        """
+        Extrae la ruta contenida entre comillas. Realiza validación de seguridad
+        adicional para asegurar que no contenga referencias a padres ('..').
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -147,7 +159,6 @@ class StartupEntry:
             
         try:
             p: Path = Path(path_str)
-            # Validamos existencia básica antes de operar con la ruta
             if not p.parts or is_protected_path(p):
                 return ""
             return str(p)
@@ -156,22 +167,22 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Verifica la existencia y seguridad del archivo.
-        
-        Asegura que el archivo sea real, no un enlace, y que sea seguro manipularlo
-        según las reglas de protección de la aplicación.
+        Verifica la seguridad y existencia del archivo en el sistema de archivos.
+        Requiere que el path no sea protegido y sea seguro de modificar según safety.py.
         """
         if not p.is_file() or p.is_symlink():
             return False
         
-        # El chequeo de seguridad debe hacerse siempre sobre rutas existentes y validadas
         if is_protected_path(p) or not is_safe_to_modify(p):
             return False
             
         return p.exists()
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Normaliza rutas y gestiona la caché de resolución para evitar accesos repetidos al disco."""
+        """
+        Normaliza y resuelve rutas absolutas. Utiliza caché global para minimizar
+        llamadas costosas al sistema de archivos durante el escaneo.
+        """
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
@@ -192,7 +203,6 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
-            # resolve() puede fallar por permisos; tratamos esto como una ruta no accesible
             p = p.resolve(strict=False)
             if not self._validate_file_access(p):
                 _EXISTS_CACHE[path_string] = False
@@ -206,7 +216,10 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Aísla la ruta del ejecutable principal desde la línea de comandos."""
+        """
+        Descompone la línea de comandos de inicio para aislar el ejecutable,
+        gestionando tanto rutas simples como rutas entrecomilladas.
+        """
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -332,7 +345,10 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
-    """Verifica si una entrada del registro debe ser procesada por seguridad."""
+    """
+    Aplica filtros de seguridad previos al procesamiento de entradas del registro,
+    descartando comandos ambiguos o rutas potencialmente peligrosas.
+    """
     if not isinstance(name, str) or not isinstance(command, str):
         return False
     
