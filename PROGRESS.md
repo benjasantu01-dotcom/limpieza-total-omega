@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 49
-- Sin cambios (nada sustancial que mejorar): 21
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 28 | 3 | 7 | 1 | 39 |
+| 2026-10-23 | 25 | 3 | 6 | 1 | 39 |
 | 2026-10-24 | 154 | 13 | 37 | 17 | 129 |
-| 2026-10-25 | 26 | 3 | 5 | 3 | 39 |
+| 2026-10-25 | 28 | 3 | 6 | 4 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **45**
-- legibilidad y documentación: **40**
-- rendimiento: **36**
-- robustez ante casos límite: **36**
+- legibilidad y documentación: **42**
+- rendimiento: **35**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
+- `memory.py`: **22**
 - `diskreport.py`: **19**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `settings.py`: **17**
 - `organizer.py`: **17**
 - `browser.py`: **16**
 - `safety.py`: **16**
 - `healthscore.py`: **15**
 - `duplicates.py`: **15**
-- `assistant.py`: **13**
 - `scanner.py`: **13**
-- `branding.py`: **12**
-- `startup.py`: **9**
+- `assistant.py`: **12**
+- `branding.py`: **11**
 - `main.py`: **8**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T03:24:48` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_win_has_system_attributes` para separar la consulta de atributos de la lógica de evaluación, y añadí docstrings explicativos en las validaciones críticas para clarificar las salvaguardas de seguridad.
+- `2026-10-25T03:23:30` **memory.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en las funciones clave de bajo nivel para aclarar el propósito de cada etapa del procesamiento de memoria y garantizar la mantenibilidad del código.
 - `2026-10-25T03:14:10` **healthscore.py** (legibilidad y documentación): Mejora de la mantenibilidad y legibilidad mediante la documentación explícita de `SystemMetrics` y la centralización de los límites de validación, facilitando futuras auditorías de seguridad al separar claramente la configuración del motor de la lógica de negocio.
 - `2026-10-25T03:13:16` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `ext_stats` y parámetros opcionales) y se documentó mejor la lógica del min-heap y el propósito de las funciones internas para mejorar la mantenibilidad y legibilidad del código.
 - `2026-10-25T03:04:16` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de las responsabilidades de los tipos y funciones, y se ha encapsulado el manejo de las flags de atributos de archivo en una clase de solo lectura para evitar confusiones, mejorando la legibilidad del código sin alterar su lógica.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T02:33:38` **healthscore.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `_calculate_area_contribution` para prevenir el uso de índices fuera de rango o estructuras corruptas, y se mejoró la validación en `compute_score` asegurando que el proceso de cálculo nunca retorne resultados inconsistentes si la entrada está malformada.
 - `2026-10-25T02:33:24` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validación de parámetros y manejo de casos vacíos, asegurando que no se operen sobre objetos nulos o mal formados, siguiendo el enfoque de manejo de errores y validación.
 - `2026-10-25T02:32:32` **browser.py** (manejo de errores y validación de entradas): Corregí una referencia a una variable inexistente (`BOURSER_CACHE_PATHS`) en `detect_profiles` y añadí una validación robusta de tipo para el parámetro `bases` asegurando que el bucle principal no falle ante entradas mal formadas.
-- `2026-10-25T01:02:24` **settings.py** (seguridad defensiva): Reforcé la integridad del proceso de escritura atómica añadiendo `os.replace` (que es una operación atómica a nivel de sistema operativo en Windows y POSIX) y asegurando explícitamente que el archivo temporal sea eliminado en caso de error, evitando dejar basura en el sistema de archivos.
-- `2026-10-25T01:01:19` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_within_directory` incorporando un chequeo explícito de existencia antes de la resolución del path final, evitando así posibles errores de `OSError` cuando se manipulan rutas que ya no existen, manteniendo la integridad del "jail" de seguridad.

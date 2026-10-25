@@ -93,18 +93,23 @@ def _check_path_for_junctions(path: Path) -> None:
     """Verifica si la ruta es un punto de reparse (junction) mediante la API de Windows."""
     _check_for_reparse_points(path)
 
+def _get_win_attributes(path: Path) -> int:
+    """Interfaz privada para invocar GetFileAttributesW de forma segura."""
+    if os.name != 'nt': return 0
+    try:
+        return ctypes.windll.kernel32.GetFileAttributesW(str(path))
+    except (OSError, AttributeError):
+        return -1
+
 def _win_has_system_attributes(path: Path) -> bool:
     """
-    Consulta atributos críticos (HIDDEN/SYSTEM) en Windows vía Win32 API.
-    Identifica archivos de sistema que deben ser excluidos de cualquier operación de limpieza.
+    Identifica si el archivo posee atributos de sistema (HIDDEN, SYSTEM, TEMPORARY).
+    Se usa para evitar la manipulación accidental de archivos críticos del SO.
     """
-    if os.name != 'nt': return False
-    try:
-        attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        # 0x02: HIDDEN, 0x04: SYSTEM, 0x100: TEMPORARY
-        return attrs != -1 and bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
-    except (OSError, AttributeError):
-        return True
+    attrs = _get_win_attributes(path)
+    if attrs == -1: return True
+    # 0x02: HIDDEN, 0x04: SYSTEM, 0x100: TEMPORARY
+    return bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
 
 def _verify_source_fs_permissions(path: Path) -> None:
     """Valida que la ruta origen sea un archivo estándar local y no una ruta UNC (red)."""
@@ -148,8 +153,8 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
 
 def _is_file_exclusive(path: Path) -> bool:
     """
-    Verifica mediante APIs de sistema si un archivo está en uso exclusivo.
-    En Windows utiliza un handle con acceso nulo, en POSIX emplea flock para detectar bloqueos.
+    Verifica si un archivo está en uso exclusivo mediante handles de SO.
+    Evita la cuarentena de archivos que están siendo procesados activamente.
     """
     if not path.exists():
         return False
@@ -235,8 +240,8 @@ class QuarantineItem:
 
     def _validate_integrity(self, stored_path: Path) -> bool:
         """
-        Validación básica de atributos. Comprueba inodo y UID para asegurar que
-        el archivo no fue reemplazado por otro durante el tiempo de reposo.
+        Validación de metadatos de archivo contra el estado registrado.
+        Previene ataques de sustitución verificando inodo y UID del archivo en el sandbox.
         """
         if not stored_path.exists(): return False
         try:
