@@ -304,7 +304,10 @@ class Scanner:
         Si es archivo, lo deriva al motor de heurísticas. Si es directorio,
         lo añade a la pila si no ha sido visitado previamente.
         """
-        if not isinstance(entry, os.DirEntry) or not entry.path or not self._is_safe_entry(entry):
+        if not isinstance(entry, os.DirEntry) or not hasattr(entry, 'path') or entry.path is None:
+            return
+            
+        if not self._is_safe_entry(entry):
             return
             
         try:

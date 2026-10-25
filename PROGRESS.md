@@ -7,23 +7,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **215** (42.7% de aceptación)
-- Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por tests: 24
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 105 | 10 | 21 | 13 | 79 |
-| 2026-10-25 | 110 | 13 | 24 | 10 | 119 |
+| 2026-10-24 | 104 | 10 | 19 | 13 | 78 |
+| 2026-10-25 | 111 | 14 | 24 | 10 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **50**
+- manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
-- rendimiento: **44**
+- rendimiento: **43**
 - robustez ante casos límite: **37**
 - legibilidad y documentación: **36**
 
@@ -31,14 +31,14 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `memory.py`: **19**
 - `quarantine.py`: **19**
-- `diskreport.py`: **18**
 - `settings.py`: **17**
 - `healthscore.py`: **17**
 - `browser.py`: **17**
+- `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `organizer.py`: **16**
 - `safety.py`: **16**
-- `scanner.py`: **15**
+- `scanner.py`: **16**
 - `assistant.py`: **15**
 - `branding.py`: **13**
 - `main.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T11:53:11` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del motor de escaneo implementando validaciones de tipo y de estado en los parámetros de entrada (`path`, `entry`) dentro del método `process_entry`, asegurando que `entry.path` sea tratado de forma segura antes de realizar llamadas a sistema, evitando posibles excepciones de tipo `AttributeError` o `TypeError` al evaluar archivos mal formados.
 - `2026-10-25T11:43:18` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_unlink` y `_is_item_purgable` centralizando la validación de integridad mediante una excepción específica, asegurando que cualquier fallo de estado sea capturado como `UnsafePathError` en lugar de fallos genéricos, cumpliendo con el enfoque de manejo de errores.
 - `2026-10-25T11:33:59` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_windows_snapshot` y `trim_working_set` añadiendo verificaciones explícitas de errores y un manejo de excepciones más granular para evitar fallos silenciosos o bloqueos por tipos de datos inválidos.
 - `2026-10-25T11:33:47` **main.py** (manejo de errores y validación de entradas): Se implementó un manejo de errores robusto en la inicialización de la configuración (`get_cached_settings`) y en la recolección de ajustes (`_collect_settings`) para prevenir fallas silenciosas o estados inconsistentes cuando el usuario ingresa datos malformados, cumpliendo con el enfoque de validación de entradas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T09:50:38` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_safe_unlink` al añadir una validación de propiedad explícita mediante `st_uid` (cuando está disponible) antes de cualquier operación de borrado, evitando el riesgo de borrar archivos que, por una condición de carrera o manipulación externa, pudieran haber cambiado de propietario dentro del sandbox.
 - `2026-10-25T09:41:08` **main.py** (seguridad defensiva): Mejoré la seguridad en el manejo de rutas de configuración dentro de `main.py` mediante la implementación de una validación explícita en `_safe_validate_inputs` que utiliza `safety.is_safe_to_modify` para cualquier parámetro que contenga la palabra "carpeta", previniendo que el usuario inyecte rutas fuera del alcance permitido del Home.
 - `2026-10-25T09:40:05` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo `healthscore.py` al restringir estrictamente las entradas que utiliza `_sanitize_msg` y el `SystemMetrics` mediante la adición de una comprobación de seguridad ante cualquier dato no numérico inesperado durante la deserialización, evitando la propagación de valores o tipos inyectados.
-- `2026-10-25T09:30:58` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `duplicates.py` mediante la implementación de `contextlib.suppress` para manejar errores de acceso a disco en la lectura de atributos, evitando que excepciones inesperadas rompan el flujo de análisis, y se reforzó la validación de seguridad asegurando que el chequeo `_safe_path_check` se realice antes de cualquier llamada a `stat()` o `open()`, evitando condiciones de carrera.

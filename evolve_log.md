@@ -1035,3 +1035,49 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-25T11:44:19` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo una gestión de errores más robusta y específica en `_get_file_id` y `_get_file_attrs`, asegurando que el uso de la API de Windows no silencie excepciones críticas de sistema mediante el uso de un manejo de excepciones explícito en lugar de capturas genéricas.
 - `2026-10-25T11:44:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T11:44:19` Corrida terminada. Total usado hoy: 276.
+- `2026-10-25T11:51:56` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-25T11:53:11` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del motor de escaneo implementando validaciones de tipo y de estado en los parámetros de entrada (`path`, `entry`) dentro del método `process_entry`, asegurando que `entry.path` sea tratado de forma segura antes de realizar llamadas a sistema, evitando posibles excepciones de tipo `AttributeError` o `TypeError` al evaluar archivos mal formados.
+- `2026-10-25T11:54:11` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-25T11:54:43` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-25T11:54:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-25T11:56:03` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.02s
+
+```
+- `2026-10-25T11:56:03` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry.is_valid` y los métodos de resolución de rutas (`_resolve_and_cache_path`) para manejar explícitamente posibles errores en la manipulación de `Path` cuando los comandos contienen caracteres inválidos o rutas malformadas, evitando que una entrada corrupta bloquee el escaneo completo.
+- `2026-10-25T11:56:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-25T11:56:09` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-25T11:56:15` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-25T11:57:26` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-25T11:57:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T11:57:26` Corrida terminada. Total usado hoy: 280.
