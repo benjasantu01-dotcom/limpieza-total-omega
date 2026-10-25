@@ -336,39 +336,29 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=32)
 def _calculate_area_contribution(metrics_tuple: Tuple[float, ...], area_idx: int) -> Tuple[int, Tuple[str, ...]]:
     """Calcula el aporte de puntos de un área específica del pipeline con cacheo."""
+    if area_idx < 0 or area_idx >= len(_PIPELINE):
+        return 0, ()
     try:
-        if area_idx < 0 or area_idx >= len(_PIPELINE):
-            return 0, ()
-        
         entry = _PIPELINE[area_idx]
-        
-        # Mapeo directo para evitar crear instancia completa de SystemMetrics innecesariamente
         m_args = {k: metrics_tuple[i] for i, k in enumerate(SystemMetrics._FIELDS_TO_VALIDATE)}
         metrics = SystemMetrics(**m_args)
-        
         weight = max(0, entry.weight)
         raw_ratio = entry.scorer(metrics)
         area_ratio = _clamp(float(raw_ratio))
         recommendations = _evaluate_rules(metrics, entry.rules, area_ratio) if entry.rules else []
-        
         points = area_ratio * float(weight)
         val_int = int(_clamp(round(points), 0.0, float(weight)))
-        
         return val_int, tuple(recommendations)
     except Exception:
         return 0, ()
 
 @lru_cache(maxsize=128)
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
-    """
-    Motor de cómputo cacheado del HealthResult. Evita re-procesar los mismos 
-    datos de sistema idénticos entre iteraciones.
-    """
+    """Motor de cómputo cacheado del HealthResult."""
     if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in metrics_tuple):
-        return HealthResult(0, "F", {}, ["Error: Métricas no numéricas en pipeline."])
-    
-    if not _PIPELINE or not isinstance(metrics_tuple, tuple):
-        return HealthResult(0, "F", {}, ["Error: Pipeline o métricas no válidas."])
+        return HealthResult(0, "F", {}, ["Error: Métricas corruptas."])
+    if not _PIPELINE:
+        return HealthResult(0, "F", {}, ["Error: Pipeline no configurado."])
         
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -399,7 +389,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     metrics.validate()
     if not metrics.is_finite:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos o corruptos."])
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema corruptos."])
     
     cache_key = tuple(float(getattr(metrics, f, 0.0)) for f in SystemMetrics._FIELDS_TO_VALIDATE)
     return _compute_cached(cache_key, int(metrics.quarantined_count))
@@ -423,7 +413,6 @@ def summarize(result: HealthResult | None) -> List[str]:
         lines.append(f"  {entry.area.capitalize():<12} {p:>2}/{entry.weight:<2} [{_render_bar(p, entry.weight)}]")
     
     recs = [r for r in result.recommendations if r]
-    
     if not recs:
         recs = ["No hay advertencias activas."]
         

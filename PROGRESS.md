@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 38 | 4 | 12 | 2 | 42 |
+| 2026-10-23 | 36 | 4 | 11 | 1 | 42 |
 | 2026-10-24 | 154 | 13 | 37 | 17 | 129 |
-| 2026-10-25 | 13 | 2 | 3 | 1 | 37 |
+| 2026-10-25 | 16 | 2 | 3 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
+- manejo de errores y validación de entradas: **44**
 - rendimiento: **42**
-- legibilidad y documentación: **41**
-- manejo de errores y validación de entradas: **41**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
 - `diskreport.py`: **18**
-- `organizer.py`: **17**
-- `safety.py`: **17**
 - `quarantine.py`: **17**
+- `browser.py`: **16**
+- `duplicates.py`: **16**
+- `safety.py`: **16**
 - `settings.py`: **16**
-- `browser.py`: **15**
-- `duplicates.py`: **15**
+- `organizer.py`: **16**
+- `healthscore.py`: **14**
 - `scanner.py`: **13**
 - `assistant.py`: **13**
-- `healthscore.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **10**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T02:33:38` **healthscore.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `_calculate_area_contribution` para prevenir el uso de índices fuera de rango o estructuras corruptas, y se mejoró la validación en `compute_score` asegurando que el proceso de cálculo nunca retorne resultados inconsistentes si la entrada está malformada.
+- `2026-10-25T02:33:24` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validación de parámetros y manejo de casos vacíos, asegurando que no se operen sobre objetos nulos o mal formados, siguiendo el enfoque de manejo de errores y validación.
+- `2026-10-25T02:32:32` **browser.py** (manejo de errores y validación de entradas): Corregí una referencia a una variable inexistente (`BOURSER_CACHE_PATHS`) en `detect_profiles` y añadí una validación robusta de tipo para el parámetro `bases` asegurando que el bucle principal no falle ante entradas mal formadas.
 - `2026-10-25T01:02:24` **settings.py** (seguridad defensiva): Reforcé la integridad del proceso de escritura atómica añadiendo `os.replace` (que es una operación atómica a nivel de sistema operativo en Windows y POSIX) y asegurando explícitamente que el archivo temporal sea eliminado en caso de error, evitando dejar basura en el sistema de archivos.
 - `2026-10-25T01:01:19` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_within_directory` incorporando un chequeo explícito de existencia antes de la resolución del path final, evitando así posibles errores de `OSError` cuando se manipulan rutas que ya no existen, manteniendo la integridad del "jail" de seguridad.
 - `2026-10-25T00:52:35` **quarantine.py** (seguridad defensiva): Reforcé la seguridad del método `_atomic_isolate_file` añadiendo una validación explícita para evitar que `source` sea un directorio (protección redundante contra errores de tipo), y apliqué un `os.fsync` sobre el directorio padre inmediatamente después de la creación del archivo, para asegurar la persistencia de los metadatos de archivo antes de finalizar la transacción.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T00:21:41` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor de escaneo ante fallos en el acceso a archivos mediante la implementación de bloques `try-except` más granulares en `process_entry`, asegurando que errores de acceso específicos en un archivo no interrumpan el recorrido completo del directorio.
 - `2026-10-25T00:13:36` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `purge_all` intente procesar o eliminar subdirectorios dentro de la carpeta de cuarentena, asegurando que solo opere sobre archivos regulares para prevenir errores de I/O y posibles ataques de manipulación de estructuras de directorios.
 - `2026-10-25T00:11:55` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` al añadir una verificación explícita de `is_protected_path` sobre la ruta resuelta (`src_real`), previniendo que archivos con nombres críticos pero ubicados en rutas dinámicas escapen a las protecciones del sistema en casos de manipulación de punteros.
-- `2026-10-25T00:11:18` **memory.py** (robustez ante casos límite): Mejora la robustez de `_is_process_executable_safe` añadiendo una comprobación explícita para evitar errores `OSError` cuando la ruta del ejecutable contiene caracteres inválidos o el proceso ya ha terminado antes de poder leer su información de módulo, reforzando la tolerancia a fallos ante procesos efímeros o en estado de cierre.
-- `2026-10-24T14:53:28` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema de métricas ante posibles valores no numéricos o `NaN` en `SystemMetrics` mediante la adición de un chequeo explícito en `_compute_cached` y `compute_score`, garantizando que la caché no reciba datos malformados que puedan provocar comportamientos impredecibles durante el cómputo del `HealthResult`.
-- `2026-10-24T14:52:59` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a disco en la etapa de recolección de candidatos y lectura de hashes, integrando una validación explícita mediante `is_safe_to_modify` dentro de los bloques `try-except` para asegurar que archivos bloqueados, inexistentes o con permisos denegados no interrumpan el flujo de análisis.

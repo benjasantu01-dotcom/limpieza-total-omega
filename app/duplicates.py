@@ -81,7 +81,7 @@ class DuplicateGroup:
     @property
     def count(self) -> int:
         """Devuelve el número total de archivos en el grupo."""
-        return len(self.paths)
+        return len(self.paths) if self.paths else 0
 
     @property
     def wasted_bytes(self) -> int:
@@ -103,7 +103,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo, verificando seguridad de acceso antes de leer."""
-    if not _safe_path_check(path) or not path.is_file(): 
+    if not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
@@ -120,7 +120,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash parcial (primeros N bytes) de forma segura."""
-    if not _safe_path_check(path) or not path.is_file(): 
+    if not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     try:
@@ -150,6 +150,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Exploración recursiva (BFS) para recolectar archivos candidatos usando atributos de DirEntry."""
     raw_map: Dict[int, List[Path]] = defaultdict(list)
+    if not directories: return raw_map
     queue: deque[Tuple[Path, int]] = deque()
     for d in directories:
         if d:
@@ -167,7 +168,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # No seguir symlinks ni junction points para prevenir loops y escapes de seguridad
                         if entry.is_dir(follow_symlinks=False):
                             path = Path(entry.path)
                             if _safe_path_check(path):
@@ -252,13 +252,15 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
             candidates.append((_get_mtime(p), p))
     
     if not candidates:
-        return group.paths[0] if group.paths else None
+        return group.paths[0]
     return min(candidates, key=lambda x: x[0])[1]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera una representación textual legible del grupo de duplicados para el reporte."""
-    if not group: return []
+    if not isinstance(group, DuplicateGroup) or not group.paths:
+        return []
+    
     keeper = suggest_keeper(group)
     mb = round(group.size_bytes / 1048576, 2)
     wasted = round(group.wasted_bytes / 1048576, 2)
