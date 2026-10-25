@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 54 | 5 | 15 | 3 | 73 |
+| 2026-10-23 | 54 | 5 | 15 | 3 | 69 |
 | 2026-10-24 | 154 | 13 | 37 | 17 | 129 |
-| 2026-10-25 | 3 | 0 | 0 | 0 | 1 |
+| 2026-10-25 | 5 | 0 | 1 | 0 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **48**
 - rendimiento: **42**
 - seguridad defensiva: **37**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,18 +35,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **18**
 - `safety.py`: **17**
 - `duplicates.py`: **16**
+- `settings.py`: **16**
 - `quarantine.py`: **16**
 - `healthscore.py`: **15**
-- `settings.py`: **15**
 - `browser.py`: **15**
 - `assistant.py`: **14**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `branding.py`: **13**
 - `startup.py`: **10**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T00:22:07` **settings.py** (robustez ante casos límite): Se reforzó la robustez en la carga inicial de archivos de configuración mediante un chequeo de integridad que detecta archivos vacíos (size 0) o archivos excesivamente grandes (potencial ataque de denegación de servicio por memoria) antes de cualquier operación de I/O, previniendo fallos en `_read_and_parse_json`.
+- `2026-10-25T00:21:41` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor de escaneo ante fallos en el acceso a archivos mediante la implementación de bloques `try-except` más granulares en `process_entry`, asegurando que errores de acceso específicos en un archivo no interrumpan el recorrido completo del directorio.
 - `2026-10-25T00:13:36` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `purge_all` intente procesar o eliminar subdirectorios dentro de la carpeta de cuarentena, asegurando que solo opere sobre archivos regulares para prevenir errores de I/O y posibles ataques de manipulación de estructuras de directorios.
 - `2026-10-25T00:11:55` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` al añadir una verificación explícita de `is_protected_path` sobre la ruta resuelta (`src_real`), previniendo que archivos con nombres críticos pero ubicados en rutas dinámicas escapen a las protecciones del sistema en casos de manipulación de punteros.
 - `2026-10-25T00:11:18` **memory.py** (robustez ante casos límite): Mejora la robustez de `_is_process_executable_safe` añadiendo una comprobación explícita para evitar errores `OSError` cuando la ruta del ejecutable contiene caracteres inválidos o el proceso ya ha terminado antes de poder leer su información de módulo, reforzando la tolerancia a fallos ante procesos efímeros o en estado de cierre.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-24T14:22:32` **memory.py** (rendimiento): Se optimizó el acceso a los procesos en `_iter_process_memory` mediante la pre-validación de PIDs mediante un conjunto (`SYSTEM_CRITICAL_PIDS`) y evitando llamadas costosas a `GetModuleFileNameExW` (que implica I/O y carga de módulos) para procesos que ya superan el umbral de consumo o están protegidos, mejorando significativamente la velocidad de escaneo.
 - `2026-10-24T14:14:25` **main.py** (rendimiento): Se implementó un sistema de "Dirty Flag" y memoización de estado en `on_full_analysis` para evitar el re-procesamiento innecesario del asistente y la actualización redundante de la UI cuando los datos subyacentes no han cambiado, optimizando el rendimiento general del dashboard.
 - `2026-10-24T14:13:28` **healthscore.py** (rendimiento): Se ha optimizado el rendimiento del motor de cálculo mediante la eliminación de la recreación redundante de objetos `SystemMetrics` dentro de `_calculate_area_contribution`, permitiendo el paso directo de métricas individuales, lo que reduce la carga del recolector de basura y mejora la eficiencia del cacheo.
-- `2026-10-24T14:12:57` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` para obtener el tamaño y el inodo en una sola llamada al sistema, evitando múltiples llamadas a `.stat()` y `is_file()` dentro del bucle de exploración.
-- `2026-10-24T14:12:28` **diskreport.py** (rendimiento): Optimizé `walk_files` y `_collect_summary_data` para evitar llamadas redundantes a `is_protected_path` sobre la misma ruta, consolidando la lógica de seguridad y reduciendo la carga de cómputo durante el recorrido recursivo del sistema de archivos.

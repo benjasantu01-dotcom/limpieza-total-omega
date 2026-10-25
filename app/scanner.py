@@ -298,8 +298,8 @@ class Scanner:
                     self._run_file_heuristics(Path(entry.path), entry)
             elif entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
-        except (OSError, PermissionError, FileNotFoundError, AttributeError):
-            logger.debug(f"Error procesando entrada: {entry.path}")
+        except (OSError, PermissionError, FileNotFoundError, AttributeError, RuntimeError):
+            logger.debug(f"Error accediendo a entrada: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Aplica todas las heurísticas registradas a un archivo individual."""

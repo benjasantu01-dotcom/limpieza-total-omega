@@ -914,3 +914,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-25T00:13:36` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar que `purge_all` intente procesar o eliminar subdirectorios dentro de la carpeta de cuarentena, asegurando que solo opere sobre archivos regulares para prevenir errores de I/O y posibles ataques de manipulación de estructuras de directorios.
 - `2026-10-25T00:13:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T00:13:36` Corrida terminada. Total usado hoy: 4.
+- `2026-10-25T00:19:40` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-10-25T00:20:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-25T00:20:54` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-10-25T00:21:41` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia del motor de escaneo ante fallos en el acceso a archivos mediante la implementación de bloques `try-except` más granulares en `process_entry`, asegurando que errores de acceso específicos en un archivo no interrumpan el recorrido completo del directorio.
+- `2026-10-25T00:22:07` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez en la carga inicial de archivos de configuración mediante un chequeo de integridad que detecta archivos vacíos (size 0) o archivos excesivamente grandes (potencial ataque de denegación de servicio por memoria) antes de cualquier operación de I/O, previniendo fallos en `_read_and_parse_json`.
+- `2026-10-25T00:22:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T00:22:07` Corrida terminada. Total usado hoy: 8.
