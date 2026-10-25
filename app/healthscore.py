@@ -43,7 +43,8 @@ _METRIC_LIMITS: Final[Dict[str, Tuple[float, float]]] = {
     "suspicious_warnings": (0, 5000),
     "startup_count": (0, 1000),
     "memory_available_percent": (0.0, 100.0),
-    "disk_free_percent": (0.0, 100.0)
+    "disk_free_percent": (0.0, 100.0),
+    "quarantined_count": (0, 10000)
 }
 
 class Scorer(Protocol):
@@ -240,7 +241,7 @@ class SystemMetrics:
     _FIELDS_TO_VALIDATE: Final[Tuple[str, ...]] = (
         "junk_mb", "suspicious_count", "suspicious_warnings", 
         "memory_available_percent", "disk_free_percent", 
-        "duplicate_mb", "startup_count"
+        "duplicate_mb", "startup_count", "quarantined_count"
     )
 
     def __post_init__(self) -> None:
@@ -292,7 +293,6 @@ def _sanitize_msg(msg: str | Any) -> str:
     """Filtro de seguridad que asegura que solo caracteres permitidos pasen al reporte."""
     if not isinstance(msg, str): return ""
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
-    # Verificación extra de integridad: rechazar si hay indicios de paths bloqueados
     if not _is_safe_string_for_report(clean):
         return ""
     return clean.strip()[:_MAX_MSG_LEN]
@@ -343,7 +343,7 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
         metric_breakdown[entry.area] = val_int
         total_points += float(val_int)
             
-    if quarantined > 0:
+    if metrics.quarantined_count > 0:
         recommendations.append("Existen elementos en cuarentena.")
         
     final_score = int(_clamp(round(total_points), 0.0, 100.0))

@@ -539,3 +539,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-25T06:58:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-25T06:58:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T06:58:16` Corrida terminada. Total usado hoy: 164.
+- `2026-10-25T07:06:56` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-25T07:07:49` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del pipeline de cálculo mediante la validación explícita de `quarantined_count` en la entrada y el manejo defensivo de errores en la evaluación de reglas, asegurando que un fallo inesperado en una factoría de mensajes no propague excepciones y garantice siempre una respuesta válida para la interfaz.
+- `2026-10-25T07:08:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._validate_environment
+- `2026-10-25T07:09:32` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_is_process_accessible` y `_query_working_set_bytes` reemplazando los bloques `try-except` genéricos por capturas específicas de `ctypes.WinError` y `OSError`, asegurando además que los punteros y handles sean validados explícitamente antes de su uso.
+- `2026-10-25T07:09:44` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-25T07:09:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T07:09:44` Corrida terminada. Total usado hoy: 168.

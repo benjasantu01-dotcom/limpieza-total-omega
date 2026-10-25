@@ -325,8 +325,8 @@ def _is_process_accessible(pid: int, access_mask: int, kernel32: ctypes.CDLL) ->
 
 def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Invoca GetProcessMemoryInfo para obtener el WorkingSet del proceso."""
+    if handle is None: return None
     try:
-        if handle is None: return None
         if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
