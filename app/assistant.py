@@ -679,14 +679,15 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     if not isinstance(raw_cfg, dict):
         return default
     
-    api_key: Any = raw_cfg.get("asistente_api_key", "")
-    model: Any = raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")
-    metrics_val: Any = raw_cfg.get("asistente_enviar_metricas", True)
+    # Validación estricta de tipos tras la lectura del json
+    api_key = raw_cfg.get("asistente_api_key")
+    model = raw_cfg.get("asistente_modelo")
+    metrics_val = raw_cfg.get("asistente_enviar_metricas")
     
     return AssistantConfig(
         api_key=str(api_key) if isinstance(api_key, str) else "",
-        model=str(model) if isinstance(model, str) and len(model) < 64 else "gemini-3.1-flash-lite",
-        allow_metrics=bool(metrics_val)
+        model=str(model) if isinstance(model, str) and _MODEL_NAME_REGEX.match(model) else "gemini-3.1-flash-lite",
+        allow_metrics=bool(metrics_val) if isinstance(metrics_val, bool) else True
     )
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
@@ -710,34 +711,29 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extracte de manera segura el contenido textual de la respuesta JSON del motor remoto."""
+    """Extrae de manera segura el contenido textual de la respuesta JSON del motor remoto."""
     if not isinstance(data, dict) or not _is_safe_payload_structure(data):
         return None
     
-    candidates: Any = data.get("candidates")
-    if not isinstance(candidates, list) or not candidates:
-        return None
+    try:
+        candidates = data.get("candidates")
+        if not isinstance(candidates, list) or not candidates: return None
+            
+        first = candidates[0]
+        if not isinstance(first, dict) or first.get("finishReason") != "STOP": return None
+            
+        content = first.get("content")
+        if not isinstance(content, dict): return None
         
-    first: Any = candidates[0]
-    if not isinstance(first, dict) or first.get("finishReason") != "STOP":
-        return None
+        parts = content.get("parts")
+        if not isinstance(parts, list) or not parts: return None
         
-    content: Any = first.get("content")
-    if not isinstance(content, dict):
+        text_val = parts[0].get("text")
+        if isinstance(text_val, str):
+            sanitized: str = _validate_response_length(text_val)
+            return sanitized if _ensure_safe_text(sanitized) else None
+    except (KeyError, AttributeError, TypeError):
         return None
-        
-    parts: Any = content.get("parts")
-    if not isinstance(parts, list) or not parts:
-        return None
-        
-    first_part: Any = parts[0]
-    if not isinstance(first_part, dict):
-        return None
-        
-    text_val: Any = first_part.get("text")
-    if isinstance(text_val, str):
-        sanitized: str = _validate_response_length(text_val)
-        return sanitized if _ensure_safe_text(sanitized) else None
     return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
