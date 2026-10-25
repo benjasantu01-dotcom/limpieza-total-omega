@@ -267,7 +267,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         if _is_recursive_violation(src_real, dest_real) or not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
-        return True
+        return not is_protected_path(src_real)
     except (OSError, AttributeError, ValueError, PermissionError):
         return False
 

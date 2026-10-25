@@ -330,6 +330,7 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
+        # get_filename_func puede fallar si el proceso está en cierre o sin permisos
         if get_filename_func(handle, None, buffer_path, 4096) <= 0:
             return False
         

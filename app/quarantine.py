@@ -1091,7 +1091,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         
         for f in quarantine_root.iterdir():
             try:
-                if not is_within_directory(f, quarantine_root):
+                if not is_within_directory(f, quarantine_root) or f.is_dir():
                     continue
                 if f.name == MANIFEST_NAME or is_protected_path(f):
                     continue
