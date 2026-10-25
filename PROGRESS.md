@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 34 | 3 | 10 | 1 | 42 |
+| 2026-10-23 | 32 | 3 | 10 | 1 | 40 |
 | 2026-10-24 | 154 | 13 | 37 | 17 | 129 |
-| 2026-10-25 | 20 | 2 | 3 | 2 | 37 |
+| 2026-10-25 | 23 | 2 | 4 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **48**
+- manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **45**
-- rendimiento: **42**
+- rendimiento: **40**
 - legibilidad y documentación: **37**
 - robustez ante casos límite: **36**
 
@@ -33,20 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **22**
 - `quarantine.py`: **18**
 - `diskreport.py`: **18**
+- `safety.py`: **17**
+- `settings.py`: **17**
 - `organizer.py`: **17**
-- `browser.py`: **16**
-- `duplicates.py`: **16**
-- `safety.py`: **16**
-- `settings.py`: **16**
+- `browser.py`: **15**
+- `duplicates.py`: **15**
 - `healthscore.py`: **14**
 - `assistant.py`: **13**
+- `scanner.py`: **13**
 - `branding.py`: **12**
-- `scanner.py`: **12**
 - `main.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T02:54:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `validate` mediante un manejo de errores más específico en los validadores, evitando que claves ausentes o mal formadas en el JSON rompan la estructura de configuración y asegurando que siempre se devuelva un objeto `AppSettings` íntegro.
+- `2026-10-25T02:53:58` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_readable` y `_is_valid_file_path` centralizando la validación de tipos y rutas, asegurando que cualquier entrada `None` o malformada sea descartada antes de interactuar con el sistema de archivos, evitando excepciones innecesarias durante el escaneo.
+- `2026-10-25T02:53:32` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura más granular de excepciones de bajo nivel en las funciones de validación para evitar que errores inesperados del sistema de archivos (como `OSError` inesperado en metadatos) causen una falla completa, transformándolos en `UnsafePathError` con mensajes informativos y códigos de error adecuados.
 - `2026-10-25T02:44:53` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez en `_atomic_isolate_file` reemplazando los `RuntimeError` genéricos por excepciones más específicas y añadiendo una validación de `path.exists()` dentro del bloque de reintento de creación de directorio, evitando así condiciones de carrera en entornos de I/O altamente concurrentes.
 - `2026-10-25T02:44:19` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` reemplazando validaciones implícitas por comprobaciones de tipo y estado más estrictas, asegurando que cualquier entrada nula o mal formada sea descartada sin lanzar excepciones.
 - `2026-10-25T02:43:46` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de proceso mediante una validación más estricta de los punteros de manejo (handles) y el manejo preventivo de excepciones en las llamadas a la API de Windows, evitando posibles fallos de segmentación o estados inconsistentes.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T00:52:35` **quarantine.py** (seguridad defensiva): Reforcé la seguridad del método `_atomic_isolate_file` añadiendo una validación explícita para evitar que `source` sea un directorio (protección redundante contra errores de tipo), y apliqué un `os.fsync` sobre el directorio padre inmediatamente después de la creación del archivo, para asegurar la persistencia de los metadatos de archivo antes de finalizar la transacción.
 - `2026-10-25T00:51:22` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` reforzando la validación del ejecutable mediante `is_protected_path` antes de cualquier interacción, asegurando que incluso en procesos no críticos, no se intente actuar sobre rutas que violen las políticas de seguridad del sistema.
 - `2026-10-25T00:41:45` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_safe_path_check` para asegurar que el escaneo no siga enlaces simbólicos fuera de las rutas permitidas, validando explícitamente el acceso mediante `is_safe_to_modify` antes de cualquier operación de I/O, siguiendo la lógica estricta de no tocar zonas protegidas ni seguir puntos de reanálisis.
-- `2026-10-25T00:41:09` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `drive_usage` añadiendo chequeos adicionales de `is_protected_path` ante posibles rutas resueltas que puedan haber mutado o apuntar a destinos fuera del ámbito original, fortaleciendo la integridad del recorrido frente a cambios en el sistema de archivos durante la ejecución.
-- `2026-10-25T00:32:37` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de la ruta normalizada contra `base_norm` ANTES de intentar acceder al disco, evitando que el iterador `os.scandir` pueda ser engañado por enlaces simbólicos o puntos de reparse que apunten fuera del sandbox permitido, garantizando que el escaneo permanezca estrictamente dentro de `LOCALAPPDATA`.
-- `2026-10-25T00:31:28` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_build_payload` y `_call_gemini` añadiendo validaciones estrictas de los datos de entrada, evitando que cualquier cadena potencialmente maliciosa (aunque pase el primer filtro) sea interpolada directamente en el prompt final, y asegurando que las claves de API y nombres de modelo sigan patrones estrictos antes de construir cualquier URL.

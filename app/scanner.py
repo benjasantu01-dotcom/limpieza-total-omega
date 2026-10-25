@@ -94,27 +94,28 @@ def _cached_is_protected(path_str: str) -> bool:
     """Valida si una ruta está protegida mediante el módulo de seguridad, con caché LRU."""
     return is_protected_path(Path(path_str))
 
-def _is_valid_file_path(path: Path) -> bool:
+def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
     """Valida la existencia y accesibilidad de un archivo antes de procesarlo."""
-    if not isinstance(path, (Path, str)):
+    if path is None:
         return False
     try:
         p = Path(path)
-        if _cached_is_protected(str(p)):
+        path_str = str(p)
+        if _cached_is_protected(path_str):
             return False
         return p.is_file()
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError):
         return False
 
-def _is_readable(path: Path) -> bool:
+def _is_readable(path: Union[Path, str, None]) -> bool:
     """Verifica si el sistema operativo permite lectura en la ruta indicada mediante os.access."""
-    if not isinstance(path, (Path, str)):
+    if path is None:
         return False
     try:
-        p = Path(path)
-        if _cached_is_protected(str(p)):
+        path_str = str(path)
+        if _cached_is_protected(path_str):
             return False
-        return os.access(str(p), os.R_OK)
+        return os.access(path_str, os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError, TypeError):
         return False
 

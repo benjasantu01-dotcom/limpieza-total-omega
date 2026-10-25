@@ -479,7 +479,8 @@ def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
 @lru_cache(maxsize=128)
 def _get_drive_type(root: str) -> int:
     """Retorna tipo de unidad (cached)."""
-    return ctypes.windll.kernel32.GetDriveTypeW(root)
+    try: return ctypes.windll.kernel32.GetDriveTypeW(root)
+    except (OSError, AttributeError): return DRIVE_UNKNOWN
 
 @lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
@@ -711,16 +712,19 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result, initial_id: 
     if not path.exists():
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
     
-    current_stat = _get_path_stat_robust(path)
-    current_id = _get_file_id(str(path))
-    
-    if initial_id != (0, 0, 0) and current_id != initial_id:
-        raise UnsafePathError(f"Manipulación de identidad detectada (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
-    
-    if stat.S_ISREG(initial_stat.st_mode) != stat.S_ISREG(current_stat.st_mode):
-        raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
-    
-    _evaluate_security_rules(path, current_stat)
+    try:
+        current_stat = _get_path_stat_robust(path)
+        current_id = _get_file_id(str(path))
+        
+        if initial_id != (0, 0, 0) and current_id != initial_id:
+            raise UnsafePathError(f"Manipulación de identidad detectada (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
+        
+        if stat.S_ISREG(initial_stat.st_mode) != stat.S_ISREG(current_stat.st_mode):
+            raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
+        
+        _evaluate_security_rules(path, current_stat)
+    except (OSError, PermissionError) as e:
+        raise UnsafePathError(f"Fallo durante integridad: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path_str: str) -> bool:
@@ -748,12 +752,15 @@ def _validate_access_permissions(path: Path) -> None:
 def _validate_volume_integrity(path: Path) -> None:
     """Asegura que el volumen contenga capacidades operativas válidas para el proceso."""
     if os.name != 'nt': return
-    if _is_volume_readonly(str(path)) or _is_volume_compressed_or_encrypted(str(path)) or \
-       _is_virtual_drive(str(path)) or _is_volume_busy_or_invalid(str(path)):
-        raise UnsafePathError(f"Volumen restringido/inaccesible: {path.anchor}", SafetyValidationErrorCode.VOLUME_RESTRICTED)
-    if os.path.ismount(path):
-        raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
-    _validate_drive_restrictions(path)
+    try:
+        if _is_volume_readonly(str(path)) or _is_volume_compressed_or_encrypted(str(path)) or \
+           _is_virtual_drive(str(path)) or _is_volume_busy_or_invalid(str(path)):
+            raise UnsafePathError(f"Volumen restringido/inaccesible: {path.anchor}", SafetyValidationErrorCode.VOLUME_RESTRICTED)
+        if os.path.ismount(path):
+            raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
+        _validate_drive_restrictions(path)
+    except (OSError, PermissionError, AttributeError):
+        raise UnsafePathError("Error validando integridad de volumen.", SafetyValidationErrorCode.IO_ERROR)
 
 @lru_cache(maxsize=4096)
 def _normalize_resolved(path_str: str) -> Path:
@@ -942,7 +949,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         
         _validate_volume_integrity(target_path)
     except (OSError, PermissionError):
-        pass
+        raise UnsafePathError("Error accediendo a precondiciones.", SafetyValidationErrorCode.IO_ERROR)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """Valida los límites del alcance operativo (jail) permitido."""

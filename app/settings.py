@@ -335,12 +335,18 @@ def validate(raw_values: Any) -> AppSettings:
     Valida iterativamente el diccionario bruto recibido contra el esquema definido.
     """
     if not _is_dict(raw_values): return dict(DEFAULTS)
+    
     config = dict(DEFAULTS)
     for key_str, raw_val in raw_values.items():
-        if (key_enum := _KEY_TO_ENUM.get(key_str)):
-            validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
-            if validated_val is not None:
-                config[key_enum.value] = validated_val
+        try:
+            key_enum = _KEY_TO_ENUM.get(key_str)
+            if key_enum:
+                validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
+                if validated_val is not None:
+                    config[key_enum.value] = validated_val
+        except (KeyError, TypeError, AttributeError):
+            continue
+            
     return config # type: ignore
 
 def _is_file_secure_to_read(st: os.stat_result, file_path: Path) -> bool:
