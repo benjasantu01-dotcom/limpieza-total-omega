@@ -1461,3 +1461,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-25T04:36:43` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha añadido `item.exists()` dentro del bucle de borrado en `delete_reviewed` y `stage_for_review` para prevenir excepciones por condiciones de carrera (Race Conditions) donde el archivo podría ser eliminado o movido por otro proceso entre la validación y la ejecución.
 - `2026-10-25T04:36:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T04:36:43` Corrida terminada. Total usado hoy: 108.
+- `2026-10-25T04:44:18` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-10-25T04:45:27` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una mejora robusta en `_is_file_exclusive` para el caso de Windows al utilizar el flag `FILE_SHARE_DELETE` (0x00000004) junto con los accesos adecuados en `CreateFileW`, permitiendo detectar de forma más precisa si el archivo está siendo bloqueado exclusivamente por otros procesos (como antivirus o indexadores) sin causar falsos negativos en condiciones de alta carga de E/S.
+- `2026-10-25T04:45:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-25T04:46:48` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-25T04:47:47` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una comprobación crítica para evitar race conditions y comportamientos impredecibles al validar archivos que cambian de tipo (ej. de archivo regular a directorio o enlace) durante la ejecución, añadiendo una verificación de tipo persistente en `_check_file_integrity` y robusteciendo la limpieza de la caché de evaluación de seguridad.
+- `2026-10-25T04:47:58` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-25T04:47:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T04:47:58` Corrida terminada. Total usado hoy: 112.

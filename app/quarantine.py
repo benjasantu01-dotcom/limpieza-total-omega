@@ -160,7 +160,8 @@ def _is_file_exclusive(path: Path) -> bool:
         return False
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
-        handle: int = k32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x00000080, None)
+        # GENERIC_READ (0x80000000), SHARE_READ|SHARE_WRITE|SHARE_DELETE (0x7), OPEN_EXISTING (3)
+        handle: int = k32.CreateFileW(str(path), 0x80000000, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1: return False
         k32.CloseHandle(handle)
         return True

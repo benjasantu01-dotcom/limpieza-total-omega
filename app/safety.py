@@ -46,27 +46,26 @@ class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
         ("nFileIndexLow", ctypes.c_uint32),
     ]
 
-def _get_file_id(path_str: str) -> tuple[int, int, int]:
+def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     """
-    Genera un identificador único basado en el volumen y nodo del archivo.
-    
-    Utilizado para prevenir condiciones de carrera TOCTOU (Time-of-check to time-of-use),
-    asegurando que el descriptor de archivo verificado sea idéntico al manipulado.
+    Genera un identificador único basado en volumen, índice de archivo y tipo.
+    Incluye el tipo (archivo vs directorio) para prevenir cambios de tipo TOCTOU.
     """
-    if os.name != 'nt' or not path_str: return (0, 0, 0)
+    if os.name != 'nt' or not path_str: return (0, 0, 0, 0)
     info = BY_HANDLE_FILE_INFORMATION()
     kernel32 = ctypes.windll.kernel32
     try:
         handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0, None, 3, 0x00000080, None)
-        if handle == -1: return (0, 0, 0)
+        if handle == -1: return (0, 0, 0, 0)
         try:
             if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
-                return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow)
+                is_dir = bool(info.dwFileAttributes & Win32Attr.DIRECTORY)
+                return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, int(is_dir))
         finally:
             kernel32.CloseHandle(handle)
     except (OSError, ctypes.ArgumentError, AttributeError):
         pass
-    return (0, 0, 0)
+    return (0, 0, 0, 0)
 
 class SafetyAction(Enum):
     """Niveles de criticidad para determinar el rigor en la validación de acceso."""
@@ -637,7 +636,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.VIRTUAL_DRIVE: SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED,
 }
 
-_EVAL_CACHE: Final[dict[tuple[str, int], None]] = {}
+_EVAL_CACHE: Final[dict[tuple[str, int, int], None]] = {}
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     """
@@ -647,7 +646,8 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     if not path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     
-    cache_key = (str(path), int(current_stat.st_mtime))
+    # Inclusión de st_ino o equivalente para invalidar caché ante reemplazos de archivo
+    cache_key = (str(path), int(current_stat.st_mtime), getattr(current_stat, 'st_ino', 0))
     if cache_key in _EVAL_CACHE:
         return
 
@@ -656,6 +656,8 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
         if rule.predicate(path, current_stat, sd):
             code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
             raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
+    
+    if len(_EVAL_CACHE) > 2048: _EVAL_CACHE.clear()
     _EVAL_CACHE[cache_key] = None
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
@@ -704,7 +706,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     raise UnsafePathError(f"Error tras reintentos leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
 
-def _check_file_integrity(path: Path, initial_stat: os.stat_result, initial_id: tuple[int, int, int]) -> None:
+def _check_file_integrity(path: Path, initial_stat: os.stat_result, initial_id: tuple[int, int, int, int]) -> None:
     """Verifica que la identidad del archivo no haya cambiado entre validaciones (mitigación TOCTOU)."""
     if not path.exists():
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
@@ -713,9 +715,10 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result, initial_id: 
         current_stat = _get_path_stat_robust(path)
         current_id = _get_file_id(str(path))
         
-        if initial_id != (0, 0, 0) and current_id != initial_id:
+        if initial_id != (0, 0, 0, 0) and current_id != initial_id:
             raise UnsafePathError(f"Manipulación de identidad detectada (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
         
+        # Verificar que el tipo de archivo no mutó (ej. de archivo a enlace)
         if stat.S_ISREG(initial_stat.st_mode) != stat.S_ISREG(current_stat.st_mode):
             raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
         
