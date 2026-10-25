@@ -9,36 +9,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 196
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 128 | 11 | 30 | 16 | 115 |
-| 2026-10-25 | 87 | 9 | 21 | 6 | 81 |
+| 2026-10-24 | 126 | 11 | 30 | 16 | 113 |
+| 2026-10-25 | 89 | 9 | 21 | 7 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **45**
 - rendimiento: **45**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
-- `quarantine.py`: **19**
+- `memory.py`: **20**
+- `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
-- `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `settings.py`: **17**
 - `organizer.py`: **17**
 - `browser.py`: **17**
 - `healthscore.py`: **16**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `scanner.py`: **14**
 - `branding.py`: **12**
 - `startup.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T08:50:28` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_safe_stat` al añadir un manejo explícito para errores de `FileNotFoundError` durante la iteración y el acceso a metadatos, evitando que la eliminación de un archivo temporal por otro proceso mientras la app escanea interrumpa la ejecución.
+- `2026-10-25T08:49:23` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y la carga de datos del asistente mediante la validación del origen de datos, previniendo que un diccionario con valores inesperados (como `None` o estructuras anidadas profundas) provoque excepciones en tiempo de ejecución o fallos en la integridad del `SystemContext`.
 - `2026-10-25T08:39:58` **settings.py** (rendimiento): Optimizé la gestión de memoria eliminando la caché de lru_cache en `_load_impl` para evitar redundancias con la caché del estado del Singleton `_MANAGER`, asegurando que `load()` sea más rápido al delegar completamente la validez de la carga a los metadatos de archivo (size/mtime) que ya gestiona la instancia `_MANAGER`.
 - `2026-10-25T08:39:29` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner mediante la centralización de la normalización de rutas y la eliminación de llamadas redundantes a `os.path.realpath` y `resolve()` dentro del bucle crítico, reemplazándolas por una gestión más eficiente basada en el `path` ya disponible en `os.DirEntry`.
 - `2026-10-25T08:29:18` **organizer.py** (rendimiento): Optimizé el rendimiento del escaneo recursivo sustituyendo las llamadas frecuentes a `Path()` y `.resolve()` dentro de `_process_directory` por operaciones con strings y atributos de `os.DirEntry`, evitando instanciaciones innecesarias de objetos pesados en el bucle principal.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T07:59:38` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el módulo `Scanner` para clarificar la lógica de estado del recorrido y mejorar la mantenibilidad, sin alterar la funcionalidad.
 - `2026-10-25T07:59:04` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la refactorización de `is_within_directory` y `_get_final_path_normalized`, extrayendo la lógica compleja de manejo de Handles de Windows a un contexto claro, lo cual facilita el mantenimiento y la auditoría de seguridad sin alterar el comportamiento.
 - `2026-10-25T07:50:05` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `IsolationManager` y la clarificación de las validaciones de inodos y TOCTOU en el flujo de aislamiento, facilitando la comprensión del "porqué" de cada barrera de seguridad sin alterar la lógica.
-- `2026-10-25T07:49:34` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la sustitución de comprobaciones implícitas por type hints explícitos, facilitando la comprensión de las restricciones de seguridad sin alterar la lógica de ejecución.
-- `2026-10-25T07:49:06` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_is_process_executable_safe` y `_process_from_pid`, eliminando la dependencia de pasar la función `get_filename_func` por parámetro en cascada y documentando explícitamente las asunciones del manejo de PIDs mediante type hints y docstrings claros.
