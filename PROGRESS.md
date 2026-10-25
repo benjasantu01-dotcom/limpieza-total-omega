@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 112 | 10 | 25 | 14 | 79 |
-| 2026-10-25 | 101 | 12 | 23 | 10 | 118 |
+| 2026-10-24 | 108 | 10 | 25 | 14 | 79 |
+| 2026-10-25 | 105 | 12 | 23 | 10 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
 - rendimiento: **45**
-- legibilidad y documentación: **42**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **45**
+- legibilidad y documentación: **38**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
-- `quarantine.py`: **19**
-- `organizer.py`: **17**
+- `browser.py`: **18**
+- `diskreport.py`: **18**
+- `memory.py`: **18**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
-- `browser.py`: **17**
-- `diskreport.py`: **17**
 - `settings.py`: **17**
+- `organizer.py`: **16**
 - `healthscore.py`: **16**
 - `duplicates.py`: **16**
 - `scanner.py`: **15**
-- `assistant.py`: **14**
-- `branding.py`: **12**
-- `main.py`: **9**
+- `assistant.py`: **15**
+- `branding.py`: **13**
 - `startup.py`: **8**
+- `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T11:23:39` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` ante excepciones imprevistas capturando posibles errores de `Path.relative_to` y mejorando la validación del acceso a archivos individuales, evitando que fallos parciales interrumpan el reporte completo.
+- `2026-10-25T11:23:19` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada en `directory_size` y `detect_profiles` para prevenir errores de tipo o rutas mal formadas antes de que entren al núcleo recursivo, asegurando que los valores `None` o inesperados se manejen con elegancia y sin excepciones no controladas.
+- `2026-10-25T11:22:50` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `draw_logo`, `_draw_shield_stripes` y `_draw_shield_icon_decorations` añadiendo validaciones de tipo y estructura para los parámetros críticos (`canvas` y `scale`), garantizando que la aplicación no intente operar sobre objetos nulos o malformados en el bucle de renderizado.
+- `2026-10-25T11:22:13` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext` agregando validaciones de tipo explícitas y control de flujo mediante `if` guardas, evitando que una entrada con claves inesperadas o valores malformados silencie errores o corrompa el estado interno, alineándome con el enfoque de validación de entradas.
 - `2026-10-25T09:52:17` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo frente a puntos de reanálisis (Junctions) mediante la integración de la validación `is_symlink` y la verificación de atributos Win32 dentro de `_safe_stat`, asegurando que el escáner no siga enlaces recursivos o volúmenes montados inesperados que podrían causar ciclos o acceso fuera de la ruta raíz.
 - `2026-10-25T09:52:02` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la navegación hacia puntos de reparse (junctions o symlinks) que apunten fuera de la jerarquía permitida, fortaleciendo el aislamiento del "jail" de seguridad al verificar el destino real del enlace antes de permitir la operación.
 - `2026-10-25T09:50:38` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_safe_unlink` al añadir una validación de propiedad explícita mediante `st_uid` (cuando está disponible) antes de cualquier operación de borrado, evitando el riesgo de borrar archivos que, por una condición de carrera o manipulación externa, pudieran haber cambiado de propietario dentro del sandbox.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T09:20:22` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_read_and_parse_json` ante archivos de configuración corruptos, maliciosos (tipo "JSON bomb") o truncados, validando explícitamente que el archivo sea un archivo regular antes de leerlo y limitando estrictamente el tamaño de la estructura de datos para evitar desbordamientos de memoria o CPU.
 - `2026-10-25T09:19:51` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas de archivo mediante el manejo explícito de `FileNotFoundError` en las funciones de inspección, evitando que el escáner se interrumpa si un archivo es eliminado o movido por otro proceso durante la ejecución del bucle (`Race Condition`).
 - `2026-10-25T09:11:30` **safety.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad antes de la creación de `Path` en `_is_file_owned_by_system` y se robusteció la lógica de `_is_virtual_drive` para evitar excepciones en rutas inválidas o dispositivos inexistentes, mejorando la tolerancia a fallos en entornos donde el acceso al sistema de archivos es errático.
-- `2026-10-25T09:01:02` **main.py** (robustez ante casos límite): Se ha mejorado `on_stage` para realizar una validación de seguridad de forma más robusta antes de mover archivos, asegurando que cada archivo individual pase por `is_safe_to_modify` dentro de la tarea asíncrona, evitando que una lista parcial de archivos potencialmente bloqueados interrumpa la operación o permita el acceso a rutas protegidas si la validación inicial fuera insuficiente.
-- `2026-10-25T08:50:28` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_safe_stat` al añadir un manejo explícito para errores de `FileNotFoundError` durante la iteración y el acceso a metadatos, evitando que la eliminación de un archivo temporal por otro proceso mientras la app escanea interrumpa la ejecución.
-- `2026-10-25T08:49:23` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y la carga de datos del asistente mediante la validación del origen de datos, previniendo que un diccionario con valores inesperados (como `None` o estructuras anidadas profundas) provoque excepciones en tiempo de ejecución o fallos en la integridad del `SystemContext`.
-- `2026-10-25T08:39:58` **settings.py** (rendimiento): Optimizé la gestión de memoria eliminando la caché de lru_cache en `_load_impl` para evitar redundancias con la caché del estado del Singleton `_MANAGER`, asegurando que `load()` sea más rápido al delegar completamente la validez de la carga a los metadatos de archivo (size/mtime) que ya gestiona la instancia `_MANAGER`.

@@ -388,6 +388,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja las franjas internas del escudo usando gradientes segmentados."""
     try:
+        if not hasattr(canvas, "create_rectangle"): return
         if not math.isfinite(scale) or scale <= 0: return
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + 64 * scale
@@ -400,6 +401,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja detalles decorativos (líneas, icono Omega) sobre la base del escudo."""
     try:
+        if not (hasattr(canvas, "create_line") and hasattr(canvas, "create_polygon") and hasattr(canvas, "create_text")): return
         if not math.isfinite(scale) or scale <= 0: return
         ts = max(8, int(UI_CONFIG.header_size * scale))
         canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
@@ -410,6 +412,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el logo vectorial completo de Omega en un widget Canvas."""
     try:
+        if canvas is None or not hasattr(canvas, "create_oval"): return
         val_size = float(size)
         if not math.isfinite(val_size) or val_size <= 0: return
         s = max(0.1, min(10.0, val_size / 128.0))

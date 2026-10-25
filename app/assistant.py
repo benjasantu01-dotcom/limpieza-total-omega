@@ -432,13 +432,16 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         try:
-            val: Any = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+            # Obtención segura de valor
+            val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
             if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)): 
                 return None
-            if _is_nan_or_inf(val): 
-                return None
-            valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
-            return spec.type_hint(valid_val) if valid_val is not None else None
+            
+            # Conversión y validación de métrica numérica
+            valid_val = _is_valid_numeric_update(val, spec)
+            if valid_val is not None:
+                return spec.type_hint(valid_val)
+            return None
         except (ValueError, TypeError, Exception):
             return None
 
@@ -451,9 +454,11 @@ class SystemContext:
 
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
         """Extrae y valida métricas numéricas y texto de calificación de una fuente."""
+        if not isinstance(source, (dict, object)): return None
+        
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
-            val: Any = self._apply_field(source, key, spec)
+            val = self._apply_field(source, key, spec)
             if val is not None: 
                 updates[key] = val
         

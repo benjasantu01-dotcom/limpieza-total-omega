@@ -247,8 +247,8 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    """Interfaz pública para calcular el peso de una carpeta de caché."""
-    if not path or not isinstance(path, (str, Path)): return 0
+    """Interfaz pública para calcular el peso de una carpeta de caché con validación estricta."""
+    if not isinstance(path, (str, Path)) or not path: return 0
     path_obj = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0
     
@@ -282,8 +282,9 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Escanea perfiles para consolidar hallazgos de caché ordenados por tamaño (de mayor a menor)."""
-    raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
+    """Escanea perfiles para consolidar hallazgos de caché ordenados por tamaño."""
+    if bases is not None and not isinstance(bases, (list, tuple)): return []
+    raw_bases = list(bases) if bases else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
     if not raw_bases or not browser_map: return []
