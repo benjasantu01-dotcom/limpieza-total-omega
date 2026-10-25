@@ -227,11 +227,17 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     if not root_path or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
-    root_norm = os.path.normcase(os.path.abspath(root_path))
+    # Normalización temprana y validación estricta contra sandbox antes de entrar
+    abs_path = os.path.abspath(root_path)
+    root_norm = os.path.normcase(abs_path)
+    
+    if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm):
+        return ScanResult(0, True)
+
     if root_norm in scan_ctx.visited_dirs or not os.path.isdir(root_path) or not os.access(root_path, os.R_OK):
         return ScanResult(0, True)
     
-    if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm) or is_protected_path(Path(root_path)):
+    if is_protected_path(Path(root_path)):
         return ScanResult(0, True)
     
     scan_ctx.visited_dirs.add(root_norm)
@@ -289,7 +295,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Escanea los navegadores configurados y reporta el peso de sus cachés, retornando una lista ordenada."""
     raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
-    browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
+    browser_map = cache_paths if isinstance(cache_paths, dict) else BOURSER_CACHE_PATHS
     
     if not raw_bases or not browser_map: return []
         

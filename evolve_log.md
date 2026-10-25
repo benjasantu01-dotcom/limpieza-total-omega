@@ -921,3 +921,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-25T00:22:07` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez en la carga inicial de archivos de configuración mediante un chequeo de integridad que detecta archivos vacíos (size 0) o archivos excesivamente grandes (potencial ataque de denegación de servicio por memoria) antes de cualquier operación de I/O, previniendo fallos en `_read_and_parse_json`.
 - `2026-10-25T00:22:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-25T00:22:07` Corrida terminada. Total usado hoy: 8.
+- `2026-10-25T00:29:51` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-25T00:30:49` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-25T00:31:28` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_build_payload` y `_call_gemini` añadiendo validaciones estrictas de los datos de entrada, evitando que cualquier cadena potencialmente maliciosa (aunque pase el primer filtro) sea interpolada directamente en el prompt final, y asegurando que las claves de API y nombres de modelo sigan patrones estrictos antes de construir cualquier URL.
+- `2026-10-25T00:32:06` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-25T00:32:37` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de la ruta normalizada contra `base_norm` ANTES de intentar acceder al disco, evitando que el iterador `os.scandir` pueda ser engañado por enlaces simbólicos o puntos de reparse que apunten fuera del sandbox permitido, garantizando que el escaneo permanezca estrictamente dentro de `LOCALAPPDATA`.
+- `2026-10-25T00:32:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-25T00:32:37` Corrida terminada. Total usado hoy: 12.

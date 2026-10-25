@@ -693,8 +693,9 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
     q: str = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
+    # Interpolar de forma segura
     full_prompt: str = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
-    # Verificación extra de longitud y seguridad antes de cualquier operación
+    # Verificación extra de longitud y seguridad
     if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): 
         return None
     payload_data: dict[str, Any] = {"contents": [{"parts": [{"text": full_prompt}]}]}
@@ -746,6 +747,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload: Optional[bytes] = _build_payload(question, context_text)
     if not payload: return None
     
+    # Construcción segura de URL sin caracteres maliciosos
     target_url: str = _ENDPOINT_BASE.format(model=model)
     if not target_url.startswith(_API_HOST_ROOT) or any(c in target_url for c in "<>\"' \t\n\r&?="):
         return None
@@ -761,7 +763,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: 
                 return None
-            # Validación adicional de respuesta remota
             content_length: Any = res.headers.get("Content-Length")
             if content_length and int(content_length) > _MAX_RESPONSE_BYTES: 
                 return None
