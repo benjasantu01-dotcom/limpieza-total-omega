@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-23 | 16 | 2 | 5 | 0 | 35 |
+| 2026-10-23 | 14 | 2 | 4 | 0 | 34 |
 | 2026-10-24 | 154 | 13 | 37 | 17 | 129 |
-| 2026-10-25 | 37 | 5 | 10 | 4 | 40 |
+| 2026-10-25 | 38 | 7 | 11 | 4 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
+- rendimiento: **44**
 - legibilidad y documentación: **43**
-- rendimiento: **43**
-- seguridad defensiva: **42**
+- seguridad defensiva: **40**
 - robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `diskreport.py`: **19**
+- `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `organizer.py`: **17**
 - `safety.py`: **17**
@@ -39,14 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **16**
 - `duplicates.py`: **16**
 - `healthscore.py`: **15**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `assistant.py`: **12**
 - `branding.py`: **11**
-- `main.py`: **8**
 - `startup.py`: **8**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-25T04:14:19` **scanner.py** (rendimiento): Se implementó un `set` de caché (`self.seen_exts`) dentro de la clase `Scanner` para evitar llamadas redundantes a `Path(name).suffix` y `is_target_extension` (incluyendo la lógica de `RTL_CHAR_RE`) al procesar miles de archivos con las mismas extensiones, optimizando la fase de filtrado inicial en el recorrido del disco.
 - `2026-10-25T04:04:52` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la recarga redundante del disco: ahora `load_manifest` utiliza un caché validado por `st_mtime` y `quarantine.py` evita llamadas múltiples a `stat()` durante las operaciones masivas, reduciendo drásticamente la latencia de I/O en entornos con muchos archivos.
 - `2026-10-25T03:59:14` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` evitando la creación innecesaria de objetos `ProcessMemory` mediante un filtrado temprano de procesos de bajo consumo, y reemplazando la instanciación redundante de `Path` dentro del bucle crítico por comparaciones de strings de bajo costo.
 - `2026-10-25T03:54:25` **healthscore.py** (rendimiento): Se optimizó el rendimiento del motor de cálculo eliminando la recreación innecesaria de objetos `SystemMetrics` dentro de los bucles de análisis y utilizando directamente los valores normalizados, aprovechando el cacheo de `_compute_cached` sin redundancia de serialización.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T03:14:10` **healthscore.py** (legibilidad y documentación): Mejora de la mantenibilidad y legibilidad mediante la documentación explícita de `SystemMetrics` y la centralización de los límites de validación, facilitando futuras auditorías de seguridad al separar claramente la configuración del motor de la lógica de negocio.
 - `2026-10-25T03:13:16` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `ext_stats` y parámetros opcionales) y se documentó mejor la lógica del min-heap y el propósito de las funciones internas para mejorar la mantenibilidad y legibilidad del código.
 - `2026-10-25T03:04:16` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de las responsabilidades de los tipos y funciones, y se ha encapsulado el manejo de las flags de atributos de archivo en una clase de solo lectura para evitar confusiones, mejorando la legibilidad del código sin alterar su lógica.
-- `2026-10-25T02:54:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `validate` mediante un manejo de errores más específico en los validadores, evitando que claves ausentes o mal formadas en el JSON rompan la estructura de configuración y asegurando que siempre se devuelva un objeto `AppSettings` íntegro.

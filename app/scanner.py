@@ -220,6 +220,7 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
+        self.seen_exts: set[str] = set()
         # Normalización estricta para garantizar aislamiento
         self.base_root_norm: str = os.path.normcase(os.path.realpath(base_root))
         self.now_ts: float = datetime.now().timestamp()
@@ -277,11 +278,13 @@ class Scanner:
         except (OSError, RuntimeError):
             pass
 
-    @staticmethod
-    @lru_cache(maxsize=1024)
-    def _is_relevant_extension(name: str) -> bool:
-        """Verifica si la extensión del archivo es candidata a ser analizada por heurísticas."""
-        return _is_target_extension(name)
+    def _is_relevant_extension(self, name: str) -> bool:
+        """Verifica si la extensión del archivo es candidata a ser analizada por heurísticas usando caché."""
+        if name in self.seen_exts: return True
+        if _is_target_extension(name):
+            self.seen_exts.add(name)
+            return True
+        return False
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Procesa una entrada: bifurca en directorio para recursión o archivo para heurísticas."""
