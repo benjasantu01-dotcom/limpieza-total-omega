@@ -205,19 +205,23 @@ def app_title() -> str:
 
 def color(name: Optional[str]) -> ColorHex: 
     """Acceso seguro a un color de la paleta corporativa por nombre."""
-    return PALETTE.get(name, "#808080")
+    if not isinstance(name, str): return "#808080"
+    return PALETTE.get(name.lower(), "#808080")
 
 def font_size(name: Optional[str]) -> int: 
     """Retorna el tamaño de fuente configurado para una categoría dada."""
-    return FONT_SIZES.get(name, UI_CONFIG.body_size)
+    if not isinstance(name, str): return UI_CONFIG.body_size
+    return FONT_SIZES.get(name.lower(), UI_CONFIG.body_size)
 
 def icon(section: Optional[str]) -> str: 
     """Retorna el glifo Unicode asociado a una sección de la aplicación."""
+    if not isinstance(section, str): return "\u2022"
     return ICONS.get(section, "\u2022")
 
 def tab_label(section: Optional[str]) -> str: 
     """Formatea la etiqueta de una pestaña combinando icono y texto."""
-    return f"{icon(section)}  {section or 'Desconocido'}"
+    valid_section = section if isinstance(section, str) and section else "Desconocido"
+    return f"{icon(valid_section)}  {valid_section}"
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
     """Valida y normaliza una cadena de texto a un enum de tipo SeverityType."""
@@ -243,7 +247,7 @@ def severity_icon(severity: Optional[str]) -> str:
 
 def grade_color(grade: Optional[str]) -> ColorHex: 
     """Retorna el color asignado a una calificación de salud (A-F)."""
-    if not grade: return C_TEXT_MUTED
+    if not grade or not isinstance(grade, str): return C_TEXT_MUTED
     return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED)
 
 @lru_cache(maxsize=128)
