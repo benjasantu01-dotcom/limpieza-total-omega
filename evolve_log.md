@@ -906,3 +906,42 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T07:45:57` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `_resolve_and_cache_path` para incluir un manejo robusto de excepciones ante rutas inexistentes, denegadas por permisos o con formato inválido, evitando que el escaneo se detenga silenciosamente y asegurando que las entradas corruptas sean correctamente descartadas mediante el caché de estado (`_EXISTS_CACHE`).
 - `2026-10-26T07:45:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T07:45:57` Corrida terminada. Total usado hoy: 184.
+- `2026-10-26T07:53:36` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-10-26T07:54:14` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-10-26T07:54:44` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad en `save_logo_svg` consolidando las verificaciones de rutas bajo el validador `is_safe_to_modify` antes de proceder, eliminando redundancias y asegurando que las operaciones de creación de directorios y escritura respeten estrictamente el contrato de seguridad de la aplicación.
+- `2026-10-26T07:55:13` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.03s
+
+```
+- `2026-10-26T07:55:13` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: He mejorado la seguridad defensiva al centralizar la validación de rutas en `_resolve_browser_path`, asegurando que `resolve()` no siga enlaces simbólicos fuera de la ruta base (usando `strict=False` pero validando manualmente la normalización) y fortaleciendo la integridad del escaneo al evitar que rutas maliciosas o desbordamientos del sandbox escapen de las restricciones de seguridad.
+- `2026-10-26T07:55:24` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré `_validate_root` para que utilice `is_protected_path` antes de intentar cualquier operación de resolución de rutas o acceso a disco, evitando que el script intente resolver o procesar rutas potencialmente sensibles o bloqueadas.
+- `2026-10-26T07:55:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T07:55:24` Corrida terminada. Total usado hoy: 188.

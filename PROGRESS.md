@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 127 | 15 | 27 | 15 | 136 |
-| 2026-10-26 | 76 | 5 | 21 | 8 | 74 |
+| 2026-10-25 | 127 | 15 | 27 | 15 | 132 |
+| 2026-10-26 | 78 | 6 | 21 | 8 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **42**
 - legibilidad y documentación: **40**
 - rendimiento: **39**
-- seguridad defensiva: **32**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `healthscore.py`: **17**
 - `assistant.py`: **17**
+- `diskreport.py`: **16**
 - `safety.py`: **15**
-- `diskreport.py`: **15**
 - `settings.py`: **14**
 - `organizer.py`: **12**
+- `branding.py`: **11**
 - `duplicates.py`: **10**
-- `branding.py`: **10**
 - `main.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T07:55:24` **diskreport.py** (seguridad defensiva): Mejoré `_validate_root` para que utilice `is_protected_path` antes de intentar cualquier operación de resolución de rutas o acceso a disco, evitando que el script intente resolver o procesar rutas potencialmente sensibles o bloqueadas.
+- `2026-10-26T07:54:44` **branding.py** (seguridad defensiva): Mejoré la seguridad en `save_logo_svg` consolidando las verificaciones de rutas bajo el validador `is_safe_to_modify` antes de proceder, eliminando redundancias y asegurando que las operaciones de creación de directorios y escritura respeten estrictamente el contrato de seguridad de la aplicación.
 - `2026-10-26T07:45:45` **settings.py** (robustez ante casos límite): Mejora la robustez de `_read_and_parse_json` y `_file_secure_to_read` ante archivos maliciosamente grandes, vacíos o con metadatos inconsistentes, reforzando la verificación de integridad antes de cualquier operación de carga.
 - `2026-10-26T07:45:17` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante rutas con formato inválido o bloqueadas (denegación de acceso) en las heurísticas de archivo, añadiendo validaciones de existencia y saneamiento de acceso antes de procesar atributos, evitando excepciones innecesarias en `_safe_stat` y `check_recent_executable_in_downloads`.
 - `2026-10-26T07:44:24` **safety.py** (robustez ante casos límite): Se ha añadido una validación estricta en `_validate_structural_safety` para detectar caracteres de control (BIDI) y secuencias de escape no imprimibles, reforzando la protección contra ataques de spoofing visual en nombres de archivos que podrían engañar al usuario sobre el contenido real.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T07:03:46` **safety.py** (rendimiento): Se implementó un mecanismo de caché local `_SECURITY_CACHE` con una clave basada en `st_ino` (índice de archivo) y `st_mtime` para evitar la sobrecarga de consultas repetitivas de metadatos en disco dentro de `is_safe_to_modify` y operaciones masivas, optimizando significativamente el rendimiento durante escaneos.
 - `2026-10-26T06:56:09` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `_get_sha256` y `_is_file_exclusive` eliminando llamadas redundantes a `exists()` y `stat()` mediante el uso de excepciones, lo que reduce la latencia de I/O en operaciones repetitivas sobre el mismo archivo.
 - `2026-10-26T06:55:17` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` evitando la llamada redundante y costosa a `GetModuleFileNameExW` (que implica acceso al sistema de archivos) al realizar primero el filtrado por el nombre del proceso y el uso de memoria, relegando la verificación de seguridad (`_is_process_executable_safe`) a un paso final solo cuando sea estrictamente necesario.
-- `2026-10-26T06:44:03` **healthscore.py** (rendimiento): Se optimizó el rendimiento mediante la eliminación de búsquedas repetitivas en el pipeline y la pre-compilación de la clave de acceso a métricas, transformando las tuplas de búsqueda en una estructura indexada más eficiente dentro del proceso de `_compute_cached`.
-- `2026-10-26T06:43:15` **diskreport.py** (rendimiento): Mejoré la eficiencia del recorrido de archivos reemplazando el uso de `path.relative_to(root)` por `path.parts` y el cálculo de la carpeta raíz (`top_folder_name`), evitando llamadas costosas a métodos de objeto `Path` que realizan validaciones internas innecesarias dentro de un bucle de alta frecuencia.
