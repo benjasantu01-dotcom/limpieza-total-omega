@@ -349,6 +349,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         parent = dest_path.parent
         
         # Validación de seguridad: rutas protegidas y permisos de escritura
+        if is_protected_path(dest_path):
+            return None
+            
         if not (is_safe_to_modify(dest_path) and is_safe_to_modify(parent)):
             return None
         
