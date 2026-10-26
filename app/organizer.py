@@ -326,21 +326,28 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """Mueve archivos validados a cuarentena de forma atómica y segura."""
-    if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: return None
+    if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
+        return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        if not is_safe_to_modify(dest_base) or is_protected_path(dest_base) or _has_forbidden_chars(dest_base): return None
+        if not is_safe_to_modify(dest_base) or is_protected_path(dest_base) or _has_forbidden_chars(dest_base): 
+            return None
+        
         for junk_file in files:
-            if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
+            if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): 
+                continue
             try:
-                if not _is_safe_for_disk_op(junk_file, dest_base): continue
+                if not _is_safe_for_disk_op(junk_file, dest_base): 
+                    continue
                 target_path = _can_move_file(junk_file, dest_base)
-                if target_path and junk_file.path.exists(): shutil.move(str(junk_file.path), str(target_path))
+                if target_path and junk_file.path.exists(): 
+                    shutil.move(str(junk_file.path), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
-                logger.error(f"Error moviendo {junk_file.path}: {e}")
+                logger.error(f"Error moviendo archivo a revisión: {junk_file.path} - {e}")
         return dest_base
-    except (OSError, ValueError, RuntimeError, TypeError):
+    except (OSError, RuntimeError) as e:
+        logger.error(f"Falla crítica en stage_for_review: {e}")
         return None
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
@@ -357,16 +364,16 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest) or is_protected_path(dest): 
+            return 0
         count = 0
         for item in dest.iterdir():
             try:
-                if item.is_symlink() or _is_junction(item): continue
-                if not item.is_file(): continue
-                # Validación estricta para asegurar que el archivo no ha escapado de la carpeta objetivo
-                # `is_relative_to` verifica que la ruta resuelta esté dentro de la carpeta de cuarentena
+                if not item.is_file() or item.is_symlink() or _is_junction(item): 
+                    continue
                 item_resolved = item.resolve()
-                if not item_resolved.is_relative_to(dest): continue
+                if not item_resolved.is_relative_to(dest): 
+                    continue
                 if is_safe_to_modify(item) and not is_protected_path(item):
                     item.unlink()
                     count += 1
@@ -374,5 +381,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 logger.warning(f"No se pudo eliminar {item}: {e}")
                 continue
         return count
-    except (OSError, PermissionError, RuntimeError, TypeError):
+    except (OSError, PermissionError, RuntimeError, TypeError) as e:
+        logger.error(f"Falla crítica en delete_reviewed: {e}")
         return 0

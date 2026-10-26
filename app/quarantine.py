@@ -1098,7 +1098,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     return False
 
 
-def _is_item_purgable(file_path: Path, item: Optional[QuarantineItem] = None) -> bool:
+def _is_item_purgable(file_path: Optional[Path], item: Optional[QuarantineItem] = None) -> bool:
     """Validación de seguridad antes de purgar un archivo del sandbox."""
     if file_path is None: return False
     try:
@@ -1108,7 +1108,7 @@ def _is_item_purgable(file_path: Path, item: Optional[QuarantineItem] = None) ->
         if _is_file_in_use_by_system(file_path):
             return False
         
-        if item and item.verify_integrity(file_path):
+        if item is not None and item.verify_integrity(file_path):
             return _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
         
         return False
@@ -1135,6 +1135,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     continue
                 
                 item = item_map.get(f.name)
+                # Validar ítem y purgar solo si es seguro
                 if item and _is_item_purgable(f, item):
                     purgado_ids.add(item.item_id)
             except (OSError, PermissionError, UnsafePathError):
