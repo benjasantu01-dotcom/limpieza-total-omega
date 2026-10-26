@@ -1160,3 +1160,47 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-26T09:39:41` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-26T09:39:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T09:39:41` Corrida terminada. Total usado hoy: 228.
+- `2026-10-26T09:45:45` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-26T09:45:47` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-26T09:45:47` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-26T09:46:07` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-26T09:46:07` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-26T09:46:38` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-26T09:46:38` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-26T09:47:31` ➖ Sin cambios en assistant.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de la función `_is_valid_numeric_update` integrando una validación explícita de `float` y `OverflowError` para prevenir comportamientos inesperados ante valores extremos, además de unificar la lógica de validación de `nan/inf` para asegurar que ninguna métrica mal formada llegue al motor de razonamiento.
+- `2026-10-26T09:48:31` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-26T09:48:42` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.69s
+
+```
+- `2026-10-26T09:48:42` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_valid_rel_path` y `_resolve_browser_path` añadiendo validaciones explícitas contra rutas que contienen componentes nulos o inyectados, y asegurando que `base_directories` filtre correctamente entradas `None` o malformadas mediante tipado y chequeos proactivos antes de proceder.
+- `2026-10-26T09:48:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T09:48:42` Corrida terminada. Total usado hoy: 232.
