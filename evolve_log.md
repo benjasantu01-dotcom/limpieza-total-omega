@@ -1335,3 +1335,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T12:01:04` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_filesystem_read_only` y `_is_file_exclusive` para manejar correctamente casos donde las rutas son inexistentes o inaccesibles, evitando que errores de sistema no capturados interrumpan el flujo lógico del bucle de cuarentena.
 - `2026-10-26T12:01:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T12:01:04` Corrida terminada. Total usado hoy: 284.
+- `2026-10-26T12:08:30` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-10-26T12:08:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T12:08:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-26T12:09:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-26T12:10:48` ➖ Sin cambios en safety.py (enfoque: robustez ante casos límite). Motivo: Mejora la robustez ante errores de acceso (permisos denegados y violaciones de compartición) en `_get_file_attrs` y `SecurityDescriptor.from_path`, garantizando que el sistema no falle si encuentra archivos bloqueados por el SO o inaccesibles, retornando un estado seguro por defecto en lugar de lanzar excepciones que podrían interrumpir el bucle de escaneo.
+- `2026-10-26T12:11:14` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-26T12:11:31` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_read_and_parse_json` y `save` ante situaciones donde el archivo de configuración es inaccesible o está siendo bloqueado temporalmente por el sistema operativo, implementando un manejo de excepciones más granular para evitar fallos catastróficos durante la persistencia o lectura.
+- `2026-10-26T12:11:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T12:11:31` Corrida terminada. Total usado hoy: 288.

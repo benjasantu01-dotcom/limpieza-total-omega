@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 81 | 8 | 16 | 11 | 104 |
-| 2026-10-26 | 115 | 8 | 34 | 11 | 116 |
+| 2026-10-25 | 81 | 8 | 16 | 11 | 100 |
+| 2026-10-26 | 116 | 8 | 35 | 12 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **42**
 - rendimiento: **38**
 - seguridad defensiva: **27**
 
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `browser.py`: **16**
+- `settings.py`: **15**
 - `safety.py`: **14**
-- `settings.py`: **14**
 - `diskreport.py`: **14**
 - `organizer.py`: **13**
 - `branding.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T12:11:31` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_read_and_parse_json` y `save` ante situaciones donde el archivo de configuración es inaccesible o está siendo bloqueado temporalmente por el sistema operativo, implementando un manejo de excepciones más granular para evitar fallos catastróficos durante la persistencia o lectura.
 - `2026-10-26T12:01:04` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_filesystem_read_only` y `_is_file_exclusive` para manejar correctamente casos donde las rutas son inexistentes o inaccesibles, evitando que errores de sistema no capturados interrumpan el flujo lógico del bucle de cuarentena.
 - `2026-10-26T12:00:31` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `delete_reviewed` al validar explícitamente que cada archivo en la carpeta de cuarentena sea una ruta absoluta y esté contenido físicamente dentro de `dest`, evitando ataques de "path traversal" o manipulación de enlaces simbólicos malintencionados durante la eliminación.
 - `2026-10-26T12:00:02` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_accessible` y `_query_working_set_bytes` para manejar gracefully los casos donde los handles de procesos se cierran prematuramente (race conditions) o fallan por falta de permisos específicos (denied), evitando excepciones innecesarias en procesos en ejecución.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T11:18:09` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo mediante la eliminación de una conversión redundante a `tuple` en cada llamado a `compute_score`, aprovechando que la estructura de datos interna del caché ya recibe los valores descompuestos y evitando el costo de regenerar la tupla si no es estrictamente necesario.
 - `2026-10-26T11:10:26` **diskreport.py** (rendimiento): Optimizado el rendimiento del método `largest_folders` reemplazando el uso de `path.parts` y la creación de objetos `Path` intermedios por un acceso directo al primer componente del subdirectorio relativo, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos masivos.
 - `2026-10-26T11:08:15` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` reemplazando la creación dinámica de tuplas y llamadas a `zip` en el ámbito global por una constante precalculada, reduciendo la carga de inicialización del módulo y evitando la re-evaluación innecesaria.
-- `2026-10-26T10:59:05` **assistant.py** (rendimiento): Se optimizó la evaluación de problemas activos en `SystemContext` reemplazando la serialización a `tuple` y el re-sorting en cada acceso por un hash de estado inmutable (`_hash_tuple`), mejorando el rendimiento del asistente en iteraciones frecuentes sin comprometer la integridad.

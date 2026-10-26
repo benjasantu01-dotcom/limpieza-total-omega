@@ -377,7 +377,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             data = json.load(f)
             
         if not isinstance(data, dict) or len(data) > 64: return None
-        # Validar esquema mínimo: solo procesar si es un diccionario compatible
         return data
     except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError):
         return None
@@ -438,7 +437,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if _MANAGER.perform_atomic_write(config_path, serialized):
             _MANAGER._cached_settings = cleaned_settings
             _MANAGER._last_size = len(serialized_bytes)
-            _MANAGER._last_mtime = config_path.stat().st_mtime
+            try:
+                _MANAGER._last_mtime = config_path.stat().st_mtime
+            except OSError:
+                _MANAGER._last_mtime = 0.0
             return config_path
         return None
     except (OSError, PermissionError, AttributeError, TypeError, ValueError): return None
