@@ -350,15 +350,13 @@ def _is_virtual_drive(path_str: str) -> bool:
 
 def _is_file_owned_by_system(path_str: str) -> bool:
     """Verifica la propiedad SID del archivo contra cuentas críticas (SYSTEM/TrustedInstaller)."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not os.path.exists(path_str): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not os.path.exists(_to_long_path(path_str)): return False
     try:
-        path_obj = Path(path_str)
-        if not path_obj.exists(): return False
         advapi32 = ctypes.windll.advapi32
         kernel32 = ctypes.windll.kernel32
         sid_ptr = ctypes.c_void_p()
         res = advapi32.GetNamedSecurityInfoW(
-            path_str, 1, 1, ctypes.byref(sid_ptr), None, None, None, None
+            _to_long_path(path_str), 1, 1, ctypes.byref(sid_ptr), None, None, None, None
         )
         if res == 0 and sid_ptr:
             try:

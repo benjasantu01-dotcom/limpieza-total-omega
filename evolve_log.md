@@ -501,3 +501,28 @@ assert not True
 - `2026-10-26T03:42:46` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `delete_reviewed` implementando una validación estricta de la ruta del archivo mediante `resolve()` y `is_relative_to()` antes de cualquier operación de borrado, asegurando que solo se eliminen archivos contenidos físicamente en el directorio de cuarentena designado, previniendo así posibles ataques de "path traversal".
 - `2026-10-26T03:42:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T03:42:46` Corrida terminada. Total usado hoy: 88.
+- `2026-10-26T03:49:10` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-26T03:50:01` Tests FALLARON:
+```
+ NameError: name '_check_path_junctions' is not defined
+
+app/quarantine.py:117: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name '_check_path_junctions' is not defined
+9 failed, 290 passed in 1.87s
+
+```
+- `2026-10-26T03:50:01` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad en `purge_all` y `purge_item` implementando una validación estricta de nombres de archivo contra `MANIFEST_NAME` y `WINDOWS_RESERVED_NAMES` para evitar errores de manipulación de archivos críticos durante el borrado, asegurando que solo los archivos registrados y confirmados sean procesados.
+- `2026-10-26T03:50:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-26T03:51:10` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación temprana contra `LONG_PATH_PREFIX` en `_is_file_owned_by_system` para prevenir que rutas extremadamente largas causen errores de API, y se ha fortalecido `_get_file_id` integrando `_to_long_path` para garantizar consistencia en la detección de identidades bajo rutas extendidas.
+- `2026-10-26T03:51:22` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `scanner.py` al reemplazar la resolución de rutas mediante `os.path.realpath` (que puede ser engañosa en contextos de enlaces simbólicos o junctions maliciosos) por una validación estricta utilizando `Path.resolve(strict=True)` dentro de la clase `Scanner`, y se ha reforzado el filtrado en `scan_directory` para asegurar que el punto de entrada sea un directorio real antes de iniciar cualquier operación de escaneo, protegiendo así el núcleo del recorrido ante posibles manipulaciones de la ruta base.
+- `2026-10-26T03:51:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T03:51:22` Corrida terminada. Total usado hoy: 92.

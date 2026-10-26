@@ -254,7 +254,8 @@ class Scanner:
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
         self.seen_exts: set[str] = set()
-        self.base_root_norm: str = os.path.normcase(os.path.realpath(base_root))
+        # Resolución estricta para garantizar un punto de partida validado sin reparse points
+        self.base_root_norm: str = os.path.normcase(str(base_root.resolve(strict=True)))
         self.now_ts: float = datetime.now().timestamp()
 
     @lru_cache(maxsize=1024)
@@ -288,7 +289,6 @@ class Scanner:
             if entry.is_symlink() or self._is_reparse_point(entry): return False
             if _cached_is_protected(path_str): return False
             if not _is_valid_path_structure(path_str): return False
-            # La resolución real es costosa, se posterga al filtrado final
             if not self._is_inside_base_root(path_str): return False
                 
             self.safe_cache.add(path_str)
@@ -301,7 +301,6 @@ class Scanner:
         if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
         
-        # Saltamos la normalización pesada aquí, el _is_safe_entry ya valida los accesos básicos
         directory_stack.append((entry.path, current_depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
@@ -325,7 +324,6 @@ class Scanner:
         try:
             if entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
-                    # Solo resolvemos path cuando detectamos un candidato heurístico real
                     path_norm: str = os.path.normcase(os.path.realpath(entry.path))
                     if path_norm not in self.seen:
                         self.seen.add(path_norm)
@@ -370,16 +368,17 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None: return []
     try:
         base_path = Path(directory)
-        if not base_path.exists() or not base_path.is_dir():
+        # Validación estricta para asegurar que el punto de entrada es un directorio real y no un enlace
+        if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink():
             return []
-        base_path = base_path.resolve(strict=True)
-        if base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
+        resolved_path = base_path.resolve(strict=True)
+        if _cached_is_protected(str(resolved_path)) or not os.access(resolved_path, os.R_OK):
             return []
-        scanner: Scanner = Scanner(base_root=base_path)
+        scanner: Scanner = Scanner(base_root=resolved_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return []
     
-    directory_stack: DirectoryStack = [(str(base_path), 0)]
+    directory_stack: DirectoryStack = [(str(resolved_path), 0)]
     
     while directory_stack:
         current_dir, depth = directory_stack.pop()
