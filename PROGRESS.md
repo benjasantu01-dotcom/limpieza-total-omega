@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 98 | 9 | 18 | 11 | 108 |
-| 2026-10-26 | 101 | 8 | 30 | 9 | 112 |
+| 2026-10-25 | 96 | 9 | 17 | 11 | 107 |
+| 2026-10-26 | 103 | 8 | 30 | 9 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **43**
 - seguridad defensiva: **40**
-- robustez ante casos límite: **38**
-- rendimiento: **31**
+- robustez ante casos límite: **36**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **21**
 - `memory.py`: **19**
-- `quarantine.py`: **18**
 - `assistant.py`: **17**
 - `browser.py`: **17**
+- `quarantine.py`: **17**
 - `settings.py`: **16**
 - `healthscore.py`: **16**
 - `safety.py`: **15**
-- `diskreport.py`: **14**
-- `organizer.py`: **13**
-- `branding.py`: **9**
+- `diskreport.py`: **15**
+- `organizer.py`: **12**
+- `branding.py`: **10**
 - `duplicates.py`: **9**
 - `main.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T11:10:26` **diskreport.py** (rendimiento): Optimizado el rendimiento del método `largest_folders` reemplazando el uso de `path.parts` y la creación de objetos `Path` intermedios por un acceso directo al primer componente del subdirectorio relativo, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos masivos.
+- `2026-10-26T11:08:15` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` reemplazando la creación dinámica de tuplas y llamadas a `zip` en el ámbito global por una constante precalculada, reduciendo la carga de inicialización del módulo y evitando la re-evaluación innecesaria.
 - `2026-10-26T10:59:05` **assistant.py** (rendimiento): Se optimizó la evaluación de problemas activos en `SystemContext` reemplazando la serialización a `tuple` y el re-sorting en cada acceso por un hash de estado inmutable (`_hash_tuple`), mejorando el rendimiento del asistente en iteraciones frecuentes sin comprometer la integridad.
 - `2026-10-26T10:58:10` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la validación extrayendo la lógica de conversión de tipos a un `mapping` centralizado dentro de `_Validators`, facilitando la auditoría de reglas de validación y reduciendo la complejidad ciclomática de las funciones de despacho.
 - `2026-10-26T10:57:40` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` mediante la aplicación de type hints más precisos, la estandarización de docstrings siguiendo el estándar PEP 257 y la mejora de la semántica en el nombre de variables, facilitando la comprensión del flujo de datos en las heurísticas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T10:18:49` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `load` mediante la validación proactiva del esquema del diccionario cargado, asegurando que cada clave necesaria exista y tenga el tipo correcto después del parsing JSON, evitando que valores faltantes o mal formados en el archivo provoquen errores en tiempo de ejecución.
 - `2026-10-26T10:18:12` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `scanner.py` sustituyendo accesos directos por validaciones de seguridad centralizadas y agregando chequeos de tipo/valor antes de operar sobre objetos del sistema, previniendo excepciones innecesarias durante la ejecución.
 - `2026-10-26T10:17:24` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_path_stat_robust` y `_get_file_id` reemplazando capturas de excepciones genéricas (`Exception`) por bloques específicos de bajo nivel (como `ctypes.ArgumentError` o `OSError`), asegurando que la app no aborte ante errores de sistema transitorios y manteniendo la integridad de las validaciones de seguridad.
-- `2026-10-26T10:08:04` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_exclusive` capturando de forma específica posibles errores de `OSError` al cerrar el handle de Windows y garantizando que las excepciones en `os.open` no silencien bloqueos de archivo, mejorando la fiabilidad de las validaciones de acceso antes de mover archivos.
-- `2026-10-26T10:06:45` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_int_conversion` y `_extract_process_info` para manejar de forma explícita valores `None` o malformados, asegurando que las conversiones a `BytesValue` sean seguras y no propaguen errores de tipo a través de las capas de procesamiento de memoria.

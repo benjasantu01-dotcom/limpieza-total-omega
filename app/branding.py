@@ -57,9 +57,10 @@ class SeverityType(Enum):
     DANGER = "danger"
 
 # Pre-generación de fragmentos SVG estáticos para mejorar performance
-_SVG_GRADIENT_STOPS: Final[str] = "\n".join(
-    f'      <stop offset="{o}" stop-color="{c}"/>' 
-    for o, c in zip(("0%", "55%", "100%"), ("#00f0c0", "#7c5cff", "#ff2d78"))
+_SVG_GRADIENT_STOPS: Final[str] = (
+    '      <stop offset="0%" stop-color="#00f0c0"/>\n'
+    '      <stop offset="55%" stop-color="#7c5cff"/>\n'
+    '      <stop offset="100%" stop-color="#ff2d78"/>'
 )
 
 # Constantes de identidad corporativa

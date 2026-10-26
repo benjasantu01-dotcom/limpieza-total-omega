@@ -1281,3 +1281,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T10:59:05` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó la evaluación de problemas activos en `SystemContext` reemplazando la serialización a `tuple` y el re-sorting en cada acceso por un hash de estado inmutable (`_hash_tuple`), mejorando el rendimiento del asistente en iteraciones frecuentes sin comprometer la integridad.
 - `2026-10-26T10:59:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T10:59:05` Corrida terminada. Total usado hoy: 260.
+- `2026-10-26T11:07:24` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-10-26T11:07:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T11:08:15` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `branding.py` reemplazando la creación dinámica de tuplas y llamadas a `zip` en el ámbito global por una constante precalculada, reduciendo la carga de inicialización del módulo y evitando la re-evaluación innecesaria.
+- `2026-10-26T11:08:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T11:08:27` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-26T11:09:33` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-26T11:09:45` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-26T11:10:26` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizado el rendimiento del método `largest_folders` reemplazando el uso de `path.parts` y la creación de objetos `Path` intermedios por un acceso directo al primer componente del subdirectorio relativo, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos masivos.
+- `2026-10-26T11:10:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-26T11:10:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T11:10:35` Corrida terminada. Total usado hoy: 264.
