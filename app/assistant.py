@@ -433,10 +433,8 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         try:
             val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-            # Validación de tipo para prevenir errores durante la conversión
             if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)): 
                 return None
-            
             valid_val = _is_valid_numeric_update(val, spec)
             if valid_val is not None:
                 return spec.type_hint(valid_val)
@@ -454,17 +452,18 @@ class SystemContext:
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
         """Extrae y valida métricas numéricas y texto de calificación de una fuente."""
         if not isinstance(source, (dict, object)): return None
-        
         updates: dict[str, Any] = {}
-        for key, spec in _VALIDATORS.items():
-            val = self._apply_field(source, key, spec)
-            if val is not None: 
-                updates[key] = val
-        
-        grade_val: str = self._clean_grade(source.get("grade") if isinstance(source, dict) else getattr(source, "grade", None))
-        if grade_val: 
-            updates["grade"] = grade_val
-        
+        try:
+            for key, spec in _VALIDATORS.items():
+                val = self._apply_field(source, key, spec)
+                if val is not None: 
+                    updates[key] = val
+            
+            grade_val: str = self._clean_grade(source.get("grade") if isinstance(source, dict) else getattr(source, "grade", None))
+            if grade_val: 
+                updates["grade"] = grade_val
+        except Exception:
+            return None
         return updates if updates else None
 
     def _validate_ingestion_source(self, source: Any) -> bool:
@@ -492,11 +491,14 @@ class SystemContext:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
         if not self._validate_ingestion_source(source): 
             return False
-        updates: Optional[dict[str, Any]] = self._validate_and_sanitize_data(source)
+        updates = self._validate_and_sanitize_data(source)
         if not updates: 
             return False
-        self._apply_updates(updates)
-        return True
+        try:
+            self._apply_updates(updates)
+            return True
+        except Exception:
+            return False
 
 @dataclass
 class Answer:

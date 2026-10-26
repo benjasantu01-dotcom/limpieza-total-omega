@@ -343,7 +343,7 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """Guarda el logo SVG en el sistema de archivos tras verificar permisos."""
-    if not destination: return None
+    if destination is None: return None
     try:
         dest_path = Path(destination).resolve()
         parent = dest_path.parent
@@ -358,7 +358,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         ensure_safe_to_modify(dest_path)
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
-    except (OSError, PermissionError, RuntimeError): 
+    except (OSError, PermissionError, RuntimeError, TypeError, ValueError): 
         return None
 
 def logo_ascii() -> str: 
