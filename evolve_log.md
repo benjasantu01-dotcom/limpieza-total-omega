@@ -1604,3 +1604,24 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-26T02:11:15` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el proceso de detección de perfiles y escaneo de caché reemplazando el uso repetitivo de `path.resolve()` y `os.path.abspath` por una resolución única al inicio del ciclo, reduciendo significativamente las llamadas al sistema de archivos.
 - `2026-10-26T02:11:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T02:11:15` Corrida terminada. Total usado hoy: 52.
+- `2026-10-26T02:17:32` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-26T02:17:58` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-26T02:18:28` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-26T02:19:08` Tests FALLARON:
+```
+t'
+FAILED evolve/tests/test_modules.py::test_a_broken_system_scores_low - TypeError: healthscore.SystemMetrics() got multiple values for keyword argument 'quarantined_count'
+FAILED evolve/tests/test_modules.py::test_score_never_leaves_the_zero_to_hundred_range - TypeError: healthscore.SystemMetrics() got multiple values for keyword argument 'quarantined_count'
+FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area - TypeError: healthscore.SystemMetrics() got multiple values for keyword argument 'quarantined_count'
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - TypeError: healthscore.SystemMetrics() got multiple values for keyword argument 'quarantined_count'
+FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommendation - TypeError: healthscore.SystemMetrics() got multiple values for keyword argument 'quarantined_count'
+FAILED evolve/tests/test_modules.py::test_quarantined_files_are_mentioned - TypeError: healthscore.SystemMetrics() got multiple values for keyword argument 'quarantined_count'
+FAILED evolve/tests/test_modules.py::test_compute_score_is_pure_and_repeatable - TypeError: healthscore.SystemMetrics() got multiple values for keyword argument 'quarantined_count'
+FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recommendations - TypeError: healthscore.SystemMetrics() got multiple values for keyword argument 'quarantined_count'
+9 failed, 290 passed in 1.02s
+
+```
+- `2026-10-26T02:19:08` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de cómputo del puntaje reemplazando la creación y validación de una instancia completa de `SystemMetrics` dentro del caché por un acceso directo a los valores numéricos, eliminando la sobrecarga de instanciación en el ciclo de reporte.
+- `2026-10-26T02:20:04` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-26T02:20:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T02:20:04` Corrida terminada. Total usado hoy: 56.
