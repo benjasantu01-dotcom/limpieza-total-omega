@@ -517,17 +517,14 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
 def _is_kernel_managed(path_str: str) -> bool:
     """Determina si la ruta forma parte de directorios bajo gestión exclusiva del SO."""
     if not path_str: return False
-    path = Path(path_str)
-    try:
-        if path.name.lower() in _KERNEL_BLOCKED_FILES: return True
-        if os.name == 'nt':
-            p_str = path_str.lower()
-            local_app_data = os.environ.get("LOCALAPPDATA", "").lower()
-            app_data = os.environ.get("APPDATA", "").lower()
-            if (local_app_data and p_str.startswith(local_app_data)) or \
-               (app_data and p_str.startswith(app_data)): return True
-        return any(part.lower() in _KERNEL_BLOCKED_DIRS for part in path.parts)
-    except (OSError, RuntimeError): return False
+    p_lower = path_str.lower()
+    if any(p_lower.endswith(f) for f in _KERNEL_BLOCKED_FILES): return True
+    if os.name == 'nt':
+        local_app_data = os.environ.get("LOCALAPPDATA", "").lower()
+        app_data = os.environ.get("APPDATA", "").lower()
+        if (local_app_data and p_lower.startswith(local_app_data)) or \
+           (app_data and p_lower.startswith(app_data)): return True
+    return any(d in p_lower for d in _KERNEL_BLOCKED_DIRS)
 
 @lru_cache(maxsize=1024)
 def _is_sensitive_extension(ext: str) -> bool:
@@ -544,7 +541,8 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     if not anchor: return
     
     try:
-        if _is_volume_busy_or_invalid(str(target_path)):
+        path_s = str(target_path)
+        if _is_volume_busy_or_invalid(path_s):
              raise UnsafePathError("Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR)
         drive_type = _get_drive_type(anchor)
         if drive_type == DRIVE_NO_ROOT_DIR:
@@ -553,11 +551,11 @@ def _validate_drive_restrictions(target_path: Path) -> None:
             raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR)
         if drive_type == DRIVE_REMOVABLE:
             raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
-        if drive_type == DRIVE_CDROM or _is_volume_readonly(str(target_path)):
+        if drive_type == DRIVE_CDROM or _is_volume_readonly(path_s):
             raise UnsafePathError("Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
-        if _is_volume_compressed_or_encrypted(str(target_path)):
+        if _is_volume_compressed_or_encrypted(path_s):
             raise UnsafePathError("Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED)
-        if _is_virtual_drive(str(target_path)):
+        if _is_virtual_drive(path_s):
             raise UnsafePathError("Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
     except (AttributeError, OSError, ctypes.ArgumentError):
         pass
@@ -761,8 +759,9 @@ def _validate_volume_integrity(path: Path) -> None:
     """Asegura que el volumen contenga capacidades operativas válidas para el proceso."""
     if os.name != 'nt': return
     try:
-        if _is_volume_readonly(str(path)) or _is_volume_compressed_or_encrypted(str(path)) or \
-           _is_virtual_drive(str(path)) or _is_volume_busy_or_invalid(str(path)):
+        path_s = str(path)
+        if _is_volume_readonly(path_s) or _is_volume_compressed_or_encrypted(path_s) or \
+           _is_virtual_drive(path_s) or _is_volume_busy_or_invalid(path_s):
             raise UnsafePathError(f"Volumen restringido/inaccesible: {path.anchor}", SafetyValidationErrorCode.VOLUME_RESTRICTED)
         if os.path.ismount(path):
             raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)

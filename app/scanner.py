@@ -221,7 +221,6 @@ class Scanner:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.seen_exts: set[str] = set()
         self.base_root_norm: str = os.path.normcase(os.path.realpath(base_root))
         self.now_ts: float = datetime.now().timestamp()
 
@@ -274,12 +273,7 @@ class Scanner:
         """Evalúa si el archivo tiene una extensión sujeta a monitoreo heurístico."""
         if not name: return False
         _, ext = os.path.splitext(name)
-        ext_low = ext.lower()
-        if ext_low in self.seen_exts: return True
-        if ext_low in SUSPICIOUS_ALL_EXTS:
-            self.seen_exts.add(ext_low)
-            return True
-        return False
+        return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Procesa una entrada del sistema de archivos, derivando a heurísticas si aplica."""
