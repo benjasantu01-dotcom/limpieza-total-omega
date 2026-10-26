@@ -122,11 +122,11 @@ class GlobalStats:
 
 class FolderMetrics:
     """
-    Contenedor de métricas para el análisis de directorios.
+    Contenedor de métricas para el análisis acumulativo de directorios.
     
     Attributes:
-        size: Bytes totales acumulados.
-        file_count: Cantidad total de archivos procesados.
+        size: Total de bytes acumulados en la jerarquía.
+        file_count: Cantidad total de archivos procesados en el subárbol.
     """
     __slots__ = ('size', 'file_count')
     
@@ -136,12 +136,20 @@ class FolderMetrics:
 
     @property
     def size_mb(self) -> float:
-        """Retorna el peso acumulado en Megabytes."""
+        """Retorna el peso acumulado en Megabytes (float)."""
         return _bytes_to_mb(self.size)
 
 
 class SummaryData(NamedTuple):
-    """Estructura inmutable con el resultado consolidado de un escaneo."""
+    """
+    Estructura inmutable con el resultado consolidado de un escaneo.
+    
+    Attributes:
+        total_bytes: Suma total de bytes del escaneo.
+        total_files: Cantidad total de archivos encontrados.
+        ext_stats: Mapeo de extensión -> métricas acumuladas.
+        top_files: Lista de FileRecord (Heap) con los archivos más pesados.
+    """
     total_bytes: int
     total_files: int
     ext_stats: Dict[str, ExtStats]
@@ -388,7 +396,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Centraliza el recorrido y la agregación de métricas.
+    Centraliza el recorrido del sistema de archivos y la agregación de métricas.
+    
+    Utiliza un min-heap para mantener los archivos más grandes de manera eficiente 
+    sin almacenar toda la estructura en memoria.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

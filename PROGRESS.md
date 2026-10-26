@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 8 | 0 | 3 | 2 | 1 |
+| 2026-10-24 | 6 | 0 | 2 | 1 | 1 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 52 | 3 | 14 | 4 | 67 |
+| 2026-10-26 | 54 | 3 | 14 | 5 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **43**
 - seguridad defensiva: **40**
-- rendimiento: **34**
-- legibilidad y documentación: **33**
+- legibilidad y documentación: **35**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
-- `browser.py`: **19**
+- `browser.py`: **20**
 - `quarantine.py`: **19**
+- `memory.py`: **18**
 - `scanner.py`: **18**
 - `assistant.py`: **17**
+- `diskreport.py`: **15**
 - `healthscore.py`: **15**
 - `safety.py`: **14**
-- `diskreport.py`: **14**
 - `settings.py`: **14**
-- `organizer.py`: **13**
 - `duplicates.py`: **12**
+- `organizer.py`: **12**
 - `branding.py`: **10**
 - `main.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T06:03:02` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y documentación técnica del módulo mediante la adición de Type Hints explícitos para las estructuras de datos complejas (`FolderMetrics` y `SummaryData`) y la clarificación de los docstrings en las funciones críticas de agregación para explicar mejor el flujo de datos.
+- `2026-10-26T06:02:37` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` documentando explícitamente los parámetros y el comportamiento de las funciones críticas (`ScanContext`, `_sum_directory_recursive` y `_should_skip_entry`) mediante docstrings informativos, y agregué type hints más precisos para clarificar las estructuras de datos complejas.
 - `2026-10-26T05:53:12` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de `ProblemCriterion` y centralizando la lógica de seguridad para mejorar la claridad del flujo de trabajo, eliminando redundancias en la comprobación de texto.
 - `2026-10-26T05:52:24` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate` al capturar errores de ejecución dentro del bucle de validación, evitando que una clave inesperada o una llamada fallida a un validador aborten la reconstrucción del diccionario de configuración, manteniendo siempre un estado consistente.
 - `2026-10-26T05:51:55` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de archivo (`check_empty_file` y `check_recent_executable_in_downloads`) para manejar explícitamente posibles errores de acceso y valores nulos sin depender únicamente de bloques `try-except` genéricos, asegurando que el motor de escaneo no se detenga ante fallos de metadatos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T05:21:34` **assistant.py** (manejo de errores y validación de entradas): Reforcé el manejo de errores en `_parse_config` y `_apply_field` para asegurar que datos malformados o tipos inesperados durante la carga de configuración y la ingesta de métricas no degraden el estado del `SystemContext`.
 - `2026-10-26T04:00:21` **startup.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_registry_entry_safe` y `_resolve_and_cache_path` implementando una validación explícita para evitar que rutas que contienen caracteres NUL o secuencias de escape sean procesadas, reforzando la defensa ante inyección o manipulación de rutas en el registro.
 - `2026-10-26T03:51:22` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al reemplazar la resolución de rutas mediante `os.path.realpath` (que puede ser engañosa en contextos de enlaces simbólicos o junctions maliciosos) por una validación estricta utilizando `Path.resolve(strict=True)` dentro de la clase `Scanner`, y se ha reforzado el filtrado en `scan_directory` para asegurar que el punto de entrada sea un directorio real antes de iniciar cualquier operación de escaneo, protegiendo así el núcleo del recorrido ante posibles manipulaciones de la ruta base.
-- `2026-10-26T03:51:10` **safety.py** (seguridad defensiva): Se ha añadido una validación temprana contra `LONG_PATH_PREFIX` en `_is_file_owned_by_system` para prevenir que rutas extremadamente largas causen errores de API, y se ha fortalecido `_get_file_id` integrando `_to_long_path` para garantizar consistencia en la detección de identidades bajo rutas extendidas.
-- `2026-10-26T03:42:46` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad en `delete_reviewed` implementando una validación estricta de la ruta del archivo mediante `resolve()` y `is_relative_to()` antes de cualquier operación de borrado, asegurando que solo se eliminen archivos contenidos físicamente en el directorio de cuarentena designado, previniendo así posibles ataques de "path traversal".

@@ -53,8 +53,15 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 class ScanContext:
     """
     Estado inmutable compartido durante el recorrido del árbol de directorios.
-    Mantiene la trazabilidad de archivos visitados y configuraciones
-    de seguridad para evitar ciclos y accesos fuera de límites.
+    
+    Attributes:
+        sandbox_base_norm: Ruta normalizada raíz para evitar fugas de directorio.
+        kernel32: Instancia de la API de Windows para consultas de bajo nivel.
+        is_junction: Función delegada para detectar puntos de reparse (Junctions).
+        visited_files: Set de tuplas (dev, ino) para evitar conteo doble (hardlinks).
+        visited_dirs: Set de rutas normalizadas ya visitadas para evitar ciclos.
+        never_touch_lower: Conjunto de nombres de archivo/carpeta prohibidos.
+        max_depth: Profundidad máxima de recursión permitida.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -62,7 +69,7 @@ class ScanContext:
     visited_files: Set[tuple[int, int]]
     visited_dirs: VisitedDirs
     never_touch_lower: frozenset[str]
-    max_depth: int = 20  # Límite anti-recursión infinita
+    max_depth: int = 20
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     """
@@ -118,7 +125,6 @@ def _is_valid_rel_path(p: Any) -> TypeGuard[str]:
     """Valida la integridad de la ruta relativa contra inyecciones y caracteres inválidos."""
     if not isinstance(p, str) or not p.strip(): return False
     if os.path.isabs(p) or p.startswith(('\\', '/')): return False
-    # Normalización para verificar si existen secuencias de escape de directorio
     if ".." in os.path.normpath(p): return False
     if any(c in p for c in PATH_FORBIDDEN_CHARS): return False
     if any(ord(c) < 32 for c in p): return False
@@ -191,7 +197,14 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str) -> bool:
-    """Determina si un nodo del sistema de archivos debe ser ignorado por seguridad."""
+    """
+    Evalúa mediante heurísticas de seguridad si una entrada de disco debe ser ignorada.
+    
+    Args:
+        entry: Objeto DirEntry actual.
+        scan_ctx: Contexto de escaneo con reglas de seguridad.
+        norm_path: Ruta normalizada para validación de sandbox.
+    """
     if entry.name.lower() in scan_ctx.never_touch_lower: return True
     if not _is_within_sandbox(norm_path, scan_ctx.sandbox_base_norm): return True
     if is_protected_path(Path(entry.path)): return True
@@ -218,6 +231,9 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
     Calcula el tamaño acumulado de una jerarquía de directorios de forma recursiva.
+    
+    Implementa un mecanismo anti-recursión (depth) y seguimiento de visitados 
+    (visited_dirs) para prevenir ciclos en el sistema de archivos.
     """
     if not root_path or depth > scan_ctx.max_depth:
         return ScanResult(0, True)
@@ -286,7 +302,6 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
     if not _is_valid_rel_path(rel_str): return Path()
     try:
         target = base_resolved.joinpath(*rel_str.split("\\"))
-        # Comprobación de existencia sin re-resolver la base completa y verificación de seguridad
         if target.exists() and target.is_dir() and is_safe_to_modify(target):
             return target
         return Path()
