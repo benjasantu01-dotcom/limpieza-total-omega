@@ -43,6 +43,7 @@ class SecurityLimits:
     WIN_ATTR_SYSTEM: Final[int] = 0x04
     WIN_ATTR_HIDDEN: Final[int] = 0x02
     WIN_ATTR_MASK: Final[int] = 0x04 | 0x02
+    WIN_ATTR_READONLY: Final[int] = 0x01
 
 LIMITS: Final = SecurityLimits()
 
@@ -249,6 +250,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
         if not junk_file.path.exists() or not junk_file.path.is_file(): return False
+        if os.name == 'nt' and (_get_win_attributes(junk_file.path) & LIMITS.WIN_ATTR_READONLY): return False
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         ensure_safe_to_modify(dest_real)

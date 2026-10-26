@@ -791,6 +791,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if source is None or not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     
+    # Check: Asegurar que estamos en un volumen físico local y no una unidad mapeada o red
+    if source.stat().st_dev == 0:
+        raise UnsafePathError("Archivo origen en dispositivo no soportado.")
+    
     if not source.is_file():
         raise UnsafePathError("Solo se admiten archivos regulares para aislamiento.")
     
