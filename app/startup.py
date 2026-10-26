@@ -392,7 +392,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         for row in reader:
             if not isinstance(row, dict):
                 continue
-                
+            
             raw_name = row.get("Name")
             raw_cmd = row.get("Value")
             

@@ -372,7 +372,8 @@ def _evaluate_active_problems(metrics_items: tuple) -> tuple[str, ...]:
 
 @dataclass
 class SystemContext:
-    """Contenedor de estado consolidado que representa la salud del sistema."""
+    """Contenedor de estado consolidado que representa la salud del sistema. Almacena
+    métricas del equipo y gestiona su validación, persistencia y exposición."""
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0
@@ -502,7 +503,7 @@ class SystemContext:
 
 @dataclass
 class Answer:
-    """Encapsula la respuesta final del asistente."""
+    """Representa la respuesta textual del asistente, incluyendo metadatos de fuente y sugerencias."""
     text: str
     source: str = "local"
     notice: str = ""
@@ -550,14 +551,14 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
         return None
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
-    """Crea un objeto SystemContext a partir de múltiples fuentes de datos."""
+    """Crea y popula un objeto SystemContext a partir de fuentes de datos múltiples."""
     ctx: SystemContext = SystemContext()
     for s in (metrics, health, extra):
         if s is not None: ctx.ingest(s)
     return ctx
 
 def context_as_text(context: SystemContext) -> str:
-    """Serializa el contexto a un formato textual seguro para el prompt."""
+    """Serializa el contexto a un formato textual seguro para el prompt del asistente."""
     if context.is_empty: return ""
     snap: MetricsDict = context.metrics_snapshot
     lines = (f"{k}: {snap[k]:.{p}f}{u}" for k, u, p in _CONTEXT_SCHEMA if k in snap and (val := snap[k]) >= 0)
@@ -794,7 +795,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Optional[Union[str, Path]] = None) -> Answer:
-    """Punto de acceso único que orquesta los motores local y remoto."""
+    """Punto de acceso único que orquesta los motores local y remoto para responder consultas."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()

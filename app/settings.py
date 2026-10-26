@@ -348,12 +348,13 @@ def validate(raw_values: Any) -> AppSettings:
             
     return config # type: ignore
 
-def _is_file_secure_to_read(st: os.stat_result, file_path: Path) -> bool:
+def _is_file_secure_to_read(file_path: Path) -> bool:
     """
     Verifica que el archivo sea un archivo regular, propiedad del usuario,
     sin permisos excesivos y dentro de los límites de tamaño permitidos.
     """
     try:
+        st = file_path.stat()
         if not stat.S_ISREG(st.st_mode): return False
         if st.st_nlink != 1: return False
         if (st.st_mode & 0o077) != 0: return False # Prohibir permisos laxos (grupo/otros)
@@ -368,15 +369,13 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     asegurando que el contenido sea un diccionario de valores simples.
     """
     try:
-        if not _Validators._is_safe_path(str(file_path)): return None
-        st = file_path.lstat()
-        if not _is_file_secure_to_read(st, file_path): return None
+        if not _Validators._is_safe_path(str(file_path)) or not _is_file_secure_to_read(file_path): 
+            return None
         
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             
-        if not isinstance(data, dict): return None
-        if len(data) > 64: return None
+        if not isinstance(data, dict) or len(data) > 64: return None
         if not all(isinstance(v, (str, int, float, bool)) or v is None for v in data.values()): return None
         return data
     except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError):
@@ -406,7 +405,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 _MANAGER._last_size = st.st_size
                 return settings.copy()
     except (OSError, PermissionError): 
-        # Fallback silencioso: retornamos DEFAULTS si el archivo no se pudo leer
         pass
     return dict(DEFAULTS) # type: ignore
 

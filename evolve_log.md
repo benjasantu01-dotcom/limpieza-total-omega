@@ -1554,3 +1554,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-26T01:18:21` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_valid_file_path` y `_is_readable` reemplazando los chequeos implícitos por validaciones de tipo explícitas (`isinstance(..., Path)`) y capturando errores de forma más granular para evitar comportamientos inesperados ante entradas nulas o rutas malformadas, alineándose con el enfoque de manejo de errores y validación de entradas.
 - `2026-10-26T01:18:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T01:18:21` Corrida terminada. Total usado hoy: 32.
+- `2026-10-26T01:26:37` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-10-26T01:26:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T01:27:14` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de archivos mediante la implementación de `os.stat` antes de la apertura (evitando condiciones de carrera y validando metadatos críticos) y refinando el manejo de excepciones en `_read_and_parse_json` para prevenir abortos inesperados ante archivos malformados o bloqueados.
+- `2026-10-26T01:27:43` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_registry_csv` añadiendo validación estricta de tipos y manejo de errores ante entradas del registro malformadas, evitando que un campo `None` o un formato inesperado de `DictReader` interrumpan el escaneo.
+- `2026-10-26T01:28:22` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings que explican el propósito de las clases y funciones clave, asegurando que el código sea mantenible y fácil de comprender para futuros colaboradores, además de añadir type hints en secciones críticas donde se perdía visibilidad del tipo.
+- `2026-10-26T01:28:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T01:28:30` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-26T01:28:46` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-26T01:29:23` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-26T01:29:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T01:29:23` Corrida terminada. Total usado hoy: 36.
