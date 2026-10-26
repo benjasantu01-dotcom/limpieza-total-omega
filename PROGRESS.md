@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 197
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 36 | 1 | 7 | 5 | 13 |
+| 2026-10-24 | 36 | 1 | 7 | 5 | 9 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 40 | 3 | 12 | 2 | 35 |
+| 2026-10-26 | 41 | 3 | 12 | 3 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **43**
 - legibilidad y documentación: **42**
 - rendimiento: **40**
-- seguridad defensiva: **39**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
@@ -43,10 +43,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **14**
 - `branding.py`: **13**
 - `main.py`: **10**
-- `startup.py`: **7**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T04:00:21` **startup.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_registry_entry_safe` y `_resolve_and_cache_path` implementando una validación explícita para evitar que rutas que contienen caracteres NUL o secuencias de escape sean procesadas, reforzando la defensa ante inyección o manipulación de rutas en el registro.
 - `2026-10-26T03:51:22` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al reemplazar la resolución de rutas mediante `os.path.realpath` (que puede ser engañosa en contextos de enlaces simbólicos o junctions maliciosos) por una validación estricta utilizando `Path.resolve(strict=True)` dentro de la clase `Scanner`, y se ha reforzado el filtrado en `scan_directory` para asegurar que el punto de entrada sea un directorio real antes de iniciar cualquier operación de escaneo, protegiendo así el núcleo del recorrido ante posibles manipulaciones de la ruta base.
 - `2026-10-26T03:51:10` **safety.py** (seguridad defensiva): Se ha añadido una validación temprana contra `LONG_PATH_PREFIX` en `_is_file_owned_by_system` para prevenir que rutas extremadamente largas causen errores de API, y se ha fortalecido `_get_file_id` integrando `_to_long_path` para garantizar consistencia en la detección de identidades bajo rutas extendidas.
 - `2026-10-26T03:42:46` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad en `delete_reviewed` implementando una validación estricta de la ruta del archivo mediante `resolve()` y `is_relative_to()` antes de cualquier operación de borrado, asegurando que solo se eliminen archivos contenidos físicamente en el directorio de cuarentena designado, previniendo así posibles ataques de "path traversal".
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T02:59:06` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite de entrada (como datos no normalizables o configuraciones externas inesperadas) añadiendo un manejo de errores preventivo en el pipeline de evaluación y asegurando que `_compute_cached` no pueda abortar por excepciones no controladas durante la ejecución de las reglas.
 - `2026-10-26T02:58:37` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en la lectura de archivos (en `hash_file` y `partial_hash`) manejando explícitamente archivos que desaparecen o pierden permisos entre el escaneo y el hash, evitando propagar errores fuera del módulo.
 - `2026-10-26T02:50:08` **browser.py** (robustez ante casos límite): Se ha robustecido `browser.py` frente a rutas inválidas o nombres de archivo excesivamente largos (comunes en cachés de navegadores) mediante la validación de `os.path.abspath` y el manejo explícito de errores de `OSError` en `_sum_directory_recursive` durante la iteración, evitando que caracteres Unicode o nombres de ruta malformados interrumpan el escaneo de otras carpetas.
-- `2026-10-26T02:48:47` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_payload_structure` al incluir un chequeo de tipos estricto para las colecciones (listas y diccionarios), evitando que estructuras de datos inusualmente profundas o maliciosamente construidas puedan evadir los límites de recursión o causar un consumo excesivo de recursos durante la serialización JSON.

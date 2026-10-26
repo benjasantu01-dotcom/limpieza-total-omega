@@ -186,7 +186,7 @@ class StartupEntry:
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
-        if len(path_string) > MAX_PATH_LEN or path_string.startswith(r"\\"):
+        if len(path_string) > MAX_PATH_LEN or path_string.startswith(r"\\") or "\0" in path_string:
             return ""
             
         try:
@@ -357,6 +357,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     if not isinstance(name, str) or not isinstance(command, str):
         return False
     
+    # Prevenir inyección o rutas inválidas mediante caracteres de control
     if len(command) > MAX_PATH_LEN or any(ord(c) < 32 for c in command) or "\0" in command:
         return False
         
@@ -367,7 +368,12 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
         return False
     
     try:
-        target_path = Path(clean_cmd.strip('"'))
+        # Extraer posible ruta quitando comillas
+        path_candidate = clean_cmd.strip('"')
+        if not path_candidate:
+            return False
+            
+        target_path = Path(path_candidate)
         if not target_path or ("\\" not in str(target_path) and "/" not in str(target_path)):
             return False
         if any(c in str(target_path) for c in SUSPICIOUS_CHARS):
