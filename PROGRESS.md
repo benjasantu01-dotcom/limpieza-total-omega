@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 204
+- Rechazadas por guardia de seguridad: 40
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 70 | 6 | 12 | 10 | 36 |
+| 2026-10-24 | 67 | 6 | 11 | 10 | 36 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 1 | 0 | 0 | 0 | 19 |
+| 2026-10-26 | 3 | 0 | 0 | 1 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **44**
 - rendimiento: **43**
 - robustez ante casos límite: **43**
 - seguridad defensiva: **42**
-- manejo de errores y validación de entradas: **42**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
-- `quarantine.py`: **19**
 - `healthscore.py`: **18**
+- `memory.py`: **18**
+- `quarantine.py`: **18**
+- `browser.py`: **18**
 - `scanner.py`: **17**
-- `browser.py`: **17**
 - `settings.py`: **16**
 - `diskreport.py`: **16**
-- `organizer.py`: **15**
 - `assistant.py`: **15**
 - `duplicates.py`: **15**
+- `branding.py`: **15**
+- `organizer.py`: **14**
 - `safety.py`: **14**
-- `branding.py`: **14**
 - `main.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T00:57:11` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `summarize` validando explícitamente los tipos de entrada y manejando estados vacíos para evitar excepciones innecesarias durante la ejecución del bucle, aplicando el enfoque de validación defensiva.
+- `2026-10-26T00:56:42` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` reemplazando la captura genérica `Exception` por el manejo de excepciones específicas, y se ha añadido una validación de retorno explícita en `_draw_shield_stripes` y `_draw_shield_icon_decorations` para evitar el uso de `canvas` en estados inconsistentes, siguiendo el principio de fail-fast y manejo de errores informado.
 - `2026-10-26T00:49:37` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext` agregando una validación explícita para asegurar que el `source` no contenga tipos de datos inesperados antes de procesarlos, evitando errores durante la iteración y garantizando que las métricas se procesen de manera atómica y segura.
 - `2026-10-25T14:15:54` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_isolation_request` para prevenir condiciones de carrera (TOCTOU) al validar el estado del origen justo antes de la operación, bloqueando explícitamente el uso de archivos con atributos de sistema o de solo lectura que podrían ser críticos para el SO.
 - `2026-10-25T14:05:25` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sanitize_msg` implementando un filtro de validación de entradas más estricto contra inyección de rutas (evitando que el reporte pueda contener por error subcadenas que parezcan rutas o términos sensibles) y asegurando que las longitudes y contenidos sean siempre deterministas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T13:26:45` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `main.py` ante errores de entrada en `on_trim_process` y `on_restore_quarantine`, implementando un filtrado más estricto de caracteres y validaciones adicionales de estado en los widgets, evitando que la aplicación intente procesar datos mal formados o rutas inexistentes que podrían disparar excepciones no controladas en el hilo principal.
 - `2026-10-25T13:24:52` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite al añadir validación explícita de `metrics` dentro del pipeline y asegurar que la lógica de cálculo nunca propague excepciones (aísla fallos en los `scorer` de forma preventiva).
 - `2026-10-25T13:15:17` **browser.py** (robustez ante casos límite): Se ha mejorado `_resolve_browser_path` para prevenir la resolución de rutas mediante "path traversal" usando `resolve()` sobre la base, y se añadió una validación explícita para asegurar que la ruta resuelta permanezca dentro de `LOCALAPPDATA`, mitigando intentos de escape del sandbox.
-- `2026-10-25T13:15:07` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante el caso límite de rutas con permisos denegados o sistemas de archivos de solo lectura, añadiendo una validación explícita mediante `is_safe_to_modify` previa a la escritura y refinando el manejo de excepciones para evitar el silenciamiento de errores críticos de sistema.
-- `2026-10-25T13:14:36` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_ensure_safe_text` y sus helpers asociados para prevenir inyecciones y errores de validación, centralizando la lógica de sanitización para garantizar que cualquier cadena procesada por el asistente sea estrictamente segura, previniendo fallos por caracteres inesperados que podrían romper la interfaz o la lógica de procesamiento.

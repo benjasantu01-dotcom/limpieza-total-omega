@@ -195,7 +195,6 @@ def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str
     if is_protected_path(Path(entry.path)): return True
     
     try:
-        # Validación de seguridad: no seguir links y verificar atributos de sistema
         if entry.is_symlink() or scan_ctx.is_junction(entry.path) or _is_system_hidden(entry.path, scan_ctx.kernel32): 
             return True
     except OSError: return True
@@ -204,7 +203,6 @@ def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str
 def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     """Calcula el tamaño de un archivo individual evitando conteos múltiples por hardlinks."""
     try:
-        # Verificar is_symlink previo a cualquier lectura estadística
         if not entry.is_file() or entry.is_symlink(): return 0
         st = entry.stat(follow_symlinks=False)
         if st.st_size > 0:
@@ -222,14 +220,12 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     
     root_norm = os.path.normcase(os.path.abspath(root_path))
     
-    # Pre-check de seguridad estricto
     if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm) or root_norm in scan_ctx.visited_dirs:
         return ScanResult(0, True)
 
     if not os.path.isdir(root_path) or not os.access(root_path, os.R_OK) or is_protected_path(Path(root_path)):
         return ScanResult(0, True)
 
-    # Verificar si es link antes de entrar
     if os.path.islink(root_path) or _IS_JUNCTION_FN(root_path):
         return ScanResult(0, True)
     
@@ -282,11 +278,9 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Combina el directorio base del usuario con la ruta relativa conocida de un navegador."""
     if not _is_valid_rel_path(rel_str): return Path()
     try:
-        # Usamos resolve() para normalizar y evitar path traversal tipo '..\..\Windows'
         target = real_base.joinpath(*rel_str.split("\\")).resolve()
         base_resolved = real_base.resolve()
         
-        # Validar explícitamente que la ruta resultante siga bajo el sandbox
         if not str(target).startswith(str(base_resolved)): return Path()
         return target if target.exists() and target.is_dir() else Path()
     except (OSError, RuntimeError):
@@ -305,7 +299,10 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists() or not os.access(base, os.R_OK): continue
-        base_norm = os.path.normcase(str(base.resolve()))
+        try:
+            base_norm = os.path.normcase(str(base.resolve()))
+        except (OSError, RuntimeError): continue
+        
         scan_ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
         
         for browser_key, relative_path in browser_map.items():
@@ -320,13 +317,16 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
     """Calcula la suma total en bytes de los hallazgos de caché procesados."""
-    return sum(c.size_bytes for c in caches) if isinstance(caches, (list, tuple, set)) else 0
+    if not isinstance(caches, (list, tuple, set)): return 0
+    return sum(c.size_bytes for c in caches if isinstance(c, BrowserCache))
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """Formatea los resultados del escaneo para su visualización en la interfaz."""
     current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches: return ["No se detectaron cachés de navegador en este sistema."]
-    total_mb = round(total_cache_bytes(current_caches) / BYTES_TO_MB, 2)
+    
+    total_bytes = total_cache_bytes(current_caches)
+    total_mb = round(total_bytes / BYTES_TO_MB, 2)
     lines = [f"Caché de navegadores: {total_mb} MB en {len(current_caches)} carpeta(s)", ""]
     for cache in current_caches:
         if isinstance(cache, BrowserCache):

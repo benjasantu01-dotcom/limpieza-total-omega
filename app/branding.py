@@ -369,7 +369,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         ensure_safe_to_modify(dest_path)
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
-    except (OSError, PermissionError, TypeError, ValueError, RuntimeError): 
+    except (OSError, PermissionError, RuntimeError): 
         return None
 
 def logo_ascii() -> str: 
@@ -393,27 +393,25 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja las franjas internas del escudo usando gradientes segmentados."""
-    try:
-        if not hasattr(canvas, "create_rectangle"): return
-        if not math.isfinite(scale) or scale <= 0: return
-        n = max(6, int(STRIPE_COUNT_FACTOR * scale))
-        by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + 64 * scale
-        params = _get_stripe_params(scale, n)
-        for s in get_gradient_segments(n):
-            p_start, p_end = params[s.start_index], params[s.end_index - 1]
-            canvas.create_rectangle(cx - p_start[0], by + p_start[1], cx + p_start[0], by + p_end[2], fill=s.hex_color, outline="")
-    except Exception: pass
+    if not hasattr(canvas, "create_rectangle") or not math.isfinite(scale) or scale <= 0:
+        return
+    n = max(6, int(STRIPE_COUNT_FACTOR * scale))
+    by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + 64 * scale
+    params = _get_stripe_params(scale, n)
+    for s in get_gradient_segments(n):
+        p_start, p_end = params[s.start_index], params[s.end_index - 1]
+        canvas.create_rectangle(cx - p_start[0], by + p_start[1], cx + p_start[0], by + p_end[2], fill=s.hex_color, outline="")
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja detalles decorativos (líneas, icono Omega) sobre la base del escudo."""
-    try:
-        if not (hasattr(canvas, "create_line") and hasattr(canvas, "create_polygon") and hasattr(canvas, "create_text")): return
-        if not math.isfinite(scale) or scale <= 0: return
-        ts = max(8, int(UI_CONFIG.header_size * scale))
-        canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
-        canvas.create_polygon(x+75*scale, y+41*scale, x+89*scale, y+38*scale, x+92*scale, y+52*scale, fill=C_BACKGROUND, outline="")
-        canvas.create_text(x+64*scale, y+96*scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center")
-    except Exception: pass
+    if not (hasattr(canvas, "create_line") and hasattr(canvas, "create_polygon") and hasattr(canvas, "create_text")):
+        return
+    if not math.isfinite(scale) or scale <= 0:
+        return
+    ts = max(8, int(UI_CONFIG.header_size * scale))
+    canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
+    canvas.create_polygon(x+75*scale, y+41*scale, x+89*scale, y+38*scale, x+92*scale, y+52*scale, fill=C_BACKGROUND, outline="")
+    canvas.create_text(x+64*scale, y+96*scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center")
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el logo vectorial completo de Omega en un widget Canvas."""
