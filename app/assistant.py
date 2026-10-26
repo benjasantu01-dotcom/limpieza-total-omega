@@ -196,7 +196,6 @@ class ProblemCriterion(NamedTuple):
         """Formatea el mensaje de advertencia solo si la condición es verdadera y es texto seguro."""
         if not self.is_triggered_by(val):
             return None
-            
         try:
             msg: str = str(self.message_format.format(val))[:_MAX_MSG_CHUNK]
             return msg if _ensure_safe_text(msg) else None

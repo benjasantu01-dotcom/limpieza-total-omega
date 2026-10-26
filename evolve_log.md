@@ -505,3 +505,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T14:43:57` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-26T14:43:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T14:43:57` Corrida terminada. Total usado hoy: 348.
+- `2026-10-26T14:52:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-26T14:52:40` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-26T14:53:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T14:53:42` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de la lógica de evaluación de criterios de salud mediante la implementación de un método `__str__` en `ProblemCriterion` y la simplificación de su uso en `_evaluate_active_problems`, eliminando lógica redundante de formato dentro del ciclo.
+- `2026-10-26T14:53:42` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-26T14:53:42` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T14:53:42` Corrida terminada. Total usado hoy: 350.
