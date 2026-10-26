@@ -50,6 +50,9 @@ _METRIC_LIMITS: Final[Dict[str, Tuple[float, float]]] = {
 class Scorer(Protocol):
     """
     Protocolo funcional para transformar SystemMetrics en un ratio de salud [0.0, 1.0].
+    
+    Un valor de 0.0 indica una condición crítica o de riesgo máximo, mientras que
+    1.0 representa el estado nominal o de salud óptima.
     """
     def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
@@ -79,11 +82,11 @@ class Grade(Enum):
 
 class RecommendationRule(NamedTuple):
     """
-    Define una regla de diagnóstico: 
-    - area: Identificador del componente evaluado.
-    - threshold: Punto de corte para disparo.
-    - message_factory: Función que genera el texto de recomendación.
-    - check: Predicado lógico para evaluar si la regla dispara una advertencia.
+    Define una lógica de diagnóstico reactiva: 
+    - area: Identificador del componente (ej. 'disco', 'seguridad').
+    - threshold: Valor de ratio [0, 1] que activa la advertencia.
+    - message_factory: Callable que extrae datos de SystemMetrics para redactar el mensaje.
+    - check: Predicado que evalúa la métrica frente al ratio para decidir el disparo.
     """
     area: MetricKey
     threshold: float
@@ -92,11 +95,11 @@ class RecommendationRule(NamedTuple):
 
 class PipelineEntry(NamedTuple):
     """
-    Configuración de una unidad de procesamiento en el pipeline de salud:
-    - area: Nombre de la métrica asociada.
-    - weight: Contribución porcentual (0-100) al puntaje final.
-    - scorer: Lógica de normalización.
-    - rules: Colección de reglas de diagnóstico asociadas.
+    Define la estructura de procesamiento de una métrica en el pipeline:
+    - area: Nombre único de la métrica.
+    - weight: Entero entre 0-100 representando la importancia relativa en el score final.
+    - scorer: Función que normaliza el dato crudo a NormalizedRatio.
+    - rules: Tupla de reglas de advertencia (RecommendationRule) vinculadas a esta métrica.
     """
     area: MetricKey
     weight: int
@@ -131,7 +134,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     return float(max(min_val, min(max_val, value)))
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Fábrica que genera normalizadores lineales donde 1.0 es el valor óptimo."""
+    """Fábrica de normalizadores lineales con soporte para métricas inversas (ej. basura)."""
     def scorer(val: float) -> NormalizedRatio:
         if not math.isfinite(val) or limit <= 0.0: return 0.0
         ratio = val / limit
@@ -153,7 +156,7 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 }
 
 def _verify_pipeline_integrity(weights: Dict[str, int], pipeline: Tuple[PipelineEntry, ...]) -> None:
-    """Validación de pre-arranque para asegurar que los pesos sumen 100 y coincidan con el pipeline."""
+    """Validación de pre-arranque para asegurar coherencia en pesos y áreas del pipeline."""
     try:
         if sum(weights.values()) != 100:
             logging.error("Integridad de Pipeline fallida: Los pesos no suman 100.")
@@ -200,7 +203,7 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _JUNK_SCORER(float(junk_mb) if isinstance(junk_mb, (int, float)) else 0.0)
 
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
-    """Calcula salud: Penaliza según archivos sospechosos y advertencias."""
+    """Calcula salud: Penaliza según archivos sospechosos y advertencias de seguridad."""
     try:
         s_count = max(0, int(suspicious_count))
         w_count = max(0, int(warnings))
@@ -245,7 +248,7 @@ def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) ->
 class SystemMetrics:
     """
     Contenedor de datos inmutable utilizado como entrada para el análisis.
-    Realiza una validación de rangos automática al instanciarse.
+    Realiza una validación de rangos automática en __post_init__.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
@@ -279,7 +282,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verificación booleana de estado saludable de los datos."""
+        """Verificación booleana de integridad de los datos en el contenedor."""
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name, 0.0)
             if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
@@ -308,16 +311,15 @@ def _is_safe_string_for_report(text: str) -> bool:
     return not any(term in t_low for term in _BLOCKED_TERMS)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Filtro de seguridad estricto que limpia caracteres no permitidos y bloquea términos sensibles."""
+    """Filtro de seguridad que limpia caracteres no permitidos y bloquea términos sensibles."""
     if not isinstance(msg, str): return ""
-    # Filtrado explícito de control y normalización de texto plano
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
     if not _is_safe_string_for_report(clean):
         return ""
     return clean.strip()[:_MAX_MSG_LEN]
 
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
-    """Ejecutor de reglas con aislamiento de errores (sandbox)."""
+    """Ejecutor de reglas con aislamiento (sandbox) para evitar fugas de información."""
     try:
         raw_res = rule.message_factory(metrics)
         return _sanitize_msg(raw_res)
@@ -341,7 +343,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Motor central que orquestra el cálculo de métricas a través del pipeline."""
     m_args = dict(zip(SystemMetrics._FIELDS_TO_VALIDATE, metrics_tuple))
-    # Integridad post-caché: asegurar que los datos no se hayan degradado
     try:
         metrics = SystemMetrics(**m_args)
         if not metrics.is_finite: raise ValueError("Data corruption in cache lookup")
