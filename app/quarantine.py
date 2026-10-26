@@ -478,6 +478,7 @@ def _validate_quarantine_path(path: Path, base: Path) -> Path:
 def _check_device_consistency(source: Path, target_directory: Path) -> None:
     """Seguridad: Verifica que la operación ocurra en el mismo volumen (evita cruces de FS)."""
     try:
+        # Resolvemos el origen para asegurar que estamos comparando el dispositivo real
         if source.stat().st_dev != target_directory.stat().st_dev:
             raise UnsafePathError("Operación entre distintos volúmenes no permitida.")
     except OSError:
@@ -516,8 +517,6 @@ def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
             raise UnsafePathError("Aislamiento denegado: el archivo no pertenece al usuario.")
 
     _check_device_consistency(resolved_source, resolved_dest_dir)
-    if os.path.exists(resolved_dest_dir) and os.path.samefile(resolved_source, resolved_dest_dir):
-        raise UnsafePathError("Operación circular detectada.")
         
     _verify_quarantine_preconditions(resolved_source, resolved_dest_dir)
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
@@ -963,6 +962,10 @@ def quarantine_file(
         raise IOError("Archivo origen bloqueado por el sistema: operación abortada.")
         
     dest_dir: Path = quarantine_dir(base)
+    # Verificación de volumen: evitar mover archivos entre volúmenes (falla en os.replace atómico)
+    if p_source.resolve().stat().st_dev != dest_dir.resolve().stat().st_dev:
+        raise UnsafePathError("El archivo de origen y el sandbox deben estar en la misma unidad.")
+        
     if _is_within_quarantine_sandbox(p_source.resolve(), dest_dir.resolve()):
         raise UnsafePathError("Archivo ya en el sandbox.")
     

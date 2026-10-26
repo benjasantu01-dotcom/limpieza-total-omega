@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 45
+- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 37 | 1 | 7 | 5 | 32 |
+| 2026-10-24 | 36 | 1 | 7 | 5 | 29 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 30 | 1 | 9 | 1 | 31 |
+| 2026-10-26 | 32 | 2 | 10 | 1 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **42**
+- robustez ante casos límite: **42**
 - rendimiento: **40**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **33**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
 - `memory.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `healthscore.py`: **17**
 - `scanner.py`: **17**
 - `assistant.py`: **15**
 - `duplicates.py`: **14**
+- `safety.py`: **14**
 - `settings.py`: **14**
 - `diskreport.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **13**
-- `safety.py`: **13**
 - `main.py`: **10**
-- `startup.py`: **8**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T03:10:28` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de puntos de reparse, añadiendo una verificación de existencia mediante `Lstat` antes de llamar a `GetFinalPathNameByHandleW` para evitar errores de E/S en enlaces simbólicos rotos o inaccesibles, asegurando que la app no aborte innecesariamente por condiciones de carrera o estados inválidos del sistema de archivos.
+- `2026-10-26T03:09:33` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` al introducir una verificación de existencia de volumen antes de iniciar cualquier movimiento, previniendo fallos críticos cuando el sandbox se encuentra en una unidad de disco distinta a la del archivo origen (lo cual podría causar errores en `os.replace` o inconsistencias en los metadatos de inodos).
 - `2026-10-26T03:00:58` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_process_accessible` para detectar errores de acceso (como `ERROR_ACCESS_DENIED`) de forma más granular y robusta, evitando que excepciones silenciadas por el `try/except` general en el bucle de enumeración enmascaren posibles problemas de permisos en procesos con privilegios elevados.
 - `2026-10-26T02:59:06` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite de entrada (como datos no normalizables o configuraciones externas inesperadas) añadiendo un manejo de errores preventivo en el pipeline de evaluación y asegurando que `_compute_cached` no pueda abortar por excepciones no controladas durante la ejecución de las reglas.
 - `2026-10-26T02:58:37` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en la lectura de archivos (en `hash_file` y `partial_hash`) manejando explícitamente archivos que desaparecen o pierden permisos entre el escaneo y el hash, evitando propagar errores fuera del módulo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T02:11:15` **browser.py** (rendimiento): Se optimizó el proceso de detección de perfiles y escaneo de caché reemplazando el uso repetitivo de `path.resolve()` y `os.path.abspath` por una resolución única al inicio del ciclo, reduciendo significativamente las llamadas al sistema de archivos.
 - `2026-10-26T02:09:42` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la recreación innecesaria de listas y el uso de `strip()` en cada palabra dentro del bucle principal, reemplazándolo por una búsqueda directa en `_TOKENS_MAP` sobre una versión pre-tokenizada, reduciendo la complejidad de las operaciones en cada consulta.
 - `2026-10-26T02:07:59` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando docstrings detallados en funciones clave y añadiendo anotaciones de tipo más precisas para clarificar los contratos de datos, facilitando así el mantenimiento y la auditoría del código.
-- `2026-10-26T01:58:53` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en las funciones de heurística y clarificando mediante docstrings el propósito técnico de los parámetros críticos (como `now_ts` y `entry`), asegurando mayor consistencia y legibilidad para el mantenimiento del motor de análisis.
-- `2026-10-26T01:50:12` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de anotaciones de tipo, facilitando el mantenimiento y la auditoría de seguridad.

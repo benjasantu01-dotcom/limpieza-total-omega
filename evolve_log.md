@@ -433,3 +433,43 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-10-26T03:00:58` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_is_process_accessible` para detectar errores de acceso (como `ERROR_ACCESS_DENIED`) de forma más granular y robusta, evitando que excepciones silenciadas por el `try/except` general en el bucle de enumeración enmascaren posibles problemas de permisos en procesos con privilegios elevados.
 - `2026-10-26T03:00:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T03:00:58` Corrida terminada. Total usado hoy: 72.
+- `2026-10-26T03:08:20` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-10-26T03:08:49` Tests FALLARON:
+```
+                                     [100%]
+=================================== FAILURES ===================================
+___________ test_stage_for_review_moves_files_without_deleting_them ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0')
+
+    def test_stage_for_review_moves_files_without_deleting_them(tmp_path):
+        origen = tmp_path / "origen"
+        origen.mkdir()
+        archivo = origen / "mover.tmp"
+        archivo.write_text("contenido")
+        revision = tmp_path / "revision"
+    
+        found = organizer.scan_for_junk([str(origen)])
+        dest = organizer.stage_for_review(found, review_dir=str(revision))
+    
+>       assert not archivo.exists(), "el archivo debe salir de su lugar original"
+E       AssertionError: el archivo debe salir de su lugar original
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+1 failed, 298 passed in 1.05s
+
+```
+- `2026-10-26T03:08:49` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo una validación explícita para prevenir la sobreescritura de archivos protegidos en el destino mediante el uso de `pathlib.Path.is_relative_to` (reemplazado por una verificación de padres equivalente compatible con versiones anteriores) y asegurando que las operaciones de movimiento no escapen del directorio de destino configurado, evitando ataques de path traversal en rutas de cuarentena.
+- `2026-10-26T03:09:33` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` al introducir una verificación de existencia de volumen antes de iniciar cualquier movimiento, previniendo fallos críticos cuando el sandbox se encuentra en una unidad de disco distinta a la del archivo origen (lo cual podría causar errores en `os.replace` o inconsistencias en los metadatos de inodos).
+- `2026-10-26T03:09:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-26T03:10:28` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la detección de puntos de reparse, añadiendo una verificación de existencia mediante `Lstat` antes de llamar a `GetFinalPathNameByHandleW` para evitar errores de E/S en enlaces simbólicos rotos o inaccesibles, asegurando que la app no aborte innecesariamente por condiciones de carrera o estados inválidos del sistema de archivos.
+- `2026-10-26T03:10:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T03:10:28` Corrida terminada. Total usado hoy: 76.

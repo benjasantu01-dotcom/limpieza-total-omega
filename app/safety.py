@@ -857,6 +857,12 @@ def _get_final_path_normalized(p: Path) -> Path:
         return p.resolve()
     
     kernel32 = ctypes.windll.kernel32
+    # Comprobar existencia previa mediante Lstat (lstat es seguro para enlaces)
+    try:
+        p.lstat()
+    except (OSError, FileNotFoundError):
+        return p.resolve(strict=False)
+
     handle = kernel32.CreateFileW(
         _to_long_path(str(p)), 0, 0, None, 3, 0x02000000, None
     )
