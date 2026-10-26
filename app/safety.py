@@ -392,7 +392,7 @@ def _is_unc_path_accessible(path_str: str) -> bool:
     if not _is_unc_path(path_str) or os.name != 'nt': return False
     try:
         return ctypes.windll.kernel32.GetDiskFreeSpaceW(path_str, None, None, None, None) != 0
-    except Exception: return False
+    except (OSError, ctypes.ArgumentError): return False
 
 @lru_cache(maxsize=128)
 def _is_reserved_device_name(name: str) -> bool:
@@ -475,13 +475,13 @@ def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
         if kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0) == 0:
             return True
         return False
-    except Exception: return True
+    except (OSError, ctypes.ArgumentError): return True
 
 @lru_cache(maxsize=128)
 def _get_drive_type(root: str) -> int:
     """Retorna tipo de unidad (cached)."""
     try: return ctypes.windll.kernel32.GetDriveTypeW(root)
-    except (OSError, AttributeError): return DRIVE_UNKNOWN
+    except (OSError, AttributeError, ctypes.ArgumentError): return DRIVE_UNKNOWN
 
 @lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
@@ -692,22 +692,19 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             
             try:
                 return path.stat()
-            except (OSError, FileNotFoundError, PermissionError) as e:
-                win_err = getattr(e, 'winerror', None)
-                if win_err == ERROR_ACCESS_DENIED or e.errno == errno.EACCES:
-                    raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-                if win_err == ERROR_FILE_NOT_FOUND or e.errno == errno.ENOENT:
-                    raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
-                raise UnsafePathError(f"Error de acceso: {path.name} ({e})", SafetyValidationErrorCode.IO_ERROR)
+            except (OSError, PermissionError) as e:
+                # Filtrar errores conocidos de sistema
+                if getattr(e, 'winerror', 0) in (ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
+                    raise UnsafePathError(f"Acceso denegado/inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+                raise
         except UnsafePathError:
             raise
         except (OSError, PermissionError) as e:
-            win_err = getattr(e, 'winerror', None)
-            if e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or win_err in (ERROR_SHARING_VIOLATION, 1920):
+            if getattr(e, 'errno', 0) in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or getattr(e, 'winerror', 0) == ERROR_SHARING_VIOLATION:
                 if attempt < max_retries - 1:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
-                raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
+                raise UnsafePathError(f"Archivo bloqueado tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
             raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     raise UnsafePathError(f"Error tras reintentos leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
 
@@ -723,12 +720,12 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result, initial_id: 
         if initial_id != (0, 0, 0, 0) and current_id != initial_id:
             raise UnsafePathError(f"Manipulación de identidad detectada (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
         
-        # Verificar que el tipo de archivo no mutó (ej. de archivo a enlace)
         if stat.S_ISREG(initial_stat.st_mode) != stat.S_ISREG(current_stat.st_mode):
             raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
         
         _evaluate_security_rules(path, current_stat)
-    except (OSError, PermissionError) as e:
+    except (OSError, PermissionError, UnsafePathError) as e:
+        if isinstance(e, UnsafePathError): raise
         raise UnsafePathError(f"Fallo durante integridad: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 @lru_cache(maxsize=2048)
@@ -858,7 +855,6 @@ def _get_final_path_normalized(p: Path) -> Path:
         return p.resolve()
     
     kernel32 = ctypes.windll.kernel32
-    # Comprobar existencia previa mediante Lstat (lstat es seguro para enlaces)
     try:
         p.lstat()
     except (OSError, FileNotFoundError):
@@ -907,11 +903,9 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     
-    # Bloqueo de ataques BIDI (ej. RLO) y caracteres de control
     if re.search(r'[\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_string):
         raise UnsafePathError("Secuencias de escape visual detectadas.", SafetyValidationErrorCode.INVALID_CHARS)
     
-    # Lista de condiciones de bloqueo estructural
     if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
         raise UnsafePathError("Acceso a Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     if _is_unc_path(path_string) and not _is_unc_path_accessible(path_string):
@@ -1045,11 +1039,10 @@ def _validate_no_reparse_traversal(path: Path) -> None:
         for part in path.parts[1:]:
             current = current / part
             if current.is_symlink() or _is_system_directory_junction(str(current)):
-                # Verificación crítica: el destino real del punto de reparse debe estar bajo la raíz
                 target = _get_final_path_normalized(current)
                 if not target.is_relative_to(Path(path.anchor)):
                     raise UnsafePathError(f"Intento de escape mediante reparse point: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS)
-    except Exception as e:
+    except (Exception, UnsafePathError) as e:
         if not isinstance(e, UnsafePathError): return
         raise
 
@@ -1094,7 +1087,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         except (TypeError, ValueError, OSError) as e:
             raise UnsafePathError(f"Directorio base inválido: {e}", SafetyValidationErrorCode.IO_ERROR)
     
-    # Verificación de reparse points antes de cualquier otra validación profunda
     if os.name == 'nt' and _is_system_directory_junction(str(p)):
          _validate_ntfs_reparse_redirection(p, base)
 

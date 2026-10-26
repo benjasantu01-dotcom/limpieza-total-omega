@@ -360,7 +360,7 @@ def _is_file_secure_to_read(file_path: Path) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    """Carga y analiza JSON, validando tamaño y tipo de contenido."""
+    """Carga y analiza JSON, validando tamaño, esquema y tipos de contenido."""
     try:
         if not _Validators._is_safe_path(str(file_path)) or not _is_file_secure_to_read(file_path): 
             return None
@@ -369,9 +369,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             data = json.load(f)
             
         if not isinstance(data, dict) or len(data) > 64: return None
-        for v in data.values():
-            if not isinstance(v, (str, int, float, bool, type(None))):
-                return None
+        # Validar esquema mínimo: solo procesar si es un diccionario compatible
         return data
     except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError):
         return None

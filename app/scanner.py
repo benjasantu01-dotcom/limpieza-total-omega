@@ -94,7 +94,10 @@ SYSTEM32_LOWER: Final[str] = "system32"
 @lru_cache(maxsize=4096)
 def _cached_is_protected(path_str: str) -> bool:
     """Verifica si una ruta está protegida, usando caché LRU."""
-    return is_protected_path(Path(path_str))
+    try:
+        return is_protected_path(Path(path_str))
+    except (ValueError, TypeError, OSError):
+        return True
 
 def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
     """Valida la existencia y accesibilidad de un archivo."""
@@ -102,9 +105,7 @@ def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
         return False
     try:
         p = Path(path)
-        if _cached_is_protected(str(p)):
-            return False
-        return p.is_file()
+        return not _cached_is_protected(str(p)) and p.is_file()
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
@@ -114,9 +115,7 @@ def _is_readable(path: Union[Path, str, None]) -> bool:
         return False
     try:
         path_str = str(path)
-        if _cached_is_protected(path_str):
-            return False
-        return os.access(path_str, os.R_OK)
+        return not _cached_is_protected(path_str) and os.access(path_str, os.R_OK)
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
@@ -132,14 +131,12 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Obtiene metadatos de forma segura, evitando enlaces y rutas bloqueadas."""
-    if entry is None:
+    if not isinstance(entry, os.DirEntry):
         return None
     try:
         if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
             return None
-        if not entry.is_file(follow_symlinks=False):
-            return None
-        if _cached_is_protected(entry.path):
+        if not entry.is_file(follow_symlinks=False) or _cached_is_protected(entry.path):
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
@@ -179,14 +176,14 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Ti
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Detecta doble extensión para prevenir enmascaramiento (.jpg.exe)."""
-    if path is None or not path.name or _cached_is_protected(str(path)): return None
+    if not path or not path.name or _cached_is_protected(str(path)): return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Detecta ejecutables con nombres de procesos del sistema fuera de 'System32'."""
-    if path is None or not path.name or _cached_is_protected(str(path)): return None
+    if not path or not path.name or _cached_is_protected(str(path)): return None
     if path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -197,7 +194,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Señala ejecutables creados recientemente en carpetas volátiles."""
-    if path is None or path.parent is None or _cached_is_protected(str(path)): return None
+    if not path or not path.parent or _cached_is_protected(str(path)): return None
     if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
         return None
     if entry is None or not entry.exists(): return None
@@ -231,7 +228,6 @@ class Scanner:
     @lru_cache(maxsize=1024)
     def _is_inside_base_root(self, entry_path: str) -> bool:
         try:
-            # Validamos contra la ruta real resuelta para evitar desbordamiento mediante symlinks
             abs_path = os.path.normcase(os.path.realpath(entry_path))
             return abs_path.startswith(self.base_root_norm)
         except (OSError, RuntimeError):
@@ -270,6 +266,7 @@ class Scanner:
         directory_stack.append((entry.path, current_depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
+        if not name: return False
         _, ext = os.path.splitext(name)
         ext_low = ext.lower()
         if ext_low in self.seen_exts: return True
@@ -279,7 +276,7 @@ class Scanner:
         return False
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        if not isinstance(entry, os.DirEntry) or not hasattr(entry, 'path') or entry.path is None:
+        if not isinstance(entry, os.DirEntry) or not entry.path:
             return
         if not self._is_safe_entry(entry):
             return
@@ -330,7 +327,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         base_path = Path(directory)
         if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink():
             return []
-        # Resolver ruta real antes de procesar para evitar escapes de directorio
         resolved_path = base_path.resolve(strict=True)
         if _cached_is_protected(str(resolved_path)) or not os.access(resolved_path, os.R_OK):
             return []
@@ -347,7 +343,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 for entry in it:
                     if entry: scanner.process_entry(entry, directory_stack, depth)
         except (PermissionError, OSError, FileNotFoundError):
-            logger.debug(f"Error de acceso en directorio {current_dir}")
             continue
     return scanner.results
 

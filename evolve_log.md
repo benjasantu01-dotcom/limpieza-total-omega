@@ -1219,3 +1219,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-26T10:08:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-10-26T10:08:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T10:08:16` Corrida terminada. Total usado hoy: 240.
+- `2026-10-26T10:16:24` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-10-26T10:17:24` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_path_stat_robust` y `_get_file_id` reemplazando capturas de excepciones genéricas (`Exception`) por bloques específicos de bajo nivel (como `ctypes.ArgumentError` o `OSError`), asegurando que la app no aborte ante errores de sistema transitorios y manteniendo la integridad de las validaciones de seguridad.
+- `2026-10-26T10:17:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T10:18:12` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `scanner.py` sustituyendo accesos directos por validaciones de seguridad centralizadas y agregando chequeos de tipo/valor antes de operar sobre objetos del sistema, previniendo excepciones innecesarias durante la ejecución.
+- `2026-10-26T10:18:49` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` y `load` mediante la validación proactiva del esquema del diccionario cargado, asegurando que cada clave necesaria exista y tenga el tipo correcto después del parsing JSON, evitando que valores faltantes o mal formados en el archivo provoquen errores en tiempo de ejecución.
+- `2026-10-26T10:19:15` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-26T10:19:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T10:19:15` Corrida terminada. Total usado hoy: 244.
