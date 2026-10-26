@@ -353,7 +353,8 @@ def _is_file_secure_to_read(file_path: Path) -> bool:
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if (st.st_mode & 0o077) != 0: return False # Prohibir permisos laxos (grupo/otros)
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
+        # Un archivo de configuración lógico no debería estar vacío (mínimo JSON {})
+        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
@@ -367,7 +368,10 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             data = json.load(f)
             
         if not isinstance(data, dict) or len(data) > 64: return None
-        if not all(isinstance(v, (str, int, float, bool)) or v is None for v in data.values()): return None
+        # Validación estricta del tipo de valores contenidos para evitar deserializaciones inesperadas
+        for v in data.values():
+            if not isinstance(v, (str, int, float, bool, type(None))):
+                return None
         return data
     except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError):
         return None

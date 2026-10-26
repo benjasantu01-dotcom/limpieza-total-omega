@@ -865,3 +865,44 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-26T07:35:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-10-26T07:35:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T07:35:04` Corrida terminada. Total usado hoy: 180.
+- `2026-10-26T07:43:26` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-10-26T07:44:24` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación estricta en `_validate_structural_safety` para detectar caracteres de control (BIDI) y secuencias de escape no imprimibles, reforzando la protección contra ataques de spoofing visual en nombres de archivos que podrían engañar al usuario sobre el contenido real.
+- `2026-10-26T07:45:17` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia ante rutas con formato inválido o bloqueadas (denegación de acceso) en las heurísticas de archivo, añadiendo validaciones de existencia y saneamiento de acceso antes de procesar atributos, evitando excepciones innecesarias en `_safe_stat` y `check_recent_executable_in_downloads`.
+- `2026-10-26T07:45:45` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejora la robustez de `_read_and_parse_json` y `_file_secure_to_read` ante archivos maliciosamente grandes, vacíos o con metadatos inconsistentes, reforzando la verificación de integridad antes de cualquier operación de carga.
+- `2026-10-26T07:45:57` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.38s
+
+```
+- `2026-10-26T07:45:57` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `_resolve_and_cache_path` para incluir un manejo robusto de excepciones ante rutas inexistentes, denegadas por permisos o con formato inválido, evitando que el escaneo se detenga silenciosamente y asegurando que las entradas corruptas sean correctamente descartadas mediante el caché de estado (`_EXISTS_CACHE`).
+- `2026-10-26T07:45:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T07:45:57` Corrida terminada. Total usado hoy: 184.

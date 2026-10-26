@@ -907,6 +907,10 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     
+    # Bloqueo de ataques BIDI (ej. RLO) y caracteres de control
+    if re.search(r'[\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_string):
+        raise UnsafePathError("Secuencias de escape visual detectadas.", SafetyValidationErrorCode.INVALID_CHARS)
+    
     # Lista de condiciones de bloqueo estructural
     if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
         raise UnsafePathError("Acceso a Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
@@ -928,8 +932,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     if _RESERVED_NAMES_PATTERN.fullmatch(target_path.name):
         raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME)
-    if re.search(r'[\u200E\u200F\u202A-\u202E]', target_path.name):
-        raise UnsafePathError("Ataque de spoofing visual detectado.", SafetyValidationErrorCode.INVALID_CHARS)
 
     try:
         t_parts = target_path.parts

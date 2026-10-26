@@ -143,7 +143,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
-        if hasattr(e, 'winerror') and e.winerror == ERROR_SHARING_VIOLATION:
+        if getattr(e, 'winerror', 0) == ERROR_SHARING_VIOLATION:
             return None
         return None
     except (PermissionError, AttributeError, FileNotFoundError):
@@ -200,7 +200,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if path is None or path.parent is None or _cached_is_protected(str(path)): return None
     if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
         return None
-    if entry is None: return None
+    if entry is None or not entry.exists(): return None
     
     stats = _safe_stat(entry)
     if stats:
