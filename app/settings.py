@@ -319,12 +319,20 @@ INT_KEYS: Final[frozenset[ConfigKey]] = frozenset((
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS
 ))
 
+# Mapeo estratégico para la resolución de validadores por tipo
+_VALIDATOR_STRATEGY: Final[MappingProxyType[str, Callable[[ConfigKey, Any], Any]]] = MappingProxyType({
+    "bool": _Validators.bool,
+    "int": _Validators.int,
+    "path": _Validators.path,
+    "str": _Validators.str
+})
+
 def _get_validator_for_k(k: ConfigKey) -> _ValidatorEntry:
     """Selecciona el validador funcional según el tipo de clave."""
-    if k in BOOL_KEYS: return _ValidatorEntry(_Validators.bool)
-    if k in INT_KEYS: return _ValidatorEntry(_Validators.int)
-    if k == ConfigKey.ULTIMA_CARPETA: return _ValidatorEntry(_Validators.path)
-    return _ValidatorEntry(_Validators.str)
+    if k in BOOL_KEYS: return _ValidatorEntry(_VALIDATOR_STRATEGY["bool"])
+    if k in INT_KEYS: return _ValidatorEntry(_VALIDATOR_STRATEGY["int"])
+    if k == ConfigKey.ULTIMA_CARPETA: return _ValidatorEntry(_VALIDATOR_STRATEGY["path"])
+    return _ValidatorEntry(_VALIDATOR_STRATEGY["str"])
 
 _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingProxyType({
     k: _get_validator_for_k(k) for k in ConfigKey

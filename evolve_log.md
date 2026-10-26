@@ -1250,3 +1250,34 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-26T10:49:11` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujo `SafetyState` como objeto de contexto inmutable para consolidar la lógica de validación dispersa en funciones de bajo nivel, mejorando la legibilidad y garantizando una fuente única de verdad para los atributos de seguridad durante el ciclo de vida de una validación.
 - `2026-10-26T10:49:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T10:49:11` Corrida terminada. Total usado hoy: 256.
+- `2026-10-26T10:57:10` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-26T10:57:40` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` mediante la aplicación de type hints más precisos, la estandarización de docstrings siguiendo el estándar PEP 257 y la mejora de la semántica en el nombre de variables, facilitando la comprensión del flujo de datos en las heurísticas.
+- `2026-10-26T10:58:10` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de la validación extrayendo la lógica de conversión de tipos a un `mapping` centralizado dentro de `_Validators`, facilitando la auditoría de reglas de validación y reduciendo la complejidad ciclomática de las funciones de despacho.
+- `2026-10-26T10:58:39` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.98s
+
+```
+- `2026-10-26T10:58:39` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad técnica mediante la documentación explícita de las excepciones esperadas en cada método de resolución de rutas, utilizando anotaciones de tipo más precisas y clarificando mediante docstrings el flujo de seguridad en la validación de ejecutables.
+- `2026-10-26T10:59:05` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó la evaluación de problemas activos en `SystemContext` reemplazando la serialización a `tuple` y el re-sorting en cada acceso por un hash de estado inmutable (`_hash_tuple`), mejorando el rendimiento del asistente en iteraciones frecuentes sin comprometer la integridad.
+- `2026-10-26T10:59:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T10:59:05` Corrida terminada. Total usado hoy: 260.

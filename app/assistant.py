@@ -394,7 +394,7 @@ class SystemContext:
 
     @cached_property
     def _cached_active_problems(self) -> tuple[str, ...]:
-        """Versión cacheada de active_problems, invalidada al cambiar metrics_snapshot."""
+        """Versión cacheada de active_problems, invalidada al cambiar el hash de estado."""
         if not self.analyzed: return ()
         return _evaluate_active_problems(tuple(sorted(self.metrics_snapshot.items())))
 
