@@ -336,7 +336,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Motor central que orquestra el cálculo de métricas a través del pipeline."""
-    m_args = {k: metrics_tuple[i] for i, k in enumerate(SystemMetrics._FIELDS_TO_VALIDATE)}
+    # Pre-mapeo para evitar lookup por nombre en cada iteración
+    m_args = dict(zip(SystemMetrics._FIELDS_TO_VALIDATE, metrics_tuple))
     try:
         metrics = SystemMetrics(**m_args)
     except Exception:
@@ -359,7 +360,7 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
             metric_breakdown[entry.area] = 0
             continue
             
-    if metrics.quarantined_count > 0:
+    if quarantined > 0:
         recommendations.append("Existen elementos en cuarentena.")
         
     final_score = int(_clamp(round(total_points), 0.0, 100.0))

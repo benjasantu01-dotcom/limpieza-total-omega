@@ -793,3 +793,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-26T06:35:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-10-26T06:35:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T06:35:13` Corrida terminada. Total usado hoy: 156.
+- `2026-10-26T06:42:19` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-26T06:42:47` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas innecesarias a `os.path.abspath` y `os.path.normcase` dentro del bucle de archivos, reutilizando la información del `DirEntry` ya normalizada y aplicando un filtro `set` para `never_touch_lower` en lugar de una lista para reducir la complejidad de búsqueda a O(1).
+- `2026-10-26T06:43:15` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Mejoré la eficiencia del recorrido de archivos reemplazando el uso de `path.relative_to(root)` por `path.parts` y el cálculo de la carpeta raíz (`top_folder_name`), evitando llamadas costosas a métodos de objeto `Path` que realizan validaciones internas innecesarias dentro de un bucle de alta frecuencia.
+- `2026-10-26T06:43:38` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-26T06:44:03` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el rendimiento mediante la eliminación de búsquedas repetitivas en el pipeline y la pre-compilación de la clave de acceso a métricas, transformando las tuplas de búsqueda en una estructura indexada más eficiente dentro del proceso de `_compute_cached`.
+- `2026-10-26T06:44:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T06:44:03` Corrida terminada. Total usado hoy: 160.

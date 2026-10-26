@@ -199,11 +199,6 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str) -> bool:
     """
     Evalúa mediante heurísticas de seguridad si una entrada de disco debe ser ignorada.
-    
-    Args:
-        entry: Objeto DirEntry actual.
-        scan_ctx: Contexto de escaneo con reglas de seguridad.
-        norm_path: Ruta normalizada para validación de sandbox.
     """
     if entry.name.lower() in scan_ctx.never_touch_lower: return True
     if not _is_within_sandbox(norm_path, scan_ctx.sandbox_base_norm): return True
@@ -218,7 +213,7 @@ def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str
 def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     """Calcula el tamaño de un archivo individual evitando conteos múltiples por hardlinks."""
     try:
-        if not entry.is_file() or entry.is_symlink(): return 0
+        # Usamos entry.stat directamente (es más rápido que llamar a os.stat)
         st = entry.stat(follow_symlinks=False)
         if st.st_size > 0:
             file_id = (st.st_dev, st.st_ino)
@@ -231,9 +226,6 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
     Calcula el tamaño acumulado de una jerarquía de directorios de forma recursiva.
-    
-    Implementa un mecanismo anti-recursión (depth) y seguimiento de visitados 
-    (visited_dirs) para prevenir ciclos en el sistema de archivos.
     """
     if not root_path or depth > scan_ctx.max_depth:
         return ScanResult(0, True)
@@ -246,14 +238,9 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm) or root_norm in scan_ctx.visited_dirs:
         return ScanResult(0, True)
 
-    if not os.path.isdir(root_path) or not os.access(root_path, os.R_OK) or is_protected_path(Path(root_path)):
-        return ScanResult(0, True)
-
-    if os.path.islink(root_path) or _IS_JUNCTION_FN(root_path):
-        return ScanResult(0, True)
-    
     scan_ctx.visited_dirs.add(root_norm)
     total_bytes = 0
+    
     try:
         with os.scandir(root_path) as iterator:
             for entry in iterator:
@@ -264,7 +251,7 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
                     if entry.is_dir(follow_symlinks=False):
                         subdir_result = _sum_directory_recursive(entry.path, scan_ctx, depth + 1)
                         total_bytes += subdir_result.bytes_found
-                    else:
+                    elif entry.is_file(follow_symlinks=False):
                         total_bytes += _process_file_in_dir(entry, scan_ctx)
                 except (OSError, PermissionError):
                     continue
