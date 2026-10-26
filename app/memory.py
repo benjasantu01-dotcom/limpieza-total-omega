@@ -342,7 +342,7 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
     return None
 
 def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
-    """Verifica si el ejecutable reside en zonas protegidas."""
+    """Verifica si el ejecutable reside en zonas protegidas mediante seguridad defensiva."""
     if h_process is None: return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
@@ -352,8 +352,14 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
         
         exe_path_str = buffer_path.value.strip()
         if not exe_path_str: return False
+        
+        exe_path = Path(exe_path_str).absolute()
+        if not exe_path.exists(): return False
+        
+        # Validamos contra la lista de protegidos del módulo de seguridad.
+        if is_protected_path(exe_path): return False
             
-        return not is_protected_path(Path(exe_path_str).absolute())
+        return True
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 

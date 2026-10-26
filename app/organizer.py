@@ -362,6 +362,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         for item in dest.iterdir():
             try:
                 if not item.is_file() or item.is_symlink() or _is_junction(item): continue
+                # Validación estricta: asegurar que el item resida físicamente bajo el directorio de revisión
                 if not item.resolve().is_relative_to(dest): continue
                 if item.exists() and is_safe_to_modify(item) and not is_protected_path(item):
                     item.unlink()
