@@ -684,6 +684,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                         raise UnsafePathError(f"Archivo bloqueado: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
                     if err == ERROR_FILE_NOT_FOUND:
                         raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+                    if err == ERROR_ACCESS_DENIED:
+                        raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
                 else:
                     kernel32.CloseHandle(handle)
             
