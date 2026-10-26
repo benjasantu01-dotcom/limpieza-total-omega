@@ -186,7 +186,8 @@ class _SettingsManager:
             if resolved_path.exists():
                 st = resolved_path.lstat()
                 if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-                if (st.st_mode & 0o077) != 0: return False # Prohibir permisos laxos (grupo/otros)
+                # Prohibir permisos laxos (grupo/otros) y verificar propiedad
+                if (st.st_mode & 0o077) != 0: return False 
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             
             with open(temp_path, "w", encoding="utf-8") as f:
@@ -350,10 +351,10 @@ def _is_file_secure_to_read(file_path: Path) -> bool:
     """Verifica permisos de archivo y metadatos antes de lectura de configuración."""
     try:
         st = file_path.lstat()
+        # Verificar integridad del archivo (regular, sin hardlinks, propietario correcto)
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-        if (st.st_mode & 0o077) != 0: return False # Prohibir permisos laxos (grupo/otros)
+        if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        # Un archivo de configuración lógico no debería estar vacío (mínimo JSON {})
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
@@ -368,7 +369,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             data = json.load(f)
             
         if not isinstance(data, dict) or len(data) > 64: return None
-        # Validación estricta del tipo de valores contenidos para evitar deserializaciones inesperadas
         for v in data.values():
             if not isinstance(v, (str, int, float, bool, type(None))):
                 return None
@@ -432,7 +432,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if _MANAGER.perform_atomic_write(config_path, serialized):
             _MANAGER._cached_settings = cleaned_settings
             _MANAGER._last_size = len(serialized_bytes)
-            # Actualizamos el mtime tras escritura exitosa para evitar re-validación
             _MANAGER._last_mtime = config_path.stat().st_mtime
             return config_path
         return None
