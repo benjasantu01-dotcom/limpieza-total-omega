@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 218
+- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 131 | 16 | 28 | 16 | 145 |
-| 2026-10-26 | 67 | 3 | 18 | 7 | 73 |
+| 2026-10-25 | 130 | 16 | 28 | 15 | 143 |
+| 2026-10-26 | 69 | 4 | 19 | 7 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **40**
 - rendimiento: **39**
-- seguridad defensiva: **36**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **35**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
+- `browser.py`: **20**
 - `quarantine.py`: **19**
-- `browser.py`: **19**
 - `scanner.py`: **19**
+- `memory.py`: **18**
 - `assistant.py`: **17**
 - `healthscore.py`: **16**
 - `safety.py`: **15**
@@ -40,12 +40,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **14**
 - `organizer.py`: **11**
 - `duplicates.py`: **10**
+- `branding.py`: **10**
 - `main.py`: **9**
-- `branding.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T07:15:23` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante rutas inexistentes o malformadas en `_resolve_browser_path` y se mejoró la validación de `base_directories` ante posibles errores de acceso a disco, asegurando que el módulo no aborte si el sistema operativo deniega la lectura de directorios de perfil.
+- `2026-10-26T07:15:14` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante casos límite geométricos y de sistema, asegurando que las operaciones de archivo no fallen ante rutas inexistentes o inaccesibles, y que el renderizado de canvas sea defensivo ante escalas nulas o no finitas.
 - `2026-10-26T07:04:11` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de una caché local (`seen_normcase`) basada en `os.path.normcase` para evitar llamadas redundantes a `os.path.realpath` y `os.path.normcase` dentro del bucle de procesamiento, reduciendo drásticamente las operaciones de E/S.
 - `2026-10-26T07:03:46` **safety.py** (rendimiento): Se implementó un mecanismo de caché local `_SECURITY_CACHE` con una clave basada en `st_ino` (índice de archivo) y `st_mtime` para evitar la sobrecarga de consultas repetitivas de metadatos en disco dentro de `is_safe_to_modify` y operaciones masivas, optimizando significativamente el rendimiento durante escaneos.
 - `2026-10-26T06:56:09` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `_get_sha256` y `_is_file_exclusive` eliminando llamadas redundantes a `exists()` y `stat()` mediante el uso de excepciones, lo que reduce la latencia de I/O en operaciones repetitivas sobre el mismo archivo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T06:23:57` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `safety.py` mediante la refactorización de `_validate_structural_safety` para extraer lógica redundante y simplificar su flujo de control, mejorando la claridad de los chequeos de integridad sin alterar su funcionalidad.
 - `2026-10-26T06:14:23` **memory.py** (legibilidad y documentación): Se introdujeron type hints explícitos en la estructura `MEMORYSTATUSEX` y se mejoró la claridad de los `docstrings` en las funciones de bajo nivel de la API de Windows, facilitando la comprensión de la interacción con los punteros de C y el ciclo de vida de los handles.
 - `2026-10-26T06:12:54` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de cómputo y el pipeline, especificando el propósito y el contrato de los tipos, además de renombrar `_PIPELINE` a `PIPELINE_DEFINITIONS` para clarificar que es la configuración maestra del sistema.
-- `2026-10-26T06:03:02` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y documentación técnica del módulo mediante la adición de Type Hints explícitos para las estructuras de datos complejas (`FolderMetrics` y `SummaryData`) y la clarificación de los docstrings en las funciones críticas de agregación para explicar mejor el flujo de datos.
-- `2026-10-26T06:02:37` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` documentando explícitamente los parámetros y el comportamiento de las funciones críticas (`ScanContext`, `_sum_directory_recursive` y `_should_skip_entry`) mediante docstrings informativos, y agregué type hints más precisos para clarificar las estructuras de datos complejas.

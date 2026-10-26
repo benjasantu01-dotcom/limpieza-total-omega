@@ -180,13 +180,13 @@ def base_directories() -> List[Path]:
     if not isinstance(local_env, str) or not local_env.strip() or _is_unc_path(local_env):
         return []
     
-    p = Path(local_env)
-    if p.exists() and p.is_dir() and os.access(p, os.R_OK):
-        try:
+    try:
+        p = Path(local_env).resolve()
+        if p.exists() and p.is_dir() and os.access(p, os.R_OK):
             if is_safe_to_modify(p) and not is_protected_path(p):
                 return [p]
-        except (OSError, RuntimeError):
-            pass
+    except (OSError, RuntimeError):
+        pass
     return []
 
 @safe_path_operation(False)
@@ -288,9 +288,14 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
     """Combina el directorio base del usuario ya resuelto con la ruta relativa del navegador."""
     if not _is_valid_rel_path(rel_str): return Path()
     try:
-        target = base_resolved.joinpath(*rel_str.split("\\"))
-        if target.exists() and target.is_dir() and is_safe_to_modify(target):
-            return target
+        parts = rel_str.split("\\")
+        target = base_resolved.joinpath(*parts)
+        # Verificamos si existe y si la normalización sigue dentro del sandbox
+        if target.exists() and target.is_dir():
+            target_norm = os.path.normcase(str(target.resolve()))
+            base_norm = os.path.normcase(str(base_resolved))
+            if _is_within_sandbox(target_norm, base_norm) and is_safe_to_modify(target):
+                return target
         return Path()
     except (OSError, RuntimeError):
         return Path()

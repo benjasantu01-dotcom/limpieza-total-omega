@@ -350,17 +350,16 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if not filter_safe_paths([dest_path]): return None
         if dest_path.is_dir(): return None
         
-        # Validación de integridad: el padre debe ser seguro
+        # Asegurar que el padre sea seguro y exista
         parent = dest_path.parent
-        if not filter_safe_paths([parent]):
-            return None
-            
-        # Crear directorios solo si la ruta padre es segura
         if not parent.exists():
             if is_safe_to_modify(parent):
                 parent.mkdir(parents=True, exist_ok=True)
             else:
                 return None
+        
+        if not filter_safe_paths([parent]):
+            return None
             
         # Asegurar explícitamente que la operación de escritura es permitida y segura
         if not is_safe_to_modify(dest_path):
@@ -383,6 +382,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float], ...]:
     """Calcula los parámetros geométricos para las franjas dinámicas del escudo."""
+    if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     tf = STRIPE_THICKNESS_SCALE * scale
     params = []
     for i in range(n):
@@ -396,8 +396,9 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     if not hasattr(canvas, "create_rectangle") or not math.isfinite(scale) or scale <= 0:
         return
     n = max(6, int(STRIPE_COUNT_FACTOR * scale))
-    by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + 64 * scale
     params = _get_stripe_params(scale, n)
+    if not params: return
+    by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + 64 * scale
     for s in get_gradient_segments(n):
         p_start, p_end = params[s.start_index], params[s.end_index - 1]
         canvas.create_rectangle(cx - p_start[0], by + p_start[1], cx + p_start[0], by + p_end[2], fill=s.hex_color, outline="")

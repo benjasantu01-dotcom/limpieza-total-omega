@@ -815,3 +815,39 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-26T07:04:27` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
 - `2026-10-26T07:04:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T07:04:27` Corrida terminada. Total usado hoy: 168.
+- `2026-10-26T07:12:54` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-10-26T07:13:33` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-26T07:14:13` Tests FALLARON:
+```
+ __________________
+
+    def test_build_context_reads_fields_one_by_one():
+        """Copia campo por campo, no el objeto entero, para no arrastrar datos."""
+        class MetricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 1.37s
+
+```
+- `2026-10-26T07:14:13` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_validate_ingestion_source` agregando una validación explícita para evitar que objetos con métodos o atributos dinámicos inesperados pasen a la lógica de ingesta, y corregí el acceso a atributos en `_apply_field` para que verifique que el valor sea un tipo básico permitido antes de intentar cualquier conversión.
+- `2026-10-26T07:15:14` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y `draw_logo` ante casos límite geométricos y de sistema, asegurando que las operaciones de archivo no fallen ante rutas inexistentes o inaccesibles, y que el renderizado de canvas sea defensivo ante escalas nulas o no finitas.
+- `2026-10-26T07:15:23` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante rutas inexistentes o malformadas en `_resolve_browser_path` y se mejoró la validación de `base_directories` ante posibles errores de acceso a disco, asegurando que el módulo no aborte si el sistema operativo deniega la lectura de directorios de perfil.
+- `2026-10-26T07:15:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T07:15:23` Corrida terminada. Total usado hoy: 172.
