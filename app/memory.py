@@ -99,7 +99,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura para la API GlobalMemoryStatusEx de Windows (reporte global)."""
+    """Estructura de datos para la API GlobalMemoryStatusEx de Windows."""
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -113,8 +113,8 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura para la API GetProcessMemoryInfo de Windows (detalle de proceso)."""
-    _fields_: List[Tuple[str, ctypes.c_size_t | wintypes.DWORD]] = [
+    """Estructura utilizada para recibir estadísticas de memoria de un proceso mediante GetProcessMemoryInfo."""
+    _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
         ("PeakWorkingSetSize", ctypes.c_size_t),
@@ -182,7 +182,7 @@ def format_bytes(num: Optional[int | float]) -> str:
         return "0 B"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Inicializa la estructura Win32 con el tamaño requerido por el sistema."""
+    """Inicializa la estructura Win32 con el tamaño requerido por el sistema para GlobalMemoryStatusEx."""
     mem_status = MEMORYSTATUSEX()
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
@@ -316,13 +316,13 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
-    """Solicita un handle de proceso con privilegios específicos usando WindowsAPI."""
+    """
+    Solicita un handle de proceso con privilegios específicos.
+    Retorna el handle como un objeto ctypes o None si el acceso es denegado o el proceso no existe.
+    """
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-        # Si falla (handle es 0), verificamos si es por acceso denegado (5)
         if not handle or handle == INVALID_HANDLE_VALUE:
-            if WindowsAPI.kernel32.GetLastError() == 5:
-                return None
             return None
         return wintypes.HANDLE(handle)
     except (ctypes.WinError, OSError):
@@ -330,7 +330,8 @@ def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HAND
 
 def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """
-    Invoca GetProcessMemoryInfo para obtener el WorkingSet del proceso.
+    Invoca la API de Windows GetProcessMemoryInfo para extraer el WorkingSet actual de un proceso.
+    Recibe un handle abierto y una estructura pre-inicializada como buffer.
     """
     if h_process is None: return None
     try:
@@ -356,7 +357,6 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
         exe_path = Path(exe_path_str).absolute()
         if not exe_path.exists(): return False
         
-        # Validamos contra la lista de protegidos del módulo de seguridad.
         if is_protected_path(exe_path): return False
             
         return True
@@ -382,7 +382,6 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         
         try:
             ws = _query_working_set_bytes(h_process, pmc)
-            # Pre-filtro: descartamos procesos pequeños antes de llamar a GetModuleFileNameExW (muy costoso)
             if ws is not None and ws > (10 * BYTES_IN_MB):
                 if _is_process_executable_safe(h_process):
                     yield ProcessMemory(f"PID {pid}", pid, ws)

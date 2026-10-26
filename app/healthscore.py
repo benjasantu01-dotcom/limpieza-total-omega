@@ -181,7 +181,7 @@ _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
     "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_arranque, lambda m, r: r < WARN_THRESHOLD_LOW),),
 }
 
-_PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
+PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES["seguridad"]),
     PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES["disco"]),
     PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES["memoria"]),
@@ -190,7 +190,7 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES["arranque"]),
 )
 
-_verify_pipeline_integrity(WEIGHTS, _PIPELINE)
+_verify_pipeline_integrity(WEIGHTS, PIPELINE_DEFINITIONS)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
     """Calcula el score normalizado basado en MB de archivos basura."""
@@ -335,7 +335,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 @lru_cache(maxsize=128)
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
-    """Motor de cómputo cacheado del HealthResult."""
+    """Motor central que orquestra el cálculo de métricas a través del pipeline."""
     m_args = {k: metrics_tuple[i] for i, k in enumerate(SystemMetrics._FIELDS_TO_VALIDATE)}
     try:
         metrics = SystemMetrics(**m_args)
@@ -346,7 +346,7 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
     metric_breakdown: Dict[MetricKey, int] = {}
     total_points = 0.0
     
-    for entry in _PIPELINE:
+    for entry in PIPELINE_DEFINITIONS:
         try:
             area_ratio = entry.scorer(metrics)
             recs = _evaluate_rules(metrics, entry.rules, area_ratio)
@@ -399,7 +399,7 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe de salud no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    for entry in _PIPELINE:
+    for entry in PIPELINE_DEFINITIONS:
         p = result.breakdown.get(entry.area, 0)
         lines.append(f"  {entry.area.capitalize():<12} {p:>2}/{entry.weight:<2} [{_render_bar(p, entry.weight)}]")
     
