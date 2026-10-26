@@ -1204,3 +1204,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-26T09:48:42` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_valid_rel_path` y `_resolve_browser_path` añadiendo validaciones explícitas contra rutas que contienen componentes nulos o inyectados, y asegurando que `base_directories` filtre correctamente entradas `None` o malformadas mediante tipado y chequeos proactivos antes de proceder.
 - `2026-10-26T09:48:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T09:48:42` Corrida terminada. Total usado hoy: 232.
+- `2026-10-26T09:55:56` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-10-26T09:56:24` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-26T09:56:49` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `group_by_size` y `_collect_candidates` mediante la validación explícita de `Path` y el uso de `stat()` seguro, evitando que excepciones en el sistema de archivos (como denegaciones de acceso o rutas malformadas) interrumpan el análisis global.
+- `2026-10-26T09:57:18` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `Grade.from_score` añadiendo validaciones de tipo explícitas y manejo de errores ante entradas inesperadas (`None` o tipos incorrectos), evitando que una métrica mal formada rompa el reporte de salud.
+- `2026-10-26T09:57:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T09:58:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-26T09:58:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T09:58:12` Corrida terminada. Total usado hoy: 236.

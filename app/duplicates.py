@@ -143,13 +143,15 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa una lista de rutas según su tamaño en bytes, filtrando archivos no válidos."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_size
-    for item in (Path(p) for p in paths if p):
+    for p in paths:
+        if not p: continue
+        item = Path(p)
         if _safe_path_check(item) and item.is_file():
             try:
                 st = item.stat()
                 if _is_valid_candidate(item, st.st_size):
                     groups_by_size[st.st_size].append(item)
-            except (OSError, PermissionError): continue
+            except (OSError, PermissionError, FileNotFoundError): continue
     return groups_by_size
 
 
@@ -163,7 +165,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     if not directories: return raw_map
     queue: deque[Tuple[Path, int]] = deque()
-    for d in (Path(d) for d in directories if d):
+    for d_raw in directories:
+        if not d_raw: continue
+        d = Path(d_raw)
         if _safe_path_check(d):
             queue.append((d, 0))
     
@@ -190,8 +194,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                     visited.add(inode)
                                     raw_map[stat.st_size].append(path)
                                     size_counts[stat.st_size] += 1
-                    except (OSError, PermissionError): continue
-        except (OSError, PermissionError): continue
+                    except (OSError, PermissionError, FileNotFoundError): continue
+        except (OSError, PermissionError, FileNotFoundError): continue
     return {sz: paths for sz, paths in raw_map.items() if size_counts[sz] > 1}
 
 
@@ -241,7 +245,7 @@ def _get_mtime(path: Path) -> float:
     """Obtiene el tiempo de última modificación del archivo de forma segura."""
     if path is None or not isinstance(path, Path) or not _safe_path_check(path):
         return float('inf')
-    with suppress(OSError, PermissionError):
+    with suppress(OSError, PermissionError, FileNotFoundError):
         return path.stat().st_mtime
     return float('inf')
 

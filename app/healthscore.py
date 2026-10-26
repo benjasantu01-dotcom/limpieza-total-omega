@@ -62,10 +62,13 @@ class Grade(Enum):
     F = "F"
 
     @classmethod
-    def from_score(cls, score: float | int) -> str:
+    def from_score(cls, score: float | int | None) -> str:
         """Convierte una puntuación numérica a su categoría alfabética equivalente."""
+        if score is None:
+            return cls.F.value
         try:
             val = float(score)
+            if not math.isfinite(val): return cls.F.value
         except (TypeError, ValueError):
             return cls.F.value
         if val >= 90: return cls.A.value
@@ -404,9 +407,10 @@ def summarize(result: HealthResult | None) -> List[str]:
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for entry in PIPELINE_DEFINITIONS:
         p = result.breakdown.get(entry.area, 0)
+        if not isinstance(p, int): p = 0
         lines.append(f"  {entry.area.capitalize():<12} {p:>2}/{entry.weight:<2} [{_render_bar(p, entry.weight)}]")
     
-    recs = [r for r in result.recommendations if r]
+    recs = [r for r in result.recommendations if isinstance(r, str) and r]
     if not recs:
         recs = ["No hay advertencias activas."]
         
