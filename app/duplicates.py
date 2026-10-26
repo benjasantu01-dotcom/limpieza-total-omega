@@ -182,6 +182,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in it:
                     try:
                         path = Path(entry.path)
+                        if is_protected_path(path): continue
                         if not _safe_path_check(path): continue
                         if entry.is_dir(follow_symlinks=False):
                             queue.append((path, depth + 1))

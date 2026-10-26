@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 81 | 8 | 16 | 11 | 96 |
-| 2026-10-26 | 119 | 9 | 35 | 12 | 117 |
+| 2026-10-25 | 81 | 8 | 16 | 11 | 92 |
+| 2026-10-26 | 120 | 9 | 36 | 12 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **42**
 - rendimiento: **38**
-- seguridad defensiva: **30**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **14**
 - `organizer.py`: **13**
 - `branding.py`: **11**
-- `duplicates.py`: **9**
+- `duplicates.py`: **10**
 - `startup.py`: **7**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T12:29:46` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `is_protected_path` al iterar los directorios, garantizando que el escaneo no acceda a rutas restringidas incluso si el sistema operativo permite la lectura.
 - `2026-10-26T12:20:53` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la validación explícita de `is_safe_to_modify` antes de procesar cada subdirectorio, evitando así que el escáner se introduzca en rutas protegidas que podrían haber sido alcanzadas mediante enlaces simbólicos o jerarquías complejas no detectadas previamente.
 - `2026-10-26T12:20:37` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` añadiendo una comprobación adicional mediante `is_protected_path` sobre la ruta de destino, garantizando que incluso si `ensure_safe_to_modify` pasara, el módulo no proceda si la ruta está explícitamente marcada como prohibida por las políticas de seguridad del sistema.
 - `2026-10-26T12:20:05` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` reforzando la desinfección del campo `grade` y asegurando que las comparaciones de métricas utilicen comparaciones booleanas explícitas, evitando el riesgo de evaluar valores `None` o estados inesperados como verdaderos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T11:29:57` **scanner.py** (rendimiento): Se ha optimizado la estructura de datos `seen_exts` en la clase `Scanner` para utilizar un `frozenset` pre-calculado, evitando manipulaciones repetitivas de conjuntos y mejorando la velocidad de búsqueda durante la iteración sobre el sistema de archivos.
 - `2026-10-26T11:29:44` **safety.py** (rendimiento): Optimicé el rendimiento de las validaciones de seguridad centralizando y reduciendo la redundancia de las llamadas a `_get_file_attrs` y `os.path.abspath`, implementando una caché de nivel de módulo para `_is_protected_path` y refactorizando `_is_kernel_managed` para minimizar las reconstrucciones de `Path` dentro del bucle de validación.
 - `2026-10-26T11:20:43` **organizer.py** (rendimiento): Se optimizó el escaneo del sistema de archivos reemplazando el uso intensivo de `Path.resolve()` (que realiza consultas al sistema de archivos por cada llamada) por el uso de los atributos ya disponibles en `os.DirEntry` y una lógica de caché de `visited` más eficiente, reduciendo drásticamente las llamadas redundantes al SO en el bucle principal.
-- `2026-10-26T11:20:30` **memory.py** (rendimiento): Se optimizó el proceso de enumeración de procesos (`_iter_process_memory`) moviendo la llamada costosa `GetModuleFileNameExW` (a través de `_is_process_executable_safe`) fuera del bucle principal, aplicando primero los filtros más económicos (PID, acceso y tamaño) para reducir drásticamente el número de llamadas al sistema.

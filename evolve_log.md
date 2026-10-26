@@ -1375,3 +1375,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T12:20:53` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la validación explícita de `is_safe_to_modify` antes de procesar cada subdirectorio, evitando así que el escáner se introduzca en rutas protegidas que podrían haber sido alcanzadas mediante enlaces simbólicos o jerarquías complejas no detectadas previamente.
 - `2026-10-26T12:20:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T12:20:53` Corrida terminada. Total usado hoy: 292.
+- `2026-10-26T12:28:53` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-10-26T12:29:22` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-10-26T12:29:46` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `is_protected_path` al iterar los directorios, garantizando que el escaneo no acceda a rutas restringidas incluso si el sistema operativo permite la lectura.
+- `2026-10-26T12:30:16` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-10-26T12:31:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-26T12:32:14` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-26T12:32:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T12:32:14` Corrida terminada. Total usado hoy: 296.
