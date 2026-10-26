@@ -98,27 +98,26 @@ def _cached_is_protected(path_str: str) -> bool:
 
 def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
     """Valida la existencia y accesibilidad de un archivo antes de procesarlo."""
-    if path is None:
+    if not isinstance(path, (Path, str)) or not path:
         return False
     try:
         p = Path(path)
-        path_str = str(p)
-        if _cached_is_protected(path_str):
+        if _cached_is_protected(str(p)):
             return False
         return p.is_file()
-    except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError):
+    except (OSError, PermissionError, ValueError, TypeError):
         return False
 
 def _is_readable(path: Union[Path, str, None]) -> bool:
     """Verifica si el sistema operativo permite lectura en la ruta indicada mediante os.access."""
-    if path is None:
+    if not isinstance(path, (Path, str)) or not path:
         return False
     try:
         path_str = str(path)
         if _cached_is_protected(path_str):
             return False
         return os.access(path_str, os.R_OK)
-    except (OSError, PermissionError, ValueError, AttributeError, TypeError):
+    except (OSError, PermissionError, ValueError, TypeError):
         return False
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
@@ -144,7 +143,6 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
-        # Si el archivo está en uso por otro proceso, ignorar silenciosamente
         if hasattr(e, 'winerror') and e.winerror == ERROR_SHARING_VIOLATION:
             return None
         return None
@@ -236,7 +234,6 @@ class Scanner:
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
         self.seen_exts: set[str] = set()
-        # Normalización estricta para garantizar aislamiento
         self.base_root_norm: str = os.path.normcase(os.path.realpath(base_root))
         self.now_ts: float = datetime.now().timestamp()
 
@@ -258,12 +255,7 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """
-        Realiza comprobaciones de seguridad jerárquicas antes de acceder a la entrada.
-        
-        Verifica: nombres inválidos, puntos de reanálisis, rutas protegidas globalmente,
-        formato de ruta y que la entrada se mantenga dentro del árbol base definido.
-        """
+        """Realiza comprobaciones de seguridad jerárquicas antes de acceder a la entrada."""
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         
@@ -284,11 +276,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """
-        Gestiona la adición de directorios válidos a la pila para búsqueda DFS.
-        
-        Implementa un control de profundidad máxima para prevenir desbordamientos.
-        """
+        """Gestiona la adición de directorios válidos a la pila para búsqueda DFS."""
         if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
         
@@ -311,12 +299,7 @@ class Scanner:
         return False
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """
-        Procesa una entrada del sistema de archivos mediante DFS.
-        
-        Si es archivo candidato, lo envía a las heurísticas. Si es directorio,
-        lo añade a la pila de procesamiento si es seguro y no ha sido visitado.
-        """
+        """Procesa una entrada del sistema de archivos mediante DFS."""
         if not isinstance(entry, os.DirEntry) or not hasattr(entry, 'path') or entry.path is None:
             return
             
@@ -373,7 +356,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         if not base_path.exists() or not base_path.is_dir():
             return []
         base_path = base_path.resolve(strict=True)
-        # Impedir el escaneo de raíz en caso de que sea symlink
         if base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
             return []
         scanner: Scanner = Scanner(base_root=base_path)

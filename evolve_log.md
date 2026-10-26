@@ -1546,3 +1546,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-26T01:09:28` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones en `stage_for_review` y `delete_reviewed` implementando chequeos explícitos para valores nulos o tipos incorrectos, evitando que errores de lógica en las llamadas externas comprometan la integridad de las rutas procesadas.
 - `2026-10-26T01:09:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T01:09:28` Corrida terminada. Total usado hoy: 28.
+- `2026-10-26T01:16:29` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-10-26T01:17:18` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine.py` mediante la validación proactiva de parámetros en funciones críticas (como `purge_item` y `list_items`) y la centralización del manejo de excepciones, evitando que rutas `None` o entradas malformadas inyecten estados inválidos en el flujo de trabajo.
+- `2026-10-26T01:17:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-10-26T01:17:56` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 5% del original (posible pérdida de código)
+- `2026-10-26T01:18:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T01:18:21` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_valid_file_path` y `_is_readable` reemplazando los chequeos implícitos por validaciones de tipo explícitas (`isinstance(..., Path)`) y capturando errores de forma más granular para evitar comportamientos inesperados ante entradas nulas o rutas malformadas, alineándose con el enfoque de manejo de errores y validación de entradas.
+- `2026-10-26T01:18:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T01:18:21` Corrida terminada. Total usado hoy: 32.
