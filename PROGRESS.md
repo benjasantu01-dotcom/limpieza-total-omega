@@ -9,35 +9,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 216
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 130 | 16 | 28 | 15 | 143 |
-| 2026-10-26 | 69 | 4 | 19 | 7 | 73 |
+| 2026-10-25 | 128 | 16 | 27 | 15 | 142 |
+| 2026-10-26 | 71 | 4 | 20 | 8 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **40**
 - rendimiento: **39**
-- seguridad defensiva: **35**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
-- `quarantine.py`: **19**
 - `scanner.py`: **19**
 - `memory.py`: **18**
+- `quarantine.py`: **18**
+- `healthscore.py`: **17**
 - `assistant.py`: **17**
-- `healthscore.py`: **16**
-- `safety.py`: **15**
+- `diskreport.py`: **15**
 - `settings.py`: **14**
-- `diskreport.py`: **14**
+- `safety.py`: **14**
 - `organizer.py`: **11**
 - `duplicates.py`: **10**
 - `branding.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T07:24:23` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados de entrada inesperados en `SystemMetrics` evitando la propagación de errores de validación a través de una verificación de integridad más estricta antes del procesamiento en caché, previniendo posibles estados inconsistentes del objeto.
+- `2026-10-26T07:23:34` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `diskreport.py` ante errores de acceso a disco durante el escaneo al envolver la llamada `_safe_stat` en `walk_files`, asegurando que archivos bloqueados o con permisos denegados no aborten la operación completa del generador.
 - `2026-10-26T07:15:23` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante rutas inexistentes o malformadas en `_resolve_browser_path` y se mejoró la validación de `base_directories` ante posibles errores de acceso a disco, asegurando que el módulo no aborte si el sistema operativo deniega la lectura de directorios de perfil.
 - `2026-10-26T07:15:14` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante casos límite geométricos y de sistema, asegurando que las operaciones de archivo no fallen ante rutas inexistentes o inaccesibles, y que el renderizado de canvas sea defensivo ante escalas nulas o no finitas.
 - `2026-10-26T07:04:11` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de una caché local (`seen_normcase`) basada en `os.path.normcase` para evitar llamadas redundantes a `os.path.realpath` y `os.path.normcase` dentro del bucle de procesamiento, reduciendo drásticamente las operaciones de E/S.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T06:32:55` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los métodos críticos de gestión de estado (`_SettingsManager`) y validación, clarificando la intención detrás de las operaciones de seguridad y persistencia atómica.
 - `2026-10-26T06:24:16` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo PEP 257) y se han corregido tipos y nombres de argumentos en las funciones de heurística para garantizar claridad, consistencia y una mejor experiencia de desarrollo.
 - `2026-10-26T06:23:57` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `safety.py` mediante la refactorización de `_validate_structural_safety` para extraer lógica redundante y simplificar su flujo de control, mejorando la claridad de los chequeos de integridad sin alterar su funcionalidad.
-- `2026-10-26T06:14:23` **memory.py** (legibilidad y documentación): Se introdujeron type hints explícitos en la estructura `MEMORYSTATUSEX` y se mejoró la claridad de los `docstrings` en las funciones de bajo nivel de la API de Windows, facilitando la comprensión de la interacción con los punteros de C y el ciclo de vida de los handles.
-- `2026-10-26T06:12:54` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de cómputo y el pipeline, especificando el propósito y el contrato de los tipos, además de renombrar `_PIPELINE` a `PIPELINE_DEFINITIONS` para clarificar que es la configuración maestra del sistema.

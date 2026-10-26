@@ -328,7 +328,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, entry.path)):
                             continue
                         
-                        st = entry.stat(follow_symlinks=False)
+                        st = _safe_stat(entry.path)
+                        if st is None:
+                            continue
                             
                         if entry.is_dir(follow_symlinks=False):
                             inode = (st.st_dev, st.st_ino)
