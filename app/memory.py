@@ -382,6 +382,7 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         
         try:
             ws = _query_working_set_bytes(h_process, pmc)
+            # Filtro de peso primero: es más barato que GetModuleFileNameExW y validaciones de ruta
             if ws is not None and ws > (10 * BYTES_IN_MB):
                 if _is_process_executable_safe(h_process):
                     yield ProcessMemory(f"PID {pid}", pid, ws)

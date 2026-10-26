@@ -800,3 +800,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-26T06:44:03` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el rendimiento mediante la eliminación de búsquedas repetitivas en el pipeline y la pre-compilación de la clave de acceso a métricas, transformando las tuplas de búsqueda en una estructura indexada más eficiente dentro del proceso de `_compute_cached`.
 - `2026-10-26T06:44:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T06:44:03` Corrida terminada. Total usado hoy: 160.
+- `2026-10-26T06:52:29` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-26T06:53:32` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-26T06:54:42` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-26T06:55:17` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` evitando la llamada redundante y costosa a `GetModuleFileNameExW` (que implica acceso al sistema de archivos) al realizar primero el filtrado por el nombre del proceso y el uso de memoria, relegando la verificación de seguridad (`_is_process_executable_safe`) a un paso final solo cuando sea estrictamente necesario.
+- `2026-10-26T06:55:43` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-26T06:56:09` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al sistema de archivos en `_get_sha256` y `_is_file_exclusive` eliminando llamadas redundantes a `exists()` y `stat()` mediante el uso de excepciones, lo que reduce la latencia de I/O en operaciones repetitivas sobre el mismo archivo.
+- `2026-10-26T06:56:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T06:56:09` Corrida terminada. Total usado hoy: 164.

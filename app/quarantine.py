@@ -151,11 +151,10 @@ def _is_file_exclusive(path: Path) -> bool:
     Verifica si un archivo está bloqueado por otro proceso (Windows Handles o POSIX flock).
     Previene intentar mover archivos en uso activo.
     """
-    if path is None or not path.exists():
+    if path is None:
         return False
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
-        # GENERIC_READ (0x80000000), SHARE_READ|SHARE_WRITE|SHARE_DELETE (0x7), OPEN_EXISTING (3)
         handle: int = k32.CreateFileW(str(path), 0x80000000, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1: return False
         k32.CloseHandle(handle)
@@ -242,7 +241,7 @@ class QuarantineItem:
         Validación de metadatos del archivo en sandbox: compara inodos y UID para 
         detectar sustitución no autorizada o manipulación.
         """
-        if stored_path is None or not stored_path.exists(): return False
+        if stored_path is None: return False
         try:
             _check_for_reparse_points(stored_path)
             file_stat = st if st is not None else stored_path.stat()
@@ -279,7 +278,7 @@ class QuarantineItem:
 
 def _get_sha256(path: Path) -> str:
     """Calcula suma SHA256 mediante streaming para optimizar consumo de memoria RAM."""
-    if path is None or not path.exists(): return ""
+    if path is None: return ""
     try:
         st = path.stat()
         cache_key = (str(path), st.st_mtime, st.st_size)
@@ -298,7 +297,7 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_in_use_by_system(path: Path) -> bool:
     """Verifica si un archivo está en uso por procesos del sistema o posee atributos críticos."""
-    if path is None or not path.exists():
+    if path is None:
         return False
     
     try:
@@ -334,7 +333,7 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
     """Eliminación controlada con sincronización de fsync para asegurar persistencia en disco."""
-    if path is None or not path.exists():
+    if path is None:
         return False
         
     try:
