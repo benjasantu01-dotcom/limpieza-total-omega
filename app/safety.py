@@ -905,6 +905,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """Validación sintáctica para prevenir inyecciones y accesos a namespaces peligrosos."""
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
+    
+    # Lista de condiciones de bloqueo estructural
     if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
         raise UnsafePathError("Acceso a Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     if _is_unc_path(path_string) and not _is_unc_path_accessible(path_string):
@@ -923,10 +925,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
     if _is_device_file(target_path):
         raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
-    
     if _RESERVED_NAMES_PATTERN.fullmatch(target_path.name):
         raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME)
-
     if re.search(r'[\u200E\u200F\u202A-\u202E]', target_path.name):
         raise UnsafePathError("Ataque de spoofing visual detectado.", SafetyValidationErrorCode.INVALID_CHARS)
 
