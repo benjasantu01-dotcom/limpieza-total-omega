@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 53 | 4 | 9 | 8 | 36 |
+| 2026-10-24 | 50 | 4 | 9 | 8 | 35 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 16 | 0 | 4 | 1 | 23 |
+| 2026-10-26 | 17 | 0 | 5 | 1 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
-- robustez ante casos límite: **42**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **41**
+- robustez ante casos límite: **39**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
 - `healthscore.py`: **18**
-- `scanner.py`: **16**
-- `branding.py`: **15**
-- `duplicates.py`: **15**
+- `browser.py`: **18**
+- `scanner.py`: **17**
 - `settings.py`: **15**
 - `diskreport.py`: **15**
 - `organizer.py`: **14**
 - `assistant.py`: **14**
+- `branding.py`: **14**
+- `duplicates.py`: **14**
 - `safety.py`: **13**
 - `main.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T01:58:53` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en las funciones de heurística y clarificando mediante docstrings el propósito técnico de los parámetros críticos (como `now_ts` y `entry`), asegurando mayor consistencia y legibilidad para el mantenimiento del motor de análisis.
 - `2026-10-26T01:50:12` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de anotaciones de tipo, facilitando el mantenimiento y la auditoría de seguridad.
 - `2026-10-26T01:48:34` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `memory.py` centralizando la lógica de acceso a la API de Windows en un objeto de configuración (`WindowsAPI`) y añadiendo documentación tipo Google Docstring en las funciones críticas para clarificar el propósito de las llamadas de bajo nivel.
 - `2026-10-26T01:38:21` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y se han añadido type hints más precisos para clarificar las estructuras de datos manejadas (como el uso de `tuple` y `set`), facilitando la mantenibilidad sin alterar la lógica funcional.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T01:08:29` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_restore_quarantine` al añadir validaciones de estado previas y manejo explícito de errores durante la restauración, asegurando que si el manifiesto de cuarentena está corrupto o la ruta destino es insegura, la operación se cancele de forma controlada y se informe al usuario en lugar de intentar una operación parcial o fallida.
 - `2026-10-26T01:06:58` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo `healthscore.py` mediante una validación más estricta de las entradas `SystemMetrics` y la implementación de un manejo de errores defensivo en la lógica del pipeline, evitando que errores en reglas individuales invaliden el reporte global.
 - `2026-10-26T00:57:11` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `summarize` validando explícitamente los tipos de entrada y manejando estados vacíos para evitar excepciones innecesarias durante la ejecución del bucle, aplicando el enfoque de validación defensiva.
-- `2026-10-26T00:56:42` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` reemplazando la captura genérica `Exception` por el manejo de excepciones específicas, y se ha añadido una validación de retorno explícita en `_draw_shield_stripes` y `_draw_shield_icon_decorations` para evitar el uso de `canvas` en estados inconsistentes, siguiendo el principio de fail-fast y manejo de errores informado.

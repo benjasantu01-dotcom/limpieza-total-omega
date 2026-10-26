@@ -66,7 +66,7 @@ class SuspicionCheck(Protocol):
     Interfaz para funciones de análisis heurístico.
     
     Las implementaciones deben ser funciones puras (sin efectos secundarios en disco), 
-    inyectando 'now_ts' para garantizar la determinismo temporal durante un escaneo completo.
+    inyectando 'now_ts' para garantizar el determinismo temporal durante un escaneo completo.
     """
     def __call__(self, path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]: ...
 
@@ -170,7 +170,12 @@ def _is_target_extension(name: str) -> bool:
         return False
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Identifica ejecutables cuya carga útil es nula (0 bytes), a menudo usados en malware rudimentario."""
+    """
+    Heurística: Identifica ejecutables cuya carga útil es nula (0 bytes).
+    :param path: Objeto Path del archivo a analizar.
+    :param entry: Entrada de escaneo opcional para metadatos rápidos.
+    :param now_ts: Timestamp actual para cálculos de ventana temporal.
+    """
     if entry:
         try:
             stats = _safe_stat(entry)
@@ -180,14 +185,24 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Ti
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta doble extensión para prevenir engaños al usuario sobre el tipo de archivo (ej. .jpg.exe)."""
+    """
+    Heurística: Detecta doble extensión para prevenir engaños al usuario (ej. .jpg.exe).
+    :param path: Objeto Path del archivo a analizar.
+    :param entry: Entrada de escaneo opcional.
+    :param now_ts: Timestamp actual.
+    """
     if not path or not path.name or _cached_is_protected(str(path)): return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta ejecutables que suplantan nombres de procesos del sistema fuera de 'System32'."""
+    """
+    Heurística: Detecta ejecutables que suplantan nombres de procesos del sistema fuera de 'System32'.
+    :param path: Objeto Path del archivo a analizar.
+    :param entry: Entrada de escaneo opcional.
+    :param now_ts: Timestamp actual.
+    """
     if not path or not path.name or _cached_is_protected(str(path)): return None
     if path.name.lower() in SYSTEM_LOOKALIKES:
         try:
@@ -198,7 +213,12 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Heurística: Señala ejecutables creados recientemente en carpetas de alta volatilidad (Downloads, Temp)."""
+    """
+    Heurística: Señala ejecutables creados recientemente en carpetas de alta volatilidad.
+    :param path: Objeto Path del archivo a analizar.
+    :param entry: Entrada de escaneo, necesaria para obtener metadatos sin abrir el archivo.
+    :param now_ts: Timestamp actual.
+    """
     if not path or not path.parent or _cached_is_protected(str(path)): return None
     if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
         return None

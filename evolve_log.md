@@ -1583,3 +1583,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-26T01:50:12` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de anotaciones de tipo, facilitando el mantenimiento y la auditoría de seguridad.
 - `2026-10-26T01:50:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T01:50:12` Corrida terminada. Total usado hoy: 44.
+- `2026-10-26T01:57:10` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-10-26T01:57:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T01:57:16` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-26T01:57:23` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-26T01:57:35` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-26T01:58:13` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 17% del original (posible pérdida de código)
+- `2026-10-26T01:58:53` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints faltantes en las funciones de heurística y clarificando mediante docstrings el propósito técnico de los parámetros críticos (como `now_ts` y `entry`), asegurando mayor consistencia y legibilidad para el mantenimiento del motor de análisis.
+- `2026-10-26T01:59:07` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: legibilidad y documentación).
+- `2026-10-26T01:59:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T01:59:07` Corrida terminada. Total usado hoy: 48.
