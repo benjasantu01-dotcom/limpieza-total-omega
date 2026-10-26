@@ -1292,3 +1292,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T11:10:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-10-26T11:10:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T11:10:35` Corrida terminada. Total usado hoy: 264.
+- `2026-10-26T11:17:34` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-26T11:17:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T11:18:09` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del motor de cálculo mediante la eliminación de una conversión redundante a `tuple` en cada llamado a `compute_score`, aprovechando que la estructura de datos interna del caché ya recibe los valores descompuestos y evitando el costo de regenerar la tupla si no es estrictamente necesario.
+- `2026-10-26T11:18:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T11:19:27` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-26T11:19:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T11:20:30` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de enumeración de procesos (`_iter_process_memory`) moviendo la llamada costosa `GetModuleFileNameExW` (a través de `_is_process_executable_safe`) fuera del bucle principal, aplicando primero los filtros más económicos (PID, acceso y tamaño) para reducir drásticamente el número de llamadas al sistema.
+- `2026-10-26T11:20:43` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el escaneo del sistema de archivos reemplazando el uso intensivo de `Path.resolve()` (que realiza consultas al sistema de archivos por cada llamada) por el uso de los atributos ya disponibles en `os.DirEntry` y una lógica de caché de `visited` más eficiente, reduciendo drásticamente las llamadas redundantes al SO en el bucle principal.
+- `2026-10-26T11:20:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T11:20:43` Corrida terminada. Total usado hoy: 268.

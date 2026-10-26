@@ -279,13 +279,15 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
         return False
     return True
 
-def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[Path]) -> None:
+def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """Explora recursivamente el sistema de archivos buscando candidatos a limpieza."""
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
-        resolved_dir = current_dir.resolve(strict=False)
-        if resolved_dir in visited: return
-        visited.add(resolved_dir)
+        # Usamos el path absoluto como string para un lookup O(1) en el set de visited
+        path_str = str(current_dir.absolute())
+        if path_str in visited: return
+        visited.add(path_str)
+        
         with os.scandir(current_dir) as iterator:
             for entry in iterator:
                 try:
@@ -293,14 +295,11 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        _, ext = os.path.splitext(entry.name)
-                        if ext.lower() in JUNK_EXTENSIONS:
-                            try:
-                                stats = entry.stat(follow_symlinks=False)
-                                if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
-                                    found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
-                            except (OSError, PermissionError):
-                                continue
+                        # Evitamos llamadas repetidas a Path.suffix convirtiendo el nombre una vez
+                        if entry.name.lower().endswith(tuple(JUNK_EXTENSIONS)):
+                            stats = entry.stat(follow_symlinks=False)
+                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
+                                found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
@@ -310,7 +309,7 @@ def scan_for_junk(directories: Optional[Sequence[Union[str, Path]]] = None) -> L
     """Inicia el escaneo recursivo de archivos en las rutas indicadas."""
     found: List[JunkFile] = []
     protected_cache: Set[str] = set()
-    visited: Set[Path] = set()
+    visited: Set[str] = set()
     scan_list = directories if directories is not None else DEFAULT_SCAN_DIRS
     if not isinstance(scan_list, (list, tuple)): return []
     for d in filter(None, scan_list):

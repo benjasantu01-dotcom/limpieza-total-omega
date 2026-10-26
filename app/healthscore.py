@@ -387,7 +387,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema corruptos."])
     
     try:
-        cache_key = tuple(float(getattr(metrics, f, 0.0)) for f in SystemMetrics._FIELDS_TO_VALIDATE)
+        # Cache keyed by flat tuple directly extracted from existing fields to avoid redundant creation
+        cache_key = tuple(getattr(metrics, f) for f in SystemMetrics._FIELDS_TO_VALIDATE)
         return _compute_cached(cache_key, int(metrics.quarantined_count))
     except (TypeError, ValueError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])

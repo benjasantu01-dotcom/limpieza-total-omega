@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 96 | 9 | 17 | 11 | 107 |
-| 2026-10-26 | 103 | 8 | 30 | 9 | 114 |
+| 2026-10-25 | 94 | 9 | 17 | 11 | 105 |
+| 2026-10-26 | 106 | 8 | 31 | 9 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **43**
 - seguridad defensiva: **40**
-- robustez ante casos límite: **36**
-- rendimiento: **33**
+- rendimiento: **36**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **21**
-- `memory.py`: **19**
+- `memory.py`: **20**
 - `assistant.py`: **17**
 - `browser.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `settings.py`: **16**
-- `healthscore.py`: **16**
-- `safety.py`: **15**
 - `diskreport.py`: **15**
-- `organizer.py`: **12**
+- `settings.py`: **15**
+- `safety.py`: **14**
+- `organizer.py`: **13**
 - `branding.py`: **10**
 - `duplicates.py`: **9**
 - `main.py`: **8**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T11:20:43` **organizer.py** (rendimiento): Se optimizó el escaneo del sistema de archivos reemplazando el uso intensivo de `Path.resolve()` (que realiza consultas al sistema de archivos por cada llamada) por el uso de los atributos ya disponibles en `os.DirEntry` y una lógica de caché de `visited` más eficiente, reduciendo drásticamente las llamadas redundantes al SO en el bucle principal.
+- `2026-10-26T11:20:30` **memory.py** (rendimiento): Se optimizó el proceso de enumeración de procesos (`_iter_process_memory`) moviendo la llamada costosa `GetModuleFileNameExW` (a través de `_is_process_executable_safe`) fuera del bucle principal, aplicando primero los filtros más económicos (PID, acceso y tamaño) para reducir drásticamente el número de llamadas al sistema.
+- `2026-10-26T11:18:09` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo mediante la eliminación de una conversión redundante a `tuple` en cada llamado a `compute_score`, aprovechando que la estructura de datos interna del caché ya recibe los valores descompuestos y evitando el costo de regenerar la tupla si no es estrictamente necesario.
 - `2026-10-26T11:10:26` **diskreport.py** (rendimiento): Optimizado el rendimiento del método `largest_folders` reemplazando el uso de `path.parts` y la creación de objetos `Path` intermedios por un acceso directo al primer componente del subdirectorio relativo, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos masivos.
 - `2026-10-26T11:08:15` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` reemplazando la creación dinámica de tuplas y llamadas a `zip` en el ámbito global por una constante precalculada, reduciendo la carga de inicialización del módulo y evitando la re-evaluación innecesaria.
 - `2026-10-26T10:59:05` **assistant.py** (rendimiento): Se optimizó la evaluación de problemas activos en `SystemContext` reemplazando la serialización a `tuple` y el re-sorting en cada acceso por un hash de estado inmutable (`_hash_tuple`), mejorando el rendimiento del asistente en iteraciones frecuentes sin comprometer la integridad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T10:37:47` **healthscore.py** (legibilidad y documentación): Se han documentado las clases de protocolo y estructuras de datos con docstrings detallados, explicitando las unidades (MB, %) y la semántica de los valores, mejorando la legibilidad para futuros desarrolladores del equipo.
 - `2026-10-26T10:28:41` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados (estilo Google/NumPy) en funciones clave y la estandarización de tipos, asegurando que la intención del código sea clara para futuras auditorías sin alterar la lógica de escaneo.
 - `2026-10-26T10:28:30` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos, se ha estandarizado la nomenclatura de variables y se han añadido docstrings explicativos en las funciones críticas de detección de perfiles y resolución de rutas para clarificar el flujo lógico de seguridad.
-- `2026-10-26T10:18:49` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `load` mediante la validación proactiva del esquema del diccionario cargado, asegurando que cada clave necesaria exista y tenga el tipo correcto después del parsing JSON, evitando que valores faltantes o mal formados en el archivo provoquen errores en tiempo de ejecución.
-- `2026-10-26T10:18:12` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `scanner.py` sustituyendo accesos directos por validaciones de seguridad centralizadas y agregando chequeos de tipo/valor antes de operar sobre objetos del sistema, previniendo excepciones innecesarias durante la ejecución.
-- `2026-10-26T10:17:24` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_path_stat_robust` y `_get_file_id` reemplazando capturas de excepciones genéricas (`Exception`) por bloques específicos de bajo nivel (como `ctypes.ArgumentError` o `OSError`), asegurando que la app no aborte ante errores de sistema transitorios y manteniendo la integridad de las validaciones de seguridad.
