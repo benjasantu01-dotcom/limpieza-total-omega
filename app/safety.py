@@ -49,6 +49,13 @@ class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
         ("nFileIndexLow", ctypes.c_uint32),
     ]
 
+class SafetyState(NamedTuple):
+    """Contexto inmutable que encapsula el estado crítico de un archivo para validación."""
+    path: Path
+    descriptor: SecurityDescriptor
+    stat_result: os.stat_result
+    file_id: tuple[int, int, int, int]
+
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     """
     Genera un identificador único basado en volumen, índice de archivo y tipo.
@@ -641,22 +648,21 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.VIRTUAL_DRIVE: SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED,
 }
 
-def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
+def _evaluate_security_rules(state: SafetyState) -> None:
     """
     Ejecuta el conjunto de reglas de integridad sobre la ruta y lanza UnsafePathError.
     Usa caché de estado para evitar reevaluaciones redundantes.
     """
-    if not path.exists():
+    if not state.path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     
     # Clave de caché compuesta por ruta, modificación y el identificador de nodo (inode)
-    cache_key = (str(path), int(current_stat.st_mtime), getattr(current_stat, 'st_ino', 0))
+    cache_key = (str(state.path), int(state.stat_result.st_mtime), getattr(state.stat_result, 'st_ino', 0))
     if cache_key in _SECURITY_CACHE:
         return
 
-    sd = _get_security_descriptor(path)
     for rule in _VALIDATORS:
-        if rule.predicate(path, current_stat, sd):
+        if rule.predicate(state.path, state.stat_result, state.descriptor):
             code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
             raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
     
@@ -708,22 +714,22 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     raise UnsafePathError(f"Error tras reintentos leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
 
-def _check_file_integrity(path: Path, initial_stat: os.stat_result, initial_id: tuple[int, int, int, int]) -> None:
+def _check_file_integrity(state: SafetyState) -> None:
     """Verifica que la identidad del archivo no haya cambiado entre validaciones (mitigación TOCTOU)."""
-    if not path.exists():
+    if not state.path.exists():
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
     
     try:
-        current_stat = _get_path_stat_robust(path)
-        current_id = _get_file_id(str(path))
+        current_stat = _get_path_stat_robust(state.path)
+        current_id = _get_file_id(str(state.path))
         
-        if initial_id != (0, 0, 0, 0) and current_id != initial_id:
-            raise UnsafePathError(f"Manipulación de identidad detectada (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
+        if state.file_id != (0, 0, 0, 0) and current_id != state.file_id:
+            raise UnsafePathError(f"Manipulación de identidad detectada (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
         
-        if stat.S_ISREG(initial_stat.st_mode) != stat.S_ISREG(current_stat.st_mode):
-            raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
+        if stat.S_ISREG(state.stat_result.st_mode) != stat.S_ISREG(current_stat.st_mode):
+            raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
         
-        _evaluate_security_rules(path, current_stat)
+        _evaluate_security_rules(state)
     except (OSError, PermissionError, UnsafePathError) as e:
         if isinstance(e, UnsafePathError): raise
         raise UnsafePathError(f"Fallo durante integridad: {e}", SafetyValidationErrorCode.IO_ERROR)
@@ -1055,11 +1061,16 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
     if _is_file_in_use_by_system(str(p)):
         raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
     
-    initial_stat = _get_path_stat_robust(p)
-    initial_id = _get_file_id(str(p))
+    state = SafetyState(
+        path=p,
+        descriptor=_get_security_descriptor(p),
+        stat_result=_get_path_stat_robust(p),
+        file_id=_get_file_id(str(p))
+    )
+    
     if os.name == 'nt': 
         _validate_ntfs_reparse_redirection(p, base)
-    _check_file_integrity(p, initial_stat, initial_id)
+    _check_file_integrity(state)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """

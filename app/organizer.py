@@ -34,11 +34,12 @@ SortField: TypeAlias = Literal["size", "date"]
 
 @dataclass(frozen=True)
 class SecurityLimits:
-    """Umbrales de seguridad para limitar la profundidad y el impacto del escaneo."""
+    """Umbrales de seguridad y constantes de bajo nivel para el escaneo."""
     MAX_PATH_LENGTH: Final[int] = 260
     MAX_FILE_SIZE_BYTES: Final[int] = 100_000_000_000
     MIN_FREE_SPACE_BYTES: Final[int] = 52_428_800
     MAX_SCAN_DEPTH: Final[int] = 50
+    # Atributos de archivo específicos de la API de Windows
     WIN_ATTR_JUNCTION: Final[int] = 0x400
     WIN_ATTR_SYSTEM: Final[int] = 0x04
     WIN_ATTR_HIDDEN: Final[int] = 0x02
