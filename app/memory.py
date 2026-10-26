@@ -66,6 +66,11 @@ STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 # PIDs reservados por el kernel de Windows que no deben ser consultados.
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 
+class WindowsAPI:
+    """Namespace contenedor para acceder a las librerías Win32 de forma controlada."""
+    kernel32 = ctypes.windll.kernel32 if os.name == "nt" else None
+    psapi = ctypes.windll.psapi if os.name == "nt" else None
+
 class CacheEntry(NamedTuple):
     """Contenedor temporal con timestamp para implementar caché basada en expiración."""
     timestamp: float
@@ -280,14 +285,11 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
 def _read_windows_snapshot() -> MemorySnapshot:
     """Consulta la API GlobalMemoryStatusEx de Windows mediante FFI."""
     try:
-        if not hasattr(ctypes, "windll"): return _EMPTY_SNAPSHOT
-        kernel32 = ctypes.windll.kernel32
-        if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
+        if WindowsAPI.kernel32 is None or not hasattr(WindowsAPI.kernel32, "GlobalMemoryStatusEx"): 
+            return _EMPTY_SNAPSHOT
         
         mem_status = _create_mem_status_ex()
-        # Verificar retorno de la función (0 indica fallo en Win32)
-        if kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
-            # Validar que los valores devueltos sean físicamente coherentes
+        if WindowsAPI.kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
             if 0 < mem_status.ullTotalPhys and mem_status.ullAvailPhys <= mem_status.ullTotalPhys:
                 return MemorySnapshot(
                     total=BytesValue(mem_status.ullTotalPhys), 
@@ -313,38 +315,46 @@ def read_snapshot() -> MemorySnapshot:
     """Retorna el estado global de memoria con granularidad de 5 segundos."""
     return _get_cached_snapshot(int(time.time() / 5))
 
-def _is_process_accessible(pid: int, access_mask: int, kernel32: ctypes.CDLL) -> Optional[wintypes.HANDLE]:
-    """Solicita un handle de proceso con privilegios específicos."""
+def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
+    """Solicita un handle de proceso con privilegios específicos usando WindowsAPI."""
     try:
-        handle = kernel32.OpenProcess(access_mask, False, pid)
+        handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
         if handle and handle != INVALID_HANDLE_VALUE:
             return wintypes.HANDLE(handle)
     except (ctypes.WinError, OSError):
         pass
     return None
 
-def _query_working_set_bytes(pid: int, h_process: wintypes.HANDLE, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
-    """Invoca GetProcessMemoryInfo para obtener el WorkingSet del proceso."""
+def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
+    """
+    Invoca GetProcessMemoryInfo para obtener el WorkingSet del proceso.
+    
+    Args:
+        h_process: Handle abierto del proceso.
+        pmc: Estructura de memoria rellenada por la API.
+    """
     if h_process is None: return None
     try:
-        if psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
+        if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
     except (ctypes.WinError, OSError, ValueError):
         return None
     return None
 
-def _is_process_executable_safe(h_process: wintypes.HANDLE, psapi: ctypes.CDLL) -> bool:
+def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
     """
-    Verifica que el ejecutable asociado al handle del proceso no esté en zonas protegidas.
-    Utiliza GetModuleFileNameExW para obtener la ruta del ejecutable.
+    Verifica si el ejecutable asociado al handle del proceso reside en zonas protegidas.
+    
+    Utiliza GetModuleFileNameExW para resolver la ruta absoluta del archivo y
+    valida contra las reglas de seguridad locales.
     """
     if h_process is None: 
         return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
-        if psapi.GetModuleFileNameExW(h_process, None, buffer_path, 4096) <= 0:
+        if WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, buffer_path, 4096) <= 0:
             return False
         
         exe_path_str = buffer_path.value.strip()
@@ -355,37 +365,36 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, psapi: ctypes.CDLL) 
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 
-def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
+def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos mediante EnumProcesses y filtra aquellos significativos."""
     MAX_PIDS = 4096
     pids = (wintypes.DWORD * MAX_PIDS)()
     cb_needed = wintypes.DWORD(0)
     
-    if not psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+    if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
         return
             
     count = cb_needed.value // ctypes.sizeof(wintypes.DWORD)
-    # Validar coherencia del buffer retornado
     if count <= 0 or count > MAX_PIDS:
         return
         
     for i in range(count):
         pid = int(pids[i])
-        if pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid():
+        if _is_system_process(pid):
             continue
             
-        h_process = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
+        h_process = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION)
         if not h_process:
             continue
         
         try:
-            ws = _query_working_set_bytes(pid, h_process, psapi, pmc)
-            if ws is not None and ws > (10 * BYTES_IN_MB) and _is_process_executable_safe(h_process, psapi):
+            ws = _query_working_set_bytes(h_process, pmc)
+            if ws is not None and ws > (10 * BYTES_IN_MB) and _is_process_executable_safe(h_process):
                 yield ProcessMemory(f"PID {pid}", pid, ws)
         except Exception:
             continue
         finally:
-            kernel32.CloseHandle(h_process)
+            WindowsAPI.kernel32.CloseHandle(h_process)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna los procesos más pesados. Implementa caché de 60 segundos para evitar sobrecarga."""
@@ -395,10 +404,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
         try:
-            kernel32 = ctypes.windll.kernel32
-            psapi = ctypes.windll.psapi
             pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
-            candidates = heapq.nlargest(limit, _iter_process_memory(kernel32, psapi, pmc))
+            candidates = heapq.nlargest(limit, _iter_process_memory(pmc))
             _CACHE_TOP_PROC = CacheEntry(now, candidates)
         except (AttributeError, OSError):
             pass
@@ -438,7 +445,10 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita al SO liberar RAM de un proceso específico. Ver TRIM_WARNING antes de usar."""
+    """
+    Solicita al SO liberar RAM de un proceso específico (EmptyWorkingSet).
+    Verifica seguridad del ejecutable y estado del proceso antes de actuar.
+    """
     if not _is_windows: return False, "Solo soportado en Windows."
     
     try: 
@@ -450,27 +460,25 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida en procesos del sistema."
     
     try:
-        psapi, kernel32 = ctypes.windll.psapi, ctypes.windll.kernel32
-        h_process = _is_process_accessible(target_pid, TRIM_ACCESS_MASK, kernel32)
+        h_process = _is_process_accessible(target_pid, TRIM_ACCESS_MASK)
         if not h_process:
             return False, "Acceso denegado o proceso no encontrado."
 
         try:
-            # Validar existencia y estado del proceso
             exit_code = wintypes.DWORD()
-            if kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0:
+            if WindowsAPI.kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0:
                 return False, "No se pudo verificar el estado del proceso."
                 
             if exit_code.value != STILL_ACTIVE_EXIT_CODE:
                 return False, "El proceso no está activo."
             
-            if not _is_process_executable_safe(h_process, psapi):
+            if not _is_process_executable_safe(h_process):
                 return False, "Proceso protegido o ubicación insegura."
                 
-            if psapi.EmptyWorkingSet(h_process) == 0:
+            if WindowsAPI.psapi.EmptyWorkingSet(h_process) == 0:
                 return False, "El sistema operativo rechazó la operación de limpieza."
             return True, f"Working set liberado. {TRIM_WARNING}"
         finally:
-            kernel32.CloseHandle(h_process)
+            WindowsAPI.kernel32.CloseHandle(h_process)
     except (ctypes.WinError, OSError, Exception):
         return False, "Error inesperado al intentar interactuar con el proceso."
