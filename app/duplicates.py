@@ -107,9 +107,9 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo. 
-    Usa caché global `_full_hash_cache` para evitar E/S redundante en la misma sesión.
+    Maneja excepciones de acceso para asegurar que archivos bloqueados no aborten el proceso.
     """
-    if path is None or not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
+    if path is None or not isinstance(path, Path) or not _safe_path_check(path): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
@@ -120,13 +120,13 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, FileNotFoundError):
         return None
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un fingerprint rápido leyendo solo los primeros N bytes del archivo."""
-    if path is None or not isinstance(path, Path) or not _safe_path_check(path) or not path.is_file(): 
+    if path is None or not isinstance(path, Path) or not _safe_path_check(path): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     try:
@@ -135,7 +135,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             digest_val = hashlib.sha256(header).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, FileNotFoundError):
         return None
 
 

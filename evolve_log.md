@@ -425,3 +425,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-10-26T02:50:50` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-26T02:50:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T02:50:50` Corrida terminada. Total usado hoy: 68.
+- `2026-10-26T02:58:11` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-10-26T02:58:37` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de E/S en la lectura de archivos (en `hash_file` y `partial_hash`) manejando explícitamente archivos que desaparecen o pierden permisos entre el escaneo y el hash, evitando propagar errores fuera del módulo.
+- `2026-10-26T02:59:06` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor ante casos límite de entrada (como datos no normalizables o configuraciones externas inesperadas) añadiendo un manejo de errores preventivo en el pipeline de evaluación y asegurando que `_compute_cached` no pueda abortar por excepciones no controladas durante la ejecución de las reglas.
+- `2026-10-26T03:00:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-26T03:00:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T03:00:58` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_is_process_accessible` para detectar errores de acceso (como `ERROR_ACCESS_DENIED`) de forma más granular y robusta, evitando que excepciones silenciadas por el `try/except` general en el bucle de enumeración enmascaren posibles problemas de permisos en procesos con privilegios elevados.
+- `2026-10-26T03:00:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T03:00:58` Corrida terminada. Total usado hoy: 72.

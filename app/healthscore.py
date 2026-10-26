@@ -346,17 +346,15 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
     for entry in _PIPELINE:
         try:
             area_ratio = entry.scorer(metrics)
+            recs = _evaluate_rules(metrics, entry.rules, area_ratio)
+            recommendations.extend(recs)
+            points = area_ratio * float(entry.weight)
+            val_int = int(_clamp(round(points), 0.0, float(entry.weight)))
+            metric_breakdown[entry.area] = val_int
+            total_points += float(val_int)
         except Exception:
-            area_ratio = 0.0
-            
-        recs = _evaluate_rules(metrics, entry.rules, area_ratio)
-        recommendations.extend(recs)
-        
-        points = area_ratio * float(entry.weight)
-        val_int = int(_clamp(round(points), 0.0, float(entry.weight)))
-        
-        metric_breakdown[entry.area] = val_int
-        total_points += float(val_int)
+            metric_breakdown[entry.area] = 0
+            continue
             
     if metrics.quarantined_count > 0:
         recommendations.append("Existen elementos en cuarentena.")

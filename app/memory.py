@@ -319,11 +319,14 @@ def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HAND
     """Solicita un handle de proceso con privilegios específicos usando WindowsAPI."""
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-        if handle and handle != INVALID_HANDLE_VALUE:
-            return wintypes.HANDLE(handle)
+        # Si falla (handle es 0), verificamos si es por acceso denegado (5)
+        if not handle or handle == INVALID_HANDLE_VALUE:
+            if WindowsAPI.kernel32.GetLastError() == 5:
+                return None
+            return None
+        return wintypes.HANDLE(handle)
     except (ctypes.WinError, OSError):
-        pass
-    return None
+        return None
 
 def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """
