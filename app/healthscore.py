@@ -394,12 +394,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 
 @lru_cache(maxsize=128)
-def _render_bar(points: int, max_val: int) -> str:
+def _render_bar(points: Any, max_val: Any) -> str:
     """Generador visual de barras de progreso para reportes en texto."""
-    if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0:
+    if not isinstance(points, (int, float)) or not isinstance(max_val, (int, float)):
         return "." * 10
-    percent_val = max(0, min(points, max_val))
-    return "#" * percent_val + "." * (max_val - percent_val)
+    safe_points = int(max(0, min(points, max_val)))
+    safe_max = int(max(1, max_val))
+    return "#" * safe_points + "." * (safe_max - safe_points)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Serializa el resultado de salud en una lista de líneas para informe legible."""
@@ -408,10 +409,8 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for entry in PIPELINE_DEFINITIONS:
-        p = result.breakdown.get(entry.area, 0)
-        # Validación de tipo y rango para evitar desbordamiento en renderizado
-        val_int = p if isinstance(p, int) else 0
-        lines.append(f"  {entry.area.capitalize():<12} {val_int:>2}/{entry.weight:<2} [{_render_bar(val_int, entry.weight)}]")
+        val = result.breakdown.get(entry.area, 0)
+        lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
     
     recs = [r for r in result.recommendations if isinstance(r, str) and r]
     if not recs:

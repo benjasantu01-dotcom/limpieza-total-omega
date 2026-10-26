@@ -308,10 +308,10 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     Devuelve una lista de objetos BrowserCache ordenados de mayor a menor tamaño ocupado.
     """
     if bases is not None and not isinstance(bases, (list, tuple)): return []
-    raw_bases = list(bases) if bases else base_directories()
+    raw_bases = list(bases) if (bases is not None) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
-    if not raw_bases or not browser_map: return []
+    if not raw_bases or not isinstance(browser_map, dict): return []
         
     found: List[BrowserCache] = []
     kernel = _get_kernel32()

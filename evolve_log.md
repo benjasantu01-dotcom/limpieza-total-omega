@@ -474,3 +474,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T14:15:26` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-26T14:15:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T14:15:26` Corrida terminada. Total usado hoy: 336.
+- `2026-10-26T14:21:31` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-26T14:22:00` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de los parámetros de entrada en `detect_profiles` y `summarize` para evitar errores de ejecución inesperados al procesar tipos incorrectos, asegurando que la función maneje entradas `None` o mal formadas de manera resiliente antes de ejecutar la lógica de escaneo.
+- `2026-10-26T14:22:32` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-26T14:22:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-26T14:23:14` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `summarize` y `_render_bar` mediante validaciones de tipo explícitas y la eliminación de posibles condiciones de carrera o datos nulos en la representación de reportes, asegurando que el motor de salud sea tolerante a fallos incluso ante estados inesperados de las métricas.
+- `2026-10-26T14:23:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T14:23:14` Corrida terminada. Total usado hoy: 340.
