@@ -180,21 +180,17 @@ class ProblemCriterion(NamedTuple):
     message_format: str
 
     def _evaluate_metric(self, val: float) -> bool:
-        """Compara una métrica contra el umbral según el operador definido."""
+        """Determina si la métrica excede el umbral basándose en el operador lógico configurado."""
         if not _check_metric_integrity(val):
             return False
-        if self.operator == "<":
-            return val < self.threshold
-        if self.operator == ">":
-            return val > self.threshold
-        return False
+        return (val < self.threshold) if self.operator == "<" else (val > self.threshold)
 
     def is_triggered_by(self, val: float) -> bool:
-        """Determina si un valor específico dispara esta advertencia."""
+        """Verifica si el valor es positivo y cumple la condición de umbral de riesgo."""
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, val: float) -> Optional[str]:
-        """Formatea el mensaje de advertencia solo si la condición es verdadera."""
+        """Formatea el mensaje de advertencia solo si la condición es verdadera y es texto seguro."""
         if not self.is_triggered_by(val):
             return None
             
@@ -537,9 +533,7 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if _REGEX_ANSI_ESCAPE.search(text) or _REGEX_UNICODE_FORMAT.search(text):
         return False
-    if _contains_forbidden_patterns(text):
-        return False
-    return _is_safe_path_input(text)
+    return not _contains_forbidden_patterns(text) and _is_safe_path_input(text)
 
 def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     """Acceso seguro a atributos validando contra lista blanca para evitar ataques de introspección."""

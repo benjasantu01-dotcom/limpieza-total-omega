@@ -172,26 +172,18 @@ def _is_target_extension(name: str) -> bool:
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """
     Heurística: Identifica ejecutables cuya carga útil es nula (0 bytes).
-    :param path: Objeto Path del archivo a analizar.
-    :param entry: Entrada de escaneo opcional para metadatos rápidos.
-    :param now_ts: Timestamp actual para cálculos de ventana temporal.
     """
-    if entry:
-        try:
-            stats = _safe_stat(entry)
-            if stats and stats.st_size == 0:
-                return Suspicion(path, "Ejecutable vacío detectado", "warning")
-        except (OSError, PermissionError, FileNotFoundError): pass
+    if entry is None: return None
+    stats = _safe_stat(entry)
+    if stats is not None and getattr(stats, "st_size", -1) == 0:
+        return Suspicion(path, "Ejecutable vacío detectado", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """
     Heurística: Detecta doble extensión para prevenir engaños al usuario (ej. .jpg.exe).
-    :param path: Objeto Path del archivo a analizar.
-    :param entry: Entrada de escaneo opcional.
-    :param now_ts: Timestamp actual.
     """
-    if not path or not path.name or _cached_is_protected(str(path)): return None
+    if path is None or not path.name or _cached_is_protected(str(path)): return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
@@ -199,11 +191,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """
     Heurística: Detecta ejecutables que suplantan nombres de procesos del sistema fuera de 'System32'.
-    :param path: Objeto Path del archivo a analizar.
-    :param entry: Entrada de escaneo opcional.
-    :param now_ts: Timestamp actual.
     """
-    if not path or not path.name or _cached_is_protected(str(path)): return None
+    if path is None or not path.name or _cached_is_protected(str(path)): return None
     if path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -215,22 +204,18 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """
     Heurística: Señala ejecutables creados recientemente en carpetas de alta volatilidad.
-    :param path: Objeto Path del archivo a analizar.
-    :param entry: Entrada de escaneo, necesaria para obtener metadatos sin abrir el archivo.
-    :param now_ts: Timestamp actual.
     """
-    if not path or not path.parent or _cached_is_protected(str(path)): return None
+    if path is None or path.parent is None or _cached_is_protected(str(path)): return None
     if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
         return None
-    try:
-        if entry:
-            stats = _safe_stat(entry)
-            if stats:
-                mtime = getattr(stats, "st_mtime", 0.0)
-                if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
-                    return Suspicion(path, "Ejecutable reciente detectado en carpeta volátil", "info")
-    except (OSError, PermissionError, AttributeError, TypeError, FileNotFoundError):
-        return None
+    if entry is None: return None
+    
+    stats = _safe_stat(entry)
+    if stats:
+        mtime = getattr(stats, "st_mtime", 0.0)
+        if isinstance(mtime, (int, float)) and mtime > 0:
+            if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
+                return Suspicion(path, "Ejecutable reciente detectado en carpeta volátil", "info")
     return None
 
 ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
@@ -243,10 +228,6 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 class Scanner:
     """
     Controlador central del motor de escaneo.
-    
-    Gestiona el estado del recorrido DFS mediante 'seen' para prevenir ciclos, 
-    'safe_cache' para memorizar validaciones de rutas y 'seen_exts' para 
-    optimizar la filtración inicial de archivos candidatos.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -254,29 +235,24 @@ class Scanner:
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
         self.seen_exts: set[str] = set()
-        # Resolución estricta para garantizar un punto de partida validado sin reparse points
         self.base_root_norm: str = os.path.normcase(str(base_root.resolve(strict=True)))
         self.now_ts: float = datetime.now().timestamp()
 
     @lru_cache(maxsize=1024)
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Valida, mediante resolución real, si el archivo pertenece al árbol de escaneo."""
         try:
             return os.path.normcase(os.path.realpath(entry_path)).startswith(self.base_root_norm)
         except (OSError, RuntimeError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Verifica nombres de archivo con caracteres o patrones prohibidos por Windows."""
         if not isinstance(name, str) or not name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name) or "\0" in name)
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si una entrada es un punto de reanálisis usando atributos de Win32."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Realiza comprobaciones de seguridad jerárquicas antes de acceder a la entrada."""
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         
@@ -297,14 +273,12 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Gestiona la adición de directorios válidos a la pila para búsqueda DFS."""
         if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
         
         directory_stack.append((entry.path, current_depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Verifica si la extensión del archivo es candidata a ser analizada por heurísticas usando caché."""
         _, ext = os.path.splitext(name)
         ext_low = ext.lower()
         if ext_low in self.seen_exts: return True
@@ -314,7 +288,6 @@ class Scanner:
         return False
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Procesa una entrada del sistema de archivos mediante DFS."""
         if not isinstance(entry, os.DirEntry) or not hasattr(entry, 'path') or entry.path is None:
             return
             
@@ -334,7 +307,6 @@ class Scanner:
             logger.debug(f"Error accediendo a entrada: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta secuencialmente todas las heurísticas registradas contra un archivo."""
         for check_fn in ALL_CHECKS:
             try:
                 finding = check_fn(path, entry, self.now_ts)
@@ -368,7 +340,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None: return []
     try:
         base_path = Path(directory)
-        # Validación estricta para asegurar que el punto de entrada es un directorio real y no un enlace
         if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink():
             return []
         resolved_path = base_path.resolve(strict=True)

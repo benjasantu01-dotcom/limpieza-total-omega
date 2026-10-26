@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 12 | 0 | 3 | 2 | 1 |
+| 2026-10-24 | 8 | 0 | 3 | 2 | 1 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 49 | 3 | 14 | 4 | 66 |
+| 2026-10-26 | 52 | 3 | 14 | 4 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **48**
+- manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **43**
 - seguridad defensiva: **40**
-- rendimiento: **38**
-- legibilidad y documentación: **32**
+- rendimiento: **34**
+- legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
 - `browser.py`: **19**
 - `quarantine.py`: **19**
-- `scanner.py`: **17**
-- `healthscore.py`: **16**
-- `assistant.py`: **16**
-- `diskreport.py`: **15**
+- `scanner.py`: **18**
+- `assistant.py`: **17**
+- `healthscore.py`: **15**
 - `safety.py`: **14**
-- `duplicates.py`: **13**
+- `diskreport.py`: **14**
+- `settings.py`: **14**
 - `organizer.py`: **13**
-- `settings.py`: **13**
-- `main.py`: **10**
+- `duplicates.py`: **12**
 - `branding.py`: **10**
+- `main.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T05:53:12` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de `ProblemCriterion` y centralizando la lógica de seguridad para mejorar la claridad del flujo de trabajo, eliminando redundancias en la comprobación de texto.
+- `2026-10-26T05:52:24` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate` al capturar errores de ejecución dentro del bucle de validación, evitando que una clave inesperada o una llamada fallida a un validador aborten la reconstrucción del diccionario de configuración, manteniendo siempre un estado consistente.
+- `2026-10-26T05:51:55` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de archivo (`check_empty_file` y `check_recent_executable_in_downloads`) para manejar explícitamente posibles errores de acceso y valores nulos sin depender únicamente de bloques `try-except` genéricos, asegurando que el motor de escaneo no se detenga ante fallos de metadatos.
 - `2026-10-26T05:43:20` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_evaluate_security_rules` implementando un manejo explícito y centralizado de los códigos de error de Windows mediante `ctypes.GetLastError()` para diferenciar adecuadamente entre errores de acceso denegado, archivo en uso y archivo no encontrado, evitando lanzamientos de excepciones genéricas que podrían ocultar la causa raíz de un fallo de seguridad.
 - `2026-10-26T05:42:26` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` y `_atomic_isolate_file` reemplazando los `raise Exception` genéricos por `raise RuntimeError` o `raise OSError` específicos, y asegurando que las validaciones de TOCTOU ocurran justo antes de la operación de I/O crítica, evitando que excepciones silenciadas por condiciones de carrera permitan estados de archivo inconsistentes.
 - `2026-10-26T05:41:41` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez en `stage_for_review` y `delete_reviewed` mediante la validación explícita de `is_relative_to` (reemplazando lógica manual propensa a errores) y agregando chequeos de tipo defensivos para evitar excepciones inesperadas al procesar rutas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T03:51:22` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al reemplazar la resolución de rutas mediante `os.path.realpath` (que puede ser engañosa en contextos de enlaces simbólicos o junctions maliciosos) por una validación estricta utilizando `Path.resolve(strict=True)` dentro de la clase `Scanner`, y se ha reforzado el filtrado en `scan_directory` para asegurar que el punto de entrada sea un directorio real antes de iniciar cualquier operación de escaneo, protegiendo así el núcleo del recorrido ante posibles manipulaciones de la ruta base.
 - `2026-10-26T03:51:10` **safety.py** (seguridad defensiva): Se ha añadido una validación temprana contra `LONG_PATH_PREFIX` en `_is_file_owned_by_system` para prevenir que rutas extremadamente largas causen errores de API, y se ha fortalecido `_get_file_id` integrando `_to_long_path` para garantizar consistencia en la detección de identidades bajo rutas extendidas.
 - `2026-10-26T03:42:46` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad en `delete_reviewed` implementando una validación estricta de la ruta del archivo mediante `resolve()` y `is_relative_to()` antes de cualquier operación de borrado, asegurando que solo se eliminen archivos contenidos físicamente en el directorio de cuarentena designado, previniendo así posibles ataques de "path traversal".
-- `2026-10-26T03:42:30` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_process_executable_safe` añadiendo una validación explícita de `is_protected_path` sobre la ruta absoluta del ejecutable tras verificar su existencia, asegurando que no se interactúe con procesos cuyos ejecutables residan en directorios protegidos o bloqueados por la política de seguridad del proyecto.
-- `2026-10-26T03:30:48` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva al evitar el uso de `entry.path` en `walk_files`, reemplazándolo por `Path(entry.path).resolve()` o construyendo la ruta de forma segura para garantizar que la validación de `is_protected_path` actúe sobre la ruta real y no sobre strings potencialmente manipulados por el sistema operativo durante la iteración.
-- `2026-10-26T03:30:09` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_resolve_browser_path` añadiendo una validación explícita de `is_safe_to_modify` antes de retornar una ruta, previniendo así que la lógica de detección resuelva y procese rutas que, aunque existan, hayan sido marcadas como protegidas o inseguras por el sistema de seguridad central.
