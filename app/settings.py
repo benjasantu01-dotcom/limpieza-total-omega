@@ -354,9 +354,8 @@ def _is_file_secure_to_read(file_path: Path) -> bool:
     sin permisos excesivos y dentro de los límites de tamaño permitidos.
     """
     try:
-        st = file_path.stat()
-        if not stat.S_ISREG(st.st_mode): return False
-        if st.st_nlink != 1: return False
+        st = file_path.lstat()
+        if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if (st.st_mode & 0o077) != 0: return False # Prohibir permisos laxos (grupo/otros)
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False

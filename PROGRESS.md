@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 36 | 1 | 7 | 5 | 29 |
+| 2026-10-24 | 36 | 1 | 7 | 5 | 25 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 32 | 2 | 10 | 1 | 31 |
+| 2026-10-26 | 34 | 2 | 10 | 1 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
+- robustez ante casos límite: **43**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **42**
 - rendimiento: **40**
-- seguridad defensiva: **32**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,10 +35,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `healthscore.py`: **17**
 - `scanner.py`: **17**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
+- `settings.py`: **15**
 - `duplicates.py`: **14**
 - `safety.py`: **14**
-- `settings.py`: **14**
 - `diskreport.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T03:20:42` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_ensure_safe_text` integrando un chequeo contra `is_protected_path` para prevenir la inyección accidental de rutas o comandos en las respuestas del asistente, asegurando que ningún dato devuelto pueda ser interpretado como una ruta del sistema sensible.
+- `2026-10-26T03:19:35` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `_read_and_parse_json` intente abrir archivos con enlaces simbólicos o de hardware, añadiendo una capa de robustez ante condiciones de carrera o manipulación externa (TOCTOU) antes de procesar el JSON.
 - `2026-10-26T03:10:28` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de puntos de reparse, añadiendo una verificación de existencia mediante `Lstat` antes de llamar a `GetFinalPathNameByHandleW` para evitar errores de E/S en enlaces simbólicos rotos o inaccesibles, asegurando que la app no aborte innecesariamente por condiciones de carrera o estados inválidos del sistema de archivos.
 - `2026-10-26T03:09:33` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` al introducir una verificación de existencia de volumen antes de iniciar cualquier movimiento, previniendo fallos críticos cuando el sandbox se encuentra en una unidad de disco distinta a la del archivo origen (lo cual podría causar errores en `os.replace` o inconsistencias en los metadatos de inodos).
 - `2026-10-26T03:00:58` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_process_accessible` para detectar errores de acceso (como `ERROR_ACCESS_DENIED`) de forma más granular y robusta, evitando que excepciones silenciadas por el `try/except` general en el bucle de enumeración enmascaren posibles problemas de permisos en procesos con privilegios elevados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T02:28:51` **organizer.py** (rendimiento): Se ha optimizado `_process_directory` reemplazando la búsqueda lineal por extensiones mediante `os.path.splitext` dentro del bucle, por una verificación directa sobre un `set` cacheado de extensiones, evitando llamadas repetitivas a `os.path.split` y mejorando la eficiencia al filtrar el acceso a `stat()` solo cuando es estrictamente necesario.
 - `2026-10-26T02:28:14` **memory.py** (rendimiento): Optimicé el bucle de enumeración de procesos (`_iter_process_memory`) reemplazando las múltiples llamadas a `GetModuleFileNameExW` (que es una operación costosa de E/S por cada proceso) por un pre-filtrado de uso de memoria, reduciendo drásticamente la latencia de la función `top_memory_processes`.
 - `2026-10-26T02:11:15` **browser.py** (rendimiento): Se optimizó el proceso de detección de perfiles y escaneo de caché reemplazando el uso repetitivo de `path.resolve()` y `os.path.abspath` por una resolución única al inicio del ciclo, reduciendo significativamente las llamadas al sistema de archivos.
-- `2026-10-26T02:09:42` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la recreación innecesaria de listas y el uso de `strip()` en cada palabra dentro del bucle principal, reemplazándolo por una búsqueda directa en `_TOKENS_MAP` sobre una versión pre-tokenizada, reduciendo la complejidad de las operaciones en cada consulta.
-- `2026-10-26T02:07:59` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando docstrings detallados en funciones clave y añadiendo anotaciones de tipo más precisas para clarificar los contratos de datos, facilitando así el mantenimiento y la auditoría del código.

@@ -473,3 +473,13 @@ assert not True
 - `2026-10-26T03:10:28` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la detección de puntos de reparse, añadiendo una verificación de existencia mediante `Lstat` antes de llamar a `GetFinalPathNameByHandleW` para evitar errores de E/S en enlaces simbólicos rotos o inaccesibles, asegurando que la app no aborte innecesariamente por condiciones de carrera o estados inválidos del sistema de archivos.
 - `2026-10-26T03:10:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T03:10:28` Corrida terminada. Total usado hoy: 76.
+- `2026-10-26T03:18:31` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-10-26T03:18:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T03:19:03` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-26T03:19:35` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar que `_read_and_parse_json` intente abrir archivos con enlaces simbólicos o de hardware, añadiendo una capa de robustez ante condiciones de carrera o manipulación externa (TOCTOU) antes de procesar el JSON.
+- `2026-10-26T03:19:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T03:19:46` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-26T03:20:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-26T03:20:42` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_ensure_safe_text` integrando un chequeo contra `is_protected_path` para prevenir la inyección accidental de rutas o comandos en las respuestas del asistente, asegurando que ningún dato devuelto pueda ser interpretado como una ruta del sistema sensible.
+- `2026-10-26T03:20:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T03:20:42` Corrida terminada. Total usado hoy: 80.
