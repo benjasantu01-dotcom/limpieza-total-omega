@@ -409,8 +409,9 @@ def summarize(result: HealthResult | None) -> List[str]:
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for entry in PIPELINE_DEFINITIONS:
         p = result.breakdown.get(entry.area, 0)
-        if not isinstance(p, int): p = 0
-        lines.append(f"  {entry.area.capitalize():<12} {p:>2}/{entry.weight:<2} [{_render_bar(p, entry.weight)}]")
+        # Validación de tipo y rango para evitar desbordamiento en renderizado
+        val_int = p if isinstance(p, int) else 0
+        lines.append(f"  {entry.area.capitalize():<12} {val_int:>2}/{entry.weight:<2} [{_render_bar(val_int, entry.weight)}]")
     
     recs = [r for r in result.recommendations if isinstance(r, str) and r]
     if not recs:

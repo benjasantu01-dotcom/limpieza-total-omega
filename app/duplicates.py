@@ -186,14 +186,16 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if entry.is_dir(follow_symlinks=False):
                             queue.append((path, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            stat = entry.stat(follow_symlinks=False)
-                            if stat.st_size >= min_size and _is_valid_candidate(path, stat.st_size):
-                                if skip_protected and is_protected_path(path): continue
-                                inode = (stat.st_dev, stat.st_ino)
-                                if inode not in visited:
-                                    visited.add(inode)
-                                    raw_map[stat.st_size].append(path)
-                                    size_counts[stat.st_size] += 1
+                            try:
+                                stat = entry.stat(follow_symlinks=False)
+                                if stat.st_size >= min_size and _is_valid_candidate(path, stat.st_size):
+                                    if skip_protected and is_protected_path(path): continue
+                                    inode = (stat.st_dev, stat.st_ino)
+                                    if inode not in visited:
+                                        visited.add(inode)
+                                        raw_map[stat.st_size].append(path)
+                                        size_counts[stat.st_size] += 1
+                            except (OSError, PermissionError): continue
                     except (OSError, PermissionError, FileNotFoundError): continue
         except (OSError, PermissionError, FileNotFoundError): continue
     return {sz: paths for sz, paths in raw_map.items() if size_counts[sz] > 1}

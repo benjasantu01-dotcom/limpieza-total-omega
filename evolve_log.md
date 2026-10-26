@@ -1318,3 +1318,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T11:40:05` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada, añadiendo una validación explícita de `destination` como cadena o ruta y asegurando que la operación de escritura gestione correctamente el cierre de recursos y las excepciones de sistema, evitando estados inconsistentes si el disco no está disponible.
 - `2026-10-26T11:40:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T11:40:05` Corrida terminada. Total usado hoy: 276.
+- `2026-10-26T11:48:04` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-26T11:48:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T11:48:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-26T11:48:17` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-26T11:48:53` ➖ Sin cambios en browser.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez ante rutas inexistentes o inaccesibles al inicializar `ScanContext` con una base normalizada validada, evitando que el escaneo falle silenciosamente o se desvíe si `base_resolved` arroja errores al intentar normalizar una ruta nula.
+- `2026-10-26T11:49:19` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-10-26T11:49:42` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de lectura durante el escaneo de directorios asegurando que `_collect_candidates` maneje explícitamente archivos bloqueados por el sistema operativo mediante un bloque `try-except` más preciso en la obtención de atributos de archivo, evitando que una falla en un solo archivo rompa la iteración completa de la carpeta.
+- `2026-10-26T11:50:01` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del sistema ante posibles errores de configuración y desbordamiento de memoria al validar explícitamente los pesos del pipeline y proteger las operaciones de serialización de reportes contra entradas nulas o inesperadas.
+- `2026-10-26T11:50:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T11:50:01` Corrida terminada. Total usado hoy: 280.
