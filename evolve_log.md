@@ -1212,3 +1212,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-26T09:58:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-26T09:58:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T09:58:12` Corrida terminada. Total usado hoy: 236.
+- `2026-10-26T10:06:10` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-10-26T10:06:45` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_safe_int_conversion` y `_extract_process_info` para manejar de forma explícita valores `None` o malformados, asegurando que las conversiones a `BytesValue` sean seguras y no propaguen errores de tipo a través de las capas de procesamiento de memoria.
+- `2026-10-26T10:07:14` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-26T10:08:04` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_exclusive` capturando de forma específica posibles errores de `OSError` al cerrar el handle de Windows y garantizando que las excepciones en `os.open` no silencien bloqueos de archivo, mejorando la fiabilidad de las validaciones de acceso antes de mover archivos.
+- `2026-10-26T10:08:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-26T10:08:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T10:08:16` Corrida terminada. Total usado hoy: 240.

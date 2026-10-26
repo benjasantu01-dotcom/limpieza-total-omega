@@ -157,7 +157,10 @@ def _is_file_exclusive(path: Path) -> bool:
         k32 = ctypes.windll.kernel32
         handle: int = k32.CreateFileW(str(path), 0x80000000, 0x00000007, None, 3, 0x00000080, None)
         if handle == -1: return False
-        k32.CloseHandle(handle)
+        try:
+            k32.CloseHandle(handle)
+        except OSError:
+            pass
         return True
     
     try:
@@ -967,7 +970,7 @@ def quarantine_file(
         
     if _is_within_quarantine_sandbox(p_source.resolve(), dest_dir.resolve()):
         raise UnsafePathError("Archivo ya en el sandbox.")
-    
+        
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     

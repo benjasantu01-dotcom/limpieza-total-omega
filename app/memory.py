@@ -189,6 +189,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
 
 def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
     """Normaliza inputs crudos (str/int) a BytesValue aplicando un multiplicador de escala."""
+    if value is None: return BytesValue(0)
     if isinstance(value, int): return BytesValue(max(0, value * multiplier))
     if not isinstance(value, str): return BytesValue(0)
     
@@ -243,7 +244,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     Parsea una línea de texto crudo de procesos (CSV format).
     Valida que el PID sea legítimo y que el consumo de memoria esté dentro de rangos lógicos.
     """
-    if not isinstance(line, str) or not line.strip() or "," not in line: 
+    if not isinstance(line, str) or not line.strip(): 
         return None
         
     parts = [p.strip().strip("'\"") for p in line.split(",")]
@@ -254,7 +255,8 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         name = parts[0]
         if not name: return None
         pid = int(parts[-2])
-        ws = _safe_int_conversion(parts[-1])
+        ws_raw = parts[-1]
+        ws = _safe_int_conversion(ws_raw)
         
         if _is_system_process(pid) or pid <= 0:
             return None
