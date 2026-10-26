@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 72 | 6 | 14 | 10 | 36 |
+| 2026-10-24 | 70 | 6 | 12 | 10 | 36 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 0 | 0 | 0 | 0 | 16 |
+| 2026-10-26 | 1 | 0 | 0 | 0 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **43**
 - rendimiento: **43**
 - robustez ante casos límite: **43**
 - seguridad defensiva: **42**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **42**
+- legibilidad y documentación: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
 - `quarantine.py`: **19**
 - `healthscore.py`: **18**
-- `diskreport.py`: **17**
 - `scanner.py`: **17**
 - `browser.py`: **17**
-- `duplicates.py`: **16**
 - `settings.py`: **16**
+- `diskreport.py`: **16**
 - `organizer.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
+- `duplicates.py`: **15**
 - `safety.py`: **14**
 - `branding.py`: **14**
 - `main.py`: **9**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T00:49:37` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext` agregando una validación explícita para asegurar que el `source` no contenga tipos de datos inesperados antes de procesarlos, evitando errores durante la iteración y garantizando que las métricas se procesen de manera atómica y segura.
 - `2026-10-25T14:15:54` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_isolation_request` para prevenir condiciones de carrera (TOCTOU) al validar el estado del origen justo antes de la operación, bloqueando explícitamente el uso de archivos con atributos de sistema o de solo lectura que podrían ser críticos para el SO.
 - `2026-10-25T14:05:25` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sanitize_msg` implementando un filtro de validación de entradas más estricto contra inyección de rutas (evitando que el reporte pueda contener por error subcadenas que parezcan rutas o términos sensibles) y asegurando que las longitudes y contenidos sean siempre deterministas.
 - `2026-10-25T13:55:56` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación del estado de los archivos (`is_symlink` y atributos de sistema) antes de intentar cualquier lectura de metadatos o acceso recursivo, evitando el seguimiento de enlaces simbólicos malintencionados o rutas críticas fuera del sandbox.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-25T13:15:17` **browser.py** (robustez ante casos límite): Se ha mejorado `_resolve_browser_path` para prevenir la resolución de rutas mediante "path traversal" usando `resolve()` sobre la base, y se añadió una validación explícita para asegurar que la ruta resuelta permanezca dentro de `LOCALAPPDATA`, mitigando intentos de escape del sandbox.
 - `2026-10-25T13:15:07` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante el caso límite de rutas con permisos denegados o sistemas de archivos de solo lectura, añadiendo una validación explícita mediante `is_safe_to_modify` previa a la escritura y refinando el manejo de excepciones para evitar el silenciamiento de errores críticos de sistema.
 - `2026-10-25T13:14:36` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_ensure_safe_text` y sus helpers asociados para prevenir inyecciones y errores de validación, centralizando la lógica de sanitización para garantizar que cualquier cadena procesada por el asistente sea estrictamente segura, previniendo fallos por caracteres inesperados que podrían romper la interfaz o la lógica de procesamiento.
-- `2026-10-25T13:05:11` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando el parseo redundante de rutas y comprobaciones de sistema mediante el uso de una caché estática en `_MANAGER`, asegurando que `settings_path()` solo resuelva la ruta cuando sea estrictamente necesario.

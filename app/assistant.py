@@ -470,8 +470,10 @@ class SystemContext:
 
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
+        # Se verifica que el source sea un diccionario o un objeto de datos válido
         if source is None: return False
-        if not isinstance(source, (dict, object)): return False
+        if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)): 
+            return False
         if isinstance(source, (dict, list)):
             return not _is_input_too_deep_or_complex(source)
         return True
