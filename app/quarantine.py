@@ -749,11 +749,13 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
         except OSError:
             pass
         
-        if destination.stat().st_nlink > 1:
+        # Confinamiento estricto: Verificación TOCTOU post-escritura
+        dest_stat = destination.stat()
+        if dest_stat.st_nlink > 1:
              raise UnsafePathError("Integridad comprometida: destino tiene enlaces múltiples.")
 
         ensure_safe_to_modify(destination, allow_sensitive=True)
-        return source_hash, destination.stat().st_ino
+        return source_hash, dest_stat.st_ino
     except Exception as e:
         if temp_dest.exists():
             try: _check_io_error_context(temp_dest.unlink)

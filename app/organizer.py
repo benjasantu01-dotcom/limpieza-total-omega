@@ -364,8 +364,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 if item.is_symlink() or _is_junction(item): continue
                 if not item.is_file(): continue
                 # Validación estricta para asegurar que el archivo no ha escapado de la carpeta objetivo
+                # `is_relative_to` verifica que la ruta resuelta esté dentro de la carpeta de cuarentena
                 item_resolved = item.resolve()
-                if not item_resolved.is_absolute() or not item_resolved.is_relative_to(dest): continue
+                if not item_resolved.is_relative_to(dest): continue
                 if is_safe_to_modify(item) and not is_protected_path(item):
                     item.unlink()
                     count += 1

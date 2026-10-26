@@ -1383,3 +1383,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T12:32:14` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-26T12:32:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T12:32:14` Corrida terminada. Total usado hoy: 296.
+- `2026-10-26T12:39:08` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-26T12:39:43` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-26T12:40:11` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se fortaleció `delete_reviewed` para evitar que un usuario o proceso malicioso pueda realizar ataques de *path traversal* (como usar `..` en nombres de archivos) para borrar elementos fuera de la carpeta de cuarentena, añadiendo una validación explícita de anclaje mediante `path.resolve()` y `is_relative_to()`.
+- `2026-10-26T12:40:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T12:41:02` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). He implementado una validación de "confinamiento estricto" en `_write_temp_to_final` para evitar ataques de tipo "Time-of-check to time-of-use" (TOCTOU) al asegurar que, tras la copia, el inodo del archivo en el sandbox no haya cambiado respecto al que se acaba de escribir, blindando el proceso contra reemplazos maliciosos en el sistema de archivos durante la transacción.
+- `2026-10-26T12:41:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T12:41:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-26T12:41:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T12:41:30` Corrida terminada. Total usado hoy: 300.
