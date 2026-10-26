@@ -248,26 +248,18 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
-        # Validación de existencia inmediata previa a resolución
         if not junk_file.path.exists() or not junk_file.path.is_file(): return False
-        
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
-        
         ensure_safe_to_modify(dest_real)
-
         if src_real == dest_real or src_real.parent == dest_real: return False
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES or is_protected_path(src_real): return False
         if is_protected_path(dest_real): return False
         if src_real.is_symlink() or (os.name == 'nt' and _is_system_hidden(src_real)): return False
         if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
-        
-        # Validar que no cruzamos volúmenes (misma letra de unidad)
         if src_real.drive != dest_real.drive: return False
-
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         if _is_recursive_violation(src_real, dest_real) or not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
-        
         return not is_protected_path(src_real)
     except (OSError, AttributeError, ValueError, PermissionError):
         return False
@@ -286,15 +278,11 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[Path]) -> None:
     """Explora recursivamente el sistema de archivos buscando candidatos a limpieza."""
-    if depth > LIMITS.MAX_SCAN_DEPTH: 
-        return
-    
+    if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
         resolved_dir = current_dir.resolve(strict=False)
-        if resolved_dir in visited: 
-            return
+        if resolved_dir in visited: return
         visited.add(resolved_dir)
-        
         with os.scandir(current_dir) as iterator:
             for entry in iterator:
                 try:
@@ -303,7 +291,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
                         if os.path.splitext(entry.name)[1].lower() in JUNK_EXTENSIONS:
-                            # Verificación doble por cambio de estado del archivo
                             try:
                                 stats = entry.stat(follow_symlinks=False)
                                 if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
@@ -321,7 +308,6 @@ def scan_for_junk(directories: Optional[Sequence[Union[str, Path]]] = None) -> L
     protected_cache: Set[str] = set()
     visited: Set[Path] = set()
     scan_list = directories if directories is not None else DEFAULT_SCAN_DIRS
-    
     if not isinstance(scan_list, (list, tuple)): return []
     for d in filter(None, scan_list):
         try:
@@ -339,22 +325,17 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """Mueve archivos validados a cuarentena de forma atómica y segura."""
-    if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
-        return None
+    if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        
-        if not is_safe_to_modify(dest_base) or is_protected_path(dest_base) or _has_forbidden_chars(dest_base):
-            return None
-        
+        if not is_safe_to_modify(dest_base) or is_protected_path(dest_base) or _has_forbidden_chars(dest_base): return None
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
             try:
                 if not _is_safe_for_disk_op(junk_file, dest_base): continue
                 target_path = _can_move_file(junk_file, dest_base)
-                if target_path and junk_file.path.exists():
-                    shutil.move(str(junk_file.path), str(target_path))
+                if target_path and junk_file.path.exists(): shutil.move(str(junk_file.path), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
         return dest_base
@@ -371,26 +352,16 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """
-    Elimina físicamente los archivos validados tras aplicar chequeos de seguridad.
-    Verifica que cada ítem resida efectivamente bajo la carpeta de cuarentena para 
-    evitar borrados fuera del ámbito autorizado.
-    """
+    """Elimina físicamente los archivos validados tras aplicar chequeos de seguridad."""
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir(): return 0
-        
-        if not is_safe_to_modify(dest) or is_protected_path(dest): return 0
-        
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
         count = 0
         for item in dest.iterdir():
             try:
-                # Verificación estricta: debe ser archivo, no enlace, estar en la carpeta de cuarentena,
-                # pasar los filtros de seguridad y no estar bloqueado.
                 if not item.is_file() or item.is_symlink() or _is_junction(item): continue
                 if not item.resolve().is_relative_to(dest): continue
-                
                 if item.exists() and is_safe_to_modify(item) and not is_protected_path(item):
                     item.unlink()
                     count += 1

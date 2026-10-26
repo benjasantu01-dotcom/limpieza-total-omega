@@ -293,7 +293,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
                     total=BytesValue(mem_status.ullTotalPhys), 
                     available=BytesValue(mem_status.ullAvailPhys)
                 )
-    except (AttributeError, ctypes.ArgumentError, OSError, ValueError):
+    except (AttributeError, ctypes.ArgumentError, OSError, ValueError, TypeError):
         pass
     return _EMPTY_SNAPSHOT
 
@@ -456,7 +456,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "Acceso denegado o proceso no encontrado."
 
         try:
-            # Validar que el proceso realmente exista antes de operar
+            # Validar existencia y estado del proceso
             exit_code = wintypes.DWORD()
             if kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0:
                 return False, "No se pudo verificar el estado del proceso."

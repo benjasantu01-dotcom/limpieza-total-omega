@@ -192,16 +192,16 @@ def safe_ui_operation(func: Callable) -> Callable:
     ya fue destruido, evitando la interrupción del bucle de eventos principal 
     cuando los procesos asíncronos intentan actualizar componentes eliminados.
     """
-    @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Optional[Any]:
-        try:
-            if args and hasattr(args[0], 'winfo_exists') and not args[0].winfo_exists():
-                return None
-            return func(*args, **kwargs)
-        except (tk.TclError, RuntimeError, AttributeError) as e:
-            logging.debug("Ignorando error de UI en %s: %s", func.__name__, e)
+@wraps(func)
+def wrapper(*args: Any, **kwargs: Any) -> Optional[Any]:
+    try:
+        if args and hasattr(args[0], 'winfo_exists') and not args[0].winfo_exists():
             return None
-    return wrapper
+        return func(*args, **kwargs)
+    except (tk.TclError, RuntimeError, AttributeError) as e:
+        logging.debug("Ignorando error de UI en %s: %s", func.__name__, e)
+        return None
+return wrapper
 
 def validated_ui_operation(func: Callable) -> Callable:
     """
@@ -1737,21 +1737,28 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         def task() -> None:
             try:
+                # Validar existencia antes de cualquier operación
                 if not quarantine.item_exists(clean_id):
                     self._safe_run_ui_callback(lambda: self.log(f"Error: El ID '{clean_id}' no existe o ya fue restaurado.", "Cuarentena"))
                     return
                 
+                # Obtener metadatos y validar integridad
                 item = quarantine.get_item(clean_id)
                 if not item or not hasattr(item, 'original_path'):
                     self._safe_run_ui_callback(lambda: self.log("Error: Manifiesto de cuarentena corrupto.", "Cuarentena"))
                     return
                 
+                # Verificar si el destino original aún es seguro
                 if not self._is_safe_path(item.original_path):
-                    self._safe_run_ui_callback(lambda: self.log("Error: La ruta destino no es segura.", "Cuarentena"))
+                    self._safe_run_ui_callback(lambda: self.log("Error: La ruta de restauración no es segura.", "Cuarentena"))
                     return
                 
+                # Ejecutar restauración
                 destino = quarantine.restore_item(clean_id)
-                self._safe_run_ui_callback(lambda: self.log(f"Restaurado en: {destino}", "Cuarentena"))
+                if destino:
+                    self._safe_run_ui_callback(lambda: self.log(f"Restaurado en: {destino}", "Cuarentena"))
+                else:
+                    self._safe_run_ui_callback(lambda: self.log("Error inesperado durante el proceso de restauración.", "Cuarentena"))
             except Exception as e:
                 self._safe_run_ui_callback(lambda: self.log(f"Error inesperado al restaurar: {e}", "Cuarentena"))
 

@@ -1536,3 +1536,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-26T00:57:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-26T00:57:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T00:57:46` Corrida terminada. Total usado hoy: 24.
+- `2026-10-26T01:06:15` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-10-26T01:06:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T01:06:58` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del módulo `healthscore.py` mediante una validación más estricta de las entradas `SystemMetrics` y la implementación de un manejo de errores defensivo en la lógica del pipeline, evitando que errores en reglas individuales invaliden el reporte global.
+- `2026-10-26T01:07:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T01:07:13` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-26T01:08:29` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_restore_quarantine` al añadir validaciones de estado previas y manejo explícito de errores durante la restauración, asegurando que si el manifiesto de cuarentena está corrupto o la ruta destino es insegura, la operación se cancele de forma controlada y se informe al usuario en lugar de intentar una operación parcial o fallida.
+- `2026-10-26T01:09:11` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_read_windows_snapshot` y `trim_working_set` mediante la validación explícita de tipos y estados, asegurando que las llamadas a la API de Windows no operen sobre punteros nulos o contextos inválidos, lo que previene errores inesperados durante el diagnóstico del sistema.
+- `2026-10-26T01:09:28` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones en `stage_for_review` y `delete_reviewed` implementando chequeos explícitos para valores nulos o tipos incorrectos, evitando que errores de lógica en las llamadas externas comprometan la integridad de las rutas procesadas.
+- `2026-10-26T01:09:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T01:09:28` Corrida terminada. Total usado hoy: 28.
