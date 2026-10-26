@@ -196,12 +196,15 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     """Calcula el score normalizado basado en MB de archivos basura."""
     return _JUNK_SCORER(float(junk_mb) if isinstance(junk_mb, (int, float)) else 0.0)
 
-def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
+def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
     """Calcula salud: Penaliza según archivos sospechosos y advertencias."""
-    s_count = max(0, int(suspicious_count))
-    w_count = max(0, int(warnings))
-    penalization = (s_count * 0.05) + (w_count * 0.25)
-    return _clamp(1.0 - penalization)
+    try:
+        s_count = max(0, int(suspicious_count))
+        w_count = max(0, int(warnings))
+        penalization = (s_count * 0.05) + (w_count * 0.25)
+        return _clamp(1.0 - penalization)
+    except (TypeError, ValueError):
+        return 0.0
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula el score normalizado basado en % de memoria disponible."""
@@ -376,8 +379,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema corruptos."])
     
-    cache_key = tuple(float(getattr(metrics, f, 0.0)) for f in SystemMetrics._FIELDS_TO_VALIDATE)
-    return _compute_cached(cache_key, int(metrics.quarantined_count))
+    try:
+        cache_key = tuple(float(getattr(metrics, f, 0.0)) for f in SystemMetrics._FIELDS_TO_VALIDATE)
+        return _compute_cached(cache_key, int(metrics.quarantined_count))
+    except (TypeError, ValueError):
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:

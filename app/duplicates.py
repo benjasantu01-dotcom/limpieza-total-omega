@@ -252,7 +252,13 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         return None
         
     candidates = [( _get_mtime(p), p) for p in group.paths if _safe_path_check(p)]
-    return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
+    # Filtramos valores 'inf' resultantes de errores de lectura previos
+    valid_candidates = [c for c in candidates if c[0] != float('inf')]
+    
+    if not valid_candidates:
+        return group.paths[0]
+        
+    return min(valid_candidates, key=lambda x: x[0])[1]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
@@ -261,6 +267,8 @@ def format_group(group: DuplicateGroup) -> List[str]:
         return []
     
     keeper = suggest_keeper(group)
+    if keeper is None: return []
+
     mb = round(group.size_bytes / 1048576, 2)
     wasted = round(group.wasted_bytes / 1048576, 2)
     lines = [f"{group.count} copias de {mb} MB (recuperable: {wasted} MB)"]

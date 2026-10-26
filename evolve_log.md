@@ -739,3 +739,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-26T05:22:57` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` capturando errores de acceso a nivel de subdirectorio (cuando un directorio deniega listado durante el `os.scandir`) para evitar que una excepción silencie el escaneo completo, además de asegurar que `relative_to` no falle ante rutas mal formadas.
 - `2026-10-26T05:22:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T05:22:57` Corrida terminada. Total usado hoy: 128.
+- `2026-10-26T05:31:06` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-10-26T05:31:50` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `suggest_keeper` y `format_group`, añadiendo validaciones explícitas para prevenir fallos silenciosos cuando `_get_mtime` retorna un valor inválido o `group.paths` está vacío, asegurando que la interfaz no procese estados inconsistentes.
+- `2026-10-26T05:32:41` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de errores en `summarize` y `compute_score` validando explícitamente los datos de entrada, y se mejoró la lógica de normalización en `score_security` para prevenir errores de tipo mediante un casting seguro.
+- `2026-10-26T05:33:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-26T05:34:13` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-26T05:34:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T05:34:13` Corrida terminada. Total usado hoy: 132.

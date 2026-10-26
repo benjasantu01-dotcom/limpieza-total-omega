@@ -7,26 +7,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 20
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 16 | 1 | 5 | 3 | 1 |
+| 2026-10-24 | 14 | 0 | 4 | 3 | 1 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 44 | 3 | 12 | 4 | 65 |
+| 2026-10-26 | 46 | 3 | 13 | 4 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **45**
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **43**
 - rendimiento: **40**
 - seguridad defensiva: **40**
-- legibilidad y documentación: **34**
+- legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,12 +34,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **19**
 - `quarantine.py`: **18**
 - `scanner.py`: **17**
+- `healthscore.py`: **16**
 - `assistant.py`: **16**
 - `diskreport.py`: **15**
-- `healthscore.py`: **15**
-- `safety.py`: **14**
-- `settings.py`: **14**
-- `duplicates.py`: **12**
+- `duplicates.py`: **13**
+- `safety.py`: **13**
+- `settings.py`: **13**
 - `organizer.py`: **12**
 - `branding.py`: **11**
 - `main.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T05:32:41` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `summarize` y `compute_score` validando explícitamente los datos de entrada, y se mejoró la lógica de normalización en `score_security` para prevenir errores de tipo mediante un casting seguro.
+- `2026-10-26T05:31:50` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `suggest_keeper` y `format_group`, añadiendo validaciones explícitas para prevenir fallos silenciosos cuando `_get_mtime` retorna un valor inválido o `group.paths` está vacío, asegurando que la interfaz no procese estados inconsistentes.
 - `2026-10-26T05:22:57` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` capturando errores de acceso a nivel de subdirectorio (cuando un directorio deniega listado durante el `os.scandir`) para evitar que una excepción silencie el escaneo completo, además de asegurar que `relative_to` no falle ante rutas mal formadas.
 - `2026-10-26T05:22:31` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_valid_rel_path` al incluir una validación estricta de rutas mediante `os.path.normpath`, garantizando que el uso de barras invertidas y normalizaciones no permita el acceso fuera del directorio esperado, mitigando posibles errores de entrada en `BROWSER_CACHE_PATHS`.
 - `2026-10-26T05:21:34` **assistant.py** (manejo de errores y validación de entradas): Reforcé el manejo de errores en `_parse_config` y `_apply_field` para asegurar que datos malformados o tipos inesperados durante la carga de configuración y la ingesta de métricas no degraden el estado del `SystemContext`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T03:20:42` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_ensure_safe_text` integrando un chequeo contra `is_protected_path` para prevenir la inyección accidental de rutas o comandos en las respuestas del asistente, asegurando que ningún dato devuelto pueda ser interpretado como una ruta del sistema sensible.
 - `2026-10-26T03:19:35` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `_read_and_parse_json` intente abrir archivos con enlaces simbólicos o de hardware, añadiendo una capa de robustez ante condiciones de carrera o manipulación externa (TOCTOU) antes de procesar el JSON.
 - `2026-10-26T03:10:28` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de puntos de reparse, añadiendo una verificación de existencia mediante `Lstat` antes de llamar a `GetFinalPathNameByHandleW` para evitar errores de E/S en enlaces simbólicos rotos o inaccesibles, asegurando que la app no aborte innecesariamente por condiciones de carrera o estados inválidos del sistema de archivos.
-- `2026-10-26T03:09:33` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` al introducir una verificación de existencia de volumen antes de iniciar cualquier movimiento, previniendo fallos críticos cuando el sandbox se encuentra en una unidad de disco distinta a la del archivo origen (lo cual podría causar errores en `os.replace` o inconsistencias en los metadatos de inodos).
-- `2026-10-26T03:00:58` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_process_accessible` para detectar errores de acceso (como `ERROR_ACCESS_DENIED`) de forma más granular y robusta, evitando que excepciones silenciadas por el `try/except` general en el bucle de enumeración enmascaren posibles problemas de permisos en procesos con privilegios elevados.
