@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 226
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 61 | 8 | 10 | 11 | 70 |
-| 2026-10-26 | 128 | 10 | 37 | 13 | 156 |
+| 2026-10-25 | 58 | 8 | 10 | 11 | 69 |
+| 2026-10-26 | 129 | 10 | 39 | 13 | 157 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **42**
-- rendimiento: **37**
+- rendimiento: **34**
 - seguridad defensiva: **34**
 - legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `scanner.py`: **20**
 - `memory.py`: **19**
-- `scanner.py`: **19**
-- `browser.py`: **17**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
+- `browser.py`: **16**
 - `settings.py`: **15**
 - `assistant.py`: **15**
 - `organizer.py`: **14**
 - `diskreport.py`: **13**
 - `safety.py`: **12**
-- `branding.py`: **10**
-- `duplicates.py`: **9**
+- `branding.py`: **9**
+- `duplicates.py`: **8**
 - `main.py`: **7**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T14:43:42` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de las funciones `check_system_lookalike` y `check_recent_executable_in_downloads` mediante validación explícita de `path` y `entry` para prevenir excepciones por accesos a atributos en objetos `None` o malformados, alineándose con el enfoque de manejo de errores y validación de entradas.
 - `2026-10-26T14:36:44` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `_is_item_purgable` mediante la validación explícita de `None` y el uso de `try-except` más granulares al iterar sobre el sistema de archivos, previniendo fallos en caso de que archivos sean eliminados externamente o el estado de permisos cambie durante la ejecución.
 - `2026-10-26T14:34:44` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de tipos y estados, sustituyendo el manejo de errores genérico por uno más granular para evitar silenciamientos accidentales de excepciones críticas.
 - `2026-10-26T14:34:07` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_accessible` y `_iter_process_memory` mediante el manejo explícito de excepciones de Windows API, evitando fallos silenciosos y garantizando una liberación de recursos (handles) más determinista ante procesos transitorios.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T12:20:05` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` reforzando la desinfección del campo `grade` y asegurando que las comparaciones de métricas utilicen comparaciones booleanas explícitas, evitando el riesgo de evaluar valores `None` o estados inesperados como verdaderos.
 - `2026-10-26T12:11:31` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_read_and_parse_json` y `save` ante situaciones donde el archivo de configuración es inaccesible o está siendo bloqueado temporalmente por el sistema operativo, implementando un manejo de excepciones más granular para evitar fallos catastróficos durante la persistencia o lectura.
 - `2026-10-26T12:01:04` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_filesystem_read_only` y `_is_file_exclusive` para manejar correctamente casos donde las rutas son inexistentes o inaccesibles, evitando que errores de sistema no capturados interrumpan el flujo lógico del bucle de cuarentena.
-- `2026-10-26T12:00:31` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `delete_reviewed` al validar explícitamente que cada archivo en la carpeta de cuarentena sea una ruta absoluta y esté contenido físicamente dentro de `dest`, evitando ataques de "path traversal" o manipulación de enlaces simbólicos malintencionados durante la eliminación.

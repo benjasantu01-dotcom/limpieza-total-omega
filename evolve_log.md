@@ -494,3 +494,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T14:36:44` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `purge_all` y `_is_item_purgable` mediante la validación explícita de `None` y el uso de `try-except` más granulares al iterar sobre el sistema de archivos, previniendo fallos en caso de que archivos sean eliminados externamente o el estado de permisos cambie durante la ejecución.
 - `2026-10-26T14:36:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T14:36:44` Corrida terminada. Total usado hoy: 344.
+- `2026-10-26T14:41:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-26T14:42:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T14:42:05` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-26T14:42:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-26T14:42:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T14:42:45` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-26T14:43:14` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 14% del original (posible pérdida de código)
+- `2026-10-26T14:43:42` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de las funciones `check_system_lookalike` y `check_recent_executable_in_downloads` mediante validación explícita de `path` y `entry` para prevenir excepciones por accesos a atributos en objetos `None` o malformados, alineándose con el enfoque de manejo de errores y validación de entradas.
+- `2026-10-26T14:43:57` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-26T14:43:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T14:43:57` Corrida terminada. Total usado hoy: 348.

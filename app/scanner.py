@@ -183,7 +183,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Detecta ejecutables que suplantan procesos del sistema fuera de 'System32'."""
-    if not path or not path.name or _cached_is_protected(str(path)): return None
+    if path is None or not path.name or _cached_is_protected(str(path)): return None
     if path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -194,10 +194,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Detecta ejecutables creados recientemente en carpetas temporales o de descargas."""
-    if not path or not path.parent or _cached_is_protected(str(path)): return None
+    if path is None or path.parent is None or _cached_is_protected(str(path)): return None
     if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
         return None
-    if entry is None or not entry.exists(): return None
+    if entry is None or not entry.is_file(): return None
     
     stats = _safe_stat(entry)
     if stats:
