@@ -94,6 +94,9 @@ _CONTEXT_SCHEMA: Final = (
     ("duplicate_mb", " MB", 0), ("startup_count", "", 0)
 )
 
+# Conjunto optimizado para validación rápida de caracteres prohibidos
+_FORBIDDEN_CHARS: Final[set[str]] = set("<>|&^$():;\n\r\t\"'\\`")
+
 def _is_nan_or_inf(val: Any) -> bool:
     """Verifica si un valor es NaN o Infinito, evitando errores de cálculo."""
     if not isinstance(val, (int, float)): return True
@@ -528,9 +531,10 @@ def _ensure_safe_text(text: Any) -> bool:
     # Prevenir que la cadena sea o contenga rutas protegidas
     if is_protected_path(text) or any(is_protected_path(part) for part in text.split()):
         return False
-    # Evitar inyección de caracteres de control, formato, comandos shell o escape ANSI
-    if any(c in text for c in "<>|&^$():;\n\r\t\"'\\`"):
+    # Evitar caracteres prohibidos mediante conjunto pre-calculado
+    if any(c in _FORBIDDEN_CHARS for c in text):
         return False
+    # Evitar inyección de caracteres de control, formato o escape ANSI
     if _REGEX_ANSI_ESCAPE.search(text) or _REGEX_UNICODE_FORMAT.search(text):
         return False
     return not _contains_forbidden_patterns(text) and _is_safe_path_input(text)
