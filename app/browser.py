@@ -220,7 +220,10 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     if not root_path or depth > scan_ctx.max_depth:
         return ScanResult(0, True)
     
-    root_norm = os.path.normcase(os.path.abspath(root_path))
+    try:
+        root_norm = os.path.normcase(os.path.abspath(root_path))
+    except (OSError, ValueError):
+        return ScanResult(0, False)
     
     if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm) or root_norm in scan_ctx.visited_dirs:
         return ScanResult(0, True)

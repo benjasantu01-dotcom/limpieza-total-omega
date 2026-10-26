@@ -9,44 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 212
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 41 | 1 | 8 | 6 | 34 |
+| 2026-10-24 | 39 | 1 | 8 | 5 | 33 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 25 | 1 | 8 | 1 | 29 |
+| 2026-10-26 | 27 | 1 | 8 | 1 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **42**
 - rendimiento: **40**
-- seguridad defensiva: **37**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `browser.py`: **19**
+- `browser.py`: **20**
 - `memory.py`: **19**
+- `quarantine.py`: **19**
 - `scanner.py`: **18**
 - `healthscore.py`: **16**
 - `settings.py`: **15**
-- `organizer.py`: **14**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `diskreport.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **13**
+- `organizer.py`: **13**
 - `safety.py`: **13**
 - `main.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T02:50:08` **browser.py** (robustez ante casos límite): Se ha robustecido `browser.py` frente a rutas inválidas o nombres de archivo excesivamente largos (comunes en cachés de navegadores) mediante la validación de `os.path.abspath` y el manejo explícito de errores de `OSError` en `_sum_directory_recursive` durante la iteración, evitando que caracteres Unicode o nombres de ruta malformados interrumpan el escaneo de otras carpetas.
+- `2026-10-26T02:48:47` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_payload_structure` al incluir un chequeo de tipos estricto para las colecciones (listas y diccionarios), evitando que estructuras de datos inusualmente profundas o maliciosamente construidas puedan evadir los límites de recursión o causar un consumo excesivo de recursos durante la serialización JSON.
 - `2026-10-26T02:39:21` **settings.py** (rendimiento): Optimizé `load()` y `save()` para reducir drásticamente las llamadas a `os.lstat` y validaciones de seguridad redundantes mediante el uso del caché de metadatos `_MANAGER`, asegurando que solo se re-valide el archivo si su `mtime` o `size` han cambiado realmente en el sistema de archivos.
 - `2026-10-26T02:38:48` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la resolución de rutas (`os.path.realpath`) fuera del bucle crítico de `process_entry`, utilizando en su lugar `entry.path` directamente para las comprobaciones iniciales y difiriendo la resolución costosa solo para los archivos candidatos que pasan los filtros, reduciendo así la carga de I/O por cada archivo procesado.
 - `2026-10-26T02:29:42` **quarantine.py** (rendimiento): Optimizé la validación de integridad en `_get_sha256` y `verify_integrity` evitando lecturas de disco redundantes y mejorando la gestión del caché para reducir el impacto de I/O en operaciones frecuentes.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T01:48:34` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `memory.py` centralizando la lógica de acceso a la API de Windows en un objeto de configuración (`WindowsAPI`) y añadiendo documentación tipo Google Docstring en las funciones críticas para clarificar el propósito de las llamadas de bajo nivel.
 - `2026-10-26T01:38:21` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y se han añadido type hints más precisos para clarificar las estructuras de datos manejadas (como el uso de `tuple` y `set`), facilitando la mantenibilidad sin alterar la lógica funcional.
 - `2026-10-26T01:37:31` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de escaneo, la aclaración de las intenciones de los parámetros en los docstrings y la estandarización de las aserciones de tipo para asegurar una ejecución robusta y autocomprensible.
-- `2026-10-26T01:28:22` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el propósito de las clases y funciones clave, asegurando que el código sea mantenible y fácil de comprender para futuros colaboradores, además de añadir type hints en secciones críticas donde se perdía visibilidad del tipo.
-- `2026-10-26T01:27:43` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` añadiendo validación estricta de tipos y manejo de errores ante entradas del registro malformadas, evitando que un campo `None` o un formato inesperado de `DictReader` interrumpan el escaneo.
