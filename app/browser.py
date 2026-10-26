@@ -214,7 +214,14 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     return 0
 
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Calcula el tamaño acumulado de una jerarquía de directorios de forma recursiva."""
+    """
+    Calcula el tamaño acumulado de una jerarquía de directorios de forma recursiva.
+    
+    Args:
+        root_path: Ruta absoluta base del escaneo.
+        scan_ctx: Contexto inmutable de estado y seguridad.
+        depth: Profundidad actual de recursión para evitar desbordamiento.
+    """
     if not root_path or depth > scan_ctx.max_depth:
         return ScanResult(0, True)
     
