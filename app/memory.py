@@ -196,7 +196,7 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
     if not digits: return BytesValue(0)
     try:
         val = int(digits) * multiplier
-        return BytesValue(val) if val >= 0 else BytesValue(0)
+        return BytesValue(val) if 0 <= val < (2**63 - 1) else BytesValue(0)
     except (ValueError, OverflowError, TypeError):
         return BytesValue(0)
 

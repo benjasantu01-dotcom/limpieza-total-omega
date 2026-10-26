@@ -858,3 +858,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-26T07:25:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-26T07:25:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T07:25:21` Corrida terminada. Total usado hoy: 176.
+- `2026-10-26T07:33:17` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-10-26T07:33:46` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_extract_process_info` para evitar procesar líneas CSV con valores de memoria desbordados o tipos inesperados que podrían causar errores durante la iteración de procesos, aumentando la robustez ante datos malformados.
+- `2026-10-26T07:34:15` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `delete_reviewed` implementando una validación estricta del path base mediante `pathlib.Path.is_relative_to` (reemplazando lógica manual) y asegurando que las iteraciones sobre el directorio de cuarentena no sigan enlaces simbólicos ni puntos de reparse, previniendo así posibles escapes del entorno confinado.
+- `2026-10-26T07:35:00` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-10-26T07:35:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-26T07:35:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T07:35:04` Corrida terminada. Total usado hoy: 180.

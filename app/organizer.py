@@ -361,8 +361,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
-                if not item.is_file() or item.is_symlink() or _is_junction(item): continue
-                # Validación estricta usando is_relative_to para asegurar que el archivo pertenece a la cuarentena
+                # Evitar seguir symlinks o junctions durante el proceso de borrado
+                if item.is_symlink() or _is_junction(item): continue
+                if not item.is_file(): continue
+                # Validación estricta para asegurar que el archivo no ha escapado de la cuarentena
                 if not item.resolve().is_relative_to(dest): continue
                 if is_safe_to_modify(item) and not is_protected_path(item):
                     item.unlink()
