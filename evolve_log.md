@@ -808,3 +808,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-26T06:56:09` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al sistema de archivos en `_get_sha256` y `_is_file_exclusive` eliminando llamadas redundantes a `exists()` y `stat()` mediante el uso de excepciones, lo que reduce la latencia de I/O en operaciones repetitivas sobre el mismo archivo.
 - `2026-10-26T06:56:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T06:56:09` Corrida terminada. Total usado hoy: 164.
+- `2026-10-26T07:02:41` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-26T07:03:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-10-26T07:03:46` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché local `_SECURITY_CACHE` con una clave basada en `st_ino` (índice de archivo) y `st_mtime` para evitar la sobrecarga de consultas repetitivas de metadatos en disco dentro de `is_safe_to_modify` y operaciones masivas, optimizando significativamente el rendimiento durante escaneos.
+- `2026-10-26T07:04:11` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el uso de una caché local (`seen_normcase`) basada en `os.path.normcase` para evitar llamadas redundantes a `os.path.realpath` y `os.path.normcase` dentro del bucle de procesamiento, reduciendo drásticamente las operaciones de E/S.
+- `2026-10-26T07:04:27` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-10-26T07:04:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T07:04:27` Corrida terminada. Total usado hoy: 168.

@@ -222,7 +222,7 @@ class Scanner:
     
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
-        self.seen: set[str] = set()
+        self.seen_normcase: set[str] = set()
         self.safe_cache: set[str] = set()
         self.seen_exts: set[str] = set()
         self.base_root_norm: str = os.path.normcase(str(base_root.resolve(strict=True)))
@@ -284,9 +284,9 @@ class Scanner:
         try:
             if entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
-                    path_norm: str = os.path.normcase(os.path.realpath(entry.path))
-                    if path_norm not in self.seen:
-                        self.seen.add(path_norm)
+                    path_norm = os.path.normcase(entry.path)
+                    if path_norm not in self.seen_normcase:
+                        self.seen_normcase.add(path_norm)
                         self._run_file_heuristics(Path(entry.path), entry)
             elif entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)

@@ -31,6 +31,9 @@ LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
+# Caché global de integridad para evitar E/S redundante
+_SECURITY_CACHE: Final[dict[tuple[str, int, int], bool]] = {}
+
 class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
     """Estructura de bajo nivel que mapea la API GetFileInformationByHandle de Windows."""
     _fields_ = [
@@ -638,8 +641,6 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.VIRTUAL_DRIVE: SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED,
 }
 
-_EVAL_CACHE: Final[dict[tuple[str, int, int], None]] = {}
-
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     """
     Ejecuta el conjunto de reglas de integridad sobre la ruta y lanza UnsafePathError.
@@ -648,9 +649,9 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     if not path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     
-    # Inclusión de st_ino o equivalente para invalidar caché ante reemplazos de archivo
+    # Clave de caché compuesta por ruta, modificación y el identificador de nodo (inode)
     cache_key = (str(path), int(current_stat.st_mtime), getattr(current_stat, 'st_ino', 0))
-    if cache_key in _EVAL_CACHE:
+    if cache_key in _SECURITY_CACHE:
         return
 
     sd = _get_security_descriptor(path)
@@ -659,8 +660,8 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
             code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
             raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
     
-    if len(_EVAL_CACHE) > 2048: _EVAL_CACHE.clear()
-    _EVAL_CACHE[cache_key] = None
+    if len(_SECURITY_CACHE) > 4096: _SECURITY_CACHE.clear()
+    _SECURITY_CACHE[cache_key] = True
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """Obtiene metadatos del sistema aplicando reintentos para manejar bloqueos temporales de E/S."""
