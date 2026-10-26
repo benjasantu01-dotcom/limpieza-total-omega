@@ -290,7 +290,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        if os.path.splitext(entry.name)[1].lower() in JUNK_EXTENSIONS:
+                        _, ext = os.path.splitext(entry.name)
+                        if ext.lower() in JUNK_EXTENSIONS:
                             try:
                                 stats = entry.stat(follow_symlinks=False)
                                 if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):

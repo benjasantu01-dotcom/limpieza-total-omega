@@ -267,16 +267,12 @@ class QuarantineItem:
         """
         if stored_path is None: return False
         try:
-            st: os.stat_result = stored_path.stat()
-        except OSError:
-            return False
+            st = stored_path.stat()
+            if not self._validate_integrity(stored_path, st):
+                return False
             
-        if not self._validate_integrity(stored_path, st):
-            return False
-        
-        try:
-            current_hash: str = _get_sha256(stored_path)
-            return bool(self.sha256 and current_hash == self.sha256)
+            # Solo recalcular hash si la integridad de metadatos es correcta
+            return bool(self.sha256 and _get_sha256(stored_path) == self.sha256)
         except (OSError, PermissionError):
             return False
 
@@ -299,7 +295,6 @@ def _get_sha256(path: Path) -> str:
         return res
     except (OSError, IOError, MemoryError):
         return ""
-
 
 def _is_file_in_use_by_system(path: Path) -> bool:
     """Verifica si un archivo está en uso por procesos del sistema o posee atributos críticos."""

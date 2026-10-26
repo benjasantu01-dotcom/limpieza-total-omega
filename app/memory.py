@@ -328,10 +328,6 @@ def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HAND
 def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """
     Invoca GetProcessMemoryInfo para obtener el WorkingSet del proceso.
-    
-    Args:
-        h_process: Handle abierto del proceso.
-        pmc: Estructura de memoria rellenada por la API.
     """
     if h_process is None: return None
     try:
@@ -343,14 +339,8 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
     return None
 
 def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
-    """
-    Verifica si el ejecutable asociado al handle del proceso reside en zonas protegidas.
-    
-    Utiliza GetModuleFileNameExW para resolver la ruta absoluta del archivo y
-    valida contra las reglas de seguridad locales.
-    """
-    if h_process is None: 
-        return False
+    """Verifica si el ejecutable reside en zonas protegidas."""
+    if h_process is None: return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
@@ -358,8 +348,7 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
             return False
         
         exe_path_str = buffer_path.value.strip()
-        if not exe_path_str: 
-            return False
+        if not exe_path_str: return False
             
         return not is_protected_path(Path(exe_path_str).absolute())
     except (OSError, RuntimeError, ValueError, TypeError):
@@ -375,29 +364,26 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         return
             
     count = cb_needed.value // ctypes.sizeof(wintypes.DWORD)
-    if count <= 0 or count > MAX_PIDS:
-        return
-        
     for i in range(count):
         pid = int(pids[i])
-        if _is_system_process(pid):
-            continue
+        if _is_system_process(pid): continue
             
         h_process = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION)
-        if not h_process:
-            continue
+        if not h_process: continue
         
         try:
             ws = _query_working_set_bytes(h_process, pmc)
-            if ws is not None and ws > (10 * BYTES_IN_MB) and _is_process_executable_safe(h_process):
-                yield ProcessMemory(f"PID {pid}", pid, ws)
+            # Pre-filtro: descartamos procesos pequeños antes de llamar a GetModuleFileNameExW (muy costoso)
+            if ws is not None and ws > (10 * BYTES_IN_MB):
+                if _is_process_executable_safe(h_process):
+                    yield ProcessMemory(f"PID {pid}", pid, ws)
         except Exception:
             continue
         finally:
             WindowsAPI.kernel32.CloseHandle(h_process)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Retorna los procesos más pesados. Implementa caché de 60 segundos para evitar sobrecarga."""
+    """Retorna los procesos más pesados. Implementa caché de 60 segundos."""
     global _CACHE_TOP_PROC
     if not _is_windows: return []
     now = time.time()
