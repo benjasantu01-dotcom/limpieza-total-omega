@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 49
+- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 83 | 9 | 16 | 11 | 105 |
-| 2026-10-26 | 112 | 8 | 33 | 11 | 116 |
+| 2026-10-25 | 81 | 8 | 16 | 11 | 104 |
+| 2026-10-26 | 115 | 8 | 34 | 11 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **43**
+- robustez ante casos límite: **41**
 - rendimiento: **38**
-- robustez ante casos límite: **38**
-- seguridad defensiva: **29**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **22**
-- `memory.py`: **19**
+- `scanner.py`: **21**
+- `memory.py`: **20**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `browser.py`: **16**
-- `settings.py`: **15**
 - `safety.py`: **14**
+- `settings.py`: **14**
 - `diskreport.py`: **14**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
 - `branding.py`: **10**
 - `duplicates.py`: **9**
 - `startup.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T12:01:04` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_filesystem_read_only` y `_is_file_exclusive` para manejar correctamente casos donde las rutas son inexistentes o inaccesibles, evitando que errores de sistema no capturados interrumpan el flujo lógico del bucle de cuarentena.
+- `2026-10-26T12:00:31` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `delete_reviewed` al validar explícitamente que cada archivo en la carpeta de cuarentena sea una ruta absoluta y esté contenido físicamente dentro de `dest`, evitando ataques de "path traversal" o manipulación de enlaces simbólicos malintencionados durante la eliminación.
+- `2026-10-26T12:00:02` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_accessible` y `_query_working_set_bytes` para manejar gracefully los casos donde los handles de procesos se cierran prematuramente (race conditions) o fallan por falta de permisos específicos (denied), evitando excepciones innecesarias en procesos en ejecución.
 - `2026-10-26T11:50:01` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante posibles errores de configuración y desbordamiento de memoria al validar explícitamente los pesos del pipeline y proteger las operaciones de serialización de reportes contra entradas nulas o inesperadas.
 - `2026-10-26T11:49:42` **duplicates.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de lectura durante el escaneo de directorios asegurando que `_collect_candidates` maneje explícitamente archivos bloqueados por el sistema operativo mediante un bloque `try-except` más preciso en la obtención de atributos de archivo, evitando que una falla en un solo archivo rompa la iteración completa de la carpeta.
 - `2026-10-26T11:40:05` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada, añadiendo una validación explícita de `destination` como cadena o ruta y asegurando que la operación de escritura gestione correctamente el cierre de recursos y las excepciones de sistema, evitando estados inconsistentes si el disco no está disponible.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T11:10:26` **diskreport.py** (rendimiento): Optimizado el rendimiento del método `largest_folders` reemplazando el uso de `path.parts` y la creación de objetos `Path` intermedios por un acceso directo al primer componente del subdirectorio relativo, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos masivos.
 - `2026-10-26T11:08:15` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` reemplazando la creación dinámica de tuplas y llamadas a `zip` en el ámbito global por una constante precalculada, reduciendo la carga de inicialización del módulo y evitando la re-evaluación innecesaria.
 - `2026-10-26T10:59:05` **assistant.py** (rendimiento): Se optimizó la evaluación de problemas activos en `SystemContext` reemplazando la serialización a `tuple` y el re-sorting en cada acceso por un hash de estado inmutable (`_hash_tuple`), mejorando el rendimiento del asistente en iteraciones frecuentes sin comprometer la integridad.
-- `2026-10-26T10:58:10` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la validación extrayendo la lógica de conversión de tipos a un `mapping` centralizado dentro de `_Validators`, facilitando la auditoría de reglas de validación y reduciendo la complejidad ciclomática de las funciones de despacho.
-- `2026-10-26T10:57:40` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `scanner.py` mediante la aplicación de type hints más precisos, la estandarización de docstrings siguiendo el estándar PEP 257 y la mejora de la semántica en el nombre de variables, facilitando la comprensión del flujo de datos en las heurísticas.
-- `2026-10-26T10:49:11` **safety.py** (legibilidad y documentación): Se introdujo `SafetyState` como objeto de contexto inmutable para consolidar la lógica de validación dispersa en funciones de bajo nivel, mejorando la legibilidad y garantizando una fuente única de verdad para los atributos de seguridad durante el ciclo de vida de una validación.

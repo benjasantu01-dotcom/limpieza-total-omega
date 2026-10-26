@@ -329,11 +329,12 @@ def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HAND
     Retorna el handle como un objeto ctypes o None si el acceso es denegado o el proceso no existe.
     """
     try:
+        # Evitar excepciones de bajo nivel en casos de procesos terminando mientras se intenta acceder
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
         if not handle or handle == INVALID_HANDLE_VALUE:
             return None
         return wintypes.HANDLE(handle)
-    except (ctypes.WinError, OSError):
+    except (ctypes.WinError, OSError, Exception):
         return None
 
 def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
@@ -343,10 +344,11 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
     """
     if h_process is None: return None
     try:
+        # Se captura cualquier error de API psapi para procesos que ya cerraron o sin permiso de lectura
         if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
-    except (ctypes.WinError, OSError, ValueError):
+    except (ctypes.WinError, OSError, Exception):
         return None
     return None
 

@@ -124,7 +124,8 @@ def _verify_source_fs_permissions(path: Path) -> None:
 
 def _is_filesystem_read_only(path: Path) -> bool:
     """Test proactivo: verifica capacidad de escritura intentando crear un archivo temporal."""
-    if path is None or not path.exists(): return True
+    if path is None: return True
+    if not path.exists(): return False
     if not os.access(path, os.W_OK):
         return True
     try:
@@ -155,7 +156,7 @@ def _is_file_exclusive(path: Path) -> bool:
     Verifica si un archivo está bloqueado por otro proceso.
     Previene intentar mover archivos que están siendo usados activamente.
     """
-    if path is None:
+    if path is None or not path.exists():
         return False
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32

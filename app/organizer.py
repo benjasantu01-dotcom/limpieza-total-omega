@@ -283,7 +283,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
     """Explora recursivamente el sistema de archivos buscando candidatos a limpieza."""
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
-        # Usamos el path absoluto como string para un lookup O(1) en el set de visited
         path_str = str(current_dir.absolute())
         if path_str in visited: return
         visited.add(path_str)
@@ -295,7 +294,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        # Evitamos llamadas repetidas a Path.suffix convirtiendo el nombre una vez
                         if entry.name.lower().endswith(tuple(JUNK_EXTENSIONS)):
                             stats = entry.stat(follow_symlinks=False)
                             if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
@@ -363,11 +361,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
-                # Evitar seguir symlinks o junctions durante el proceso de borrado
                 if item.is_symlink() or _is_junction(item): continue
                 if not item.is_file(): continue
-                # Validación estricta para asegurar que el archivo no ha escapado de la cuarentena
-                if not item.resolve().is_relative_to(dest): continue
+                # Validación estricta para asegurar que el archivo no ha escapado de la carpeta objetivo
+                item_resolved = item.resolve()
+                if not item_resolved.is_absolute() or not item_resolved.is_relative_to(dest): continue
                 if is_safe_to_modify(item) and not is_protected_path(item):
                     item.unlink()
                     count += 1

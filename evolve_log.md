@@ -1328,3 +1328,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T11:50:01` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del sistema ante posibles errores de configuración y desbordamiento de memoria al validar explícitamente los pesos del pipeline y proteger las operaciones de serialización de reportes contra entradas nulas o inesperadas.
 - `2026-10-26T11:50:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T11:50:01` Corrida terminada. Total usado hoy: 280.
+- `2026-10-26T11:58:19` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-10-26T11:59:33` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-26T12:00:02` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_is_process_accessible` y `_query_working_set_bytes` para manejar gracefully los casos donde los handles de procesos se cierran prematuramente (race conditions) o fallan por falta de permisos específicos (denied), evitando excepciones innecesarias en procesos en ejecución.
+- `2026-10-26T12:00:31` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `delete_reviewed` al validar explícitamente que cada archivo en la carpeta de cuarentena sea una ruta absoluta y esté contenido físicamente dentro de `dest`, evitando ataques de "path traversal" o manipulación de enlaces simbólicos malintencionados durante la eliminación.
+- `2026-10-26T12:01:04` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_filesystem_read_only` y `_is_file_exclusive` para manejar correctamente casos donde las rutas son inexistentes o inaccesibles, evitando que errores de sistema no capturados interrumpan el flujo lógico del bucle de cuarentena.
+- `2026-10-26T12:01:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T12:01:04` Corrida terminada. Total usado hoy: 284.
