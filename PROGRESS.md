@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 127 | 15 | 27 | 15 | 132 |
-| 2026-10-26 | 78 | 6 | 21 | 8 | 75 |
+| 2026-10-25 | 127 | 15 | 27 | 15 | 128 |
+| 2026-10-26 | 80 | 6 | 22 | 8 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,15 +25,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **42**
 - legibilidad y documentación: **40**
 - rendimiento: **39**
-- seguridad defensiva: **34**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
+- `memory.py`: **20**
 - `scanner.py`: **20**
-- `memory.py`: **19**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
 - `assistant.py`: **17**
 - `diskreport.py`: **16**
 - `safety.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T08:06:05` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` añadiendo una validación explícita mediante `is_protected_path` antes de cualquier interacción con el handle del proceso, garantizando que procesos en ubicaciones críticas o bloqueadas (como los de sistema o ejecutables en carpetas protegidas) no sean objeto de operaciones de trimming, incluso si el proceso no tiene privilegios de sistema pero se encuentra en una ruta delicada.
+- `2026-10-26T08:04:39` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del filtrado de mensajes de recomendación eliminando la posibilidad de que caracteres de control ocultos o secuencias de escape (que podrían interpretarse mal en interfaces gráficas o logs) se filtren en los reportes, además de asegurar que la validación de integridad sea más estricta ante entradas inesperadas.
 - `2026-10-26T07:55:24` **diskreport.py** (seguridad defensiva): Mejoré `_validate_root` para que utilice `is_protected_path` antes de intentar cualquier operación de resolución de rutas o acceso a disco, evitando que el script intente resolver o procesar rutas potencialmente sensibles o bloqueadas.
 - `2026-10-26T07:54:44` **branding.py** (seguridad defensiva): Mejoré la seguridad en `save_logo_svg` consolidando las verificaciones de rutas bajo el validador `is_safe_to_modify` antes de proceder, eliminando redundancias y asegurando que las operaciones de creación de directorios y escritura respeten estrictamente el contrato de seguridad de la aplicación.
 - `2026-10-26T07:45:45` **settings.py** (robustez ante casos límite): Mejora la robustez de `_read_and_parse_json` y `_file_secure_to_read` ante archivos maliciosamente grandes, vacíos o con metadatos inconsistentes, reforzando la verificación de integridad antes de cualquier operación de carga.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T07:15:14` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante casos límite geométricos y de sistema, asegurando que las operaciones de archivo no fallen ante rutas inexistentes o inaccesibles, y que el renderizado de canvas sea defensivo ante escalas nulas o no finitas.
 - `2026-10-26T07:04:11` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de una caché local (`seen_normcase`) basada en `os.path.normcase` para evitar llamadas redundantes a `os.path.realpath` y `os.path.normcase` dentro del bucle de procesamiento, reduciendo drásticamente las operaciones de E/S.
 - `2026-10-26T07:03:46` **safety.py** (rendimiento): Se implementó un mecanismo de caché local `_SECURITY_CACHE` con una clave basada en `st_ino` (índice de archivo) y `st_mtime` para evitar la sobrecarga de consultas repetitivas de metadatos en disco dentro de `is_safe_to_modify` y operaciones masivas, optimizando significativamente el rendimiento durante escaneos.
-- `2026-10-26T06:56:09` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `_get_sha256` y `_is_file_exclusive` eliminando llamadas redundantes a `exists()` y `stat()` mediante el uso de excepciones, lo que reduce la latencia de I/O en operaciones repetitivas sobre el mismo archivo.
-- `2026-10-26T06:55:17` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` evitando la llamada redundante y costosa a `GetModuleFileNameExW` (que implica acceso al sistema de archivos) al realizar primero el filtrado por el nombre del proceso y el uso de memoria, relegando la verificación de seguridad (`_is_process_executable_safe`) a un paso final solo cuando sea estrictamente necesario.

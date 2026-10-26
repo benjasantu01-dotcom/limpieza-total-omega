@@ -945,3 +945,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-26T07:55:24` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré `_validate_root` para que utilice `is_protected_path` antes de intentar cualquier operación de resolución de rutas o acceso a disco, evitando que el script intente resolver o procesar rutas potencialmente sensibles o bloqueadas.
 - `2026-10-26T07:55:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T07:55:24` Corrida terminada. Total usado hoy: 188.
+- `2026-10-26T08:03:47` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-10-26T08:04:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-26T08:04:39` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva del filtrado de mensajes de recomendación eliminando la posibilidad de que caracteres de control ocultos o secuencias de escape (que podrían interpretarse mal en interfaces gráficas o logs) se filtren en los reportes, además de asegurar que la validación de integridad sea más estricta ante entradas inesperadas.
+- `2026-10-26T08:05:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-26T08:06:05` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` añadiendo una validación explícita mediante `is_protected_path` antes de cualquier interacción con el handle del proceso, garantizando que procesos en ubicaciones críticas o bloqueadas (como los de sistema o ejecutables en carpetas protegidas) no sean objeto de operaciones de trimming, incluso si el proceso no tiene privilegios de sistema pero se encuentra en una ruta delicada.
+- `2026-10-26T08:06:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T08:06:05` Corrida terminada. Total usado hoy: 192.

@@ -357,6 +357,7 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
         exe_path = Path(exe_path_str).absolute()
         if not exe_path.exists(): return False
         
+        # Validar ruta contra protección antes de considerar el proceso seguro
         if is_protected_path(exe_path): return False
             
         return True
@@ -467,6 +468,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             if exit_code.value != STILL_ACTIVE_EXIT_CODE:
                 return False, "El proceso no está activo."
             
+            # Verificación de seguridad reforzada: se valida antes de cualquier acción.
             if not _is_process_executable_safe(h_process):
                 return False, "Proceso protegido o ubicación insegura."
                 

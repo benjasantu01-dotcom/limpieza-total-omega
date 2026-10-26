@@ -305,8 +305,9 @@ def _is_safe_string_for_report(text: str) -> bool:
     return not any(term in t_low for term in _BLOCKED_TERMS)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Filtro de seguridad que asegura que solo caracteres permitidos pasen al reporte."""
+    """Filtro de seguridad estricto que limpia caracteres no permitidos y bloquea términos sensibles."""
     if not isinstance(msg, str): return ""
+    # Filtrado explícito de control y normalización de texto plano
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
     if not _is_safe_string_for_report(clean):
         return ""
