@@ -362,6 +362,9 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
+            # Validar que la ruta sea relativa al root antes de intentar acceder a .parts
+            if root not in path.parents and path != root:
+                continue
             relative = path.relative_to(root)
             if relative.parts:
                 top_folder_name = relative.parts[0]

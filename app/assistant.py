@@ -433,12 +433,11 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         try:
-            # Obtención segura de valor
             val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+            # Validación de tipo para prevenir errores durante la conversión
             if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)): 
                 return None
             
-            # Conversión y validación de métrica numérica
             valid_val = _is_valid_numeric_update(val, spec)
             if valid_val is not None:
                 return spec.type_hint(valid_val)
@@ -471,7 +470,6 @@ class SystemContext:
 
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
-        # Se verifica que el source sea un diccionario o un objeto de datos válido
         if source is None: return False
         if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)): 
             return False
@@ -701,16 +699,19 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     if not isinstance(raw_cfg, dict):
         return default
     
-    # Validación estricta de tipos tras la lectura del json
-    api_key = raw_cfg.get("asistente_api_key")
-    model = raw_cfg.get("asistente_modelo")
-    metrics_val = raw_cfg.get("asistente_enviar_metricas")
-    
-    return AssistantConfig(
-        api_key=str(api_key) if isinstance(api_key, str) else "",
-        model=str(model) if isinstance(model, str) and _MODEL_NAME_REGEX.match(model) else "gemini-3.1-flash-lite",
-        allow_metrics=bool(metrics_val) if isinstance(metrics_val, bool) else True
-    )
+    # Manejo robusto de tipos para evitar inyecciones o fallos en la configuración
+    try:
+        api_key = raw_cfg.get("asistente_api_key")
+        model = raw_cfg.get("asistente_modelo")
+        metrics_val = raw_cfg.get("asistente_enviar_metricas")
+        
+        return AssistantConfig(
+            api_key=str(api_key) if isinstance(api_key, str) else "",
+            model=str(model) if isinstance(model, str) and _MODEL_NAME_REGEX.match(model) else "gemini-3.1-flash-lite",
+            allow_metrics=bool(metrics_val) if isinstance(metrics_val, bool) else True
+        )
+    except (TypeError, ValueError):
+        return default
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en el formato JSON esperado por Gemini."""

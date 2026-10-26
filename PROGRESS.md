@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 19 | 1 | 5 | 4 | 1 |
+| 2026-10-24 | 16 | 1 | 5 | 3 | 1 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 41 | 3 | 12 | 3 | 65 |
+| 2026-10-26 | 44 | 3 | 12 | 4 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
+- manejo de errores y validación de entradas: **43**
 - rendimiento: **40**
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
-- `quarantine.py`: **19**
-- `browser.py`: **19**
+- `browser.py`: **20**
+- `memory.py`: **19**
+- `quarantine.py`: **18**
 - `scanner.py`: **17**
+- `assistant.py`: **16**
+- `diskreport.py`: **15**
 - `healthscore.py`: **15**
-- `assistant.py`: **15**
 - `safety.py`: **14**
 - `settings.py`: **14**
-- `diskreport.py`: **14**
-- `organizer.py`: **13**
 - `duplicates.py`: **12**
+- `organizer.py`: **12**
 - `branding.py`: **11**
 - `main.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T05:22:57` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` capturando errores de acceso a nivel de subdirectorio (cuando un directorio deniega listado durante el `os.scandir`) para evitar que una excepción silencie el escaneo completo, además de asegurar que `relative_to` no falle ante rutas mal formadas.
+- `2026-10-26T05:22:31` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_valid_rel_path` al incluir una validación estricta de rutas mediante `os.path.normpath`, garantizando que el uso de barras invertidas y normalizaciones no permita el acceso fuera del directorio esperado, mitigando posibles errores de entrada en `BROWSER_CACHE_PATHS`.
+- `2026-10-26T05:21:34` **assistant.py** (manejo de errores y validación de entradas): Reforcé el manejo de errores en `_parse_config` y `_apply_field` para asegurar que datos malformados o tipos inesperados durante la carga de configuración y la ingesta de métricas no degraden el estado del `SystemContext`.
 - `2026-10-26T04:00:21` **startup.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_registry_entry_safe` y `_resolve_and_cache_path` implementando una validación explícita para evitar que rutas que contienen caracteres NUL o secuencias de escape sean procesadas, reforzando la defensa ante inyección o manipulación de rutas en el registro.
 - `2026-10-26T03:51:22` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al reemplazar la resolución de rutas mediante `os.path.realpath` (que puede ser engañosa en contextos de enlaces simbólicos o junctions maliciosos) por una validación estricta utilizando `Path.resolve(strict=True)` dentro de la clase `Scanner`, y se ha reforzado el filtrado en `scan_directory` para asegurar que el punto de entrada sea un directorio real antes de iniciar cualquier operación de escaneo, protegiendo así el núcleo del recorrido ante posibles manipulaciones de la ruta base.
 - `2026-10-26T03:51:10` **safety.py** (seguridad defensiva): Se ha añadido una validación temprana contra `LONG_PATH_PREFIX` en `_is_file_owned_by_system` para prevenir que rutas extremadamente largas causen errores de API, y se ha fortalecido `_get_file_id` integrando `_to_long_path` para garantizar consistencia en la detección de identidades bajo rutas extendidas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T03:10:28` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de puntos de reparse, añadiendo una verificación de existencia mediante `Lstat` antes de llamar a `GetFinalPathNameByHandleW` para evitar errores de E/S en enlaces simbólicos rotos o inaccesibles, asegurando que la app no aborte innecesariamente por condiciones de carrera o estados inválidos del sistema de archivos.
 - `2026-10-26T03:09:33` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` al introducir una verificación de existencia de volumen antes de iniciar cualquier movimiento, previniendo fallos críticos cuando el sandbox se encuentra en una unidad de disco distinta a la del archivo origen (lo cual podría causar errores en `os.replace` o inconsistencias en los metadatos de inodos).
 - `2026-10-26T03:00:58` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_process_accessible` para detectar errores de acceso (como `ERROR_ACCESS_DENIED`) de forma más granular y robusta, evitando que excepciones silenciadas por el `try/except` general en el bucle de enumeración enmascaren posibles problemas de permisos en procesos con privilegios elevados.
-- `2026-10-26T02:59:06` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite de entrada (como datos no normalizables o configuraciones externas inesperadas) añadiendo un manejo de errores preventivo en el pipeline de evaluación y asegurando que `_compute_cached` no pueda abortar por excepciones no controladas durante la ejecución de las reglas.
-- `2026-10-26T02:58:37` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en la lectura de archivos (en `hash_file` y `partial_hash`) manejando explícitamente archivos que desaparecen o pierden permisos entre el escaneo y el hash, evitando propagar errores fuera del módulo.
-- `2026-10-26T02:50:08` **browser.py** (robustez ante casos límite): Se ha robustecido `browser.py` frente a rutas inválidas o nombres de archivo excesivamente largos (comunes en cachés de navegadores) mediante la validación de `os.path.abspath` y el manejo explícito de errores de `OSError` en `_sum_directory_recursive` durante la iteración, evitando que caracteres Unicode o nombres de ruta malformados interrumpan el escaneo de otras carpetas.

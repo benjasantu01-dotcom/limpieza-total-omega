@@ -118,9 +118,11 @@ def _is_valid_rel_path(p: Any) -> TypeGuard[str]:
     """Valida la integridad de la ruta relativa contra inyecciones y caracteres inválidos."""
     if not isinstance(p, str) or not p.strip(): return False
     if os.path.isabs(p) or p.startswith(('\\', '/')): return False
-    if '..' in p or any(c in p for c in PATH_FORBIDDEN_CHARS): return False
+    # Normalización para verificar si existen secuencias de escape de directorio
+    if ".." in os.path.normpath(p): return False
+    if any(c in p for c in PATH_FORBIDDEN_CHARS): return False
     if any(ord(c) < 32 for c in p): return False
-    return all(len(s) > 0 for s in p.split('\\'))
+    return True
 
 for _k, _v in BROWSER_CACHE_PATHS.items():
     if not _is_valid_rel_path(_v):
