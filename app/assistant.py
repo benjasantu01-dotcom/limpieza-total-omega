@@ -679,8 +679,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         return Answer("Entrada no válida.")
     
     # Búsqueda optimizada: iterar tokens y buscar en el diccionario directamente
-    for word in q_sanitized.lower().split():
-        token = word.strip("¿?!.,")
+    tokens = _TOKEN_REGEX.findall(q_sanitized.lower())
+    for token in tokens:
         if token in _TOKENS_MAP:
             return _TOKENS_MAP[token](context, question)
             

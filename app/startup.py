@@ -258,7 +258,12 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Identifica las rutas estándar de inicio del sistema y usuario en Windows."""
+    """
+    Identifica las rutas de carpetas 'Startup' del sistema y del usuario.
+    
+    Retorna una lista de objetos Path hacia directorios que requieren escaneo.
+    Solo retorna rutas existentes, no protegidas y que no son enlaces simbólicos.
+    """
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -375,7 +380,12 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Convierte el output CSV de PowerShell en objetos StartupEntry."""
+    """
+    Convierte el output CSV de PowerShell en objetos StartupEntry.
+    
+    Espera un string con formato CSV donde las columnas 'Name' y 'Value'
+    representan la clave del registro y el comando asociado.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -413,7 +423,12 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
-    """Extrae programas del Registro de Windows mediante un subproceso PowerShell."""
+    """
+    Extrae programas del Registro de Windows mediante un subproceso PowerShell.
+    
+    Invoca PowerShell para obtener propiedades de claves Run, evitando ejecutar
+    código arbitrario al usar -LiteralPath y parámetros estrictos.
+    """
     if os.name != "nt":
         return []
     

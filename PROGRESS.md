@@ -9,44 +9,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 209
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 50 | 4 | 9 | 8 | 35 |
+| 2026-10-24 | 47 | 4 | 9 | 7 | 35 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 17 | 0 | 5 | 1 | 25 |
+| 2026-10-26 | 20 | 0 | 5 | 1 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **41**
-- robustez ante casos límite: **39**
-- rendimiento: **33**
+- legibilidad y documentación: **42**
+- robustez ante casos límite: **36**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
 - `quarantine.py`: **19**
-- `healthscore.py`: **18**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `memory.py`: **18**
+- `healthscore.py`: **17**
 - `scanner.py`: **17**
 - `settings.py`: **15**
+- `assistant.py`: **15**
 - `diskreport.py`: **15**
-- `organizer.py`: **14**
-- `assistant.py`: **14**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
+- `organizer.py`: **13**
 - `safety.py`: **13**
 - `main.py`: **10**
-- `startup.py`: **7**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T02:11:15` **browser.py** (rendimiento): Se optimizó el proceso de detección de perfiles y escaneo de caché reemplazando el uso repetitivo de `path.resolve()` y `os.path.abspath` por una resolución única al inicio del ciclo, reduciendo significativamente las llamadas al sistema de archivos.
+- `2026-10-26T02:09:42` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la recreación innecesaria de listas y el uso de `strip()` en cada palabra dentro del bucle principal, reemplazándolo por una búsqueda directa en `_TOKENS_MAP` sobre una versión pre-tokenizada, reduciendo la complejidad de las operaciones en cada consulta.
+- `2026-10-26T02:07:59` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando docstrings detallados en funciones clave y añadiendo anotaciones de tipo más precisas para clarificar los contratos de datos, facilitando así el mantenimiento y la auditoría del código.
 - `2026-10-26T01:58:53` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en las funciones de heurística y clarificando mediante docstrings el propósito técnico de los parámetros críticos (como `now_ts` y `entry`), asegurando mayor consistencia y legibilidad para el mantenimiento del motor de análisis.
 - `2026-10-26T01:50:12` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de anotaciones de tipo, facilitando el mantenimiento y la auditoría de seguridad.
 - `2026-10-26T01:48:34` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `memory.py` centralizando la lógica de acceso a la API de Windows en un objeto de configuración (`WindowsAPI`) y añadiendo documentación tipo Google Docstring en las funciones críticas para clarificar el propósito de las llamadas de bajo nivel.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T01:17:18` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la validación proactiva de parámetros en funciones críticas (como `purge_item` y `list_items`) y la centralización del manejo de excepciones, evitando que rutas `None` o entradas malformadas inyecten estados inválidos en el flujo de trabajo.
 - `2026-10-26T01:09:28` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones en `stage_for_review` y `delete_reviewed` implementando chequeos explícitos para valores nulos o tipos incorrectos, evitando que errores de lógica en las llamadas externas comprometan la integridad de las rutas procesadas.
 - `2026-10-26T01:09:11` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_read_windows_snapshot` y `trim_working_set` mediante la validación explícita de tipos y estados, asegurando que las llamadas a la API de Windows no operen sobre punteros nulos o contextos inválidos, lo que previene errores inesperados durante el diagnóstico del sistema.
-- `2026-10-26T01:08:29` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_restore_quarantine` al añadir validaciones de estado previas y manejo explícito de errores durante la restauración, asegurando que si el manifiesto de cuarentena está corrupto o la ruta destino es insegura, la operación se cancele de forma controlada y se informe al usuario en lugar de intentar una operación parcial o fallida.
-- `2026-10-26T01:06:58` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo `healthscore.py` mediante una validación más estricta de las entradas `SystemMetrics` y la implementación de un manejo de errores defensivo en la lógica del pipeline, evitando que errores en reglas individuales invaliden el reporte global.
-- `2026-10-26T00:57:11` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `summarize` validando explícitamente los tipos de entrada y manejando estados vacíos para evitar excepciones innecesarias durante la ejecución del bucle, aplicando el enfoque de validación defensiva.

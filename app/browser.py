@@ -216,11 +216,6 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
     Calcula el tamaño acumulado de una jerarquía de directorios de forma recursiva.
-    
-    Args:
-        root_path: Ruta absoluta base del escaneo.
-        scan_ctx: Contexto inmutable de estado y seguridad.
-        depth: Profundidad actual de recursión para evitar desbordamiento.
     """
     if not root_path or depth > scan_ctx.max_depth:
         return ScanResult(0, True)
@@ -281,14 +276,12 @@ def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
     
     return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
 
-def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Combina el directorio base del usuario con la ruta relativa conocida de un navegador."""
+def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
+    """Combina el directorio base del usuario ya resuelto con la ruta relativa del navegador."""
     if not _is_valid_rel_path(rel_str): return Path()
     try:
-        target = real_base.joinpath(*rel_str.split("\\")).resolve()
-        base_resolved = real_base.resolve()
-        
-        if not str(target).startswith(str(base_resolved)): return Path()
+        target = base_resolved.joinpath(*rel_str.split("\\"))
+        # Comprobación de existencia sin re-resolver la base completa
         return target if target.exists() and target.is_dir() else Path()
     except (OSError, RuntimeError):
         return Path()
@@ -307,13 +300,14 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists() or not os.access(base, os.R_OK): continue
         try:
-            base_norm = os.path.normcase(str(base.resolve()))
+            base_resolved = base.resolve()
+            base_norm = os.path.normcase(str(base_resolved))
         except (OSError, RuntimeError): continue
         
         scan_ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
         
         for browser_key, relative_path in browser_map.items():
-            candidate = _resolve_browser_path(base, relative_path)
+            candidate = _resolve_browser_path(base_resolved, relative_path)
             if candidate != Path() and _is_valid_cache_path(candidate, base_norm):
                 scan_res = _sum_directory_recursive(str(candidate), scan_ctx, 0)
                 if scan_res.success and scan_res.bytes_found > 0:
