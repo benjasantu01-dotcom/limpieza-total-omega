@@ -284,8 +284,10 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
     if not _is_valid_rel_path(rel_str): return Path()
     try:
         target = base_resolved.joinpath(*rel_str.split("\\"))
-        # Comprobación de existencia sin re-resolver la base completa
-        return target if target.exists() and target.is_dir() else Path()
+        # Comprobación de existencia sin re-resolver la base completa y verificación de seguridad
+        if target.exists() and target.is_dir() and is_safe_to_modify(target):
+            return target
+        return Path()
     except (OSError, RuntimeError):
         return Path()
 

@@ -483,3 +483,10 @@ assert not True
 - `2026-10-26T03:20:42` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_ensure_safe_text` integrando un chequeo contra `is_protected_path` para prevenir la inyección accidental de rutas o comandos en las respuestas del asistente, asegurando que ningún dato devuelto pueda ser interpretado como una ruta del sistema sensible.
 - `2026-10-26T03:20:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T03:20:42` Corrida terminada. Total usado hoy: 80.
+- `2026-10-26T03:28:45` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-26T03:29:41` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-26T03:30:09` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_resolve_browser_path` añadiendo una validación explícita de `is_safe_to_modify` antes de retornar una ruta, previniendo así que la lógica de detección resuelva y procese rutas que, aunque existan, hayan sido marcadas como protegidas o inseguras por el sistema de seguridad central.
+- `2026-10-26T03:30:48` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al evitar el uso de `entry.path` en `walk_files`, reemplazándolo por `Path(entry.path).resolve()` o construyendo la ruta de forma segura para garantizar que la validación de `is_protected_path` actúe sobre la ruta real y no sobre strings potencialmente manipulados por el sistema operativo durante la iteración.
+- `2026-10-26T03:30:56` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-26T03:30:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T03:30:56` Corrida terminada. Total usado hoy: 84.
