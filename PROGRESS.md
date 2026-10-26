@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 44
+- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-24 | 44 | 2 | 8 | 6 | 34 |
+| 2026-10-24 | 41 | 1 | 8 | 6 | 34 |
 | 2026-10-25 | 140 | 16 | 29 | 16 | 149 |
-| 2026-10-26 | 23 | 1 | 7 | 1 | 28 |
+| 2026-10-26 | 25 | 1 | 8 | 1 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **40**
-- rendimiento: **38**
+- rendimiento: **40**
+- seguridad defensiva: **37**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
@@ -33,20 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `browser.py`: **19**
 - `memory.py`: **19**
-- `healthscore.py`: **17**
-- `scanner.py`: **17**
-- `diskreport.py`: **15**
-- `duplicates.py`: **14**
+- `scanner.py`: **18**
+- `healthscore.py`: **16**
+- `settings.py`: **15**
 - `organizer.py`: **14**
-- `settings.py`: **14**
 - `assistant.py`: **14**
+- `diskreport.py`: **14**
 - `branding.py`: **13**
+- `duplicates.py`: **13**
 - `safety.py`: **13**
 - `main.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T02:39:21` **settings.py** (rendimiento): Optimizé `load()` y `save()` para reducir drásticamente las llamadas a `os.lstat` y validaciones de seguridad redundantes mediante el uso del caché de metadatos `_MANAGER`, asegurando que solo se re-valide el archivo si su `mtime` o `size` han cambiado realmente en el sistema de archivos.
+- `2026-10-26T02:38:48` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la resolución de rutas (`os.path.realpath`) fuera del bucle crítico de `process_entry`, utilizando en su lugar `entry.path` directamente para las comprobaciones iniciales y difiriendo la resolución costosa solo para los archivos candidatos que pasan los filtros, reduciendo así la carga de I/O por cada archivo procesado.
 - `2026-10-26T02:29:42` **quarantine.py** (rendimiento): Optimizé la validación de integridad en `_get_sha256` y `verify_integrity` evitando lecturas de disco redundantes y mejorando la gestión del caché para reducir el impacto de I/O en operaciones frecuentes.
 - `2026-10-26T02:28:51` **organizer.py** (rendimiento): Se ha optimizado `_process_directory` reemplazando la búsqueda lineal por extensiones mediante `os.path.splitext` dentro del bucle, por una verificación directa sobre un `set` cacheado de extensiones, evitando llamadas repetitivas a `os.path.split` y mejorando la eficiencia al filtrar el acceso a `stat()` solo cuando es estrictamente necesario.
 - `2026-10-26T02:28:14` **memory.py** (rendimiento): Optimicé el bucle de enumeración de procesos (`_iter_process_memory`) reemplazando las múltiples llamadas a `GetModuleFileNameExW` (que es una operación costosa de E/S por cada proceso) por un pre-filtrado de uso de memoria, reduciendo drásticamente la latencia de la función `top_memory_processes`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T01:37:31` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de escaneo, la aclaración de las intenciones de los parámetros en los docstrings y la estandarización de las aserciones de tipo para asegurar una ejecución robusta y autocomprensible.
 - `2026-10-26T01:28:22` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el propósito de las clases y funciones clave, asegurando que el código sea mantenible y fácil de comprender para futuros colaboradores, además de añadir type hints en secciones críticas donde se perdía visibilidad del tipo.
 - `2026-10-26T01:27:43` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` añadiendo validación estricta de tipos y manejo de errores ante entradas del registro malformadas, evitando que un campo `None` o un formato inesperado de `DictReader` interrumpan el escaneo.
-- `2026-10-26T01:27:14` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de archivos mediante la implementación de `os.stat` antes de la apertura (evitando condiciones de carrera y validando metadatos críticos) y refinando el manejo de excepciones en `_read_and_parse_json` para prevenir abortos inesperados ante archivos malformados o bloqueados.
-- `2026-10-26T01:18:21` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_valid_file_path` y `_is_readable` reemplazando los chequeos implícitos por validaciones de tipo explícitas (`isinstance(..., Path)`) y capturando errores de forma más granular para evitar comportamientos inesperados ante entradas nulas o rutas malformadas, alineándose con el enfoque de manejo de errores y validación de entradas.

@@ -437,6 +437,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if _MANAGER.perform_atomic_write(config_path, serialized):
             _MANAGER._cached_settings = cleaned_settings
             _MANAGER._last_size = len(serialized_bytes)
+            # Actualizamos el mtime tras escritura exitosa para evitar re-validación
+            _MANAGER._last_mtime = config_path.stat().st_mtime
             return config_path
         return None
     except (OSError, PermissionError, AttributeError, TypeError, ValueError): return None

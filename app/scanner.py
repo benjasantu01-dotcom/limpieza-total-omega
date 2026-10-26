@@ -288,6 +288,7 @@ class Scanner:
             if entry.is_symlink() or self._is_reparse_point(entry): return False
             if _cached_is_protected(path_str): return False
             if not _is_valid_path_structure(path_str): return False
+            # La resolución real es costosa, se posterga al filtrado final
             if not self._is_inside_base_root(path_str): return False
                 
             self.safe_cache.add(path_str)
@@ -300,13 +301,8 @@ class Scanner:
         if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
         
-        try:
-            path_norm: str = os.path.normcase(os.path.realpath(entry.path))
-            if path_norm not in self.seen:
-                self.seen.add(path_norm)
-                directory_stack.append((entry.path, current_depth + 1))
-        except (OSError, RuntimeError):
-            logger.debug(f"Error procesando directorio para el stack: {entry.path}")
+        # Saltamos la normalización pesada aquí, el _is_safe_entry ya valida los accesos básicos
+        directory_stack.append((entry.path, current_depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Verifica si la extensión del archivo es candidata a ser analizada por heurísticas usando caché."""
@@ -329,6 +325,7 @@ class Scanner:
         try:
             if entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
+                    # Solo resolvemos path cuando detectamos un candidato heurístico real
                     path_norm: str = os.path.normcase(os.path.realpath(entry.path))
                     if path_norm not in self.seen:
                         self.seen.add(path_norm)
@@ -383,11 +380,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
     
     directory_stack: DirectoryStack = [(str(base_path), 0)]
-    try:
-        scanner.seen.add(os.path.normcase(os.path.realpath(str(base_path))))
-    except (OSError, RuntimeError):
-        return []
-
+    
     while directory_stack:
         current_dir, depth = directory_stack.pop()
         try:

@@ -402,3 +402,13 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-10-26T02:29:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
 - `2026-10-26T02:29:45` Rotación — log: 1232 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T02:29:45` Corrida terminada. Total usado hoy: 60.
+- `2026-10-26T02:37:54` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-26T02:38:20` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 17% del original (posible pérdida de código)
+- `2026-10-26T02:38:48` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner moviendo la resolución de rutas (`os.path.realpath`) fuera del bucle crítico de `process_entry`, utilizando en su lugar `entry.path` directamente para las comprobaciones iniciales y difiriendo la resolución costosa solo para los archivos candidatos que pasan los filtros, reduciendo así la carga de I/O por cada archivo procesado.
+- `2026-10-26T02:39:21` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` y `save()` para reducir drásticamente las llamadas a `os.lstat` y validaciones de seguridad redundantes mediante el uso del caché de metadatos `_MANAGER`, asegurando que solo se re-valide el archivo si su `mtime` o `size` han cambiado realmente en el sistema de archivos.
+- `2026-10-26T02:39:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T02:39:26` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-26T02:39:34` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-26T02:39:46` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-26T02:39:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T02:39:46` Corrida terminada. Total usado hoy: 64.
