@@ -121,13 +121,13 @@ BROWSER_CACHE_PATHS: BrowserMap = {
     "Chrome (GPU)": r"Microsoft\Edge\User Data\Default\GPUCache",
 }
 
-def _is_valid_rel_path(p: Any) -> TypeGuard[str]:
-    """Valida la integridad de la ruta relativa contra inyecciones y caracteres inválidos."""
-    if not isinstance(p, str) or not p.strip(): return False
-    if os.path.isabs(p) or p.startswith(('\\', '/')): return False
-    if ".." in os.path.normpath(p): return False
-    if any(c in p for c in PATH_FORBIDDEN_CHARS): return False
-    if any(ord(c) < 32 for c in p): return False
+def _is_valid_rel_path(path_candidate: Any) -> TypeGuard[str]:
+    """Valida la integridad de una ruta relativa contra inyecciones y caracteres inválidos."""
+    if not isinstance(path_candidate, str) or not path_candidate.strip(): return False
+    if os.path.isabs(path_candidate) or path_candidate.startswith(('\\', '/')): return False
+    if ".." in os.path.normpath(path_candidate): return False
+    if any(c in path_candidate for c in PATH_FORBIDDEN_CHARS): return False
+    if any(ord(c) < 32 for c in path_candidate): return False
     return True
 
 for _k, _v in BROWSER_CACHE_PATHS.items():
@@ -213,7 +213,6 @@ def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str
 def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     """Calcula el tamaño de un archivo individual evitando conteos múltiples por hardlinks."""
     try:
-        # Usamos entry.stat directamente (es más rápido que llamar a os.stat)
         st = entry.stat(follow_symlinks=False)
         if st.st_size > 0:
             file_id = (st.st_dev, st.st_ino)
@@ -290,10 +289,10 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
     try:
         parts = rel_str.split("\\")
         target = base_resolved.joinpath(*parts)
-        # Verificamos si existe y si la normalización sigue dentro del sandbox
         if target.exists() and target.is_dir():
             target_norm = os.path.normcase(str(target.resolve()))
             base_norm = os.path.normcase(str(base_resolved))
+            # Verificamos si la ruta resuelta está confinada dentro del sandbox original
             if _is_within_sandbox(target_norm, base_norm) and is_safe_to_modify(target):
                 return target
         return Path()
@@ -301,7 +300,10 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
         return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Escanea perfiles para consolidar hallazgos de caché ordenados por tamaño."""
+    """
+    Escanea las rutas base proporcionadas en busca de perfiles de navegador conocidos.
+    Devuelve una lista de objetos BrowserCache ordenados de mayor a menor tamaño ocupado.
+    """
     if bases is not None and not isinstance(bases, (list, tuple)): return []
     raw_bases = list(bases) if bases else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
