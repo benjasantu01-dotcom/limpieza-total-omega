@@ -1392,3 +1392,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-26T12:41:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-26T12:41:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-26T12:41:30` Corrida terminada. Total usado hoy: 300.
+- `2026-10-26T12:49:37` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-26T12:50:29` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-26T12:50:56` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-26T12:51:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-26T12:51:35` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `perform_atomic_write` añadiendo una comprobación explícita para evitar enlaces simbólicos (symlink attacks) en el archivo de configuración antes de la apertura, asegurando que el archivo sea un archivo regular y no un enlace hacia una ubicación sensible fuera del directorio controlado.
+- `2026-10-26T12:51:47` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.19s
+
+```
+- `2026-10-26T12:51:47` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_extract_quoted_path` y `_resolve_and_cache_path` mediante la validación explícita de puntos de reparse (reparse points) y enlaces simbólicos mediante `is_symlink()` antes de realizar cualquier operación de resolución de rutas, mitigando riesgos de redirección de archivos fuera del alcance esperado.
+- `2026-10-26T12:51:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-26T12:51:47` Corrida terminada. Total usado hoy: 304.

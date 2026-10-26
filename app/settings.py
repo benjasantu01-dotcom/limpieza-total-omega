@@ -184,9 +184,9 @@ class _SettingsManager:
             if is_protected_path(str(resolved_path)) or not is_safe_to_modify(str(resolved_path)): return False
             
             if resolved_path.exists():
+                # Verificar integridad: debe ser un archivo regular sin enlaces simbólicos ni hardlinks peligrosos
                 st = resolved_path.lstat()
                 if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-                # Prohibir permisos laxos (grupo/otros) y verificar propiedad
                 if (st.st_mode & 0o077) != 0: return False 
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             

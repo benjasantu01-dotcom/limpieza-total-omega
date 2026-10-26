@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 81 | 8 | 16 | 11 | 88 |
-| 2026-10-26 | 122 | 9 | 37 | 12 | 120 |
+| 2026-10-25 | 81 | 8 | 16 | 11 | 84 |
+| 2026-10-26 | 123 | 10 | 37 | 12 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **42**
 - rendimiento: **38**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,7 +35,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `healthscore.py`: **17**
 - `browser.py`: **17**
-- `settings.py`: **15**
+- `settings.py`: **16**
 - `safety.py`: **14**
 - `diskreport.py`: **14**
 - `organizer.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-26T12:51:35` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `perform_atomic_write` añadiendo una comprobación explícita para evitar enlaces simbólicos (symlink attacks) en el archivo de configuración antes de la apertura, asegurando que el archivo sea un archivo regular y no un enlace hacia una ubicación sensible fuera del directorio controlado.
 - `2026-10-26T12:41:02` **quarantine.py** (seguridad defensiva): He implementado una validación de "confinamiento estricto" en `_write_temp_to_final` para evitar ataques de tipo "Time-of-check to time-of-use" (TOCTOU) al asegurar que, tras la copia, el inodo del archivo en el sandbox no haya cambiado respecto al que se acaba de escribir, blindando el proceso contra reemplazos maliciosos en el sistema de archivos durante la transacción.
 - `2026-10-26T12:40:11` **organizer.py** (seguridad defensiva): Se fortaleció `delete_reviewed` para evitar que un usuario o proceso malicioso pueda realizar ataques de *path traversal* (como usar `..` en nombres de archivos) para borrar elementos fuera de la carpeta de cuarentena, añadiendo una validación explícita de anclaje mediante `path.resolve()` y `is_relative_to()`.
 - `2026-10-26T12:29:46` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `is_protected_path` al iterar los directorios, garantizando que el escaneo no acceda a rutas restringidas incluso si el sistema operativo permite la lectura.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-26T11:49:42` **duplicates.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de lectura durante el escaneo de directorios asegurando que `_collect_candidates` maneje explícitamente archivos bloqueados por el sistema operativo mediante un bloque `try-except` más preciso en la obtención de atributos de archivo, evitando que una falla en un solo archivo rompa la iteración completa de la carpeta.
 - `2026-10-26T11:40:05` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada, añadiendo una validación explícita de `destination` como cadena o ruta y asegurando que la operación de escritura gestione correctamente el cierre de recursos y las excepciones de sistema, evitando estados inconsistentes si el disco no está disponible.
 - `2026-10-26T11:39:45` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `SystemContext.ingest` ante entradas externas malformadas mediante el uso de un manejo de errores más estricto, asegurando que si una actualización parcial falla, el estado interno permanezca consistente y no quede en un estado híbrido.
-- `2026-10-26T11:29:57` **scanner.py** (rendimiento): Se ha optimizado la estructura de datos `seen_exts` en la clase `Scanner` para utilizar un `frozenset` pre-calculado, evitando manipulaciones repetitivas de conjuntos y mejorando la velocidad de búsqueda durante la iteración sobre el sistema de archivos.
