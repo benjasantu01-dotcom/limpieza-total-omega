@@ -1559,3 +1559,11 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-10-27T10:18:42` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-10-27T10:18:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T10:18:42` Corrida terminada. Total usado hoy: 244.
+- `2026-10-27T10:27:11` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-10-27T10:27:42` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante la recepción de tipos de datos inesperados o valores no numéricos mediante la inclusión de un control estricto de tipo `(int, float)` antes de la validación, evitando excepciones no controladas durante la instanciación de métricas.
+- `2026-10-27T10:28:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-27T10:30:00` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-27T10:30:31` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_extract_process_info` para ignorar procesos con nombres vacíos o caracteres de control, mejorando la robustez ante entradas de procesos malformados que podrían retornar nombres inválidos o vacíos, una situación común al enumerar procesos en Windows.
+- `2026-10-27T10:30:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-27T10:30:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T10:30:49` Corrida terminada. Total usado hoy: 248.

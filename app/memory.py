@@ -245,7 +245,9 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         return None
     
     try:
-        name = parts[0]
+        name = parts[0].strip()
+        if not name or any(ord(c) < 32 for c in name):
+            return None
         pid = int(parts[1])
         ws_raw = parts[2]
         ws = _safe_int_conversion(ws_raw)

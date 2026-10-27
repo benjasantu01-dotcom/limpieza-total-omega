@@ -283,7 +283,7 @@ class SystemMetrics:
     def validate(self) -> None:
         """Normaliza todas las métricas según los rangos definidos en _METRIC_LIMITS."""
         for field_name in self._FIELDS_TO_VALIDATE:
-            val = getattr(self, field_name, None)
+            val = getattr(self, field_name, 0.0)
             if not isinstance(val, (int, float)):
                 val = 0.0
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
