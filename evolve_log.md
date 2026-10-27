@@ -644,3 +644,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-10-27T13:13:26` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez del manejo de errores en las heurísticas de `scanner.py`, asegurando que `_run_file_heuristics` y `scan_file` validen explícitamente los parámetros y manejen de forma segura las excepciones durante la ejecución de los checks para evitar interrupciones prematuras del escaneo.
 - `2026-10-27T13:13:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T13:13:26` Corrida terminada. Total usado hoy: 312.
+- `2026-10-27T13:20:55` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-27T13:21:28` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` al centralizar la captura de errores específicos durante la carga del archivo, asegurando que cualquier entrada mal formada o corrupta resulte en un valor seguro (`None`) en lugar de permitir excepciones inesperadas que podrían comprometer la estabilidad del sistema.
+- `2026-10-27T13:21:55` ➖ Sin cambios en startup.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `_is_registry_entry_safe` y `parse_registry_csv` añadiendo verificaciones de tipo más estrictas y sanitización frente a entradas inesperadas, previniendo excepciones innecesarias al procesar CSVs mal formados.
+- `2026-10-27T13:22:33` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._apply_field
+- `2026-10-27T13:22:51` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-27T13:22:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T13:22:51` Corrida terminada. Total usado hoy: 316.

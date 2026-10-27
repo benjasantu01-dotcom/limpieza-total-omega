@@ -358,7 +358,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return data if isinstance(data, dict) and len(data) <= 64 else None
-    except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError):
+    except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError, TypeError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
