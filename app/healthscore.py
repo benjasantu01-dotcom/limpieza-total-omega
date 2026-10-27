@@ -211,8 +211,8 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
     """Calcula salud: Penaliza proporcionalmente según archivos sospechosos y advertencias."""
     try:
-        s_count = max(0, int(suspicious_count))
-        w_count = max(0, int(warnings))
+        s_count = max(0, float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0)
+        w_count = max(0, float(warnings) if isinstance(warnings, (int, float)) else 0.0)
         penalization = (s_count * 0.05) + (w_count * 0.25)
         return _clamp(1.0 - penalization)
     except (TypeError, ValueError):
@@ -420,17 +420,20 @@ def summarize(result: HealthResult | None) -> List[str]:
     if not isinstance(result, HealthResult): 
         return ["Error: Informe de salud no disponible."]
     
-    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    for entry in PIPELINE_DEFINITIONS:
-        val = result.breakdown.get(entry.area, 0)
-        lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
-    
-    recs = [r for r in result.recommendations if isinstance(r, str) and r]
-    if not recs:
-        recs = ["No hay advertencias activas."]
+    try:
+        lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+        for entry in PIPELINE_DEFINITIONS:
+            val = result.breakdown.get(entry.area, 0)
+            lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
         
-    lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recs]))
-    return lines
+        recs = [r for r in result.recommendations if isinstance(r, str) and r]
+        if not recs:
+            recs = ["No hay advertencias activas."]
+            
+        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recs]))
+        return lines
+    except Exception:
+        return ["Error: Fallo crítico al generar resumen de informe."]
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

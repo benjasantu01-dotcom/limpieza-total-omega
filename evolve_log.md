@@ -1419,3 +1419,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-27T08:17:58` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-27T08:17:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T08:17:58` Corrida terminada. Total usado hoy: 196.
+- `2026-10-27T08:24:59` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-10-27T08:25:29` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_sum_directory_recursive` mediante la validación explícita de `root_path` y el manejo de rutas malformadas, evitando que el escaneo falle silenciosamente ante entradas de disco inesperadas.
+- `2026-10-27T08:25:56` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` implementando una gestión de errores más granular y validando explícitamente estados de retorno, evitando que excepciones en el sistema de archivos (como `OSError` o `PermissionError`) se propaguen o devuelvan resultados parciales engañosos en el reporte.
+- `2026-10-27T08:26:21` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-27T08:26:35` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `score_security` agregando validaciones de tipos y manejos de excepciones para prevenir fallos silenciosos cuando los datos de entrada son inesperados, asegurando que el reporte siempre sea consistente.
+- `2026-10-27T08:26:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T08:26:35` Corrida terminada. Total usado hoy: 200.

@@ -263,10 +263,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo seguro mediante pila (stack).
-    
-    Usa el par (device_id, inode) para rastrear carpetas ya visitadas y prevenir
-    bucles infinitos ante enlaces simbólicos o junctions. Salta silenciosamente
-    cualquier ruta que dispare excepciones de sistema o esté protegida.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -278,7 +274,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         root_stat = root_path.stat()
         visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
     except (OSError, PermissionError):
-        pass
+        return
     
     while stack:
         current_dir = stack.pop()
@@ -300,9 +296,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             yield Path(entry.path), st.st_size
                             
-                    except (OSError, PermissionError, FileNotFoundError):
+                    except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError, NotADirectoryError, FileNotFoundError):
+        except (OSError, PermissionError):
             continue
 
 
@@ -328,7 +324,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if root is None: return []
     
-    # Pre-filtrar carpetas de primer nivel protegidas para evitar chequearlas en cada iteración
     allowed_children = {}
     try:
         for entry in os.scandir(root):
@@ -347,7 +342,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 metrics = stats[rel.parts[0]]
                 metrics.size += size
                 metrics.file_count += 1
-        except ValueError:
+        except (ValueError, IndexError):
             continue
             
     results = [FolderUsage(allowed_children[name], m.size, m.file_count) for name, m in stats.items()]
@@ -363,9 +358,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Ejecuta el recorrido del árbol e integra estadísticas globales.
-    """
+    """Ejecuta el recorrido del árbol e integra estadísticas globales."""
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
@@ -385,11 +378,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """Genera reporte textual para UI con el análisis realizado."""
     root = _validate_root(directory)
-
     if root is None: 
         return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]
     
-    data = _collect_summary_data(root, skip_protected, limit=20)
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+    except Exception:
+        return ["Error inesperado durante el escaneo del directorio."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]
