@@ -219,14 +219,9 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
 
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
     """Calcula el tamaño acumulado de una jerarquía de directorios de forma recursiva."""
-    if not isinstance(root_path, str) or not root_path.strip() or depth > scan_ctx.max_depth:
-        return ScanResult(0, True)
+    if depth > scan_ctx.max_depth: return ScanResult(0, True)
     
-    try:
-        root_norm = os.path.normcase(os.path.abspath(root_path))
-    except (OSError, ValueError):
-        return ScanResult(0, False)
-    
+    root_norm = os.path.normcase(os.path.abspath(root_path))
     if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm) or root_norm in scan_ctx.visited_dirs:
         return ScanResult(0, True)
         
@@ -239,11 +234,8 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     
     try:
         with os.scandir(root_path) as iterator:
-            while True:
+            for entry in iterator:
                 try:
-                    entry = next(iterator, None)
-                    if entry is None: break
-                    
                     entry_norm = os.path.normcase(entry.path)
                     if _should_skip_entry(entry, scan_ctx, entry_norm): continue
                     

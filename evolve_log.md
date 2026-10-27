@@ -1468,3 +1468,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-27T09:27:50` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas, clarifiqué el propósito de constantes complejas y añadí tipos de retorno explícitos para mejorar la mantenibilidad, todo sin alterar la lógica de ejecución.
 - `2026-10-27T09:27:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T09:27:50` Corrida terminada. Total usado hoy: 224.
+- `2026-10-27T09:36:15` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-10-27T09:36:51` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext.__hash__, SystemContext._hash_tuple, SystemContext.get_metric
+- `2026-10-27T09:37:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-27T09:37:49` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el escaneo del árbol de directorios implementando `os.scandir` de forma eficiente dentro de `_sum_directory_recursive` para evitar llamadas redundantes a `os.path.abspath` y `os.path.normcase` dentro del bucle, reutilizando la normalización del padre.
+- `2026-10-27T09:38:00` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la redundancia de recorrer el disco múltiples veces y realizar múltiples llamadas a `walk_files`, consolidando la lógica de cálculo en un único pase sobre el árbol de archivos.
+- `2026-10-27T09:38:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T09:38:00` Corrida terminada. Total usado hoy: 228.
