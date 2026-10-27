@@ -1061,3 +1061,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-27T05:04:14` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a atributos y la validación en `_validate_and_sanitize_data` mediante el uso de un mapa de búsqueda pre-calculado, evitando llamadas redundantes a `getattr` y mejorando la eficiencia del bucle de ingestión.
 - `2026-10-27T05:04:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T05:04:14` Corrida terminada. Total usado hoy: 120.
+- `2026-10-27T05:11:14` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-10-27T05:11:47` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-27T05:12:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T05:12:42` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-10-27T05:13:08` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizamos el método `largest_folders` reemplazando la lógica de validación redundante dentro del bucle de recorrido por una pre-filtración de las carpetas hijo, reduciendo la cantidad de llamadas a `is_protected_path` (que involucra operaciones costosas de strings y resolución de rutas) de miles de veces a solo una vez por carpeta de primer nivel.
+- `2026-10-27T05:13:15` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-27T05:13:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T05:13:15` Corrida terminada. Total usado hoy: 124.

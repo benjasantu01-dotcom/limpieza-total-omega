@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 60
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 9 | 1 | 1 | 2 | 21 |
+| 2026-10-25 | 7 | 0 | 0 | 2 | 21 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 50 | 3 | 20 | 2 | 45 |
+| 2026-10-27 | 51 | 3 | 20 | 2 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **42**
 - legibilidad y documentación: **41**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **34**
-- rendimiento: **29**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
 - `scanner.py`: **18**
 - `quarantine.py`: **18**
 - `browser.py`: **17**
 - `healthscore.py`: **17**
 - `assistant.py`: **17**
-- `organizer.py`: **16**
+- `memory.py`: **17**
 - `settings.py`: **16**
+- `organizer.py`: **15**
+- `diskreport.py`: **14**
 - `safety.py`: **13**
-- `diskreport.py`: **13**
 - `branding.py`: **10**
 - `duplicates.py`: **9**
 - `startup.py`: **6**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T05:13:08` **diskreport.py** (rendimiento): Optimizamos el método `largest_folders` reemplazando la lógica de validación redundante dentro del bucle de recorrido por una pre-filtración de las carpetas hijo, reduciendo la cantidad de llamadas a `is_protected_path` (que involucra operaciones costosas de strings y resolución de rutas) de miles de veces a solo una vez por carpeta de primer nivel.
 - `2026-10-27T05:03:39` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings técnicos detallados en los métodos críticos y la normalización de la terminología de tipos, permitiendo que un colaborador comprenda el flujo de resolución de rutas y las salvaguardas de seguridad sin necesidad de leer la implementación completa.
 - `2026-10-27T05:01:42` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las secciones "Args", "Returns" y "Raises" en funciones clave y se mejoró la precisión del tipado con `Sequence` y `Iterator` para clarificar el flujo de datos, facilitando el mantenimiento y la comprensión técnica del motor heurístico sin alterar su lógica funcional.
 - `2026-10-27T04:51:25` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo explicaciones sobre la lógica de seguridad y el manejo de concurrencia en los métodos críticos, además de refactorizar el bloque de `scan_for_junk` para extraer la lógica de validación de extensiones, mejorando la legibilidad sin alterar la funcionalidad.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T04:11:06` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez y seguridad del módulo mediante la validación explícita de tipos, la gestión segura de estados nulos y la captura granular de excepciones, evitando que errores de sistema en llamadas de E/S propaguen fallos inesperados.
 - `2026-10-27T04:10:34` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_iter_process_memory` manejando posibles excepciones durante la consulta de atributos de archivos y el uso de handles, evitando que un proceso con errores de acceso o rutas malformadas interrumpa la enumeración global.
 - `2026-10-27T04:01:30` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` mediante la adición de un chequeo de tipos estricto y saneamiento de valores en `validate()` para evitar que cualquier entrada inesperada (como valores `None` o tipos incompatibles) propague excepciones durante el cálculo, manteniendo la integridad del pipeline.
-- `2026-10-27T04:01:01` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de entrada validando los parámetros de tipo y existencia antes de procesar rutas, y sustituyendo chequeos redundantes por llamadas directas al motor de seguridad para evitar silenciamiento excesivo de errores.
