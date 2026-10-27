@@ -619,3 +619,12 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-10-27T12:43:24` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_validate_and_sanitize_data` en `SystemContext` para asegurar que el proceso de ingesta no falle silenciosamente ni deje el objeto en estado inconsistente ante datos malformados, fortaleciendo la validación de tipos y rangos de manera transaccional.
 - `2026-10-27T12:43:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T12:43:24` Corrida terminada. Total usado hoy: 300.
+- `2026-10-27T12:50:15` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-27T12:50:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T12:51:00` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` mejorando la validación inicial de la ruta, añadiendo una captura de excepciones más específica para `Path` y `mkdir`, y garantizando que las operaciones de validación y escritura sean atómicas en su manejo de errores para evitar estados parciales o corrupciones.
+- `2026-10-27T12:51:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T12:51:34` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-27T12:51:59` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-27T12:52:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-27T12:52:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T12:52:11` Corrida terminada. Total usado hoy: 304.
