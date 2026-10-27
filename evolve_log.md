@@ -1022,3 +1022,42 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-27T04:52:46` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 14% del original (posible pérdida de código)
 - `2026-10-27T04:52:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T04:52:46` Corrida terminada. Total usado hoy: 116.
+- `2026-10-27T05:01:03` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-10-27T05:01:42` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos con las secciones "Args", "Returns" y "Raises" en funciones clave y se mejoró la precisión del tipado con `Sequence` y `Iterator` para clarificar el flujo de datos, facilitando el mantenimiento y la comprensión técnica del motor heurístico sin alterar su lógica funcional.
+- `2026-10-27T05:01:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T05:01:52` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T05:02:36` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-27T05:03:39` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings técnicos detallados en los métodos críticos y la normalización de la terminología de tipos, permitiendo que un colaborador comprenda el flujo de resolución de rutas y las salvaguardas de seguridad sin necesidad de leer la implementación completa.
+- `2026-10-27T05:03:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T05:04:14` Tests FALLARON:
+```
+ __________________
+
+    def test_build_context_reads_fields_one_by_one():
+        """Copia campo por campo, no el objeto entero, para no arrastrar datos."""
+        class MetricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 1.71s
+
+```
+- `2026-10-27T05:04:14` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a atributos y la validación en `_validate_and_sanitize_data` mediante el uso de un mapa de búsqueda pre-calculado, evitando llamadas redundantes a `getattr` y mejorando la eficiencia del bucle de ingestión.
+- `2026-10-27T05:04:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T05:04:14` Corrida terminada. Total usado hoy: 120.

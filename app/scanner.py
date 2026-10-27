@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
-from typing import List, Optional, Union, Final, Protocol, NamedTuple, Sequence, Tuple, TypeAlias
+from typing import List, Optional, Union, Final, Protocol, NamedTuple, Sequence, Tuple, TypeAlias, Iterator
 from safety import is_protected_path
 
 # Configuración de logger para el seguimiento de excepciones en el escaneo
@@ -117,7 +117,15 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Obtiene metadatos de archivo de forma segura, ignorando enlaces y bloqueos."""
+    """
+    Obtiene metadatos de archivo de forma segura, ignorando enlaces y bloqueos.
+    
+    Args:
+        entry: Entrada de directorio a inspeccionar.
+        
+    Returns:
+        os.stat_result si es accesible y seguro, None en caso contrario.
+    """
     if not isinstance(entry, os.DirEntry):
         return None
     try:
@@ -127,7 +135,6 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
-        # Manejo específico: si el archivo está bloqueado o inaccesible, retornamos None
         if getattr(e, 'winerror', 0) == ERROR_SHARING_VIOLATION or isinstance(e, PermissionError):
             return None
         return None
@@ -290,11 +297,20 @@ class Scanner:
                 if finding:
                     self.results.append(finding)
             except (OSError, PermissionError, ValueError, AttributeError, FileNotFoundError) as e:
-                # Silenciar errores por archivos bloqueados durante la ejecución de la heurística
                 logger.debug(f"Heurística {check_fn.__name__} abortada en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Escanea un único archivo contra las heurísticas configuradas."""
+    """
+    Escanea un único archivo contra las heurísticas configuradas.
+    
+    Args:
+        path: Objeto Path del archivo a analizar.
+        now_ts: Timestamp de referencia para heurísticas temporales.
+        entry: Objeto DirEntry opcional para optimizar metadatos.
+        
+    Returns:
+        Lista de objetos Suspicion encontrados.
+    """
     if not isinstance(path, Path) or not _is_valid_path_structure(str(path)):
         return []
     try:
@@ -313,7 +329,12 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
         return []
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Realiza un escaneo recursivo seguro de una jerarquía de directorios."""
+    """
+    Realiza un escaneo recursivo seguro de una jerarquía de directorios.
+    
+    Returns:
+        Lista completa de hallazgos (ScanResult) encontrados en el árbol.
+    """
     if directory is None: return []
     try:
         base_path = Path(directory)

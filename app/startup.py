@@ -128,7 +128,7 @@ class StartupEntry:
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida que la ruta sea un archivo ejecutable permitido y no un symlink."""
+        """Valida si el archivo es ejecutable y no un enlace simbólico (evita loops)."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
@@ -167,8 +167,8 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Verifica la seguridad y existencia del archivo en el sistema de archivos.
-        Requiere que el path no sea protegido y sea seguro de modificar según safety.py.
+        Verifica la integridad del archivo en el sistema de archivos actual.
+        Asegura que el archivo sea accesible y que la ruta no esté bloqueada.
         """
         try:
             if not p.is_file() or p.is_symlink():
@@ -354,8 +354,8 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     """
-    Aplica filtros de seguridad previos al procesamiento de entradas del registro,
-    descartando comandos ambiguos o rutas potencialmente peligrosas.
+    Filtro de seguridad para entradas del registro: descarta comandos malformados,
+    rutas restringidas o caracteres de control que sugieran inyección.
     """
     if not isinstance(name, str) or not isinstance(command, str):
         return False
