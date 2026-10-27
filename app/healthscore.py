@@ -39,12 +39,12 @@ _MAX_RECURSION_DEPTH: Final[int] = 5
 _METRIC_LIMITS: Final[Dict[str, Tuple[float, float]]] = {
     "junk_mb": (0.0, 1048576.0),
     "duplicate_mb": (0.0, 1048576.0),
-    "suspicious_count": (0, 5000),
-    "suspicious_warnings": (0, 5000),
-    "startup_count": (0, 1000),
+    "suspicious_count": (0.0, 5000.0),
+    "suspicious_warnings": (0.0, 5000.0),
+    "startup_count": (0.0, 1000.0),
     "memory_available_percent": (0.0, 100.0),
     "disk_free_percent": (0.0, 100.0),
-    "quarantined_count": (0, 10000)
+    "quarantined_count": (0.0, 10000.0)
 }
 
 class Scorer(Protocol):
@@ -281,7 +281,10 @@ class SystemMetrics:
     def validate(self) -> None:
         """Normaliza todas las métricas según los rangos definidos en _METRIC_LIMITS."""
         for field_name in self._FIELDS_TO_VALIDATE:
-            val = getattr(self, field_name, 0.0)
+            val = getattr(self, field_name, None)
+            # Asegurar tipo numérico antes de sanitizar
+            if not isinstance(val, (int, float)):
+                val = 0.0
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
             setattr(self, field_name, sanitized)

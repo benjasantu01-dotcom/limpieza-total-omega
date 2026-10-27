@@ -274,7 +274,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]
     
-    # Registrar el nodo raíz para evitar recursión circular inmediata
     try:
         root_stat = root_path.stat()
         visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
@@ -287,8 +286,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
-                        if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, entry.path)):
+                        if skip_protected and (is_protected_path(Path(entry.path)) or _is_excluded_path(entry.name, entry.path)):
                             continue
                         
                         st = _safe_stat(entry.path)
@@ -298,13 +296,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(p_entry)
+                                stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            yield p_entry, st.st_size
+                            yield Path(entry.path), st.st_size
                             
-                    except (OSError, PermissionError, FileNotFoundError):
+                    except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError, FileNotFoundError, NotADirectoryError):
+        except (OSError, PermissionError, NotADirectoryError):
             continue
 
 
@@ -338,7 +336,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             if rel.parts:
                 top_folder_name = rel.parts[0]
                 full_top_path = root / top_folder_name
-                # Seguridad defensiva: verificar que la subcarpeta sea realmente segura
                 if skip_protected and is_protected_path(full_top_path):
                     continue
                 metrics = stats[top_folder_name]
@@ -386,10 +383,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if root is None: 
         return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]
     
-    try:
-        data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError):
-        return ["Error: Fallo inesperado durante el acceso al sistema de archivos."]
+    data = _collect_summary_data(root, skip_protected, limit=20)
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

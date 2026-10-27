@@ -55,7 +55,7 @@ _full_hash_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
     """Verifica si el path es un punto de reanálisis (Junction o Symlink) usando Win32 API."""
-    if not isinstance(path, Path) or not path.exists(): return False
+    if not isinstance(path, Path): return False
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
@@ -64,7 +64,7 @@ def is_junction(path: Path) -> bool:
 
 def is_system_or_hidden(path: Path) -> bool:
     """Verifica si el archivo posee atributos de sistema u oculto (Win32)."""
-    if not isinstance(path, Path) or not path.exists(): return False
+    if not isinstance(path, Path): return False
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)))
@@ -94,13 +94,11 @@ def _safe_path_check(path: Path) -> bool:
     Validación de seguridad compuesta.
     Verifica que la ruta no esté protegida, sea segura para leer y no sea un punto de reanálisis.
     """
-    if path is None: return False
-    return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
+    return isinstance(path, Path) and path.is_file() and is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Determina si un archivo es apto para el análisis evitando archivos vacíos o de sistema."""
-    if path is None: return False
     return st_size > 0 and _safe_path_check(path) and not is_system_or_hidden(path)
 
 
@@ -109,7 +107,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo del archivo. 
     Maneja excepciones de acceso para asegurar que archivos bloqueados no aborten el proceso.
     """
-    if path is None or not isinstance(path, Path) or not _safe_path_check(path): 
+    if not _safe_path_check(path): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
@@ -120,13 +118,13 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError, IOError, FileNotFoundError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un fingerprint rápido leyendo solo los primeros N bytes del archivo."""
-    if path is None or not isinstance(path, Path) or not _safe_path_check(path): 
+    if not _safe_path_check(path): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     try:
@@ -135,7 +133,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             digest_val = hashlib.sha256(header).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, PermissionError, IOError, FileNotFoundError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -146,12 +144,11 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     for p in paths:
         if not p: continue
         item = Path(p)
-        if _safe_path_check(item) and item.is_file():
-            try:
-                st = item.stat()
-                if _is_valid_candidate(item, st.st_size):
-                    groups_by_size[st.st_size].append(item)
-            except (OSError, PermissionError, FileNotFoundError): continue
+        try:
+            st = item.stat()
+            if _is_valid_candidate(item, st.st_size):
+                groups_by_size[st.st_size].append(item)
+        except (OSError, PermissionError, FileNotFoundError): continue
     return groups_by_size
 
 
@@ -166,9 +163,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     if not directories: return raw_map
     queue: deque[Tuple[Path, int]] = deque()
     for d_raw in directories:
-        if not d_raw: continue
-        d = Path(d_raw)
-        if _safe_path_check(d):
+        if d_raw and (d := Path(d_raw)).is_dir() and is_safe_to_modify(d):
             queue.append((d, 0))
     
     visited: set[Tuple[int, int]] = set()
@@ -182,21 +177,18 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in it:
                     try:
                         path = Path(entry.path)
-                        if is_protected_path(path): continue
-                        if not _safe_path_check(path): continue
+                        if skip_protected and is_protected_path(path): continue
                         if entry.is_dir(follow_symlinks=False):
-                            queue.append((path, depth + 1))
+                            if is_safe_to_modify(path) and not is_junction(path):
+                                queue.append((path, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                stat = entry.stat(follow_symlinks=False)
-                                if stat.st_size >= min_size and _is_valid_candidate(path, stat.st_size):
-                                    if skip_protected and is_protected_path(path): continue
-                                    inode = (stat.st_dev, stat.st_ino)
-                                    if inode not in visited:
-                                        visited.add(inode)
-                                        raw_map[stat.st_size].append(path)
-                                        size_counts[stat.st_size] += 1
-                            except (OSError, PermissionError): continue
+                            stat = entry.stat(follow_symlinks=False)
+                            if stat.st_size >= min_size and _is_valid_candidate(path, stat.st_size):
+                                inode = (stat.st_dev, stat.st_ino)
+                                if inode not in visited:
+                                    visited.add(inode)
+                                    raw_map[stat.st_size].append(path)
+                                    size_counts[stat.st_size] += 1
                     except (OSError, PermissionError, FileNotFoundError): continue
         except (OSError, PermissionError, FileNotFoundError): continue
     return {sz: paths for sz, paths in raw_map.items() if size_counts[sz] > 1}
@@ -206,7 +198,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hash a una lista y agrupa por coincidencias de digest."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path and (d := hash_func(path)): groups[d].append(path)
+        if (d := hash_func(path)): groups[d].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
 
@@ -216,8 +208,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
-        if len(subset) > 1:
-            final.update(_group_paths_by_hash(subset, hash_file))
+        final.update(_group_paths_by_hash(subset, hash_file))
     return final
 
 
@@ -246,8 +237,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_mtime(path: Path) -> float:
     """Obtiene el tiempo de última modificación del archivo de forma segura."""
-    if path is None or not isinstance(path, Path) or not _safe_path_check(path):
-        return float('inf')
+    if not isinstance(path, Path): return float('inf')
     with suppress(OSError, PermissionError, FileNotFoundError):
         return path.stat().st_mtime
     return float('inf')
@@ -258,8 +248,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not isinstance(group, DuplicateGroup) or not group.paths: 
         return None
         
-    candidates = [( _get_mtime(p), p) for p in group.paths if _safe_path_check(p)]
-    # Filtramos valores 'inf' resultantes de errores de lectura previos
+    candidates = [( _get_mtime(p), p) for p in group.paths]
     valid_candidates = [c for c in candidates if c[0] != float('inf')]
     
     if not valid_candidates:
