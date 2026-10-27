@@ -341,10 +341,10 @@ def validate(raw_values: Any) -> AppSettings:
 
 def _is_file_secure_to_read(file_path: Path) -> bool:
     try:
-        st = file_path.stat()
-        if _Validators._is_reparse_point(str(file_path)): return False
+        st = file_path.lstat()
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-        # Permisos restringidos: solo propietario debe tener permisos de escritura/ejecución
+        if _Validators._is_reparse_point(str(file_path)): return False
+        # Permisos restringidos: el archivo debe ser solo propiedad del usuario actual
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False

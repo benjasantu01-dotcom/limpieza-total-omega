@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 89 | 7 | 27 | 10 | 107 |
-| 2026-10-27 | 105 | 7 | 44 | 6 | 102 |
+| 2026-10-26 | 89 | 7 | 27 | 10 | 103 |
+| 2026-10-27 | 107 | 7 | 45 | 6 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **45**
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **34**
+- seguridad defensiva: **36**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -35,16 +35,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `assistant.py`: **17**
 - `browser.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `organizer.py`: **15**
+- `safety.py`: **15**
 - `scanner.py`: **15**
-- `safety.py`: **14**
 - `branding.py`: **10**
 - `duplicates.py`: **7**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T11:20:41` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y corrupción, validando que el archivo no sea un enlace simbólico ni contenga datos maliciosos mediante una verificación de integridad más estricta antes de abrirlo.
+- `2026-10-27T11:19:44` **safety.py** (seguridad defensiva): Mejoré `_validate_preconditions` en `safety.py` para bloquear explícitamente la modificación de archivos que poseen el atributo `OFFLINE` (archivos en la nube como OneDrive/Dropbox) y el atributo `REPARSE_POINT` (detección de junctions/symlinks de archivos), reforzando la seguridad defensiva contra modificaciones no deseadas en archivos que el sistema operativo puede gestionar externamente.
 - `2026-10-27T11:10:39` **quarantine.py** (seguridad defensiva): Se introdujo una validación de profundidad de directorio explícita en `quarantine_dir` y una comprobación de existencia de `path` al inicio de `purge_item` para prevenir errores ante rutas no normalizadas o inexistentes, reforzando la seguridad defensiva contra manipulación de rutas.
 - `2026-10-27T11:10:11` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` para prevenir operaciones en archivos de sistema ocultos o protegidos que podrían haber escapado a los filtros iniciales, asegurando que la validación de seguridad sea explícita y coherente con el enfoque de protección de archivos críticos antes de cualquier E/S.
 - `2026-10-27T11:09:37` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_process_executable_safe` añadiendo una comprobación adicional de longitud de ruta y manejo explícito de errores de acceso (como `ERROR_INSUFFICIENT_BUFFER`), alineando la validación de rutas del proceso con las mejores prácticas del enfoque de seguridad defensiva antes de cualquier operación de gestión.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T10:30:31` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_extract_process_info` para ignorar procesos con nombres vacíos o caracteres de control, mejorando la robustez ante entradas de procesos malformados que podrían retornar nombres inválidos o vacíos, una situación común al enumerar procesos en Windows.
 - `2026-10-27T10:27:42` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante la recepción de tipos de datos inesperados o valores no numéricos mediante la inclusión de un control estricto de tipo `(int, float)` antes de la validación, evitando excepciones no controladas durante la instanciación de métricas.
 - `2026-10-27T10:18:34` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante errores de acceso (como `PermissionError` o unidades extraíbles sin medio) y añadí un manejo de excepciones más granular en `_validate_root` para evitar que la app colapse ante rutas bloqueadas por el SO.
-- `2026-10-27T10:17:57` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_within_sandbox` y `_sum_directory_recursive` mediante el uso de `os.path.commonpath`, lo cual es una técnica más precisa y estándar para detectar escapes de directorio ("path traversal") que la simple comparación de prefijos de cadenas, mitigando fallos por rutas relativas o inconsistencias en la normalización.
-- `2026-10-27T10:09:02` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `ingest` y `_apply_field` ante objetos fuente que podrían contener métodos o propiedades maliciosas, garantizando que solo se procesen datos simples (`dict` o atributos) y evitando cualquier ejecución de código accidental al acceder a ellos mediante la validación `callable`.

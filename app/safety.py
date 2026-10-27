@@ -965,8 +965,13 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
 
     try:
         attrs = _get_file_attrs(str(target_path))
-        if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN)):
-            raise UnsafePathError("Protección defensiva: Archivo de sistema oculto.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+        if attrs != INVALID_FILE_ATTRIBUTES:
+            if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN):
+                raise UnsafePathError("Protección defensiva: Archivo de sistema oculto.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+            if attrs & Win32Attr.OFFLINE:
+                raise UnsafePathError("Protección defensiva: Archivo offline/nube no disponible localmente.", SafetyValidationErrorCode.OFFLINE_FILE)
+            if attrs & Win32Attr.REPARSE_POINT:
+                raise UnsafePathError("Protección defensiva: Redirección (Reparse Point) no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
         # Validar parent solo si existe
         if target_path.parent.exists() and not os.access(target_path.parent, os.W_OK):

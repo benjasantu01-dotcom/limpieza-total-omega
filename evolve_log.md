@@ -402,3 +402,14 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-10-27T11:10:39` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una validación de profundidad de directorio explícita en `quarantine_dir` y una comprobación de existencia de `path` al inicio de `purge_item` para prevenir errores ante rutas no normalizadas o inexistentes, reforzando la seguridad defensiva contra manipulación de rutas.
 - `2026-10-27T11:10:39` Rotación — log: 1198 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T11:10:39` Corrida terminada. Total usado hoy: 264.
+- `2026-10-27T11:18:05` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-27T11:18:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-27T11:18:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T11:18:46` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T11:19:44` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré `_validate_preconditions` en `safety.py` para bloquear explícitamente la modificación de archivos que poseen el atributo `OFFLINE` (archivos en la nube como OneDrive/Dropbox) y el atributo `REPARSE_POINT` (detección de junctions/symlinks de archivos), reforzando la seguridad defensiva contra modificaciones no deseadas en archivos que el sistema operativo puede gestionar externamente.
+- `2026-10-27T11:19:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T11:20:15` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-27T11:20:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T11:20:41` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y corrupción, validando que el archivo no sea un enlace simbólico ni contenga datos maliciosos mediante una verificación de integridad más estricta antes de abrirlo.
+- `2026-10-27T11:20:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T11:20:41` Corrida terminada. Total usado hoy: 268.
