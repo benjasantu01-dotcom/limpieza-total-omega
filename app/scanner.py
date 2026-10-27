@@ -174,7 +174,7 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Ti
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Heurística: Detecta doble extensión para enmascarar tipos de archivo ejecutables."""
-    if not path or not path.name or _cached_is_protected(str(path)): return None
+    if path is None or not path.name or _cached_is_protected(str(path)): return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
@@ -293,13 +293,14 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta la suite de heurísticas sobre un archivo validado."""
+        if not isinstance(path, Path) or entry is None: return
         for check_fn in ALL_CHECKS:
             try:
                 finding = check_fn(path, entry, self.now_ts)
                 if finding:
                     self.results.append(finding)
-            except (OSError, PermissionError, ValueError, AttributeError, FileNotFoundError) as e:
-                logger.debug(f"Heurística {check_fn.__name__} abortada en {path}: {e}")
+            except Exception as e:
+                logger.debug(f"Heurística {check_fn.__name__} abortada en {path}: {type(e).__name__}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Realiza un escaneo heurístico individual sobre un archivo específico."""
@@ -314,8 +315,8 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
                 res = check_fn(path, entry, now_ts)
                 if res:
                     findings.append(res)
-            except (OSError, PermissionError, ValueError, AttributeError, FileNotFoundError) as e:
-                logger.debug(f"Heurística puntual {check_fn.__name__} fallida en {path}: {e}")
+            except Exception as e:
+                logger.debug(f"Heurística puntual {check_fn.__name__} fallida en {path}: {type(e).__name__}")
         return findings
     except (OSError, PermissionError, FileNotFoundError):
         return []

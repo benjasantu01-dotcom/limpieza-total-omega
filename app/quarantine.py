@@ -1048,7 +1048,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if not parent.exists():
             _check_io_error_context(parent.mkdir, parents=True, exist_ok=True)
         
-        os.replace(str(stored_file), str(destination))
+        _check_io_error_context(os.replace, str(stored_file), str(destination))
         
         for p in [parent, base_path]:
             if p and p.exists():
@@ -1144,7 +1144,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         
         if purgado_ids:
             new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]
-            save_manifest(new_items, base)
+            _check_io_error_context(save_manifest, new_items, base)
             
             try:
                 dir_fd: int = os.open(str(quarantine_root), os.O_RDONLY)
@@ -1156,7 +1156,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 pass
             
         return len(purgado_ids)
-    except (OSError, PermissionError, UnsafePathError):
+    except (OSError, PermissionError, UnsafePathError, RuntimeError):
         return 0
 
 

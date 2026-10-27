@@ -636,3 +636,11 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-10-27T13:03:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-27T13:03:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T13:03:09` Corrida terminada. Total usado hoy: 308.
+- `2026-10-27T13:10:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-27T13:11:45` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `purge_all` y `restore_item` al envolver sus llamadas de I/O críticas en `_check_io_error_context` y capturar excepciones específicas de manera más granular, asegurando que fallos en el sistema de archivos durante la limpieza o restauración no dejen el manifiesto en un estado inconsistente.
+- `2026-10-27T13:12:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-27T13:12:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T13:13:09` ➖ Sin cambios en safety.py (enfoque: manejo de errores y validación de entradas). Motivo: Se mejora la robustez de `_get_path_stat_robust` y `is_safe_to_modify` capturando explícitamente `OSError` durante la normalización y consulta de metadatos, evitando que fallos de acceso de bajo nivel (como `AccessDenied` al abrir el handle de Windows) se propaguen como errores no controlados, transformándolos correctamente en `UnsafePathError`.
+- `2026-10-27T13:13:26` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez del manejo de errores en las heurísticas de `scanner.py`, asegurando que `_run_file_heuristics` y `scan_file` validen explícitamente los parámetros y manejen de forma segura las excepciones durante la ejecución de los checks para evitar interrupciones prematuras del escaneo.
+- `2026-10-27T13:13:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T13:13:26` Corrida terminada. Total usado hoy: 312.

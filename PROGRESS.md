@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 70
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 226
+- Rechazadas por guardia de seguridad: 71
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 71 | 7 | 23 | 6 | 89 |
-| 2026-10-27 | 111 | 7 | 47 | 6 | 137 |
+| 2026-10-26 | 68 | 7 | 23 | 6 | 88 |
+| 2026-10-27 | 113 | 7 | 48 | 7 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **45**
 - seguridad defensiva: **36**
+- manejo de errores y validación de entradas: **36**
 - legibilidad y documentación: **36**
-- manejo de errores y validación de entradas: **34**
-- rendimiento: **31**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `memory.py`: **19**
-- `diskreport.py`: **17**
 - `healthscore.py`: **17**
-- `assistant.py`: **16**
-- `browser.py`: **15**
+- `diskreport.py`: **16**
 - `settings.py`: **15**
+- `assistant.py`: **15**
+- `scanner.py`: **14**
+- `browser.py`: **14**
 - `organizer.py`: **14**
 - `safety.py`: **13**
-- `scanner.py`: **13**
 - `branding.py`: **11**
 - `duplicates.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T13:13:26` **scanner.py** (manejo de errores y validación de entradas): Se mejora la robustez del manejo de errores en las heurísticas de `scanner.py`, asegurando que `_run_file_heuristics` y `scan_file` validen explícitamente los parámetros y manejen de forma segura las excepciones durante la ejecución de los checks para evitar interrupciones prematuras del escaneo.
+- `2026-10-27T13:11:45` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `restore_item` al envolver sus llamadas de I/O críticas en `_check_io_error_context` y capturar excepciones específicas de manera más granular, asegurando que fallos en el sistema de archivos durante la limpieza o restauración no dejen el manifiesto en un estado inconsistente.
 - `2026-10-27T13:02:54` **memory.py** (manejo de errores y validación de entradas): He mejorado la robustez de `_is_process_executable_safe` añadiendo una validación explícita para asegurar que el handle recibido no sea nulo antes de invocar la API, y mejoré `_extract_process_info` para manejar de forma más segura el parseo de PIDs y valores de memoria, previniendo errores de conversión ante entradas malformadas.
 - `2026-10-27T13:01:06` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_compute_cached` y el flujo de `_evaluate_rules` mediante la captura explícita de errores durante la ejecución de los componentes, evitando que un fallo en una única regla o función de normalización propague excepciones al sistema principal, asegurando siempre un estado de retorno seguro.
 - `2026-10-27T12:51:00` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando la validación inicial de la ruta, añadiendo una captura de excepciones más específica para `Path` y `mkdir`, y garantizando que las operaciones de validación y escritura sean atómicas en su manejo de errores para evitar estados parciales o corrupciones.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T10:58:26` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una normalización estricta de rutas antes de cualquier comparación, previniendo posibles elusiones de la zona de seguridad (sandbox) causadas por el uso de caracteres de escape o rutas no resueltas.
 - `2026-10-27T10:49:54` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar el contexto, añadiendo un filtro explícito en `context_as_text` para asegurar que las métricas serializadas nunca contengan rutas o caracteres prohibidos, previniendo posibles fugas de información sensible incluso si los datos fueran inyectados en el `SystemContext` por error.
 - `2026-10-27T10:49:05` **startup.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_resolve_and_cache_path` añadiendo un filtro explícito para rutas que contienen caracteres de control u otros caracteres potencialmente ilegales que puedan causar excepciones inesperadas en `pathlib.Path.resolve()`, mejorando la resiliencia ante entradas corruptas en el registro o sistema de archivos.
-- `2026-10-27T10:48:33` **settings.py** (robustez ante casos límite): Mejoré la robustez ante la posible corrupción de datos del archivo `config.json` limitando el tamaño del contenido a procesar antes del parseo y asegurando que `_read_and_parse_json` retorne valores predeterminados seguros en caso de archivos truncados o con formato inválido, evitando condiciones de carrera al verificar la existencia y tamaño del archivo en una sola pasada.
-- `2026-10-27T10:39:13` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "error de compartición persistente" (`ERROR_SHARING_VIOLATION`) más estricta en `_get_path_stat_robust` y se mejoró la resiliencia ante `PermissionError` durante la normalización de rutas al manipular `Path.resolve()`, asegurando que archivos bloqueados por el SO no desestabilicen el bucle de validación.
