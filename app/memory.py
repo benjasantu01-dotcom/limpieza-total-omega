@@ -329,7 +329,7 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
     try:
         if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
-            return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
+            return BytesValue(val) if 10 * BYTES_IN_MB < val < MAX_VALID_PROCESS_MEM_BYTES else None
     except (ctypes.WinError, OSError, Exception):
         return None
     return None
@@ -376,7 +376,7 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         
         try:
             ws = _query_working_set_bytes(h_process, pmc)
-            if ws is not None and ws > (10 * BYTES_IN_MB):
+            if ws is not None:
                 if _is_process_executable_safe(h_process):
                     yield ProcessMemory(f"PID {pid}", pid, ws)
         except Exception:
