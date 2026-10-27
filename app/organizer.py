@@ -359,10 +359,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 target_path = _can_move_file(junk_file, dest_base)
                 if target_path and junk_file.path.exists(): 
                     shutil.move(str(junk_file.path), str(target_path))
-            except (OSError, shutil.Error, PermissionError) as e:
+            except (OSError, shutil.Error, PermissionError, TypeError) as e:
                 logger.error(f"Error moviendo archivo a revisión: {junk_file.path} - {e}")
         return dest_base
-    except (OSError, RuntimeError) as e:
+    except (OSError, RuntimeError, TypeError) as e:
         logger.error(f"Falla crítica en stage_for_review: {e}")
         return None
 
@@ -390,7 +390,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 if is_safe_to_modify(item) and not is_protected_path(item):
                     item.unlink()
                     count += 1
-            except (OSError, PermissionError, ValueError) as e:
+            except (OSError, PermissionError, ValueError, AttributeError) as e:
                 logger.warning(f"No se pudo eliminar {item}: {e}")
                 continue
         return count

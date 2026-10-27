@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 114 | 10 | 34 | 12 | 134 |
-| 2026-10-27 | 69 | 5 | 31 | 5 | 90 |
+| 2026-10-26 | 111 | 10 | 34 | 12 | 133 |
+| 2026-10-27 | 72 | 5 | 32 | 5 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
-- legibilidad y documentación: **36**
+- manejo de errores y validación de entradas: **38**
 - seguridad defensiva: **36**
-- manejo de errores y validación de entradas: **35**
-- rendimiento: **32**
+- legibilidad y documentación: **34**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
-- `assistant.py`: **17**
-- `memory.py`: **17**
+- `quarantine.py`: **19**
+- `memory.py`: **18**
 - `healthscore.py`: **17**
-- `scanner.py`: **16**
 - `browser.py`: **16**
 - `settings.py`: **16**
+- `assistant.py`: **16**
 - `diskreport.py`: **16**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
+- `scanner.py`: **15**
 - `safety.py`: **14**
 - `branding.py`: **9**
 - `duplicates.py`: **8**
-- `startup.py`: **5**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T08:38:08` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado `purge_all` para que sea más robusto ante errores de I/O y condiciones de carrera, capturando excepciones específicas dentro del bucle de purga para evitar que una falla en un solo archivo detenga la limpieza total del sandbox.
+- `2026-10-27T08:37:42` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` al asegurar que las rutas destino sean validadas mediante `is_safe_to_modify` antes de cualquier iteración y se mejoró el manejo de excepciones al verificar la existencia y el tipo de los archivos antes de procesarlos, evitando el desplome de operaciones por errores de acceso en archivos bloqueados por el sistema durante la ejecución del bucle.
+- `2026-10-27T08:37:13` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` reemplazando llamadas potencialmente inseguras a `Path.resolve()` (que puede fallar si la ruta no existe o es inaccesible) por un manejo de errores más estricto, asegurando que la validación de seguridad sea siempre efectiva ante rutas malformadas o inaccesibles.
 - `2026-10-27T08:26:35` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `score_security` agregando validaciones de tipos y manejos de excepciones para prevenir fallos silenciosos cuando los datos de entrada son inesperados, asegurando que el reporte siempre sea consistente.
 - `2026-10-27T08:25:56` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando una gestión de errores más granular y validando explícitamente estados de retorno, evitando que excepciones en el sistema de archivos (como `OSError` o `PermissionError`) se propaguen o devuelvan resultados parciales engañosos en el reporte.
 - `2026-10-27T08:25:29` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_sum_directory_recursive` mediante la validación explícita de `root_path` y el manejo de rutas malformadas, evitando que el escaneo falle silenciosamente ante entradas de disco inesperadas.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T06:17:04` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` añadiendo un chequeo explícito de límite de tamaño antes de realizar cualquier operación de disco y manejando de forma más segura el `os.replace` al verificar el estado del archivo destino inmediatamente antes de reemplazarlo, previniendo condiciones de carrera ante archivos temporales residuales.
 - `2026-10-27T06:15:22` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "reparse points" anidados y recursivos mediante un conteo de profundidad lógica y resolución de enlaces en `_validate_no_reparse_traversal`, mitigando el riesgo de que enlaces simbólicos o junctions apunten fuera del "jail" de seguridad incluso si la estructura de carpetas parece correcta a simple vista.
 - `2026-10-27T06:05:58` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `os.fsync()` en `_safe_unlink` para garantizar la persistencia de la eliminación en el sistema de archivos ante fallos de hardware o interrupciones repentinas, mitigando el riesgo de que el manifiesto se desincronice de la realidad del disco.
-- `2026-10-27T06:03:58` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_process_executable_safe` al implementar un manejo defensivo ante rutas con caracteres especiales o que excedan los límites de longitud del SO (`MAX_PATH`), además de añadir una validación de existencia explícita tras la resolución de la ruta absoluta para prevenir fallos al iterar sobre procesos efímeros.
-- `2026-10-27T05:53:05` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en el acceso a atributos (`st_stat`), evitando que fallos inesperados de E/S corten prematuramente el recorrido.
-- `2026-10-27T05:52:40` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes o malformadas en `detect_profiles` añadiendo una validación de `base_resolved` más estricta antes de iniciar el escaneo recursivo, evitando posibles errores de resolución de rutas en entornos donde los enlaces simbólicos o junctions apunten a destinos eliminados o inaccesibles.
