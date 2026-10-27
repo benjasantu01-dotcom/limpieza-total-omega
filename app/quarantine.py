@@ -444,6 +444,10 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if len(str(path)) > 240:
              raise UnsafePathError("Ruta de cuarentena excede límites de seguridad.")
         
+        # Validar profundidad de la ruta de cuarentena
+        if len(path.parts) > 16:
+            raise UnsafePathError("Profundidad de ruta de cuarentena excesiva.")
+        
         if not path.name.strip() or path == path.parent:
             raise UnsafePathError("Ruta de cuarentena inválida: raíz o vacía.")
         
@@ -1068,7 +1072,11 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     """Borrado permanente de un ítem y actualización del manifiesto."""
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem vacío.")
-    base_path: Path = quarantine_dir(base)
+    
+    try:
+        base_path: Path = quarantine_dir(base)
+    except OSError:
+        return False
     
     if is_protected_path(base_path):
         return False
@@ -1077,8 +1085,8 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     quarantine_item: Optional[QuarantineItem] = next((i for i in items if i.item_id == item_id), None)
     if quarantine_item is None:
         return False
-        
-    stored_file: Path = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
+    
+    stored_file: Path = base_path / quarantine_item.stored_name
     if not stored_file.exists():
         items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)

@@ -336,19 +336,19 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
     """Valida que la ruta de origen del ejecutable del proceso no sea una ruta protegida o crítica."""
     if h_process is None: return False
     
-    buffer_path = ctypes.create_unicode_buffer(4096)
+    # 32767 es el límite teórico para rutas largas en Windows (MAX_PATH es 260)
+    buffer_len = 32767
+    buffer_path = ctypes.create_unicode_buffer(buffer_len)
     try:
-        if WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, buffer_path, 4096) <= 0:
-            return False
+        ret = WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, buffer_path, buffer_len)
+        if ret <= 0: return False
+        if ret >= buffer_len: return False # Ruta truncada por buffer insuficiente
         
         exe_path_str = buffer_path.value.strip()
         if not exe_path_str: return False
         
         exe_path = Path(exe_path_str)
-        if is_protected_path(exe_path):
-            return False
-            
-        return True
+        return not is_protected_path(exe_path)
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 

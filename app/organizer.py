@@ -282,7 +282,11 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
     try:
         if not junk_file.path.exists() or not junk_file.path.is_file(): return False
-        if os.name == 'nt' and (_get_win_attributes(junk_file.path) & LIMITS.WIN_ATTR_READONLY): return False
+        
+        # Validaciones de atributos de bajo nivel y protección estricta
+        if os.name == 'nt':
+            attrs = _get_win_attributes(junk_file.path)
+            if (attrs & LIMITS.WIN_ATTR_READONLY) or (attrs & LIMITS.WIN_ATTR_MASK): return False
         
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
@@ -291,7 +295,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if src_real == dest_real or src_real.parent == dest_real: return False
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES or is_protected_path(src_real): return False
         if is_protected_path(dest_real): return False
-        if src_real.is_symlink() or _is_junction(src_real) or (os.name == 'nt' and _is_system_hidden(src_real)): return False
+        if src_real.is_symlink() or _is_junction(src_real): return False
         if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
         if src_real.drive != dest_real.drive: return False
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
