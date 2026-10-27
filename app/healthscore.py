@@ -360,6 +360,7 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
     
     for entry in PIPELINE_DEFINITIONS:
         try:
+            if not isinstance(entry, PipelineEntry): continue
             area_ratio = entry.scorer(metrics)
             recs = _evaluate_rules(metrics, entry.rules, area_ratio)
             recommendations.extend(recs)
@@ -368,19 +369,20 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
             metric_breakdown[entry.area] = val_int
             total_points += float(val_int)
         except Exception as e:
-            logging.error(f"Error procesando pipeline '{entry.area}': {e}")
-            metric_breakdown[entry.area] = 0
+            logging.error(f"Error procesando pipeline '{getattr(entry, 'area', 'unknown')}': {e}")
             continue
             
     if quarantined > 0:
         recommendations.append("Existen elementos en cuarentena.")
         
     final_score = int(_clamp(round(total_points), 0.0, 100.0))
+    valid_recs = [r for r in recommendations if isinstance(r, str) and r]
+    
     return HealthResult(
         score=final_score,
         grade=grade_for_score(final_score),
         breakdown=metric_breakdown,
-        recommendations=[r for r in recommendations if r] or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+        recommendations=valid_recs if valid_recs else ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -415,6 +417,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     try:
         lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
         for entry in PIPELINE_DEFINITIONS:
+            if not isinstance(entry, PipelineEntry): continue
             val = result.breakdown.get(entry.area, 0)
             lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
         

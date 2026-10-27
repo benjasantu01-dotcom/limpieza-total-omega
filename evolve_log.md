@@ -806,3 +806,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-27T15:49:40` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se introdujo una mejor gestión de errores en `walk_files` y `drive_usage` para manejar específicamente casos de unidades extraíbles sin medio presente o permisos denegados, evitando fallos silenciosos mediante la verificación de `os.access` y capturas de excepciones más específicas.
 - `2026-10-27T15:49:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T15:49:40` Corrida terminada. Total usado hoy: 348.
+- `2026-10-27T15:55:34` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-27T15:55:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T15:56:13` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-27T15:56:48` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra `None` y tipos inesperados en los accesos a `PipelineEntry` y el procesamiento de `recommendations`, protegiendo la ejecución ante datos de entrada mal formados o parcialmente inicializados que podrían causar excepciones no controladas en el pipeline.
+- `2026-10-27T15:56:48` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-27T15:56:48` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T15:56:48` Corrida terminada. Total usado hoy: 350.

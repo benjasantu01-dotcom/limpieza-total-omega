@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **171** (34.1% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 238
 
@@ -16,35 +16,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 48 | 4 | 17 | 5 | 82 |
-| 2026-10-27 | 124 | 8 | 51 | 9 | 156 |
+| 2026-10-26 | 46 | 4 | 16 | 5 | 81 |
+| 2026-10-27 | 125 | 8 | 51 | 9 | 157 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **37**
-- seguridad defensiva: **30**
+- seguridad defensiva: **28**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `settings.py`: **16**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
 - `diskreport.py`: **16**
-- `healthscore.py`: **15**
+- `settings.py`: **15**
 - `browser.py`: **15**
 - `assistant.py`: **15**
-- `scanner.py`: **13**
 - `organizer.py`: **13**
 - `safety.py`: **12**
+- `scanner.py`: **12**
 - `branding.py`: **9**
 - `duplicates.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T15:56:48` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra `None` y tipos inesperados en los accesos a `PipelineEntry` y el procesamiento de `recommendations`, protegiendo la ejecución ante datos de entrada mal formados o parcialmente inicializados que podrían causar excepciones no controladas en el pipeline.
 - `2026-10-27T15:49:40` **diskreport.py** (robustez ante casos límite): Se introdujo una mejor gestión de errores en `walk_files` y `drive_usage` para manejar específicamente casos de unidades extraíbles sin medio presente o permisos denegados, evitando fallos silenciosos mediante la verificación de `os.access` y capturas de excepciones más específicas.
 - `2026-10-27T15:48:05` **browser.py** (robustez ante casos límite): Se introdujo una validación de profundidad y redundancia de caché en `_sum_directory_recursive` mediante el uso de `real_path` normalizado, protegiendo contra el acceso a rutas con bucles simbólicos y validando que las subcarpetas no escapen del `sandbox_base_norm` durante el recorrido.
 - `2026-10-27T15:39:21` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas repetidas de `stat()` por un acceso único consolidado, reduciendo las llamadas al sistema operativo (syscalls) al verificar la integridad de la caché en memoria.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T13:13:26` **scanner.py** (manejo de errores y validación de entradas): Se mejora la robustez del manejo de errores en las heurísticas de `scanner.py`, asegurando que `_run_file_heuristics` y `scan_file` validen explícitamente los parámetros y manejen de forma segura las excepciones durante la ejecución de los checks para evitar interrupciones prematuras del escaneo.
 - `2026-10-27T13:11:45` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `restore_item` al envolver sus llamadas de I/O críticas en `_check_io_error_context` y capturar excepciones específicas de manera más granular, asegurando que fallos en el sistema de archivos durante la limpieza o restauración no dejen el manifiesto en un estado inconsistente.
 - `2026-10-27T13:02:54` **memory.py** (manejo de errores y validación de entradas): He mejorado la robustez de `_is_process_executable_safe` añadiendo una validación explícita para asegurar que el handle recibido no sea nulo antes de invocar la API, y mejoré `_extract_process_info` para manejar de forma más segura el parseo de PIDs y valores de memoria, previniendo errores de conversión ante entradas malformadas.
-- `2026-10-27T13:01:06` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_compute_cached` y el flujo de `_evaluate_rules` mediante la captura explícita de errores durante la ejecución de los componentes, evitando que un fallo en una única regla o función de normalización propague excepciones al sistema principal, asegurando siempre un estado de retorno seguro.
