@@ -1118,3 +1118,43 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-27T06:17:04` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` añadiendo un chequeo explícito de límite de tamaño antes de realizar cualquier operación de disco y manejando de forma más segura el `os.replace` al verificar el estado del archivo destino inmediatamente antes de reemplazarlo, previniendo condiciones de carrera ante archivos temporales residuales.
 - `2026-10-27T06:17:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T06:17:04` Corrida terminada. Total usado hoy: 148.
+- `2026-10-27T06:22:37` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-10-27T06:23:39` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-27T06:24:06` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-27T06:24:46` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_build_payload` al incluir una validación estricta contra `_FORBIDDEN_CHARS` en la composición final del `full_prompt`, garantizando que el payload enviado a la API no contenga secuencias de escape o caracteres que puedan ser malinterpretados por el motor remoto.
+- `2026-10-27T06:25:43` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save_logo_svg` consolidando las validaciones de acceso al sistema de archivos para garantizar que cualquier intento de escritura sea verificado explícitamente mediante `ensure_safe_to_modify` antes de proceder, eliminando una comprobación redundante y asegurando una postura defensiva consistente.
+- `2026-10-27T06:25:57` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.72s
+
+```
+- `2026-10-27T06:25:57` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_resolve_browser_path` al evitar el uso de `joinpath` con rutas no sanitizadas y se añadió una validación de integridad absoluta mediante `pathlib` para asegurar que el target resultante resida realmente bajo el sandbox, evitando posibles ataques de recorrido de directorio (path traversal).
+- `2026-10-27T06:25:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T06:25:57` Corrida terminada. Total usado hoy: 152.

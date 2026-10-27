@@ -742,6 +742,9 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     # Verificación extra de longitud y seguridad
     if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): 
         return None
+    # Validación defensiva final para asegurar que caracteres prohibidos no se filtren
+    if any(c in full_prompt for c in _FORBIDDEN_CHARS):
+        return None
     payload_data: dict[str, Any] = {"contents": [{"parts": [{"text": full_prompt}]}]}
     if not _is_safe_payload_structure(payload_data): return None
     try:

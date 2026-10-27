@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 67
+- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 0 | 0 | 0 | 0 | 6 |
+| 2026-10-25 | 0 | 0 | 0 | 0 | 2 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 60 | 3 | 28 | 5 | 52 |
+| 2026-10-27 | 62 | 4 | 29 | 5 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,13 +26,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
 - rendimiento: **32**
-- seguridad defensiva: **30**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
-- `assistant.py`: **18**
 - `browser.py`: **17**
 - `scanner.py`: **17**
 - `healthscore.py`: **16**
@@ -40,13 +40,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **15**
 - `diskreport.py`: **15**
 - `safety.py`: **13**
-- `branding.py`: **9**
+- `branding.py`: **10**
 - `duplicates.py`: **9**
 - `startup.py`: **6**
 - `main.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T06:25:43` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` consolidando las validaciones de acceso al sistema de archivos para garantizar que cualquier intento de escritura sea verificado explícitamente mediante `ensure_safe_to_modify` antes de proceder, eliminando una comprobación redundante y asegurando una postura defensiva consistente.
+- `2026-10-27T06:24:46` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_build_payload` al incluir una validación estricta contra `_FORBIDDEN_CHARS` en la composición final del `full_prompt`, garantizando que el payload enviado a la API no contenga secuencias de escape o caracteres que puedan ser malinterpretados por el motor remoto.
 - `2026-10-27T06:17:04` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` añadiendo un chequeo explícito de límite de tamaño antes de realizar cualquier operación de disco y manejando de forma más segura el `os.replace` al verificar el estado del archivo destino inmediatamente antes de reemplazarlo, previniendo condiciones de carrera ante archivos temporales residuales.
 - `2026-10-27T06:15:22` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "reparse points" anidados y recursivos mediante un conteo de profundidad lógica y resolución de enlaces en `_validate_no_reparse_traversal`, mitigando el riesgo de que enlaces simbólicos o junctions apunten fuera del "jail" de seguridad incluso si la estructura de carpetas parece correcta a simple vista.
 - `2026-10-27T06:05:58` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `os.fsync()` en `_safe_unlink` para garantizar la persistencia de la eliminación en el sistema de archivos ante fallos de hardware o interrupciones repentinas, mitigando el riesgo de que el manifiesto se desincronice de la realidad del disco.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T05:03:39` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings técnicos detallados en los métodos críticos y la normalización de la terminología de tipos, permitiendo que un colaborador comprenda el flujo de resolución de rutas y las salvaguardas de seguridad sin necesidad de leer la implementación completa.
 - `2026-10-27T05:01:42` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las secciones "Args", "Returns" y "Raises" en funciones clave y se mejoró la precisión del tipado con `Sequence` y `Iterator` para clarificar el flujo de datos, facilitando el mantenimiento y la comprensión técnica del motor heurístico sin alterar su lógica funcional.
 - `2026-10-27T04:51:25` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo explicaciones sobre la lógica de seguridad y el manejo de concurrencia en los métodos críticos, además de refactorizar el bloque de `scan_for_junk` para extraer la lógica de validación de extensiones, mejorando la legibilidad sin alterar la funcionalidad.
-- `2026-10-27T04:42:22` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la documentación explícita del propósito de las constantes críticas de Win32, el reemplazo de índices de lista arbitrarios por nombres semánticos y la aclaración de las responsabilidades en las funciones de acceso a hardware.
-- `2026-10-27T04:41:23` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de alto nivel para clarificar la jerarquía de llamadas y la intención de seguridad detrás de los filtros, facilitando el mantenimiento a futuro sin alterar la lógica de detección.
