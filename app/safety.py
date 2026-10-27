@@ -962,10 +962,11 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN)):
             raise UnsafePathError("Protección defensiva: Archivo de sistema oculto.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
         
+        # Validar parent solo si existe
         if target_path.parent.exists() and not os.access(target_path.parent, os.W_OK):
             raise UnsafePathError("No se pueden modificar atributos por falta de privilegios en el contenedor.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
         
-        if os.name == 'nt' and _is_volume_readonly(str(target_path.parent)):
+        if os.name == 'nt' and target_path.parent.exists() and _is_volume_readonly(str(target_path.parent)):
             raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
 
         if _is_kernel_managed(str(target_path)):

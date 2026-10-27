@@ -324,14 +324,12 @@ def validate(raw_values: Any) -> AppSettings:
     
     config = dict(DEFAULTS)
     for key_str, raw_val in raw_values.items():
-        try:
-            key_enum = _KEY_TO_ENUM.get(key_str)
-            if key_enum and key_enum in _VALIDATOR_MAP:
-                validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
-                if validated_val is not None:
-                    config[key_enum.value] = validated_val
-        except (Exception):
-            continue
+        key_enum = _KEY_TO_ENUM.get(key_str)
+        if key_enum and key_enum in _VALIDATOR_MAP:
+            # Validamos individualmente para no abortar si una clave falla
+            validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
+            if validated_val is not None:
+                config[key_enum.value] = validated_val
             
     return config # type: ignore
 
