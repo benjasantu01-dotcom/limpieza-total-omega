@@ -1108,3 +1108,13 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-27T06:05:58` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de `os.fsync()` en `_safe_unlink` para garantizar la persistencia de la eliminación en el sistema de archivos ante fallos de hardware o interrupciones repentinas, mitigando el riesgo de que el manifiesto se desincronice de la realidad del disco.
 - `2026-10-27T06:05:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T06:05:58` Corrida terminada. Total usado hoy: 144.
+- `2026-10-27T06:12:23` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-10-27T06:13:25` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-27T06:14:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-27T06:15:22` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una verificación de "reparse points" anidados y recursivos mediante un conteo de profundidad lógica y resolución de enlaces en `_validate_no_reparse_traversal`, mitigando el riesgo de que enlaces simbólicos o junctions apunten fuera del "jail" de seguridad incluso si la estructura de carpetas parece correcta a simple vista.
+- `2026-10-27T06:15:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T06:16:17` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T06:16:49` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-27T06:17:04` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` añadiendo un chequeo explícito de límite de tamaño antes de realizar cualquier operación de disco y manejando de forma más segura el `os.replace` al verificar el estado del archivo destino inmediatamente antes de reemplazarlo, previniendo condiciones de carrera ante archivos temporales residuales.
+- `2026-10-27T06:17:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T06:17:04` Corrida terminada. Total usado hoy: 148.

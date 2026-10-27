@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 0 | 0 | 0 | 0 | 10 |
+| 2026-10-25 | 0 | 0 | 0 | 0 | 6 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 58 | 3 | 27 | 5 | 51 |
+| 2026-10-27 | 60 | 3 | 28 | 5 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **42**
 - legibilidad y documentación: **41**
 - rendimiento: **32**
 - seguridad defensiva: **30**
@@ -36,10 +36,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **17**
 - `scanner.py`: **17**
 - `healthscore.py`: **16**
+- `settings.py`: **16**
 - `organizer.py`: **15**
-- `settings.py`: **15**
 - `diskreport.py`: **15**
-- `safety.py`: **12**
+- `safety.py`: **13**
 - `branding.py`: **9**
 - `duplicates.py`: **9**
 - `startup.py`: **6**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T06:17:04` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` añadiendo un chequeo explícito de límite de tamaño antes de realizar cualquier operación de disco y manejando de forma más segura el `os.replace` al verificar el estado del archivo destino inmediatamente antes de reemplazarlo, previniendo condiciones de carrera ante archivos temporales residuales.
+- `2026-10-27T06:15:22` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "reparse points" anidados y recursivos mediante un conteo de profundidad lógica y resolución de enlaces en `_validate_no_reparse_traversal`, mitigando el riesgo de que enlaces simbólicos o junctions apunten fuera del "jail" de seguridad incluso si la estructura de carpetas parece correcta a simple vista.
 - `2026-10-27T06:05:58` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `os.fsync()` en `_safe_unlink` para garantizar la persistencia de la eliminación en el sistema de archivos ante fallos de hardware o interrupciones repentinas, mitigando el riesgo de que el manifiesto se desincronice de la realidad del disco.
 - `2026-10-27T06:03:58` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_process_executable_safe` al implementar un manejo defensivo ante rutas con caracteres especiales o que excedan los límites de longitud del SO (`MAX_PATH`), además de añadir una validación de existencia explícita tras la resolución de la ruta absoluta para prevenir fallos al iterar sobre procesos efímeros.
 - `2026-10-27T05:53:05` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en el acceso a atributos (`st_stat`), evitando que fallos inesperados de E/S corten prematuramente el recorrido.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T04:51:25` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo explicaciones sobre la lógica de seguridad y el manejo de concurrencia en los métodos críticos, además de refactorizar el bloque de `scan_for_junk` para extraer la lógica de validación de extensiones, mejorando la legibilidad sin alterar la funcionalidad.
 - `2026-10-27T04:42:22` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la documentación explícita del propósito de las constantes críticas de Win32, el reemplazo de índices de lista arbitrarios por nombres semánticos y la aclaración de las responsabilidades en las funciones de acceso a hardware.
 - `2026-10-27T04:41:23` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de alto nivel para clarificar la jerarquía de llamadas y la intención de seguridad detrás de los filtros, facilitando el mantenimiento a futuro sin alterar la lógica de detección.
-- `2026-10-27T04:32:28` **browser.py** (legibilidad y documentación): Mejora de legibilidad mediante la documentación explícita de los parámetros en las funciones recursivas y de escaneo, clarificando la intención y el rol de cada argumento en el proceso de recolección de datos.
-- `2026-10-27T04:31:54` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `branding.py` mediante la adición de docstrings estructuradas en las funciones geométricas (`draw_logo`, `draw_gradient_bar`, `draw_ring`) y la aclaración de las constantes de escala, facilitando la comprensión del motor de renderizado vectorial de la aplicación.

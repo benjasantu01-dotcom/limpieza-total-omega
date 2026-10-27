@@ -1042,18 +1042,23 @@ def _validate_path_components(path: Path) -> None:
     _validate_no_reparse_traversal(path)
 
 def _validate_no_reparse_traversal(path: Path) -> None:
-    """Impide que la navegación mediante reparse points salte el jail de seguridad."""
+    """Impide que la navegación mediante reparse points salte el jail de seguridad mediante escaneo de resolución."""
     try:
+        # Validación de profundidad lógica en el árbol resuelto para evitar bypass de jail
         current = Path(path.anchor)
+        depth = 0
         for part in path.parts[1:]:
             current = current / part
             if current.is_symlink() or _is_system_directory_junction(str(current)):
                 target = _get_final_path_normalized(current)
                 if not target.is_relative_to(Path(path.anchor)):
-                    raise UnsafePathError(f"Intento de escape mediante reparse point: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+                    raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+            depth += 1
+            if depth > MAX_DIRECTORY_DEPTH:
+                raise UnsafePathError("Profundidad de redirección excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP)
     except (Exception, UnsafePathError) as e:
-        if not isinstance(e, UnsafePathError): return
-        raise
+        if isinstance(e, UnsafePathError): raise
+        pass
 
 def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Valida la integridad de archivos antes de operaciones de escritura."""

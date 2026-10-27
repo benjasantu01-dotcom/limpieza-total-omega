@@ -166,9 +166,10 @@ class _SettingsManager:
             self.data_cache.clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        if not isinstance(serialized, str) or len(str(config_path)) > 260: return False
+        if not isinstance(serialized, str) or len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return False
+        if len(str(config_path)) > 260: return False
         
-        temp_path = config_path.with_suffix(".tmp")
+        temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
         try:
             parent_dir = config_path.parent
             if not parent_dir.exists() or not os.access(parent_dir, os.W_OK): return False
@@ -404,8 +405,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     try:
         cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
-        serialized_bytes = serialized.encode("utf-8")
-        if len(serialized_bytes) > MAX_SETTINGS_SIZE: return None
         if _MANAGER.perform_atomic_write(config_path, serialized):
             try:
                 st = config_path.stat()
