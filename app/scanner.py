@@ -123,15 +123,15 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     try:
         if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
             return None
-        # Aprovechamos el cache de DirEntry aquí
         if not entry.is_file() or _cached_is_protected(entry.path):
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
-        if getattr(e, 'winerror', 0) == ERROR_SHARING_VIOLATION:
+        # Manejo específico: si el archivo está bloqueado o inaccesible, retornamos None
+        if getattr(e, 'winerror', 0) == ERROR_SHARING_VIOLATION or isinstance(e, PermissionError):
             return None
         return None
-    except (PermissionError, AttributeError, FileNotFoundError):
+    except (AttributeError, FileNotFoundError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -185,7 +185,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if path is None or path.parent is None or _cached_is_protected(str(path)): return None
     if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
         return None
-    if entry is None or not entry.is_file(): return None
+    if entry is None: return None
     
     stats = _safe_stat(entry)
     if stats:
@@ -271,7 +271,6 @@ class Scanner:
         if not self._is_safe_entry(entry):
             return
         try:
-            # Usamos métodos directos de DirEntry para evitar llamadas extras al sistema
             if entry.is_file():
                 if self._is_relevant_extension(entry.name):
                     path_norm = os.path.normcase(entry.path)
@@ -290,8 +289,9 @@ class Scanner:
                 finding = check_fn(path, entry, self.now_ts)
                 if finding:
                     self.results.append(finding)
-            except (OSError, ValueError, AttributeError, FileNotFoundError) as e:
-                logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
+            except (OSError, PermissionError, ValueError, AttributeError, FileNotFoundError) as e:
+                # Silenciar errores por archivos bloqueados durante la ejecución de la heurística
+                logger.debug(f"Heurística {check_fn.__name__} abortada en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo contra las heurísticas configuradas."""
@@ -306,7 +306,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
                 res = check_fn(path, entry, now_ts)
                 if res:
                     findings.append(res)
-            except (OSError, ValueError, AttributeError, FileNotFoundError) as e:
+            except (OSError, PermissionError, ValueError, AttributeError, FileNotFoundError) as e:
                 logger.debug(f"Heurística puntual {check_fn.__name__} fallida en {path}: {e}")
         return findings
     except (OSError, PermissionError, FileNotFoundError):

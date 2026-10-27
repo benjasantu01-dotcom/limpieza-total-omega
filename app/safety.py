@@ -66,7 +66,8 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     info = BY_HANDLE_FILE_INFORMATION()
     kernel32 = ctypes.windll.kernel32
     try:
-        handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 3, None, 3, 0x00000080, None)
+        # Uso de FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE (0x07)
+        handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
         if handle == -1: return (0, 0, 0, 0)
         try:
             if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
@@ -681,13 +682,15 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 
             if os.name == 'nt':
                 kernel32 = ctypes.windll.kernel32
+                # Modo de compartición estricto para integridad (FILE_SHARE_READ)
                 handle = kernel32.CreateFileW(
-                    _to_long_path(str(path)), 0, 0, None, 3, 0x00000080, None
+                    _to_long_path(str(path)), 0, 0x01, None, 3, 0x00000080, None
                 )
                 if handle == -1:
                     err = kernel32.GetLastError()
                     if err == ERROR_SHARING_VIOLATION:
-                        raise UnsafePathError(f"Archivo bloqueado: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
+                        time.sleep(0.05 * (2 ** attempt))
+                        continue
                     if err == ERROR_FILE_NOT_FOUND:
                         raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
                     if err == ERROR_ACCESS_DENIED:
@@ -698,7 +701,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             try:
                 return path.stat()
             except (OSError, PermissionError) as e:
-                # Filtrar errores conocidos de sistema
                 if getattr(e, 'winerror', 0) in (ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
                     raise UnsafePathError(f"Acceso denegado/inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
                 raise

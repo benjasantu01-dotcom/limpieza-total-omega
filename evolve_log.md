@@ -702,3 +702,13 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-27T01:39:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-10-27T01:39:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T01:39:35` Corrida terminada. Total usado hoy: 40.
+- `2026-10-27T01:47:30` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-10-27T01:47:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T01:48:28` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de concurrencia y estado del sistema más robusta en `_get_path_stat_robust` mediante el uso de una constante de "sharing mode" más restrictiva y un manejo explícito del error `ERROR_SHARING_VIOLATION` para prevenir race conditions durante la lectura de metadatos en archivos bajo alta actividad.
+- `2026-10-27T01:48:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T01:48:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T01:49:06` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de concurrencia y acceso bloqueado en `_safe_stat` y `_run_file_heuristics` para asegurar que archivos inaccesibles temporalmente no provoquen excepciones en el bucle de escaneo, mejorando la tolerancia a fallos ante archivos en uso.
+- `2026-10-27T01:49:38` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_read_and_parse_json` y `save` añadiendo una comprobación explícita para evitar la manipulación de archivos que contengan enlaces simbólicos o puntos de reparse, previniendo ataques de tipo *symlink race* al leer o escribir configuraciones.
+- `2026-10-27T01:49:53` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejora la robustez de `StartupEntry.executable` manejando explícitamente excepciones de `pathlib` (como `OSError` o `RuntimeError`) durante la resolución de rutas, evitando que un enlace simbólico circular o una ruta con permisos denegados interrumpa el escaneo del inventario.
+- `2026-10-27T01:49:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T01:49:53` Corrida terminada. Total usado hoy: 44.

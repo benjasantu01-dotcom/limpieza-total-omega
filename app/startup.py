@@ -170,13 +170,16 @@ class StartupEntry:
         Verifica la seguridad y existencia del archivo en el sistema de archivos.
         Requiere que el path no sea protegido y sea seguro de modificar según safety.py.
         """
-        if not p.is_file() or p.is_symlink():
-            return False
-        
-        if is_protected_path(p) or not is_safe_to_modify(p):
-            return False
+        try:
+            if not p.is_file() or p.is_symlink():
+                return False
             
-        return p.exists()
+            if is_protected_path(p) or not is_safe_to_modify(p):
+                return False
+                
+            return p.exists()
+        except (OSError, PermissionError, RuntimeError):
+            return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
