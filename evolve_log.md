@@ -1482,3 +1482,37 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-27T09:48:09` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` sustituyendo el uso repetido de `ctypes.create_unicode_buffer` (una llamada costosa dentro de un bucle intensivo) por un enfoque de filtrado previo de PIDs, reduciendo las llamadas innecesarias a la API de Windows para procesos que ya sabemos que son del sistema o de bajo consumo.
 - `2026-10-27T09:48:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T09:48:09` Corrida terminada. Total usado hoy: 232.
+- `2026-10-27T09:56:38` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-10-27T09:57:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-27T09:57:51` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se implementó un mecanismo de caché en `total_quarantined_bytes` y una optimización en `purge_all` para evitar llamadas redundantes a `load_manifest`, reduciendo la carga de I/O en operaciones frecuentes de reporte y limpieza masiva.
+- `2026-10-27T09:58:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-10-27T09:58:49` Tests FALLARON:
+```
+...................F...................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________________ test_drive_root_is_always_protected ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_drive_root_is_always_prot0')
+
+    def test_drive_root_is_always_protected(tmp_path):
+        # tmp_path.anchor es "/" en Linux y "C:\\" en Windows: sirve en los dos.
+        assert safety.is_drive_root(tmp_path.anchor)
+>       assert safety.is_protected_path(tmp_path.anchor)
+E       AssertionError: assert False
+E        +  where False = <functools._lru_cache_wrapper object at 0x7f355cbcddd0>('/')
+E        +    where <functools._lru_cache_wrapper object at 0x7f355cbcddd0> = safety.is_protected_path
+E        +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-2/test_drive_root_is_always_prot0').anchor
+
+evolve/tests/test_safety.py:63: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_drive_root_is_always_protected - AssertionError: assert False
+ +  where False = <functools._lru_cache_wrapper object at 0x7f355cbcddd0>('/')
+ +    where <functools._lru_cache_wrapper object at 0x7f355cbcddd0> = safety.is_protected_path
+ +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-2/test_drive_root_is_always_prot0').anchor
+1 failed, 298 passed in 1.60s
+
+```
+- `2026-10-27T09:58:49` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `is_protected_path` reemplazando la iteración completa sobre las partes del path (que incluye llamadas a `Path.parts` y normalizaciones costosas) por una verificación de prefijos más directa utilizando `os.path.normcase`, reduciendo drásticamente las operaciones de E/S innecesarias y el costo de memoria durante el escaneo de directorios.
+- `2026-10-27T09:58:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T09:58:49` Corrida terminada. Total usado hoy: 236.

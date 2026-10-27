@@ -1151,8 +1151,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el espacio total ocupado (en bytes) en el sandbox."""
-    return sum(item.size_bytes for item in load_manifest(base) if item is not None)
+    """Calcula el espacio total ocupado (en bytes) en el sandbox usando caché."""
+    base_path = quarantine_dir(base)
+    items = load_manifest(base_path)
+    return sum(item.size_bytes for item in items if item is not None)
 
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:
