@@ -92,11 +92,11 @@ class ScanResult(NamedTuple):
     success: bool
 
 class FileAttributes:
-    """Namespace inmutable para flags de atributos de archivo (Windows API)."""
-    READONLY = 0x01
-    HIDDEN = 0x02
-    SYSTEM = 0x04
-    REPARSE_POINT = 0x400
+    """Constantes de flags para la API Win32 GetFileAttributes."""
+    READONLY: int = 0x01
+    HIDDEN: int = 0x02
+    SYSTEM: int = 0x04
+    REPARSE_POINT: int = 0x400
 
 SYSTEM_HIDDEN_FLAGS: int = (
     FileAttributes.HIDDEN | 
@@ -295,7 +295,6 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
         if target.exists() and target.is_dir():
             target_norm = os.path.normcase(str(target.resolve()))
             base_norm = os.path.normcase(str(base_resolved))
-            # Verificamos si la ruta resuelta está confinada dentro del sandbox original
             if _is_within_sandbox(target_norm, base_norm) and is_safe_to_modify(target):
                 return target
         return Path()

@@ -261,7 +261,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo seguro para recorrer archivos evitando ciclos y bloqueos."""
+    """
+    Generador recursivo seguro mediante pila (stack).
+    
+    Usa el par (device_id, inode) para rastrear carpetas ya visitadas y prevenir
+    bucles infinitos ante enlaces simbólicos o junctions. Salta silenciosamente
+    cualquier ruta que dispare excepciones de sistema o esté protegida.
+    """
     root_path = _validate_root(directory)
     if root_path is None: return
     
@@ -344,7 +350,13 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Recorre el sistema de archivos centralizando la recolección de estadísticas."""
+    """
+    Ejecuta el recorrido del árbol e integra estadísticas globales.
+    
+    Gestiona dos estructuras simultáneas: `GlobalStats` (agregación por extensión)
+    y un min-heap de tamaño fijo (`top_heap`) para mantener eficientemente la
+    lista de los archivos más pesados detectados hasta el momento.
+    """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
