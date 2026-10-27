@@ -1002,3 +1002,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-27T04:32:37` 🛑 Propuesta bloqueada por la guardia en diskreport.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: FolderMetrics.size_mb
 - `2026-10-27T04:32:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T04:32:37` Corrida terminada. Total usado hoy: 108.
+- `2026-10-27T04:40:38` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-10-27T04:40:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T04:40:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T04:41:23` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de las funciones de alto nivel para clarificar la jerarquía de llamadas y la intención de seguridad detrás de los filtros, facilitando el mantenimiento a futuro sin alterar la lógica de detección.
+- `2026-10-27T04:41:50` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemMetrics.__post_init__, SystemMetrics.safe_get, SystemMetrics.validate
+- `2026-10-27T04:42:08` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 2% del original (posible pérdida de código)
+- `2026-10-27T04:42:22` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la documentación explícita del propósito de las constantes críticas de Win32, el reemplazo de índices de lista arbitrarios por nombres semánticos y la aclaración de las responsabilidades en las funciones de acceso a hardware.
+- `2026-10-27T04:42:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T04:42:22` Corrida terminada. Total usado hoy: 112.

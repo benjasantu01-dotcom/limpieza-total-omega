@@ -53,13 +53,15 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
-# Máscaras de acceso Win32:
+# Máscaras de acceso Win32 para interactuar con procesos de forma segura:
+# PROCESS_QUERY_LIMITED_INFORMATION: Acceso mínimo para lectura de metadatos básicos.
+# PROCESS_SET_QUOTA: Necesario para operaciones de administración de memoria (EmptyWorkingSet).
+# PROCESS_QUERY_INFORMATION: Requerido para leer contadores de memoria (GetProcessMemoryInfo).
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
 TRIM_ACCESS_MASK: Final[int] = 0x020000 | PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION
 
-FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
 INVALID_HANDLE_VALUE: Final[int] = -1
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 
@@ -241,15 +243,15 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     if not isinstance(line, str) or not line.strip(): 
         return None
         
+    # Esperamos CSV: "Name,PID,WorkingSet"
     parts = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: 
         return None
     
     try:
         name = parts[0]
-        if not name: return None
-        pid = int(parts[-2])
-        ws_raw = parts[-1]
+        pid = int(parts[1])
+        ws_raw = parts[2]
         ws = _safe_int_conversion(ws_raw)
         
         if _is_system_process(pid) or pid <= 0:

@@ -91,21 +91,27 @@ class DuplicateGroup:
 
 def _safe_path_check(path: Path) -> bool:
     """
-    Validación de seguridad compuesta.
-    Verifica que la ruta no esté protegida, sea segura para leer y no sea un punto de reanálisis.
+    Validación de seguridad compuesta: verifica que la ruta sea un archivo, 
+    no esté protegida, sea segura para lectura y no sea un punto de reanálisis.
     """
-    return isinstance(path, Path) and path.is_file() and is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path)
+    return (
+        isinstance(path, Path) and 
+        path.is_file() and 
+        is_safe_to_modify(path) and 
+        not is_protected_path(path) and 
+        not is_junction(path)
+    )
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
-    """Determina si un archivo es apto para el análisis evitando archivos vacíos o de sistema."""
+    """Determina si un archivo es apto para el análisis excluyendo archivos vacíos o de sistema."""
     return st_size > 0 and _safe_path_check(path) and not is_system_or_hidden(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo. 
-    Maneja excepciones de acceso para asegurar que archivos bloqueados no aborten el proceso.
+    Usa caché para evitar re-lecturas y maneja excepciones de E/S.
     """
     if not _safe_path_check(path): 
         return None
@@ -155,7 +161,8 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Exploración recursiva (BFS) para identificar archivos candidatos a duplicados.
-    Utiliza un conjunto `visited` de tuplas (st_dev, st_ino) para evitar procesar enlaces físicos múltiples veces.
+    Utiliza un conjunto `visited` de tuplas (st_dev, st_ino) para identificar 
+    unívocamente archivos (inodes) y evitar el procesamiento de enlaces físicos.
     """
     raw_map: Dict[int, List[Path]] = defaultdict(list)
     size_counts: Dict[int, int] = defaultdict(int)
@@ -213,14 +220,14 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hash según el tamaño para optimizar rendimiento."""
+    """Selecciona la estrategia de hash según el tamaño para optimizar el rendimiento."""
     if not paths: return []
     results = _group_paths_by_hash(paths, hash_file) if size <= PARTIAL_READ_BYTES else _process_large_file_subset(paths)
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Flujo principal de detección de duplicados en los directorios especificados."""
+    """Flujo principal: detecta duplicados mediante filtrado jerárquico y cálculo de hashes."""
     if not directories: return []
     _partial_cache.clear()
     _full_hash_cache.clear()
@@ -244,7 +251,11 @@ def _get_mtime(path: Path) -> float:
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
-    """Sugiere el archivo más antiguo (menor mtime) como original para reducir riesgos."""
+    """
+    Sugiere el archivo más antiguo (menor mtime) como original. 
+    La preservación del original antiguo es una práctica estándar para reducir 
+    riesgos de cambios de configuración o metadatos.
+    """
     if not isinstance(group, DuplicateGroup) or not group.paths: 
         return None
         
@@ -258,7 +269,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera una lista de strings detallando el grupo de duplicados para el reporte."""
+    """Genera una representación textual formateada de un grupo de duplicados para reportes."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return []
     
