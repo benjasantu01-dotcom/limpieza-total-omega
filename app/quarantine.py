@@ -638,7 +638,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             dir_fd: int = os.open(str(base_path), os.O_RDONLY)
             try:
                 os.fsync(dir_fd)
-            finally:
+            finally: 
                 os.close(dir_fd)
         except OSError:
             pass
@@ -813,6 +813,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if source is None or not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     
+    # Prevenir aislamiento dentro del mismo directorio destino (bucle)
+    if source.parent.resolve() == destination.parent.resolve():
+        raise UnsafePathError("Origen y destino colisionan en la misma carpeta.")
+    
     if source.stat().st_dev == 0:
         raise UnsafePathError("Archivo origen en dispositivo no soportado.")
     
@@ -872,7 +876,9 @@ def _register_quarantine_item(
 
         items_list: List[QuarantineItem] = load_manifest(base)
         
-        if destination.stat().st_ino != file_inode or destination.stat().st_nlink > 1:
+        # Validar que inodo y enlace sigan siendo consistentes al registrar
+        dest_stat = destination.stat()
+        if dest_stat.st_ino != file_inode or dest_stat.st_nlink > 1:
             raise RuntimeError("Inconsistencia crítica: mismatch de inodo o enlace.")
 
         quarantine_item: QuarantineItem = QuarantineItem(

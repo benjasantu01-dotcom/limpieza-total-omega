@@ -1165,3 +1165,13 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-27T06:35:30` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-27T06:35:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T06:35:30` Corrida terminada. Total usado hoy: 156.
+- `2026-10-27T06:43:01` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-27T06:43:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T06:43:08` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T06:43:16` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-27T06:44:28` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-27T06:45:12` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-27T06:45:57` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita para evitar que se pongan en cuarentena archivos que ya están en el directorio base (evitando bucles de autorreferencia) y se consolidó el chequeo de inodo dentro de la validación de integridad para prevenir ataques TOCTOU.
+- `2026-10-27T06:46:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-27T06:46:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T06:46:05` Corrida terminada. Total usado hoy: 160.
