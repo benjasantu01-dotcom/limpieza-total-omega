@@ -113,9 +113,7 @@ class SecurityDescriptor(NamedTuple):
 
     @classmethod
     def from_path(cls, path_str: str) -> SecurityDescriptor:
-        """
-        Constructor factoría que extrae atributos y estado de bloqueo de un archivo.
-        """
+        """Constructor factoría que extrae atributos y estado de bloqueo de un archivo."""
         if not path_str:
             return cls(0, True, True, True, True)
         try:
