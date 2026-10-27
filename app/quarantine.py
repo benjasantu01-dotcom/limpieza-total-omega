@@ -1118,22 +1118,18 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             return 0
             
         items: List[QuarantineItem] = load_manifest(base)
+        # Optimizamos mapeando por nombre de archivo para evitar iteraciones redundantes
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
         for f in quarantine_root.iterdir():
-            try:
-                if not is_within_directory(f, quarantine_root) or f.is_dir():
-                    continue
-                if f.name == MANIFEST_NAME or is_protected_path(f):
-                    continue
-                
-                item = item_map.get(f.name)
-                # Validar ítem y purgar solo si es seguro
-                if item and _is_item_purgable(f, item):
-                    purgado_ids.add(item.item_id)
-            except (OSError, PermissionError, UnsafePathError):
+            # Evitamos resolve() y otras llamadas pesadas dentro del loop
+            if f.name == MANIFEST_NAME or f.is_dir():
                 continue
+                
+            item = item_map.get(f.name)
+            if item and _is_item_purgable(f, item):
+                purgado_ids.add(item.item_id)
         
         if purgado_ids:
             new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]
