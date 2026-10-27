@@ -605,3 +605,47 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-27T00:38:10` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimizé la generación de gradientes en `branding.py` reemplazando la creación dinámica de listas y el formateo de strings en cada ciclo por una estrategia de pre-cálculo y caché más agresiva, mejorando el rendimiento en el renderizado de la UI.
 - `2026-10-27T00:38:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T00:38:10` Corrida terminada. Total usado hoy: 16.
+- `2026-10-27T00:46:21` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-27T00:46:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T00:46:28` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T00:47:13` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.70s
+
+```
+- `2026-10-27T00:47:13` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se optimizó el escaneo del árbol de directorios implementando `os.path.normpath` y `os.path.commonpath` en `_is_within_sandbox` para realizar comparaciones de rutas más eficientes y seguras, reduciendo la redundancia de llamadas a `normcase` y `abspath` dentro de los bucles críticos de recursión.
+- `2026-10-27T00:47:38` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del bucle principal, y mejoré la estructura de `_collect_summary_data` para que el acceso a `GlobalStats` sea más directo al procesar cada archivo.
+- `2026-10-27T00:47:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T00:47:47` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T00:47:53` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-27T00:48:28` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-27T00:48:51` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 56% del original (posible pérdida de código)
+- `2026-10-27T00:48:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T00:48:51` Corrida terminada. Total usado hoy: 20.

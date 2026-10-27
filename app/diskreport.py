@@ -324,7 +324,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if root is None: return []
     
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
-    root_str = str(root)
     
     for path, size in walk_files(root, skip_protected):
         try:
@@ -352,10 +351,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Ejecuta el recorrido del árbol e integra estadísticas globales.
-    
-    Gestiona dos estructuras simultáneas: `GlobalStats` (agregación por extensión)
-    y un min-heap de tamaño fijo (`top_heap`) para mantener eficientemente la
-    lista de los archivos más pesados detectados hasta el momento.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
