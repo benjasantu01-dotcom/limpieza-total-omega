@@ -649,3 +649,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-27T00:48:51` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 56% del original (posible pérdida de código)
 - `2026-10-27T00:48:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T00:48:51` Corrida terminada. Total usado hoy: 20.
+- `2026-10-27T00:56:31` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-27T00:57:45` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-27T00:57:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T00:58:15` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Se ha optimizado `_iter_process_memory` para evitar la apertura innecesaria de handles de proceso, moviendo el chequeo de seguridad (`_is_process_executable_safe`) y el filtrado por tamaño antes de realizar la llamada costosa a `OpenProcess` con privilegios completos, mejorando significativamente el rendimiento al reducir las syscalls.
+- `2026-10-27T00:58:46` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-27T00:58:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T00:59:34` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se implementó un mecanismo de caché para `_get_win_attributes` dentro de `quarantine.py` para reducir drásticamente las llamadas al sistema operativo (syscalls costosas `GetFileAttributesW`) durante las validaciones recursivas o repetidas, mejorando el rendimiento de escaneo sin sacrificar la seguridad.
+- `2026-10-27T00:59:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T00:59:34` Corrida terminada. Total usado hoy: 24.

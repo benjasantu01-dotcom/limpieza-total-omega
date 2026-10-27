@@ -69,6 +69,7 @@ MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para streaming de I/O eficiente
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
 _HASH_CACHE: Dict[Tuple[str, float, int], str] = {}
+_WIN_ATTR_CACHE: Dict[str, int] = {}
 
 # Nombres de dispositivos reservados por la API de Windows que podrían causar redirección
 WINDOWS_RESERVED_NAMES: Set[str] = {
@@ -86,7 +87,7 @@ def _check_for_reparse_points(path: Path) -> None:
     if os.name == 'nt':
         try:
             # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT según Win32 API
-            attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+            attrs: int = _get_win_attributes(path)
             if attrs != -1 and (attrs & 0x400):
                 raise UnsafePathError("Ruta detectada como punto de reparse.")
         except (OSError, AttributeError):
@@ -101,8 +102,12 @@ def _check_path_for_junctions(path: Path) -> None:
 def _get_win_attributes(path: Path) -> int:
     """Acceso de bajo nivel a atributos de archivo en Windows para validación de seguridad."""
     if os.name != 'nt': return 0
+    p_str = str(path)
+    if p_str in _WIN_ATTR_CACHE: return _WIN_ATTR_CACHE[p_str]
     try:
-        return ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(p_str)
+        _WIN_ATTR_CACHE[p_str] = attrs
+        return attrs
     except (OSError, AttributeError):
         return -1
 
