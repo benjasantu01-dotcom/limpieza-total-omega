@@ -957,3 +957,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-27T04:02:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-27T04:02:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T04:02:21` Corrida terminada. Total usado hoy: 96.
+- `2026-10-27T04:10:02` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-10-27T04:10:34` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_process_executable_safe` y `_iter_process_memory` manejando posibles excepciones durante la consulta de atributos de archivos y el uso de handles, evitando que un proceso con errores de acceso o rutas malformadas interrumpa la enumeración global.
+- `2026-10-27T04:11:06` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez y seguridad del módulo mediante la validación explícita de tipos, la gestión segura de estados nulos y la captura granular de excepciones, evitando que errores de sistema en llamadas de E/S propaguen fallos inesperados.
+- `2026-10-27T04:11:51` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación de tipo y valor en `_ensure_disk_space` y se mejoró el manejo de excepciones en `_register_quarantine_item` para evitar la propagación de errores parciales si el manifiesto no puede actualizarse, asegurando que la integridad del estado sea consistente con las operaciones de disco realizadas.
+- `2026-10-27T04:12:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-10-27T04:12:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T04:12:02` Corrida terminada. Total usado hoy: 100.

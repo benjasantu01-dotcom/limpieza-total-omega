@@ -886,7 +886,8 @@ def _register_quarantine_item(
         items_list.append(quarantine_item)
         save_manifest(items_list, base)
         return quarantine_item
-    except (OSError, IOError, ValueError) as e:
+    except (OSError, IOError, ValueError, RuntimeError) as e:
+        # En caso de error crítico al actualizar manifiesto, intentamos limpiar el archivo
         if destination and destination.exists():
             _safe_unlink(destination)
         raise RuntimeError(f"Falla al registrar ítem en manifiesto: {e}")
