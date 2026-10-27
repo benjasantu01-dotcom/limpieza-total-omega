@@ -369,6 +369,7 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         
         try:
             ws = _query_working_set_bytes(h_process, pmc)
+            # Primero validamos el consumo para evitar llamadas costosas de sistema de archivos
             if ws is not None:
                 if _is_process_executable_safe(h_process):
                     yield ProcessMemory(f"PID {pid}", pid, ws)

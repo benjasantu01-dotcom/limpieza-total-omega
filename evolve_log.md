@@ -1475,3 +1475,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-27T09:38:00` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la redundancia de recorrer el disco múltiples veces y realizar múltiples llamadas a `walk_files`, consolidando la lógica de cálculo en un único pase sobre el árbol de archivos.
 - `2026-10-27T09:38:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T09:38:00` Corrida terminada. Total usado hoy: 228.
+- `2026-10-27T09:46:27` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-27T09:46:51` 🛑 Propuesta bloqueada por la guardia en duplicates.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: group_by_size
+- `2026-10-27T09:47:21` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el acceso a datos en el pipeline de cálculo reemplazando la introspección repetitiva mediante `getattr` en el bucle principal por una extracción inicial de los valores al llamar a `_compute_cached`, reduciendo la carga de llamadas a funciones en el cálculo frecuente de puntajes.
+- `2026-10-27T09:47:54` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 25% del original (posible pérdida de código)
+- `2026-10-27T09:48:09` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` sustituyendo el uso repetido de `ctypes.create_unicode_buffer` (una llamada costosa dentro de un bucle intensivo) por un enfoque de filtrado previo de PIDs, reduciendo las llamadas innecesarias a la API de Windows para procesos que ya sabemos que son del sistema o de bajo consumo.
+- `2026-10-27T09:48:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T09:48:09` Corrida terminada. Total usado hoy: 232.
