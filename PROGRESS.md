@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 226
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 27 | 2 | 5 | 6 | 26 |
+| 2026-10-25 | 23 | 2 | 5 | 6 | 26 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 33 | 1 | 11 | 1 | 42 |
+| 2026-10-27 | 34 | 1 | 11 | 2 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **36**
 - rendimiento: **35**
+- manejo de errores y validación de entradas: **35**
 - seguridad defensiva: **34**
-- manejo de errores y validación de entradas: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
-- `healthscore.py`: **18**
-- `memory.py`: **18**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
+- `memory.py`: **17**
 - `browser.py`: **17**
+- `healthscore.py`: **17**
 - `settings.py`: **16**
-- `organizer.py`: **15**
+- `organizer.py`: **14**
 - `diskreport.py`: **13**
 - `safety.py`: **12**
 - `branding.py`: **10**
 - `duplicates.py`: **7**
 - `startup.py`: **6**
-- `main.py`: **3**
+- `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T03:51:33` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext` agregando validaciones de tipo explícitas en `_apply_field`, evitando que valores no numéricos o tipos inesperados propaguen errores durante la actualización de métricas del sistema.
 - `2026-10-27T02:29:43` **startup.py** (seguridad defensiva): Se reforzó la seguridad de `_is_registry_entry_safe` implementando una validación estricta que evita el procesamiento de rutas relativas o comandos que no contengan una estructura de sistema de archivos clara, previniendo así la ejecución accidental de comandos internos de Windows o interpretaciones incorrectas de strings maliciosos.
 - `2026-10-27T02:19:25` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` para evitar condiciones de carrera (TOCTOU) eliminando el uso de `stat()` del objeto `source` después de las validaciones, utilizando el handle ya verificado y garantizando que el archivo final no sea un enlace simbólico ni un reparse point mediante un nuevo chequeo post-escritura.
 - `2026-10-27T02:18:42` **organizer.py** (seguridad defensiva): Se mejoró la integridad del proceso `_is_safe_for_disk_op` al integrar una validación de `is_relative_to` para evitar "directory traversal" accidental si las rutas cambian durante la ejecución, y se añadió la verificación de que el origen no sea un punto de reparse (`junction`) en el momento de la operación de movimiento para cerrar una brecha de seguridad.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T01:39:16` **quarantine.py** (robustez ante casos límite): Mejora la robustez ante condiciones de carrera (TOCTOU) y errores de I/O en `_atomic_isolate_file`, añadiendo un chequeo de integridad post-copia más estricto que valida tanto el hash como el inodo antes de confirmar la transacción, y asegurando que los manejadores de archivos se cierren correctamente ante excepciones inesperadas.
 - `2026-10-27T01:38:30` **organizer.py** (robustez ante casos límite): Se introdujo la verificación `_is_file_locked` dentro del proceso de escaneo recursivo (`_process_directory`) para evitar la inclusión de archivos en uso (bloqueados) desde el momento inicial, mitigando errores de E/S y race conditions antes de que el objeto `JunkFile` llegue a la fase de movimiento.
 - `2026-10-27T01:29:26` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor frente a datos de entrada potencialmente corruptos, añadiendo una validación explícita en `_compute_cached` para asegurar que el `zip` entre campos y métricas no genere inconsistencias si la estructura de `SystemMetrics` llegara a cambiar o recibir datos inesperados.
-- `2026-10-27T01:28:53` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `is_junction` y `is_system_or_hidden` añadiendo una verificación previa de existencia (`path.exists()`), evitando llamadas innecesarias a la Win32 API sobre rutas rotas o bloqueadas que podrían causar comportamientos indefinidos en el sistema operativo.

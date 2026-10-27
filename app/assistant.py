@@ -436,6 +436,9 @@ class SystemContext:
             val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
             if val is None or isinstance(val, bool): 
                 return None
+            # Asegurar que el tipo de entrada coincide con lo esperado por el spec antes de cast
+            if not isinstance(val, (int, float, str)):
+                return None
             valid_val = _is_valid_numeric_update(val, spec)
             if valid_val is not None:
                 return spec.type_hint(valid_val)
