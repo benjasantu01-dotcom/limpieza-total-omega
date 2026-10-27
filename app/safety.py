@@ -766,7 +766,11 @@ def _validate_volume_integrity(path: Path) -> None:
         if _is_volume_readonly(path_s) or _is_volume_compressed_or_encrypted(path_s) or \
            _is_virtual_drive(path_s) or _is_volume_busy_or_invalid(path_s):
             raise UnsafePathError(f"Volumen restringido/inaccesible: {path.anchor}", SafetyValidationErrorCode.VOLUME_RESTRICTED)
+        
+        # Validación extra contra Mount Point Hijacking: si es punto de montaje, verificar integridad
         if os.path.ismount(path):
+            if not _get_final_path_normalized(path).drive == path.drive:
+                 raise UnsafePathError(f"Punto de montaje en volumen externo: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
             raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
         _validate_drive_restrictions(path)
     except (OSError, PermissionError, AttributeError):

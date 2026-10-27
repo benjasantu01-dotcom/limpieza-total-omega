@@ -1175,3 +1175,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-27T06:46:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-27T06:46:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T06:46:05` Corrida terminada. Total usado hoy: 160.
+- `2026-10-27T06:53:11` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-27T06:53:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T06:54:11` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo una validación estricta contra "Mount Point Hijacking" en `ensure_safe_to_modify` para detectar si el punto de montaje coincide con un volumen redirigido, evitando que la aplicación escanee o modifique recursivamente directorios que apuntan fuera del sistema de archivos local, reforzando la integridad del bucle de seguridad.
+- `2026-10-27T06:54:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T06:54:51` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-27T06:55:20` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_file_secure_to_read` para aplicar una validación de propiedad más estricta mediante `os.stat` antes de procesar el archivo, asegurando que el archivo de configuración sea legible exclusivamente por el usuario propietario actual y descartando archivos con permisos excesivos (world-writable).
+- `2026-10-27T06:55:39` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-27T06:55:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T06:55:39` Corrida terminada. Total usado hoy: 164.

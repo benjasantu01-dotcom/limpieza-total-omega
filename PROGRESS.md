@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 130 | 10 | 39 | 13 | 152 |
-| 2026-10-27 | 64 | 4 | 31 | 5 | 56 |
+| 2026-10-26 | 130 | 10 | 39 | 13 | 148 |
+| 2026-10-27 | 66 | 4 | 31 | 5 | 58 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **34**
+- seguridad defensiva: **36**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -35,10 +35,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **17**
 - `healthscore.py`: **17**
 - `scanner.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `organizer.py`: **15**
 - `diskreport.py`: **15**
-- `safety.py`: **13**
+- `safety.py`: **14**
 - `branding.py`: **10**
 - `duplicates.py`: **9**
 - `startup.py`: **6**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T06:55:20` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para aplicar una validación de propiedad más estricta mediante `os.stat` antes de procesar el archivo, asegurando que el archivo de configuración sea legible exclusivamente por el usuario propietario actual y descartando archivos con permisos excesivos (world-writable).
+- `2026-10-27T06:54:11` **safety.py** (seguridad defensiva): Se introdujo una validación estricta contra "Mount Point Hijacking" en `ensure_safe_to_modify` para detectar si el punto de montaje coincide con un volumen redirigido, evitando que la aplicación escanee o modifique recursivamente directorios que apuntan fuera del sistema de archivos local, reforzando la integridad del bucle de seguridad.
 - `2026-10-27T06:45:57` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita para evitar que se pongan en cuarentena archivos que ya están en el directorio base (evitando bucles de autorreferencia) y se consolidó el chequeo de inodo dentro de la validación de integridad para prevenir ataques TOCTOU.
 - `2026-10-27T06:34:33` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del motor de recomendaciones restringiendo el acceso a atributos de `SystemMetrics` mediante un método de acceso controlado y añadiendo un filtro de "lista blanca" estricto en la generación de mensajes, evitando cualquier posibilidad de inyección de datos dinámicos en la interfaz de reportes.
 - `2026-10-27T06:25:43` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` consolidando las validaciones de acceso al sistema de archivos para garantizar que cualquier intento de escritura sea verificado explícitamente mediante `ensure_safe_to_modify` antes de proceder, eliminando una comprobación redundante y asegurando una postura defensiva consistente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T05:44:11` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_apply_field` y `_clean_grade` dentro de `SystemContext` para manejar de forma segura entradas inesperadas (como objetos con atributos inesperados o tipos de datos erróneos) que podrían causar excepciones durante la ingesta, asegurando que el estado interno se mantenga íntegro ante datos malformados.
 - `2026-10-27T05:32:21` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` mediante la eliminación de llamadas redundantes a `resolve()` y `is_within_directory` dentro del loop, utilizando una comparación de nombres directa sobre el conjunto de archivos registrados, lo cual reduce drásticamente las syscalls en directorios con muchos ítems.
 - `2026-10-27T05:23:33` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` pre-asignando la estructura de procesos y reduciendo las llamadas a `ctypes` dentro del bucle, minimizando la carga sobre el kernel al filtrar procesos inactivos o inaccesibles más temprano.
-- `2026-10-27T05:13:08` **diskreport.py** (rendimiento): Optimizamos el método `largest_folders` reemplazando la lógica de validación redundante dentro del bucle de recorrido por una pre-filtración de las carpetas hijo, reduciendo la cantidad de llamadas a `is_protected_path` (que involucra operaciones costosas de strings y resolución de rutas) de miles de veces a solo una vez por carpeta de primer nivel.
-- `2026-10-27T05:03:39` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la adición de docstrings técnicos detallados en los métodos críticos y la normalización de la terminología de tipos, permitiendo que un colaborador comprenda el flujo de resolución de rutas y las salvaguardas de seguridad sin necesidad de leer la implementación completa.
