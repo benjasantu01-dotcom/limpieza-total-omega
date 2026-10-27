@@ -249,11 +249,10 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         if not name or any(ord(c) < 32 for c in name):
             return None
         pid = int(parts[1])
-        ws_raw = parts[2]
-        ws = _safe_int_conversion(ws_raw)
-        
         if _is_system_process(pid) or pid <= 0:
             return None
+            
+        ws = _safe_int_conversion(parts[2])
         if not (0 < ws < MAX_VALID_PROCESS_MEM_BYTES):
             return None
             
@@ -334,15 +333,14 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
 
 def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
     """Valida que la ruta de origen del ejecutable del proceso no sea una ruta protegida o crítica."""
-    if h_process is None: return False
+    if h_process is None or h_process == INVALID_HANDLE_VALUE: return False
     
-    # 32767 es el límite teórico para rutas largas en Windows (MAX_PATH es 260)
     buffer_len = 32767
     buffer_path = ctypes.create_unicode_buffer(buffer_len)
     try:
         ret = WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, buffer_path, buffer_len)
         if ret <= 0: return False
-        if ret >= buffer_len: return False # Ruta truncada por buffer insuficiente
+        if ret >= buffer_len: return False 
         
         exe_path_str = buffer_path.value.strip()
         if not exe_path_str: return False
@@ -371,7 +369,6 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         
         try:
             ws = _query_working_set_bytes(h_process, pmc)
-            # Primero validamos el consumo para evitar llamadas costosas de sistema de archivos
             if ws is not None:
                 if _is_process_executable_safe(h_process):
                     yield ProcessMemory(f"PID {pid}", pid, ws)

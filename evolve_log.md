@@ -628,3 +628,11 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-10-27T12:52:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-27T12:52:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T12:52:11` Corrida terminada. Total usado hoy: 304.
+- `2026-10-27T13:00:27` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-27T13:01:06` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_compute_cached` y el flujo de `_evaluate_rules` mediante la captura explícita de errores durante la ejecución de los componentes, evitando que un fallo en una única regla o función de normalización propague excepciones al sistema principal, asegurando siempre un estado de retorno seguro.
+- `2026-10-27T13:01:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T13:02:20` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-27T13:02:54` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez de `_is_process_executable_safe` añadiendo una validación explícita para asegurar que el handle recibido no sea nulo antes de invocar la API, y mejoré `_extract_process_info` para manejar de forma más segura el parseo de PIDs y valores de memoria, previniendo errores de conversión ante entradas malformadas.
+- `2026-10-27T13:03:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-27T13:03:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T13:03:09` Corrida terminada. Total usado hoy: 308.

@@ -353,7 +353,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Motor central que orquestra el cálculo de métricas a través del pipeline."""
-    # Desempaquetado eficiente de la tupla de datos
     (junk_mb, suspicious_count, suspicious_warnings, mem_avail, disk_free, 
      duplicate_mb, startup_count, _) = metrics_tuple
     
@@ -375,7 +374,8 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
             val_int = int(_clamp(round(points), 0.0, float(entry.weight)))
             metric_breakdown[entry.area] = val_int
             total_points += float(val_int)
-        except Exception:
+        except Exception as e:
+            logging.error(f"Error procesando pipeline '{entry.area}': {e}")
             metric_breakdown[entry.area] = 0
             continue
             
