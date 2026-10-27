@@ -449,21 +449,23 @@ class SystemContext:
             return ""
 
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
-        """Extrae y valida métricas numéricas y texto de calificación de una fuente."""
+        """Extrae y valida métricas numéricas y texto de calificación de una fuente de forma transaccional."""
         if not isinstance(source, (dict, object)) or callable(source): return None
         updates: dict[str, Any] = {}
         try:
             for key, spec in _VALIDATORS.items():
                 val = self._apply_field(source, key, spec)
-                if val is not None: updates[key] = val
+                if val is not None: 
+                    updates[key] = val
             
             g_val = source.get("grade") if isinstance(source, dict) else getattr(source, "grade", None)
             if g_val is not None and not callable(g_val):
                 grade_val = self._clean_grade(g_val)
-                if len(grade_val) > 0: updates["grade"] = grade_val
-        except Exception:
+                if grade_val: updates["grade"] = grade_val
+            
             return updates if updates else None
-        return updates if updates else None
+        except Exception:
+            return None
 
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
@@ -477,9 +479,8 @@ class SystemContext:
             for k, v in updates.items():
                 setattr(self, k, v)
             self.analyzed = True
-            self.__dict__.pop("metrics_snapshot", None)
-            self.__dict__.pop("_cached_active_problems", None)
-            self.__dict__.pop("_hash_tuple", None)
+            for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
+                self.__dict__.pop(attr, None)
         except Exception:
             self.analyzed = False
 
