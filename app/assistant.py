@@ -434,7 +434,7 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         try:
             val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-            if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)): 
+            if val is None or isinstance(val, bool): 
                 return None
             valid_val = _is_valid_numeric_update(val, spec)
             if valid_val is not None:
@@ -457,16 +457,21 @@ class SystemContext:
         if not isinstance(source, (dict, object)): return None
         updates: dict[str, Any] = {}
         try:
+            # Iterar sobre las claves validadas para evitar inyecciones de atributos
             for key, spec in _VALIDATORS.items():
                 val = self._apply_field(source, key, spec)
                 if val is not None: 
                     updates[key] = val
             
-            grade_val: str = self._clean_grade(source.get("grade") if isinstance(source, dict) else getattr(source, "grade", None))
-            if len(grade_val) > 0: 
-                updates["grade"] = grade_val
+            # Procesar el campo grado de manera aislada
+            g_val = source.get("grade") if isinstance(source, dict) else getattr(source, "grade", None)
+            if g_val is not None:
+                grade_val = self._clean_grade(g_val)
+                if len(grade_val) > 0: 
+                    updates["grade"] = grade_val
         except Exception:
-            return None
+            # Ante cualquier error inesperado, retornamos lo que se pudo validar o None
+            return updates if len(updates) > 0 else None
         return updates if len(updates) > 0 else None
 
     def _validate_ingestion_source(self, source: Any) -> bool:
@@ -481,7 +486,8 @@ class SystemContext:
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios validados al contexto y limpia cachés internas."""
         try:
-            self.__dict__.update(updates)
+            for k, v in updates.items():
+                setattr(self, k, v)
             self.analyzed = True
             # Limpieza segura de cachés
             self.__dict__.pop("metrics_snapshot", None)

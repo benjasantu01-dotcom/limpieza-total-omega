@@ -53,15 +53,6 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 class ScanContext:
     """
     Estado inmutable compartido durante el recorrido del árbol de directorios.
-    
-    Attributes:
-        sandbox_base_norm: Ruta normalizada raíz para evitar fugas de directorio.
-        kernel32: Instancia de la API de Windows para consultas de bajo nivel.
-        is_junction: Función delegada para detectar puntos de reparse (Junctions).
-        visited_files: Set de tuplas (dev, ino) para evitar conteo doble (hardlinks).
-        visited_dirs: Set de rutas normalizadas ya visitadas para evitar ciclos.
-        never_touch_lower: Conjunto de nombres de archivo/carpeta prohibidos.
-        max_depth: Profundidad máxima de recursión permitida.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -245,8 +236,11 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     
     try:
         with os.scandir(root_path) as iterator:
-            for entry in iterator:
+            while True:
                 try:
+                    entry = next(iterator, None)
+                    if entry is None: break
+                    
                     entry_norm = os.path.normcase(entry.path)
                     if _should_skip_entry(entry, scan_ctx, entry_norm): continue
                     
