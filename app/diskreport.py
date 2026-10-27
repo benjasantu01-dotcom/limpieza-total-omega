@@ -274,6 +274,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]
     
+    # Registrar el nodo raíz para evitar recursión circular inmediata
+    try:
+        root_stat = root_path.stat()
+        visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
+    except OSError:
+        pass
+    
     while stack:
         current_dir = stack.pop()
         try:

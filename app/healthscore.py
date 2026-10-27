@@ -348,10 +348,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Motor central que orquestra el cálculo de métricas a través del pipeline."""
+    if len(metrics_tuple) != len(SystemMetrics._FIELDS_TO_VALIDATE):
+        return HealthResult(0, "F", {}, ["Error: Inconsistencia en métricas."])
+    
     m_args = dict(zip(SystemMetrics._FIELDS_TO_VALIDATE, metrics_tuple))
     try:
         metrics = SystemMetrics(**m_args)
-        if not metrics.is_finite: raise ValueError("Data corruption in cache lookup")
+        if not metrics.is_finite: raise ValueError("Data corruption")
     except Exception:
         return HealthResult(0, "F", {}, ["Error: Fallo crítico en validación de métricas."])
     

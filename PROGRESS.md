@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 42 | 6 | 7 | 6 | 61 |
+| 2026-10-25 | 39 | 6 | 6 | 6 | 61 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 17 | 1 | 6 | 1 | 7 |
+| 2026-10-27 | 20 | 1 | 7 | 1 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **41**
 - rendimiento: **35**
-- seguridad defensiva: **30**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **20**
-- `quarantine.py`: **19**
 - `memory.py`: **19**
+- `scanner.py`: **19**
 - `browser.py`: **18**
+- `healthscore.py`: **18**
+- `quarantine.py`: **18**
 - `assistant.py`: **17**
-- `healthscore.py`: **17**
 - `settings.py`: **15**
-- `diskreport.py`: **13**
+- `diskreport.py`: **14**
 - `organizer.py`: **13**
-- `safety.py`: **12**
 - `branding.py`: **11**
-- `duplicates.py`: **7**
+- `safety.py`: **11**
+- `duplicates.py`: **8**
 - `main.py`: **4**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T01:29:26` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor frente a datos de entrada potencialmente corruptos, añadiendo una validación explícita en `_compute_cached` para asegurar que el `zip` entre campos y métricas no genere inconsistencias si la estructura de `SystemMetrics` llegara a cambiar o recibir datos inesperados.
+- `2026-10-27T01:28:53` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `is_junction` y `is_system_or_hidden` añadiendo una verificación previa de existencia (`path.exists()`), evitando llamadas innecesarias a la Win32 API sobre rutas rotas o bloqueadas que podrían causar comportamientos indefinidos en el sistema operativo.
+- `2026-10-27T01:27:57` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos en `walk_files` cuando se encuentran junctions o enlaces simbólicos a directorios, asegurando que el recorrido sea robusto ante estructuras de carpetas recursivas o auto-referenciales que podrían causar desbordamiento de pila o bucles infinitos en sistemas Windows.
 - `2026-10-27T01:19:59` **browser.py** (robustez ante casos límite): Mejoré la robustez de `browser.py` ante bloqueos de archivos en uso (típico de navegadores abiertos) añadiendo un control de errores más granular y evitando que `os.scandir` aborte prematuramente si una carpeta de perfil está bloqueada por el sistema.
 - `2026-10-27T01:19:35` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante entradas inválidas o casos límite (como `size` extremadamente pequeño o tipos de datos inesperados) y añadí una validación de `Path` más estricta para prevenir posibles errores en el sistema de archivos, asegurando que la app no falle silenciosamente ni en condiciones de borde.
 - `2026-10-27T01:18:51` **assistant.py** (robustez ante casos límite): Mejoré la robustez de la ingestión de datos en `SystemContext.ingest` y `_validate_and_sanitize_data` para manejar valores inesperados, tipos nulos o estructuras corruptas provenientes de fuentes externas sin abortar el proceso, asegurando que el asistente siempre tenga un estado consistente incluso ante entradas de datos parciales o malformadas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T00:36:42` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `_SettingsManager`, clarificando las garantías de atomicidad y seguridad en la persistencia de datos.
 - `2026-10-27T00:29:53` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `scanner.py` mediante la normalización de docstrings, la inclusión de explicaciones sobre el propósito de las constantes críticas de seguridad y la unificación de tipado, facilitando la comprensión del flujo de análisis heurístico.
 - `2026-10-27T00:28:47` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la implementación de Type Hints explícitos para las estructuras de datos de validación y la clarificación de las responsabilidades en los decoradores y funciones de chequeo, facilitando la auditoría de seguridad sin alterar la lógica de ejecución.
-- `2026-10-27T00:26:54` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante tipos y docstrings las funciones de bajo nivel que interactúan con el kernel (`ctypes`) y el sistema de archivos, asegurando que el propósito de cada "check" de seguridad sea explícito para el futuro mantenedor.
-- `2026-10-27T00:18:02` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo PEP 257) y la clarificación de las responsabilidades de las estructuras de datos (CTypes), facilitando su mantenimiento y lectura por parte de otros colaboradores.
-- `2026-10-27T00:16:16` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de normalización y en el `PipelineEntry` para clarificar la arquitectura funcional del módulo, facilitando el mantenimiento a futuro sin alterar la lógica de cálculo.

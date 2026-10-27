@@ -55,7 +55,7 @@ _full_hash_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
     """Verifica si el path es un punto de reanálisis (Junction o Symlink) usando Win32 API."""
-    if not isinstance(path, Path): return True
+    if not isinstance(path, Path) or not path.exists(): return False
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
@@ -64,7 +64,7 @@ def is_junction(path: Path) -> bool:
 
 def is_system_or_hidden(path: Path) -> bool:
     """Verifica si el archivo posee atributos de sistema u oculto (Win32)."""
-    if not isinstance(path, Path): return True
+    if not isinstance(path, Path) or not path.exists(): return False
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)))

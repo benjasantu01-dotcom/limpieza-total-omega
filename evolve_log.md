@@ -683,3 +683,13 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-27T01:19:59` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `browser.py` ante bloqueos de archivos en uso (típico de navegadores abiertos) añadiendo un control de errores más granular y evitando que `os.scandir` aborte prematuramente si una carpeta de perfil está bloqueada por el sistema.
 - `2026-10-27T01:19:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T01:19:59` Corrida terminada. Total usado hoy: 32.
+- `2026-10-27T01:27:06` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-10-27T01:27:57` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar ciclos en `walk_files` cuando se encuentran junctions o enlaces simbólicos a directorios, asegurando que el recorrido sea robusto ante estructuras de carpetas recursivas o auto-referenciales que podrían causar desbordamiento de pila o bucles infinitos en sistemas Windows.
+- `2026-10-27T01:28:53` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `is_junction` y `is_system_or_hidden` añadiendo una verificación previa de existencia (`path.exists()`), evitando llamadas innecesarias a la Win32 API sobre rutas rotas o bloqueadas que podrían causar comportamientos indefinidos en el sistema operativo.
+- `2026-10-27T01:28:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T01:29:26` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor frente a datos de entrada potencialmente corruptos, añadiendo una validación explícita en `_compute_cached` para asegurar que el `zip` entre campos y métricas no genere inconsistencias si la estructura de `SystemMetrics` llegara a cambiar o recibir datos inesperados.
+- `2026-10-27T01:29:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T01:29:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T01:30:37` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-27T01:30:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T01:30:37` Corrida terminada. Total usado hoy: 36.
