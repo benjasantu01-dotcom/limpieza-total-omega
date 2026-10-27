@@ -820,30 +820,22 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if _win_has_system_attributes(source):
         raise UnsafePathError("Aislamiento bloqueado: archivo de sistema.")
     
-    try:
-        stat_orig: os.stat_result = source.stat()
-    except OSError as e:
-        raise RuntimeError(f"No se pudo obtener estado de archivo: {e}")
-    
-    if stat_orig.st_size != original_size or stat_orig.st_nlink > 1:
-        raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
-    
-    IsolationManager.validate_atomicity(source, stat_orig, destination)
-    
-    if len(str(destination)) >= 250:
-        raise OSError("Ruta destino demasiado larga.")
+    # Abrir para mantener un file descriptor y evitar TOCTOU durante la lectura
+    with open(source, "rb") as f:
+        fd = f.fileno()
+        stat_orig = os.fstat(fd)
         
-    existing_items: List[QuarantineItem] = load_manifest(destination.parent.parent)
-    if any(i.file_inode == stat_orig.st_ino for i in existing_items):
-        raise RuntimeError("Colisión de inodo: archivo ya registrado.")
-
-    _validate_integrity_before_move(source, original_size, stat_orig.st_ino)
-
-    # Re-chequeo final post-validación antes de la escritura
-    try:
-        final_check: os.stat_result = source.stat()
-        if final_check.st_ino != stat_orig.st_ino or final_check.st_size != original_size or final_check.st_nlink > 1:
-            raise RuntimeError("Integridad comprometida (TOCTOU).")
+        if stat_orig.st_size != original_size or stat_orig.st_nlink > 1:
+            raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
+        
+        IsolationManager.validate_atomicity(source, stat_orig, destination)
+        
+        if len(str(destination)) >= 250:
+            raise OSError("Ruta destino demasiado larga.")
+            
+        existing_items: List[QuarantineItem] = load_manifest(destination.parent.parent)
+        if any(i.file_inode == stat_orig.st_ino for i in existing_items):
+            raise RuntimeError("Colisión de inodo: archivo ya registrado.")
 
         if destination.exists():
             raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
@@ -854,15 +846,12 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             
         h, i = _write_temp_to_final(source, destination)
         
-        # Validar destino final tras escritura
+        # Validar destino final tras escritura y asegurar que no sea un reparse point
         dest_stat = destination.stat()
         if dest_stat.st_ino != i or _get_sha256(destination) != h:
             raise RuntimeError("Integridad comprometida: destino inconsistente.")
+        _check_for_reparse_points(destination)
         return h, i
-    except Exception as e:
-        if destination.exists() and not os.path.samefile(source, destination):
-            _safe_unlink(destination)
-        raise RuntimeError(f"Error durante aislamiento: {e}")
 
 
 def _register_quarantine_item(

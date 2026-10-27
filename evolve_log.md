@@ -729,3 +729,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-27T02:10:29` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-10-27T02:10:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T02:10:29` Corrida terminada. Total usado hoy: 52.
+- `2026-10-27T02:18:12` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-27T02:18:42` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se mejoró la integridad del proceso `_is_safe_for_disk_op` al integrar una validación de `is_relative_to` para evitar "directory traversal" accidental si las rutas cambian durante la ejecución, y se añadió la verificación de que el origen no sea un punto de reparse (`junction`) en el momento de la operación de movimiento para cerrar una brecha de seguridad.
+- `2026-10-27T02:19:25` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_atomic_isolate_file` para evitar condiciones de carrera (TOCTOU) eliminando el uso de `stat()` del objeto `source` después de las validaciones, utilizando el handle ya verificado y garantizando que el archivo final no sea un enlace simbólico ni un reparse point mediante un nuevo chequeo post-escritura.
+- `2026-10-27T02:19:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-27T02:20:21` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-27T02:20:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T02:20:21` Corrida terminada. Total usado hoy: 56.
