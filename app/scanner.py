@@ -123,7 +123,8 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     try:
         if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
             return None
-        if not entry.is_file(follow_symlinks=False) or _cached_is_protected(entry.path):
+        # Aprovechamos el cache de DirEntry aquí
+        if not entry.is_file() or _cached_is_protected(entry.path):
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
@@ -270,13 +271,14 @@ class Scanner:
         if not self._is_safe_entry(entry):
             return
         try:
-            if entry.is_file(follow_symlinks=False):
+            # Usamos métodos directos de DirEntry para evitar llamadas extras al sistema
+            if entry.is_file():
                 if self._is_relevant_extension(entry.name):
                     path_norm = os.path.normcase(entry.path)
                     if path_norm not in self.seen_normcase:
                         self.seen_normcase.add(path_norm)
                         self._run_file_heuristics(Path(entry.path), entry)
-            elif entry.is_dir(follow_symlinks=False):
+            elif entry.is_dir():
                 self._handle_directory(entry, directory_stack, current_depth)
         except (OSError, PermissionError, FileNotFoundError, AttributeError, RuntimeError):
             logger.debug(f"Error accediendo a entrada: {entry.path}")

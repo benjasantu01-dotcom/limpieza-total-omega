@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **188** (37.3% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 227
 
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 46 | 7 | 7 | 6 | 64 |
+| 2026-10-25 | 44 | 6 | 7 | 6 | 63 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 12 | 1 | 5 | 1 | 5 |
+| 2026-10-27 | 14 | 1 | 6 | 1 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **42**
+- rendimiento: **35**
 - robustez ante casos límite: **35**
-- seguridad defensiva: **34**
-- rendimiento: **33**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `scanner.py`: **20**
 - `quarantine.py`: **19**
-- `scanner.py`: **19**
 - `memory.py`: **19**
 - `healthscore.py`: **18**
 - `browser.py`: **17**
 - `assistant.py`: **16**
-- `diskreport.py`: **14**
-- `settings.py`: **14**
+- `settings.py`: **15**
+- `diskreport.py`: **13**
 - `organizer.py`: **13**
 - `safety.py`: **12**
 - `branding.py`: **10**
-- `duplicates.py`: **8**
+- `duplicates.py`: **7**
 - `main.py`: **5**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T01:09:11` **settings.py** (rendimiento): Se implementó un mecanismo de caché indexada por ruta en `load` para evitar el acceso repetitivo a disco y las llamadas redundantes a `lstat` cuando múltiples módulos consultan la configuración en un mismo ciclo de vida de la aplicación.
+- `2026-10-27T01:08:57` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo reemplazando la verificación repetida `entry.is_file()` y `entry.is_dir()` (que implica llamadas al sistema) por el uso del atributo `entry.is_file` y `entry.is_dir` de `os.DirEntry`, reduciendo drásticamente las syscalls innecesarias durante la recursión.
 - `2026-10-27T00:59:34` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché para `_get_win_attributes` dentro de `quarantine.py` para reducir drásticamente las llamadas al sistema operativo (syscalls costosas `GetFileAttributesW`) durante las validaciones recursivas o repetidas, mejorando el rendimiento de escaneo sin sacrificar la seguridad.
 - `2026-10-27T00:47:38` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del bucle principal, y mejoré la estructura de `_collect_summary_data` para que el acceso a `GlobalStats` sea más directo al procesar cada archivo.
 - `2026-10-27T00:38:10` **branding.py** (rendimiento): Optimizé la generación de gradientes en `branding.py` reemplazando la creación dinámica de listas y el formateo de strings en cada ciclo por una estrategia de pre-cálculo y caché más agresiva, mejorando el rendimiento en el renderizado de la UI.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T00:07:03` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `_collect_summary_data` aclarando la lógica de manejo de errores, el propósito de los punteros (`Inode`) para evitar ciclos y el flujo de los acumuladores, facilitando el mantenimiento técnico.
 - `2026-10-27T00:06:35` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` agregando type hints explícitos, docstrings detallados en funciones clave y estructurando mejor el namespace `FileAttributes` para cumplir con el estándar de documentación técnica del proyecto.
 - `2026-10-26T14:53:42` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de evaluación de criterios de salud mediante la implementación de un método `__str__` en `ProblemCriterion` y la simplificación de su uso en `_evaluate_active_problems`, eliminando lógica redundante de formato dentro del ciclo.
-- `2026-10-26T14:43:42` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de las funciones `check_system_lookalike` y `check_recent_executable_in_downloads` mediante validación explícita de `path` y `entry` para prevenir excepciones por accesos a atributos en objetos `None` o malformados, alineándose con el enfoque de manejo de errores y validación de entradas.
-- `2026-10-26T14:36:44` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `_is_item_purgable` mediante la validación explícita de `None` y el uso de `try-except` más granulares al iterar sobre el sistema de archivos, previniendo fallos en caso de que archivos sean eliminados externamente o el estado de permisos cambie durante la ejecución.

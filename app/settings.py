@@ -154,33 +154,18 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """
     Singleton encargado de la persistencia y caché en memoria de la configuración.
-    
-    Implementa un mecanismo de escritura atómica (file-move) para prevenir la 
-    corrupción del archivo ante cierres inesperados. Utiliza caché basada en 
-    mtime y tamaño del archivo para evitar lecturas redundantes en disco.
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
-        self._cached_settings: Optional[AppSettings] = None
-        self._last_mtime: float = 0.0
-        self._last_size: int = 0
+        self.data_cache: dict[str, tuple[AppSettings, float, int]] = {}
 
-    def clear(self) -> None:
-        """Invalida la caché actual, forzando la recarga desde el sistema de archivos."""
-        self._cached_settings = None
-        self._last_mtime = 0.0
-        self._last_size = 0
+    def clear(self, path: Optional[Path] = None) -> None:
+        if path:
+            self.data_cache.pop(str(path), None)
+        else:
+            self.data_cache.clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """
-        Escribe datos de forma segura mediante un archivo de intercambio (.tmp) y fsync.
-        
-        Aplica estrictas verificaciones de integridad:
-        1. Valida que el path sea seguro según `safety.py`.
-        2. Garantiza que el archivo sea regular (sin enlaces/reparse points).
-        3. Realiza un flush físico a disco mediante `fsync`.
-        4. Sustituye el original mediante `os.replace` (operación atómica).
-        """
         if not isinstance(serialized, str) or len(str(config_path)) > 260: return False
         
         temp_path = config_path.with_suffix(".tmp")
@@ -204,7 +189,7 @@ class _SettingsManager:
             
             os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
             os.replace(temp_path, resolved_path)
-            self.clear()
+            self.clear(resolved_path)
             return True
         except (OSError, IOError, PermissionError, ValueError, RuntimeError):
             if temp_path.exists():
@@ -229,7 +214,6 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=32)
     def _is_reparse_point(path_str: str) -> bool:
-        """Detecta puntos de reparse (Junctions/Links) para prevenir recursión infinita."""
         try:
             st = os.lstat(path_str)
             if stat.S_ISLNK(st.st_mode): return True
@@ -240,7 +224,6 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """Verifica que una ruta sea absoluta y no resida en áreas protegidas."""
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
@@ -256,12 +239,10 @@ class _Validators:
 
     @staticmethod
     def _check_path_safety(p: Path) -> bool:
-        """Wrapper para validación de seguridad de rutas Path."""
         return p.is_absolute() and _Validators._run_safety_checks(str(p))
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """Valida integridad de cadena y seguridad de la ruta resultante."""
         if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         if is_protected_path(path_str): return False
@@ -272,7 +253,6 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Normaliza tipos heterogéneos a booleano canónico."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -283,7 +263,6 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Convierte y acota enteros según límites configurados."""
         if val is None or not isinstance(val, (int, str)): return None
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
@@ -292,7 +271,6 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida que un string represente una ruta segura para la aplicación."""
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
@@ -301,7 +279,6 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Valida pertenencia de string a conjuntos permitidos."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -310,7 +287,6 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Limpia y valida strings eliminando caracteres de control y secuencias peligrosas."""
         if val is None or not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -326,7 +302,6 @@ INT_KEYS: Final[frozenset[ConfigKey]] = frozenset((
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS
 ))
 
-# Mapeo estratégico para la resolución de validadores por tipo
 _VALIDATOR_STRATEGY: Final[MappingProxyType[str, Callable[[ConfigKey, Any], Any]]] = MappingProxyType({
     "bool": _Validators.bool,
     "int": _Validators.int,
@@ -335,7 +310,6 @@ _VALIDATOR_STRATEGY: Final[MappingProxyType[str, Callable[[ConfigKey, Any], Any]
 })
 
 def _get_validator_for_k(k: ConfigKey) -> _ValidatorEntry:
-    """Selecciona el validador funcional según el tipo de clave."""
     if k in BOOL_KEYS: return _ValidatorEntry(_VALIDATOR_STRATEGY["bool"])
     if k in INT_KEYS: return _ValidatorEntry(_VALIDATOR_STRATEGY["int"])
     if k == ConfigKey.ULTIMA_CARPETA: return _ValidatorEntry(_VALIDATOR_STRATEGY["path"])
@@ -346,7 +320,6 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 })
 
 def validate(raw_values: Any) -> AppSettings:
-    """Aplica validadores a un diccionario, descartando valores inválidos o corruptos."""
     if not _is_dict(raw_values): return dict(DEFAULTS)
     
     config = dict(DEFAULTS)
@@ -363,10 +336,8 @@ def validate(raw_values: Any) -> AppSettings:
     return config # type: ignore
 
 def _is_file_secure_to_read(file_path: Path) -> bool:
-    """Verifica permisos de archivo y metadatos antes de lectura de configuración."""
     try:
         st = file_path.lstat()
-        # Verificar integridad del archivo (regular, sin hardlinks, propietario correcto)
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
@@ -375,7 +346,6 @@ def _is_file_secure_to_read(file_path: Path) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    """Carga y analiza JSON, validando tamaño, esquema y tipos de contenido."""
     try:
         if not _Validators._is_safe_path(str(file_path)) or not _is_file_secure_to_read(file_path): 
             return None
@@ -389,34 +359,31 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Asegura consistencia lógica entre campos, ej. dependencias de API Key."""
     if settings.get("asistente_activado") and not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         settings["asistente_activado"] = False
     return settings
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Recupera configuración validada, usando caché si el archivo no cambió."""
     primary_path = settings_path(custom_base)
+    path_str = str(primary_path)
     
     try:
         if primary_path.exists() and primary_path.is_file():
             st = primary_path.stat()
-            if st.st_mtime == _MANAGER._last_mtime and st.st_size == _MANAGER._last_size and _MANAGER._cached_settings:
-                return _MANAGER._cached_settings.copy()
+            cached = _MANAGER.data_cache.get(path_str)
+            if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
+                return cached[0].copy()
             
             data = _read_and_parse_json(primary_path)
             if data is not None:
                 settings = _coerce_and_verify(validate(data))
-                _MANAGER._cached_settings = settings
-                _MANAGER._last_mtime = st.st_mtime
-                _MANAGER._last_size = st.st_size
+                _MANAGER.data_cache[path_str] = (settings, st.st_mtime, st.st_size)
                 return settings.copy()
     except (OSError, PermissionError): 
         pass
     return dict(DEFAULTS) # type: ignore
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Resuelve la ruta absoluta del archivo de configuración, inicializando carpetas si es necesario."""
     cache_key = str(custom_base) if custom_base else "DEFAULT"
     if cache_key in _MANAGER.path_cache:
         return _MANAGER.path_cache[cache_key]
@@ -433,7 +400,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste configuración de manera atómica, validando valores antes de escritura."""
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
     try:
@@ -442,18 +408,16 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE: return None
         if _MANAGER.perform_atomic_write(config_path, serialized):
-            _MANAGER._cached_settings = cleaned_settings
-            _MANAGER._last_size = len(serialized_bytes)
             try:
-                _MANAGER._last_mtime = config_path.stat().st_mtime
+                st = config_path.stat()
+                _MANAGER.data_cache[str(config_path)] = (cleaned_settings, st.st_mtime, st.st_size)
             except OSError:
-                _MANAGER._last_mtime = 0.0
+                pass
             return config_path
         return None
     except (OSError, PermissionError, AttributeError, TypeError, ValueError): return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Aplica parches parciales a la configuración y sincroniza con disco."""
     if not changes or not _is_dict(changes): return load(custom_base)
     current = load(custom_base)
     modified = False
@@ -467,30 +431,24 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura la configuración a valores de fábrica, limpiando caché interna."""
     config_path = settings_path(custom_base)
     if is_safe_to_modify(str(config_path)):
         save(DEFAULTS, custom_base)
-        _MANAGER.clear()
     return dict(DEFAULTS) # type: ignore
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Recupera un valor de configuración individual."""
     return load(custom_base).get(key)
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Obtiene la API Key (prioridad: variable de entorno -> archivo de config)."""
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
     return str(load(custom_base).get("asistente_clave_api", "")).strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica disponibilidad del asistente IA basado en configuración y entorno."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(str(settings.get("asistente_clave_api", "")).strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera reporte legible de la configuración actual para depuración."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = str(current.get("asistente_clave_api", "")).strip()
