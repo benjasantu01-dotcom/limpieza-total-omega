@@ -194,9 +194,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, scan_ctx: ScanContext, norm_path: str) -> bool:
-    """
-    Evalúa mediante heurísticas de seguridad si una entrada de disco debe ser ignorada.
-    """
+    """Evalúa mediante heurísticas de seguridad si una entrada de disco debe ser ignorada."""
     if entry.name.lower() in scan_ctx.never_touch_lower: return True
     if not _is_within_sandbox(norm_path, scan_ctx.sandbox_base_norm): return True
     if is_protected_path(Path(entry.path)): return True
@@ -212,7 +210,7 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     try:
         st = entry.stat(follow_symlinks=False)
         if st.st_size > 0:
-            file_id = (st.st_dev, st.st_ino)
+            file_id: tuple[int, int] = (st.st_dev, st.st_ino)
             if file_id not in scan_ctx.visited_files:
                 scan_ctx.visited_files.add(file_id)
                 return st.st_size
@@ -220,9 +218,7 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     return 0
 
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """
-    Calcula el tamaño acumulado de una jerarquía de directorios.
-    """
+    """Calcula el tamaño acumulado de una jerarquía de directorios de forma recursiva."""
     if not isinstance(root_path, str) or not root_path.strip() or depth > scan_ctx.max_depth:
         return ScanResult(0, True)
     
@@ -239,7 +235,7 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
         return ScanResult(0, True)
 
     scan_ctx.visited_dirs.add(root_norm)
-    total_bytes = 0
+    total_bytes: int = 0
     
     try:
         with os.scandir(root_path) as iterator:

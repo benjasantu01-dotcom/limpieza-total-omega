@@ -460,9 +460,8 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
             capture_output=True, text=True, timeout=10, check=False
         )
-        stdout = process.stdout
-        if stdout and stdout.strip():
-            return parse_registry_csv(stdout)
+        if process.returncode == 0 and process.stdout and process.stdout.strip():
+            return parse_registry_csv(process.stdout)
     except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
         return []
     return []

@@ -125,7 +125,7 @@ class ColorSegment(NamedTuple):
     end_index: int
 
 class PaletteDict(TypedDict):
-    """Estructura cromática corporativa."""
+    """Diccionario que agrupa los valores hexadecimales de todos los colores del sistema."""
     background: ColorHex
     surface: ColorHex
     surface_alt: ColorHex
@@ -149,7 +149,7 @@ class PaletteDict(TypedDict):
     glow: ColorHex
 
 class FontSizesDict(TypedDict):
-    """Escalafón tipográfico."""
+    """Mapa de categorías de texto a tamaños definidos en puntos para consistencia tipográfica."""
     display: int
     title: int
     subtitle: int
