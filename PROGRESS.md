@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 89 | 7 | 27 | 10 | 115 |
-| 2026-10-27 | 100 | 7 | 43 | 6 | 100 |
+| 2026-10-26 | 89 | 7 | 27 | 10 | 111 |
+| 2026-10-27 | 102 | 7 | 43 | 6 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,16 +25,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **31**
-- seguridad defensiva: **29**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
 - `assistant.py`: **17**
-- `browser.py`: **16**
+- `browser.py`: **17**
 - `settings.py`: **16**
 - `scanner.py`: **15**
 - `organizer.py`: **14**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T10:58:54` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` evitando el seguimiento de puntos de reparse (junctions/reparse points), comunes en Windows, mediante el uso de `entry.is_symlink()` (que identifica tanto enlaces simbólicos como puntos de reparse), previniendo bucles infinitos fuera del sistema de archivos esperado y accesos accidentales a rutas fuera del alcance del escaneo.
+- `2026-10-27T10:58:26` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una normalización estricta de rutas antes de cualquier comparación, previniendo posibles elusiones de la zona de seguridad (sandbox) causadas por el uso de caracteres de escape o rutas no resueltas.
 - `2026-10-27T10:49:54` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar el contexto, añadiendo un filtro explícito en `context_as_text` para asegurar que las métricas serializadas nunca contengan rutas o caracteres prohibidos, previniendo posibles fugas de información sensible incluso si los datos fueran inyectados en el `SystemContext` por error.
 - `2026-10-27T10:49:05` **startup.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_resolve_and_cache_path` añadiendo un filtro explícito para rutas que contienen caracteres de control u otros caracteres potencialmente ilegales que puedan causar excepciones inesperadas en `pathlib.Path.resolve()`, mejorando la resiliencia ante entradas corruptas en el registro o sistema de archivos.
 - `2026-10-27T10:48:33` **settings.py** (robustez ante casos límite): Mejoré la robustez ante la posible corrupción de datos del archivo `config.json` limitando el tamaño del contenido a procesar antes del parseo y asegurando que `_read_and_parse_json` retorne valores predeterminados seguros en caso de archivos truncados o con formato inválido, evitando condiciones de carrera al verificar la existencia y tamaño del archivo en una sola pasada.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T10:07:21` **scanner.py** (rendimiento): Optimicé el rendimiento de `process_entry` y la búsqueda de extensiones reemplazando `os.path.splitext` (que realiza múltiples operaciones de cadena y asignaciones) por una lógica de chequeo de sufijos más directa aprovechando que `SUSPICIOUS_ALL_EXTS` es un `frozenset`.
 - `2026-10-27T09:57:51` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché en `total_quarantined_bytes` y una optimización en `purge_all` para evitar llamadas redundantes a `load_manifest`, reduciendo la carga de I/O en operaciones frecuentes de reporte y limpieza masiva.
 - `2026-10-27T09:48:09` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` sustituyendo el uso repetido de `ctypes.create_unicode_buffer` (una llamada costosa dentro de un bucle intensivo) por un enfoque de filtrado previo de PIDs, reduciendo las llamadas innecesarias a la API de Windows para procesos que ya sabemos que son del sistema o de bajo consumo.
-- `2026-10-27T09:47:21` **healthscore.py** (rendimiento): Se optimizó el acceso a datos en el pipeline de cálculo reemplazando la introspección repetitiva mediante `getattr` en el bucle principal por una extracción inicial de los valores al llamar a `_compute_cached`, reduciendo la carga de llamadas a funciones en el cálculo frecuente de puntajes.
-- `2026-10-27T09:38:00` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de recorrer el disco múltiples veces y realizar múltiples llamadas a `walk_files`, consolidando la lógica de cálculo en un único pase sobre el árbol de archivos.

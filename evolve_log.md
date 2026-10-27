@@ -1581,3 +1581,13 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-10-27T10:50:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-10-27T10:50:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T10:50:14` Corrida terminada. Total usado hoy: 256.
+- `2026-10-27T10:57:45` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-27T10:58:26` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una normalización estricta de rutas antes de cualquier comparación, previniendo posibles elusiones de la zona de seguridad (sandbox) causadas por el uso de caracteres de escape o rutas no resueltas.
+- `2026-10-27T10:58:54` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` evitando el seguimiento de puntos de reparse (junctions/reparse points), comunes en Windows, mediante el uso de `entry.is_symlink()` (que identifica tanto enlaces simbólicos como puntos de reparse), previniendo bucles infinitos fuera del sistema de archivos esperado y accesos accidentales a rutas fuera del alcance del escaneo.
+- `2026-10-27T10:59:28` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-27T10:59:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T10:59:58` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T11:00:05` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-27T11:00:18` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-27T11:00:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T11:00:18` Corrida terminada. Total usado hoy: 260.
