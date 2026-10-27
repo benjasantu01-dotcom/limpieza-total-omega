@@ -29,6 +29,7 @@ INVALID_FILE_ATTRIBUTES: Final[int] = 0xFFFFFFFF
 LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 
 PathLike: TypeAlias = Union[str, os.PathLike]
+# Predicado de violación: retorna True si se detecta una condición insegura
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
 # Caché global de integridad para evitar E/S redundante
@@ -560,7 +561,7 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     except (AttributeError, OSError, ctypes.ArgumentError):
         pass
 
-# Predicados cacheados para alto rendimiento
+# Predicados cacheados para alto rendimiento (usados por el motor de integridad)
 @lru_cache(maxsize=2048)
 def _check_symlink(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return p.is_symlink()
 @lru_cache(maxsize=2048)

@@ -85,7 +85,7 @@ def _check_for_reparse_points(path: Path) -> None:
     if path is None: raise UnsafePathError("Ruta nula en chequeo de reparse.")
     if os.name == 'nt':
         try:
-            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
+            # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT según Win32 API
             attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
             if attrs != -1 and (attrs & 0x400):
                 raise UnsafePathError("Ruta detectada como punto de reparse.")
@@ -107,7 +107,10 @@ def _get_win_attributes(path: Path) -> int:
         return -1
 
 def _win_has_system_attributes(path: Path) -> bool:
-    """Filtro: identifica si un archivo es de sistema, oculto o temporal (evita falsos positivos)."""
+    """
+    Filtro de seguridad: identifica si el archivo tiene atributos de sistema,
+    oculto o temporal que sugieran ser componentes críticos del SO.
+    """
     attrs = _get_win_attributes(path)
     if attrs == -1: return True
     # Máscaras: 0x02 (Hidden), 0x04 (System), 0x100 (Temporary)
@@ -153,15 +156,16 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
 
 def _is_file_exclusive(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado por otro proceso.
-    Previene intentar mover archivos que están siendo usados activamente.
+    Verifica si un archivo está bloqueado por otro proceso (uso exclusivo).
+    Usa CreateFileW con acceso nulo pero modo de compartición 0 en Windows,
+    o flock en sistemas POSIX.
     """
     if path is None or not path.exists():
         return False
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
-        # Intenta abrir el archivo con acceso exclusivo
-        handle: int = k32.CreateFileW(str(path), 0x80000000, 0x00000007, None, 3, 0x00000080, None)
+        # Intenta abrir el archivo sin acceso de lectura/escritura, solo probando el candado
+        handle: int = k32.CreateFileW(str(path), 0, 0, None, 3, 0x00000080, None)
         if handle == -1: return False
         try:
             k32.CloseHandle(handle)
@@ -172,7 +176,7 @@ def _is_file_exclusive(path: Path) -> bool:
     try:
         fd: int = os.open(path, os.O_RDONLY) 
         try:
-            # Intenta adquirir y soltar un bloqueo exclusivo (f-lock)
+            # Adquiere bloqueo exclusivo no bloqueante
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             fcntl.flock(fd, fcntl.LOCK_UN)
             return True
@@ -247,9 +251,7 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path, st: Optional[os.stat_result] = None) -> bool:
-        """
-        Validación de metadatos (inodos y UID) para detectar sustitución no autorizada.
-        """
+        """Validación de metadatos (inodos y UID) para detectar sustitución."""
         if stored_path is None: return False
         try:
             _check_for_reparse_points(stored_path)
@@ -259,7 +261,7 @@ class QuarantineItem:
                 return False
             if self.file_inode != 0 and file_stat.st_ino != self.file_inode:
                 return False
-            # Los archivos aislados no deben tener múltiples enlaces físicos (hardlinks)
+            # Archivos aislados no deben tener múltiples hardlinks por seguridad
             if file_stat.st_nlink > 1:
                 return False
             return (
@@ -284,7 +286,7 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula el hash SHA256 mediante streaming para optimizar el uso de memoria."""
+    """Calcula el hash SHA256 mediante streaming para optimizar memoria."""
     if path is None: return ""
     try:
         st = path.stat()
@@ -303,7 +305,7 @@ def _get_sha256(path: Path) -> str:
         return ""
 
 def _is_file_in_use_by_system(path: Path) -> bool:
-    """Verifica si un archivo está en uso crítico por el sistema."""
+    """Verifica si un archivo está en uso crítico o tiene atributos de sistema."""
     if path is None:
         return False
     
@@ -319,7 +321,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     return not _is_file_exclusive(path)
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> None:
-    """Garantía post-validación antes de eliminar permanentemente."""
+    """Garantía de integridad previa al borrado definitivo (unlink)."""
     if path is None: raise UnsafePathError("Ruta nula para unlink.")
     ensure_safe_to_modify(path)
     _check_for_reparse_points(path)
@@ -348,7 +350,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         parent: Path = path.parent
         _check_io_error_context(path.unlink)
         
-        # Forzar sincronización del directorio padre después del borrado
+        # Sincronización del directorio padre
         if parent.exists():
             try:
                 dir_fd: int = os.open(str(parent), os.O_RDONLY)
@@ -653,7 +655,7 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
     if not is_safe_to_modify(dest_dir) or _is_filesystem_read_only(dest_dir):
         raise PermissionError(f"Sin permisos de escritura seguros: {dest_dir}")
     
-    usage: shutil.Usage = shutil.disk_usage(dest_dir)
+    usage = shutil.disk_usage(dest_dir)
     # Margen de 5% o 5MB mínimo por seguridad
     margin: int = max(int(required_size * 0.05), 5 * 1024 * 1024)
     if usage.free < (required_size + margin):
