@@ -540,8 +540,14 @@ def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt del asistente."""
     if context.is_empty: return ""
     snap: MetricsDict = context.metrics_snapshot
-    lines = (f"{k}: {snap[k]:.{p}f}{u}" for k, u, p in _CONTEXT_SCHEMA if k in snap and snap[k] >= 0.0)
-    return "\n".join(filter(_ensure_safe_text, lines))
+    lines = []
+    for k, u, p in _CONTEXT_SCHEMA:
+        if k in snap and snap[k] >= 0.0:
+            val_str = f"{k}: {snap[k]:.{p}f}{u}"
+            # Filtro adicional de seguridad defensiva para asegurar que la línea serializada sea segura
+            if _ensure_safe_text(val_str):
+                lines.append(val_str)
+    return "\n".join(lines)
 
 def explain_area(area: Any) -> str:
     """Retorna una explicación amigable para el usuario sobre un área del sistema."""

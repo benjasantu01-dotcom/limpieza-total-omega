@@ -189,6 +189,10 @@ class StartupEntry:
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
+        # Filtro adicional contra caracteres de control que rompen pathlib.Path
+        if any(ord(c) < 32 for c in path_string):
+            return ""
+        
         if len(path_string) > MAX_PATH_LEN or path_string.startswith(r"\\") or "\0" in path_string:
             return ""
             

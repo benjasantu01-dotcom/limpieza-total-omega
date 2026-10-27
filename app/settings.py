@@ -352,15 +352,12 @@ def _is_file_secure_to_read(file_path: Path) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
+    if not _Validators._is_safe_path(str(file_path)) or not _is_file_secure_to_read(file_path): 
+        return None
     try:
-        if not _Validators._is_safe_path(str(file_path)) or not _is_file_secure_to_read(file_path): 
-            return None
-        
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-            
-        if not isinstance(data, dict) or len(data) > 64: return None
-        return data
+        return data if isinstance(data, dict) and len(data) <= 64 else None
     except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError):
         return None
 

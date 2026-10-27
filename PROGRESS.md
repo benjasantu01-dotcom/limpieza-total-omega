@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 89 | 7 | 27 | 10 | 119 |
-| 2026-10-27 | 97 | 7 | 43 | 6 | 99 |
+| 2026-10-26 | 89 | 7 | 27 | 10 | 115 |
+| 2026-10-27 | 100 | 7 | 43 | 6 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **45**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **31**
-- seguridad defensiva: **28**
+- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,18 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
-- `assistant.py`: **16**
+- `assistant.py`: **17**
 - `browser.py`: **16**
+- `settings.py`: **16**
 - `scanner.py`: **15**
-- `settings.py`: **15**
 - `organizer.py`: **14**
 - `safety.py`: **14**
 - `branding.py`: **10**
 - `duplicates.py`: **7**
-- `startup.py`: **5**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T10:49:54` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar el contexto, añadiendo un filtro explícito en `context_as_text` para asegurar que las métricas serializadas nunca contengan rutas o caracteres prohibidos, previniendo posibles fugas de información sensible incluso si los datos fueran inyectados en el `SystemContext` por error.
+- `2026-10-27T10:49:05` **startup.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_resolve_and_cache_path` añadiendo un filtro explícito para rutas que contienen caracteres de control u otros caracteres potencialmente ilegales que puedan causar excepciones inesperadas en `pathlib.Path.resolve()`, mejorando la resiliencia ante entradas corruptas en el registro o sistema de archivos.
+- `2026-10-27T10:48:33` **settings.py** (robustez ante casos límite): Mejoré la robustez ante la posible corrupción de datos del archivo `config.json` limitando el tamaño del contenido a procesar antes del parseo y asegurando que `_read_and_parse_json` retorne valores predeterminados seguros en caso de archivos truncados o con formato inválido, evitando condiciones de carrera al verificar la existencia y tamaño del archivo en una sola pasada.
 - `2026-10-27T10:39:13` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "error de compartición persistente" (`ERROR_SHARING_VIOLATION`) más estricta en `_get_path_stat_robust` y se mejoró la resiliencia ante `PermissionError` durante la normalización de rutas al manipular `Path.resolve()`, asegurando que archivos bloqueados por el SO no desestabilicen el bucle de validación.
 - `2026-10-27T10:38:09` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y fallos de I/O en `_atomic_isolate_file` añadiendo una validación explícita mediante `stat` sobre el descriptor de archivo ya abierto, garantizando que el archivo no fue reemplazado (ataque TOCTOU) entre la apertura y la lectura, y asegurando que las operaciones de metadatos se mantienen coherentes antes del registro en el manifiesto.
 - `2026-10-27T10:30:31` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_extract_process_info` para ignorar procesos con nombres vacíos o caracteres de control, mejorando la robustez ante entradas de procesos malformados que podrían retornar nombres inválidos o vacíos, una situación común al enumerar procesos en Windows.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T09:48:09` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` sustituyendo el uso repetido de `ctypes.create_unicode_buffer` (una llamada costosa dentro de un bucle intensivo) por un enfoque de filtrado previo de PIDs, reduciendo las llamadas innecesarias a la API de Windows para procesos que ya sabemos que son del sistema o de bajo consumo.
 - `2026-10-27T09:47:21` **healthscore.py** (rendimiento): Se optimizó el acceso a datos en el pipeline de cálculo reemplazando la introspección repetitiva mediante `getattr` en el bucle principal por una extracción inicial de los valores al llamar a `_compute_cached`, reduciendo la carga de llamadas a funciones en el cálculo frecuente de puntajes.
 - `2026-10-27T09:38:00` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de recorrer el disco múltiples veces y realizar múltiples llamadas a `walk_files`, consolidando la lógica de cálculo en un único pase sobre el árbol de archivos.
-- `2026-10-27T09:37:49` **browser.py** (rendimiento): Se optimizó el escaneo del árbol de directorios implementando `os.scandir` de forma eficiente dentro de `_sum_directory_recursive` para evitar llamadas redundantes a `os.path.abspath` y `os.path.normcase` dentro del bucle, reutilizando la normalización del padre.
-- `2026-10-27T09:27:50` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas, clarifiqué el propósito de constantes complejas y añadí tipos de retorno explícitos para mejorar la mantenibilidad, todo sin alterar la lógica de ejecución.
-- `2026-10-27T09:27:33` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings descriptivos a los métodos del Singleton `_SettingsManager` y aclarando la responsabilidad del decorador `type_check`, facilitando la auditoría del código sin alterar su lógica funcional.

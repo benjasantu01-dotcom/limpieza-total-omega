@@ -1574,3 +1574,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-10-27T10:39:25` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-10-27T10:39:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T10:39:25` Corrida terminada. Total usado hoy: 252.
+- `2026-10-27T10:47:33` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-10-27T10:48:33` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante la posible corrupción de datos del archivo `config.json` limitando el tamaño del contenido a procesar antes del parseo y asegurando que `_read_and_parse_json` retorne valores predeterminados seguros en caso de archivos truncados o con formato inválido, evitando condiciones de carrera al verificar la existencia y tamaño del archivo en una sola pasada.
+- `2026-10-27T10:49:05` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de errores en `_resolve_and_cache_path` añadiendo un filtro explícito para rutas que contienen caracteres de control u otros caracteres potencialmente ilegales que puedan causar excepciones inesperadas en `pathlib.Path.resolve()`, mejorando la resiliencia ante entradas corruptas en el registro o sistema de archivos.
+- `2026-10-27T10:49:54` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al serializar el contexto, añadiendo un filtro explícito en `context_as_text` para asegurar que las métricas serializadas nunca contengan rutas o caracteres prohibidos, previniendo posibles fugas de información sensible incluso si los datos fueran inyectados en el `SystemContext` por error.
+- `2026-10-27T10:50:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-27T10:50:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T10:50:14` Corrida terminada. Total usado hoy: 256.
