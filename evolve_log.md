@@ -712,3 +712,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-27T01:49:53` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejora la robustez de `StartupEntry.executable` manejando explícitamente excepciones de `pathlib` (como `OSError` o `RuntimeError`) durante la resolución de rutas, evitando que un enlace simbólico circular o una ruta con permisos denegados interrumpa el escaneo del inventario.
 - `2026-10-27T01:49:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T01:49:53` Corrida terminada. Total usado hoy: 44.
+- `2026-10-27T01:57:40` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-10-27T01:58:23` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de entrada en `_sanitize_query` y `ask` eliminando cualquier carácter no imprimible o potencialmente peligroso antes de que el texto toque el motor de procesamiento o el prompt, reforzando la defensa contra inyecciones de control.
+- `2026-10-27T01:58:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T01:59:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-27T01:59:30` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Reforcé la integridad del escaneo recursivo mediante la validación del estado del disco (`is_protected_path`) directamente en el punto de entrada de cada subdirectorio, asegurando que la lógica de seguridad sea activa y no solo pasiva al inicio de la recursión.
+- `2026-10-27T01:59:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T01:59:47` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `largest_folders` implementando una validación explícita mediante `is_protected_path` al procesar cada subdirectorio hijo, asegurando que ninguna ruta resuelta fuera del ámbito original del escaneo sea procesada, incluso si `walk_files` omitiera algún caso borde de resolución de rutas relativas.
+- `2026-10-27T01:59:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T01:59:47` Corrida terminada. Total usado hoy: 48.

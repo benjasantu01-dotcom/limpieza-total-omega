@@ -670,7 +670,8 @@ _TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 def _sanitize_query(question: str) -> str:
     """Limpia, trunca y desinfecta la consulta del usuario antes del procesamiento."""
     if not isinstance(question, str): return ""
-    clean: str = _REGEX_CONTROL_CHARS.sub(' ', question).strip()[:100]
+    # Eliminar caracteres de control y reducir whitespace antes de validar
+    clean: str = " ".join(_REGEX_CONTROL_CHARS.sub(' ', question).split())[:100]
     return clean if _ensure_safe_text(clean) else ""
 
 def local_answer(question: str, context: SystemContext) -> Answer:
@@ -806,10 +807,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Optional[Union[str, Path]] = None) -> Answer:
     """Punto de acceso único que orquesta los motores local y remoto para responder consultas."""
-    if not _ensure_safe_text(question):
+    q_sanitized: str = _sanitize_query(question)
+    if not q_sanitized:
         return Answer("Entrada no válida.")
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
-    respaldo: Answer = local_answer(question, ctx)
+    respaldo: Answer = local_answer(q_sanitized, ctx)
     if not available(base):
         return respaldo
     try:
@@ -820,7 +822,7 @@ def ask(question: str, context: Optional[SystemContext] = None,
         if not isinstance(ctx, SystemContext) or not ctx.is_valid_structure:
             return respaldo
         texto_contexto: str = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
-        remoto: Optional[str] = _call_gemini(question, texto_contexto, cfg.api_key, cfg.model)
+        remoto: Optional[str] = _call_gemini(q_sanitized, texto_contexto, cfg.api_key, cfg.model)
         if remoto is None:
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo

@@ -228,7 +228,8 @@ def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int =
     if not _is_within_sandbox(root_norm, scan_ctx.sandbox_base_norm) or root_norm in scan_ctx.visited_dirs:
         return ScanResult(0, True)
         
-    if not is_safe_to_modify(Path(root_path)):
+    path_obj = Path(root_path)
+    if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return ScanResult(0, True)
 
     scan_ctx.visited_dirs.add(root_norm)
