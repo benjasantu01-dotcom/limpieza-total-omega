@@ -339,9 +339,8 @@ def validate(raw_values: Any) -> AppSettings:
             
     return config # type: ignore
 
-def _is_file_secure_to_read(file_path: Path) -> bool:
+def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     try:
-        st = file_path.lstat()
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if _Validators._is_reparse_point(str(file_path)): return False
         # Permisos restringidos: el archivo debe ser solo propiedad del usuario actual
@@ -352,7 +351,7 @@ def _is_file_secure_to_read(file_path: Path) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    if not _Validators._is_safe_path(str(file_path)) or not _is_file_secure_to_read(file_path): 
+    if not _Validators._is_safe_path(str(file_path)): 
         return None
     try:
         with open(file_path, "r", encoding="utf-8") as f:
@@ -377,11 +376,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
                 return cached[0].copy()
             
-            data = _read_and_parse_json(primary_path)
-            if data is not None:
-                settings = _coerce_and_verify(validate(data))
-                _MANAGER.data_cache[path_str] = (settings, st.st_mtime, st.st_size)
-                return settings.copy()
+            if _is_file_secure_to_read(primary_path, st):
+                data = _read_and_parse_json(primary_path)
+                if data is not None:
+                    settings = _coerce_and_verify(validate(data))
+                    _MANAGER.data_cache[path_str] = (settings, st.st_mtime, st.st_size)
+                    return settings.copy()
     except (OSError, PermissionError): 
         pass
     return dict(DEFAULTS) # type: ignore

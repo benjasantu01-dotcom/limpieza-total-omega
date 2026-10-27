@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 53 | 5 | 18 | 5 | 83 |
-| 2026-10-27 | 120 | 7 | 51 | 9 | 153 |
+| 2026-10-26 | 51 | 4 | 18 | 5 | 82 |
+| 2026-10-27 | 122 | 8 | 51 | 9 | 154 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **36**
-- seguridad defensiva: **35**
-- rendimiento: **23**
+- seguridad defensiva: **33**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
 - `memory.py`: **17**
-- `diskreport.py`: **16**
-- `healthscore.py`: **16**
-- `settings.py`: **15**
+- `settings.py`: **16**
+- `healthscore.py`: **15**
+- `diskreport.py`: **15**
 - `assistant.py`: **15**
 - `organizer.py`: **14**
 - `browser.py`: **14**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `safety.py`: **12**
 - `branding.py`: **9**
 - `duplicates.py`: **6**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T15:39:21` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas repetidas de `stat()` por un acceso único consolidado, reduciendo las llamadas al sistema operativo (syscalls) al verificar la integridad de la caché en memoria.
+- `2026-10-27T15:38:31` **scanner.py** (rendimiento): Se optimizó el rendimiento del proceso de escaneo mediante el reemplazo de `list` por `set` en la pila de directorios visitados y la implementación de una exclusión temprana de rutas ya procesadas en `scan_directory` para evitar ciclos infinitos y redundancias innecesarias.
 - `2026-10-27T14:51:56` **safety.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad de `safety.py` mediante la implementación de *type hints* consistentes, normalización de la estructura de las reglas de integridad y uso de comentarios explicativos (docstrings) para documentar el propósito técnico detrás de las constantes y validaciones complejas.
 - `2026-10-27T14:43:18` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para delegar la lógica de creación de directorios y limpieza de recursos, y añadí docstrings detallados en las funciones de validación crítica para clarificar las intenciones de seguridad.
 - `2026-10-27T14:42:44` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings detallados en las funciones de validación crítica y constantes, explicando el "porqué" de las verificaciones de seguridad y el manejo de bajo nivel, facilitando así la auditoría y mantenimiento del código.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T13:01:06` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_compute_cached` y el flujo de `_evaluate_rules` mediante la captura explícita de errores durante la ejecución de los componentes, evitando que un fallo en una única regla o función de normalización propague excepciones al sistema principal, asegurando siempre un estado de retorno seguro.
 - `2026-10-27T12:51:00` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando la validación inicial de la ruta, añadiendo una captura de excepciones más específica para `Path` y `mkdir`, y garantizando que las operaciones de validación y escritura sean atómicas en su manejo de errores para evitar estados parciales o corrupciones.
 - `2026-10-27T12:43:24` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_and_sanitize_data` en `SystemContext` para asegurar que el proceso de ingesta no falle silenciosamente ni deje el objeto en estado inconsistente ante datos malformados, fortaleciendo la validación de tipos y rangos de manera transaccional.
-- `2026-10-27T11:20:41` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y corrupción, validando que el archivo no sea un enlace simbólico ni contenga datos maliciosos mediante una verificación de integridad más estricta antes de abrirlo.
-- `2026-10-27T11:19:44` **safety.py** (seguridad defensiva): Mejoré `_validate_preconditions` en `safety.py` para bloquear explícitamente la modificación de archivos que poseen el atributo `OFFLINE` (archivos en la nube como OneDrive/Dropbox) y el atributo `REPARSE_POINT` (detección de junctions/symlinks de archivos), reforzando la seguridad defensiva contra modificaciones no deseadas en archivos que el sistema operativo puede gestionar externamente.

@@ -742,3 +742,51 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-10-27T15:29:04` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-27T15:29:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T15:29:04` Corrida terminada. Total usado hoy: 340.
+- `2026-10-27T15:35:09` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-27T15:35:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T15:36:05` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T15:36:25` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-27T15:37:04` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-27T15:37:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T15:37:56` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T15:38:31` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del proceso de escaneo mediante el reemplazo de `list` por `set` en la pila de directorios visitados y la implementación de una exclusión temprana de rutas ya procesadas en `scan_directory` para evitar ciclos infinitos y redundancias innecesarias.
+- `2026-10-27T15:38:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T15:38:42` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T15:39:21` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas repetidas de `stat()` por un acceso único consolidado, reduciendo las llamadas al sistema operativo (syscalls) al verificar la integridad de la caché en memoria.
+- `2026-10-27T15:39:52` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.68s
+
+```
+- `2026-10-27T15:39:52` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo al reemplazar el uso redundante de `Path.resolve()` (que es una operación de disco costosa) por comprobaciones lógicas más eficientes y se agregó una validación temprana en `_resolve_and_cache_path` para evitar llamadas innecesarias al sistema de archivos mediante el uso del `_EXISTS_CACHE` ya existente.
+- `2026-10-27T15:39:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T15:39:52` Corrida terminada. Total usado hoy: 344.

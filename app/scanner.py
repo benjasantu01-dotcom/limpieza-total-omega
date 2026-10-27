@@ -262,18 +262,21 @@ class Scanner:
         except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
             return False
 
-    def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Gestiona la inserción de subdirectorios en la pila de exploración."""
+    def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str], current_depth: int, visited_dirs: set[str]) -> None:
+        """Gestiona la inserción de subdirectorios en la pila de exploración evitando ciclos."""
         if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
-        directory_stack.append((entry.path, current_depth + 1))
+        norm_path = os.path.normcase(entry.path)
+        if norm_path not in visited_dirs:
+            visited_dirs.add(norm_path)
+            directory_stack.append((entry.path, current_depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos relevantes para las heurísticas configuradas (Optimizado)."""
         idx = name.rfind('.')
         return idx > 0 and name[idx:].lower() in SUSPICIOUS_ALL_EXTS
 
-    def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
+    def process_entry(self, entry: os.DirEntry, directory_stack: List[Tuple[str, int]], current_depth: int, visited_dirs: set[str]) -> None:
         """Procesa una entrada individual (directorio o archivo) del sistema."""
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return
@@ -287,7 +290,7 @@ class Scanner:
                         self.seen_normcase.add(path_norm)
                         self._run_file_heuristics(Path(entry.path), entry)
             elif entry.is_dir():
-                self._handle_directory(entry, directory_stack, current_depth)
+                self._handle_directory(entry, directory_stack, current_depth, visited_dirs)
         except (OSError, PermissionError, FileNotFoundError, AttributeError, RuntimeError):
             logger.debug(f"Error accediendo a entrada: {entry.path}")
 
@@ -335,14 +338,15 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return []
     
-    directory_stack: DirectoryStack = [(str(resolved_path), 0)]
+    directory_stack: List[Tuple[str, int]] = [(str(resolved_path), 0)]
+    visited_dirs: set[str] = {os.path.normcase(str(resolved_path))}
     
     while directory_stack:
         current_dir, depth = directory_stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry: scanner.process_entry(entry, directory_stack, depth)
+                    if entry: scanner.process_entry(entry, directory_stack, depth, visited_dirs)
         except (PermissionError, OSError, FileNotFoundError):
             continue
     return scanner.results
