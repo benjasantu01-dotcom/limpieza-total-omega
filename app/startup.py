@@ -52,16 +52,16 @@ REGISTRY_RUN_KEYS: Tuple[str, ...] = (
     r"HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run",
 )
 
-# Extensiones estándar para filtrar ejecutables sin recurrir a heurísticas complejas.
+# Extensiones de archivo que representan candidatos probables de ejecución automática.
 EXECUTABLE_EXTS: Set[str] = {'.exe', '.bat', '.cmd', '.scr', '.lnk'}
 
 # Caracteres que en rutas de Windows pueden ser interpretados por la shell como comandos (inyección).
 SUSPICIOUS_CHARS: str = '<>|?*\0&;%^$'
 
-# Lista de nombres reservados por el kernel que no deben ser tratados como archivos.
+# Nombres reservados por el kernel que deben ser excluidos para evitar errores de acceso a dispositivos.
 RESERVED_DEVICE_NAMES: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
 
-# Constante de seguridad para límites de ruta de Windows.
+# Límite máximo estándar para rutas en el sistema de archivos de Windows.
 MAX_PATH_LEN: int = 260
 
 # Caché global para persistir resultados de resolución de rutas en la misma ejecución.

@@ -160,12 +160,17 @@ class _SettingsManager:
         self.data_cache: dict[str, tuple[AppSettings, float, int]] = {}
 
     def clear(self, path: Optional[Path] = None) -> None:
+        """Limpia la caché de datos. Si se provee una ruta, elimina solo esa entrada."""
         if path:
             self.data_cache.pop(str(path), None)
         else:
             self.data_cache.clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
+        """
+        Escribe la configuración al disco de forma atómica usando archivos temporales
+        y chequeos de seguridad estrictos antes de reemplazar el original.
+        """
         if not isinstance(serialized, str) or len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return False
         if len(str(config_path)) > 260: return False
         
@@ -201,7 +206,7 @@ class _SettingsManager:
 _MANAGER = _SettingsManager()
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
-    """Decorador para envolver validadores y prevenir propagación de excepciones de conversión."""
+    """Decorador que captura excepciones de conversión/parsing, devolviendo None si la entrada es inválida."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
         try:
             return func(*args, **kwargs)
