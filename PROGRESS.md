@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 53
+- Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 39 | 4 | 6 | 6 | 51 |
+| 2026-10-25 | 39 | 4 | 6 | 6 | 47 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 29 | 1 | 8 | 1 | 9 |
+| 2026-10-27 | 30 | 1 | 9 | 1 | 11 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,16 +26,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **42**
 - rendimiento: **35**
-- seguridad defensiva: **30**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **20**
 - `browser.py`: **19**
+- `healthscore.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
-- `healthscore.py`: **18**
 - `settings.py`: **16**
 - `diskreport.py`: **15**
 - `organizer.py`: **14**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T02:08:54` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo añadiendo una validación de longitud estricta antes de la sanitización, evitando que mensajes excesivamente largos generen un consumo de memoria innecesario o riesgos de desbordamiento en el procesamiento de strings.
 - `2026-10-27T01:59:47` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `largest_folders` implementando una validación explícita mediante `is_protected_path` al procesar cada subdirectorio hijo, asegurando que ninguna ruta resuelta fuera del ámbito original del escaneo sea procesada, incluso si `walk_files` omitiera algún caso borde de resolución de rutas relativas.
 - `2026-10-27T01:59:30` **browser.py** (seguridad defensiva): Reforcé la integridad del escaneo recursivo mediante la validación del estado del disco (`is_protected_path`) directamente en el punto de entrada de cada subdirectorio, asegurando que la lógica de seguridad sea activa y no solo pasiva al inicio de la recursión.
 - `2026-10-27T01:58:23` **assistant.py** (seguridad defensiva): Se endureció la validación de entrada en `_sanitize_query` y `ask` eliminando cualquier carácter no imprimible o potencialmente peligroso antes de que el texto toque el motor de procesamiento o el prompt, reforzando la defensa contra inyecciones de control.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T01:27:57` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos en `walk_files` cuando se encuentran junctions o enlaces simbólicos a directorios, asegurando que el recorrido sea robusto ante estructuras de carpetas recursivas o auto-referenciales que podrían causar desbordamiento de pila o bucles infinitos en sistemas Windows.
 - `2026-10-27T01:19:59` **browser.py** (robustez ante casos límite): Mejoré la robustez de `browser.py` ante bloqueos de archivos en uso (típico de navegadores abiertos) añadiendo un control de errores más granular y evitando que `os.scandir` aborte prematuramente si una carpeta de perfil está bloqueada por el sistema.
 - `2026-10-27T01:19:35` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante entradas inválidas o casos límite (como `size` extremadamente pequeño o tipos de datos inesperados) y añadí una validación de `Path` más estricta para prevenir posibles errores en el sistema de archivos, asegurando que la app no falle silenciosamente ni en condiciones de borde.
-- `2026-10-27T01:18:51` **assistant.py** (robustez ante casos límite): Mejoré la robustez de la ingestión de datos en `SystemContext.ingest` y `_validate_and_sanitize_data` para manejar valores inesperados, tipos nulos o estructuras corruptas provenientes de fuentes externas sin abortar el proceso, asegurando que el asistente siempre tenga un estado consistente incluso ante entradas de datos parciales o malformadas.
