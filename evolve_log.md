@@ -1158,3 +1158,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-27T06:25:57` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_resolve_browser_path` al evitar el uso de `joinpath` con rutas no sanitizadas y se añadió una validación de integridad absoluta mediante `pathlib` para asegurar que el target resultante resida realmente bajo el sandbox, evitando posibles ataques de recorrido de directorio (path traversal).
 - `2026-10-27T06:25:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T06:25:57` Corrida terminada. Total usado hoy: 152.
+- `2026-10-27T06:32:49` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-10-27T06:33:21` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-10-27T06:33:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-27T06:34:33` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva del motor de recomendaciones restringiendo el acceso a atributos de `SystemMetrics` mediante un método de acceso controlado y añadiendo un filtro de "lista blanca" estricto en la generación de mensajes, evitando cualquier posibilidad de inyección de datos dinámicos en la interfaz de reportes.
+- `2026-10-27T06:35:30` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-27T06:35:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T06:35:30` Corrida terminada. Total usado hoy: 156.

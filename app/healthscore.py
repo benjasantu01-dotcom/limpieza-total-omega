@@ -177,12 +177,12 @@ _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
-def _msg_seguridad(metrics: SystemMetrics) -> str: return f"Riesgos de seguridad detectados: {metrics.suspicious_count}."
-def _msg_disco(metrics: SystemMetrics) -> str: return f"Espacio libre en disco bajo: {metrics.disk_free_percent:.1f} porciento."
+def _msg_seguridad(metrics: SystemMetrics) -> str: return f"Riesgos de seguridad detectados: {metrics.safe_get('suspicious_count')}."
+def _msg_disco(metrics: SystemMetrics) -> str: return f"Espacio libre en disco bajo: {metrics.safe_get('disk_free_percent'):.1f} porciento."
 def _msg_memoria(metrics: SystemMetrics) -> str: return "Memoria disponible baja, optimice sus procesos."
-def _msg_basura(metrics: SystemMetrics) -> str: return f"Acumulacion de archivos temporales: {metrics.junk_mb:.0f} MB."
-def _msg_duplicados(metrics: SystemMetrics) -> str: return f"Recuperacion posible: {metrics.duplicate_mb:.0f} MB en duplicados."
-def _msg_arranque(metrics: SystemMetrics) -> str: return f"Exceso de programas en arranque: {metrics.startup_count} entradas."
+def _msg_basura(metrics: SystemMetrics) -> str: return f"Acumulacion de archivos temporales: {metrics.safe_get('junk_mb'):.0f} MB."
+def _msg_duplicados(metrics: SystemMetrics) -> str: return f"Recuperacion posible: {metrics.safe_get('duplicate_mb'):.0f} MB en duplicados."
+def _msg_arranque(metrics: SystemMetrics) -> str: return f"Exceso de programas en arranque: {metrics.safe_get('startup_count')} entradas."
 
 _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
     "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_seguridad, lambda m, r: r < WARN_THRESHOLD_HIGH),),
@@ -194,12 +194,12 @@ _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
 }
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES["seguridad"]),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES["disco"]),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES["memoria"]),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), _RULES["basura"]),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), _RULES["duplicados"]),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES["arranque"]),
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.safe_get("suspicious_count"), m.safe_get("suspicious_warnings")), _RULES["seguridad"]),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.safe_get("disk_free_percent")), _RULES["disco"]),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.safe_get("memory_available_percent")), _RULES["memoria"]),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.safe_get("junk_mb")), _RULES["basura"]),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.safe_get("duplicate_mb")), _RULES["duplicados"]),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.safe_get("startup_count")), _RULES["arranque"]),
 )
 
 _verify_pipeline_integrity(WEIGHTS, PIPELINE_DEFINITIONS)
@@ -275,14 +275,15 @@ class SystemMetrics:
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
-        """Acceso seguro a métricas mediante introspección."""
-        return getattr(self, field_name, default)
+        """Acceso seguro a métricas mediante introspección validada."""
+        if field_name in self._FIELDS_TO_VALIDATE:
+            return getattr(self, field_name, default)
+        return default
 
     def validate(self) -> None:
         """Normaliza todas las métricas según los rangos definidos en _METRIC_LIMITS."""
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name, None)
-            # Asegurar tipo numérico antes de sanitizar
             if not isinstance(val, (int, float)):
                 val = 0.0
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
