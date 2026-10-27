@@ -1433,3 +1433,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-27T08:38:08` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `purge_all` para que sea más robusto ante errores de I/O y condiciones de carrera, capturando excepciones específicas dentro del bucle de purga para evitar que una falla en un solo archivo detenga la limpieza total del sandbox.
 - `2026-10-27T08:38:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T08:38:08` Corrida terminada. Total usado hoy: 204.
+- `2026-10-27T08:45:20` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-10-27T08:45:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-27T08:46:27` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_get_file_id` para capturar errores de ejecución de forma más granular y devolver un ID de fallo explícito (`(0,0,0,0)`) solo ante condiciones de error reales, además de limpiar el manejo de `ctypes` para evitar excepciones no capturadas que podrían colgar la validación.
+- `2026-10-27T08:46:56` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-27T08:47:44` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejora la robustez del manejo de archivos JSON mediante un bloque `try-except` más específico en `_read_and_parse_json` para capturar errores de permisos o de formato de manera granular, asegurando que cualquier entrada maliciosa o corrupta sea tratada como un fallo de carga y no como un error de ejecución.
+- `2026-10-27T08:47:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T08:47:44` Corrida terminada. Total usado hoy: 208.

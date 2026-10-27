@@ -73,9 +73,11 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
             if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
                 is_dir = bool(info.dwFileAttributes & Win32Attr.DIRECTORY)
                 return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, int(is_dir))
+        except (OSError, AttributeError):
+            return (0, 0, 0, 0)
         finally:
             kernel32.CloseHandle(handle)
-    except (OSError, ctypes.ArgumentError, AttributeError, ValueError):
+    except (ctypes.ArgumentError, ValueError):
         return (0, 0, 0, 0)
     return (0, 0, 0, 0)
 
