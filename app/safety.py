@@ -783,7 +783,7 @@ def _normalize_resolved(path_str: str) -> Path:
     """Normaliza y resuelve rutas absolutas de forma segura."""
     try:
         return Path(os.path.abspath(path_str)).resolve(strict=False)
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, PermissionError):
         return Path(path_str).absolute()
 
 @lru_cache(maxsize=4096)
@@ -871,7 +871,7 @@ def _get_final_path_normalized(p: Path) -> Path:
     kernel32 = ctypes.windll.kernel32
     try:
         p.lstat()
-    except (OSError, FileNotFoundError):
+    except (OSError, FileNotFoundError, PermissionError):
         return p.resolve(strict=False)
 
     handle = kernel32.CreateFileW(
@@ -1017,7 +1017,7 @@ def _validate_path_components(path: Path) -> None:
     """Verifica recursión circular y spoofing en componentes de ruta."""
     try:
         resolved_path = path.resolve()
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, PermissionError):
         resolved_path = path
 
     anchor = Path(resolved_path.anchor)
@@ -1042,7 +1042,7 @@ def _validate_path_components(path: Path) -> None:
                 if _is_system_directory_junction(str(current_check)):
                     if _get_final_path_normalized(current_check) is None:
                         raise UnsafePathError(f"Punto de reparse inaccesible: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
-            except (OSError, RuntimeError):
+            except (OSError, RuntimeError, PermissionError):
                 continue
     
     _validate_no_reparse_traversal(path)

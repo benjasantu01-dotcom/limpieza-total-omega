@@ -826,6 +826,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         fd = f.fileno()
         stat_orig = os.fstat(fd)
         
+        # Validar consistencia tras abrir el archivo para asegurar que no cambió
         if stat_orig.st_size != original_size or stat_orig.st_nlink > 1:
             raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
         
@@ -846,6 +847,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             
         h, i = _write_temp_to_final(source, destination)
         
+        # Validación final de estado post-escritura
         dest_stat = destination.stat()
         if dest_stat.st_ino != i or _get_sha256(destination) != h:
             raise RuntimeError("Integridad comprometida: destino inconsistente.")

@@ -1567,3 +1567,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-10-27T10:30:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-10-27T10:30:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T10:30:49` Corrida terminada. Total usado hoy: 248.
+- `2026-10-27T10:37:22` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-10-27T10:38:09` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera y fallos de I/O en `_atomic_isolate_file` añadiendo una validación explícita mediante `stat` sobre el descriptor de archivo ya abierto, garantizando que el archivo no fue reemplazado (ataque TOCTOU) entre la apertura y la lectura, y asegurando que las operaciones de metadatos se mantienen coherentes antes del registro en el manifiesto.
+- `2026-10-27T10:38:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-27T10:39:13` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una verificación de "error de compartición persistente" (`ERROR_SHARING_VIOLATION`) más estricta en `_get_path_stat_robust` y se mejoró la resiliencia ante `PermissionError` durante la normalización de rutas al manipular `Path.resolve()`, asegurando que archivos bloqueados por el SO no desestabilicen el bucle de validación.
+- `2026-10-27T10:39:25` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-27T10:39:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T10:39:25` Corrida terminada. Total usado hoy: 252.
