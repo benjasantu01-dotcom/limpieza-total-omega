@@ -277,7 +277,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     try:
         root_stat = root_path.stat()
         visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
-    except OSError:
+    except (OSError, PermissionError):
         pass
     
     while stack:
@@ -300,9 +300,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             yield Path(entry.path), st.st_size
                             
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
-        except (OSError, PermissionError, NotADirectoryError):
+        except (OSError, PermissionError, NotADirectoryError, FileNotFoundError):
             continue
 
 

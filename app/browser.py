@@ -320,9 +320,10 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
-        if not isinstance(base, Path) or not base.exists() or not os.access(base, os.R_OK): continue
+        if not isinstance(base, Path): continue
         try:
             base_resolved = base.resolve()
+            if not base_resolved.exists() or not base_resolved.is_dir(): continue
             base_norm = os.path.normcase(str(base_resolved))
         except (OSError, RuntimeError): continue
         

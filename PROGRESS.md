@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 65
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 225
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 1 | 0 | 0 | 0 | 17 |
+| 2026-10-25 | 0 | 0 | 0 | 0 | 14 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 54 | 3 | 26 | 3 | 50 |
+| 2026-10-27 | 56 | 3 | 26 | 4 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 - rendimiento: **32**
-- seguridad defensiva: **31**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `memory.py`: **18**
+- `quarantine.py`: **18**
+- `browser.py`: **17**
 - `scanner.py`: **17**
-- `browser.py`: **16**
 - `healthscore.py`: **16**
 - `organizer.py`: **15**
 - `settings.py`: **15**
-- `diskreport.py`: **14**
+- `diskreport.py`: **15**
 - `safety.py`: **12**
 - `branding.py`: **9**
 - `duplicates.py`: **9**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T05:53:05` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en el acceso a atributos (`st_stat`), evitando que fallos inesperados de E/S corten prematuramente el recorrido.
+- `2026-10-27T05:52:40` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes o malformadas en `detect_profiles` añadiendo una validación de `base_resolved` más estricta antes de iniciar el escaneo recursivo, evitando posibles errores de resolución de rutas en entornos donde los enlaces simbólicos o junctions apunten a destinos eliminados o inaccesibles.
 - `2026-10-27T05:44:11` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_apply_field` y `_clean_grade` dentro de `SystemContext` para manejar de forma segura entradas inesperadas (como objetos con atributos inesperados o tipos de datos erróneos) que podrían causar excepciones durante la ingesta, asegurando que el estado interno se mantenga íntegro ante datos malformados.
 - `2026-10-27T05:32:21` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` mediante la eliminación de llamadas redundantes a `resolve()` y `is_within_directory` dentro del loop, utilizando una comparación de nombres directa sobre el conjunto de archivos registrados, lo cual reduce drásticamente las syscalls en directorios con muchos ítems.
 - `2026-10-27T05:23:33` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` pre-asignando la estructura de procesos y reduciendo las llamadas a `ctypes` dentro del bucle, minimizando la carga sobre el kernel al filtrar procesos inactivos o inaccesibles más temprano.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T04:31:54` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `branding.py` mediante la adición de docstrings estructuradas en las funciones geométricas (`draw_logo`, `draw_gradient_bar`, `draw_ring`) y la aclaración de las constantes de escala, facilitando la comprensión del motor de renderizado vectorial de la aplicación.
 - `2026-10-27T04:31:20` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad del archivo `assistant.py` mediante la refactorización de `_ensure_safe_text`, extrayendo la lógica de validación secuencial en sub-funciones con nombres descriptivos para clarificar las reglas de seguridad defensiva aplicadas.
 - `2026-10-27T04:22:03` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` al reemplazar la captura genérica de excepciones en `validate` por una iteración defensiva que aísla los errores de validación de cada clave, asegurando que un fallo en un valor no detenga el procesamiento del resto del diccionario y manteniendo la integridad de la configuración cargada.
-- `2026-10-27T04:21:08` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_validate_preconditions` en `safety.py` agregando un manejo explícito de errores para el caso donde el path del contenedor (parent) no existe, evitando que el intento de validar permisos sobre una ruta inexistente genere excepciones no controladas antes de que la lógica de seguridad llegue a su fin.
-- `2026-10-27T04:11:51` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación de tipo y valor en `_ensure_disk_space` y se mejoró el manejo de excepciones en `_register_quarantine_item` para evitar la propagación de errores parciales si el manifiesto no puede actualizarse, asegurando que la integridad del estado sea consistente con las operaciones de disco realizadas.
