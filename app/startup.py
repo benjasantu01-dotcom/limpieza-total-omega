@@ -375,10 +375,12 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
         path_candidate = clean_cmd.strip('"')
         if not path_candidate:
             return False
-            
-        target_path = Path(path_candidate)
-        if not target_path or ("\\" not in str(target_path) and "/" not in str(target_path)):
+        
+        # Validar que sea una ruta absoluta o al menos contenga separadores de disco
+        if "\\" not in path_candidate and "/" not in path_candidate:
             return False
+        
+        target_path = Path(path_candidate)
         if any(c in str(target_path) for c in SUSPICIOUS_CHARS):
             return False
         if is_protected_path(target_path) or ".." in str(target_path):

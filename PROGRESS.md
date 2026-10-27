@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 55
+- Rechazadas por guardia de seguridad: 56
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 39 | 4 | 6 | 6 | 43 |
+| 2026-10-25 | 39 | 4 | 6 | 6 | 39 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 32 | 1 | 10 | 1 | 12 |
+| 2026-10-27 | 33 | 1 | 11 | 1 | 14 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **42**
 - rendimiento: **35**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -42,11 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **12**
 - `branding.py`: **11**
 - `duplicates.py`: **8**
-- `startup.py`: **5**
+- `startup.py`: **6**
 - `main.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T02:29:43` **startup.py** (seguridad defensiva): Se reforzó la seguridad de `_is_registry_entry_safe` implementando una validación estricta que evita el procesamiento de rutas relativas o comandos que no contengan una estructura de sistema de archivos clara, previniendo así la ejecución accidental de comandos internos de Windows o interpretaciones incorrectas de strings maliciosos.
 - `2026-10-27T02:19:25` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` para evitar condiciones de carrera (TOCTOU) eliminando el uso de `stat()` del objeto `source` después de las validaciones, utilizando el handle ya verificado y garantizando que el archivo final no sea un enlace simbólico ni un reparse point mediante un nuevo chequeo post-escritura.
 - `2026-10-27T02:18:42` **organizer.py** (seguridad defensiva): Se mejoró la integridad del proceso `_is_safe_for_disk_op` al integrar una validación de `is_relative_to` para evitar "directory traversal" accidental si las rutas cambian durante la ejecución, y se añadió la verificación de que el origen no sea un punto de reparse (`junction`) en el momento de la operación de movimiento para cerrar una brecha de seguridad.
 - `2026-10-27T02:08:54` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo añadiendo una validación de longitud estricta antes de la sanitización, evitando que mensajes excesivamente largos generen un consumo de memoria innecesario o riesgos de desbordamiento en el procesamiento de strings.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T01:38:30` **organizer.py** (robustez ante casos límite): Se introdujo la verificación `_is_file_locked` dentro del proceso de escaneo recursivo (`_process_directory`) para evitar la inclusión de archivos en uso (bloqueados) desde el momento inicial, mitigando errores de E/S y race conditions antes de que el objeto `JunkFile` llegue a la fase de movimiento.
 - `2026-10-27T01:29:26` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor frente a datos de entrada potencialmente corruptos, añadiendo una validación explícita en `_compute_cached` para asegurar que el `zip` entre campos y métricas no genere inconsistencias si la estructura de `SystemMetrics` llegara a cambiar o recibir datos inesperados.
 - `2026-10-27T01:28:53` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `is_junction` y `is_system_or_hidden` añadiendo una verificación previa de existencia (`path.exists()`), evitando llamadas innecesarias a la Win32 API sobre rutas rotas o bloqueadas que podrían causar comportamientos indefinidos en el sistema operativo.
-- `2026-10-27T01:27:57` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos en `walk_files` cuando se encuentran junctions o enlaces simbólicos a directorios, asegurando que el recorrido sea robusto ante estructuras de carpetas recursivas o auto-referenciales que podrían causar desbordamiento de pila o bucles infinitos en sistemas Windows.
