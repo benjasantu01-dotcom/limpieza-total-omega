@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 65
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 223
+- Rechazadas por guardia de seguridad: 66
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 0 | 0 | 0 | 0 | 14 |
+| 2026-10-25 | 0 | 0 | 0 | 0 | 10 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 56 | 3 | 26 | 4 | 51 |
+| 2026-10-27 | 58 | 3 | 27 | 5 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
+- robustez ante casos límite: **42**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **40**
 - rendimiento: **32**
 - seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **19**
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
-- `memory.py`: **18**
-- `quarantine.py`: **18**
 - `browser.py`: **17**
 - `scanner.py`: **17**
 - `healthscore.py`: **16**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T06:05:58` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `os.fsync()` en `_safe_unlink` para garantizar la persistencia de la eliminación en el sistema de archivos ante fallos de hardware o interrupciones repentinas, mitigando el riesgo de que el manifiesto se desincronice de la realidad del disco.
+- `2026-10-27T06:03:58` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_process_executable_safe` al implementar un manejo defensivo ante rutas con caracteres especiales o que excedan los límites de longitud del SO (`MAX_PATH`), además de añadir una validación de existencia explícita tras la resolución de la ruta absoluta para prevenir fallos al iterar sobre procesos efímeros.
 - `2026-10-27T05:53:05` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en el acceso a atributos (`st_stat`), evitando que fallos inesperados de E/S corten prematuramente el recorrido.
 - `2026-10-27T05:52:40` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes o malformadas en `detect_profiles` añadiendo una validación de `base_resolved` más estricta antes de iniciar el escaneo recursivo, evitando posibles errores de resolución de rutas en entornos donde los enlaces simbólicos o junctions apunten a destinos eliminados o inaccesibles.
 - `2026-10-27T05:44:11` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_apply_field` y `_clean_grade` dentro de `SystemContext` para manejar de forma segura entradas inesperadas (como objetos con atributos inesperados o tipos de datos erróneos) que podrían causar excepciones durante la ingesta, asegurando que el estado interno se mantenga íntegro ante datos malformados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T04:41:23` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de alto nivel para clarificar la jerarquía de llamadas y la intención de seguridad detrás de los filtros, facilitando el mantenimiento a futuro sin alterar la lógica de detección.
 - `2026-10-27T04:32:28` **browser.py** (legibilidad y documentación): Mejora de legibilidad mediante la documentación explícita de los parámetros en las funciones recursivas y de escaneo, clarificando la intención y el rol de cada argumento en el proceso de recolección de datos.
 - `2026-10-27T04:31:54` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `branding.py` mediante la adición de docstrings estructuradas en las funciones geométricas (`draw_logo`, `draw_gradient_bar`, `draw_ring`) y la aclaración de las constantes de escala, facilitando la comprensión del motor de renderizado vectorial de la aplicación.
-- `2026-10-27T04:31:20` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad del archivo `assistant.py` mediante la refactorización de `_ensure_safe_text`, extrayendo la lógica de validación secuencial en sub-funciones con nombres descriptivos para clarificar las reglas de seguridad defensiva aplicadas.
-- `2026-10-27T04:22:03` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` al reemplazar la captura genérica de excepciones en `validate` por una iteración defensiva que aísla los errores de validación de cada clave, asegurando que un fallo en un valor no detenga el procesamiento del resto del diccionario y manteniendo la integridad de la configuración cargada.

@@ -347,7 +347,7 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
         if not exe_path_str: return False
         
         try:
-            exe_path = Path(exe_path_str).absolute()
+            exe_path = Path(exe_path_str).resolve()
             if not exe_path.exists(): return False
             if is_protected_path(exe_path): return False
         except (OSError, RuntimeError, ValueError):

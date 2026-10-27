@@ -1100,3 +1100,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-27T05:53:43` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante casos límite en la recolección de datos de `SystemMetrics` y la evaluación del pipeline, añadiendo validaciones específicas contra valores `None` o `NaN` en los argumentos del constructor, previniendo errores de propagación que podrían dejar la app en estado inconsistente.
 - `2026-10-27T05:53:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T05:53:43` Corrida terminada. Total usado hoy: 140.
+- `2026-10-27T06:02:13` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-10-27T06:03:27` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-27T06:03:58` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_process_executable_safe` al implementar un manejo defensivo ante rutas con caracteres especiales o que excedan los límites de longitud del SO (`MAX_PATH`), además de añadir una validación de existencia explícita tras la resolución de la ruta absoluta para prevenir fallos al iterar sobre procesos efímeros.
+- `2026-10-27T06:04:27` ➖ Sin cambios en organizer.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `organizer.py` ante errores de sistema de archivos (como discos extraíbles desconectados o rutas inválidas) durante el escaneo y el movimiento, añadiendo validaciones de existencia y capturas de excepciones específicas en las funciones críticas de E/S.
+- `2026-10-27T06:05:28` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-27T06:05:58` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de `os.fsync()` en `_safe_unlink` para garantizar la persistencia de la eliminación en el sistema de archivos ante fallos de hardware o interrupciones repentinas, mitigando el riesgo de que el manifiesto se desincronice de la realidad del disco.
+- `2026-10-27T06:05:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T06:05:58` Corrida terminada. Total usado hoy: 144.

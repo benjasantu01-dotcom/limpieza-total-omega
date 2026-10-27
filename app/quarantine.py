@@ -359,8 +359,10 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         if parent.exists():
             try:
                 dir_fd: int = os.open(str(parent), os.O_RDONLY)
-                try: os.fsync(dir_fd)
-                finally: os.close(dir_fd)
+                try: 
+                    os.fsync(dir_fd)
+                finally: 
+                    os.close(dir_fd)
             except OSError:
                 pass
         return True
@@ -1050,8 +1052,10 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             if p and p.exists():
                 try:
                     dir_fd: int = os.open(str(p), os.O_RDONLY)
-                    try: os.fsync(dir_fd)
-                    finally: os.close(dir_fd)
+                    try: 
+                        os.fsync(dir_fd)
+                    finally: 
+                        os.close(dir_fd)
                 except OSError:
                     pass
             
@@ -1137,8 +1141,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             
             try:
                 dir_fd: int = os.open(str(quarantine_root), os.O_RDONLY)
-                try: os.fsync(dir_fd)
-                finally: os.close(dir_fd)
+                try: 
+                    os.fsync(dir_fd)
+                finally: 
+                    os.close(dir_fd)
             except OSError:
                 pass
             
