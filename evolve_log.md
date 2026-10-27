@@ -1083,3 +1083,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-27T05:33:22` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
 - `2026-10-27T05:33:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T05:33:22` Corrida terminada. Total usado hoy: 132.
+- `2026-10-27T05:41:49` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-10-27T05:42:54` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Optimizé la gestión de caché de `_SettingsManager` reemplazando los diccionarios de caché por una estructura más eficiente y añadiendo la invalidación selectiva para evitar lecturas innecesarias de disco, mejorando así el rendimiento en accesos repetidos a la configuración.
+- `2026-10-27T05:42:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T05:43:23` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-27T05:44:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_apply_field` y `_clean_grade` dentro de `SystemContext` para manejar de forma segura entradas inesperadas (como objetos con atributos inesperados o tipos de datos erróneos) que podrían causar excepciones durante la ingesta, asegurando que el estado interno se mantenga íntegro ante datos malformados.
+- `2026-10-27T05:44:30` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-27T05:44:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T05:44:30` Corrida terminada. Total usado hoy: 136.

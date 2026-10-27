@@ -443,17 +443,19 @@ class SystemContext:
             if valid_val is not None:
                 return spec.type_hint(valid_val)
             return None
-        except (ValueError, TypeError, Exception):
+        except (ValueError, TypeError, AttributeError, Exception):
             return None
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""
         if not isinstance(val, str): return ""
-        clean: str = _REGEX_CONTROL_CHARS.sub(" ", val)[:_MAX_GRADE_LEN].strip()
-        if not clean or is_protected_path(clean): return ""
-        # Validación de seguridad defensiva extra
-        if not _ensure_safe_text(clean): return ""
-        return clean
+        try:
+            clean: str = _REGEX_CONTROL_CHARS.sub(" ", val)[:_MAX_GRADE_LEN].strip()
+            if not clean or is_protected_path(clean) or not _ensure_safe_text(clean): 
+                return ""
+            return clean
+        except (TypeError, Exception):
+            return ""
 
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
         """Extrae y valida métricas numéricas y texto de calificación de una fuente."""
