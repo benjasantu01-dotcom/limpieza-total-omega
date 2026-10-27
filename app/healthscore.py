@@ -85,7 +85,7 @@ class RecommendationRule(NamedTuple):
     Define una lógica de diagnóstico reactiva: 
     - area: Identificador del componente (ej. 'disco', 'seguridad').
     - threshold: Valor de ratio [0, 1] que activa la advertencia.
-    - message_factory: Callable que extrae datos de SystemMetrics para redactar el mensaje.
+    - message_factory: Función que extrae datos de SystemMetrics para redactar el mensaje.
     - check: Predicado que evalúa la métrica frente al ratio para decidir el disparo.
     """
     area: MetricKey
@@ -95,11 +95,11 @@ class RecommendationRule(NamedTuple):
 
 class PipelineEntry(NamedTuple):
     """
-    Define la estructura de procesamiento de una métrica en el pipeline:
-    - area: Nombre único de la métrica.
-    - weight: Entero entre 0-100 representando la importancia relativa en el score final.
-    - scorer: Función que normaliza el dato crudo a NormalizedRatio.
-    - rules: Tupla de reglas de advertencia (RecommendationRule) vinculadas a esta métrica.
+    Estructura de procesamiento para cada métrica en el sistema:
+    - area: Nombre identificador.
+    - weight: Entero (0-100) para la ponderación en el score final.
+    - scorer: Función que transforma la métrica cruda en NormalizedRatio [0.0, 1.0].
+    - rules: Colección de reglas de diagnóstico disparables.
     """
     area: MetricKey
     weight: int
@@ -129,12 +129,18 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0     
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """Recorta un valor numérico para que se encuentre dentro de un rango inclusivo."""
+    """Recorta un valor numérico para asegurar que esté dentro de un rango inclusivo."""
     if not isinstance(value, (int, float)) or not math.isfinite(value): return min_val
     return float(max(min_val, min(max_val, value)))
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Fábrica de normalizadores lineales con soporte para métricas inversas (ej. basura)."""
+    """
+    Fábrica que genera funciones de normalización lineal.
+    
+    Args:
+        limit: Valor umbral para la normalización.
+        inverse: Si es True, valores superiores al límite reducen el score (penalizan).
+    """
     def scorer(val: float) -> NormalizedRatio:
         if not math.isfinite(val) or limit <= 0.0: return 0.0
         ratio = val / limit
@@ -156,7 +162,7 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 }
 
 def _verify_pipeline_integrity(weights: Dict[str, int], pipeline: Tuple[PipelineEntry, ...]) -> None:
-    """Validación de pre-arranque para asegurar coherencia en pesos y áreas del pipeline."""
+    """Validación de pre-arranque para asegurar coherencia entre pesos definidos y pipeline."""
     try:
         if sum(weights.values()) != 100:
             logging.error("Integridad de Pipeline fallida: Los pesos no suman 100.")
@@ -203,7 +209,7 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _JUNK_SCORER(float(junk_mb) if isinstance(junk_mb, (int, float)) else 0.0)
 
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
-    """Calcula salud: Penaliza según archivos sospechosos y advertencias de seguridad."""
+    """Calcula salud: Penaliza proporcionalmente según archivos sospechosos y advertencias."""
     try:
         s_count = max(0, int(suspicious_count))
         w_count = max(0, int(warnings))
@@ -387,7 +393,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema corruptos."])
     
     try:
-        # Cache keyed by flat tuple directly extracted from existing fields to avoid redundant creation
         cache_key = tuple(getattr(metrics, f) for f in SystemMetrics._FIELDS_TO_VALIDATE)
         return _compute_cached(cache_key, int(metrics.quarantined_count))
     except (TypeError, ValueError):
