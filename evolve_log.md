@@ -597,3 +597,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-27T00:29:53` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `scanner.py` mediante la normalización de docstrings, la inclusión de explicaciones sobre el propósito de las constantes críticas de seguridad y la unificación de tipado, facilitando la comprensión del flujo de análisis heurístico.
 - `2026-10-27T00:29:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T00:29:53` Corrida terminada. Total usado hoy: 12.
+- `2026-10-27T00:36:08` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-10-27T00:36:42` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `_SettingsManager`, clarificando las garantías de atomicidad y seguridad en la persistencia de datos.
+- `2026-10-27T00:36:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T00:37:13` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-27T00:37:53` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` y el manejo de métricas transformando la búsqueda de tokens y la serialización del contexto en operaciones de tiempo constante o lineal mediante sets, evitando iteraciones repetitivas y recreación de estructuras.
+- `2026-10-27T00:38:10` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimizé la generación de gradientes en `branding.py` reemplazando la creación dinámica de listas y el formateo de strings en cada ciclo por una estrategia de pre-cálculo y caché más agresiva, mejorando el rendimiento en el renderizado de la UI.
+- `2026-10-27T00:38:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T00:38:10` Corrida terminada. Total usado hoy: 16.

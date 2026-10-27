@@ -563,7 +563,7 @@ def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt del asistente."""
     if context.is_empty: return ""
     snap: MetricsDict = context.metrics_snapshot
-    lines = (f"{k}: {snap[k]:.{p}f}{u}" for k, u, p in _CONTEXT_SCHEMA if k in snap and (val := snap[k]) >= 0.0)
+    lines = (f"{k}: {snap[k]:.{p}f}{u}" for k, u, p in _CONTEXT_SCHEMA if k in snap and snap[k] >= 0.0)
     return "\n".join(filter(_ensure_safe_text, lines))
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
@@ -681,8 +681,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         return Answer("Entrada no válida.")
     
     # Búsqueda optimizada: iterar tokens y buscar en el diccionario directamente
-    tokens = _TOKEN_REGEX.findall(q_sanitized.lower())
-    for token in tokens:
+    for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
         if token in _TOKENS_MAP:
             return _TOKENS_MAP[token](context, question)
             

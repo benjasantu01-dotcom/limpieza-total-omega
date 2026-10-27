@@ -153,8 +153,11 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 
 class _SettingsManager:
     """
-    Singleton que gestiona el estado de la configuración, minimizando el acceso
-    a disco mediante el uso de cachés sincronizadas por metadatos (mtime/size).
+    Singleton encargado de la persistencia y caché en memoria de la configuración.
+    
+    Implementa un mecanismo de escritura atómica (file-move) para prevenir la 
+    corrupción del archivo ante cierres inesperados. Utiliza caché basada en 
+    mtime y tamaño del archivo para evitar lecturas redundantes en disco.
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
@@ -163,15 +166,20 @@ class _SettingsManager:
         self._last_size: int = 0
 
     def clear(self) -> None:
-        """Resetea los estados de caché para forzar una lectura fresca desde disco."""
+        """Invalida la caché actual, forzando la recarga desde el sistema de archivos."""
         self._cached_settings = None
         self._last_mtime = 0.0
         self._last_size = 0
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Escribe el contenido de configuración mediante un archivo temporal y fsync.
-        Verifica seguridad de escritura mediante restricciones de sistema operativo.
+        Escribe datos de forma segura mediante un archivo de intercambio (.tmp) y fsync.
+        
+        Aplica estrictas verificaciones de integridad:
+        1. Valida que el path sea seguro según `safety.py`.
+        2. Garantiza que el archivo sea regular (sin enlaces/reparse points).
+        3. Realiza un flush físico a disco mediante `fsync`.
+        4. Sustituye el original mediante `os.replace` (operación atómica).
         """
         if not isinstance(serialized, str) or len(str(config_path)) > 260: return False
         
@@ -184,7 +192,6 @@ class _SettingsManager:
             if is_protected_path(str(resolved_path)) or not is_safe_to_modify(str(resolved_path)): return False
             
             if resolved_path.exists():
-                # Verificar integridad: debe ser un archivo regular sin enlaces simbólicos ni hardlinks peligrosos
                 st = resolved_path.lstat()
                 if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
                 if (st.st_mode & 0o077) != 0: return False 
