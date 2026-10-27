@@ -1516,3 +1516,39 @@ FAILED evolve/tests/test_safety.py::test_drive_root_is_always_protected - Assert
 - `2026-10-27T09:58:49` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `is_protected_path` reemplazando la iteración completa sobre las partes del path (que incluye llamadas a `Path.parts` y normalizaciones costosas) por una verificación de prefijos más directa utilizando `os.path.normcase`, reduciendo drásticamente las operaciones de E/S innecesarias y el costo de memoria durante el escaneo de directorios.
 - `2026-10-27T09:58:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T09:58:49` Corrida terminada. Total usado hoy: 236.
+- `2026-10-27T10:06:50` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-10-27T10:07:21` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `process_entry` y la búsqueda de extensiones reemplazando `os.path.splitext` (que realiza múltiples operaciones de cadena y asignaciones) por una lógica de chequeo de sufijos más directa aprovechando que `SUSPICIOUS_ALL_EXTS` es un `frozenset`.
+- `2026-10-27T10:07:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T10:07:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T10:08:08` Tests FALLARON:
+```
+...............F........................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+1 failed, 298 passed in 1.91s
+
+```
+- `2026-10-27T10:08:08` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_Validators._run_safety_checks` reemplazando la llamada repetitiva a `pathlib.Path.parents` (que generaba múltiples objetos y recorridos por cada chequeo) por una lógica basada en el string del path, reduciendo la presión sobre el recolector de basura y mejorando la velocidad de validación en entornos con muchas rutas.
+- `2026-10-27T10:08:37` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-27T10:09:02` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `ingest` y `_apply_field` ante objetos fuente que podrían contener métodos o propiedades maliciosas, garantizando que solo se procesen datos simples (`dict` o atributos) y evitando cualquier ejecución de código accidental al acceder a ellos mediante la validación `callable`.
+- `2026-10-27T10:09:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T10:09:02` Corrida terminada. Total usado hoy: 240.

@@ -269,10 +269,9 @@ class Scanner:
         directory_stack.append((entry.path, current_depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Filtra archivos relevantes para las heurísticas configuradas."""
-        if not name: return False
-        _, ext = os.path.splitext(name)
-        return ext.lower() in SUSPICIOUS_ALL_EXTS
+        """Filtra archivos relevantes para las heurísticas configuradas (Optimizado)."""
+        idx = name.rfind('.')
+        return idx > 0 and name[idx:].lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Procesa una entrada individual (directorio o archivo) del sistema."""

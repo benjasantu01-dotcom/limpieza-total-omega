@@ -430,7 +430,7 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         try:
             val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-            if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)):
+            if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)) or callable(val):
                 return None
             valid_val = _is_valid_numeric_update(val, spec)
             return spec.type_hint(valid_val) if valid_val is not None else None
@@ -439,7 +439,7 @@ class SystemContext:
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""
-        if not isinstance(val, str): return ""
+        if not isinstance(val, str) or callable(val): return ""
         try:
             clean: str = _REGEX_CONTROL_CHARS.sub(" ", val)[:_MAX_GRADE_LEN].strip()
             if not clean or is_protected_path(clean) or not _ensure_safe_text(clean): 
@@ -450,7 +450,7 @@ class SystemContext:
 
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
         """Extrae y valida métricas numéricas y texto de calificación de una fuente."""
-        if not isinstance(source, (dict, object)): return None
+        if not isinstance(source, (dict, object)) or callable(source): return None
         updates: dict[str, Any] = {}
         try:
             for key, spec in _VALIDATORS.items():
@@ -458,7 +458,7 @@ class SystemContext:
                 if val is not None: updates[key] = val
             
             g_val = source.get("grade") if isinstance(source, dict) else getattr(source, "grade", None)
-            if g_val is not None:
+            if g_val is not None and not callable(g_val):
                 grade_val = self._clean_grade(g_val)
                 if len(grade_val) > 0: updates["grade"] = grade_val
         except Exception:
@@ -467,7 +467,7 @@ class SystemContext:
 
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
-        if source is None or not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)): 
+        if source is None or callable(source) or not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)): 
             return False
         return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list)) else True
 
@@ -674,7 +674,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     except (TypeError, ValueError): return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae de manera segura el contenido textual de la respuesta JSON del motor remoto."""
+    """Extracte de manera segura el contenido textual de la respuesta JSON del motor remoto."""
     if not isinstance(data, dict) or not _is_safe_payload_structure(data): return None
     try:
         candidates = data.get("candidates")

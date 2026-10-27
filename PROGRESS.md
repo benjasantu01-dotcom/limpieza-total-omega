@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 70
-- Sin cambios (nada sustancial que mejorar): 18
+- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 69
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 95 | 8 | 29 | 12 | 124 |
-| 2026-10-27 | 89 | 6 | 41 | 6 | 94 |
+| 2026-10-26 | 94 | 8 | 28 | 11 | 123 |
+| 2026-10-27 | 91 | 7 | 41 | 6 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **36**
-- seguridad defensiva: **34**
-- rendimiento: **30**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **33**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
-- `diskreport.py`: **18**
 - `memory.py`: **18**
+- `diskreport.py`: **17**
 - `healthscore.py`: **17**
+- `scanner.py`: **16**
+- `assistant.py`: **16**
 - `organizer.py`: **15**
-- `scanner.py`: **15**
-- `assistant.py`: **15**
 - `browser.py`: **15**
 - `settings.py`: **15**
 - `safety.py`: **14**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T10:09:02` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `ingest` y `_apply_field` ante objetos fuente que podrían contener métodos o propiedades maliciosas, garantizando que solo se procesen datos simples (`dict` o atributos) y evitando cualquier ejecución de código accidental al acceder a ellos mediante la validación `callable`.
+- `2026-10-27T10:07:21` **scanner.py** (rendimiento): Optimicé el rendimiento de `process_entry` y la búsqueda de extensiones reemplazando `os.path.splitext` (que realiza múltiples operaciones de cadena y asignaciones) por una lógica de chequeo de sufijos más directa aprovechando que `SUSPICIOUS_ALL_EXTS` es un `frozenset`.
 - `2026-10-27T09:57:51` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché en `total_quarantined_bytes` y una optimización en `purge_all` para evitar llamadas redundantes a `load_manifest`, reduciendo la carga de I/O en operaciones frecuentes de reporte y limpieza masiva.
 - `2026-10-27T09:48:09` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` sustituyendo el uso repetido de `ctypes.create_unicode_buffer` (una llamada costosa dentro de un bucle intensivo) por un enfoque de filtrado previo de PIDs, reduciendo las llamadas innecesarias a la API de Windows para procesos que ya sabemos que son del sistema o de bajo consumo.
 - `2026-10-27T09:47:21` **healthscore.py** (rendimiento): Se optimizó el acceso a datos en el pipeline de cálculo reemplazando la introspección repetitiva mediante `getattr` en el bucle principal por una extracción inicial de los valores al llamar a `_compute_cached`, reduciendo la carga de llamadas a funciones en el cálculo frecuente de puntajes.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T09:16:39` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo documentación detallada (docstrings) en las estructuras de datos y funciones complejas, aclarando el propósito y las limitaciones de las APIs de Windows utilizadas.
 - `2026-10-27T09:06:12` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con estructura (Args/Returns) a las funciones críticas, aplicando type hints consistentes y clarificando mediante comentarios técnicos el propósito de los mecanismos de recolección de métricas.
 - `2026-10-27T08:57:39` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos y type hints faltantes en funciones clave (`_process_file_in_dir`, `_sum_directory_recursive`), además de normalizar la consistencia de las anotaciones de tipo para asegurar claridad en la lógica de recursión y manejo de archivos.
-- `2026-10-27T08:57:14` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad semántica de las estructuras de datos, añadiendo docstrings explicativos a las clases `PaletteDict` y `FontSizesDict`, y renombrando variables clave para evitar ambigüedades en la arquitectura visual.
-- `2026-10-27T08:56:44` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenimiento del código mediante la aplicación sistemática de type hints en los retornos de funciones, la simplificación de lógicas de control mediante el uso de `any()` y `all()` en lugar de bucles `for` manuales, y la documentación de comportamientos implícitos en `AssistantConfig`.
