@@ -7,44 +7,46 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 69
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 94 | 8 | 28 | 11 | 123 |
-| 2026-10-27 | 91 | 7 | 41 | 6 | 95 |
+| 2026-10-26 | 92 | 7 | 27 | 11 | 123 |
+| 2026-10-27 | 93 | 7 | 41 | 6 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **37**
-- seguridad defensiva: **33**
+- robustez ante casos límite: **39**
+- seguridad defensiva: **31**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
-- `memory.py`: **18**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `healthscore.py`: **17**
+- `memory.py`: **17**
 - `scanner.py`: **16**
 - `assistant.py`: **16**
-- `organizer.py`: **15**
-- `browser.py`: **15**
+- `browser.py`: **16**
 - `settings.py`: **15**
 - `safety.py`: **14**
+- `organizer.py`: **14**
 - `branding.py`: **10**
 - `duplicates.py`: **7**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T10:18:34` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante errores de acceso (como `PermissionError` o unidades extraíbles sin medio) y añadí un manejo de excepciones más granular en `_validate_root` para evitar que la app colapse ante rutas bloqueadas por el SO.
+- `2026-10-27T10:17:57` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_within_sandbox` y `_sum_directory_recursive` mediante el uso de `os.path.commonpath`, lo cual es una técnica más precisa y estándar para detectar escapes de directorio ("path traversal") que la simple comparación de prefijos de cadenas, mitigando fallos por rutas relativas o inconsistencias en la normalización.
 - `2026-10-27T10:09:02` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `ingest` y `_apply_field` ante objetos fuente que podrían contener métodos o propiedades maliciosas, garantizando que solo se procesen datos simples (`dict` o atributos) y evitando cualquier ejecución de código accidental al acceder a ellos mediante la validación `callable`.
 - `2026-10-27T10:07:21` **scanner.py** (rendimiento): Optimicé el rendimiento de `process_entry` y la búsqueda de extensiones reemplazando `os.path.splitext` (que realiza múltiples operaciones de cadena y asignaciones) por una lógica de chequeo de sufijos más directa aprovechando que `SUSPICIOUS_ALL_EXTS` es un `frozenset`.
 - `2026-10-27T09:57:51` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché en `total_quarantined_bytes` y una optimización en `purge_all` para evitar llamadas redundantes a `load_manifest`, reduciendo la carga de I/O en operaciones frecuentes de reporte y limpieza masiva.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T09:17:56` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados (usando formato estilo Google) en funciones críticas, la estandarización de las anotaciones de tipo, y la extracción de lógica compleja de validación en funciones auxiliares con nombres más semánticos, facilitando la comprensión del flujo de seguridad para otros colaboradores.
 - `2026-10-27T09:17:11` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a funciones críticas y normalizando los type hints para asegurar consistencia en la documentación de parámetros y retornos.
 - `2026-10-27T09:16:39` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo documentación detallada (docstrings) en las estructuras de datos y funciones complejas, aclarando el propósito y las limitaciones de las APIs de Windows utilizadas.
-- `2026-10-27T09:06:12` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con estructura (Args/Returns) a las funciones críticas, aplicando type hints consistentes y clarificando mediante comentarios técnicos el propósito de los mecanismos de recolección de métricas.
-- `2026-10-27T08:57:39` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos y type hints faltantes en funciones clave (`_process_file_in_dir`, `_sum_directory_recursive`), además de normalizar la consistencia de las anotaciones de tipo para asegurar claridad en la lógica de recursión y manejo de archivos.

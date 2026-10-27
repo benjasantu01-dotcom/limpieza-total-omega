@@ -1552,3 +1552,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-10-27T10:09:02` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `ingest` y `_apply_field` ante objetos fuente que podrían contener métodos o propiedades maliciosas, garantizando que solo se procesen datos simples (`dict` o atributos) y evitando cualquier ejecución de código accidental al acceder a ellos mediante la validación `callable`.
 - `2026-10-27T10:09:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T10:09:02` Corrida terminada. Total usado hoy: 240.
+- `2026-10-27T10:17:00` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-10-27T10:17:32` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-27T10:17:57` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_within_sandbox` y `_sum_directory_recursive` mediante el uso de `os.path.commonpath`, lo cual es una técnica más precisa y estándar para detectar escapes de directorio ("path traversal") que la simple comparación de prefijos de cadenas, mitigando fallos por rutas relativas o inconsistencias en la normalización.
+- `2026-10-27T10:18:34` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante errores de acceso (como `PermissionError` o unidades extraíbles sin medio) y añadí un manejo de excepciones más granular en `_validate_root` para evitar que la app colapse ante rutas bloqueadas por el SO.
+- `2026-10-27T10:18:42` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-27T10:18:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T10:18:42` Corrida terminada. Total usado hoy: 244.

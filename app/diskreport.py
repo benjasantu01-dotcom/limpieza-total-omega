@@ -150,7 +150,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=False)
-        if is_protected_path(p) or not p.exists() or not p.is_dir() or not os.access(p, os.R_OK):
+        # Verificación estricta: existencia y acceso de lectura
+        if not p.exists() or not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
         return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -170,8 +171,13 @@ def _get_local_windows_drives() -> List[str]:
     try:
         for letter in string.ascii_uppercase:
             drive = f"{letter}:\\"
+            # Verificar si existe y es accesible antes de añadir
             if os.path.exists(drive) and not is_protected_path(Path(drive)):
-                drives.append(drive)
+                try:
+                    os.listdir(drive)
+                    drives.append(drive)
+                except (OSError, PermissionError):
+                    continue
     except (OSError, PermissionError):
         pass
     return drives
@@ -250,6 +256,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     try:
         p = Path(mount).expanduser().resolve(strict=False)
         if not p.exists() or is_protected_path(p): return None
+        # disk_usage puede fallar en unidades removibles sin medio
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
@@ -287,6 +294,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Saltar si es protegido o tiene caracteres ilegales
                         if skip_protected and (is_protected_path(Path(entry.path)) or _is_excluded_path(entry.name, entry.path)):
                             continue
                         

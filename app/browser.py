@@ -168,8 +168,11 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def _is_within_sandbox(path_norm: str, base_norm: str) -> bool:
-    """Valida que la ruta sea descendiente del directorio raíz permitido."""
-    return path_norm.startswith(base_norm)
+    """Valida mediante commonpath que la ruta sea descendiente de la raíz."""
+    try:
+        return os.path.commonpath([path_norm, base_norm]) == base_norm
+    except ValueError:
+        return False
 
 def base_directories() -> List[Path]:
     """Determina las carpetas locales de usuario autorizadas para el escaneo."""
