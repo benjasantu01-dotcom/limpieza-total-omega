@@ -755,10 +755,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
              
         os.replace(temp_dest, destination)
         
+        # Sincronización del directorio padre tras la creación del archivo
         try:
-            dir_fd: int = os.open(str(destination.parent), os.O_RDONLY)
-            try: os.fsync(dir_fd)
-            finally: os.close(dir_fd)
+            with os.fdopen(os.open(str(destination.parent), os.O_RDONLY), 'r') as dir_fd:
+                os.fsync(dir_fd.fileno())
         except OSError:
             pass
         
@@ -1147,11 +1147,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             _check_io_error_context(save_manifest, new_items, base)
             
             try:
-                dir_fd: int = os.open(str(quarantine_root), os.O_RDONLY)
-                try: 
-                    os.fsync(dir_fd)
-                finally: 
-                    os.close(dir_fd)
+                with os.fdopen(os.open(str(quarantine_root), os.O_RDONLY), 'r') as dir_fd:
+                    os.fsync(dir_fd.fileno())
             except OSError:
                 pass
             

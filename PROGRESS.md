@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 70
+- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 64 | 7 | 21 | 6 | 86 |
-| 2026-10-27 | 117 | 7 | 49 | 9 | 138 |
+| 2026-10-26 | 63 | 6 | 20 | 6 | 85 |
+| 2026-10-27 | 119 | 7 | 49 | 9 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **45**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **41**
 - manejo de errores y validación de entradas: **37**
 - seguridad defensiva: **36**
-- rendimiento: **24**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
 - `settings.py`: **16**
 - `browser.py`: **15**
+- `organizer.py`: **15**
 - `assistant.py`: **15**
-- `scanner.py`: **14**
-- `organizer.py`: **14**
+- `scanner.py`: **13**
 - `safety.py`: **12**
 - `branding.py`: **11**
 - `duplicates.py`: **6**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T14:43:18` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para delegar la lógica de creación de directorios y limpieza de recursos, y añadí docstrings detallados en las funciones de validación crítica para clarificar las intenciones de seguridad.
+- `2026-10-27T14:42:44` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings detallados en las funciones de validación crítica y constantes, explicando el "porqué" de las verificaciones de seguridad y el manejo de bajo nivel, facilitando así la auditoría y mantenimiento del código.
 - `2026-10-27T14:31:14` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los argumentos de funciones clave y refinando los docstrings para explicar la lógica de normalización y el contrato de los protocolos.
 - `2026-10-27T14:29:41` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo docstrings descriptivos con especificación de tipos en las funciones auxiliares de bajo nivel (`_safe_stat`, `_bytes_to_mb`, `_validate_limit`), clarificando las precondiciones y el comportamiento esperado para facilitar la auditoría de seguridad del código.
 - `2026-10-27T14:29:13` **browser.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) de `ScanContext` y `_sum_directory_recursive` para clarificar la lógica de prevención de bucles y el manejo de excepciones, facilitando el mantenimiento a largo plazo.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T11:20:41` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y corrupción, validando que el archivo no sea un enlace simbólico ni contenga datos maliciosos mediante una verificación de integridad más estricta antes de abrirlo.
 - `2026-10-27T11:19:44` **safety.py** (seguridad defensiva): Mejoré `_validate_preconditions` en `safety.py` para bloquear explícitamente la modificación de archivos que poseen el atributo `OFFLINE` (archivos en la nube como OneDrive/Dropbox) y el atributo `REPARSE_POINT` (detección de junctions/symlinks de archivos), reforzando la seguridad defensiva contra modificaciones no deseadas en archivos que el sistema operativo puede gestionar externamente.
 - `2026-10-27T11:10:39` **quarantine.py** (seguridad defensiva): Se introdujo una validación de profundidad de directorio explícita en `quarantine_dir` y una comprobación de existencia de `path` al inicio de `purge_item` para prevenir errores ante rutas no normalizadas o inexistentes, reforzando la seguridad defensiva contra manipulación de rutas.
-- `2026-10-27T11:10:11` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` para prevenir operaciones en archivos de sistema ocultos o protegidos que podrían haber escapado a los filtros iniciales, asegurando que la validación de seguridad sea explícita y coherente con el enfoque de protección de archivos críticos antes de cualquier E/S.
-- `2026-10-27T11:09:37` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_process_executable_safe` añadiendo una comprobación adicional de longitud de ruta y manejo explícito de errores de acceso (como `ERROR_INSUFFICIENT_BUFFER`), alineando la validación de rutas del proceso con las mejores prácticas del enfoque de seguridad defensiva antes de cualquier operación de gestión.

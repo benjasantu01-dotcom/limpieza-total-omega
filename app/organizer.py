@@ -34,7 +34,9 @@ SortField: TypeAlias = Literal["size", "date"]
 
 @dataclass(frozen=True)
 class SecurityLimits:
-    """Umbrales de seguridad y constantes de bajo nivel para el escaneo."""
+    """Umbrales de seguridad y constantes de bajo nivel para el escaneo.
+    Define límites de recursión, tamaño y máscaras de atributos de Windows para 
+    evitar el procesamiento de archivos críticos o bucles infinitos."""
     MAX_PATH_LENGTH: Final[int] = 260
     MAX_FILE_SIZE_BYTES: Final[int] = 100_000_000_000
     MIN_FREE_SPACE_BYTES: Final[int] = 52_428_800
@@ -94,9 +96,9 @@ def list_available_drives() -> List[str]:
 @dataclass
 class JunkFile:
     """
-    Representa un archivo candidato a limpieza y sus metadatos de identidad 
-    capturados durante el escaneo. Se utiliza inodo/dev para evitar race 
-    conditions en las que un archivo es reemplazado por otro en la misma ruta.
+    Representa un archivo candidato a limpieza. Se utiliza inodo/dev (o equivalente) 
+    para identificar de forma unívoca el archivo y prevenir race conditions donde 
+    el archivo es reemplazado por otro en la misma ruta antes de procesarlo.
     """
     path: Path
     size_bytes: int
@@ -131,8 +133,9 @@ def is_valid_junk_extension(filename: str) -> bool:
 
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """
-    Extrae atributos de archivo de la API de Win32 para identificar metadatos 
-    específicos del sistema de archivos, como archivos ocultos o de sistema.
+    Extrae atributos de archivo de la API de Win32 (GetFileAttributes). 
+    Es necesario para distinguir correctamente archivos con bits de sistema/oculto
+    que las llamadas estándar de POSIX pueden omitir.
     """
     try:
         if isinstance(entry, os.DirEntry):
@@ -143,8 +146,9 @@ def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
 
 def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     """
-    Detecta puntos de reparse (Junctions o symlinks) para impedir que el 
-    algoritmo de escaneo siga recursivamente enlaces que causen bucles infinitos.
+    Detecta puntos de reparse (Junctions o symlinks). Bloquear esto es crítico
+    porque seguir enlaces de sistema puede llevar a bucles infinitos o escaneos
+    fuera de los directorios permitidos por el usuario.
     """
     try:
         if isinstance(entry, Path) and entry.is_symlink(): return True
@@ -154,8 +158,9 @@ def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
 
 def _is_unc_path(path: Path) -> bool:
     """
-    Valida si la ruta es una ruta UNC (Universal Naming Convention), 
-    bloqueando su procesamiento para prevenir E/S en recursos de red externos.
+    Valida si la ruta es UNC (e.g., \\servidor\recurso). Se bloquea explícitamente 
+    porque estas rutas pueden causar bloqueos de E/S impredecibles (timeouts) 
+    y no son seguras para realizar operaciones de limpieza local.
     """
     if not isinstance(path, Path): return True
     try:
@@ -183,8 +188,9 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _try_open_win_file(path: Path) -> bool:
     """
-    Realiza una llamada de bajo nivel a la API de Windows (CreateFileW)
-    para verificar si el archivo está siendo bloqueado por otro proceso.
+    Intenta abrir el archivo con privilegios exclusivos de solo lectura 
+    (CreateFileW) para detectar si está bloqueado por otro proceso del sistema.
+    Retorna True si el archivo está accesible, False si hay un lock vigente.
     """
     try:
         handle = ctypes.windll.kernel32.CreateFileW(
@@ -210,8 +216,9 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Verifica que la operación de movimiento no sea circular, evitando que 
-    la carpeta de destino sea un subdirectorio de la fuente o viceversa.
+    Verifica que la operación de movimiento no sea circular. Esto evita la 
+    corrupción del sistema de archivos al intentar mover una carpeta padre 
+    dentro de su propia estructura (subdirectorio).
     """
     try:
         src_resolved = src.resolve(strict=False)
@@ -221,7 +228,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Detecta caracteres no permitidos en la cadena de ruta según estándares del SO."""
+    """Detecta caracteres que pueden romper la interpretación de rutas en Win32."""
     if not path: return True
     try:
         path_str = str(path).lower()
@@ -231,8 +238,8 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
-    Orquestador que agrupa comprobaciones de seguridad básicas, como la longitud 
-    de la ruta y la ausencia de caracteres ilegales o rutas protegidas.
+    Orquestador de seguridad: Valida longitud, caracteres, rutas UNC y 
+    restricciones de `safety.py` sobre los paths implicados en la E/S.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
@@ -245,8 +252,9 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
 
 def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
     """
-    Valida la identidad física de un archivo comparando su inodo actual con el 
-    registrado durante la captura inicial para evitar race conditions.
+    Valida la identidad física comparando inodo/dev. Es la defensa final 
+    contra TOCTOU (Time-of-check to time-of-use), asegurando que el archivo 
+    que vamos a mover es el mismo que escaneamos inicialmente.
     """
     try:
         stat_result = src_real.stat()
@@ -257,8 +265,9 @@ def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
 
 def _can_write_to_destination(dest_real: Path, size: int) -> bool:
     """
-    Consulta el espacio libre en disco en la unidad de destino y garantiza 
-    que sea suficiente para realizar la operación de movimiento.
+    Verifica disponibilidad de espacio en disco en la unidad de destino. 
+    Se calcula con margen extra (`MIN_FREE_SPACE_BYTES`) para evitar dejar 
+    la partición con espacio insuficiente tras el movimiento.
     """
     try:
         target_dir = dest_real.parent if dest_real.exists() else dest_real
@@ -276,8 +285,9 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Realiza un chequeo exhaustivo de seguridad para E/S antes de mover un archivo.
-    Valida permisos, estados de bloqueo, integridad de ruta y disponibilidad de espacio.
+    Validador integral previo a cualquier operación de E/S.
+    Verifica seguridad de permisos, exclusividad de acceso (sin locks),
+    integridad de identidad y disponibilidad de espacio en disco.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
     try:
@@ -321,7 +331,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
     Procesa recursivamente el sistema de archivos buscando candidatos a limpieza. 
-    Usa un caché de rutas visitadas y protegidas para optimizar el rendimiento.
+    Usa un caché de rutas visitadas para evitar ciclos lógicos y optimizar el rendimiento.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
