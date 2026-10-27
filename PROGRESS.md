@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 71
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 225
+- Rechazadas por guardia de seguridad: 70
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 66 | 7 | 22 | 6 | 87 |
-| 2026-10-27 | 114 | 7 | 49 | 8 | 138 |
+| 2026-10-26 | 64 | 7 | 21 | 6 | 86 |
+| 2026-10-27 | 117 | 7 | 49 | 9 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **45**
+- legibilidad y documentación: **39**
 - manejo de errores y validación de entradas: **37**
 - seguridad defensiva: **36**
-- legibilidad y documentación: **36**
-- rendimiento: **26**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `quarantine.py`: **20**
 - `memory.py`: **18**
-- `diskreport.py`: **16**
-- `healthscore.py`: **16**
+- `diskreport.py`: **17**
+- `healthscore.py`: **17**
 - `settings.py`: **16**
+- `browser.py`: **15**
 - `assistant.py`: **15**
 - `scanner.py`: **14**
-- `browser.py`: **14**
 - `organizer.py`: **14**
-- `safety.py`: **13**
+- `safety.py`: **12**
 - `branding.py`: **11**
 - `duplicates.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T14:31:14` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los argumentos de funciones clave y refinando los docstrings para explicar la lógica de normalización y el contrato de los protocolos.
+- `2026-10-27T14:29:41` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo docstrings descriptivos con especificación de tipos en las funciones auxiliares de bajo nivel (`_safe_stat`, `_bytes_to_mb`, `_validate_limit`), clarificando las precondiciones y el comportamiento esperado para facilitar la auditoría de seguridad del código.
+- `2026-10-27T14:29:13` **browser.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) de `ScanContext` y `_sum_directory_recursive` para clarificar la lógica de prevención de bucles y el manejo de excepciones, facilitando el mantenimiento a largo plazo.
 - `2026-10-27T13:21:28` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al centralizar la captura de errores específicos durante la carga del archivo, asegurando que cualquier entrada mal formada o corrupta resulte en un valor seguro (`None`) en lugar de permitir excepciones inesperadas que podrían comprometer la estabilidad del sistema.
 - `2026-10-27T13:13:26` **scanner.py** (manejo de errores y validación de entradas): Se mejora la robustez del manejo de errores en las heurísticas de `scanner.py`, asegurando que `_run_file_heuristics` y `scan_file` validen explícitamente los parámetros y manejen de forma segura las excepciones durante la ejecución de los checks para evitar interrupciones prematuras del escaneo.
 - `2026-10-27T13:11:45` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `restore_item` al envolver sus llamadas de I/O críticas en `_check_io_error_context` y capturar excepciones específicas de manera más granular, asegurando que fallos en el sistema de archivos durante la limpieza o restauración no dejen el manifiesto en un estado inconsistente.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T11:10:39` **quarantine.py** (seguridad defensiva): Se introdujo una validación de profundidad de directorio explícita en `quarantine_dir` y una comprobación de existencia de `path` al inicio de `purge_item` para prevenir errores ante rutas no normalizadas o inexistentes, reforzando la seguridad defensiva contra manipulación de rutas.
 - `2026-10-27T11:10:11` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` para prevenir operaciones en archivos de sistema ocultos o protegidos que podrían haber escapado a los filtros iniciales, asegurando que la validación de seguridad sea explícita y coherente con el enfoque de protección de archivos críticos antes de cualquier E/S.
 - `2026-10-27T11:09:37` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_process_executable_safe` añadiendo una comprobación adicional de longitud de ruta y manejo explícito de errores de acceso (como `ERROR_INSUFFICIENT_BUFFER`), alineando la validación de rutas del proceso con las mejores prácticas del enfoque de seguridad defensiva antes de cualquier operación de gestión.
-- `2026-10-27T10:58:54` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` evitando el seguimiento de puntos de reparse (junctions/reparse points), comunes en Windows, mediante el uso de `entry.is_symlink()` (que identifica tanto enlaces simbólicos como puntos de reparse), previniendo bucles infinitos fuera del sistema de archivos esperado y accesos accidentales a rutas fuera del alcance del escaneo.
-- `2026-10-27T10:58:26` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una normalización estricta de rutas antes de cualquier comparación, previniendo posibles elusiones de la zona de seguridad (sandbox) causadas por el uso de caracteres de escape o rutas no resueltas.
-- `2026-10-27T10:49:54` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar el contexto, añadiendo un filtro explícito en `context_as_text` para asegurar que las métricas serializadas nunca contengan rutas o caracteres prohibidos, previniendo posibles fugas de información sensible incluso si los datos fueran inyectados en el `SystemContext` por error.

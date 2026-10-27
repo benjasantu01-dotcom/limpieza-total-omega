@@ -50,9 +50,6 @@ _METRIC_LIMITS: Final[Dict[str, Tuple[float, float]]] = {
 class Scorer(Protocol):
     """
     Protocolo funcional para transformar SystemMetrics en un ratio de salud [0.0, 1.0].
-    
-    Un valor de 0.0 indica una condición crítica o de riesgo máximo, mientras que
-    1.0 representa el estado nominal o de salud óptima.
     """
     def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
@@ -95,11 +92,7 @@ class RecommendationRule(NamedTuple):
 
 class PipelineEntry(NamedTuple):
     """
-    Estructura de procesamiento para cada métrica en el sistema:
-    - area: Nombre identificador.
-    - weight: Entero (0-100) para la ponderación en el score final.
-    - scorer: Función que transforma la métrica cruda en NormalizedRatio [0.0, 1.0].
-    - rules: Colección de reglas de diagnóstico disparables.
+    Estructura de procesamiento para cada métrica en el sistema.
     """
     area: MetricKey
     weight: int
@@ -138,8 +131,8 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
     Fábrica que genera funciones de normalización lineal.
     
     Args:
-        limit: Valor umbral para la normalización.
-        inverse: Si es True, valores superiores al límite reducen el score (penalizan).
+        limit: El valor de referencia donde el ratio alcanza el 1.0 (o 0.0 si es inverso).
+        inverse: Si es True, penaliza valores que exceden el límite (ej. acumulación de archivos).
     """
     def scorer(val: float) -> NormalizedRatio:
         if not math.isfinite(val) or limit <= 0.0: return 0.0

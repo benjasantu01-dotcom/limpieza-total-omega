@@ -53,13 +53,13 @@ FileRecord: TypeAlias = Tuple[int, Path]
 
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """
-    Intenta obtener el estado de un archivo/directorio sin seguir enlaces simbólicos.
+    Obtiene metadatos del archivo sin seguir enlaces simbólicos (evita escapes).
 
     Args:
-        path: Ruta a inspeccionar.
+        path: Ruta (string o Path) a inspeccionar.
 
     Returns:
-        `os.stat_result` si es accesible, None en caso de error de acceso o permisos.
+        Objeto `os.stat_result` con permisos y tamaño, o None si hay error de acceso.
     """
     if not path:
         return None
@@ -126,14 +126,27 @@ class SummaryData(NamedTuple):
 
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
-    """Conversión de escala de bytes a MB con precisión de 2 decimales."""
+    """
+    Convierte bytes a Megabytes.
+    
+    Args:
+        size_bytes: Tamaño en bytes, entero o flotante.
+    
+    Returns:
+        Valor en MB redondeado a 2 decimales, 0.0 si la entrada es inválida.
+    """
     if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
         return 0.0
     return round(float(size_bytes) / MB_SIZE, 2)
 
 
 def _validate_limit(limit: Any) -> int:
-    """Asegura que el límite de resultados sea un entero no negativo."""
+    """
+    Valida y normaliza el límite de resultados para funciones de ordenamiento.
+
+    Returns:
+        Un entero positivo o cero, filtrando entradas inválidas o booleanos.
+    """
     if isinstance(limit, int) and not isinstance(limit, bool):
         return max(0, limit)
     return 0

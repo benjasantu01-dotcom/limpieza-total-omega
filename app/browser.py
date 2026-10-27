@@ -53,12 +53,14 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 class ScanContext:
     """
     Estado inmutable compartido durante el recorrido del árbol de directorios.
-    sandbox_base_norm: Ruta normalizada raíz para validar el scope del escaneo.
-    kernel32: Instancia de la DLL para llamadas de sistema de bajo nivel.
-    is_junction: Función delegada para detectar puntos de reparse (Junctions).
-    visited_files: Historial de (dev, inode) para evitar conteos duplicados.
-    visited_dirs: Historial de rutas normalizadas para evitar bucles.
-    never_touch_lower: Conjunto de nombres de archivo/carpeta protegidos.
+    
+    Attributes:
+        sandbox_base_norm: Ruta normalizada (case-insensitive) que define el límite raíz.
+        kernel32: DLL para acceso a atributos de archivo Win32; None en otros SO.
+        is_junction: Predicado para detectar puntos de reparse (evita bucles infinitos).
+        visited_files: Conjunto de (dev, inode) para ignorar hardlinks duplicados.
+        visited_dirs: Conjunto de rutas normalizadas recorridas para evitar bucles.
+        never_touch_lower: Conjunto de nombres bloqueados para evitar borrar datos vitales.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -84,7 +86,7 @@ def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     return decorator
 
 class ScanResult(NamedTuple):
-    """Resultado del cálculo de tamaño recursivo: total en bytes y éxito de operación."""
+    """Resultado del cálculo de tamaño recursivo: bytes acumulados y éxito de la operación."""
     bytes_found: int
     success: bool
 
@@ -221,7 +223,12 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
     return 0
 
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Calcula el tamaño acumulado de una jerarquía de directorios de forma recursiva."""
+    """
+    Calcula el tamaño acumulado de una jerarquía de directorios de forma recursiva.
+    
+    La función implementa control de profundidad y validación de sandbox 
+    para garantizar la integridad y seguridad del escaneo.
+    """
     if depth > scan_ctx.max_depth: return ScanResult(0, True)
     
     try:
