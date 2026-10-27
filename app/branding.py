@@ -406,7 +406,10 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     canvas.create_text(x+64*scale, y+96*scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center")
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el logo vectorial completo de Omega en un widget Canvas."""
+    """
+    Renderiza el logo vectorial del escudo Omega en un widget Canvas mediante 
+    primitivas gráficas escaladas y posicionadas dinámicamente.
+    """
     try:
         if canvas is None or not hasattr(canvas, "create_oval"): return
         val_size = float(size)
@@ -421,7 +424,10 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra de degradado horizontal sobre un widget Canvas."""
+    """
+    Dibuja una barra de progreso horizontal con degradado, optimizando las llamadas
+    a la API del Canvas mediante el agrupamiento de segmentos monocromáticos.
+    """
     try:
         w, h = max(1, int(width)), max(1, int(height))
         for s in get_gradient_segments(w, stops):
@@ -429,7 +435,10 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un anillo de progreso circular para representar métricas de salud."""
+    """
+    Dibuja un indicador circular de progreso (anillo) basado en un valor porcentual,
+    utilizando arcos geométricos para representar métricas de estado de salud.
+    """
     try:
         if percent is None: return
         val = float(percent)

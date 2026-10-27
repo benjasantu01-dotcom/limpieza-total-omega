@@ -538,18 +538,22 @@ def _contains_forbidden_patterns(text: str) -> bool:
     """Verifica si el texto contiene patrones de seguridad prohibidos."""
     return any(pattern.search(text) for pattern in SECURITY_PATTERNS)
 
+def _has_invalid_meta_characters(text: str) -> bool:
+    """Verifica si la cadena contiene caracteres de control, formato o escape ANSI."""
+    return bool(_REGEX_ANSI_ESCAPE.search(text) or _REGEX_UNICODE_FORMAT.search(text) or any(c in _FORBIDDEN_CHARS for c in text))
+
+def _is_safe_text_length(text: Any) -> bool:
+    """Valida la longitud del texto."""
+    return isinstance(text, str) and 0 < len(text) <= _MAX_TEXT_LENGTH
+
 def _ensure_safe_text(text: Any) -> bool:
     """Desinfecta estricta sobre cadenas evitando inyecciones de comandos."""
-    if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
+    if not _is_safe_text_length(text):
         return False
     # Prevenir que la cadena sea o contenga rutas protegidas
     if is_protected_path(text) or any(is_protected_path(part) for part in text.split()):
         return False
-    # Evitar caracteres prohibidos mediante conjunto pre-calculado
-    if any(c in _FORBIDDEN_CHARS for c in text):
-        return False
-    # Evitar inyección de caracteres de control, formato o escape ANSI
-    if _REGEX_ANSI_ESCAPE.search(text) or _REGEX_UNICODE_FORMAT.search(text):
+    if _has_invalid_meta_characters(text):
         return False
     return not _contains_forbidden_patterns(text) and _is_safe_path_input(text)
 

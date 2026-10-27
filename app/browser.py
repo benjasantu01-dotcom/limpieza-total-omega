@@ -53,6 +53,12 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 class ScanContext:
     """
     Estado inmutable compartido durante el recorrido del árbol de directorios.
+    sandbox_base_norm: Ruta normalizada raíz para validar el scope del escaneo.
+    kernel32: Instancia de la DLL para llamadas de sistema de bajo nivel.
+    is_junction: Función delegada para detectar puntos de reparse (Junctions).
+    visited_files: Historial de (dev, inode) para evitar conteos duplicados.
+    visited_dirs: Historial de rutas normalizadas para evitar bucles.
+    never_touch_lower: Conjunto de nombres de archivo/carpeta protegidos.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -215,7 +221,10 @@ def _process_file_in_dir(entry: os.DirEntry, scan_ctx: ScanContext) -> int:
 
 def _sum_directory_recursive(root_path: str, scan_ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
-    Calcula el tamaño acumulado de una jerarquía de directorios de forma recursiva.
+    Calcula el tamaño acumulado de una jerarquía de directorios.
+    root_path: Ruta actual a procesar.
+    scan_ctx: Contexto inmutable de configuración y estado.
+    depth: Profundidad de recursión actual para evitar desbordamiento.
     """
     if not root_path or depth > scan_ctx.max_depth:
         return ScanResult(0, True)

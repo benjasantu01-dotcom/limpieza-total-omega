@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 226
+- Rechazadas por guardia de seguridad: 56
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 18 | 2 | 3 | 4 | 23 |
+| 2026-10-25 | 16 | 2 | 3 | 3 | 22 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 42 | 2 | 13 | 2 | 45 |
+| 2026-10-27 | 45 | 2 | 14 | 2 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - manejo de errores y validación de entradas: **43**
+- legibilidad y documentación: **36**
 - seguridad defensiva: **34**
-- rendimiento: **33**
-- legibilidad y documentación: **33**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `memory.py`: **18**
 - `scanner.py`: **18**
+- `assistant.py`: **18**
+- `browser.py`: **18**
 - `healthscore.py`: **18**
+- `quarantine.py`: **18**
 - `settings.py`: **17**
-- `assistant.py`: **17**
-- `browser.py`: **17**
+- `memory.py`: **17**
 - `organizer.py`: **15**
 - `safety.py`: **13**
 - `diskreport.py`: **13**
-- `branding.py`: **10**
+- `branding.py`: **11**
 - `duplicates.py`: **8**
 - `startup.py`: **5**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T04:32:28` **browser.py** (legibilidad y documentación): Mejora de legibilidad mediante la documentación explícita de los parámetros en las funciones recursivas y de escaneo, clarificando la intención y el rol de cada argumento en el proceso de recolección de datos.
+- `2026-10-27T04:31:54` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `branding.py` mediante la adición de docstrings estructuradas en las funciones geométricas (`draw_logo`, `draw_gradient_bar`, `draw_ring`) y la aclaración de las constantes de escala, facilitando la comprensión del motor de renderizado vectorial de la aplicación.
+- `2026-10-27T04:31:20` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad del archivo `assistant.py` mediante la refactorización de `_ensure_safe_text`, extrayendo la lógica de validación secuencial en sub-funciones con nombres descriptivos para clarificar las reglas de seguridad defensiva aplicadas.
 - `2026-10-27T04:22:03` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` al reemplazar la captura genérica de excepciones en `validate` por una iteración defensiva que aísla los errores de validación de cada clave, asegurando que un fallo en un valor no detenga el procesamiento del resto del diccionario y manteniendo la integridad de la configuración cargada.
 - `2026-10-27T04:21:08` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_validate_preconditions` en `safety.py` agregando un manejo explícito de errores para el caso donde el path del contenedor (parent) no existe, evitando que el intento de validar permisos sobre una ruta inexistente genere excepciones no controladas antes de que la lógica de seguridad llegue a su fin.
 - `2026-10-27T04:11:51` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación de tipo y valor en `_ensure_disk_space` y se mejoró el manejo de excepciones en `_register_quarantine_item` para evitar la propagación de errores parciales si el manifiesto no puede actualizarse, asegurando que la integridad del estado sea consistente con las operaciones de disco realizadas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T02:29:43` **startup.py** (seguridad defensiva): Se reforzó la seguridad de `_is_registry_entry_safe` implementando una validación estricta que evita el procesamiento de rutas relativas o comandos que no contengan una estructura de sistema de archivos clara, previniendo así la ejecución accidental de comandos internos de Windows o interpretaciones incorrectas de strings maliciosos.
 - `2026-10-27T02:19:25` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` para evitar condiciones de carrera (TOCTOU) eliminando el uso de `stat()` del objeto `source` después de las validaciones, utilizando el handle ya verificado y garantizando que el archivo final no sea un enlace simbólico ni un reparse point mediante un nuevo chequeo post-escritura.
 - `2026-10-27T02:18:42` **organizer.py** (seguridad defensiva): Se mejoró la integridad del proceso `_is_safe_for_disk_op` al integrar una validación de `is_relative_to` para evitar "directory traversal" accidental si las rutas cambian durante la ejecución, y se añadió la verificación de que el origen no sea un punto de reparse (`junction`) en el momento de la operación de movimiento para cerrar una brecha de seguridad.
-- `2026-10-27T02:08:54` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo añadiendo una validación de longitud estricta antes de la sanitización, evitando que mensajes excesivamente largos generen un consumo de memoria innecesario o riesgos de desbordamiento en el procesamiento de strings.
-- `2026-10-27T01:59:47` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `largest_folders` implementando una validación explícita mediante `is_protected_path` al procesar cada subdirectorio hijo, asegurando que ninguna ruta resuelta fuera del ámbito original del escaneo sea procesada, incluso si `walk_files` omitiera algún caso borde de resolución de rutas relativas.
-- `2026-10-27T01:59:30` **browser.py** (seguridad defensiva): Reforcé la integridad del escaneo recursivo mediante la validación del estado del disco (`is_protected_path`) directamente en el punto de entrada de cada subdirectorio, asegurando que la lógica de seguridad sea activa y no solo pasiva al inicio de la recursión.
