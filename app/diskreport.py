@@ -184,11 +184,12 @@ def _get_local_windows_drives() -> List[str]:
     try:
         for letter in string.ascii_uppercase:
             drive = f"{letter}:\\"
-            # Verificar si existe y es accesible antes de añadir
+            # Verificar si existe, es accesible y es un directorio real antes de añadir
             if os.path.exists(drive) and not is_protected_path(Path(drive)):
                 try:
-                    os.listdir(drive)
-                    drives.append(drive)
+                    # os.access con R_OK asegura que podemos leer el contenido de la raíz
+                    if os.access(drive, os.R_OK):
+                        drives.append(drive)
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError):
@@ -268,8 +269,9 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None: return None
     try:
         p = Path(mount).expanduser().resolve(strict=False)
-        if not p.exists() or is_protected_path(p): return None
-        # disk_usage puede fallar en unidades removibles sin medio
+        # Verificamos acceso real antes de pedir el uso para evitar bloqueos en unidades vacías
+        if not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
+            return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
