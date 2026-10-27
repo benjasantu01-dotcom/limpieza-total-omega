@@ -693,3 +693,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-27T01:30:37` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-27T01:30:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-27T01:30:37` Corrida terminada. Total usado hoy: 36.
+- `2026-10-27T01:37:20` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-10-27T01:37:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-27T01:37:27` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-27T01:38:02` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-27T01:38:30` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo la verificación `_is_file_locked` dentro del proceso de escaneo recursivo (`_process_directory`) para evitar la inclusión de archivos en uso (bloqueados) desde el momento inicial, mitigando errores de E/S y race conditions antes de que el objeto `JunkFile` llegue a la fase de movimiento.
+- `2026-10-27T01:39:16` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejora la robustez ante condiciones de carrera (TOCTOU) y errores de I/O en `_atomic_isolate_file`, añadiendo un chequeo de integridad post-copia más estricto que valida tanto el hash como el inodo antes de confirmar la transacción, y asegurando que los manejadores de archivos se cierren correctamente ante excepciones inesperadas.
+- `2026-10-27T01:39:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-27T01:39:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-27T01:39:35` Corrida terminada. Total usado hoy: 40.

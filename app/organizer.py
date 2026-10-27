@@ -296,8 +296,11 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                     elif entry.is_file(follow_symlinks=False):
                         if entry.name.lower().endswith(tuple(JUNK_EXTENSIONS)):
                             stats = entry.stat(follow_symlinks=False)
+                            # Chequeo preventivo: verificar que no esté bloqueado antes de agregarlo
+                            p = Path(entry.path)
                             if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
-                                found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                                if not _is_file_locked(p):
+                                    found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):

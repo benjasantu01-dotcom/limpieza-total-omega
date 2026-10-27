@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 52
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-25 | 39 | 6 | 6 | 6 | 61 |
+| 2026-10-25 | 39 | 4 | 6 | 6 | 59 |
 | 2026-10-26 | 130 | 10 | 39 | 13 | 158 |
-| 2026-10-27 | 20 | 1 | 7 | 1 | 7 |
+| 2026-10-27 | 22 | 1 | 8 | 1 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
+- robustez ante casos límite: **43**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **41**
 - rendimiento: **35**
 - seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
+- `quarantine.py`: **19**
 - `scanner.py`: **19**
 - `browser.py`: **18**
 - `healthscore.py`: **18**
-- `quarantine.py`: **18**
 - `assistant.py`: **17**
 - `settings.py`: **15**
 - `diskreport.py`: **14**
-- `organizer.py`: **13**
+- `organizer.py`: **14**
 - `branding.py`: **11**
 - `safety.py`: **11**
 - `duplicates.py`: **8**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T01:39:16` **quarantine.py** (robustez ante casos límite): Mejora la robustez ante condiciones de carrera (TOCTOU) y errores de I/O en `_atomic_isolate_file`, añadiendo un chequeo de integridad post-copia más estricto que valida tanto el hash como el inodo antes de confirmar la transacción, y asegurando que los manejadores de archivos se cierren correctamente ante excepciones inesperadas.
+- `2026-10-27T01:38:30` **organizer.py** (robustez ante casos límite): Se introdujo la verificación `_is_file_locked` dentro del proceso de escaneo recursivo (`_process_directory`) para evitar la inclusión de archivos en uso (bloqueados) desde el momento inicial, mitigando errores de E/S y race conditions antes de que el objeto `JunkFile` llegue a la fase de movimiento.
 - `2026-10-27T01:29:26` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor frente a datos de entrada potencialmente corruptos, añadiendo una validación explícita en `_compute_cached` para asegurar que el `zip` entre campos y métricas no genere inconsistencias si la estructura de `SystemMetrics` llegara a cambiar o recibir datos inesperados.
 - `2026-10-27T01:28:53` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `is_junction` y `is_system_or_hidden` añadiendo una verificación previa de existencia (`path.exists()`), evitando llamadas innecesarias a la Win32 API sobre rutas rotas o bloqueadas que podrían causar comportamientos indefinidos en el sistema operativo.
 - `2026-10-27T01:27:57` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos en `walk_files` cuando se encuentran junctions o enlaces simbólicos a directorios, asegurando que el recorrido sea robusto ante estructuras de carpetas recursivas o auto-referenciales que podrían causar desbordamiento de pila o bucles infinitos en sistemas Windows.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T00:38:10` **branding.py** (rendimiento): Optimizé la generación de gradientes en `branding.py` reemplazando la creación dinámica de listas y el formateo de strings en cada ciclo por una estrategia de pre-cálculo y caché más agresiva, mejorando el rendimiento en el renderizado de la UI.
 - `2026-10-27T00:37:53` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y el manejo de métricas transformando la búsqueda de tokens y la serialización del contexto en operaciones de tiempo constante o lineal mediante sets, evitando iteraciones repetitivas y recreación de estructuras.
 - `2026-10-27T00:36:42` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `_SettingsManager`, clarificando las garantías de atomicidad y seguridad en la persistencia de datos.
-- `2026-10-27T00:29:53` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `scanner.py` mediante la normalización de docstrings, la inclusión de explicaciones sobre el propósito de las constantes críticas de seguridad y la unificación de tipado, facilitando la comprensión del flujo de análisis heurístico.
-- `2026-10-27T00:28:47` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la implementación de Type Hints explícitos para las estructuras de datos de validación y la clarificación de las responsabilidades en los decoradores y funciones de chequeo, facilitando la auditoría de seguridad sin alterar la lógica de ejecución.

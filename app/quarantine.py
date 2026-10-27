@@ -840,27 +840,24 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     _validate_integrity_before_move(source, original_size, stat_orig.st_ino)
 
     # Re-chequeo final post-validación antes de la escritura
-    final_check: os.stat_result = source.stat()
-    if final_check.st_ino != stat_orig.st_ino or final_check.st_size != original_size or final_check.st_nlink > 1:
-        raise RuntimeError("Integridad comprometida (TOCTOU).")
-
     try:
+        final_check: os.stat_result = source.stat()
+        if final_check.st_ino != stat_orig.st_ino or final_check.st_size != original_size or final_check.st_nlink > 1:
+            raise RuntimeError("Integridad comprometida (TOCTOU).")
+
         if destination.exists():
             raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         
-        try:
-            if not destination.parent.exists():
-                destination.parent.mkdir(parents=True, exist_ok=True)
-            dir_fd: int = os.open(str(destination.parent), os.O_RDONLY)
-            try: os.fsync(dir_fd)
-            finally: os.close(dir_fd)
-        except OSError:
-            pass
-
+        # Asegurar directorio padre
+        if not destination.parent.exists():
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            
         h, i = _write_temp_to_final(source, destination)
         
-        if destination.stat().st_ino != i:
-            raise RuntimeError("Integridad comprometida: inodo destino inconsistente.")
+        # Validar destino final tras escritura
+        dest_stat = destination.stat()
+        if dest_stat.st_ino != i or _get_sha256(destination) != h:
+            raise RuntimeError("Integridad comprometida: destino inconsistente.")
         return h, i
     except Exception as e:
         if destination.exists() and not os.path.samefile(source, destination):
