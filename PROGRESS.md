@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 108 | 9 | 33 | 12 | 130 |
-| 2026-10-27 | 77 | 5 | 33 | 6 | 91 |
+| 2026-10-26 | 106 | 9 | 31 | 12 | 130 |
+| 2026-10-27 | 78 | 5 | 35 | 6 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **38**
 - seguridad defensiva: **36**
-- rendimiento: **28**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `quarantine.py`: **18**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
+- `diskreport.py`: **17**
 - `settings.py`: **16**
 - `browser.py`: **16**
-- `diskreport.py`: **16**
-- `scanner.py`: **15**
 - `safety.py`: **15**
 - `organizer.py`: **14**
+- `scanner.py`: **14**
 - `branding.py`: **10**
 - `duplicates.py`: **8**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-27T09:06:12` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con estructura (Args/Returns) a las funciones críticas, aplicando type hints consistentes y clarificando mediante comentarios técnicos el propósito de los mecanismos de recolección de métricas.
 - `2026-10-27T08:57:39` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos y type hints faltantes en funciones clave (`_process_file_in_dir`, `_sum_directory_recursive`), además de normalizar la consistencia de las anotaciones de tipo para asegurar claridad en la lógica de recursión y manejo de archivos.
 - `2026-10-27T08:57:14` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad semántica de las estructuras de datos, añadiendo docstrings explicativos a las clases `PaletteDict` y `FontSizesDict`, y renombrando variables clave para evitar ambigüedades en la arquitectura visual.
 - `2026-10-27T08:56:44` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenimiento del código mediante la aplicación sistemática de type hints en los retornos de funciones, la simplificación de lógicas de control mediante el uso de `any()` y `all()` en lugar de bucles `for` manuales, y la documentación de comportamientos implícitos en `AssistantConfig`.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T06:55:20` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para aplicar una validación de propiedad más estricta mediante `os.stat` antes de procesar el archivo, asegurando que el archivo de configuración sea legible exclusivamente por el usuario propietario actual y descartando archivos con permisos excesivos (world-writable).
 - `2026-10-27T06:54:11` **safety.py** (seguridad defensiva): Se introdujo una validación estricta contra "Mount Point Hijacking" en `ensure_safe_to_modify` para detectar si el punto de montaje coincide con un volumen redirigido, evitando que la aplicación escanee o modifique recursivamente directorios que apuntan fuera del sistema de archivos local, reforzando la integridad del bucle de seguridad.
 - `2026-10-27T06:45:57` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita para evitar que se pongan en cuarentena archivos que ya están en el directorio base (evitando bucles de autorreferencia) y se consolidó el chequeo de inodo dentro de la validación de integridad para prevenir ataques TOCTOU.
-- `2026-10-27T06:34:33` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del motor de recomendaciones restringiendo el acceso a atributos de `SystemMetrics` mediante un método de acceso controlado y añadiendo un filtro de "lista blanca" estricto en la generación de mensajes, evitando cualquier posibilidad de inyección de datos dinámicos en la interfaz de reportes.
