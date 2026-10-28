@@ -63,7 +63,14 @@ class Grade(Enum):
 
     @classmethod
     def from_score(cls, score: float | int | None) -> str:
-        """Convierte una puntuación numérica a su categoría alfabética equivalente."""
+        """
+        Convierte una puntuación numérica a su categoría alfabética equivalente.
+        
+        Args:
+            score: Valor numérico de 0 a 100.
+        Returns:
+            str: Categoría de 'A' (excelente) a 'F' (crítico).
+        """
         if score is None:
             return cls.F.value
         try:
@@ -122,7 +129,14 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0     
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """Recorta un valor numérico para asegurar que esté dentro de un rango inclusivo."""
+    """
+    Recorta un valor numérico para asegurar que esté dentro de un rango inclusivo.
+    
+    Args:
+        value: Valor a procesar.
+        min_val: Límite inferior.
+        max_val: Límite superior.
+    """
     if not isinstance(value, (int, float)) or not math.isfinite(value): return min_val
     return float(max(min_val, min(max_val, value)))
 
@@ -342,10 +356,16 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     return findings
 
 @lru_cache(maxsize=128)
-def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
-    """Motor central que orquestra el cálculo de métricas a través del pipeline."""
+def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> HealthResult:
+    """
+    Motor central que orquestra el cálculo de métricas a través del pipeline.
+    
+    Args:
+        metric_values: Tupla con los valores crudos de métricas.
+        quarantined: Cantidad de archivos en cuarentena.
+    """
     (junk_mb, suspicious_count, suspicious_warnings, mem_avail, disk_free, 
-     duplicate_mb, startup_count, _) = metrics_tuple
+     duplicate_mb, startup_count, _) = metric_values
     
     metrics = SystemMetrics(
         junk_mb, int(suspicious_count), int(suspicious_warnings), 
@@ -408,7 +428,14 @@ def _render_bar(points: Any, max_val: Any) -> str:
     return "#" * safe_points + "." * (safe_max - safe_points)
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Serializa el resultado de salud en una lista de líneas para informe legible."""
+    """
+    Serializa el resultado de salud en una lista de líneas para informe legible.
+    
+    Args:
+        result: Instancia de HealthResult a resumir.
+    Returns:
+        List[str]: Líneas del reporte formateado.
+    """
     if not isinstance(result, HealthResult): 
         return ["Error: Informe de salud no disponible."]
     
