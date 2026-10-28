@@ -929,3 +929,11 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-10-28T12:32:02` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Se introdujo una cache `lru_cache` en la función `_get_scaled_poly` para evitar el cálculo redundante de coordenadas poligonales al redibujar el logo en el Canvas, optimizando el uso de CPU durante animaciones o repintados frecuentes.
 - `2026-10-28T12:32:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T12:32:02` Corrida terminada. Total usado hoy: 296.
+- `2026-10-28T12:40:16` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-28T12:40:45` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo eliminando la resolución innecesaria de rutas (`resolve()`) dentro del bucle interno de `DirectoryScanner`, reemplazándola por `normcase` y `normpath` para validar límites, lo que reduce drásticamente las llamadas al sistema de archivos por cada archivo encontrado.
+- `2026-10-28T12:41:13` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el cálculo de `largest_folders` para evitar la reconstrucción de rutas `Path` mediante tuplas y `os.path.join` innecesarios, utilizando directamente `path.relative_to` para identificar el subdirectorio de primer nivel de forma eficiente.
+- `2026-10-28T12:41:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T12:41:43` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-28T12:41:52` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 55% del original (posible pérdida de código)
+- `2026-10-28T12:41:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T12:41:52` Corrida terminada. Total usado hoy: 300.

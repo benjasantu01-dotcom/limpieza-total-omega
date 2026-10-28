@@ -233,7 +233,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     if not candidate.exists() or not candidate.is_dir(): return False
-    cand_abs = str(candidate.resolve())
+    cand_abs = os.path.abspath(candidate)
     cand_norm = os.path.normcase(cand_abs)
     
     if not is_safe_to_modify(candidate) or not cand_norm.startswith(base_norm): return False
@@ -253,9 +253,9 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
         target = base_resolved.joinpath(*rel_str.split("\\"))
         if not target.exists() or not target.is_dir(): return Path()
         
-        target_res = target.resolve()
-        if not str(target_res).startswith(str(base_resolved)): return Path()
-        if _IS_JUNCTION_FN(str(target_res)) or target_res.is_symlink(): return Path()
+        target_abs = os.path.abspath(target)
+        if not os.path.normcase(target_abs).startswith(os.path.normcase(str(base_resolved))): return Path()
+        if _IS_JUNCTION_FN(target_abs) or target.is_symlink(): return Path()
         
         return target if is_safe_to_modify(target) else Path()
     except (OSError, RuntimeError):
