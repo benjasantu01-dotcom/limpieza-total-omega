@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 114 | 7 | 46 | 8 | 153 |
-| 2026-10-28 | 59 | 7 | 19 | 5 | 86 |
+| 2026-10-27 | 113 | 7 | 45 | 8 | 151 |
+| 2026-10-28 | 61 | 7 | 20 | 5 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
 - seguridad defensiva: **37**
-- legibilidad y documentación: **35**
-- rendimiento: **20**
+- legibilidad y documentación: **37**
+- rendimiento: **19**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `quarantine.py`: **17**
 - `settings.py`: **16**
 - `assistant.py`: **16**
+- `browser.py`: **16**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
-- `browser.py`: **15**
 - `scanner.py`: **13**
 - `organizer.py`: **12**
 - `safety.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T07:34:47` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las clases `ExtStats`, `GlobalStats`, `FolderMetrics` y `SummaryData` para clarificar su propósito dentro del flujo de datos, además de añadir tipos explícitos para mejorar la legibilidad y mantenibilidad del análisis.
+- `2026-10-28T07:34:19` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` extrayendo la lógica compleja de cálculo de tamaño de `_sum_directory_recursive` mediante una clase contenedora `DirectoryScanner`, lo que permite encapsular el estado (`ScanContext`) y simplificar la firma de las funciones recursivas.
 - `2026-10-28T07:25:48` **branding.py** (legibilidad y documentación): Se introdujeron constantes de documentación y se mejoró la claridad de las signaturas de tipos en las funciones de renderizado, centralizando la lógica de validación de coordenadas para asegurar la legibilidad del flujo de dibujo vectorial.
 - `2026-10-28T07:24:44` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `StartupEntry.is_valid` y el manejo de rutas en `_resolve_and_cache_path` mediante la validación explícita de `None` y tipos, previniendo errores de ejecución ante entradas mal formadas provenientes de un registro de Windows potencialmente corrupto o inesperado.
 - `2026-10-28T07:24:17` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos en `perform_atomic_write` y `_read_and_parse_json` al implementar una validación de tamaño de archivo (metadata) previa a la lectura, previniendo excepciones innecesarias y posibles errores de E/S al trabajar con descriptores de archivos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T05:23:14` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de sustitución (TOCTOU) y validaciones laxas: ahora se verifica que la ruta sea un archivo real absoluto y se asegura que el archivo no sea un enlace simbólico ni un punto de reparse antes de procesarlo, reduciendo riesgos al leer configuraciones desde el disco.
 - `2026-10-28T05:22:59` **scanner.py** (seguridad defensiva): Se ha añadido `entry.is_symlink()` en el método `_safe_stat` y una validación de `st_reparse_tag` para identificar puntos de reanálisis (Junctions) mediante la API de bajo nivel, asegurando que el escáner sea incapaz de seguir enlaces simbólicos o puntos de montaje incluso si el sistema operativo no los marca directamente como symlinks convencionales.
 - `2026-10-28T05:14:58` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación de I/O, asegurando que incluso si una ruta maliciosa intenta eludir la validación inicial mediante resolución de enlaces, el sistema la bloquee.
-- `2026-10-28T05:14:30` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` implementando una validación estricta en `trim_working_set` para prevenir la manipulación de procesos cuya ruta ejecutable sea inaccesible o apunte a directorios protegidos, delegando la decisión de seguridad exclusivamente al filtro `is_protected_path`.
-- `2026-10-28T05:01:51` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `drive_usage` añadiendo chequeos explícitos para puntos de reparse (reparse points/junctions) usando `os.path.isdir` junto con atributos de archivo (`st_file_attributes`), previniendo así la recursión infinita o el seguimiento no deseado de enlaces simbólicos complejos fuera del árbol objetivo.

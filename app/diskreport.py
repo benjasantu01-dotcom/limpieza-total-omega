@@ -85,6 +85,7 @@ def _is_reparse_point(path: Path) -> bool:
 class ExtStats:
     """
     Estructura acumuladora para métricas agregadas por tipo de extensión.
+    Gestiona el peso total y el contador de archivos para una extensión específica.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -102,6 +103,8 @@ class ExtStats:
 class GlobalStats:
     """
     Contenedor principal para consolidar métricas durante un escaneo completo.
+    Mantiene el estado global de bytes procesados, archivos totales y el 
+    mapeo de estadísticas por extensión.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -117,7 +120,10 @@ class GlobalStats:
 
 
 class FolderMetrics:
-    """Acumulador temporal para el cálculo de peso total por directorio."""
+    """
+    Acumulador temporal para el cálculo de peso total por directorio padre.
+    Utilizado en la lógica de 'largest_folders' para agrupar archivos.
+    """
     __slots__ = ('size', 'file_count')
     
     def __init__(self) -> None:
@@ -131,7 +137,11 @@ class FolderMetrics:
 
 
 class SummaryData(NamedTuple):
-    """Resultados consolidados obtenidos tras ejecutar una iteración de escaneo."""
+    """
+    Estructura de resultados consolidados al finalizar una iteración de escaneo.
+    Contiene las métricas globales, estadísticas por extensión y los archivos
+    identificados como el top N de mayor tamaño.
+    """
     total_bytes: int
     total_files: int
     ext_stats: Dict[str, ExtStats]

@@ -485,3 +485,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T07:25:48` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujeron constantes de documentación y se mejoró la claridad de las signaturas de tipos en las funciones de renderizado, centralizando la lógica de validación de coordenadas para asegurar la legibilidad del flujo de dibujo vectorial.
 - `2026-10-28T07:25:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T07:25:48` Corrida terminada. Total usado hoy: 176.
+- `2026-10-28T07:33:50` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-10-28T07:34:19` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `browser.py` extrayendo la lógica compleja de cálculo de tamaño de `_sum_directory_recursive` mediante una clase contenedora `DirectoryScanner`, lo que permite encapsular el estado (`ScanContext`) y simplificar la firma de las funciones recursivas.
+- `2026-10-28T07:34:47` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings detallados en las clases `ExtStats`, `GlobalStats`, `FolderMetrics` y `SummaryData` para clarificar su propósito dentro del flujo de datos, además de añadir tipos explícitos para mejorar la legibilidad y mantenibilidad del análisis.
+- `2026-10-28T07:35:12` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: legibilidad y documentación).
+- `2026-10-28T07:35:23` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.safe_get
+- `2026-10-28T07:35:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T07:35:23` Corrida terminada. Total usado hoy: 180.
