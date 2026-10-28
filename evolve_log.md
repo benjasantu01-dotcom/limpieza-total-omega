@@ -492,3 +492,13 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T07:35:23` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.safe_get
 - `2026-10-28T07:35:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T07:35:23` Corrida terminada. Total usado hoy: 180.
+- `2026-10-28T07:44:02` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-10-28T07:44:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T07:44:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-28T07:44:32` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-28T07:45:54` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T07:46:25` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y la robustez del código mediante la adición de docstrings técnicos detallados en funciones críticas, la consolidación de constantes de seguridad en una estructura clara y la estandarización de las firmas de funciones para reflejar mejor su comportamiento real ante fallos de hardware o permisos.
+- `2026-10-28T07:46:56` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la robustez documental de `organizer.py` mediante la adición de docstrings técnicos detallados en las funciones de validación de bajo nivel, la normalización de los tipos de retorno y la aclaración de las intenciones de seguridad en los bloques de resolución de rutas, facilitando la auditoría de las reglas de seguridad.
+- `2026-10-28T07:47:24` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en funciones internas clave de `quarantine.py` para mejorar la legibilidad y facilitar el mantenimiento del código, además de normalizar la estructura de las firmas de funciones para mayor claridad.
+- `2026-10-28T07:47:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T07:47:24` Corrida terminada. Total usado hoy: 184.

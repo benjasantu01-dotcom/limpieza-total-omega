@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 113 | 7 | 45 | 8 | 151 |
-| 2026-10-28 | 61 | 7 | 20 | 5 | 87 |
+| 2026-10-27 | 110 | 7 | 45 | 8 | 150 |
+| 2026-10-28 | 64 | 7 | 21 | 5 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **40**
+- legibilidad y documentación: **40**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **37**
-- legibilidad y documentación: **37**
-- rendimiento: **19**
+- rendimiento: **17**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
-- `quarantine.py`: **17**
-- `settings.py`: **16**
-- `assistant.py`: **16**
+- `quarantine.py`: **18**
+- `memory.py`: **17**
 - `browser.py`: **16**
 - `healthscore.py`: **16**
-- `memory.py`: **16**
-- `scanner.py`: **13**
-- `organizer.py`: **12**
+- `settings.py`: **15**
+- `assistant.py`: **15**
+- `organizer.py`: **13**
+- `scanner.py`: **12**
 - `safety.py`: **11**
 - `branding.py`: **10**
 - `startup.py`: **9**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T07:47:24` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones internas clave de `quarantine.py` para mejorar la legibilidad y facilitar el mantenimiento del código, además de normalizar la estructura de las firmas de funciones para mayor claridad.
+- `2026-10-28T07:46:56` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez documental de `organizer.py` mediante la adición de docstrings técnicos detallados en las funciones de validación de bajo nivel, la normalización de los tipos de retorno y la aclaración de las intenciones de seguridad en los bloques de resolución de rutas, facilitando la auditoría de las reglas de seguridad.
+- `2026-10-28T07:46:25` **memory.py** (legibilidad y documentación): Se ha mejorado la legibilidad y la robustez del código mediante la adición de docstrings técnicos detallados en funciones críticas, la consolidación de constantes de seguridad en una estructura clara y la estandarización de las firmas de funciones para reflejar mejor su comportamiento real ante fallos de hardware o permisos.
 - `2026-10-28T07:34:47` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las clases `ExtStats`, `GlobalStats`, `FolderMetrics` y `SummaryData` para clarificar su propósito dentro del flujo de datos, además de añadir tipos explícitos para mejorar la legibilidad y mantenibilidad del análisis.
 - `2026-10-28T07:34:19` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` extrayendo la lógica compleja de cálculo de tamaño de `_sum_directory_recursive` mediante una clase contenedora `DirectoryScanner`, lo que permite encapsular el estado (`ScanContext`) y simplificar la firma de las funciones recursivas.
 - `2026-10-28T07:25:48` **branding.py** (legibilidad y documentación): Se introdujeron constantes de documentación y se mejoró la claridad de las signaturas de tipos en las funciones de renderizado, centralizando la lógica de validación de coordenadas para asegurar la legibilidad del flujo de dibujo vectorial.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T06:53:37` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de acceso a datos del módulo `branding.py` mediante una validación de tipo más estricta (`isinstance` en lugar de comparaciones implícitas) y la captura de errores en el parsing de colores y fuentes para asegurar que la UI no colapse ante configuraciones inesperadas.
 - `2026-10-28T06:46:36` **assistant.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `ingest` y `_validate_and_sanitize_data` mediante la captura explícita de `AttributeError` y validaciones de tipo más estrictas, evitando la propagación de fallos cuando los objetos fuente no cumplen con la estructura esperada.
 - `2026-10-28T05:32:00` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que las rutas del registro obtenidas mediante PowerShell no intenten "escapar" de sus directorios originales mediante ataques de directory traversal (`..`), asegurando que cualquier entrada que intente acceder fuera del alcance permitido sea descartada antes de ser procesada por la lógica de la aplicación.
-- `2026-10-28T05:23:14` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de sustitución (TOCTOU) y validaciones laxas: ahora se verifica que la ruta sea un archivo real absoluto y se asegura que el archivo no sea un enlace simbólico ni un punto de reparse antes de procesarlo, reduciendo riesgos al leer configuraciones desde el disco.
-- `2026-10-28T05:22:59` **scanner.py** (seguridad defensiva): Se ha añadido `entry.is_symlink()` en el método `_safe_stat` y una validación de `st_reparse_tag` para identificar puntos de reanálisis (Junctions) mediante la API de bajo nivel, asegurando que el escáner sea incapaz de seguir enlaces simbólicos o puntos de montaje incluso si el sistema operativo no los marca directamente como symlinks convencionales.
-- `2026-10-28T05:14:58` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación de I/O, asegurando que incluso si una ruta maliciosa intenta eludir la validación inicial mediante resolución de enlaces, el sistema la bloquee.

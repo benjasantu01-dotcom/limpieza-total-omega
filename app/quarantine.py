@@ -1095,7 +1095,14 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 
 def _is_item_purgable(file_path: Optional[Path], item: Optional[QuarantineItem] = None) -> bool:
-    """Validación de seguridad previo a purga."""
+    """Valida la integridad y exclusividad del archivo antes de proceder a la purga física.
+    
+    Args:
+        file_path: Ruta al archivo en la cuarentena.
+        item: Objeto de metadatos asociado al ítem.
+    Returns:
+        bool: True si el archivo puede ser borrado de forma segura.
+    """
     if file_path is None: return False
     try:
         if not (file_path.exists() and file_path.is_file()):
@@ -1113,7 +1120,11 @@ def _is_item_purgable(file_path: Optional[Path], item: Optional[QuarantineItem] 
 
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Elimina permanentemente todo el contenido del sandbox de forma segura."""
+    """Elimina permanentemente todo el contenido del sandbox de forma segura.
+    
+    Returns:
+        int: Cantidad total de archivos eliminados correctamente.
+    """
     try:
         quarantine_root: Path = quarantine_dir(base).resolve()
         if _is_filesystem_read_only(quarantine_root) or is_protected_path(quarantine_root):
@@ -1123,7 +1134,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
-        # Iterar una sola vez sobre el directorio usando un set para búsquedas O(1)
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or f.is_dir():
                 continue

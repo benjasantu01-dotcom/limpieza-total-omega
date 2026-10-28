@@ -51,13 +51,14 @@ MegabytesValue = NewType("MegabytesValue", float)
 # Constantes de conversión y límites de seguridad:
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
+# Límite arbitrario para evitar procesos corruptos que reporten tamaños imposibles
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32 para interactuar con procesos.
-# Se utiliza QUERY_LIMITED para obtener info básica sin requerir privilegios de Admin.
 WIN32_PROCESS_QUERY_LIMITED: Final[int] = 0x1000
 WIN32_PROCESS_SET_QUOTA: Final[int] = 0x0400
 WIN32_PROCESS_QUERY_INFO: Final[int] = 0x0400
+# Máscara combinada requerida para operaciones de gestión de memoria (EmptyWorkingSet)
 TRIM_ACCESS_MASK: Final[int] = 0x020000 | WIN32_PROCESS_SET_QUOTA | WIN32_PROCESS_QUERY_INFO
 
 INVALID_HANDLE_VALUE: Final[int] = -1
@@ -297,7 +298,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 @lru_cache(maxsize=1)
 def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
-    """Estratégia de caché temporal para evitar llamadas recursivas costosas al sistema."""
+    """Estrategia de caché temporal para evitar llamadas recursivas costosas al sistema."""
     if _is_windows: return _read_windows_snapshot()
     try:
         if _linux_mem_path.exists():
@@ -312,7 +313,7 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
-    """Abre un handle al proceso. Se encapsula el acceso Win32 para evitar fugas de recursos."""
+    """Abre un handle al proceso con la máscara provista; devuelve None si el acceso es denegado."""
     if WindowsAPI.kernel32 is None: return None
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
@@ -323,7 +324,7 @@ def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HAND
         return None
 
 def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
-    """Consulta el 'working set' de un proceso. Valida que el tamaño esté dentro de lo razonable."""
+    """Consulta los contadores de memoria de un proceso y extrae el WorkingSetSize validado."""
     if h_process is None or WindowsAPI.psapi is None: return None
     try:
         if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
@@ -335,7 +336,7 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
 
 def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
     """
-    Verifica que el ejecutable del proceso no se encuentre en ubicaciones protegidas.
+    Verifica mediante la API Win32 que la ruta del ejecutable del proceso no sea un recurso protegido.
     """
     if h_process is None or h_process == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: 
         return False
@@ -377,7 +378,7 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
                 WindowsAPI.kernel32.CloseHandle(h_process)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Retorna los procesos con mayor consumo. Implementa caché de 60 segundos."""
+    """Retorna los procesos con mayor consumo. Implementa caché interna de 60 segundos."""
     global _CACHE_TOP_PROC
     if not _is_windows: return []
     now = time.time()
@@ -427,6 +428,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta reducir el working set de un proceso específico tras realizar validaciones de seguridad.
+    Esta función es destructiva respecto al caché de memoria del proceso, no debe usarse habitualmente.
     """
     if not _is_windows or WindowsAPI.kernel32 is None: return False, "Solo soportado en Windows."
     
