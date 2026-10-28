@@ -312,6 +312,7 @@ def read_snapshot() -> MemorySnapshot:
 
 def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
     """Abre un handle de proceso con los permisos mínimos necesarios para diagnóstico o gestión."""
+    if WindowsAPI.kernel32 is None: return None
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
         if not handle or handle == INVALID_HANDLE_VALUE:
@@ -322,7 +323,7 @@ def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HAND
 
 def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Consulta mediante psapi el tamaño del Working Set (memoria física asignada) de un proceso."""
-    if h_process is None: return None
+    if h_process is None or WindowsAPI.psapi is None: return None
     try:
         if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
@@ -333,7 +334,7 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
 
 def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
     """Valida que la ruta de origen del ejecutable del proceso no sea una ruta protegida o crítica."""
-    if h_process is None or h_process == INVALID_HANDLE_VALUE: return False
+    if h_process is None or h_process == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None: return False
     
     buffer_len = 32767
     buffer_path = ctypes.create_unicode_buffer(buffer_len)
@@ -356,7 +357,7 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
     pids = (wintypes.DWORD * MAX_PIDS)()
     cb_needed = wintypes.DWORD(0)
     
-    if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+    if WindowsAPI.psapi is None or not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
         return
             
     count = cb_needed.value // ctypes.sizeof(wintypes.DWORD)
@@ -375,7 +376,8 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         except Exception:
             continue
         finally:
-            WindowsAPI.kernel32.CloseHandle(h_process)
+            if WindowsAPI.kernel32:
+                WindowsAPI.kernel32.CloseHandle(h_process)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna la lista de procesos con mayor consumo, usando caché de 60 segundos para evitar carga de CPU."""
@@ -427,7 +429,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Intenta reducir el Working Set de un proceso tras pasar controles de seguridad."""
-    if not _is_windows: return False, "Solo soportado en Windows."
+    if not _is_windows or WindowsAPI.kernel32 is None: return False, "Solo soportado en Windows."
     
     try: 
         target_pid = int(pid)
@@ -453,7 +455,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             if not _is_process_executable_safe(h_process):
                 return False, "Proceso protegido o ubicación insegura."
                 
-            if WindowsAPI.psapi.EmptyWorkingSet(h_process) == 0:
+            if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(h_process) == 0:
                 return False, "El sistema operativo rechazó la operación de limpieza."
             return True, f"Working set liberado. {TRIM_WARNING}"
         finally:

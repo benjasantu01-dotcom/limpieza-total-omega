@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **171** (34.1% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 14
@@ -16,22 +16,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 46 | 4 | 16 | 5 | 81 |
+| 2026-10-26 | 46 | 4 | 15 | 5 | 80 |
 | 2026-10-27 | 125 | 8 | 51 | 9 | 157 |
+| 2026-10-28 | 2 | 0 | 1 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **37**
 - seguridad defensiva: **28**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
+- `memory.py`: **17**
 - `healthscore.py`: **16**
-- `memory.py`: **16**
 - `diskreport.py`: **16**
 - `settings.py`: **15**
 - `browser.py`: **15**
@@ -45,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T00:07:59` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita para evitar que `iterdir()` procese archivos que no pertenecen al manifiesto o que pudieran ser residuales, evitando errores en el conteo y la integridad del manifiesto durante limpiezas parciales.
+- `2026-10-28T00:07:04` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo explícito en `_is_process_accessible` para evitar la propagación de errores en el manejo de handles cuando las APIs de sistema fallan debido a restricciones de privilegios de usuario, asegurando que la iteración de procesos sea resiliente a denegaciones de acceso comunes en procesos del sistema.
 - `2026-10-27T15:56:48` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra `None` y tipos inesperados en los accesos a `PipelineEntry` y el procesamiento de `recommendations`, protegiendo la ejecución ante datos de entrada mal formados o parcialmente inicializados que podrían causar excepciones no controladas en el pipeline.
 - `2026-10-27T15:49:40` **diskreport.py** (robustez ante casos límite): Se introdujo una mejor gestión de errores en `walk_files` y `drive_usage` para manejar específicamente casos de unidades extraíbles sin medio presente o permisos denegados, evitando fallos silenciosos mediante la verificación de `os.access` y capturas de excepciones más específicas.
 - `2026-10-27T15:48:05` **browser.py** (robustez ante casos límite): Se introdujo una validación de profundidad y redundancia de caché en `_sum_directory_recursive` mediante el uso de `real_path` normalizado, protegiendo contra el acceso a rutas con bucles simbólicos y validando que las subcarpetas no escapen del `sandbox_base_norm` durante el recorrido.
@@ -58,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T14:29:13` **browser.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) de `ScanContext` y `_sum_directory_recursive` para clarificar la lógica de prevención de bucles y el manejo de excepciones, facilitando el mantenimiento a largo plazo.
 - `2026-10-27T13:21:28` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al centralizar la captura de errores específicos durante la carga del archivo, asegurando que cualquier entrada mal formada o corrupta resulte en un valor seguro (`None`) en lugar de permitir excepciones inesperadas que podrían comprometer la estabilidad del sistema.
 - `2026-10-27T13:13:26` **scanner.py** (manejo de errores y validación de entradas): Se mejora la robustez del manejo de errores en las heurísticas de `scanner.py`, asegurando que `_run_file_heuristics` y `scan_file` validen explícitamente los parámetros y manejen de forma segura las excepciones durante la ejecución de los checks para evitar interrupciones prematuras del escaneo.
-- `2026-10-27T13:11:45` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `restore_item` al envolver sus llamadas de I/O críticas en `_check_io_error_context` y capturar excepciones específicas de manera más granular, asegurando que fallos en el sistema de archivos durante la limpieza o restauración no dejen el manifiesto en un estado inconsistente.
-- `2026-10-27T13:02:54` **memory.py** (manejo de errores y validación de entradas): He mejorado la robustez de `_is_process_executable_safe` añadiendo una validación explícita para asegurar que el handle recibido no sea nulo antes de invocar la API, y mejoré `_extract_process_info` para manejar de forma más segura el parseo de PIDs y valores de memoria, previniendo errores de conversión ante entradas malformadas.

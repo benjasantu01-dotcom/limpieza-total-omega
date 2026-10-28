@@ -860,3 +860,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-27T23:34:43` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-27T23:44:53` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-27T23:55:05` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-28T00:05:13` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-10-28T00:06:26` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T00:07:04` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo explícito en `_is_process_accessible` para evitar la propagación de errores en el manejo de handles cuando las APIs de sistema fallan debido a restricciones de privilegios de usuario, asegurando que la iteración de procesos sea resiliente a denegaciones de acceso comunes en procesos del sistema.
+- `2026-10-28T00:07:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-28T00:07:59` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita para evitar que `iterdir()` procese archivos que no pertenecen al manifiesto o que pudieran ser residuales, evitando errores en el conteo y la integridad del manifiesto durante limpiezas parciales.
+- `2026-10-28T00:07:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T00:07:59` Corrida terminada. Total usado hoy: 4.

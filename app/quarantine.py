@@ -1135,12 +1135,14 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or f.is_dir():
                 continue
             
-            try:
-                item = item_map.get(f.name)
-                if item and _is_item_purgable(f, item):
-                    purgado_ids.add(item.item_id)
-            except (OSError, PermissionError):
-                continue
+            # Solo procesar si el archivo es parte del manifiesto registrado
+            item = item_map.get(f.name)
+            if item:
+                try:
+                    if _is_item_purgable(f, item):
+                        purgado_ids.add(item.item_id)
+                except (OSError, PermissionError):
+                    continue
         
         if purgado_ids:
             new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]
