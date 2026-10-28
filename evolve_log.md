@@ -1206,3 +1206,11 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Att
 - `2026-10-28T02:29:26` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `score_security` y `_render_bar` validando los tipos de entrada y asegurando que las divisiones por cero o valores no numéricos sean capturados de forma segura, previniendo errores en tiempo de ejecución.
 - `2026-10-28T02:29:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T02:29:26` Corrida terminada. Total usado hoy: 60.
+- `2026-10-28T02:37:59` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-28T02:39:11` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T02:39:38` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-28T02:40:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-28T02:40:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T02:41:31` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` centralizando el chequeo de exclusividad y estado del sistema antes de iniciar la transacción, y añadiendo una validación explícita para evitar que `source_path` resulte ser el directorio de cuarentena tras la resolución de la ruta.
+- `2026-10-28T02:41:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T02:41:31` Corrida terminada. Total usado hoy: 64.

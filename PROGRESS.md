@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 65
+- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 32 | 3 | 9 | 4 | 46 |
+| 2026-10-26 | 29 | 2 | 9 | 4 | 46 |
 | 2026-10-27 | 125 | 8 | 51 | 9 | 157 |
-| 2026-10-28 | 16 | 3 | 5 | 1 | 35 |
+| 2026-10-28 | 17 | 3 | 6 | 1 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **35**
+- manejo de errores y validación de entradas: **36**
 - seguridad defensiva: **35**
-- manejo de errores y validación de entradas: **35**
-- rendimiento: **25**
+- legibilidad y documentación: **33**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `assistant.py`: **17**
-- `settings.py`: **16**
+- `quarantine.py`: **20**
 - `diskreport.py`: **16**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
+- `assistant.py`: **16**
+- `settings.py`: **15**
 - `browser.py`: **15**
 - `organizer.py`: **13**
-- `scanner.py`: **12**
 - `branding.py`: **11**
 - `safety.py`: **11**
+- `scanner.py`: **11**
 - `startup.py`: **6**
 - `duplicates.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T02:41:31` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` centralizando el chequeo de exclusividad y estado del sistema antes de iniciar la transacción, y añadiendo una validación explícita para evitar que `source_path` resulte ser el directorio de cuarentena tras la resolución de la ruta.
 - `2026-10-28T02:29:26` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `score_security` y `_render_bar` validando los tipos de entrada y asegurando que las divisiones por cero o valores no numéricos sean capturados de forma segura, previniendo errores en tiempo de ejecución.
 - `2026-10-28T02:28:42` **diskreport.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y la integridad de los datos en `_collect_summary_data` y `summarize`, asegurando que errores inesperados durante el acceso a archivos individuales no propaguen estados inconsistentes, y añadiendo validaciones proactivas en las operaciones de cómputo del heap.
 - `2026-10-28T02:28:14` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `detect_profiles` y `summarize` implementando validaciones de tipo explícitas y manejo de estados vacíos para prevenir excepciones en tiempo de ejecución, alineándose con el enfoque de validación defensiva de entradas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T00:27:24` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor remoto validando que la `api_key` se recupere exclusivamente mediante variables de entorno o la configuración interna, evitando posibles filtraciones o inyecciones por parámetros externos no controlados en la llamada a la API.
 - `2026-10-28T00:17:24` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar la lectura de archivos de configuración vinculados a rutas de sistema o uniones (reparse points) en `_is_file_secure_to_read`, reforzando la robustez ante manipulaciones externas del FS antes de intentar procesar el JSON.
 - `2026-10-28T00:16:41` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en la robustez ante casos de E/S fallida mediante la introducción de un manejo explícito de errores de Windows (`ERROR_SHARING_VIOLATION`, `ERROR_ACCESS_DENIED`, `ERROR_FILE_NOT_FOUND`) dentro de `_get_file_id`, evitando retornos silenciosos de valores por defecto que podrían enmascarar estados de seguridad críticos.
-- `2026-10-28T00:07:59` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita para evitar que `iterdir()` procese archivos que no pertenecen al manifiesto o que pudieran ser residuales, evitando errores en el conteo y la integridad del manifiesto durante limpiezas parciales.

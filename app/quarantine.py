@@ -562,8 +562,10 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
         
     if len(str(target_directory)) > 240:
         raise UnsafePathError("Ruta de cuarentena demasiado larga.")
-    if is_within_directory(resolved_source, target_directory.resolve()):
-        raise UnsafePathError("Archivo origen ya reside dentro del sandbox.")
+    
+    resolved_target = target_directory.resolve()
+    if is_within_directory(resolved_source, resolved_target) or resolved_source == resolved_target:
+        raise UnsafePathError("Archivo origen ya reside dentro del sandbox o colisiona con él.")
     
     _ensure_disk_space(target_directory, resolved_source.stat().st_size)
     _check_isolation_safety(resolved_source, target_directory)
@@ -966,17 +968,14 @@ def quarantine_file(
     Aísla un archivo sospechoso de forma atómica y segura en el sandbox.
     """
     p_source: Path = _validate_input_path(source)
+    dest_dir: Path = quarantine_dir(base)
     st_info: os.stat_result = _check_io_error_context(p_source.stat)
     
     if _is_file_in_use_by_system(p_source):
         raise IOError("Archivo origen bloqueado por el sistema: abortado.")
         
-    dest_dir: Path = quarantine_dir(base)
     if p_source.resolve().stat().st_dev != dest_dir.resolve().stat().st_dev:
         raise UnsafePathError("Origen y sandbox deben estar en la misma unidad.")
-        
-    if _is_within_quarantine_sandbox(p_source.resolve(), dest_dir.resolve()):
-        raise UnsafePathError("Archivo ya en el sandbox.")
         
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
