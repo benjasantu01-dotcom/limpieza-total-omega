@@ -1095,14 +1095,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 
 def _is_item_purgable(file_path: Optional[Path], item: Optional[QuarantineItem] = None) -> bool:
-    """Valida la integridad y exclusividad del archivo antes de proceder a la purga física.
-    
-    Args:
-        file_path: Ruta al archivo en la cuarentena.
-        item: Objeto de metadatos asociado al ítem.
-    Returns:
-        bool: True si el archivo puede ser borrado de forma segura.
-    """
+    """Valida la integridad y exclusividad del archivo antes de proceder a la purga física."""
     if file_path is None or not file_path.exists(): return False
     try:
         if not file_path.is_file():
@@ -1120,11 +1113,7 @@ def _is_item_purgable(file_path: Optional[Path], item: Optional[QuarantineItem] 
 
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Elimina permanentemente todo el contenido del sandbox de forma segura.
-    
-    Returns:
-        int: Cantidad total de archivos eliminados correctamente.
-    """
+    """Elimina permanentemente todo el contenido del sandbox de forma segura."""
     try:
         root_path: Path = quarantine_dir(base).resolve()
         if _is_filesystem_read_only(root_path) or is_protected_path(root_path):
@@ -1135,13 +1124,16 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         purgado_ids: Set[str] = set()
         
         for f in root_path.iterdir():
-            # Validación estricta: solo archivos dentro del sandbox real
             if f.name == MANIFEST_NAME or f.is_dir() or not is_within_directory(f.resolve(), root_path):
                 continue
             
             item = item_map.get(f.name)
             if item and _is_item_purgable(f, item):
                 purgado_ids.add(item.item_id)
+            elif not item and f.suffix != ".tmp":
+                # Limpieza de huérfanos que no constan en manifiesto
+                try: _safe_unlink(f)
+                except (OSError, UnsafePathError): pass
         
         if purgado_ids:
             new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]

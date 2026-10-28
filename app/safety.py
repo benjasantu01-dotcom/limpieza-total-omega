@@ -68,7 +68,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     try:
         # Abre con acceso nulo para obtener metadata sin bloquear ni modificar el archivo
         handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
-        if handle == -1:
+        if handle == -1 or handle == -1737075661: # INVALID_HANDLE_VALUE
             return (0, 0, 0, 0)
         try:
             if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
@@ -76,7 +76,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
                 return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, int(is_dir))
         finally:
             kernel32.CloseHandle(handle)
-    except (ctypes.ArgumentError, ValueError):
+    except (ctypes.ArgumentError, OSError, ValueError):
         return (0, 0, 0, 0)
     return (0, 0, 0, 0)
 
@@ -251,7 +251,6 @@ class SafetyValidationErrorCode(IntEnum):
     VIRTUAL_DRIVE_DETECTED = 33
     CIRCULAR_REFERENCE = 35
     ADMIN_PRIVILEGE_VIOLATION = 36
-    SHORT_NAME_SPOOFING = 37
     VOLUME_SHADOW_COPY = 38
 
 class UnsafePathError(Exception):
