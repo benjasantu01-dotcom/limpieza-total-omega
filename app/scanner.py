@@ -27,6 +27,8 @@ logger: Final = logging.getLogger(__name__)
 
 # Constantes de Win32 API para la identificación precisa de estructuras de archivos
 FILE_ATTRIBUTE_REPARSE_POINT: Final = 0x400
+IO_REPARSE_TAG_SYMLINK: Final = 0xA000000C
+IO_REPARSE_TAG_MOUNT_POINT: Final = 0xA0000003
 # ERROR_SHARING_VIOLATION (32) se produce cuando un archivo está bloqueado por otro proceso
 ERROR_SHARING_VIOLATION: Final = 32
 
@@ -127,7 +129,11 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry):
         return None
     try:
-        if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
+        if entry.is_symlink():
+            return None
+        attrs = _get_file_attributes(entry)
+        if attrs & SCAN_LIMITS.reparse_point_mask:
+            # Verificación adicional para asegurar que no es una estructura de reanálisis
             return None
         if not entry.is_file() or _cached_is_protected(entry.path):
             return None

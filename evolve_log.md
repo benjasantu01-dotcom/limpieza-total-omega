@@ -1446,3 +1446,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T05:15:24` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad en `purge_all` y `purge_item` implementando una validación estricta del nombre de archivo y su relación con el manifiesto, evitando que un archivo malicioso dentro de la carpeta de cuarentena pueda causar la eliminación de archivos no previstos o forzar comportamientos inesperados ante colisiones de nombres.
 - `2026-10-28T05:15:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T05:15:24` Corrida terminada. Total usado hoy: 124.
+- `2026-10-28T05:21:20` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-10-28T05:21:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-28T05:22:32` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-28T05:22:59` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha añadido `entry.is_symlink()` en el método `_safe_stat` y una validación de `st_reparse_tag` para identificar puntos de reanálisis (Junctions) mediante la API de bajo nivel, asegurando que el escáner sea incapaz de seguir enlaces simbólicos o puntos de montaje incluso si el sistema operativo no los marca directamente como symlinks convencionales.
+- `2026-10-28T05:23:14` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de sustitución (TOCTOU) y validaciones laxas: ahora se verifica que la ruta sea un archivo real absoluto y se asegura que el archivo no sea un enlace simbólico ni un punto de reparse antes de procesarlo, reduciendo riesgos al leer configuraciones desde el disco.
+- `2026-10-28T05:23:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T05:23:14` Corrida terminada. Total usado hoy: 128.

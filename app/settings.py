@@ -346,15 +346,17 @@ def validate(raw_values: Any) -> AppSettings:
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     try:
-        if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+        # Asegurar integridad: archivo regular, absoluto y sin múltiples links (hardlinks)
+        if not file_path.is_absolute() or not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+        # Prevenir reparse points (symlinks, junctions) antes de cualquier apertura
         if _Validators._is_reparse_point(str(file_path)): return False
         # Permisos restringidos: el archivo debe ser solo propiedad del usuario actual
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        # Validar tamaño mínimo de archivo lógico y máximo permitido
+        # Validar tamaño lógico
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         
-        # Seguridad adicional contra bypass de rutas de sistema o junctions
+        # Validar ruta final resuelta
         real_path = file_path.resolve()
         if is_protected_path(str(real_path)): return False
         return True
