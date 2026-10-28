@@ -517,3 +517,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T08:06:24` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el rendimiento de `detect_profiles` eliminando el cálculo redundante de `base_norm` y el acceso repetitivo a `kernel32` dentro del bucle interno, además de reutilizar el mismo `ScanContext` para reducir la creación de objetos en escaneos masivos.
 - `2026-10-28T08:06:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T08:06:24` Corrida terminada. Total usado hoy: 192.
+- `2026-10-28T08:14:40` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-28T08:15:09` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la redundancia de `relative_to` y las conversiones de cadena en cada iteración del bucle, obteniendo el directorio padre de primer nivel de forma más directa y eficiente a partir del iterador.
+- `2026-10-28T08:15:32` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-28T08:15:59` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.safe_get, SystemMetrics.validate
+- `2026-10-28T08:16:46` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T08:16:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T08:16:46` Corrida terminada. Total usado hoy: 196.
