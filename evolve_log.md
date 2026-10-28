@@ -874,3 +874,69 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-28T00:17:24` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar la lectura de archivos de configuración vinculados a rutas de sistema o uniones (reparse points) en `_is_file_secure_to_read`, reforzando la robustez ante manipulaciones externas del FS antes de intentar procesar el JSON.
 - `2026-10-28T00:17:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T00:17:24` Corrida terminada. Total usado hoy: 8.
+- `2026-10-28T00:25:42` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-28T00:26:17` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.55s
+
+```
+- `2026-10-28T00:26:17` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `startup.py` ante casos límite agregando una verificación explícita de `p.is_file()` después de la resolución de rutas en `_resolve_and_cache_path`, evitando así que directorios o enlaces simbólicos maliciosos con nombres similares a ejecutables sean reportados erróneamente como programas de inicio.
+- `2026-10-28T00:26:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T00:27:24` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad del motor remoto validando que la `api_key` se recupere exclusivamente mediante variables de entorno o la configuración interna, evitando posibles filtraciones o inyecciones por parámetros externos no controlados en la llamada a la API.
+- `2026-10-28T00:28:32` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se introdujo una validación defensiva en `save_logo_svg` para garantizar que la ruta de destino no solo sea segura para modificar, sino que el directorio padre exista y sea válido antes de intentar cualquier escritura, evitando así excepciones no controladas o intentos de escritura en rutas no permitidas.
+- `2026-10-28T00:28:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T00:29:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-28T00:29:33` Tests FALLARON:
+```
+nner/pytest-4/test_summarize_includes_the_sa0')
+
+    def test_summarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:354: in summarize
+    total_bytes = total_cache_bytes(current_caches)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:347: in total_cache_bytes
+    return sum(c.bytes_found for c in caches if isinstance(c, BrowserCache))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7f7742493070>
+
+>   return sum(c.bytes_found for c in caches if isinstance(c, BrowserCache))
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:347: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.62s
+
+```
+- `2026-10-28T00:29:33` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez del escaneo implementando una validación estricta de puntos de reparse (junctions/symlinks) mediante el uso de atributos de archivo Win32 directamente sobre cada entrada detectada en el `scandir`, asegurando que no se sigan enlaces fuera del sandbox definido incluso si el sistema operativo los marca como carpetas normales.
+- `2026-10-28T00:29:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T00:29:33` Corrida terminada. Total usado hoy: 12.

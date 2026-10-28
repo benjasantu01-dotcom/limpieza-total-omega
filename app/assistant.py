@@ -46,6 +46,7 @@ import re
 import math
 import logging
 import operator
+import os
 from itertools import islice
 from functools import lru_cache, wraps, cached_property
 from dataclasses import dataclass, field
@@ -657,9 +658,13 @@ def available(base: str | Path | None = None) -> bool:
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
     """Parsea la configuración de usuario para el asistente manejando errores de estructura."""
     if not isinstance(raw_cfg, dict): return AssistantConfig("", "gemini-3.1-flash-lite", True)
+    
+    # La API key siempre se prioriza desde la variable de entorno para evitar persistencia insegura en disco
+    api_key = os.environ.get("LTO_API_KEY", str(raw_cfg.get("asistente_api_key", "")))
+    
     try:
         return AssistantConfig(
-            api_key=str(raw_cfg.get("asistente_api_key", "")),
+            api_key=api_key,
             model=str(m) if isinstance(m := raw_cfg.get("asistente_modelo"), str) and _MODEL_NAME_REGEX.match(m) else "gemini-3.1-flash-lite",
             allow_metrics=bool(raw_cfg.get("asistente_enviar_metricas", True))
         )
