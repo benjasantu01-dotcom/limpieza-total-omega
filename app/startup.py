@@ -384,10 +384,14 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
         if "\\" not in path_candidate and "/" not in path_candidate:
             return False
         
+        # Seguridad: Prevenir directory traversal
+        if ".." in path_candidate.split(os.sep):
+            return False
+            
         target_path = Path(path_candidate)
         if any(c in str(target_path) for c in SUSPICIOUS_CHARS):
             return False
-        if is_protected_path(target_path) or ".." in str(target_path):
+        if is_protected_path(target_path):
             return False
         return True
     except (ValueError, TypeError, OSError, RuntimeError):
