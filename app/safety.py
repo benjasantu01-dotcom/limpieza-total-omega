@@ -163,6 +163,7 @@ MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILENAME_LENGTH: Final[int] = 255
 MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024
 MAX_DIRECTORY_DEPTH: Final[int] = 32
+MAX_REPARSE_DEPTH: Final[int] = 4
 
 DRIVE_UNKNOWN: Final[int] = 0
 DRIVE_NO_ROOT_DIR: Final[int] = 1
@@ -550,6 +551,19 @@ def _is_sensitive_extension(ext: str) -> bool:
 def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _IntegrityCheck:
     """Constructor helper para definir reglas de seguridad."""
     return _IntegrityCheck(reason, predicate)
+
+def _validate_junction_depth(path: Path) -> None:
+    """Limita la profundidad de resolución de enlaces para prevenir ataques de recursión."""
+    count = 0
+    curr = path
+    while curr.is_symlink() or _is_system_directory_junction(str(curr)):
+        count += 1
+        if count > MAX_REPARSE_DEPTH:
+            raise UnsafePathError("Profundidad de reparse point excesiva.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+        try:
+            curr = _get_final_path_normalized(curr)
+        except Exception:
+            break
 
 def _validate_drive_restrictions(target_path: Path) -> None:
     """Valida que la unidad destino cumpla con los requisitos operativos de la app."""
@@ -1046,6 +1060,7 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
     """Verifica la seguridad de las redirecciones mediante puntos de unión NTFS."""
     for p in [path] + list(path.parents):
         if _is_system_directory_junction(str(p)):
+            _validate_junction_depth(p)
             final_path = _get_final_path_normalized(p)
             if base_dir and not final_path.is_relative_to(base_dir):
                 raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
@@ -1092,6 +1107,7 @@ def _validate_no_reparse_traversal(path: Path) -> None:
         for part in path.parts[1:]:
             current = current / part
             if current.is_symlink() or _is_system_directory_junction(str(current)):
+                _validate_junction_depth(current)
                 target = _get_final_path_normalized(current)
                 if not target.is_relative_to(Path(path.anchor)):
                     raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS)

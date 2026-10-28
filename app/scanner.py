@@ -196,15 +196,16 @@ class Scanner:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.base_root_norm: str = os.path.normcase(os.path.realpath(base_root))
+        # Se normaliza la ruta base de forma defensiva ante rutas que puedan fallar al resolver
+        self.base_root_norm: str = os.path.normcase(os.path.abspath(base_root))
         self.now_ts: float = datetime.now().timestamp()
 
     @lru_cache(maxsize=1024)
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la ruta sea descendiente del directorio raíz escaneado."""
         try:
-            abs_path = os.path.normcase(os.path.realpath(entry_path))
-            return os.path.commonpath([abs_path, self.base_root_norm]) == self.base_root_norm
+            abs_path = os.path.normcase(os.path.abspath(entry_path))
+            return abs_path.startswith(self.base_root_norm)
         except (OSError, RuntimeError, ValueError):
             return False
 
@@ -305,7 +306,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         base_path = Path(directory)
         if not base_path.exists() or not base_path.is_dir() or not os.access(base_path, os.R_OK):
             return []
-        resolved_path = base_path.resolve(strict=True)
+        # Usar resolución no estricta para manejar rutas que podrían bloquearse por sistema
+        resolved_path = base_path.resolve(strict=False)
         if _cached_is_protected(str(resolved_path)):
             return []
         scanner: Scanner = Scanner(base_root=resolved_path)

@@ -374,9 +374,16 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Lee y parsea JSON, verificando estructura básica antes de procesar."""
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        with open(file_path, "rb") as f:
+            content = f.read(MAX_SETTINGS_SIZE + 1)
+        if len(content) > MAX_SETTINGS_SIZE: return None
+        
+        # Validación de integridad de caracteres de control
+        if any(b < 32 and b not in (9, 10, 13) for b in content): return None
+        
+        data = json.loads(content.decode("utf-8"))
         if not isinstance(data, dict) or len(data) > 64: return None
+        
         for k, v in data.items():
             if not isinstance(k, str) or (v is not None and not isinstance(v, (str, int, bool, float))):
                 return None

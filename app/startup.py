@@ -199,13 +199,9 @@ class StartupEntry:
             
         try:
             norm: str = os.path.normpath(path_string)
-        except (ValueError, TypeError):
-            return ""
-        
-        if path_string in _EXISTS_CACHE:
-            return path_string if _EXISTS_CACHE[path_string] else path_string
-        
-        try:
+            if path_string in _EXISTS_CACHE:
+                return path_string if _EXISTS_CACHE[path_string] else path_string
+            
             p: Path = Path(norm)
             if not p.is_absolute() or ".." in p.parts:
                 _EXISTS_CACHE[path_string] = False
@@ -219,7 +215,7 @@ class StartupEntry:
             p_str: str = str(p)
             _EXISTS_CACHE[p_str] = True
             return p_str
-        except (OSError, PermissionError, FileNotFoundError, RuntimeError, ValueError, TypeError):
+        except (OSError, PermissionError, FileNotFoundError, RuntimeError, ValueError, TypeError, AttributeError):
             _EXISTS_CACHE[path_string] = False
             return ""
 
