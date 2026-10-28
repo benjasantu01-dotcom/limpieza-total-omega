@@ -359,18 +359,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> HealthResult:
     """
     Motor central que orquestra el cálculo de métricas a través del pipeline.
-    
-    Args:
-        metric_values: Tupla con los valores crudos de métricas.
-        quarantined: Cantidad de archivos en cuarentena.
     """
-    (junk_mb, suspicious_count, suspicious_warnings, mem_avail, disk_free, 
-     duplicate_mb, startup_count, _) = metric_values
-    
-    metrics = SystemMetrics(
-        junk_mb, int(suspicious_count), int(suspicious_warnings), 
-        mem_avail, disk_free, duplicate_mb, int(startup_count), quarantined
-    )
+    metrics = SystemMetrics(*metric_values, quarantined)
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -378,7 +368,6 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
     
     for entry in PIPELINE_DEFINITIONS:
         try:
-            if not isinstance(entry, PipelineEntry): continue
             area_ratio = entry.scorer(metrics)
             recs = _evaluate_rules(metrics, entry.rules, area_ratio)
             recommendations.extend(recs)
@@ -393,13 +382,12 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
         recommendations.append("Existen elementos en cuarentena.")
         
     final_score = int(_clamp(round(total_points), 0.0, 100.0))
-    valid_recs = [r for r in recommendations if isinstance(r, str) and r]
     
     return HealthResult(
         score=final_score,
         grade=grade_for_score(final_score),
         breakdown=metric_breakdown,
-        recommendations=valid_recs if valid_recs else ["No hay nada urgente para hacer. El sistema está en buen estado."]
+        recommendations=recommendations if recommendations else ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -412,7 +400,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema corruptos."])
     
     try:
-        cache_key = tuple(getattr(metrics, f) for f in SystemMetrics._FIELDS_TO_VALIDATE)
+        cache_key = tuple(getattr(metrics, f) for f in SystemMetrics._FIELDS_TO_VALIDATE[:-1])
         return _compute_cached(cache_key, int(metrics.quarantined_count))
     except (TypeError, ValueError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
@@ -430,11 +418,6 @@ def _render_bar(points: Any, max_val: Any) -> str:
 def summarize(result: HealthResult | None) -> List[str]:
     """
     Serializa el resultado de salud en una lista de líneas para informe legible.
-    
-    Args:
-        result: Instancia de HealthResult a resumir.
-    Returns:
-        List[str]: Líneas del reporte formateado.
     """
     if not isinstance(result, HealthResult): 
         return ["Error: Informe de salud no disponible."]
@@ -442,11 +425,10 @@ def summarize(result: HealthResult | None) -> List[str]:
     try:
         lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
         for entry in PIPELINE_DEFINITIONS:
-            if not isinstance(entry, PipelineEntry): continue
             val = result.breakdown.get(entry.area, 0)
             lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
         
-        recs = [r for r in result.recommendations if isinstance(r, str) and r]
+        recs = result.recommendations
         if not recs:
             recs = ["No hay advertencias activas."]
             

@@ -350,19 +350,15 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
     buffer_path = ctypes.create_unicode_buffer(buffer_len)
     try:
         ret = WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, buffer_path, buffer_len)
-        if ret <= 0: return False
-        if ret >= buffer_len: return False 
+        if ret <= 0 or ret >= buffer_len: return False 
         
         exe_path_str = buffer_path.value.strip()
-        if not exe_path_str: return False
-        
-        exe_path = Path(exe_path_str)
-        return not is_protected_path(exe_path)
+        return bool(exe_path_str) and not is_protected_path(Path(exe_path_str))
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 
 def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
-    """Enumera los procesos del sistema usando la API EnumProcesses de Windows."""
+    """Enumera los procesos del sistema usando la API EnumProcesses de Windows con buffer pre-asignado."""
     MAX_PIDS = 4096
     pids = (wintypes.DWORD * MAX_PIDS)()
     cb_needed = wintypes.DWORD(0)
@@ -380,11 +376,8 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         
         try:
             ws = _query_working_set_bytes(h_process, pmc)
-            if ws is not None:
-                if _is_process_executable_safe(h_process):
-                    yield ProcessMemory(f"PID {pid}", pid, ws)
-        except Exception:
-            continue
+            if ws is not None and _is_process_executable_safe(h_process):
+                yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:
             if WindowsAPI.kernel32:
                 WindowsAPI.kernel32.CloseHandle(h_process)

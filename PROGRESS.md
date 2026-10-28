@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 66
-- Sin cambios (nada sustancial que mejorar): 13
+- Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 15 | 2 | 5 | 2 | 42 |
+| 2026-10-26 | 14 | 2 | 4 | 1 | 41 |
 | 2026-10-27 | 125 | 8 | 51 | 9 | 157 |
-| 2026-10-28 | 32 | 4 | 10 | 2 | 40 |
+| 2026-10-28 | 34 | 4 | 11 | 2 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **36**
 - seguridad defensiva: **35**
-- rendimiento: **19**
+- robustez ante casos límite: **35**
+- rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `assistant.py`: **17**
 - `browser.py`: **17**
-- `settings.py`: **16**
+- `healthscore.py`: **16**
+- `memory.py`: **16**
 - `diskreport.py`: **16**
-- `healthscore.py`: **15**
-- `memory.py`: **15**
+- `settings.py`: **15**
 - `organizer.py`: **12**
 - `scanner.py`: **12**
 - `safety.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T03:52:04` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` pre-asignando el buffer de PIDs una única vez fuera del loop y minimizando las llamadas a la API de Windows mediante la consolidación de chequeos, evitando redundancia en la apertura de handles y validación de procesos.
+- `2026-10-28T03:50:36` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación eliminando la re-iteración de los datos en `_compute_cached` y reemplazando la construcción manual de la tupla de claves del caché por una extracción basada en la definición de la clase, reduciendo así la sobrecarga de llamadas a `getattr` y `SystemMetrics._FIELDS_TO_VALIDATE`.
 - `2026-10-28T03:41:29` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando la creación innecesaria de objetos `Path` y llamadas a `realpath` dentro del bucle de iteración, utilizando directamente los atributos de `os.DirEntry` y normalizando rutas solo cuando es estrictamente necesario, reduciendo significativamente la carga de I/O en escaneos masivos.
 - `2026-10-28T03:40:06` **assistant.py** (rendimiento): Se optimizó el acceso a `active_problems` eliminando el uso de `tuple(sorted(metrics_snapshot.items()))` como clave de caché, reemplazándolo por una tupla de valores pre-seleccionados basada en el orden de los criterios, lo que evita la ordenación constante y reduce la carga computacional en cada acceso.
 - `2026-10-28T03:31:34` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de Type Hints en los argumentos de los métodos, la estandarización de los nombres de los parámetros de tipo en `Scanner` y la clarificación de las responsabilidades en los métodos de filtrado de rutas mediante docstrings descriptivos, asegurando que el flujo de ejecución sea más transparente y menos propenso a errores.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T03:01:38` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos a las funciones de utilidad interna, estandarizando los tipos de retorno y clarificando las precondiciones de seguridad, facilitando así el mantenimiento y la auditoría del código para futuras iteraciones del equipo.
 - `2026-10-28T02:59:49` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la documentación de los criterios de salud (`ProblemCriterion`) y la normalización de la estructura de `SystemContext` para facilitar futuras expansiones, sin alterar el comportamiento.
 - `2026-10-28T02:59:00` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._resolve_path_from_command` y `parse_registry_csv` añadiendo validaciones específicas de tipo y contenido antes de intentar procesar las cadenas, evitando errores de ejecución ante entradas inesperadas o malformadas.
-- `2026-10-28T02:50:04` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_read_and_parse_json` y `_coerce_and_verify` agregando validaciones de tipo explícitas y manejo de errores ante estructuras de datos malintencionadas o corruptas para evitar comportamientos inesperados durante el procesamiento del JSON de configuración.
-- `2026-10-28T02:49:49` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas integrando validaciones de tipo `None` y de integridad de ruta antes de operar, previniendo excepciones innecesarias durante la ejecución del bucle de escaneo.

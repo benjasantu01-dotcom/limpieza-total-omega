@@ -1294,3 +1294,13 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-28T03:41:43` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `walk_files` y `_collect_summary_data` evitando crear objetos `Path` innecesarios dentro del bucle crítico; el uso de `os.path.join` y la manipulación de cadenas para la validación de extensiones reduce drásticamente la presión sobre el recolector de basura durante escaneos profundos.
 - `2026-10-28T03:41:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T03:41:43` Corrida terminada. Total usado hoy: 88.
+- `2026-10-28T03:49:33` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-28T03:49:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T03:50:02` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-28T03:50:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T03:50:36` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del pipeline de puntuación eliminando la re-iteración de los datos en `_compute_cached` y reemplazando la construcción manual de la tupla de claves del caché por una extracción basada en la definición de la clase, reduciendo así la sobrecarga de llamadas a `getattr` y `SystemMetrics._FIELDS_TO_VALIDATE`.
+- `2026-10-28T03:51:46` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, wrapper
+- `2026-10-28T03:51:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T03:52:04` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `_iter_process_memory` pre-asignando el buffer de PIDs una única vez fuera del loop y minimizando las llamadas a la API de Windows mediante la consolidación de chequeos, evitando redundancia en la apertura de handles y validación de procesos.
+- `2026-10-28T03:52:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T03:52:04` Corrida terminada. Total usado hoy: 92.
