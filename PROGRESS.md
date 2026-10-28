@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 67
+- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 18 | 2 | 6 | 2 | 42 |
+| 2026-10-26 | 15 | 2 | 5 | 2 | 42 |
 | 2026-10-27 | 125 | 8 | 51 | 9 | 157 |
-| 2026-10-28 | 30 | 3 | 10 | 2 | 39 |
+| 2026-10-28 | 32 | 4 | 10 | 2 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **39**
+- robustez ante casos límite: **36**
 - seguridad defensiva: **35**
-- rendimiento: **17**
+- rendimiento: **19**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `memory.py`: **16**
+- `quarantine.py`: **20**
+- `assistant.py`: **17**
+- `browser.py`: **17**
 - `settings.py`: **16**
-- `assistant.py`: **16**
-- `browser.py`: **16**
 - `diskreport.py`: **16**
 - `healthscore.py`: **15**
-- `organizer.py`: **13**
+- `memory.py`: **15**
+- `organizer.py`: **12**
 - `scanner.py`: **12**
 - `safety.py`: **11**
 - `branding.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T03:41:29` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando la creación innecesaria de objetos `Path` y llamadas a `realpath` dentro del bucle de iteración, utilizando directamente los atributos de `os.DirEntry` y normalizando rutas solo cuando es estrictamente necesario, reduciendo significativamente la carga de I/O en escaneos masivos.
+- `2026-10-28T03:40:06` **assistant.py** (rendimiento): Se optimizó el acceso a `active_problems` eliminando el uso de `tuple(sorted(metrics_snapshot.items()))` como clave de caché, reemplazándolo por una tupla de valores pre-seleccionados basada en el orden de los criterios, lo que evita la ordenación constante y reduce la carga computacional en cada acceso.
 - `2026-10-28T03:31:34` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de Type Hints en los argumentos de los métodos, la estandarización de los nombres de los parámetros de tipo en `Scanner` y la clarificación de las responsabilidades en los métodos de filtrado de rutas mediante docstrings descriptivos, asegurando que el flujo de ejecución sea más transparente y menos propenso a errores.
 - `2026-10-28T03:31:08` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se estructuró la jerarquía de validación en `ensure_safe_to_modify` para mejorar la legibilidad y claridad del flujo de control ante auditorías técnicas.
 - `2026-10-28T03:20:35` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la implementación de `TypeHint` más precisos y la conversión de comentarios genéricos en docstrings estructurados conforme a los estándares de estilo de Google, facilitando la comprensión del flujo de datos en las operaciones de I/O.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T02:59:00` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._resolve_path_from_command` y `parse_registry_csv` añadiendo validaciones específicas de tipo y contenido antes de intentar procesar las cadenas, evitando errores de ejecución ante entradas inesperadas o malformadas.
 - `2026-10-28T02:50:04` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_read_and_parse_json` y `_coerce_and_verify` agregando validaciones de tipo explícitas y manejo de errores ante estructuras de datos malintencionadas o corruptas para evitar comportamientos inesperados durante el procesamiento del JSON de configuración.
 - `2026-10-28T02:49:49` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas integrando validaciones de tipo `None` y de integridad de ruta antes de operar, previniendo excepciones innecesarias durante la ejecución del bucle de escaneo.
-- `2026-10-28T02:41:31` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` centralizando el chequeo de exclusividad y estado del sistema antes de iniciar la transacción, y añadiendo una validación explícita para evitar que `source_path` resulte ser el directorio de cuarentena tras la resolución de la ruta.
-- `2026-10-28T02:29:26` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `score_security` y `_render_bar` validando los tipos de entrada y asegurando que las divisiones por cero o valores no numéricos sean capturados de forma segura, previniendo errores en tiempo de ejecución.

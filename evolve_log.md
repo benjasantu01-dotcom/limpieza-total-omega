@@ -1253,3 +1253,44 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Att
 - `2026-10-28T03:33:16` ➖ Sin cambios en startup.py (enfoque: legibilidad y documentación). Motivo: Se mejoró la legibilidad y mantenibilidad del archivo documentando exhaustivamente las clases y métodos clave con docstrings que clarifican el propósito y las restricciones de seguridad, además de estandarizar los tipos de datos en `_is_registry_entry_safe` para asegurar consistencia con el resto del módulo.
 - `2026-10-28T03:33:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T03:33:16` Corrida terminada. Total usado hoy: 84.
+- `2026-10-28T03:39:21` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-10-28T03:40:06` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el acceso a `active_problems` eliminando el uso de `tuple(sorted(metrics_snapshot.items()))` como clave de caché, reemplazándolo por una tupla de valores pre-seleccionados basada en el orden de los criterios, lo que evita la ordenación constante y reduce la carga computacional en cada acceso.
+- `2026-10-28T03:41:05` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-28T03:41:29` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando la creación innecesaria de objetos `Path` y llamadas a `realpath` dentro del bucle de iteración, utilizando directamente los atributos de `os.DirEntry` y normalizando rutas solo cuando es estrictamente necesario, reduciendo significativamente la carga de I/O en escaneos masivos.
+- `2026-10-28T03:41:43` Tests FALLARON:
+```
+/pytest-of-runner/pytest-3/test_walk_files_finds_everythi0')
+
+    def test_walk_files_finds_everything_recursively(tmp_path):
+        (tmp_path / "raiz.txt").write_text("12345")
+        sub = tmp_path / "sub" / "mas"
+        sub.mkdir(parents=True)
+        (sub / "hondo.txt").write_text("1234567890")
+>       encontrados = {p.name: s for p, s in diskreport.walk_files(tmp_path)}
+                       ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:568: AttributeError
+_____________________ test_walk_files_skips_system_folders _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_walk_files_skips_system_f0')
+
+    def test_walk_files_skips_system_folders(tmp_path):
+        (tmp_path / "normal.txt").write_text("x")
+        sistema = tmp_path / "Program Files"
+        sistema.mkdir()
+        (sistema / "oculto.txt").write_text("y")
+>       nombres = {p.name for p, _ in diskreport.walk_files(tmp_path)}
+                   ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:577: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'str' object has no attribute 'name'
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - AttributeError: 'str' object has no attribute 'name'
+2 failed, 297 passed in 1.59s
+
+```
+- `2026-10-28T03:41:43` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `walk_files` y `_collect_summary_data` evitando crear objetos `Path` innecesarios dentro del bucle crítico; el uso de `os.path.join` y la manipulación de cadenas para la validación de extensiones reduce drásticamente la presión sobre el recolector de basura durante escaneos profundos.
+- `2026-10-28T03:41:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T03:41:43` Corrida terminada. Total usado hoy: 88.

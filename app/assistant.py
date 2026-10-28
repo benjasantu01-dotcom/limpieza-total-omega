@@ -367,9 +367,9 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     return spec.min_val <= val <= spec.max_val
 
 @lru_cache(maxsize=16)
-def _evaluate_active_problems(metrics_items: tuple) -> tuple[str, ...]:
+def _evaluate_active_problems(metrics_tuple: tuple) -> tuple[str, ...]:
     """Calcula los problemas activos a partir de los valores crudos cacheables."""
-    metrics_dict: Dict[str, float] = dict(metrics_items)
+    metrics_dict = dict(metrics_tuple)
     return tuple(
         msg for c in _CRITERIOS_SALUD 
         if (msg := c.format_if_triggered(metrics_dict.get(c.metric_key, -1.0))) is not None
@@ -402,9 +402,11 @@ class SystemContext:
 
     @cached_property
     def _cached_active_problems(self) -> tuple[str, ...]:
-        """Versión cacheada de active_problems, invalidada al cambiar el hash de estado."""
+        """Versión cacheada de active_problems, usando valores ordenados según los criterios."""
         if self.analyzed is not True: return ()
-        return _evaluate_active_problems(tuple(sorted(self.metrics_snapshot.items())))
+        snap = self.metrics_snapshot
+        key_vals = tuple((c.metric_key, snap.get(c.metric_key, -1.0)) for c in _CRITERIOS_SALUD)
+        return _evaluate_active_problems(key_vals)
 
     @property
     def active_problems(self) -> tuple[str, ...]:
