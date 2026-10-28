@@ -198,7 +198,10 @@ def _is_path_too_long(path_str: str) -> bool:
 @lru_cache(maxsize=4096)
 def _get_file_attrs(path_str: Optional[str]) -> int:
     """Consulta atributos de archivo directamente mediante GetFileAttributesW."""
-    if not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): 
+    if not isinstance(path_str, str) or not path_str:
+        return 0
+    # Validación lógica de absolutismo evitando llamada a sistema de archivos
+    if not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'):
         return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
@@ -431,8 +434,8 @@ def _is_system_directory_junction(path_str: str) -> bool:
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
     """Verifica si un archivo está bloqueado por otro proceso usando reintentos."""
-    if not isinstance(path_str, str) or os.name != 'nt' or not os.path.isabs(path_str): return False
-    if os.path.isdir(path_str) or not os.path.exists(path_str): return False
+    if not isinstance(path_str, str) or os.name != 'nt' or not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'): return False
+    if not os.path.exists(path_str): return False
     
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
@@ -465,7 +468,7 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
     """Consulta al SO si el volumen que contiene la ruta es de solo lectura."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'): return False
     if _is_unc_path(path_str): return False
     try:
         drive = os.path.splitdrive(path_str)[0]
@@ -497,7 +500,7 @@ def _get_drive_type(root: str) -> int:
 @lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
     """Identifica si el archivo reside en almacenamiento extraíble (USB/SD)."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         return _get_drive_type(root) == DRIVE_REMOVABLE
@@ -507,7 +510,7 @@ def _is_volume_removable_media(path_str: Optional[str]) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
     """Verifica si el volumen tiene restricciones nativas de cifrado/compresión."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         if not os.path.exists(root): return False

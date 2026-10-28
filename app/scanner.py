@@ -151,8 +151,8 @@ def _is_target_extension(name: str) -> bool:
     if not isinstance(name, str) or not name: return False
     try:
         if RTL_CHAR_RE.search(name): return False
-        _, ext = os.path.splitext(name)
-        return ext.lower() in SUSPICIOUS_ALL_EXTS
+        idx = name.rfind('.')
+        return idx > 0 and name[idx:].lower() in SUSPICIOUS_ALL_EXTS
     except (ValueError, TypeError):
         return False
 
@@ -243,6 +243,7 @@ class Scanner:
             if not _is_valid_path_structure(path_str): return False
             if not self._is_inside_base_root(path_str): return False
             
+            # Verificación final contra el root normalizado sin repetir normcase innecesario
             real_path = os.path.realpath(path_str)
             if not os.path.normcase(real_path).startswith(self.base_root_norm):
                 return False
@@ -257,6 +258,8 @@ class Scanner:
         if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
         try:
+            # Optimizamos evitando normcase si no es estrictamente necesario, 
+            # pero aquí se requiere para la detección de ciclos.
             norm_path = os.path.normcase(entry.path)
             if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
                 visited_dirs.add(norm_path)
@@ -276,6 +279,7 @@ class Scanner:
         try:
             if entry.is_file():
                 if self._is_relevant_extension(entry.name):
+                    # Solo calculamos normcase si es necesario verificar duplicados
                     path_norm = os.path.normcase(entry.path)
                     if path_norm not in self.seen_normcase:
                         self.seen_normcase.add(path_norm)

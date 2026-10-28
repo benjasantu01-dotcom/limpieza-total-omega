@@ -157,7 +157,7 @@ class _SettingsManager:
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
-        self.data_cache: dict[str, tuple[AppSettings, float, int]] = {}
+        self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
 
     def clear(self, path: Optional[Path] = None) -> None:
         """Limpia la caché de datos. Si se provee una ruta, elimina solo esa entrada."""
@@ -405,14 +405,14 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             st = primary_path.stat()
             cached = _MANAGER.data_cache.get(path_str)
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
-                return cached[0].copy()
+                return dict(cached[0])
             
             if _is_file_secure_to_read(primary_path, st):
                 data = _read_and_parse_json(primary_path)
                 if data is not None:
                     settings = _coerce_and_verify(validate(data))
-                    _MANAGER.data_cache[path_str] = (settings, st.st_mtime, st.st_size)
-                    return settings.copy()
+                    _MANAGER.data_cache[path_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
+                    return settings
     except (OSError, PermissionError): 
         pass
     return dict(DEFAULTS) # type: ignore
@@ -444,7 +444,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if _MANAGER.perform_atomic_write(config_path, serialized):
             try:
                 st = config_path.stat()
-                _MANAGER.data_cache[str(config_path)] = (cleaned_settings, st.st_mtime, st.st_size)
+                _MANAGER.data_cache[str(config_path)] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size)
             except OSError:
                 pass
             return config_path

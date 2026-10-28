@@ -533,3 +533,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T08:26:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
 - `2026-10-28T08:26:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T08:26:50` Corrida terminada. Total usado hoy: 200.
+- `2026-10-28T08:35:01` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-28T08:35:54` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `_get_file_attrs` y otras funciones críticas mediante el reemplazo de `os.path.isabs` y `os.path.abspath` (que invocan al sistema de archivos) por validaciones lógicas previas, reduciendo drásticamente las llamadas redundantes a E/S durante el filtrado de listas grandes.
+- `2026-10-28T08:36:23` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo reemplazando la lógica de extensión `os.path.splitext` (que crea tuplas y objetos intermedios en cada iteración) por un `rfind` directo y evitando llamadas redundantes a `os.path.normcase` dentro del bucle crítico, reduciendo la presión sobre el recolector de basura.
+- `2026-10-28T08:36:56` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` y `save()` eliminando llamadas redundantes a `settings_path()` (que internamente realiza resolución de rutas y validaciones costosas) y reemplazando las copias completas de diccionario con `MappingProxyType` para las lecturas de solo lectura, mejorando la eficiencia del caché en memoria.
+- `2026-10-28T08:37:06` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-28T08:37:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T08:37:06` Corrida terminada. Total usado hoy: 204.
