@@ -798,3 +798,32 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T11:12:31` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-28T11:12:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T11:12:31` Corrida terminada. Total usado hoy: 264.
+- `2026-10-28T11:18:34` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-28T11:19:16` Tests FALLARON:
+```
+sertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:177: SyntaxWarning: invalid escape sequence '\C'
+    Transforma rutas a formato extendido UNC (\\?\C:\...) para permitir el
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed, 4 warnings in 1.54s
+
+```
+- `2026-10-28T11:19:16` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `_is_safe_payload_structure` para prevenir recursión infinita mediante un control de profundidad más robusto y se reemplazó el uso de `getattr` en `_validate_and_sanitize_data` por una validación explícita de clave en el diccionario para evitar el acceso accidental a atributos del sistema no deseados.
+- `2026-10-28T11:19:50` ➖ Sin cambios en branding.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de las funciones de acceso a datos (`color`, `font_size`, `icon`, `tab_label`) mediante la validación explícita de entradas y el uso de `None` como valor de retorno seguro, evitando el riesgo de `AttributeError` o retornos inconsistentes cuando se pasan valores inesperados o vacíos, manteniendo la inmutabilidad de las constantes expuestas.
+- `2026-10-28T11:20:18` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `detect_profiles` añadiendo validaciones de entrada defensivas para los parámetros `bases` y `cache_paths`, evitando que la función falle si recibe tipos inesperados o colecciones vacías mal formadas, reforzando la integridad del proceso ante datos de configuración potencialmente corruptos.
+- `2026-10-28T11:20:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T11:20:33` ➖ Sin cambios en diskreport.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejora la robustez de `walk_files` capturando errores al intentar realizar `stat()` sobre el `root_path` inicial, evitando que un error de permisos en la carpeta raíz detenga toda la ejecución de forma silenciosa o inesperada.
+- `2026-10-28T11:20:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T11:20:33` Corrida terminada. Total usado hoy: 268.

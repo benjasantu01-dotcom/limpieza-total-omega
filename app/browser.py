@@ -267,6 +267,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH))
         
         for browser_key, relative_path in browser_map.items():
+            if not isinstance(relative_path, str): continue
             candidate = _resolve_browser_path(base_resolved, relative_path)
             if candidate != Path() and _is_valid_cache_path(candidate, base_norm, kernel):
                 scan_res = scanner.get_size(str(candidate))
