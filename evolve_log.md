@@ -986,3 +986,10 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Att
 - `2026-10-28T00:47:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-28T00:47:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T00:47:52` Corrida terminada. Total usado hoy: 20.
+- `2026-10-28T00:56:10` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-28T00:57:01` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-28T00:57:28` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha endurecido el método `_is_safe_entry` en la clase `Scanner` para garantizar que la ruta absoluta normalizada no solo sea un subdirectorio del raíz, sino que se verifique estrictamente antes de cualquier procesamiento, previniendo riesgos de manipulación de rutas externas mediante el uso de `os.path.realpath` constante.
+- `2026-10-28T00:57:56` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la validación en `_read_and_parse_json` y `_is_file_secure_to_read` para prevenir ataques de denegación de servicio por agotamiento de recursos (JSONs maliciosos demasiado grandes o complejos) y se añadió una verificación de integridad de tamaño para evitar la carga de archivos corruptos o malintencionados.
+- `2026-10-28T00:58:07` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-28T00:58:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T00:58:07` Corrida terminada. Total usado hoy: 24.

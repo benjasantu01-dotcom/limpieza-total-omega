@@ -256,6 +256,11 @@ class Scanner:
             if _cached_is_protected(path_str): return False
             if not _is_valid_path_structure(path_str): return False
             if not self._is_inside_base_root(path_str): return False
+            
+            # Verificación doble para asegurar que la ruta real no se escapó del root
+            real_path = os.path.realpath(path_str)
+            if not os.path.normcase(real_path).startswith(self.base_root_norm):
+                return False
                 
             self.safe_cache.add(path_str)
             return True
