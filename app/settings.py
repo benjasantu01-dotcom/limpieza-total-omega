@@ -358,14 +358,15 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     """Chequea metadatos del archivo para asegurar que no ha sido alterado maliciosamente."""
     try:
-        if not file_path.is_absolute() or not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+        # Verifica que sea un archivo regular, sin ser symlink/reparse point, y que pertenezca al usuario actual
+        if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if _Validators._is_reparse_point(str(file_path)): return False
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         
-        real_path = file_path.resolve()
-        if is_protected_path(str(real_path)): return False
+        # Validaciones de tamaño y seguridad del path
+        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
+        if is_protected_path(str(file_path.resolve())): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
@@ -402,7 +403,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     
     try:
         if primary_path.exists() and primary_path.is_file():
-            st = primary_path.stat()
+            st = primary_path.lstat()
             cached = _MANAGER.data_cache.get(path_str)
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
                 return dict(cached[0])
