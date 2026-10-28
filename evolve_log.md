@@ -1214,3 +1214,10 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Att
 - `2026-10-28T02:41:31` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` centralizando el chequeo de exclusividad y estado del sistema antes de iniciar la transacción, y añadiendo una validación explícita para evitar que `source_path` resulte ser el directorio de cuarentena tras la resolución de la ruta.
 - `2026-10-28T02:41:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T02:41:31` Corrida terminada. Total usado hoy: 64.
+- `2026-10-28T02:48:16` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-10-28T02:48:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-28T02:49:21` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-28T02:49:49` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de las heurísticas integrando validaciones de tipo `None` y de integridad de ruta antes de operar, previniendo excepciones innecesarias durante la ejecución del bucle de escaneo.
+- `2026-10-28T02:50:04` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_read_and_parse_json` y `_coerce_and_verify` agregando validaciones de tipo explícitas y manejo de errores ante estructuras de datos malintencionadas o corruptas para evitar comportamientos inesperados durante el procesamiento del JSON de configuración.
+- `2026-10-28T02:50:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T02:50:04` Corrida terminada. Total usado hoy: 68.

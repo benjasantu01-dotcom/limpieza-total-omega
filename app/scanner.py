@@ -166,7 +166,7 @@ def _is_target_extension(name: str) -> bool:
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Heurística: Detecta ejecutables con tamaño 0 bytes (posible indicio de ofuscación)."""
-    if entry is None: return None
+    if entry is None or path is None: return None
     stats = _safe_stat(entry)
     if stats is not None and getattr(stats, "st_size", -1) == 0:
         return Suspicion(path, "Ejecutable vacío detectado", "warning")

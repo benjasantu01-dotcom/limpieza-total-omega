@@ -360,14 +360,23 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         return None
     try:
         with open(file_path, "r", encoding="utf-8") as f:
-            # Prevenir lectura excesiva si el archivo cambió de tamaño inesperadamente
             data = json.load(f)
-        # Validar que sea un diccionario y no contenga una cantidad desproporcionada de llaves
-        return data if isinstance(data, dict) and len(data) <= 64 else None
+        # Validar que sea un diccionario, tenga un tamaño razonable y no contenga tipos inválidos
+        if not isinstance(data, dict) or len(data) > 64: return None
+        for k, v in data.items():
+            if not isinstance(k, str) or (v is not None and not isinstance(v, (str, int, bool, float))):
+                return None
+        return data
     except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError, TypeError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
+    # Verificación de tipos estricta post-carga
+    for k, v in settings.items():
+        expected_type = type(DEFAULTS.get(k))
+        if not isinstance(v, expected_type):
+            settings[k] = DEFAULTS.get(k) # type: ignore
+            
     if settings.get("asistente_activado") and not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         settings["asistente_activado"] = False
     return settings
