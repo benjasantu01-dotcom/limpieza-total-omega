@@ -841,3 +841,37 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-28T11:41:13` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_get_file_id` para capturar errores de ejecución de la API de Windows mediante un bloque `try-except` más específico y la verificación del handle, evitando que errores de permisos en llamadas de bajo nivel se propaguen silenciosamente como estados inválidos, mejorando la precisión en la detección de violaciones TOCTOU.
 - `2026-10-28T11:41:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T11:41:13` Corrida terminada. Total usado hoy: 276.
+- `2026-10-28T11:49:07` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-28T11:49:41` Tests FALLARON:
+```
+t_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:177: SyntaxWarning: invalid escape sequence '\C'
+    Transforma rutas a formato extendido UNC (\\?\C:\...) para permitir el
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed, 4 warnings in 1.34s
+
+```
+- `2026-10-28T11:49:41` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación robusta de tipos y valores mediante un nuevo decorador interno `validates_inputs` para las funciones heurísticas, asegurando que cualquier error en la entrada se capture y registre silenciosamente antes de que la lógica de análisis se ejecute, evitando excepciones no controladas durante el escaneo masivo.
+- `2026-10-28T11:50:12` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré `_read_and_parse_json` y `_coerce_and_verify` añadiendo validaciones más estrictas contra entradas inesperadas (como tipos de datos anidados no permitidos o valores fuera de rango de tipos), asegurando que cualquier JSON malintencionado no inyecte estructuras de datos complejas que el validador actual podría ignorar por error.
+- `2026-10-28T11:50:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-28T11:51:37` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Answer.is_online, ProblemCriterion._evaluate_metric, ProblemCriterion.format_if_triggered, ProblemCriterion.is_triggered_by, SystemContext.__hash__, SystemContext._cached_active_problems, SystemContext._hash_tuple, SystemContext.is_valid_structure
+- `2026-10-28T11:51:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T11:51:37` Corrida terminada. Total usado hoy: 280.
