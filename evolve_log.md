@@ -1336,3 +1336,10 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-10-28T04:02:19` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la validación `is_protected_path` reemplazando la creación innecesaria de objetos `Path` y el uso de `.parts` (que implica parseo de strings) por un enfoque basado en `normcase` y `startswith`, evitando así miles de asignaciones de memoria y ciclos de CPU en escaneos profundos de directorios.
 - `2026-10-28T04:02:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T04:02:19` Corrida terminada. Total usado hoy: 96.
+- `2026-10-28T04:09:56` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-10-28T04:10:24` ➖ Sin cambios en scanner.py (enfoque: rendimiento). Motivo: Se ha optimizado `_is_relevant_extension` mediante el uso de `rfind` en lugar de `os.path.splitext`, lo cual evita la creación innecesaria de tuplas y reduce la carga del recolector de basura al evitar el manejo de strings adicionales en cada iteración del escáner.
+- `2026-10-28T04:10:50` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._is_safe_path, _Validators._run_safety_checks, _Validators._validate_enum_str
+- `2026-10-28T04:11:17` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-28T04:11:44` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
+- `2026-10-28T04:11:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T04:11:44` Corrida terminada. Total usado hoy: 100.
