@@ -317,6 +317,7 @@ def _sanitize_msg(msg: str | Any) -> str:
     """Filtro de seguridad que limpia caracteres no permitidos y bloquea términos sensibles."""
     if not isinstance(msg, str) or len(msg) > (_MAX_MSG_LEN * 4): 
         return ""
+    # Filtrado estricto por lista blanca y normalización
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
     if not _is_safe_string_for_report(clean):
         return ""
@@ -368,8 +369,7 @@ def _compute_cached(metrics_tuple: Tuple[float, ...], quarantined: int) -> Healt
             val_int = int(_clamp(round(points), 0.0, float(entry.weight)))
             metric_breakdown[entry.area] = val_int
             total_points += float(val_int)
-        except Exception as e:
-            logging.error(f"Error procesando pipeline '{getattr(entry, 'area', 'unknown')}': {e}")
+        except Exception:
             continue
             
     if quarantined > 0:

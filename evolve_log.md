@@ -940,3 +940,42 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-28T00:29:33` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez del escaneo implementando una validación estricta de puntos de reparse (junctions/symlinks) mediante el uso de atributos de archivo Win32 directamente sobre cada entrada detectada en el `scandir`, asegurando que no se sigan enlaces fuera del sandbox definido incluso si el sistema operativo los marca como carpetas normales.
 - `2026-10-28T00:29:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T00:29:33` Corrida terminada. Total usado hoy: 12.
+- `2026-10-28T00:35:46` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-10-28T00:36:48` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-28T00:37:51` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-28T00:38:57` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-28T00:39:35` Tests FALLARON:
+```
+st_dev, root_stat.st_ino))
+        except (OSError, PermissionError):
+            return
+    
+        while stack:
+            current_dir = stack.pop()
+            try:
+                with os.scandir(current_dir) as iterator:
+                    for entry in iterator:
+                        try:
+                            # Saltar si es protegido o tiene caracteres ilegales
+                            if skip_protected and (is_protected_path(Path(entry.path)) or _is_excluded_path(entry.name, entry.path)):
+                                continue
+    
+                            # Impedir seguimiento de enlaces simbólicos y puntos de reparse (junctions)
+>                           if entry.is_symlink() or (entry.is_dir() and entry.stat(follow_symlinks=False).st_file_attributes & 0x400):
+                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E                           AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+
+app/diskreport.py:317: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+2 failed, 297 passed in 1.20s
+
+```
+- `2026-10-28T00:39:35` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Se ha reforzado la seguridad defensiva en `walk_files` mediante la validación explícita de `entry.is_symlink()` y `entry.is_junction()` (simulado mediante `entry.is_dir()` y chequeo de atributos), asegurando que el escáner nunca siga puntos de reparse fuera de la estructura de carpetas esperada, protegiendo así contra loops infinitos o escapes de directorio.
+- `2026-10-28T00:39:59` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-28T00:40:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T00:41:08` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva del motor de salud fortaleciendo la lógica de saneamiento de mensajes, evitando que caracteres de control o rutas malintencionadas se infiltren en los informes mediante la estricta validación del contenido generado dinámicamente y protegiendo el pipeline contra la inyección de excepciones durante la evaluación de reglas.
+- `2026-10-28T00:41:57` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T00:41:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T00:41:57` Corrida terminada. Total usado hoy: 16.

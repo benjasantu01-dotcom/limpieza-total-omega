@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 68
+- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 231
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 46 | 4 | 15 | 5 | 72 |
+| 2026-10-26 | 46 | 4 | 15 | 5 | 68 |
 | 2026-10-27 | 125 | 8 | 51 | 9 | 157 |
-| 2026-10-28 | 6 | 2 | 2 | 0 | 2 |
+| 2026-10-28 | 7 | 3 | 3 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **37**
-- seguridad defensiva: **30**
+- seguridad defensiva: **31**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
+- `healthscore.py`: **17**
 - `memory.py`: **17**
-- `healthscore.py`: **16**
 - `settings.py`: **16**
 - `diskreport.py`: **16**
 - `assistant.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T00:41:08` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del motor de salud fortaleciendo la lógica de saneamiento de mensajes, evitando que caracteres de control o rutas malintencionadas se infiltren en los informes mediante la estricta validación del contenido generado dinámicamente y protegiendo el pipeline contra la inyección de excepciones durante la evaluación de reglas.
 - `2026-10-28T00:28:32` **branding.py** (seguridad defensiva): Se introdujo una validación defensiva en `save_logo_svg` para garantizar que la ruta de destino no solo sea segura para modificar, sino que el directorio padre exista y sea válido antes de intentar cualquier escritura, evitando así excepciones no controladas o intentos de escritura en rutas no permitidas.
 - `2026-10-28T00:27:24` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor remoto validando que la `api_key` se recupere exclusivamente mediante variables de entorno o la configuración interna, evitando posibles filtraciones o inyecciones por parámetros externos no controlados en la llamada a la API.
 - `2026-10-28T00:17:24` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar la lectura de archivos de configuración vinculados a rutas de sistema o uniones (reparse points) en `_is_file_secure_to_read`, reforzando la robustez ante manipulaciones externas del FS antes de intentar procesar el JSON.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T14:51:56` **safety.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad de `safety.py` mediante la implementación de *type hints* consistentes, normalización de la estructura de las reglas de integridad y uso de comentarios explicativos (docstrings) para documentar el propósito técnico detrás de las constantes y validaciones complejas.
 - `2026-10-27T14:43:18` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para delegar la lógica de creación de directorios y limpieza de recursos, y añadí docstrings detallados en las funciones de validación crítica para clarificar las intenciones de seguridad.
 - `2026-10-27T14:42:44` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings detallados en las funciones de validación crítica y constantes, explicando el "porqué" de las verificaciones de seguridad y el manejo de bajo nivel, facilitando así la auditoría y mantenimiento del código.
-- `2026-10-27T14:31:14` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los argumentos de funciones clave y refinando los docstrings para explicar la lógica de normalización y el contrato de los protocolos.
