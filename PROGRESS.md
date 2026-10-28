@@ -8,23 +8,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **166** (32.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 77 | 6 | 34 | 7 | 112 |
-| 2026-10-28 | 89 | 8 | 31 | 9 | 131 |
+| 2026-10-27 | 76 | 6 | 31 | 7 | 112 |
+| 2026-10-28 | 90 | 8 | 32 | 9 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **38**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **36**
+- manejo de errores y validación de entradas: **34**
 - robustez ante casos límite: **33**
-- manejo de errores y validación de entradas: **33**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **16**
 - `browser.py`: **16**
 - `settings.py`: **16**
-- `healthscore.py`: **15**
-- `scanner.py`: **14**
+- `healthscore.py`: **16**
 - `assistant.py`: **13**
 - `safety.py`: **13**
+- `scanner.py`: **13**
 - `organizer.py`: **10**
 - `branding.py`: **9**
 - `startup.py`: **7**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T11:29:50` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.__post_init__` y `validate` eliminando la llamada redundante y potencialmente peligrosa a `setattr` con nombres dinámicos sin una verificación estricta de existencia, asegurando que cualquier valor inválido se reemplace por un valor seguro predeterminado antes de la validación.
 - `2026-10-28T11:20:18` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` añadiendo validaciones de entrada defensivas para los parámetros `bases` y `cache_paths`, evitando que la función falle si recibe tipos inesperados o colecciones vacías mal formadas, reforzando la integridad del proceso ante datos de configuración potencialmente corruptos.
 - `2026-10-28T09:57:12` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de condiciones de carrera (TOCTOU) y validación de integridad al verificar que el archivo de configuración no sea un enlace simbólico, pertenezca al usuario actual y tenga permisos restringidos antes de procesarlo.
 - `2026-10-28T09:49:40` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` al verificar explícitamente que la ruta no contenga componentes prohibidos ni intente escapar de la raíz mediante el uso de `os.path.commonpath`, asegurando que `realpath` se evalúe contra la base de forma inequívoca.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T08:56:43` **healthscore.py** (robustez ante casos límite): Se ha robustecido el manejo de `SystemMetrics` mediante la implementación de una validación de `__init__` más estricta que previene la creación de instancias con tipos incompatibles y se ha mejorado el `PipelineEntry` para incluir una verificación de `None` en la ejecución del `scorer`, evitando fallos en tiempo de ejecución ante métricas parciales o no inicializadas.
 - `2026-10-28T08:47:15` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` y `drive_usage` ante bloqueos de archivos o inconsistencias del sistema de archivos al añadir un manejo de excepciones explícito en las llamadas a `stat` y `scandir`, garantizando que un error puntual de lectura no aborte el escaneo de todo el volumen.
 - `2026-10-28T08:46:37` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y estados inesperados del sistema de archivos, asegurando que la validación de la ruta sea completa y que cualquier fallo en la creación de directorios o escritura sea capturado sin afectar la estabilidad de la UI.
-- `2026-10-28T08:36:56` **settings.py** (rendimiento): Optimizé `load()` y `save()` eliminando llamadas redundantes a `settings_path()` (que internamente realiza resolución de rutas y validaciones costosas) y reemplazando las copias completas de diccionario con `MappingProxyType` para las lecturas de solo lectura, mejorando la eficiencia del caché en memoria.

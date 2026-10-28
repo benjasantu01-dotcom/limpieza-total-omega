@@ -276,11 +276,11 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
-        # Validación estricta de tipos previo a la sanitización
+        # Sanitización inicial: asegurar tipos correctos antes de la validación
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
-            if not isinstance(val, (int, float, bool)):
-                setattr(self, field_name, 0.0)
+            if not isinstance(val, (int, float)):
+                object.__setattr__(self, field_name, 0.0)
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
@@ -293,11 +293,9 @@ class SystemMetrics:
         """Normaliza todas las métricas según los rangos definidos en _METRIC_LIMITS."""
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name, 0.0)
-            if not isinstance(val, (int, float)):
-                val = 0.0
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
-            setattr(self, field_name, sanitized)
+            object.__setattr__(self, field_name, sanitized)
 
     @property
     def is_finite(self) -> bool:

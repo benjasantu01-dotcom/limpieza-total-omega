@@ -827,3 +827,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-28T11:20:33` ➖ Sin cambios en diskreport.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejora la robustez de `walk_files` capturando errores al intentar realizar `stat()` sobre el `root_path` inicial, evitando que un error de permisos en la carpeta raíz detenga toda la ejecución de forma silenciosa o inesperada.
 - `2026-10-28T11:20:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T11:20:33` Corrida terminada. Total usado hoy: 268.
+- `2026-10-28T11:28:45` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-10-28T11:29:14` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-28T11:29:50` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics.__post_init__` y `validate` eliminando la llamada redundante y potencialmente peligrosa a `setattr` con nombres dinámicos sin una verificación estricta de existencia, asegurando que cualquier valor inválido se reemplace por un valor seguro predeterminado antes de la validación.
+- `2026-10-28T11:31:00` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-10-28T11:31:13` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-28T11:31:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T11:31:13` Corrida terminada. Total usado hoy: 272.
