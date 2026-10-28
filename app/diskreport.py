@@ -321,7 +321,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
+                        p_entry = Path(entry.path).resolve()
+                        
+                        # Defensivo: validar que estamos dentro de la raíz original
+                        if root_path not in p_entry.parents and p_entry != root_path:
+                            continue
+
                         # Verificación estricta de seguridad defensiva
                         if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, entry.path)):
                             continue

@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 63
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 234
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 59 | 4 | 20 | 4 | 93 |
-| 2026-10-28 | 116 | 10 | 43 | 14 | 141 |
+| 2026-10-27 | 59 | 4 | 20 | 4 | 89 |
+| 2026-10-28 | 117 | 10 | 43 | 15 | 143 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **32**
+- seguridad defensiva: **33**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `quarantine.py`: **18**
 - `browser.py`: **17**
 - `healthscore.py`: **17**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T13:54:58` **diskreport.py** (seguridad defensiva): He refactorizado `walk_files` para integrar una validación de seguridad proactiva que garantiza que la ruta sea un descendiente real de la raíz antes de procesarla, evitando posibles ataques de recorrido de directorios o acceso a rutas fuera del alcance solicitado mediante manipulaciones de `path.resolve()` o enlaces simbólicos maliciosos.
 - `2026-10-28T13:44:24` **startup.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la clase `StartupEntry` añadiendo un bloque `try-except` específico al resolver rutas en `_resolve_and_cache_path` y `_resolve_path_from_command`, evitando que errores imprevistos al procesar nombres de archivo (como caracteres de control ocultos o codificaciones corruptas) bloqueen el escaneo completo.
 - `2026-10-28T13:43:55` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de lectura de archivos JSON integrando una validación de integridad previa a `json.load`, evitando potenciales ataques de denegación de servicio por archivos con estructura JSON maliciosa o excesivamente anidada, además de asegurar que la decodificación de bytes a string no bloquee la ejecución ante bytes corruptos.
 - `2026-10-28T13:43:05` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_inside_base_root` y `scan_directory` para manejar correctamente rutas inexistentes o inaccesibles, evitando la propagación de excepciones `FileNotFoundError` durante la resolución de rutas mediante `resolve(strict=False)` y validaciones previas de estado.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T12:52:07` **memory.py** (rendimiento): Optimizé la función `_iter_process_memory` para realizar la verificación de seguridad `_is_process_executable_safe` solo después de confirmar que el proceso tiene un consumo de memoria relevante, evitando llamadas costosas a la API de archivos y manipulación de buffers para procesos pequeños o irrelevantes.
 - `2026-10-28T12:41:13` **diskreport.py** (rendimiento): Optimicé el cálculo de `largest_folders` para evitar la reconstrucción de rutas `Path` mediante tuplas y `os.path.join` innecesarios, utilizando directamente `path.relative_to` para identificar el subdirectorio de primer nivel de forma eficiente.
 - `2026-10-28T12:40:45` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo eliminando la resolución innecesaria de rutas (`resolve()`) dentro del bucle interno de `DirectoryScanner`, reemplazándola por `normcase` y `normpath` para validar límites, lo que reduce drásticamente las llamadas al sistema de archivos por cada archivo encontrado.
-- `2026-10-28T12:31:47` **assistant.py** (rendimiento): Optimicé el método `local_answer` para evitar el uso del `token_regex` en cada iteración y reducir el costo de procesamiento al usar un acceso directo por clave, eliminando la sobrecarga innecesaria de iterar sobre todos los tokens de la consulta cuando solo se necesita el primero o el más relevante para el ruteo.
