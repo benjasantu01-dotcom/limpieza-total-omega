@@ -305,8 +305,9 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
     try:
-        path = Path(entry.path)
-        if is_protected_path(path) or not is_safe_to_modify(path):
+        # Usamos Path solo cuando es indispensable para evitar overhead
+        p = Path(entry.path)
+        if is_protected_path(p) or not is_safe_to_modify(p):
             protected_cache.add(entry.path)
             return False
     except (OSError, RuntimeError):
@@ -317,11 +318,12 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
     """Procesamiento recursivo de directorios con detección de ciclos."""
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
-        path_str = str(current_dir.absolute())
+        c_abs = current_dir.absolute()
+        path_str = str(c_abs)
         if path_str in visited: return
         visited.add(path_str)
         
-        with os.scandir(current_dir) as iterator:
+        with os.scandir(c_abs) as iterator:
             for entry in iterator:
                 try:
                     if entry.is_dir(follow_symlinks=False):
@@ -330,8 +332,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                     elif entry.is_file(follow_symlinks=False):
                         if is_valid_junk_extension(entry.name):
                             stats = entry.stat(follow_symlinks=False)
-                            p = Path(entry.path)
                             if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
+                                p = Path(entry.path)
                                 if not _is_file_locked(p):
                                     found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):

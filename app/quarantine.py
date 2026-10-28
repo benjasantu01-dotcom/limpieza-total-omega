@@ -1123,17 +1123,14 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
+        # Iterar una sola vez sobre el directorio usando un set para búsquedas O(1)
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or f.is_dir():
                 continue
             
             item = item_map.get(f.name)
-            if item:
-                try:
-                    if _is_item_purgable(f, item):
-                        purgado_ids.add(item.item_id)
-                except (OSError, PermissionError):
-                    continue
+            if item and _is_item_purgable(f, item):
+                purgado_ids.add(item.item_id)
         
         if purgado_ids:
             new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]

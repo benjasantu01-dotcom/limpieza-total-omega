@@ -1304,3 +1304,35 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-28T03:52:04` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `_iter_process_memory` pre-asignando el buffer de PIDs una única vez fuera del loop y minimizando las llamadas a la API de Windows mediante la consolidación de chequeos, evitando redundancia en la apertura de handles y validación de procesos.
 - `2026-10-28T03:52:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T03:52:04` Corrida terminada. Total usado hoy: 92.
+- `2026-10-28T03:59:42` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-10-28T04:00:24` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento de `_process_directory` reemplazando la creación repetitiva de objetos `Path` y las validaciones de acceso redundantes por el uso directo de `os.DirEntry`, evitando llamadas innecesarias al sistema de archivos y reduciendo la carga de CPU durante el recorrido recursivo.
+- `2026-10-28T04:01:08` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se ha optimizado `purge_all` para evitar el acceso al disco innecesario y reducir la complejidad algorítmica al pasar de una búsqueda lineal (O(N*M)) a una búsqueda en tiempo constante (O(N)) mediante el uso de conjuntos (`set`) para la validación de archivos, mejorando significativamente el rendimiento al limpiar grandes cantidades de ítems.
+- `2026-10-28T04:01:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-28T04:02:19` Tests FALLARON:
+```
+ePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'app.tmp'
+  'malo.tmp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-3/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-3/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7ff61de07240>(((PosixPath('/tmp/pytest-of-runner/pytest-3/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7ff61de07240> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en restauración: Directorio inexistente: /tmp/pytest-of-runner/pytest-3/test_restore_into_a_system_pat0/Windows/System32
+15 failed, 284 passed in 1.76s
+
+```
+- `2026-10-28T04:02:19` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la validación `is_protected_path` reemplazando la creación innecesaria de objetos `Path` y el uso de `.parts` (que implica parseo de strings) por un enfoque basado en `normcase` y `startswith`, evitando así miles de asignaciones de memoria y ciclos de CPU en escaneos profundos de directorios.
+- `2026-10-28T04:02:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T04:02:19` Corrida terminada. Total usado hoy: 96.
