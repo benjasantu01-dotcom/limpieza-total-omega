@@ -284,10 +284,12 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
+        # Verificación explícita post-resolución
+        if is_protected_path(src_real) or is_protected_path(dest_real): return False
+        
         ensure_safe_to_modify(dest_real)
         if src_real == dest_real or src_real.parent == dest_real: return False
-        if src_real.name.lower() in SYSTEM_CRITICAL_NAMES or is_protected_path(src_real): return False
-        if is_protected_path(dest_real): return False
+        if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         
         if src_real.is_symlink() or _is_junction(junk_file.path): return False
         
@@ -296,7 +298,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         if _is_recursive_violation(src_real, dest_real) or not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
-        return not is_protected_path(src_real)
+        return True
     except (OSError, AttributeError, ValueError, PermissionError):
         return False
 

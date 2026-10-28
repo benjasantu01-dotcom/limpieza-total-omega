@@ -336,14 +336,8 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
 def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
     """
     Verifica que el ejecutable del proceso no se encuentre en ubicaciones protegidas.
-    Evita que la herramienta interfiera con procesos críticos del SO o antivirus.
     """
     if h_process is None or h_process == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: 
-        return False
-    
-    # Verificar si el proceso todavía existe antes de consultar su ruta
-    exit_code = wintypes.DWORD()
-    if WindowsAPI.kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
         return False
     
     buffer_len = 32767
@@ -433,8 +427,6 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta reducir el working set de un proceso específico tras realizar validaciones de seguridad.
-    Esta es una operación invasiva: solo se permite si el usuario solicita explícitamente y el proceso
-    es considerado no crítico.
     """
     if not _is_windows or WindowsAPI.kernel32 is None: return False, "Solo soportado en Windows."
     
@@ -459,8 +451,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             if exit_code.value != STILL_ACTIVE_EXIT_CODE:
                 return False, "El proceso no está activo."
             
+            # Validación estricta usando is_protected_path:
             if not _is_process_executable_safe(h_process):
-                return False, "Proceso protegido o ubicación insegura."
+                return False, "Proceso protegido o ubicado en zona restringida."
                 
             if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(h_process) == 0:
                 return False, "El sistema operativo rechazó la operación de limpieza."

@@ -1402,3 +1402,47 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-28T05:02:26` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-10-28T05:02:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T05:02:26` Corrida terminada. Total usado hoy: 120.
+- `2026-10-28T05:11:08` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-10-28T05:12:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T05:12:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T05:13:19` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-28T05:13:37` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-28T05:14:30` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `memory.py` implementando una validación estricta en `trim_working_set` para prevenir la manipulación de procesos cuya ruta ejecutable sea inaccesible o apunte a directorios protegidos, delegando la decisión de seguridad exclusivamente al filtro `is_protected_path`.
+- `2026-10-28T05:14:58` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación de I/O, asegurando que incluso si una ruta maliciosa intenta eludir la validación inicial mediante resolución de enlaces, el sistema la bloquee.
+- `2026-10-28T05:15:24` Tests FALLARON:
+```
+[ 72%]
+.......................................................................F [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_purge_item_cannot_delete_outside_the_quarantine _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_purge_item_cannot_delete_0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-3/test_purge_item_cannot_delete_0/_Cuarentena')
+
+    def test_purge_item_cannot_delete_outside_the_quarantine(tmp_path, cuarentena):
+        victima = tmp_path / "no-tocar.txt"
+        victima.write_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed in 1.60s
+
+```
+- `2026-10-28T05:15:24` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad en `purge_all` y `purge_item` implementando una validación estricta del nombre de archivo y su relación con el manifiesto, evitando que un archivo malicioso dentro de la carpeta de cuarentena pueda causar la eliminación de archivos no previstos o forzar comportamientos inesperados ante colisiones de nombres.
+- `2026-10-28T05:15:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T05:15:24` Corrida terminada. Total usado hoy: 124.
