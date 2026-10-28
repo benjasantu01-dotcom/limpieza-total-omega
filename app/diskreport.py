@@ -313,9 +313,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file():
                             yield Path(entry.path), st.st_size
                             
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             continue
 
 
@@ -351,7 +351,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 metrics = stats[top_level]
                 metrics.size += size
                 metrics.file_count += 1
-        except (ValueError, IndexError):
+        except (ValueError, IndexError, OSError):
             continue
             
     results = [FolderUsage(path, m.size, m.file_count) for path, m in stats.items()]

@@ -1343,3 +1343,10 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-10-28T04:11:44` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
 - `2026-10-28T04:11:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T04:11:44` Corrida terminada. Total usado hoy: 100.
+- `2026-10-28T04:20:09` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-28T04:20:49` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-28T04:21:15` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-28T04:21:41` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` ante rutas extremadamente largas o inválidas (que pueden ocurrir en sistemas de archivos complejos) añadiendo un manejo explícito de `OSError` y `ValueError` al realizar `path.relative_to` o al procesar entradas que cambian de estado durante la iteración (`FileNotFoundError`), asegurando que el análisis no se detenga por fallos aislados en el acceso al sistema de archivos.
+- `2026-10-28T04:21:56` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-28T04:21:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T04:21:56` Corrida terminada. Total usado hoy: 104.
