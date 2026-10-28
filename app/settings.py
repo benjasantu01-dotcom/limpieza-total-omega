@@ -347,6 +347,10 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
+        
+        # Seguridad adicional contra bypass de rutas de sistema o junctions
+        real_path = file_path.resolve()
+        if is_protected_path(str(real_path)): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 

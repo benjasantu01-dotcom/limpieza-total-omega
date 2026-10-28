@@ -68,7 +68,11 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     try:
         # Uso de FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE (0x07)
         handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
-        if handle == -1: return (0, 0, 0, 0)
+        if handle == -1:
+            err = kernel32.GetLastError()
+            if err in (ERROR_FILE_NOT_FOUND, ERROR_ACCESS_DENIED, ERROR_SHARING_VIOLATION):
+                return (0, 0, 0, 0)
+            return (0, 0, 0, 0)
         try:
             if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
                 is_dir = bool(info.dwFileAttributes & Win32Attr.DIRECTORY)

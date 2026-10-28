@@ -867,3 +867,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-28T00:07:59` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita para evitar que `iterdir()` procese archivos que no pertenecen al manifiesto o que pudieran ser residuales, evitando errores en el conteo y la integridad del manifiesto durante limpiezas parciales.
 - `2026-10-28T00:07:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T00:07:59` Corrida terminada. Total usado hoy: 4.
+- `2026-10-28T00:15:25` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-10-28T00:15:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-28T00:16:41` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado una mejora en la robustez ante casos de E/S fallida mediante la introducción de un manejo explícito de errores de Windows (`ERROR_SHARING_VIOLATION`, `ERROR_ACCESS_DENIED`, `ERROR_FILE_NOT_FOUND`) dentro de `_get_file_id`, evitando retornos silenciosos de valores por defecto que podrían enmascarar estados de seguridad críticos.
+- `2026-10-28T00:17:08` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-28T00:17:24` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar la lectura de archivos de configuración vinculados a rutas de sistema o uniones (reparse points) en `_is_file_secure_to_read`, reforzando la robustez ante manipulaciones externas del FS antes de intentar procesar el JSON.
+- `2026-10-28T00:17:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T00:17:24` Corrida terminada. Total usado hoy: 8.
