@@ -171,7 +171,8 @@ class _SettingsManager:
         Escribe la configuración al disco de forma atómica usando archivos temporales
         y chequeos de seguridad estrictos antes de reemplazar el original.
         """
-        if not isinstance(serialized, str) or len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return False
+        serialized_bytes = serialized.encode("utf-8")
+        if len(serialized_bytes) > MAX_SETTINGS_SIZE: return False
         if len(str(config_path)) > 260: return False
         
         temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
@@ -188,8 +189,8 @@ class _SettingsManager:
                 if (st.st_mode & 0o077) != 0: return False 
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             
-            with open(temp_path, "w", encoding="utf-8") as f:
-                f.write(serialized)
+            with open(temp_path, "wb") as f:
+                f.write(serialized_bytes)
                 f.flush()
                 os.fsync(f.fileno())
             
@@ -346,17 +347,12 @@ def validate(raw_values: Any) -> AppSettings:
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     try:
-        # Asegurar integridad: archivo regular, absoluto y sin múltiples links (hardlinks)
         if not file_path.is_absolute() or not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-        # Prevenir reparse points (symlinks, junctions) antes de cualquier apertura
         if _Validators._is_reparse_point(str(file_path)): return False
-        # Permisos restringidos: el archivo debe ser solo propiedad del usuario actual
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        # Validar tamaño lógico
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         
-        # Validar ruta final resuelta
         real_path = file_path.resolve()
         if is_protected_path(str(real_path)): return False
         return True
@@ -366,9 +362,9 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     if not _Validators._is_safe_path(str(file_path)): 
         return None
     try:
+        # Pre-chequeo: el tamaño del archivo se valida vía stat en el caller/load
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        # Validar que sea un diccionario, tenga un tamaño razonable y no contenga tipos inválidos
         if not isinstance(data, dict) or len(data) > 64: return None
         for k, v in data.items():
             if not isinstance(k, str) or (v is not None and not isinstance(v, (str, int, bool, float))):
@@ -378,7 +374,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    # Verificación de tipos estricta post-carga
     for k, v in settings.items():
         expected_type = type(DEFAULTS.get(k))
         if not isinstance(v, expected_type):

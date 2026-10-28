@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 67
-- Sin cambios (nada sustancial que mejorar): 14
+- Rechazadas por guardia de seguridad: 65
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 114 | 7 | 48 | 9 | 154 |
-| 2026-10-28 | 56 | 7 | 19 | 5 | 85 |
+| 2026-10-27 | 114 | 7 | 46 | 8 | 153 |
+| 2026-10-28 | 59 | 7 | 19 | 5 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **39**
 - seguridad defensiva: **37**
-- legibilidad y documentación: **34**
+- legibilidad y documentación: **35**
 - rendimiento: **20**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
+- `settings.py`: **16**
 - `assistant.py`: **16**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
-- `settings.py`: **15**
 - `browser.py`: **15**
 - `scanner.py`: **13**
 - `organizer.py`: **12**
 - `safety.py`: **11**
-- `branding.py`: **9**
-- `startup.py`: **8**
+- `branding.py`: **10**
+- `startup.py`: **9**
 - `duplicates.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T07:25:48` **branding.py** (legibilidad y documentación): Se introdujeron constantes de documentación y se mejoró la claridad de las signaturas de tipos en las funciones de renderizado, centralizando la lógica de validación de coordenadas para asegurar la legibilidad del flujo de dibujo vectorial.
+- `2026-10-28T07:24:44` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `StartupEntry.is_valid` y el manejo de rutas en `_resolve_and_cache_path` mediante la validación explícita de `None` y tipos, previniendo errores de ejecución ante entradas mal formadas provenientes de un registro de Windows potencialmente corrupto o inesperado.
+- `2026-10-28T07:24:17` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos en `perform_atomic_write` y `_read_and_parse_json` al implementar una validación de tamaño de archivo (metadata) previa a la lectura, previniendo excepciones innecesarias y posibles errores de E/S al trabajar con descriptores de archivos.
 - `2026-10-28T07:19:08` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de las heurísticas centralizando la validación de parámetros y capturando excepciones de forma específica, evitando que errores inesperados en archivos individuales interrumpan el proceso completo de escaneo.
 - `2026-10-28T07:06:24` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo `memory.py` mediante la validación explícita de `h_process` y `WindowsAPI` antes de realizar llamadas críticas a la API de Windows, evitando errores de segmentación o comportamiento indefinido si los manejadores o librerías son nulos.
 - `2026-10-28T07:03:45` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo de `_compute_cached` añadiendo una validación explícita de `SystemMetrics` y un manejo de errores más específico mediante la captura de excepciones durante la iteración del pipeline, evitando que un fallo en una única regla o métrica invalide el informe completo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T05:14:58` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación de I/O, asegurando que incluso si una ruta maliciosa intenta eludir la validación inicial mediante resolución de enlaces, el sistema la bloquee.
 - `2026-10-28T05:14:30` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` implementando una validación estricta en `trim_working_set` para prevenir la manipulación de procesos cuya ruta ejecutable sea inaccesible o apunte a directorios protegidos, delegando la decisión de seguridad exclusivamente al filtro `is_protected_path`.
 - `2026-10-28T05:01:51` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `drive_usage` añadiendo chequeos explícitos para puntos de reparse (reparse points/junctions) usando `os.path.isdir` junto con atributos de archivo (`st_file_attributes`), previniendo así la recursión infinita o el seguimiento no deseado de enlaces simbólicos complejos fuera del árbol objetivo.
-- `2026-10-28T05:01:24` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_browser_path` añadiendo una validación explícita para asegurar que la ruta resultante, tras la unión, siga estando contenida dentro del directorio base resuelto, evitando así posibles escapes de directorio mediante manipulación de paths.
-- `2026-10-28T04:53:09` **branding.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save_logo_svg` añadiendo una normalización de ruta explícita y verificando la existencia del directorio antes de intentar escribir, además de asegurar que la operación sea totalmente abortada si la ruta final reside fuera de los límites permitidos, evitando accesos indebidos al sistema de archivos.
-- `2026-10-28T04:52:42` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que la cadena de texto de la consulta no solo pase los filtros de inyección, sino que también se descomponga en tokens seguros antes de realizar cualquier búsqueda en el diccionario de manejo de consultas (`_TOKENS_MAP`), evitando que rutas o caracteres ocultos en la consulta intenten manipular la lógica de selección de handlers.

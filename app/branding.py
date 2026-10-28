@@ -35,6 +35,11 @@ SeverityStyle: TypeAlias = Tuple[ColorHex, str]
 RGBTuple: TypeAlias = Tuple[int, int, int]
 CoordinateSequence: TypeAlias = Tuple[float, ...]
 
+# Constantes de control para renderizado
+_MIN_SCALE: Final[float] = 0.1
+_MAX_SCALE: Final[float] = 10.0
+_DEFAULT_SVG_SIZE: Final[int] = 128
+
 class UIConfiguration(NamedTuple):
     """Contenedor inmutable de parámetros globales de identidad visual."""
     font_family: str = "Segoe UI"
@@ -341,12 +346,12 @@ def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     if not math.isfinite(scale) or scale <= 0: return ()
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
 
-def logo_svg(size: int = 128) -> str:
+def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
     """Genera el contenido XML de un logo SVG basado en la identidad visual."""
     s = max(16, min(1024, int(size)))
     return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS)
 
-def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
+def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
     """Guarda el logo SVG en el sistema de archivos tras verificar permisos."""
     if destination is None: return None
     try:
@@ -418,7 +423,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         if canvas is None or not hasattr(canvas, "create_oval"): return
         val_size = float(size)
         if not math.isfinite(val_size) or val_size <= 0: return
-        s = max(0.1, min(10.0, val_size / 128.0))
+        s = max(_MIN_SCALE, min(_MAX_SCALE, val_size / 128.0))
         poly = _get_scaled_poly(s, canvas_x, canvas_y)
         if not poly: return
         canvas.create_oval(canvas_x+(64-75)*s, canvas_y+(58-75)*s, canvas_x+(64+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")

@@ -98,9 +98,11 @@ class StartupEntry:
         Valida que la cadena del comando cumpla con las restricciones básicas:
         no nulo, longitud aceptable, sin caracteres de control o nombres reservados.
         """
-        if not self.command or not isinstance(self.command, str) or len(self.command) > MAX_PATH_LEN or self._is_path_suspicious(self.command):
+        if self.command is None or not isinstance(self.command, str):
             return False
-        if self._is_reserved_device_name(self.command):
+        if not self.command.strip() or len(self.command) > MAX_PATH_LEN:
+            return False
+        if self._is_path_suspicious(self.command) or self._is_reserved_device_name(self.command):
             return False
         return True
 
@@ -186,10 +188,9 @@ class StartupEntry:
         Normaliza y resuelve rutas absolutas. Utiliza caché global para minimizar
         llamadas costosas al sistema de archivos durante el escaneo.
         """
-        if not path_string or not isinstance(path_string, str) or not self.is_valid:
+        if path_string is None or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
-        # Filtro adicional contra caracteres de control que rompen pathlib.Path
         if any(ord(c) < 32 for c in path_string):
             return ""
         

@@ -477,3 +477,11 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T07:19:08` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de las heurísticas centralizando la validación de parámetros y capturando excepciones de forma específica, evitando que errores inesperados en archivos individuales interrumpan el proceso completo de escaneo.
 - `2026-10-28T07:19:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T07:19:08` Corrida terminada. Total usado hoy: 172.
+- `2026-10-28T07:23:39` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-10-28T07:24:17` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de archivos en `perform_atomic_write` y `_read_and_parse_json` al implementar una validación de tamaño de archivo (metadata) previa a la lectura, previniendo excepciones innecesarias y posibles errores de E/S al trabajar con descriptores de archivos.
+- `2026-10-28T07:24:44` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `StartupEntry.is_valid` y el manejo de rutas en `_resolve_and_cache_path` mediante la validación explícita de `None` y tipos, previniendo errores de ejecución ante entradas mal formadas provenientes de un registro de Windows potencialmente corrupto o inesperado.
+- `2026-10-28T07:24:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T07:25:29` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: legibilidad y documentación).
+- `2026-10-28T07:25:48` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujeron constantes de documentación y se mejoró la claridad de las signaturas de tipos en las funciones de renderizado, centralizando la lógica de validación de coordenadas para asegurar la legibilidad del flujo de dibujo vectorial.
+- `2026-10-28T07:25:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T07:25:48` Corrida terminada. Total usado hoy: 176.
