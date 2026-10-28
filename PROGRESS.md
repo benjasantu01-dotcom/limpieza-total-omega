@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 7 | 0 | 2 | 1 | 28 |
+| 2026-10-26 | 7 | 0 | 2 | 1 | 24 |
 | 2026-10-27 | 125 | 8 | 51 | 9 | 157 |
-| 2026-10-28 | 43 | 6 | 15 | 4 | 48 |
+| 2026-10-28 | 45 | 6 | 15 | 4 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **30**
+- seguridad defensiva: **32**
 - rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
+- `diskreport.py`: **18**
+- `browser.py`: **17**
 - `healthscore.py`: **17**
 - `assistant.py`: **17**
-- `diskreport.py`: **17**
-- `browser.py`: **16**
 - `memory.py`: **16**
 - `settings.py`: **15**
 - `scanner.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T05:01:51` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `drive_usage` añadiendo chequeos explícitos para puntos de reparse (reparse points/junctions) usando `os.path.isdir` junto con atributos de archivo (`st_file_attributes`), previniendo así la recursión infinita o el seguimiento no deseado de enlaces simbólicos complejos fuera del árbol objetivo.
+- `2026-10-28T05:01:24` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_browser_path` añadiendo una validación explícita para asegurar que la ruta resultante, tras la unión, siga estando contenida dentro del directorio base resuelto, evitando así posibles escapes de directorio mediante manipulación de paths.
 - `2026-10-28T04:53:09` **branding.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save_logo_svg` añadiendo una normalización de ruta explícita y verificando la existencia del directorio antes de intentar escribir, además de asegurar que la operación sea totalmente abortada si la ruta final reside fuera de los límites permitidos, evitando accesos indebidos al sistema de archivos.
 - `2026-10-28T04:52:42` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que la cadena de texto de la consulta no solo pase los filtros de inyección, sino que también se descomponga en tokens seguros antes de realizar cualquier búsqueda en el diccionario de manejo de consultas (`_TOKENS_MAP`), evitando que rutas o caracteres ocultos en la consulta intenten manipular la lógica de selección de handlers.
 - `2026-10-28T04:51:15` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` implementando un control de profundidad en la resolución de rutas dentro de `_Validators._run_safety_checks` para prevenir ataques de recursión infinita mediante enlaces simbólicos circulares.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T03:50:36` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación eliminando la re-iteración de los datos en `_compute_cached` y reemplazando la construcción manual de la tupla de claves del caché por una extracción basada en la definición de la clase, reduciendo así la sobrecarga de llamadas a `getattr` y `SystemMetrics._FIELDS_TO_VALIDATE`.
 - `2026-10-28T03:41:29` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando la creación innecesaria de objetos `Path` y llamadas a `realpath` dentro del bucle de iteración, utilizando directamente los atributos de `os.DirEntry` y normalizando rutas solo cuando es estrictamente necesario, reduciendo significativamente la carga de I/O en escaneos masivos.
 - `2026-10-28T03:40:06` **assistant.py** (rendimiento): Se optimizó el acceso a `active_problems` eliminando el uso de `tuple(sorted(metrics_snapshot.items()))` como clave de caché, reemplazándolo por una tupla de valores pre-seleccionados basada en el orden de los criterios, lo que evita la ordenación constante y reduce la carga computacional en cada acceso.
-- `2026-10-28T03:31:34` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de Type Hints en los argumentos de los métodos, la estandarización de los nombres de los parámetros de tipo en `Scanner` y la clarificación de las responsabilidades en los métodos de filtrado de rutas mediante docstrings descriptivos, asegurando que el flujo de ejecución sea más transparente y menos propenso a errores.
-- `2026-10-28T03:31:08` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se estructuró la jerarquía de validación en `ensure_safe_to_modify` para mejorar la legibilidad y claridad del flujo de control ante auditorías técnicas.

@@ -1395,3 +1395,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-28T04:53:09` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save_logo_svg` añadiendo una normalización de ruta explícita y verificando la existencia del directorio antes de intentar escribir, además de asegurar que la operación sea totalmente abortada si la ruta final reside fuera de los límites permitidos, evitando accesos indebidos al sistema de archivos.
 - `2026-10-28T04:53:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T04:53:09` Corrida terminada. Total usado hoy: 116.
+- `2026-10-28T05:00:56` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-10-28T05:01:24` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_resolve_browser_path` añadiendo una validación explícita para asegurar que la ruta resultante, tras la unión, siga estando contenida dentro del directorio base resuelto, evitando así posibles escapes de directorio mediante manipulación de paths.
+- `2026-10-28T05:01:51` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `drive_usage` añadiendo chequeos explícitos para puntos de reparse (reparse points/junctions) usando `os.path.isdir` junto con atributos de archivo (`st_file_attributes`), previniendo así la recursión infinita o el seguimiento no deseado de enlaces simbólicos complejos fuera del árbol objetivo.
+- `2026-10-28T05:02:14` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-28T05:02:26` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-10-28T05:02:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T05:02:26` Corrida terminada. Total usado hoy: 120.

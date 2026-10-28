@@ -236,6 +236,9 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
     if not _is_valid_rel_path(rel_str): return Path()
     try:
         target = base_resolved.joinpath(*rel_str.split("\\"))
+        target_res = target.resolve()
+        # Verificar que el target resuelto siga dentro del base_resolved
+        if not str(target_res).startswith(str(base_resolved)): return Path()
         return target if target.exists() and target.is_dir() and is_safe_to_modify(target) else Path()
     except (OSError, RuntimeError):
         return Path()

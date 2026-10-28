@@ -69,6 +69,19 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
         return None
 
 
+def _is_reparse_point(path: Path) -> bool:
+    """Detecta si un directorio es un punto de reparse (junction o symlink)."""
+    try:
+        if os.name == 'nt':
+            import ctypes
+            FILE_ATTRIBUTE_REPARSE_POINT = 0x0400
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+            return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
+        return path.is_symlink()
+    except Exception:
+        return False
+
+
 class ExtStats:
     """
     Estructura acumuladora para métricas agregadas por tipo de extensión.
@@ -258,7 +271,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None: return None
     try:
         p = Path(mount).expanduser().resolve(strict=False)
-        if not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
+        # Seguridad: evitar seguir reparse points en la raíz de la unidad
+        if not p.exists() or _is_reparse_point(p) or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -274,7 +288,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorrido recursivo iterativo evitando desbordamiento de pila.
+    Recorrido recursivo iterativo evitando desbordamiento de pila y reparse points.
     
     Yields:
         Tuplas (ruta, tamaño_bytes) de cada archivo.
@@ -297,9 +311,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Filtrado de seguridad
                         if skip_protected and (is_protected_path(Path(entry.path)) or _is_excluded_path(entry.name, entry.path)):
                             continue
-                        if entry.is_symlink():
+                        
+                        # No seguir symlinks ni reparse points
+                        if entry.is_symlink() or _is_reparse_point(Path(entry.path)):
                             continue
                         
                         st = _safe_stat(entry.path)
