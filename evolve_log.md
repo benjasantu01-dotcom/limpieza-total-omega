@@ -569,3 +569,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T09:17:45` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `build_context` añadiendo una validación explícita para asegurar que los datos procesados no sean instancias de clases complejas o tipos prohibidos, reforzando el aislamiento del motor de IA frente a inyecciones de objetos o lógica inesperada.
 - `2026-10-28T09:17:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T09:17:45` Corrida terminada. Total usado hoy: 220.
+- `2026-10-28T09:26:03` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-10-28T09:26:37` ➖ Sin cambios en branding.py (enfoque: seguridad defensiva). Motivo: Se ha añadido una validación de seguridad (is_protected_path) en `save_logo_svg` para prevenir que la generación del archivo afecte rutas del sistema, reforzando la protección ya existente mediante el uso de la lógica de seguridad compartida.
+- `2026-10-28T09:27:02` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva de `browser.py` implementando una validación estricta de puntos de reparse (junctions/symlinks) en `_resolve_browser_path` y asegurando que las rutas base no solo se resuelvan sino que mantengan integridad de pertenencia al `LOCALAPPDATA` antes de cualquier operación.
+- `2026-10-28T09:27:29` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` incorporando una verificación explícita mediante `is_protected_path` sobre la ruta completa (`entry.path`) antes de realizar cualquier operación de estat o recursión, garantizando que el escaneo no pueda desviarse a rutas sensibles incluso si la lógica de entrada falla.
+- `2026-10-28T09:27:37` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-28T09:27:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T09:27:37` Corrida terminada. Total usado hoy: 224.

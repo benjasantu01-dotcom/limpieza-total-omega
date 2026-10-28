@@ -237,9 +237,13 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
     if not _is_valid_rel_path(rel_str): return Path()
     try:
         target = base_resolved.joinpath(*rel_str.split("\\"))
+        if not target.exists() or not target.is_dir(): return Path()
+        
         target_res = target.resolve()
         if not str(target_res).startswith(str(base_resolved)): return Path()
-        return target if target.exists() and target.is_dir() and is_safe_to_modify(target) else Path()
+        if _IS_JUNCTION_FN(str(target_res)) or target_res.is_symlink(): return Path()
+        
+        return target if is_safe_to_modify(target) else Path()
     except (OSError, RuntimeError):
         return Path()
 

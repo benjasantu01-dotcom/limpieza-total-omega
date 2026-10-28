@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 69
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 234
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 92 | 7 | 40 | 8 | 137 |
-| 2026-10-28 | 81 | 7 | 29 | 6 | 97 |
+| 2026-10-27 | 92 | 7 | 40 | 8 | 133 |
+| 2026-10-28 | 83 | 7 | 29 | 7 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **31**
+- seguridad defensiva: **33**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
 - `settings.py`: **16**
+- `browser.py`: **16**
 - `assistant.py`: **15**
 - `healthscore.py`: **15**
-- `browser.py`: **15**
 - `safety.py`: **13**
 - `scanner.py`: **13**
 - `organizer.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T09:27:29` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` incorporando una verificación explícita mediante `is_protected_path` sobre la ruta completa (`entry.path`) antes de realizar cualquier operación de estat o recursión, garantizando que el escaneo no pueda desviarse a rutas sensibles incluso si la lógica de entrada falla.
+- `2026-10-28T09:27:02` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `browser.py` implementando una validación estricta de puntos de reparse (junctions/symlinks) en `_resolve_browser_path` y asegurando que las rutas base no solo se resuelvan sino que mantengan integridad de pertenencia al `LOCALAPPDATA` antes de cualquier operación.
 - `2026-10-28T09:17:45` **assistant.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `build_context` añadiendo una validación explícita para asegurar que los datos procesados no sean instancias de clases complejas o tipos prohibidos, reforzando el aislamiento del motor de IA frente a inyecciones de objetos o lógica inesperada.
 - `2026-10-28T09:07:41` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked_by_other_process` y `_get_path_stat_robust` incorporando un manejo explícito del error `ERROR_SHARING_VIOLATION` (código 32) de Windows mediante un bucle de reintento con backoff exponencial, garantizando mayor resiliencia ante bloqueos transitorios por procesos de indexación o antivirus sin comprometer la integridad de las verificaciones.
 - `2026-10-28T09:06:48` **quarantine.py** (robustez ante casos límite): Se mejora la robustez frente a casos límite en el `IsolationManager` y el aislamiento atómico, añadiendo validaciones de existencia y coherencia de estado para prevenir errores en situaciones de alta concurrencia o cambios abruptos en el sistema de archivos (TOCTOU).
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T08:25:53` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la comprobación individual (`.stat()`) de cada archivo en `_process_directory` por una llamada única a `os.scandir` que ya recupera los atributos, reduciendo drásticamente las llamadas al sistema y mejorando el rendimiento en directorios con miles de archivos.
 - `2026-10-28T08:25:23` **memory.py** (rendimiento): Se optimizó el acceso a los procesos en `_iter_process_memory` reduciendo la cantidad de llamadas a la API `OpenProcess` al mover la validación de `is_protected_path` (que requiere un handle abierto) después de una pre-validación de los contadores de memoria (`GetProcessMemoryInfo`), evitando abrir handles innecesarios para procesos que no cumplen con los umbrales mínimos de uso.
 - `2026-10-28T08:15:09` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de `relative_to` y las conversiones de cadena en cada iteración del bucle, obteniendo el directorio padre de primer nivel de forma más directa y eficiente a partir del iterador.
-- `2026-10-28T08:06:24` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` eliminando el cálculo redundante de `base_norm` y el acceso repetitivo a `kernel32` dentro del bucle interno, además de reutilizar el mismo `ScanContext` para reducir la creación de objetos en escaneos masivos.
-- `2026-10-28T07:56:18` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente `MappingProxyType` para constantes y retornos de funciones auxiliares) y se añadieron docstrings explicativos en las funciones de validación compleja para clarificar el flujo lógico y los casos de borde considerados, mejorando la mantenibilidad sin alterar la funcionalidad.

@@ -320,13 +320,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and (is_protected_path(Path(entry.path)) or _is_excluded_path(entry.name, entry.path)):
+                        p_entry = Path(entry.path)
+                        # Verificación estricta de seguridad defensiva
+                        if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, entry.path)):
                             continue
                         
-                        if entry.is_symlink() or _is_reparse_point(Path(entry.path)):
+                        if entry.is_symlink() or _is_reparse_point(p_entry):
                             continue
                         
-                        # Acceso a atributos: el re-stat es necesario para obtener tamaño real
                         st = _safe_stat(entry.path)
                         if st is None: continue
                             
@@ -334,9 +335,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
+                                stack.append(p_entry)
                         elif entry.is_file():
-                            yield Path(entry.path), st.st_size
+                            yield p_entry, st.st_size
                             
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
