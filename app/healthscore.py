@@ -345,7 +345,17 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     except Exception: return ""
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
-    """Evalúa las reglas registradas y retorna solo las que disparan advertencias."""
+    """
+    Evalúa las reglas registradas y retorna solo las que disparan advertencias.
+    
+    Args:
+        metrics: Instancia de SystemMetrics con el estado del sistema.
+        rules: Tupla de objetos RecommendationRule a evaluar.
+        normalized_ratio: Ratio de salud actual para el área correspondiente.
+        
+    Returns:
+        Lista de strings conteniendo los mensajes de advertencia sanitizados.
+    """
     if not isinstance(rules, tuple): return []
     ratio = _clamp(normalized_ratio)
     findings: List[str] = []
@@ -362,6 +372,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> HealthResult:
     """
     Motor central que orquestra el cálculo de métricas a través del pipeline.
+    
+    Args:
+        metric_values: Tupla de valores crudos de las métricas.
+        quarantined: Cantidad de archivos en cuarentena.
+        
+    Returns:
+        HealthResult con el puntaje final, categoría y recomendaciones generadas.
     """
     if len(metric_values) != len(SystemMetrics._FIELDS_TO_VALIDATE) - 1:
         return HealthResult(0, "F", {}, ["Error: Métrica incompleta."])
@@ -404,7 +421,15 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
     )
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Punto de entrada principal para el análisis del sistema."""
+    """
+    Punto de entrada principal para el análisis del sistema.
+    
+    Args:
+        metrics: Instancia de SystemMetrics con los datos del sistema.
+        
+    Returns:
+        HealthResult consolidado tras ejecutar el pipeline de reglas.
+    """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     

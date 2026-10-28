@@ -55,10 +55,13 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32 para interactuar con procesos.
+# 0x1000: PROCESS_QUERY_LIMITED_INFORMATION (Permite obtener info básica con menos privilegios)
 WIN32_PROCESS_QUERY_LIMITED: Final[int] = 0x1000
+# 0x0400: PROCESS_SET_QUOTA (Requerido para modificar el working set)
 WIN32_PROCESS_SET_QUOTA: Final[int] = 0x0400
+# 0x0400: PROCESS_QUERY_INFORMATION (Requerido para consultar métricas de memoria)
 WIN32_PROCESS_QUERY_INFO: Final[int] = 0x0400
-# Máscara combinada requerida para operaciones de gestión de memoria (EmptyWorkingSet)
+# 0x020000: PROCESS_SET_INFORMATION (Necesario para llamar a EmptyWorkingSet)
 TRIM_ACCESS_MASK: Final[int] = 0x020000 | WIN32_PROCESS_SET_QUOTA | WIN32_PROCESS_QUERY_INFO
 
 INVALID_HANDLE_VALUE: Final[int] = -1
