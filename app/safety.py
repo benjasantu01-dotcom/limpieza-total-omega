@@ -34,6 +34,7 @@ ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescrip
 
 # Caché global de integridad para evitar E/S redundante
 _SECURITY_CACHE: Final[dict[tuple[str, int, int], bool]] = {}
+_STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
 
 class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
     """Estructura de bajo nivel que mapea la API GetFileInformationByHandle de Windows."""
@@ -940,6 +941,9 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """Validación sintáctica para prevenir inyecciones y accesos a namespaces peligrosos."""
+    if path_string in _STRUCTURAL_CACHE:
+        return
+
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     
@@ -979,6 +983,9 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
              raise UnsafePathError("Profundidad de directorio excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP)
     except (AttributeError, TypeError, ValueError):
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
+
+    if len(_STRUCTURAL_CACHE) > 2048: _STRUCTURAL_CACHE.clear()
+    _STRUCTURAL_CACHE[path_string] = True
 
 def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> None:
     """Verificaciones de seguridad previas a cualquier operación de escritura."""

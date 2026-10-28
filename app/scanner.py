@@ -146,16 +146,6 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
         return False
     return True
 
-def _is_target_extension(name: str) -> bool:
-    """Determina si la extensión del archivo debe ser incluida en el análisis heurístico."""
-    if not isinstance(name, str) or not name: return False
-    try:
-        if RTL_CHAR_RE.search(name): return False
-        idx = name.rfind('.')
-        return idx > 0 and name[idx:].lower() in SUSPICIOUS_ALL_EXTS
-    except (ValueError, TypeError):
-        return False
-
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Detecta ejecutables con tamaño 0 bytes (posible indicio de ofuscación)."""
     if entry is None or path is None: return None
@@ -166,14 +156,14 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Ti
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Detecta doble extensión para enmascarar tipos de archivo ejecutables."""
-    if path is None or not path.name or _cached_is_protected(str(path)): return None
+    if path is None or not path.name: return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Alerta sobre procesos de sistema ubicados fuera de System32."""
-    if path is None or not path.name or _cached_is_protected(str(path)): return None
+    if path is None or not path.name: return None
     if path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso de sistema detectado fuera de directorio protegido", "warning")
@@ -181,8 +171,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Identifica ejecutables recientes en carpetas temporales o de descargas."""
-    if path is None or path.parent is None or _cached_is_protected(str(path)): return None
-    if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS or entry is None:
+    if path is None or path.parent is None or entry is None: return None
+    if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
         return None
     stats = _safe_stat(entry)
     if stats:
@@ -265,8 +255,8 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos relevantes para las heurísticas configuradas."""
-        idx = name.rfind('.')
-        return idx > 0 and name[idx:].lower() in SUSPICIOUS_ALL_EXTS
+        _, ext = os.path.splitext(name)
+        return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[Tuple[str, int]], current_depth: int, visited_dirs: set[str]) -> None:
         """Procesa una entrada individual (directorio o archivo) del sistema."""

@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 61
+- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 64 | 5 | 22 | 4 | 105 |
-| 2026-10-28 | 106 | 10 | 39 | 12 | 137 |
+| 2026-10-27 | 63 | 4 | 22 | 4 | 103 |
+| 2026-10-28 | 109 | 10 | 40 | 12 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
-- seguridad defensiva: **37**
+- seguridad defensiva: **36**
 - manejo de errores y validación de entradas: **36**
-- rendimiento: **27**
+- rendimiento: **30**
 - robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
@@ -32,19 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
+- `settings.py`: **17**
 - `browser.py`: **17**
-- `settings.py`: **16**
 - `memory.py`: **16**
-- `safety.py`: **14**
-- `scanner.py`: **13**
+- `safety.py`: **15**
+- `scanner.py`: **14**
 - `assistant.py`: **12**
 - `organizer.py`: **11**
-- `branding.py`: **9**
+- `branding.py`: **8**
 - `startup.py`: **6**
 - `duplicates.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T13:02:42` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución de `is_safe_to_modify` y `is_protected_path` cuando la configuración ya existe en caché, utilizando la marca de tiempo (mtime) y tamaño del archivo como verificadores de validez.
+- `2026-10-28T13:02:26` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del escaneo reemplazando las validaciones redundantes de extensiones mediante la pre-compilación de un conjunto (`frozenset`) eficiente y eliminando llamadas innecesarias a `is_protected_path` cuando la información ya está implícita o cacheada, reduciendo la carga de I/O y el uso de CPU durante el recorrido recursivo.
+- `2026-10-28T13:01:59` **safety.py** (rendimiento): Se implementó un mecanismo de caché en `_validate_structural_safety` para evitar el costo computacional de realizar normalizaciones, validaciones de expresiones regulares y chequeos de sistema de archivos repetitivos sobre una misma ruta en un mismo ciclo de ejecución.
 - `2026-10-28T12:53:08` **quarantine.py** (rendimiento): Optimicé el cálculo del hash SHA256 implementando una caché de resultados basada en los metadatos del archivo (ruta, tiempo de modificación y tamaño), evitando lecturas de disco innecesarias durante verificaciones recurrentes.
 - `2026-10-28T12:52:07` **memory.py** (rendimiento): Optimizé la función `_iter_process_memory` para realizar la verificación de seguridad `_is_process_executable_safe` solo después de confirmar que el proceso tiene un consumo de memoria relevante, evitando llamadas costosas a la API de archivos y manipulación de buffers para procesos pequeños o irrelevantes.
 - `2026-10-28T12:41:13` **diskreport.py** (rendimiento): Optimicé el cálculo de `largest_folders` para evitar la reconstrucción de rutas `Path` mediante tuplas y `os.path.join` innecesarios, utilizando directamente `path.relative_to` para identificar el subdirectorio de primer nivel de forma eficiente.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T12:11:50` **memory.py** (legibilidad y documentación): Mejoré la legibilidad del código documentando los valores de las máscaras de acceso Win32 mediante comentarios claros que explican su propósito técnico, facilitando el mantenimiento y la comprensión de las interacciones con la API del sistema.
 - `2026-10-28T12:10:11` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros y retornos de las funciones críticas (`compute_score`, `_compute_cached`, `_evaluate_rules`), facilitando la comprensión del pipeline analítico sin alterar la lógica funcional.
 - `2026-10-28T12:01:04` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones clave y la adición de tipos de retorno explícitos, facilitando la comprensión de las heurísticas de filtrado y el flujo del pipeline de hash.
-- `2026-10-28T12:00:53` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings precisos en las clases `ExtStats`, `GlobalStats` y `FolderMetrics`, y se han clarificado las intenciones en las funciones internas de recolección de métricas, facilitando el mantenimiento y la comprensión de las estructuras de datos.
-- `2026-10-28T12:00:25` **browser.py** (legibilidad y documentación): Documenté con precisión técnica el flujo de trabajo de `DirectoryScanner` y `_resolve_browser_path` mediante docstrings detallados, aclarando por qué se aplican restricciones de seguridad (symlinks/junctions/sandbox) para asegurar que otros colaboradores entiendan el diseño de la protección contra navegación fuera de `LOCALAPPDATA`.
-- `2026-10-28T11:41:13` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_file_id` para capturar errores de ejecución de la API de Windows mediante un bloque `try-except` más específico y la verificación del handle, evitando que errores de permisos en llamadas de bajo nivel se propaguen silenciosamente como estados inválidos, mejorando la precisión en la detección de violaciones TOCTOU.

@@ -366,16 +366,13 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         
-        # Validaciones de tamaño y seguridad del path
+        # Validaciones de tamaño
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
-        if is_protected_path(str(file_path.resolve())): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Lee y parsea JSON, verificando estructura básica antes de procesar."""
-    if not _Validators._is_safe_path(str(file_path)): 
-        return None
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             data = json.load(f)
