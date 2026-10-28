@@ -8,22 +8,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 20 | 2 | 6 | 3 | 43 |
+| 2026-10-26 | 18 | 2 | 6 | 2 | 42 |
 | 2026-10-27 | 125 | 8 | 51 | 9 | 157 |
-| 2026-10-28 | 28 | 3 | 9 | 1 | 39 |
+| 2026-10-28 | 30 | 3 | 10 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **41**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **43**
+- robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **39**
 - seguridad defensiva: **35**
 - rendimiento: **17**
@@ -31,21 +31,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
-- `healthscore.py`: **16**
 - `memory.py`: **16**
 - `settings.py`: **16**
 - `assistant.py`: **16**
 - `browser.py`: **16**
 - `diskreport.py`: **16**
+- `healthscore.py`: **15**
 - `organizer.py`: **13**
-- `scanner.py`: **11**
-- `safety.py`: **10**
+- `scanner.py`: **12**
+- `safety.py`: **11**
 - `branding.py`: **9**
 - `startup.py`: **7**
-- `duplicates.py`: **6**
+- `duplicates.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T03:31:34` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de Type Hints en los argumentos de los métodos, la estandarización de los nombres de los parámetros de tipo en `Scanner` y la clarificación de las responsabilidades en los métodos de filtrado de rutas mediante docstrings descriptivos, asegurando que el flujo de ejecución sea más transparente y menos propenso a errores.
+- `2026-10-28T03:31:08` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se estructuró la jerarquía de validación en `ensure_safe_to_modify` para mejorar la legibilidad y claridad del flujo de control ante auditorías técnicas.
 - `2026-10-28T03:20:35` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la implementación de `TypeHint` más precisos y la conversión de comentarios genéricos en docstrings estructurados conforme a los estándares de estilo de Google, facilitando la comprensión del flujo de datos en las operaciones de I/O.
 - `2026-10-28T03:19:49` **organizer.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la unificación de docstrings bajo el estilo Google/NumPy y la consolidación de la documentación interna, facilitando la comprensión de las restricciones de seguridad sin alterar la lógica de ejecución.
 - `2026-10-28T03:19:19` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de módulo y función que explican el "porqué" de las decisiones de seguridad y gestión de memoria, además de estandarizar la nomenclatura interna de las constantes de la API de Windows para una mayor claridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T02:49:49` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas integrando validaciones de tipo `None` y de integridad de ruta antes de operar, previniendo excepciones innecesarias durante la ejecución del bucle de escaneo.
 - `2026-10-28T02:41:31` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` centralizando el chequeo de exclusividad y estado del sistema antes de iniciar la transacción, y añadiendo una validación explícita para evitar que `source_path` resulte ser el directorio de cuarentena tras la resolución de la ruta.
 - `2026-10-28T02:29:26` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `score_security` y `_render_bar` validando los tipos de entrada y asegurando que las divisiones por cero o valores no numéricos sean capturados de forma segura, previniendo errores en tiempo de ejecución.
-- `2026-10-28T02:28:42` **diskreport.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y la integridad de los datos en `_collect_summary_data` y `summarize`, asegurando que errores inesperados durante el acceso a archivos individuales no propaguen estados inconsistentes, y añadiendo validaciones proactivas en las operaciones de cómputo del heap.
-- `2026-10-28T02:28:14` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `detect_profiles` y `summarize` implementando validaciones de tipo explícitas y manejo de estados vacíos para prevenir excepciones en tiempo de ejecución, alineándose con el enfoque de validación defensiva de entradas.

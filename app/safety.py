@@ -1096,6 +1096,12 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Realiza la validación jerárquica de una ruta para asegurar que sea segura para su modificación.
+    
+    El proceso sigue un orden estricto de filtrado:
+    1. Normalización y limpieza de la entrada.
+    2. Validación de límites y namespace (traversal, dispositivos, longitud).
+    3. Verificación de restricciones de volumen y permisos de sistema.
+    4. Análisis profundo de integridad y prevención TOCTOU si el archivo existe.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
@@ -1106,9 +1112,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             
     p = normalize(path_str)
     
+    # 1. Validación de tipo y nombre crítico
     if p.exists() and not (p.is_file() or p.is_dir()):
         raise UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE)
-
     if p.name.lower() in _KERNEL_BLOCKED_FILES:
         raise UnsafePathError(f"Modificación bloqueada de archivo crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
 
@@ -1119,18 +1125,20 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         except (TypeError, ValueError, OSError) as e:
             raise UnsafePathError(f"Directorio base inválido: {e}", SafetyValidationErrorCode.IO_ERROR)
     
+    # 2. Análisis estructural y de red
     if os.name == 'nt' and _is_system_directory_junction(str(p)):
          _validate_ntfs_reparse_redirection(p, base)
-
     _validate_path_components(p)
+    _validate_structural_safety(p, str(p))
+    _validate_boundary_conditions(p, base_dir)
+    
+    # 3. Verificación de permisos y volumen
     _validate_preconditions(p, base_dir)
     
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
             
-    _validate_structural_safety(p, str(p))
-    _validate_boundary_conditions(p, base_dir)
-    
+    # 4. Integridad en disco (TOCTOU)
     if p.exists():
         _validate_file_operations_security(p, allow_sensitive, base)
     else:

@@ -63,15 +63,10 @@ DirectoryStack: TypeAlias = List[Tuple[str, int]]
 Timestamp: TypeAlias = float
 
 # Expresiones regulares para detección de técnicas de evasión y riesgos de nombres
-# Detecta archivos con doble extensión (ej: .pdf.exe)
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
-# Detecta caracteres de control Unicode bidireccionales utilizados para ofuscar nombres
 RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d\u200b\u00a0\ufeff]")
-# Nombres reservados por el kernel de Windows que pueden causar comportamiento inesperado
 RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
-# Caracteres finales que invalidan rutas en el sistema de archivos de Windows
 INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[\. ]$")
-# Patrón para identificar rutas UNC (servidores de red)
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 
 # Listas blancas y negras para filtrar candidatos de escaneo
@@ -257,7 +252,6 @@ class Scanner:
             if not _is_valid_path_structure(path_str): return False
             if not self._is_inside_base_root(path_str): return False
             
-            # Verificación doble para asegurar que la ruta real no se escapó del root
             real_path = os.path.realpath(path_str)
             if not os.path.normcase(real_path).startswith(self.base_root_norm):
                 return False
@@ -267,7 +261,7 @@ class Scanner:
         except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
             return False
 
-    def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str], current_depth: int, visited_dirs: set[str]) -> None:
+    def _handle_directory(self, entry: os.DirEntry, directory_stack: List[Tuple[str, int]], current_depth: int, visited_dirs: set[str]) -> None:
         """Gestiona la inserción de subdirectorios en la pila de exploración evitando ciclos."""
         if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
