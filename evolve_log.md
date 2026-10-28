@@ -1199,3 +1199,10 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Att
 - `2026-10-28T02:20:58` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez y legibilidad de las funciones `_hex_to_rgb` y `_rgb_to_hex` reemplazando los bloqueos genéricos por validaciones tempranas de parámetros, evitando errores de cálculo silenciosos y garantizando que los colores sean siempre válidos (formato #RRGGBB).
 - `2026-10-28T02:20:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T02:20:58` Corrida terminada. Total usado hoy: 56.
+- `2026-10-28T02:27:46` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-10-28T02:28:14` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez en `detect_profiles` y `summarize` implementando validaciones de tipo explícitas y manejo de estados vacíos para prevenir excepciones en tiempo de ejecución, alineándose con el enfoque de validación defensiva de entradas.
+- `2026-10-28T02:28:42` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de excepciones y la integridad de los datos en `_collect_summary_data` y `summarize`, asegurando que errores inesperados durante el acceso a archivos individuales no propaguen estados inconsistentes, y añadiendo validaciones proactivas en las operaciones de cómputo del heap.
+- `2026-10-28T02:29:06` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-28T02:29:26` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `score_security` y `_render_bar` validando los tipos de entrada y asegurando que las divisiones por cero o valores no numéricos sean capturados de forma segura, previniendo errores en tiempo de ejecución.
+- `2026-10-28T02:29:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T02:29:26` Corrida terminada. Total usado hoy: 60.

@@ -203,13 +203,10 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
     """Calcula salud: Penaliza proporcionalmente según archivos sospechosos y advertencias."""
-    try:
-        s_count = max(0, float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0)
-        w_count = max(0, float(warnings) if isinstance(warnings, (int, float)) else 0.0)
-        penalization = (s_count * 0.05) + (w_count * 0.25)
-        return _clamp(1.0 - penalization)
-    except (TypeError, ValueError):
-        return 0.0
+    s_count = float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0
+    w_count = float(warnings) if isinstance(warnings, (int, float)) else 0.0
+    penalization = (max(0.0, s_count) * 0.05) + (max(0.0, w_count) * 0.25)
+    return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula el score normalizado basado en % de memoria disponible."""
@@ -405,8 +402,9 @@ def _render_bar(points: Any, max_val: Any) -> str:
     """Generador visual de barras de progreso para reportes en texto."""
     if not isinstance(points, (int, float)) or not isinstance(max_val, (int, float)):
         return "." * 10
-    safe_points = int(max(0, min(points, max_val)))
-    safe_max = int(max(1, max_val))
+    
+    safe_max = int(max(1, int(max_val)))
+    safe_points = int(max(0, min(int(points), safe_max)))
     return "#" * safe_points + "." * (safe_max - safe_points)
 
 def summarize(result: HealthResult | None) -> List[str]:

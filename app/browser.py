@@ -328,11 +328,12 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         scan_ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
         
         for browser_key, relative_path in browser_map.items():
+            if not isinstance(browser_key, str): continue
             candidate = _resolve_browser_path(base_resolved, relative_path)
             if candidate != Path() and _is_valid_cache_path(candidate, base_norm):
                 scan_res = _sum_directory_recursive(str(candidate), scan_ctx, 0)
                 if scan_res.success and scan_res.bytes_found > 0:
-                    found.append(BrowserCache(str(browser_key), candidate, scan_res.bytes_found))
+                    found.append(BrowserCache(browser_key, candidate, scan_res.bytes_found))
     
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found
