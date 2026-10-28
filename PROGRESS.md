@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 66
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 238
+- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 67
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 117 | 8 | 48 | 9 | 154 |
-| 2026-10-28 | 55 | 7 | 18 | 4 | 84 |
+| 2026-10-27 | 114 | 7 | 48 | 9 | 154 |
+| 2026-10-28 | 56 | 7 | 19 | 5 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **39**
 - seguridad defensiva: **37**
 - legibilidad y documentación: **34**
-- rendimiento: **23**
+- rendimiento: **20**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `assistant.py`: **17**
+- `diskreport.py`: **17**
+- `assistant.py`: **16**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
 - `settings.py`: **15**
 - `browser.py`: **15**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `organizer.py`: **12**
 - `safety.py`: **11**
-- `branding.py`: **10**
+- `branding.py`: **9**
 - `startup.py`: **8**
 - `duplicates.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T07:19:08` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de las heurísticas centralizando la validación de parámetros y capturando excepciones de forma específica, evitando que errores inesperados en archivos individuales interrumpan el proceso completo de escaneo.
 - `2026-10-28T07:06:24` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo `memory.py` mediante la validación explícita de `h_process` y `WindowsAPI` antes de realizar llamadas críticas a la API de Windows, evitando errores de segmentación o comportamiento indefinido si los manejadores o librerías son nulos.
 - `2026-10-28T07:03:45` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo de `_compute_cached` añadiendo una validación explícita de `SystemMetrics` y un manejo de errores más específico mediante la captura de excepciones durante la iteración del pipeline, evitando que un fallo en una única regla o métrica invalide el informe completo.
 - `2026-10-28T06:54:28` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del análisis de carpetas en `largest_folders` añadiendo validación explícita para evitar errores `IndexError` y `ValueError` al calcular rutas relativas, asegurando que `relative_to` solo se ejecute con rutas válidas y consistentes.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T05:01:24` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_browser_path` añadiendo una validación explícita para asegurar que la ruta resultante, tras la unión, siga estando contenida dentro del directorio base resuelto, evitando así posibles escapes de directorio mediante manipulación de paths.
 - `2026-10-28T04:53:09` **branding.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save_logo_svg` añadiendo una normalización de ruta explícita y verificando la existencia del directorio antes de intentar escribir, además de asegurar que la operación sea totalmente abortada si la ruta final reside fuera de los límites permitidos, evitando accesos indebidos al sistema de archivos.
 - `2026-10-28T04:52:42` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que la cadena de texto de la consulta no solo pase los filtros de inyección, sino que también se descomponga en tokens seguros antes de realizar cualquier búsqueda en el diccionario de manejo de consultas (`_TOKENS_MAP`), evitando que rutas o caracteres ocultos en la consulta intenten manipular la lógica de selección de handlers.
-- `2026-10-28T04:51:15` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` implementando un control de profundidad en la resolución de rutas dentro de `_Validators._run_safety_checks` para prevenir ataques de recursión infinita mediante enlaces simbólicos circulares.

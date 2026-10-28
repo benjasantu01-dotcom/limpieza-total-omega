@@ -466,3 +466,14 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T07:06:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-28T07:06:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T07:06:36` Corrida terminada. Total usado hoy: 168.
+- `2026-10-28T07:13:26` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-10-28T07:14:09` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `quarantine.py` mediante la implementación de validaciones defensivas ante condiciones de carrera (TOCTOU) y errores de E/S en funciones críticas como `_safe_unlink` y `_atomic_isolate_file`, asegurando que ninguna operación destructiva proceda si el archivo ha sido modificado o si las condiciones de seguridad han cambiado tras la verificación inicial.
+- `2026-10-28T07:14:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-28T07:15:28` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-28T07:15:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-28T07:16:41` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-28T07:17:53` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-28T07:18:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T07:19:08` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de las heurísticas centralizando la validación de parámetros y capturando excepciones de forma específica, evitando que errores inesperados en archivos individuales interrumpan el proceso completo de escaneo.
+- `2026-10-28T07:19:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T07:19:08` Corrida terminada. Total usado hoy: 172.

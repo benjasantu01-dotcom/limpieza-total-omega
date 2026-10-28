@@ -133,16 +133,11 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         attrs = _get_file_attributes(entry)
         if attrs & SCAN_LIMITS.reparse_point_mask:
-            # Verificación adicional para asegurar que no es una estructura de reanálisis
             return None
         if not entry.is_file() or _cached_is_protected(entry.path):
             return None
         return entry.stat(follow_symlinks=False)
-    except OSError as e:
-        if getattr(e, 'winerror', 0) == ERROR_SHARING_VIOLATION or isinstance(e, PermissionError):
-            return None
-        return None
-    except (AttributeError, FileNotFoundError):
+    except (OSError, PermissionError, FileNotFoundError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -168,9 +163,12 @@ def _is_target_extension(name: str) -> bool:
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Heurística: Detecta ejecutables con tamaño 0 bytes (posible indicio de ofuscación)."""
     if entry is None or path is None: return None
-    stats = _safe_stat(entry)
-    if stats is not None and getattr(stats, "st_size", -1) == 0:
-        return Suspicion(path, "Ejecutable vacío detectado", "warning")
+    try:
+        stats = _safe_stat(entry)
+        if stats is not None and getattr(stats, "st_size", -1) == 0:
+            return Suspicion(path, "Ejecutable vacío detectado", "warning")
+    except (AttributeError, OSError):
+        pass
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
@@ -194,16 +192,18 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Heurística: Identifica ejecutables recientes en carpetas temporales o de descargas."""
     if path is None or path.parent is None or _cached_is_protected(str(path)): return None
-    if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
+    if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS or entry is None:
         return None
-    if entry is None: return None
     
-    stats = _safe_stat(entry)
-    if stats:
-        mtime = getattr(stats, "st_mtime", 0.0)
-        if isinstance(mtime, (int, float)) and mtime > 0:
-            if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
-                return Suspicion(path, "Ejecutable reciente detectado en carpeta volátil", "info")
+    try:
+        stats = _safe_stat(entry)
+        if stats:
+            mtime = getattr(stats, "st_mtime", 0.0)
+            if isinstance(mtime, (int, float)) and mtime > 0:
+                if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
+                    return Suspicion(path, "Ejecutable reciente detectado en carpeta volátil", "info")
+    except (AttributeError, OSError):
+        pass
     return None
 
 # Registro de todas las heurísticas disponibles
@@ -271,10 +271,13 @@ class Scanner:
         """Gestiona la inserción de subdirectorios en la pila de exploración evitando ciclos."""
         if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
-        norm_path = os.path.normcase(entry.path)
-        if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
-            visited_dirs.add(norm_path)
-            directory_stack.append((entry.path, current_depth + 1))
+        try:
+            norm_path = os.path.normcase(entry.path)
+            if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
+                visited_dirs.add(norm_path)
+                directory_stack.append((entry.path, current_depth + 1))
+        except (OSError, PermissionError):
+            pass
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos relevantes para las heurísticas configuradas (Optimizado)."""
@@ -296,7 +299,7 @@ class Scanner:
                         self._run_file_heuristics(Path(entry.path), entry)
             elif entry.is_dir():
                 self._handle_directory(entry, directory_stack, current_depth, visited_dirs)
-        except (OSError, PermissionError, FileNotFoundError, AttributeError, RuntimeError):
+        except (OSError, PermissionError, AttributeError):
             logger.debug(f"Error accediendo a entrada: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -308,7 +311,7 @@ class Scanner:
                 if finding:
                     self.results.append(finding)
             except Exception as e:
-                logger.debug(f"Heurística {check_fn.__name__} abortada en {path}: {type(e).__name__}")
+                logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {type(e).__name__}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Realiza un escaneo heurístico individual sobre un archivo específico."""
@@ -326,7 +329,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
             except Exception as e:
                 logger.debug(f"Heurística puntual {check_fn.__name__} fallida en {path}: {type(e).__name__}")
         return findings
-    except (OSError, PermissionError, FileNotFoundError):
+    except (OSError, PermissionError):
         return []
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
