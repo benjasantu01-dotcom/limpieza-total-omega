@@ -227,7 +227,7 @@ class StartupEntry:
         Descompone la línea de comandos de inicio para aislar el ejecutable,
         gestionando tanto rutas simples como rutas entrecomilladas.
         """
-        if not command_line or not isinstance(command_line, str):
+        if not isinstance(command_line, str) or not command_line:
             return ""
         
         if command_line in _COMMAND_CACHE:
@@ -239,7 +239,7 @@ class StartupEntry:
                 result = self._extract_quoted_path(command_line)
             else:
                 parts: List[str] = command_line.split()
-                if parts and parts[0]:
+                if parts and isinstance(parts[0], str) and parts[0]:
                     if "\\" in parts[0] or "/" in parts[0]:
                         result = self._resolve_and_cache_path(parts[0])
         except (AttributeError, ValueError, IndexError, OSError, TypeError):

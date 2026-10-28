@@ -178,7 +178,15 @@ class MetricSpec:
         return isinstance(val, (int, float)) and not isinstance(val, bool) and _check_metric_integrity(val)
 
 class ProblemCriterion(NamedTuple):
-    """Regla declarativa para comparar una métrica contra un umbral y disparar una descripción."""
+    """
+    Define una regla lógica para evaluar el estado del sistema.
+    
+    Attributes:
+        metric_key: Nombre del atributo en SystemContext a evaluar.
+        threshold: Valor límite para comparar.
+        operator: Comparador lógico ('<' o '>').
+        message_format: Plantilla de mensaje con un marcador '{:.0f}' o '{:d}'.
+    """
     metric_key: str
     threshold: float
     operator: str
@@ -369,8 +377,10 @@ def _evaluate_active_problems(metrics_items: tuple) -> tuple[str, ...]:
 
 @dataclass
 class SystemContext:
-    """Contenedor de estado consolidado que representa la salud del sistema. Almacena
-    métricas del equipo y gestiona su validación, persistencia y exposición."""
+    """
+    Contenedor de estado consolidado que representa la salud del sistema. 
+    Almacena métricas numéricas, califica la salud y gestiona su validación/exposición.
+    """
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0
