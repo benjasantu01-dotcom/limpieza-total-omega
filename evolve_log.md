@@ -561,3 +561,11 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T09:07:41` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked_by_other_process` y `_get_path_stat_robust` incorporando un manejo explícito del error `ERROR_SHARING_VIOLATION` (código 32) de Windows mediante un bucle de reintento con backoff exponencial, garantizando mayor resiliencia ante bloqueos transitorios por procesos de indexación o antivirus sin comprometer la integridad de las verificaciones.
 - `2026-10-28T09:07:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T09:07:41` Corrida terminada. Total usado hoy: 216.
+- `2026-10-28T09:15:50` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-10-28T09:16:18` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-28T09:16:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T09:16:52` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez ante archivos de configuración corruptos o parcialmente escritos mediante la adición de una validación de integridad (`json.JSONDecodeError` y verificación de tipos) más estricta durante la carga, garantizando que si el archivo `config.json` no es un diccionario válido o contiene claves de tipo incorrecto, la aplicación recupere los valores de fábrica de forma segura sin abortar el proceso de inicio.
+- `2026-10-28T09:17:20` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-28T09:17:45` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `build_context` añadiendo una validación explícita para asegurar que los datos procesados no sean instancias de clases complejas o tipos prohibidos, reforzando el aislamiento del motor de IA frente a inyecciones de objetos o lógica inesperada.
+- `2026-10-28T09:17:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T09:17:45` Corrida terminada. Total usado hoy: 220.

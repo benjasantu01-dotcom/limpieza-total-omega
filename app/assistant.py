@@ -545,6 +545,10 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Crea y popula un objeto SystemContext a partir de fuentes de datos múltiples."""
+    # Validación estricta: impedir tipos no permitidos como entrada
+    for s in (metrics, health, extra):
+        if s is not None and not isinstance(s, (dict, object)):
+            return SystemContext()
     ctx: SystemContext = SystemContext()
     for s in (metrics, health, extra):
         if s is not None: ctx.ingest(s)
