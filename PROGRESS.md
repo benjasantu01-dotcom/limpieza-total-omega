@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 66 | 5 | 23 | 4 | 106 |
-| 2026-10-28 | 104 | 10 | 38 | 12 | 136 |
+| 2026-10-27 | 64 | 5 | 22 | 4 | 105 |
+| 2026-10-28 | 106 | 10 | 39 | 12 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
-- seguridad defensiva: **38**
+- seguridad defensiva: **37**
 - manejo de errores y validación de entradas: **36**
-- robustez ante casos límite: **27**
-- rendimiento: **25**
+- rendimiento: **27**
+- robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `diskreport.py`: **18**
-- `settings.py`: **17**
 - `healthscore.py`: **17**
 - `browser.py`: **17**
-- `memory.py`: **15**
+- `settings.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **14**
-- `assistant.py`: **13**
 - `scanner.py`: **13**
+- `assistant.py`: **12**
 - `organizer.py`: **11**
 - `branding.py`: **9**
 - `startup.py`: **6**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T12:53:08` **quarantine.py** (rendimiento): Optimicé el cálculo del hash SHA256 implementando una caché de resultados basada en los metadatos del archivo (ruta, tiempo de modificación y tamaño), evitando lecturas de disco innecesarias durante verificaciones recurrentes.
+- `2026-10-28T12:52:07` **memory.py** (rendimiento): Optimizé la función `_iter_process_memory` para realizar la verificación de seguridad `_is_process_executable_safe` solo después de confirmar que el proceso tiene un consumo de memoria relevante, evitando llamadas costosas a la API de archivos y manipulación de buffers para procesos pequeños o irrelevantes.
 - `2026-10-28T12:41:13` **diskreport.py** (rendimiento): Optimicé el cálculo de `largest_folders` para evitar la reconstrucción de rutas `Path` mediante tuplas y `os.path.join` innecesarios, utilizando directamente `path.relative_to` para identificar el subdirectorio de primer nivel de forma eficiente.
 - `2026-10-28T12:40:45` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo eliminando la resolución innecesaria de rutas (`resolve()`) dentro del bucle interno de `DirectoryScanner`, reemplazándola por `normcase` y `normpath` para validar límites, lo que reduce drásticamente las llamadas al sistema de archivos por cada archivo encontrado.
 - `2026-10-28T12:31:47` **assistant.py** (rendimiento): Optimicé el método `local_answer` para evitar el uso del `token_regex` en cada iteración y reducir el costo de procesamiento al usar un acceso directo por clave, eliminando la sobrecarga innecesaria de iterar sobre todos los tokens de la consulta cuando solo se necesita el primero o el más relevante para el ruteo.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T12:00:53` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings precisos en las clases `ExtStats`, `GlobalStats` y `FolderMetrics`, y se han clarificado las intenciones en las funciones internas de recolección de métricas, facilitando el mantenimiento y la comprensión de las estructuras de datos.
 - `2026-10-28T12:00:25` **browser.py** (legibilidad y documentación): Documenté con precisión técnica el flujo de trabajo de `DirectoryScanner` y `_resolve_browser_path` mediante docstrings detallados, aclarando por qué se aplican restricciones de seguridad (symlinks/junctions/sandbox) para asegurar que otros colaboradores entiendan el diseño de la protección contra navegación fuera de `LOCALAPPDATA`.
 - `2026-10-28T11:41:13` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_file_id` para capturar errores de ejecución de la API de Windows mediante un bloque `try-except` más específico y la verificación del handle, evitando que errores de permisos en llamadas de bajo nivel se propaguen silenciosamente como estados inválidos, mejorando la precisión en la detección de violaciones TOCTOU.
-- `2026-10-28T11:40:16` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y la carga de manifiestos mediante una gestión de excepciones más granular y la eliminación de posibles estados inconsistentes al validar archivos que no figuran en el manifiesto, asegurando que el proceso no se interrumpa ante errores de E/S aislados.
-- `2026-10-28T11:29:50` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.__post_init__` y `validate` eliminando la llamada redundante y potencialmente peligrosa a `setattr` con nombres dinámicos sin una verificación estricta de existencia, asegurando que cualquier valor inválido se reemplace por un valor seguro predeterminado antes de la validación.

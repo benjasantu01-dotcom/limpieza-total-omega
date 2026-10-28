@@ -937,3 +937,10 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-10-28T12:41:52` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 55% del original (posible pérdida de código)
 - `2026-10-28T12:41:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T12:41:52` Corrida terminada. Total usado hoy: 300.
+- `2026-10-28T12:50:25` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-28T12:51:35` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T12:52:07` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la función `_iter_process_memory` para realizar la verificación de seguridad `_is_process_executable_safe` solo después de confirmar que el proceso tiene un consumo de memoria relevante, evitando llamadas costosas a la API de archivos y manipulación de buffers para procesos pequeños o irrelevantes.
+- `2026-10-28T12:52:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-28T12:53:08` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del hash SHA256 implementando una caché de resultados basada en los metadatos del archivo (ruta, tiempo de modificación y tamaño), evitando lecturas de disco innecesarias durante verificaciones recurrentes.
+- `2026-10-28T12:53:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T12:53:08` Corrida terminada. Total usado hoy: 304.

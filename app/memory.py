@@ -374,7 +374,7 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         
         try:
             ws = _query_working_set_bytes(h_process, pmc)
-            # Primero validamos el consumo para evitar abrir/cerrar handles innecesarios o consultar rutas de archivos
+            # Validamos el consumo antes de abrir buffers de ruta y verificar seguridad en disco
             if ws is not None and _is_process_executable_safe(h_process):
                 yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:

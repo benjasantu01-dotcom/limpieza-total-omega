@@ -268,7 +268,7 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula el hash SHA256 con buffering eficiente para archivos grandes."""
+    """Calcula el hash SHA256 con buffering eficiente y caché de metadatos."""
     if path is None or not path.exists(): return ""
     try:
         st = path.stat()
