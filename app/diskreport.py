@@ -281,7 +281,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None: return None
     try:
         p = Path(mount).expanduser().resolve(strict=False)
-        # Seguridad: evitar seguir reparse points en la raíz de la unidad
         if not p.exists() or _is_reparse_point(p) or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
         usage = shutil.disk_usage(p)
@@ -321,14 +320,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtrado de seguridad
                         if skip_protected and (is_protected_path(Path(entry.path)) or _is_excluded_path(entry.name, entry.path)):
                             continue
                         
-                        # No seguir symlinks ni reparse points
                         if entry.is_symlink() or _is_reparse_point(Path(entry.path)):
                             continue
                         
+                        # Acceso a atributos: el re-stat es necesario para obtener tamaño real
                         st = _safe_stat(entry.path)
                         if st is None: continue
                             
@@ -371,7 +369,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
-        # Determinar el subdirectorio raíz directo evitando conversiones costosas
         parts = path.parts
         root_parts = root.parts
         if len(parts) > len(root_parts):

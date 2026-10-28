@@ -540,3 +540,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T08:37:06` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-10-28T08:37:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T08:37:06` Corrida terminada. Total usado hoy: 204.
+- `2026-10-28T08:45:12` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-10-28T08:45:54` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
+- `2026-10-28T08:46:37` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y estados inesperados del sistema de archivos, asegurando que la validación de la ruta sea completa y que cualquier fallo en la creación de directorios o escritura sea capturado sin afectar la estabilidad de la UI.
+- `2026-10-28T08:47:04` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-28T08:47:15` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `walk_files` y `drive_usage` ante bloqueos de archivos o inconsistencias del sistema de archivos al añadir un manejo de excepciones explícito en las llamadas a `stat` y `scandir`, garantizando que un error puntual de lectura no aborte el escaneo de todo el volumen.
+- `2026-10-28T08:47:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T08:47:15` Corrida terminada. Total usado hoy: 208.
