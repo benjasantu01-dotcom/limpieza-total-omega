@@ -276,6 +276,11 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
+        # Validación estricta de tipos previo a la sanitización
+        for field_name in self._FIELDS_TO_VALIDATE:
+            val = getattr(self, field_name)
+            if not isinstance(val, (int, float, bool)):
+                setattr(self, field_name, 0.0)
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
@@ -360,7 +365,6 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
     """
     Motor central que orquestra el cálculo de métricas a través del pipeline.
     """
-    # Validar integridad inicial antes de crear la instancia
     if len(metric_values) != len(SystemMetrics._FIELDS_TO_VALIDATE) - 1:
         return HealthResult(0, "F", {}, ["Error: Métrica incompleta."])
         
@@ -372,6 +376,7 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
     
     for entry in PIPELINE_DEFINITIONS:
         try:
+            if metrics is None: continue
             area_ratio = entry.scorer(metrics)
             recs = _evaluate_rules(metrics, entry.rules, area_ratio)
             recommendations.extend(recs)
@@ -405,7 +410,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema corruptos."])
     
     try:
-        # Extraer valores, asegurando integridad antes de pasar al cache
         raw_vals = [getattr(metrics, f) for f in SystemMetrics._FIELDS_TO_VALIDATE[:-1]]
         if not all(isinstance(v, (int, float)) and math.isfinite(float(v)) for v in raw_vals):
             return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos."])

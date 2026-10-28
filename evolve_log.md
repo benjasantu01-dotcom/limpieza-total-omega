@@ -547,3 +547,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T08:47:15` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `walk_files` y `drive_usage` ante bloqueos de archivos o inconsistencias del sistema de archivos al añadir un manejo de excepciones explícito en las llamadas a `stat` y `scandir`, garantizando que un error puntual de lectura no aborte el escaneo de todo el volumen.
 - `2026-10-28T08:47:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T08:47:15` Corrida terminada. Total usado hoy: 208.
+- `2026-10-28T08:55:24` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-28T08:55:51` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-28T08:56:43` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de `SystemMetrics` mediante la implementación de una validación de `__init__` más estricta que previene la creación de instancias con tipos incompatibles y se ha mejorado el `PipelineEntry` para incluir una verificación de `None` en la ejecución del `scorer`, evitando fallos en tiempo de ejecución ante métricas parciales o no inicializadas.
+- `2026-10-28T08:57:54` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T08:58:06` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-28T08:58:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T08:58:06` Corrida terminada. Total usado hoy: 212.
