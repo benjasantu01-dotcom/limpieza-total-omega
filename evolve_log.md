@@ -458,3 +458,11 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T06:54:38` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-28T06:54:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T06:54:38` Corrida terminada. Total usado hoy: 164.
+- `2026-10-28T07:03:14` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-28T07:03:45` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del cálculo de `_compute_cached` añadiendo una validación explícita de `SystemMetrics` y un manejo de errores más específico mediante la captura de excepciones durante la iteración del pipeline, evitando que un fallo en una única regla o métrica invalide el informe completo.
+- `2026-10-28T07:04:45` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-28T07:05:50` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T07:06:24` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del módulo `memory.py` mediante la validación explícita de `h_process` y `WindowsAPI` antes de realizar llamadas críticas a la API de Windows, evitando errores de segmentación o comportamiento indefinido si los manejadores o librerías son nulos.
+- `2026-10-28T07:06:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-28T07:06:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T07:06:36` Corrida terminada. Total usado hoy: 168.

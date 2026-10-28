@@ -438,27 +438,24 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid): 
         return False, "Operación no permitida en procesos del sistema."
     
-    try:
-        h_process = _is_process_accessible(target_pid, TRIM_ACCESS_MASK)
-        if not h_process:
-            return False, "Acceso denegado o proceso no encontrado."
+    h_process = _is_process_accessible(target_pid, TRIM_ACCESS_MASK)
+    if h_process is None:
+        return False, "Acceso denegado o proceso no encontrado."
 
-        try:
-            exit_code = wintypes.DWORD()
-            if WindowsAPI.kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0:
-                return False, "No se pudo verificar el estado del proceso."
-                
-            if exit_code.value != STILL_ACTIVE_EXIT_CODE:
-                return False, "El proceso no está activo."
+    try:
+        exit_code = wintypes.DWORD()
+        if WindowsAPI.kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0:
+            return False, "No se pudo verificar el estado del proceso."
             
-            # Validación estricta usando is_protected_path:
-            if not _is_process_executable_safe(h_process):
-                return False, "Proceso protegido o ubicado en zona restringida."
-                
-            if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(h_process) == 0:
-                return False, "El sistema operativo rechazó la operación de limpieza."
-            return True, f"Working set liberado. {TRIM_WARNING}"
-        finally:
+        if exit_code.value != STILL_ACTIVE_EXIT_CODE:
+            return False, "El proceso no está activo."
+        
+        if not _is_process_executable_safe(h_process):
+            return False, "Proceso protegido o ubicado en zona restringida."
+            
+        if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(h_process) == 0:
+            return False, "El sistema operativo rechazó la operación de limpieza."
+        return True, f"Working set liberado. {TRIM_WARNING}"
+    finally:
+        if WindowsAPI.kernel32:
             WindowsAPI.kernel32.CloseHandle(h_process)
-    except (ctypes.WinError, OSError, Exception):
-        return False, "Error inesperado al intentar interactuar con el proceso."

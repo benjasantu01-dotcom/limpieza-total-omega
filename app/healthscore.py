@@ -360,6 +360,10 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
     """
     Motor central que orquestra el cálculo de métricas a través del pipeline.
     """
+    # Validar integridad inicial antes de crear la instancia
+    if len(metric_values) != len(SystemMetrics._FIELDS_TO_VALIDATE) - 1:
+        return HealthResult(0, "F", {}, ["Error: Métrica incompleta."])
+        
     metrics = SystemMetrics(*metric_values, quarantined)
     
     recommendations: List[str] = []
@@ -375,7 +379,8 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
             val_int = int(_clamp(round(points), 0.0, float(entry.weight)))
             metric_breakdown[entry.area] = val_int
             total_points += float(val_int)
-        except Exception:
+        except Exception as e:
+            logging.warning(f"Error procesando área {entry.area}: {e}")
             continue
             
     if quarantined > 0:
@@ -405,7 +410,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if not all(isinstance(v, (int, float)) and math.isfinite(float(v)) for v in raw_vals):
             return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos."])
         return _compute_cached(tuple(raw_vals), int(metrics.quarantined_count))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, AttributeError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 
 @lru_cache(maxsize=128)
