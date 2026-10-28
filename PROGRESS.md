@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 67
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 236
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 37 | 3 | 11 | 4 | 47 |
+| 2026-10-26 | 35 | 3 | 10 | 4 | 46 |
 | 2026-10-27 | 125 | 8 | 51 | 9 | 157 |
-| 2026-10-28 | 11 | 3 | 5 | 1 | 32 |
+| 2026-10-28 | 13 | 3 | 5 | 1 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **38**
 - seguridad defensiva: **35**
-- manejo de errores y validación de entradas: **30**
+- manejo de errores y validación de entradas: **32**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `memory.py`: **17**
-- `healthscore.py`: **16**
+- `assistant.py`: **17**
 - `settings.py`: **16**
-- `assistant.py`: **16**
+- `memory.py`: **16**
 - `diskreport.py`: **15**
+- `healthscore.py`: **15**
 - `organizer.py`: **14**
 - `browser.py`: **14**
 - `safety.py`: **12**
 - `scanner.py`: **12**
-- `branding.py`: **10**
+- `branding.py`: **11**
 - `startup.py`: **6**
 - `duplicates.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T02:20:58` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez y legibilidad de las funciones `_hex_to_rgb` y `_rgb_to_hex` reemplazando los bloqueos genéricos por validaciones tempranas de parámetros, evitando errores de cálculo silenciosos y garantizando que los colores sean siempre válidos (formato #RRGGBB).
+- `2026-10-28T02:20:29` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para evitar que el asistente procese estructuras maliciosas o desbordamientos de memoria mediante una validación estricta de profundidad y tipos en la ingesta, asegurando que los datos siempre sean planos y simples antes de ser utilizados.
 - `2026-10-28T00:57:56` **settings.py** (seguridad defensiva): Se endureció la validación en `_read_and_parse_json` y `_is_file_secure_to_read` para prevenir ataques de denegación de servicio por agotamiento de recursos (JSONs maliciosos demasiado grandes o complejos) y se añadió una verificación de integridad de tamaño para evitar la carga de archivos corruptos o malintencionados.
 - `2026-10-28T00:57:28` **scanner.py** (seguridad defensiva): Se ha endurecido el método `_is_safe_entry` en la clase `Scanner` para garantizar que la ruta absoluta normalizada no solo sea un subdirectorio del raíz, sino que se verifique estrictamente antes de cualquier procesamiento, previniendo riesgos de manipulación de rutas externas mediante el uso de `os.path.realpath` constante.
 - `2026-10-28T00:47:02` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita contra ataques de "link traversal" o "symlink race" mediante `resolve()` estricto, asegurando que la ruta destino no se resuelva fuera de los directorios permitidos, y reforzando la exclusión de puntos de reparse antes de cualquier operación de E/S.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T00:07:04` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo explícito en `_is_process_accessible` para evitar la propagación de errores en el manejo de handles cuando las APIs de sistema fallan debido a restricciones de privilegios de usuario, asegurando que la iteración de procesos sea resiliente a denegaciones de acceso comunes en procesos del sistema.
 - `2026-10-27T15:56:48` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra `None` y tipos inesperados en los accesos a `PipelineEntry` y el procesamiento de `recommendations`, protegiendo la ejecución ante datos de entrada mal formados o parcialmente inicializados que podrían causar excepciones no controladas en el pipeline.
 - `2026-10-27T15:49:40` **diskreport.py** (robustez ante casos límite): Se introdujo una mejor gestión de errores en `walk_files` y `drive_usage` para manejar específicamente casos de unidades extraíbles sin medio presente o permisos denegados, evitando fallos silenciosos mediante la verificación de `os.access` y capturas de excepciones más específicas.
-- `2026-10-27T15:48:05` **browser.py** (robustez ante casos límite): Se introdujo una validación de profundidad y redundancia de caché en `_sum_directory_recursive` mediante el uso de `real_path` normalizado, protegiendo contra el acceso a rutas con bucles simbólicos y validando que las subcarpetas no escapen del `sandbox_base_norm` durante el recorrido.
-- `2026-10-27T15:39:21` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas repetidas de `stat()` por un acceso único consolidado, reduciendo las llamadas al sistema operativo (syscalls) al verificar la integridad de la caché en memoria.

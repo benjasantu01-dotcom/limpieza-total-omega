@@ -84,7 +84,7 @@ _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200
 _MAX_PROMPT_LIMIT: Final[int] = 4000
-_MAX_NESTING_DEPTH: Final[int] = 2
+_MAX_NESTING_DEPTH: Final[int] = 1
 _MAX_COLLECTION_SIZE: Final[int] = 20
 _MAX_GRADE_LEN: Final[int] = 10
 
@@ -333,19 +333,19 @@ def _validate_response_length(text: Any) -> str:
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
-    """Verifica de forma recursiva que la estructura de datos sea segura y contenga solo tipos permitidos."""
+    """Verifica de forma recursiva que la estructura de datos sea plana y contenga tipos permitidos."""
     if depth > _MAX_NESTING_DEPTH: return False
-    if val is None or isinstance(val, (int, float, bool, str)): return True
+    if isinstance(val, (int, float, bool, str)) or val is None: return True
     if isinstance(val, (list, tuple, set)):
         if len(val) > _MAX_COLLECTION_SIZE: return False
-        return all(isinstance(item, (int, float, bool, str, dict, list, tuple)) and _is_safe_payload_structure(item, depth + 1) for item in val)
+        return all(isinstance(item, (int, float, bool, str)) for item in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return False
-        return all(isinstance(k, str) and isinstance(v, (int, float, bool, str, dict, list, tuple)) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
+        return all(isinstance(k, str) and isinstance(v, (int, float, bool, str)) for k, v in val.items())
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
-    """Realiza un escaneo profundo para detectar estructuras anidadas o tipos inválidos."""
+    """Realiza un escaneo de seguridad para detectar estructuras anidadas o tipos inválidos."""
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
     if isinstance(val, (list, tuple, set)):
@@ -470,7 +470,7 @@ class SystemContext:
 
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
-        if source is None or callable(source) or not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)): 
+        if source is None or callable(source) or not isinstance(source, (dict, object)): 
             return False
         return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list)) else True
 
