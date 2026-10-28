@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **169** (33.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 60
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 72 | 5 | 25 | 6 | 108 |
-| 2026-10-28 | 98 | 9 | 35 | 11 | 135 |
+| 2026-10-27 | 69 | 5 | 25 | 6 | 107 |
+| 2026-10-28 | 100 | 9 | 37 | 11 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **43**
 - seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **36**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **30**
 - rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
-- `quarantine.py`: **18**
-- `browser.py`: **17**
+- `quarantine.py`: **19**
 - `healthscore.py`: **17**
+- `diskreport.py`: **17**
 - `memory.py`: **16**
 - `settings.py`: **16**
-- `safety.py`: **14**
-- `assistant.py`: **13**
+- `browser.py`: **16**
+- `safety.py`: **15**
 - `scanner.py`: **13**
+- `assistant.py`: **12**
 - `organizer.py`: **11**
 - `branding.py`: **9**
 - `startup.py`: **6**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T12:21:56` **safety.py** (legibilidad y documentación): Se refactorizó la lógica de validación del sistema de archivos en `ensure_safe_to_modify` para separar explícitamente las fases de validación (estructural, de red, permisos y de integridad) mediante una estructura más legible, mejorando la mantenibilidad y documentación interna de las precondiciones.
+- `2026-10-28T12:20:42` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y sus validaciones asociadas, separando claramente la lógica de pre-condiciones de la acción destructiva y eliminando redundancias en el manejo de errores.
 - `2026-10-28T12:12:05` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo principios de limpieza y propósito), la inclusión de type hints precisos en funciones que los omitían y la clarificación de lógica en `_is_safe_for_disk_op` para hacer explícitos los pasos de validación, facilitando su mantenimiento y auditoría.
 - `2026-10-28T12:11:50` **memory.py** (legibilidad y documentación): Mejoré la legibilidad del código documentando los valores de las máscaras de acceso Win32 mediante comentarios claros que explican su propósito técnico, facilitando el mantenimiento y la comprensión de las interacciones con la API del sistema.
 - `2026-10-28T12:10:11` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros y retornos de las funciones críticas (`compute_score`, `_compute_cached`, `_evaluate_rules`), facilitando la comprensión del pipeline analítico sin alterar la lógica funcional.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T09:57:12` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de condiciones de carrera (TOCTOU) y validación de integridad al verificar que el archivo de configuración no sea un enlace simbólico, pertenezca al usuario actual y tenga permisos restringidos antes de procesarlo.
 - `2026-10-28T09:49:40` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` al verificar explícitamente que la ruta no contenga componentes prohibidos ni intente escapar de la raíz mediante el uso de `os.path.commonpath`, asegurando que `realpath` se evalúe contra la base de forma inequívoca.
 - `2026-10-28T09:49:29` **safety.py** (seguridad defensiva): Se ha implementado `_is_volume_shadow_copy` para detectar volúmenes de instantáneas (VSS) y bloquear cualquier modificación en ellos, reforzando la seguridad al evitar la manipulación de puntos de restauración del sistema, los cuales son críticos y a menudo presentan comportamientos de bloqueo de E/S impredecibles.
-- `2026-10-28T09:48:22` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `purge_all` implementando una validación estricta del sandbox mediante `is_within_directory` y forzando la resolución absoluta de rutas para prevenir cualquier manipulación de la jerarquía de directorios durante la iteración de borrado.
-- `2026-10-28T09:36:50` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo encapsulando la integridad de los datos de entrada en `_compute_cached` mediante una validación explícita del rango de las métricas (`SystemMetrics`), evitando que valores inyectados fuera de rango puedan causar comportamientos inesperados en el pipeline de cálculo.

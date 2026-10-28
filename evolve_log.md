@@ -889,3 +889,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-28T12:12:05` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo principios de limpieza y propósito), la inclusión de type hints precisos en funciones que los omitían y la clarificación de lógica en `_is_safe_for_disk_op` para hacer explícitos los pasos de validación, facilitando su mantenimiento y auditoría.
 - `2026-10-28T12:12:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T12:12:05` Corrida terminada. Total usado hoy: 288.
+- `2026-10-28T12:19:48` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-10-28T12:20:42` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y sus validaciones asociadas, separando claramente la lógica de pre-condiciones de la acción destructiva y eliminando redundancias en el manejo de errores.
+- `2026-10-28T12:21:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-28T12:21:56` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se refactorizó la lógica de validación del sistema de archivos en `ensure_safe_to_modify` para separar explícitamente las fases de validación (estructural, de red, permisos y de integridad) mediante una estructura más legible, mejorando la mantenibilidad y documentación interna de las precondiciones.
+- `2026-10-28T12:21:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T12:22:13` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-10-28T12:22:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T12:22:13` Corrida terminada. Total usado hoy: 292.
