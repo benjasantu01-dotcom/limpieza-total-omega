@@ -441,7 +441,8 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     path_long = _to_long_path(path_str)
     
     for attempt in range(3):
-        handle = kernel32.CreateFileW(path_long, 0, 0, None, 3, 0x00000080, None)
+        # Intenta abrir con acceso GENERIC_READ y modo de compartición 0 para detectar exclusividad
+        handle = kernel32.CreateFileW(path_long, 0x80000000, 0, None, 3, 0x00000080, None)
         if handle != -1:
             kernel32.CloseHandle(handle)
             return False
@@ -691,9 +692,9 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 
             if os.name == 'nt':
                 kernel32 = ctypes.windll.kernel32
-                # Modo de compartición estricto para integridad
+                # Intenta abrir con acceso de solo lectura y modo de compartición para detectar bloqueos
                 handle = kernel32.CreateFileW(
-                    _to_long_path(str(path)), 0, 0x01, None, 3, 0x00000080, None
+                    _to_long_path(str(path)), 0x80000000, 0x01, None, 3, 0x00000080, None
                 )
                 if handle == -1:
                     err = kernel32.GetLastError()

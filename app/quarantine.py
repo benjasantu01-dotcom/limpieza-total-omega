@@ -255,7 +255,7 @@ class QuarantineItem:
 
     def _validate_integrity(self, stored_path: Path, st: Optional[os.stat_result] = None) -> bool:
         """Verifica metadatos del archivo para detectar alteraciones físicas."""
-        if stored_path is None: return False
+        if stored_path is None or not stored_path.exists(): return False
         try:
             _check_for_reparse_points(stored_path)
             file_stat = st if st is not None else stored_path.stat()
@@ -275,7 +275,7 @@ class QuarantineItem:
 
     def verify_integrity(self, stored_path: Path) -> bool:
         """Verificación profunda de integridad (metadatos + hash SHA256)."""
-        if stored_path is None: return False
+        if stored_path is None or not stored_path.exists(): return False
         try:
             st = stored_path.stat()
             if not self._validate_integrity(stored_path, st):
@@ -288,7 +288,7 @@ class QuarantineItem:
 
 def _get_sha256(path: Path) -> str:
     """Calcula el hash SHA256 con buffering eficiente para archivos grandes."""
-    if path is None: return ""
+    if path is None or not path.exists(): return ""
     try:
         st = path.stat()
         cache_key = (str(path), st.st_mtime, st.st_size)
@@ -307,7 +307,7 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_in_use_by_system(path: Path) -> bool:
     """Comprueba si el archivo está siendo utilizado por procesos del sistema."""
-    if path is None:
+    if path is None or not path.exists():
         return False
     
     try:
@@ -323,7 +323,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> None:
     """Valida que un archivo sea apto para eliminación antes de proceder."""
-    if path is None: raise UnsafePathError("Ruta nula para unlink.")
+    if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     ensure_safe_to_modify(path)
     _check_for_reparse_points(path)
     if is_protected_path(path) or ":" in path.name:
@@ -343,7 +343,7 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
     """Realiza una eliminación controlada con sincronización al sistema de archivos."""
-    if path is None:
+    if path is None or not path.exists():
         return False
         
     try:
@@ -421,7 +421,7 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
 
 def _ensure_path_ownership(path: Path) -> None:
     """Verifica la titularidad de los archivos del sandbox según el usuario actual."""
-    if path is None: raise UnsafePathError("Ruta nula en ownership.")
+    if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente en ownership.")
     if hasattr(os, 'getuid'):
         try:
             if path.stat().st_uid != os.getuid():
@@ -895,7 +895,7 @@ def _register_quarantine_item(
 
 def _validate_source_for_quarantine(source: Path) -> Path:
     """Validación de integridad inicial del origen antes de procesar."""
-    if source is None: raise UnsafePathError("Ruta origen nula.")
+    if source is None or not source.exists(): raise UnsafePathError("Ruta origen nula o inexistente.")
     _check_for_reparse_points(source)
     if source.is_dir():
         raise UnsafePathError("Aislamiento de directorios no permitido.")
@@ -1103,9 +1103,9 @@ def _is_item_purgable(file_path: Optional[Path], item: Optional[QuarantineItem] 
     Returns:
         bool: True si el archivo puede ser borrado de forma segura.
     """
-    if file_path is None: return False
+    if file_path is None or not file_path.exists(): return False
     try:
-        if not (file_path.exists() and file_path.is_file()):
+        if not file_path.is_file():
             return False
         _check_for_reparse_points(file_path)
         if _is_file_in_use_by_system(file_path):
@@ -1161,9 +1161,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     """Calcula el espacio total ocupado (en bytes) en el sandbox."""
-    base_path = quarantine_dir(base)
-    items = load_manifest(base_path)
-    return sum(item.size_bytes for item in items if item is not None)
+    try:
+        base_path = quarantine_dir(base)
+        items = load_manifest(base_path)
+        return sum(item.size_bytes for item in items if item is not None)
+    except (OSError, UnsafePathError):
+        return 0
 
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:
