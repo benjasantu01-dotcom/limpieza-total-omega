@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **166** (32.9% de aceptación)
+- Mejoras aceptadas: **167** (33.1% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 243
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 74 | 5 | 29 | 7 | 109 |
-| 2026-10-28 | 92 | 9 | 34 | 11 | 134 |
+| 2026-10-27 | 72 | 5 | 28 | 7 | 108 |
+| 2026-10-28 | 95 | 9 | 34 | 11 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **38**
+- legibilidad y documentación: **38**
 - manejo de errores y validación de entradas: **36**
-- legibilidad y documentación: **35**
 - robustez ante casos límite: **33**
-- rendimiento: **24**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `diskreport.py`: **17**
-- `memory.py`: **16**
-- `browser.py`: **16**
+- `diskreport.py`: **18**
+- `quarantine.py`: **18**
+- `browser.py`: **17**
 - `settings.py`: **16**
 - `healthscore.py`: **16**
+- `memory.py`: **15**
 - `safety.py`: **14**
 - `assistant.py`: **13**
 - `scanner.py`: **13**
 - `organizer.py`: **10**
 - `branding.py`: **9**
 - `startup.py`: **6**
-- `duplicates.py`: **1**
+- `duplicates.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T12:01:04` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones clave y la adición de tipos de retorno explícitos, facilitando la comprensión de las heurísticas de filtrado y el flujo del pipeline de hash.
+- `2026-10-28T12:00:53` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings precisos en las clases `ExtStats`, `GlobalStats` y `FolderMetrics`, y se han clarificado las intenciones en las funciones internas de recolección de métricas, facilitando el mantenimiento y la comprensión de las estructuras de datos.
+- `2026-10-28T12:00:25` **browser.py** (legibilidad y documentación): Documenté con precisión técnica el flujo de trabajo de `DirectoryScanner` y `_resolve_browser_path` mediante docstrings detallados, aclarando por qué se aplican restricciones de seguridad (symlinks/junctions/sandbox) para asegurar que otros colaboradores entiendan el diseño de la protección contra navegación fuera de `LOCALAPPDATA`.
 - `2026-10-28T11:41:13` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_file_id` para capturar errores de ejecución de la API de Windows mediante un bloque `try-except` más específico y la verificación del handle, evitando que errores de permisos en llamadas de bajo nivel se propaguen silenciosamente como estados inválidos, mejorando la precisión en la detección de violaciones TOCTOU.
 - `2026-10-28T11:40:16` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y la carga de manifiestos mediante una gestión de excepciones más granular y la eliminación de posibles estados inconsistentes al validar archivos que no figuran en el manifiesto, asegurando que el proceso no se interrumpa ante errores de E/S aislados.
 - `2026-10-28T11:29:50` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.__post_init__` y `validate` eliminando la llamada redundante y potencialmente peligrosa a `setattr` con nombres dinámicos sin una verificación estricta de existencia, asegurando que cualquier valor inválido se reemplace por un valor seguro predeterminado antes de la validación.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T09:27:29` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` incorporando una verificación explícita mediante `is_protected_path` sobre la ruta completa (`entry.path`) antes de realizar cualquier operación de estat o recursión, garantizando que el escaneo no pueda desviarse a rutas sensibles incluso si la lógica de entrada falla.
 - `2026-10-28T09:27:02` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `browser.py` implementando una validación estricta de puntos de reparse (junctions/symlinks) en `_resolve_browser_path` y asegurando que las rutas base no solo se resuelvan sino que mantengan integridad de pertenencia al `LOCALAPPDATA` antes de cualquier operación.
 - `2026-10-28T09:17:45` **assistant.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `build_context` añadiendo una validación explícita para asegurar que los datos procesados no sean instancias de clases complejas o tipos prohibidos, reforzando el aislamiento del motor de IA frente a inyecciones de objetos o lógica inesperada.
-- `2026-10-28T09:07:41` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked_by_other_process` y `_get_path_stat_robust` incorporando un manejo explícito del error `ERROR_SHARING_VIOLATION` (código 32) de Windows mediante un bucle de reintento con backoff exponencial, garantizando mayor resiliencia ante bloqueos transitorios por procesos de indexación o antivirus sin comprometer la integridad de las verificaciones.
-- `2026-10-28T09:06:48` **quarantine.py** (robustez ante casos límite): Se mejora la robustez frente a casos límite en el `IsolationManager` y el aislamiento atómico, añadiendo validaciones de existencia y coherencia de estado para prevenir errores en situaciones de alta concurrencia o cambios abruptos en el sistema de archivos (TOCTOU).
-- `2026-10-28T08:56:43` **healthscore.py** (robustez ante casos límite): Se ha robustecido el manejo de `SystemMetrics` mediante la implementación de una validación de `__init__` más estricta que previene la creación de instancias con tipos incompatibles y se ha mejorado el `PipelineEntry` para incluir una verificación de `None` en la ejecución del `scorer`, evitando fallos en tiempo de ejecución ante métricas parciales o no inicializadas.

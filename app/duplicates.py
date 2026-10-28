@@ -111,8 +111,9 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo. 
-    Usa un diccionario de caché local para evitar lecturas de disco redundantes.
-    Retorna None si el acceso es denegado o la ruta no cumple las reglas de seguridad.
+    Usa un caché local (_full_hash_cache) para evitar lecturas de disco innecesarias 
+    cuando el mismo archivo es procesado múltiples veces en una misma sesión.
+    Retorna None si el acceso es denegado o falla la lectura.
     """
     if not _safe_path_check(path): 
         return None
@@ -131,8 +132,9 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Genera un fingerprint rápido leyendo solo el encabezado (64KB).
-    Es la primera barrera de filtrado para diferenciar archivos grandes con contenido distinto.
+    Genera un fingerprint rápido leyendo solo el encabezado especificado.
+    Se utiliza como optimización previa al hash completo para descartar rápidamente
+    archivos que difieren en sus primeros bytes.
     """
     if not _safe_path_check(path): 
         return None
@@ -149,8 +151,8 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """
-    Agrupa una lista de rutas según su tamaño. Sirve como etapa de pre-filtrado 
-    para asegurar que solo procesemos archivos que tengan al menos un posible 'gemelo'.
+    Clasifica rutas por tamaño de archivo. Esta agrupación es el primer paso 
+    del pipeline, permitiendo ignorar archivos únicos que no pueden ser duplicados.
     """
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_size
@@ -167,9 +169,9 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido BFS de los directorios indicados.
-    Utiliza `visited` (inode tracking) para ignorar enlaces físicos que apuntan al mismo 
-    dato, evitando contar el mismo archivo como duplicado de sí mismo en rutas distintas.
+    Realiza un recorrido BFS de los directorios indicados para recolectar candidatos.
+    Utiliza tracking de inodos (dev, ino) para evitar procesar enlaces físicos (hardlinks) 
+    redundantes que apuntan a la misma ubicación física.
     """
     raw_map: Dict[int, List[Path]] = defaultdict(list)
     size_counts: Dict[int, int] = defaultdict(int)
@@ -209,7 +211,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa rutas que comparten un hash común generado por `hash_func`."""
+    """Aplica una función de hash a una lista de rutas y agrupa aquellas con colisiones."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (d := hash_func(path)): groups[d].append(path)
@@ -218,8 +220,9 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
-    Algoritmo de refinamiento: reduce el conjunto de candidatos mediante
-    hash parcial y, solo cuando hay coincidencias, escala a hash completo.
+    Pipeline de refinamiento para archivos grandes: aplica primero un hash parcial
+    para reducir el conjunto de trabajo, y luego un hash completo para confirmar
+    la igualdad absoluta de los datos.
     """
     if not paths: return {}
     partial_groups = _group_paths_by_hash(paths, partial_hash)
@@ -231,8 +234,9 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Selecciona la estrategia de hashing: archivos menores al umbral de lectura parcial
-    van directo a hash completo; archivos grandes inician por hash parcial.
+    Selecciona la estrategia de hashing basada en el tamaño del archivo:
+    los archivos muy pequeños se procesan directamente con hash completo para evitar
+    overhead de lectura parcial.
     """
     if not paths: return []
     results = _group_paths_by_hash(paths, hash_file) if size <= PARTIAL_READ_BYTES else _process_large_file_subset(paths)
@@ -240,7 +244,11 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Flujo principal: orquesta la detección jerárquica y el cálculo de hashes."""
+    """
+    Punto de entrada principal: orquesta la detección jerárquica de archivos,
+    agrupación por tamaño y refinamiento por hash. Retorna una lista de 
+    `DuplicateGroup` ordenados por espacio desperdiciado descendente.
+    """
     if not directories: return []
     _partial_cache.clear()
     _full_hash_cache.clear()
@@ -251,12 +259,12 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
-    """Suma total de espacio que se recuperaría si se eliminan los duplicados."""
+    """Calcula la suma total de bytes recuperables si se eliminan los duplicados."""
     return sum(g.wasted_bytes for g in groups) if groups else 0
 
 
 def _get_mtime(path: Path) -> float:
-    """Obtiene el tiempo de última modificación del archivo de forma segura."""
+    """Obtiene el tiempo de última modificación del archivo para heurísticas de selección."""
     if not isinstance(path, Path): return float('inf')
     with suppress(OSError, PermissionError, FileNotFoundError):
         return path.stat().st_mtime
@@ -265,9 +273,8 @@ def _get_mtime(path: Path) -> float:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
-    Selecciona el 'original' (el más antiguo).
-    La heurística de antigüedad minimiza el impacto ante posibles cambios
-    en metadatos de archivos sincronizados o respaldados.
+    Heurística de selección: sugiere el archivo original basándose en la fecha 
+    de modificación más antigua, favoreciendo la estabilidad histórica del archivo.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths: 
         return None
@@ -282,7 +289,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Convierte un objeto `DuplicateGroup` en una lista de líneas legibles para UI."""
+    """Convierte un grupo de duplicados en líneas de texto formateadas para su visualización."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return []
     

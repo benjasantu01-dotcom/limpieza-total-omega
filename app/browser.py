@@ -53,6 +53,8 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 class ScanContext:
     """
     Estado inmutable compartido durante el recorrido del árbol de directorios.
+    Contiene la base de confianza para evitar escapes de directorio y
+    memoria de archivos visitados para evitar ciclos en enlaces simbólicos.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -68,6 +70,12 @@ class DirectoryScanner:
         self.ctx = context
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
+        """
+        Recorre el sistema de archivos de forma recursiva y segura.
+        Valida que cada subdirectorio pertenezca a la sandbox base,
+        salta puntos de reparse (junctions) para evitar recursión infinita
+        o lecturas fuera del perfil de usuario, y mide solo archivos no ocultos.
+        """
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
         
@@ -234,6 +242,12 @@ def _is_valid_cache_path(candidate: Path, base_norm: str, kernel: Optional[ctype
     return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
 
 def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
+    """
+    Construye y valida una ruta absoluta de caché.
+    Asegura que la ruta resuelta permanezca dentro del directorio base
+    (evitando ataques de path traversal) y que no sea un enlace simbólico
+    o punto de reparse que apunte fuera del sandbox.
+    """
     if not _is_valid_rel_path(rel_str): return Path()
     try:
         target = base_resolved.joinpath(*rel_str.split("\\"))

@@ -84,8 +84,11 @@ def _is_reparse_point(path: Path) -> bool:
 
 class ExtStats:
     """
-    Estructura acumuladora para métricas agregadas por tipo de extensión.
-    Gestiona el peso total y el contador de archivos para una extensión específica.
+    Métrica agregada para una extensión específica.
+    
+    Attributes:
+        total_bytes: Sumatoria de pesos en bytes de todos los archivos con esta extensión.
+        count: Cantidad total de archivos procesados de este tipo.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -94,7 +97,7 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Suma el tamaño de un archivo y aumenta el contador de la extensión."""
+        """Suma el peso de un nuevo archivo y actualiza el contador de frecuencia."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -102,9 +105,12 @@ class ExtStats:
 
 class GlobalStats:
     """
-    Contenedor principal para consolidar métricas durante un escaneo completo.
-    Mantiene el estado global de bytes procesados, archivos totales y el 
-    mapeo de estadísticas por extensión.
+    Acumulador global para el estado del escaneo.
+    
+    Attributes:
+        total_bytes: Sumatoria de todos los archivos escaneados.
+        total_files: Cantidad total de archivos procesados.
+        ext_stats: Diccionario que mapea extensiones a objetos ExtStats.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -112,7 +118,7 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, ext: str) -> None:
-        """Registra un archivo procesado y actualiza el contador global."""
+        """Registra métricas de un archivo individual en los totales globales."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1
@@ -121,8 +127,11 @@ class GlobalStats:
 
 class FolderMetrics:
     """
-    Acumulador temporal para el cálculo de peso total por directorio padre.
-    Utilizado en la lógica de 'largest_folders' para agrupar archivos.
+    Acumulador para el peso de una carpeta padre.
+    
+    Attributes:
+        size: Peso total en bytes de los archivos contenidos.
+        file_count: Cantidad total de archivos en este directorio.
     """
     __slots__ = ('size', 'file_count')
     
@@ -138,9 +147,7 @@ class FolderMetrics:
 
 class SummaryData(NamedTuple):
     """
-    Estructura de resultados consolidados al finalizar una iteración de escaneo.
-    Contiene las métricas globales, estadísticas por extensión y los archivos
-    identificados como el top N de mayor tamaño.
+    Estructura inmutable con los resultados consolidados de un escaneo completo.
     """
     total_bytes: int
     total_files: int
@@ -150,13 +157,7 @@ class SummaryData(NamedTuple):
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
     """
-    Convierte bytes a Megabytes.
-    
-    Args:
-        size_bytes: Tamaño en bytes, entero o flotante.
-    
-    Returns:
-        Valor en MB redondeado a 2 decimales, o 0.0 si la entrada es inválida.
+    Convierte bytes a Megabytes con precisión de 2 decimales.
     """
     if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
         return 0.0
