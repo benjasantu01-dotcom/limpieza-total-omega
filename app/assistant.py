@@ -659,7 +659,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     q_sanitized: str = _sanitize_query(question)
     if not q_sanitized: return Answer("Entrada no válida.")
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if token in _TOKENS_MAP: return _TOKENS_MAP[token](context, question)
+        # Validación defensiva extra: procesar tokens solo si pasan el filtro de texto seguro
+        if _ensure_safe_text(token) and token in _TOKENS_MAP: 
+            return _TOKENS_MAP[token](context, question)
     return Answer(_format_problem_message(context.active_problems, context.score if context.score is not None else "N/A"), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: str | Path | None = None) -> bool:

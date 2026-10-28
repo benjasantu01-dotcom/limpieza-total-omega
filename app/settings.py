@@ -233,12 +233,17 @@ class _Validators:
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
-            if p.exists():
-                resolved = os.path.realpath(p)
-                path_obj = Path(resolved)
-                for parent in path_obj.parents:
-                    if _Validators._is_reparse_point(str(parent)): return False
-                return not is_protected_path(resolved) and is_safe_to_modify(resolved)
+            
+            # Limitar profundidad de resolución para evitar ataques por enlaces circulares
+            current = p.resolve()
+            depth = 0
+            for parent in current.parents:
+                depth += 1
+                if depth > 128: return False
+                if _Validators._is_reparse_point(str(parent)): return False
+            
+            if current.exists():
+                return not is_protected_path(str(current)) and is_safe_to_modify(str(current))
             return not is_protected_path(str(p)) and is_safe_to_modify(str(p))
         except (OSError, PermissionError, RuntimeError, IndexError):
             return False

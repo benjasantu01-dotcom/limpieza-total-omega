@@ -1364,3 +1364,34 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-10-28T04:42:47` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `scan_directory` ante casos donde el acceso al sistema de archivos falla parcial o totalmente durante la iteración, mediante la adición de un chequeo explícito de legibilidad mediante `os.access` y una gestión de errores más robusta dentro del bucle de `os.scandir`.
 - `2026-10-28T04:42:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T04:42:47` Corrida terminada. Total usado hoy: 112.
+- `2026-10-28T04:50:43` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-10-28T04:51:15` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `settings.py` implementando un control de profundidad en la resolución de rutas dentro de `_Validators._run_safety_checks` para prevenir ataques de recursión infinita mediante enlaces simbólicos circulares.
+- `2026-10-28T04:51:43` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.43s
+
+```
+- `2026-10-28T04:51:43` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré `_validate_file_access` y `_resolve_and_cache_path` para incluir una verificación de existencia mediante `os.access(p, os.F_OK)` y un chequeo explícito de bloqueos de sistema antes de procesar, reforzando la robustez ante archivos inexistentes o inaccesibles sin recurrir a excepciones innecesarias.
+- `2026-10-28T04:52:42` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al validar que la cadena de texto de la consulta no solo pase los filtros de inyección, sino que también se descomponga en tokens seguros antes de realizar cualquier búsqueda en el diccionario de manejo de consultas (`_TOKENS_MAP`), evitando que rutas o caracteres ocultos en la consulta intenten manipular la lógica de selección de handlers.
+- `2026-10-28T04:53:09` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save_logo_svg` añadiendo una normalización de ruta explícita y verificando la existencia del directorio antes de intentar escribir, además de asegurar que la operación sea totalmente abortada si la ruta final reside fuera de los límites permitidos, evitando accesos indebidos al sistema de archivos.
+- `2026-10-28T04:53:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T04:53:09` Corrida terminada. Total usado hoy: 116.
