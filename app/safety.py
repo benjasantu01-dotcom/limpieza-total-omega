@@ -1126,7 +1126,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             raise UnsafePathError(f"Directorio base inválido: {e}", SafetyValidationErrorCode.IO_ERROR)
     
     # 2. Análisis estructural y de red
-    if os.name == 'nt' and _is_system_directory_junction(str(p)):
+    if os.name == 'nt':
          _validate_ntfs_reparse_redirection(p, base)
     _validate_path_components(p)
     _validate_structural_safety(p, str(p))

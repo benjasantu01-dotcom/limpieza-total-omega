@@ -266,7 +266,7 @@ class Scanner:
         if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
         norm_path = os.path.normcase(entry.path)
-        if norm_path not in visited_dirs:
+        if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
             visited_dirs.add(norm_path)
             directory_stack.append((entry.path, current_depth + 1))
 
@@ -328,10 +328,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None: return []
     try:
         base_path = Path(directory)
-        if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink():
+        if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK):
             return []
         resolved_path = base_path.resolve(strict=True)
-        if _cached_is_protected(str(resolved_path)) or not os.access(resolved_path, os.R_OK):
+        if _cached_is_protected(str(resolved_path)):
             return []
         scanner: Scanner = Scanner(base_root=resolved_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
@@ -346,7 +346,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     if entry: scanner.process_entry(entry, directory_stack, depth, visited_dirs)
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError):
             continue
     return scanner.results
 

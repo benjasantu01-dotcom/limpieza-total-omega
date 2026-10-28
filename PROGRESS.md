@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 67
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 241
+- Rechazadas por guardia de seguridad: 68
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 7 | 0 | 2 | 1 | 36 |
+| 2026-10-26 | 7 | 0 | 2 | 1 | 32 |
 | 2026-10-27 | 125 | 8 | 51 | 9 | 157 |
-| 2026-10-28 | 38 | 5 | 14 | 3 | 48 |
+| 2026-10-28 | 40 | 5 | 15 | 4 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **28**
 - rendimiento: **23**
 
@@ -37,15 +37,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **16**
 - `assistant.py`: **16**
 - `settings.py`: **14**
+- `scanner.py`: **13**
 - `organizer.py`: **12**
-- `scanner.py`: **12**
-- `safety.py`: **11**
+- `safety.py`: **12**
 - `branding.py`: **8**
 - `startup.py`: **7**
 - `duplicates.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T04:42:47` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `scan_directory` ante casos donde el acceso al sistema de archivos falla parcial o totalmente durante la iteración, mediante la adición de un chequeo explícito de legibilidad mediante `os.access` y una gestión de errores más robusta dentro del bucle de `os.scandir`.
+- `2026-10-28T04:42:34` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `ensure_safe_to_modify` para detectar si el archivo es un punto de reparse (junction point) antes de cualquier operación, protegiendo contra posibles desbordamientos de la lógica de "jail" mediante enlaces simbólicos o de unión que apunten fuera del directorio base permitido.
 - `2026-10-28T04:30:58` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante entradas extremas en `SystemMetrics` mediante la implementación de una validación de `NaN` y límites estrictos antes de acceder al `lru_cache`, evitando así que valores no finitos o desbordamientos corrompan el resumen de salud.
 - `2026-10-28T04:21:41` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante rutas extremadamente largas o inválidas (que pueden ocurrir en sistemas de archivos complejos) añadiendo un manejo explícito de `OSError` y `ValueError` al realizar `path.relative_to` o al procesar entradas que cambian de estado durante la iteración (`FileNotFoundError`), asegurando que el análisis no se detenga por fallos aislados en el acceso al sistema de archivos.
 - `2026-10-28T04:01:08` **quarantine.py** (rendimiento): Se ha optimizado `purge_all` para evitar el acceso al disco innecesario y reducir la complejidad algorítmica al pasar de una búsqueda lineal (O(N*M)) a una búsqueda en tiempo constante (O(N)) mediante el uso de conjuntos (`set`) para la validación de archivos, mejorando significativamente el rendimiento al limpiar grandes cantidades de ítems.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T03:20:35` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la implementación de `TypeHint` más precisos y la conversión de comentarios genéricos en docstrings estructurados conforme a los estándares de estilo de Google, facilitando la comprensión del flujo de datos en las operaciones de I/O.
 - `2026-10-28T03:19:49` **organizer.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la unificación de docstrings bajo el estilo Google/NumPy y la consolidación de la documentación interna, facilitando la comprensión de las restricciones de seguridad sin alterar la lógica de ejecución.
 - `2026-10-28T03:19:19` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de módulo y función que explican el "porqué" de las decisiones de seguridad y gestión de memoria, además de estandarizar la nomenclatura interna de las constantes de la API de Windows para una mayor claridad.
-- `2026-10-28T03:10:07` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo integrando docstrings descriptivos con secciones de "Args" y "Returns", y se han renombrado variables internas de `_compute_cached` y `summarize` para que sus nombres expliquen claramente su propósito (por ejemplo, `metrics_tuple` a `metric_values`), facilitando la mantenibilidad sin alterar la lógica funcional.
-- `2026-10-28T03:09:31` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en funciones críticas, aclarando el propósito y el flujo de los algoritmos de detección para facilitar futuras auditorías del código.
