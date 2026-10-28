@@ -966,3 +966,11 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-10-28T13:24:28` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-28T13:24:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T13:24:28` Corrida terminada. Total usado hoy: 316.
+- `2026-10-28T13:31:12` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-28T13:31:56` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-28T13:32:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-28T13:32:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T13:33:23` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado `quarantine.py` para prevenir condiciones de carrera (TOCTOU) durante el proceso de aislamiento, mediante la validación explícita de que el archivo no ha sido reemplazado por otro mientras se leía su estado (usando el descriptor de archivo abierto para `stat` y comparaciones de `st_ino`).
+- `2026-10-28T13:33:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-28T13:33:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T13:33:40` Corrida terminada. Total usado hoy: 320.
