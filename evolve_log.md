@@ -1122,3 +1122,4 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-10-28T14:55:22` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T14:55:22` Corrida terminada. Total usado hoy: 350.
 - `2026-10-28T15:03:22` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-28T15:13:32` Presupuesto diario agotado (350 usados). Corte hasta mañana.
