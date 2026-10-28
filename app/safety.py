@@ -252,6 +252,7 @@ class SafetyValidationErrorCode(IntEnum):
     CIRCULAR_REFERENCE = 35
     ADMIN_PRIVILEGE_VIOLATION = 36
     SHORT_NAME_SPOOFING = 37
+    VOLUME_SHADOW_COPY = 38
 
 class UnsafePathError(Exception):
     """Excepción base para violaciones de política de seguridad en el sistema de archivos."""
@@ -289,6 +290,7 @@ class ProtectionReason(Enum):
     VIRTUAL_DRIVE = auto()
     CIRCULAR_REF = auto()
     ADMIN_PRIVILEGE = auto()
+    SHADOW_COPY = auto()
 
 class ValidationContext(Enum):
     """Contexto de ejecución de la validación (Estructural o Integridad)."""
@@ -364,6 +366,12 @@ def _is_virtual_drive(path_str: str) -> bool:
     except (AttributeError, OSError, ctypes.ArgumentError):
         return False 
     return False
+
+def _is_volume_shadow_copy(path_str: str) -> bool:
+    """Detecta si la ruta pertenece a un Volumen de Instantánea (VSS) de Windows."""
+    if os.name != 'nt' or not path_str or not path_str.startswith("\\\\?\\"): return False
+    # Las instantáneas de volumen suelen tener una estructura de nombre específica en el namespace global
+    return "\\GLOBALROOT\\Device\\HarddiskVolumeShadowCopy" in path_str.upper()
 
 def _is_file_owned_by_system(path_str: str) -> bool:
     """Verifica si el archivo pertenece a SYSTEM o TrustedInstaller mediante sus SID."""
@@ -550,6 +558,8 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     
     try:
         path_s = str(target_path)
+        if _is_volume_shadow_copy(path_s):
+            raise UnsafePathError("Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY)
         if _is_volume_busy_or_invalid(path_s):
              raise UnsafePathError("Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR)
         drive_type = _get_drive_type(anchor)
@@ -609,6 +619,8 @@ def _check_type(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: re
 def _check_owner(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _is_file_owned_by_system(str(p))
 @lru_cache(maxsize=2048)
 def _check_virtual(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _is_virtual_drive(str(p))
+@lru_cache(maxsize=2048)
+def _check_shadow(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _is_volume_shadow_copy(str(p))
 
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.SYMLINK, _check_symlink),
@@ -631,6 +643,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.INVALID_TYPE, _check_type),
     _rule(ProtectionReason.SYSTEM_OWNER, _check_owner),
     _rule(ProtectionReason.VIRTUAL_DRIVE, _check_virtual),
+    _rule(ProtectionReason.SHADOW_COPY, _check_shadow),
 ]
 
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
@@ -652,6 +665,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.READ_ONLY: SafetyValidationErrorCode.WRITE_ACCESS_DENIED,
     ProtectionReason.SYSTEM_OWNER: SafetyValidationErrorCode.SYSTEM_OWNER_PROTECTION,
     ProtectionReason.VIRTUAL_DRIVE: SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED,
+    ProtectionReason.SHADOW_COPY: SafetyValidationErrorCode.VOLUME_SHADOW_COPY,
 }
 
 def _evaluate_security_rules(state: SafetyState) -> None:
@@ -776,6 +790,8 @@ def _validate_volume_integrity(path: Path) -> None:
     if os.name != 'nt': return
     try:
         path_s = str(path)
+        if _is_volume_shadow_copy(path_s):
+            raise UnsafePathError(f"Volumen de instantánea bloqueado: {path.anchor}", SafetyValidationErrorCode.VOLUME_SHADOW_COPY)
         if _is_volume_readonly(path_s) or _is_volume_compressed_or_encrypted(path_s) or \
            _is_virtual_drive(path_s) or _is_volume_busy_or_invalid(path_s):
             raise UnsafePathError(f"Volumen restringido/inaccesible: {path.anchor}", SafetyValidationErrorCode.VOLUME_RESTRICTED)
@@ -1206,7 +1222,8 @@ def describe_protection(path: PathLike) -> str:
                 "atributo oculto/sistema": sd.is_protected_system,
                 "contiene ADS": _has_alternate_data_stream(p.name),
                 "tamaño excesivo": p.is_file() and p.stat().st_size > MAX_FILE_SIZE,
-                "detectado como hard link": p.is_file() and p.stat().st_nlink > 1
+                "detectado como hard link": p.is_file() and p.stat().st_nlink > 1,
+                "volumen de instantánea (VSS)": _is_volume_shadow_copy(str(p))
             }
             for reason, is_active in diagnostics.items():
                 if is_active: return f"'{p}' es {reason}."

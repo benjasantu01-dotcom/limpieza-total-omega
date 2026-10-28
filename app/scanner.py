@@ -214,8 +214,8 @@ class Scanner:
         """Verifica que la ruta sea descendiente del directorio raíz escaneado."""
         try:
             abs_path = os.path.normcase(os.path.realpath(entry_path))
-            return abs_path.startswith(self.base_root_norm)
-        except (OSError, RuntimeError):
+            return os.path.commonpath([abs_path, self.base_root_norm]) == self.base_root_norm
+        except (OSError, RuntimeError, ValueError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
@@ -241,11 +241,9 @@ class Scanner:
             if entry.is_symlink() or self._is_reparse_point(entry): return False
             if _cached_is_protected(path_str): return False
             if not _is_valid_path_structure(path_str): return False
-            if not self._is_inside_base_root(path_str): return False
             
-            # Verificación final contra el root normalizado sin repetir normcase innecesario
-            real_path = os.path.realpath(path_str)
-            if not os.path.normcase(real_path).startswith(self.base_root_norm):
+            # Validación robusta de contención
+            if not self._is_inside_base_root(path_str):
                 return False
                 
             self.safe_cache.add(path_str)
@@ -258,8 +256,6 @@ class Scanner:
         if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
             return
         try:
-            # Optimizamos evitando normcase si no es estrictamente necesario, 
-            # pero aquí se requiere para la detección de ciclos.
             norm_path = os.path.normcase(entry.path)
             if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
                 visited_dirs.add(norm_path)
@@ -279,7 +275,6 @@ class Scanner:
         try:
             if entry.is_file():
                 if self._is_relevant_extension(entry.name):
-                    # Solo calculamos normcase si es necesario verificar duplicados
                     path_norm = os.path.normcase(entry.path)
                     if path_norm not in self.seen_normcase:
                         self.seen_normcase.add(path_norm)

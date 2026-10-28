@@ -1126,18 +1126,17 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         int: Cantidad total de archivos eliminados correctamente.
     """
     try:
-        quarantine_root: Path = quarantine_dir(base).resolve()
-        if _is_filesystem_read_only(quarantine_root) or is_protected_path(quarantine_root):
+        root_path: Path = quarantine_dir(base).resolve()
+        if _is_filesystem_read_only(root_path) or is_protected_path(root_path):
             return 0
             
         items: List[QuarantineItem] = load_manifest(base)
-        # Diccionario para acceso O(1) evitando bucles anidados
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
-        # Iteramos solo una vez sobre el sistema de archivos
-        for f in quarantine_root.iterdir():
-            if f.name == MANIFEST_NAME or f.is_dir():
+        for f in root_path.iterdir():
+            # Validación estricta: solo archivos dentro del sandbox real
+            if f.name == MANIFEST_NAME or f.is_dir() or not is_within_directory(f.resolve(), root_path):
                 continue
             
             item = item_map.get(f.name)
@@ -1149,7 +1148,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             _check_io_error_context(save_manifest, new_items, base)
             
             try:
-                with os.fdopen(os.open(str(quarantine_root), os.O_RDONLY), 'r') as dir_fd:
+                with os.fdopen(os.open(str(root_path), os.O_RDONLY), 'r') as dir_fd:
                     os.fsync(dir_fd.fileno())
             except OSError:
                 pass

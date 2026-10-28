@@ -583,3 +583,12 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T09:38:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-10-28T09:38:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T09:38:45` Corrida terminada. Total usado hoy: 228.
+- `2026-10-28T09:46:31` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-28T09:46:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T09:47:34` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-28T09:48:22` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad de `purge_all` implementando una validación estricta del sandbox mediante `is_within_directory` y forzando la resolución absoluta de rutas para prevenir cualquier manipulación de la jerarquía de directorios durante la iteración de borrado.
+- `2026-10-28T09:48:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-28T09:49:29` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado `_is_volume_shadow_copy` para detectar volúmenes de instantáneas (VSS) y bloquear cualquier modificación en ellos, reforzando la seguridad al evitar la manipulación de puntos de restauración del sistema, los cuales son críticos y a menudo presentan comportamientos de bloqueo de E/S impredecibles.
+- `2026-10-28T09:49:40` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` al verificar explícitamente que la ruta no contenga componentes prohibidos ni intente escapar de la raíz mediante el uso de `os.path.commonpath`, asegurando que `realpath` se evalúe contra la base de forma inequívoca.
+- `2026-10-28T09:49:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T09:49:40` Corrida terminada. Total usado hoy: 232.
