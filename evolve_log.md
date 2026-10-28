@@ -1350,3 +1350,10 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-10-28T04:21:56` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-10-28T04:21:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T04:21:56` Corrida terminada. Total usado hoy: 104.
+- `2026-10-28T04:30:21` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-10-28T04:30:58` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor ante entradas extremas en `SystemMetrics` mediante la implementación de una validación de `NaN` y límites estrictos antes de acceder al `lru_cache`, evitando así que valores no finitos o desbordamientos corrompan el resumen de salud.
+- `2026-10-28T04:32:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T04:32:40` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-28T04:33:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-28T04:33:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T04:33:03` Corrida terminada. Total usado hoy: 108.
