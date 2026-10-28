@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 69
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 228
+- Rechazadas por guardia de seguridad: 70
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-26 | 46 | 4 | 15 | 5 | 68 |
+| 2026-10-26 | 46 | 4 | 15 | 5 | 64 |
 | 2026-10-27 | 125 | 8 | 51 | 9 | 157 |
-| 2026-10-28 | 7 | 3 | 3 | 0 | 3 |
+| 2026-10-28 | 9 | 3 | 4 | 1 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **37**
-- seguridad defensiva: **31**
+- seguridad defensiva: **33**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
+- `memory.py`: **18**
 - `healthscore.py`: **17**
-- `memory.py`: **17**
 - `settings.py`: **16**
 - `diskreport.py`: **16**
 - `assistant.py`: **16**
 - `browser.py`: **15**
+- `organizer.py`: **14**
 - `safety.py`: **13**
-- `organizer.py`: **13**
 - `scanner.py`: **12**
 - `branding.py`: **10**
 - `duplicates.py`: **6**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T00:47:02` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita contra ataques de "link traversal" o "symlink race" mediante `resolve()` estricto, asegurando que la ruta destino no se resuelva fuera de los directorios permitidos, y reforzando la exclusión de puntos de reparse antes de cualquier operación de E/S.
+- `2026-10-28T00:46:33` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` al implementar un chequeo de integridad adicional que verifica que el handle del proceso sea válido antes de intentar obtener su nombre de archivo, previniendo errores de acceso no controlados al interactuar con procesos que terminan durante el escaneo.
 - `2026-10-28T00:41:08` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del motor de salud fortaleciendo la lógica de saneamiento de mensajes, evitando que caracteres de control o rutas malintencionadas se infiltren en los informes mediante la estricta validación del contenido generado dinámicamente y protegiendo el pipeline contra la inyección de excepciones durante la evaluación de reglas.
 - `2026-10-28T00:28:32` **branding.py** (seguridad defensiva): Se introdujo una validación defensiva en `save_logo_svg` para garantizar que la ruta de destino no solo sea segura para modificar, sino que el directorio padre exista y sea válido antes de intentar cualquier escritura, evitando así excepciones no controladas o intentos de escritura en rutas no permitidas.
 - `2026-10-28T00:27:24` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor remoto validando que la `api_key` se recupere exclusivamente mediante variables de entorno o la configuración interna, evitando posibles filtraciones o inyecciones por parámetros externos no controlados en la llamada a la API.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-27T15:39:21` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas repetidas de `stat()` por un acceso único consolidado, reduciendo las llamadas al sistema operativo (syscalls) al verificar la integridad de la caché en memoria.
 - `2026-10-27T15:38:31` **scanner.py** (rendimiento): Se optimizó el rendimiento del proceso de escaneo mediante el reemplazo de `list` por `set` en la pila de directorios visitados y la implementación de una exclusión temprana de rutas ya procesadas en `scan_directory` para evitar ciclos infinitos y redundancias innecesarias.
 - `2026-10-27T14:51:56` **safety.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad de `safety.py` mediante la implementación de *type hints* consistentes, normalización de la estructura de las reglas de integridad y uso de comentarios explicativos (docstrings) para documentar el propósito técnico detrás de las constantes y validaciones complejas.
-- `2026-10-27T14:43:18` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para delegar la lógica de creación de directorios y limpieza de recursos, y añadí docstrings detallados en las funciones de validación crítica para clarificar las intenciones de seguridad.
-- `2026-10-27T14:42:44` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings detallados en las funciones de validación crítica y constantes, explicando el "porqué" de las verificaciones de seguridad y el manejo de bajo nivel, facilitando así la auditoría y mantenimiento del código.

@@ -287,7 +287,8 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Validador integral previo a cualquier operación de E/S.
     Verifica seguridad de permisos, exclusividad de acceso (sin locks),
-    integridad de identidad y disponibilidad de espacio en disco.
+    integridad de identidad y disponibilidad de espacio en disco,
+    asegurando que los paths no sean enlaces simbólicos o de sistema.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
     try:
@@ -298,6 +299,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
             attrs = _get_win_attributes(junk_file.path)
             if (attrs & LIMITS.WIN_ATTR_READONLY) or (attrs & LIMITS.WIN_ATTR_MASK): return False
         
+        # Uso de resolve(strict=True) para detectar si los archivos son enlaces fuera de la ruta esperada
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
@@ -305,7 +307,10 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if src_real == dest_real or src_real.parent == dest_real: return False
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES or is_protected_path(src_real): return False
         if is_protected_path(dest_real): return False
-        if src_real.is_symlink() or _is_junction(src_real): return False
+        
+        # Bloqueo total de enlaces simbólicos o junctions para evitar escapes de directorio
+        if src_real.is_symlink() or _is_junction(junk_file.path): return False
+        
         if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
         if src_real.drive != dest_real.drive: return False
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False

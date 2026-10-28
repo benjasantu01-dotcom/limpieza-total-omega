@@ -979,3 +979,10 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Att
 - `2026-10-28T00:41:57` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-28T00:41:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T00:41:57` Corrida terminada. Total usado hoy: 16.
+- `2026-10-28T00:46:00` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-28T00:46:33` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` al implementar un chequeo de integridad adicional que verifica que el handle del proceso sea válido antes de intentar obtener su nombre de archivo, previniendo errores de acceso no controlados al interactuar con procesos que terminan durante el escaneo.
+- `2026-10-28T00:47:02` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita contra ataques de "link traversal" o "symlink race" mediante `resolve()` estricto, asegurando que la ruta destino no se resuelva fuera de los directorios permitidos, y reforzando la exclusión de puntos de reparse antes de cualquier operación de E/S.
+- `2026-10-28T00:47:42` ➖ Sin cambios en quarantine.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `_is_file_exclusive` para evitar condiciones de carrera al verificar el estado de bloqueo de un archivo, reemplazando la apertura con `os.open` por un uso más controlado de la API de bajo nivel, asegurando que el descriptor de archivo no quede abierto ante excepciones.
+- `2026-10-28T00:47:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-28T00:47:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T00:47:52` Corrida terminada. Total usado hoy: 20.

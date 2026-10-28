@@ -334,7 +334,14 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
 
 def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
     """Valida que la ruta de origen del ejecutable del proceso no sea una ruta protegida o crítica."""
-    if h_process is None or h_process == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None: return False
+    # Validación previa de existencia del handle y APIs necesarias
+    if h_process is None or h_process == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: 
+        return False
+    
+    # Verificar si el proceso todavía existe antes de consultar su ruta
+    exit_code = wintypes.DWORD()
+    if WindowsAPI.kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+        return False
     
     buffer_len = 32767
     buffer_path = ctypes.create_unicode_buffer(buffer_len)
