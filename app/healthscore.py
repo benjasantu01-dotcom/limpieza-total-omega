@@ -309,10 +309,10 @@ class SystemMetrics:
 @dataclass
 class HealthResult:
     """Resultado consolidado del análisis de salud, inmutable tras su creación."""
-    score: int
-    grade: str
+    score: int = 0
+    grade: str = "F"
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
-    recommendations: List[str] = field(default_factory=list)
+    recommendations: List[str] = field(default_factory=lambda: ["Error: Datos no inicializados."])
 
     @property
     def is_healthy(self) -> bool: 
@@ -463,10 +463,11 @@ def summarize(result: HealthResult | None) -> List[str]:
     try:
         lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
         for entry in PIPELINE_DEFINITIONS:
-            val = result.breakdown.get(entry.area, 0)
+            # Uso de .get con valores seguros en caso de breakdown incompleto
+            val = result.breakdown.get(entry.area, 0) if isinstance(result.breakdown, dict) else 0
             lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
         
-        recs = result.recommendations
+        recs = result.recommendations if isinstance(result.recommendations, list) else []
         if not recs:
             recs = ["No hay advertencias activas."]
             

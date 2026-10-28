@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 62 | 4 | 21 | 4 | 101 |
-| 2026-10-28 | 110 | 10 | 41 | 13 | 138 |
+| 2026-10-27 | 60 | 4 | 20 | 4 | 100 |
+| 2026-10-28 | 112 | 10 | 42 | 13 | 139 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **36**
-- seguridad defensiva: **35**
+- seguridad defensiva: **33**
 - rendimiento: **30**
-- robustez ante casos límite: **27**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
+- `quarantine.py`: **18**
 - `settings.py`: **17**
 - `browser.py`: **17**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
 - `memory.py`: **16**
-- `safety.py`: **15**
+- `safety.py`: **14**
 - `scanner.py`: **14**
 - `assistant.py`: **13**
 - `organizer.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T13:22:25` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `HealthResult` y `summarize` añadiendo validación de tipos e integridad defensiva para prevenir excepciones durante la generación de reportes en caso de recibir datos parcialmente corruptos o no inicializados.
+- `2026-10-28T13:21:28` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante casos límite donde los archivos o puntos de montaje pueden dejar de existir durante el escaneo (race conditions) o presentar errores de acceso intermitentes, envolviendo las llamadas críticas en bloques `try-except` más granulares y validando la existencia de los componentes de la ruta antes de procesarlos.
 - `2026-10-28T13:12:15` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y `_validate_and_sanitize_data` en `SystemContext` para asegurar que, ante datos de entrada malformados (por ejemplo, objetos con atributos inesperados o tipos de datos no numéricos), el asistente no falle catastróficamente ni rompa el flujo de la aplicación, garantizando que solo se procesen datos numéricos válidos.
 - `2026-10-28T13:02:42` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución de `is_safe_to_modify` y `is_protected_path` cuando la configuración ya existe en caché, utilizando la marca de tiempo (mtime) y tamaño del archivo como verificadores de validez.
 - `2026-10-28T13:02:26` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del escaneo reemplazando las validaciones redundantes de extensiones mediante la pre-compilación de un conjunto (`frozenset`) eficiente y eliminando llamadas innecesarias a `is_protected_path` cuando la información ya está implícita o cacheada, reduciendo la carga de I/O y el uso de CPU durante el recorrido recursivo.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T12:21:56` **safety.py** (legibilidad y documentación): Se refactorizó la lógica de validación del sistema de archivos en `ensure_safe_to_modify` para separar explícitamente las fases de validación (estructural, de red, permisos y de integridad) mediante una estructura más legible, mejorando la mantenibilidad y documentación interna de las precondiciones.
 - `2026-10-28T12:20:42` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y sus validaciones asociadas, separando claramente la lógica de pre-condiciones de la acción destructiva y eliminando redundancias en el manejo de errores.
 - `2026-10-28T12:12:05` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo principios de limpieza y propósito), la inclusión de type hints precisos en funciones que los omitían y la clarificación de lógica en `_is_safe_for_disk_op` para hacer explícitos los pasos de validación, facilitando su mantenimiento y auditoría.
-- `2026-10-28T12:11:50` **memory.py** (legibilidad y documentación): Mejoré la legibilidad del código documentando los valores de las máscaras de acceso Win32 mediante comentarios claros que explican su propósito técnico, facilitando el mantenimiento y la comprensión de las interacciones con la API del sistema.
-- `2026-10-28T12:10:11` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros y retornos de las funciones críticas (`compute_score`, `_compute_cached`, `_evaluate_rules`), facilitando la comprensión del pipeline analítico sin alterar la lógica funcional.

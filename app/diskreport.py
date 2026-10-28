@@ -282,7 +282,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None: return None
     try:
         p = Path(mount).expanduser().resolve(strict=False)
-        if not p.exists() or _is_reparse_point(p) or is_protected_path(p) or not os.access(p, os.R_OK):
+        if not p.exists() or _is_reparse_point(p) or is_protected_path(p):
             return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -372,13 +372,15 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Identificar el subdirectorio de primer nivel directamente
-            top_level = root / path.relative_to(root).parts[0]
-            if top_level != path:
+            # Validar relación de ruta antes de operar
+            rel = path.relative_to(root)
+            if not rel.parts: continue
+            top_level = root / rel.parts[0]
+            if top_level.exists():
                 metrics = stats[top_level]
                 metrics.size += size
                 metrics.file_count += 1
-        except (ValueError, IndexError):
+        except (ValueError, IndexError, OSError):
             continue
             
     results = [FolderUsage(path, m.size, m.file_count) for path, m in stats.items()]

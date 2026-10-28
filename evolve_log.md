@@ -958,3 +958,11 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-10-28T13:12:59` ➖ Sin cambios en browser.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `DirectoryScanner` ante bloqueos de acceso durante el escaneo recursivo, asegurando que el estado de `visited_files` y `visited_dirs` no se corrompa y que los resultados parciales sean consistentes incluso si subdirectorios individuales fallan por permisos, manteniendo la integridad del cálculo total.
 - `2026-10-28T13:12:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T13:12:59` Corrida terminada. Total usado hoy: 312.
+- `2026-10-28T13:20:58` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-28T13:21:28` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante casos límite donde los archivos o puntos de montaje pueden dejar de existir durante el escaneo (race conditions) o presentar errores de acceso intermitentes, envolviendo las llamadas críticas en bloques `try-except` más granulares y validando la existencia de los componentes de la ruta antes de procesarlos.
+- `2026-10-28T13:21:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-28T13:22:25` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `HealthResult` y `summarize` añadiendo validación de tipos e integridad defensiva para prevenir excepciones durante la generación de reportes en caso de recibir datos parcialmente corruptos o no inicializados.
+- `2026-10-28T13:23:26` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-28T13:24:28` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T13:24:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T13:24:28` Corrida terminada. Total usado hoy: 316.
