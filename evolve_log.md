@@ -897,3 +897,35 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-28T12:22:13` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension, Scanner._is_reparse_point
 - `2026-10-28T12:22:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T12:22:13` Corrida terminada. Total usado hoy: 292.
+- `2026-10-28T12:30:01` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-10-28T12:30:33` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en las funciones de validación y persistencia, clarificando el flujo de datos entre el JSON de disco y la lógica de negocio para mejorar la mantenibilidad.
+- `2026-10-28T12:30:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T12:31:07` Tests FALLARON:
+```
+K: 'ok'> = <function estimate_impact at 0x7fea4591b240>([])
+E        +    where <function estimate_impact at 0x7fea4591b240> = startup.estimate_impact
+E        +    and   [] = <function test_impact_scales_with_the_number_of_programs.<locals>.entradas at 0x7fea45232020>(0)
+
+evolve/tests/test_modules.py:695: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:177: SyntaxWarning: invalid escape sequence '\C'
+    Transforma rutas a formato extendido UNC (\\?\C:\...) para permitir el
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_programs - AssertionError: assert <ImpactLevel.OK: 'ok'> == 'ok'
+ +  where <ImpactLevel.OK: 'ok'> = <function estimate_impact at 0x7fea4591b240>([])
+ +    where <function estimate_impact at 0x7fea4591b240> = startup.estimate_impact
+ +    and   [] = <function test_impact_scales_with_the_number_of_programs.<locals>.entradas at 0x7fea45232020>(0)
+1 failed, 298 passed, 4 warnings in 1.55s
+
+```
+- `2026-10-28T12:31:07` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la mantenibilidad y legibilidad de `startup.py` mediante la implementación de `Enum` para los niveles de impacto, reemplazando diccionarios de strings arbitrarios y reforzando la documentación interna con tipos más específicos.
+- `2026-10-28T12:31:47` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `local_answer` para evitar el uso del `token_regex` en cada iteración y reducir el costo de procesamiento al usar un acceso directo por clave, eliminando la sobrecarga innecesaria de iterar sobre todos los tokens de la consulta cuando solo se necesita el primero o el más relevante para el ruteo.
+- `2026-10-28T12:32:02` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Se introdujo una cache `lru_cache` en la función `_get_scaled_poly` para evitar el cálculo redundante de coordenadas poligonales al redibujar el logo en el Canvas, optimizando el uso de CPU durante animaciones o repintados frecuentes.
+- `2026-10-28T12:32:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T12:32:02` Corrida terminada. Total usado hoy: 296.
