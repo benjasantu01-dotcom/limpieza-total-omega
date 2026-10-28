@@ -325,6 +325,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
                         if is_valid_junk_extension(entry.name):
+                            # Usamos el objeto DirEntry para obtener stats sin llamadas extra
                             stats = entry.stat(follow_symlinks=False)
                             if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
                                 p = Path(entry.path)

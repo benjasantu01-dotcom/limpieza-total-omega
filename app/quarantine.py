@@ -1131,9 +1131,11 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             return 0
             
         items: List[QuarantineItem] = load_manifest(base)
+        # Diccionario para acceso O(1) evitando bucles anidados
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
+        # Iteramos solo una vez sobre el sistema de archivos
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or f.is_dir():
                 continue

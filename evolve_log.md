@@ -524,3 +524,12 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T08:16:46` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-28T08:16:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T08:16:46` Corrida terminada. Total usado hoy: 196.
+- `2026-10-28T08:24:51` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-10-28T08:25:23` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el acceso a los procesos en `_iter_process_memory` reduciendo la cantidad de llamadas a la API `OpenProcess` al mover la validación de `is_protected_path` (que requiere un handle abierto) después de una pre-validación de los contadores de memoria (`GetProcessMemoryInfo`), evitando abrir handles innecesarios para procesos que no cumplen con los umbrales mínimos de uso.
+- `2026-10-28T08:25:53` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el proceso de escaneo sustituyendo la comprobación individual (`.stat()`) de cada archivo en `_process_directory` por una llamada única a `os.scandir` que ya recupera los atributos, reduciendo drásticamente las llamadas al sistema y mejorando el rendimiento en directorios con miles de archivos.
+- `2026-10-28T08:25:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T08:26:42` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` y la carga de manifiestos evitando iteraciones innecesarias y redundancia en el acceso al sistema de archivos, implementando una búsqueda O(1) basada en diccionarios para los ítems a purgar.
+- `2026-10-28T08:26:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-28T08:26:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-10-28T08:26:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T08:26:50` Corrida terminada. Total usado hoy: 200.

@@ -365,12 +365,13 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
     for i in range(count):
         pid = int(pids[i])
         if _is_system_process(pid): continue
-            
+        
         h_process = _is_process_accessible(pid, WIN32_PROCESS_QUERY_LIMITED)
         if not h_process: continue
         
         try:
             ws = _query_working_set_bytes(h_process, pmc)
+            # Primero validamos el consumo para evitar abrir/cerrar handles innecesarios o consultar rutas de archivos
             if ws is not None and _is_process_executable_safe(h_process):
                 yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:
