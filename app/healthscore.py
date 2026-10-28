@@ -367,8 +367,14 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
     """
     if len(metric_values) != len(SystemMetrics._FIELDS_TO_VALIDATE) - 1:
         return HealthResult(0, "F", {}, ["Error: Métrica incompleta."])
-        
-    metrics = SystemMetrics(*metric_values, quarantined)
+    
+    # Validar integridad defensiva de los valores entrantes
+    sanitized_values = []
+    for i, field_name in enumerate(SystemMetrics._FIELDS_TO_VALIDATE[:-1]):
+        min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
+        sanitized_values.append(_validate_numeric(metric_values[i], 0.0, min_v, max_v))
+    
+    metrics = SystemMetrics(*sanitized_values, _validate_numeric(quarantined, 0.0, 0.0, 10000.0))
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -376,7 +382,6 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
     
     for entry in PIPELINE_DEFINITIONS:
         try:
-            if metrics is None: continue
             area_ratio = entry.scorer(metrics)
             recs = _evaluate_rules(metrics, entry.rules, area_ratio)
             recommendations.extend(recs)
@@ -388,7 +393,7 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
             logging.warning(f"Error procesando área {entry.area}: {e}")
             continue
             
-    if quarantined > 0:
+    if metrics.quarantined_count > 0:
         recommendations.append("Existen elementos en cuarentena.")
         
     final_score = int(_clamp(round(total_points), 0.0, 100.0))
@@ -411,8 +416,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     try:
         raw_vals = [getattr(metrics, f) for f in SystemMetrics._FIELDS_TO_VALIDATE[:-1]]
-        if not all(isinstance(v, (int, float)) and math.isfinite(float(v)) for v in raw_vals):
-            return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos."])
         return _compute_cached(tuple(raw_vals), int(metrics.quarantined_count))
     except (TypeError, ValueError, AttributeError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])

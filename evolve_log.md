@@ -576,3 +576,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T09:27:37` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-10-28T09:27:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T09:27:37` Corrida terminada. Total usado hoy: 224.
+- `2026-10-28T09:36:17` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-10-28T09:36:50` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva del módulo encapsulando la integridad de los datos de entrada en `_compute_cached` mediante una validación explícita del rango de las métricas (`SystemMetrics`), evitando que valores inyectados fuera de rango puedan causar comportamientos inesperados en el pipeline de cálculo.
+- `2026-10-28T09:38:03` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-28T09:38:31` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-28T09:38:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-28T09:38:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T09:38:45` Corrida terminada. Total usado hoy: 228.
