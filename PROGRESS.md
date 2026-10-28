@@ -9,35 +9,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 62
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 240
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 63 | 4 | 22 | 4 | 103 |
-| 2026-10-28 | 109 | 10 | 40 | 12 | 137 |
+| 2026-10-27 | 62 | 4 | 21 | 4 | 101 |
+| 2026-10-28 | 110 | 10 | 41 | 13 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
-- seguridad defensiva: **36**
 - manejo de errores y validación de entradas: **36**
+- seguridad defensiva: **35**
 - rendimiento: **30**
-- robustez ante casos límite: **26**
+- robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
 - `diskreport.py`: **18**
-- `healthscore.py`: **17**
 - `settings.py`: **17**
 - `browser.py`: **17**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **15**
 - `scanner.py`: **14**
-- `assistant.py`: **12**
+- `assistant.py`: **13**
 - `organizer.py`: **11**
 - `branding.py`: **8**
 - `startup.py`: **6**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T13:12:15` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y `_validate_and_sanitize_data` en `SystemContext` para asegurar que, ante datos de entrada malformados (por ejemplo, objetos con atributos inesperados o tipos de datos no numéricos), el asistente no falle catastróficamente ni rompa el flujo de la aplicación, garantizando que solo se procesen datos numéricos válidos.
 - `2026-10-28T13:02:42` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución de `is_safe_to_modify` y `is_protected_path` cuando la configuración ya existe en caché, utilizando la marca de tiempo (mtime) y tamaño del archivo como verificadores de validez.
 - `2026-10-28T13:02:26` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del escaneo reemplazando las validaciones redundantes de extensiones mediante la pre-compilación de un conjunto (`frozenset`) eficiente y eliminando llamadas innecesarias a `is_protected_path` cuando la información ya está implícita o cacheada, reduciendo la carga de I/O y el uso de CPU durante el recorrido recursivo.
 - `2026-10-28T13:01:59` **safety.py** (rendimiento): Se implementó un mecanismo de caché en `_validate_structural_safety` para evitar el costo computacional de realizar normalizaciones, validaciones de expresiones regulares y chequeos de sistema de archivos repetitivos sobre una misma ruta en un mismo ciclo de ejecución.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T12:12:05` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo principios de limpieza y propósito), la inclusión de type hints precisos en funciones que los omitían y la clarificación de lógica en `_is_safe_for_disk_op` para hacer explícitos los pasos de validación, facilitando su mantenimiento y auditoría.
 - `2026-10-28T12:11:50` **memory.py** (legibilidad y documentación): Mejoré la legibilidad del código documentando los valores de las máscaras de acceso Win32 mediante comentarios claros que explican su propósito técnico, facilitando el mantenimiento y la comprensión de las interacciones con la API del sistema.
 - `2026-10-28T12:10:11` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros y retornos de las funciones críticas (`compute_score`, `_compute_cached`, `_evaluate_rules`), facilitando la comprensión del pipeline analítico sin alterar la lógica funcional.
-- `2026-10-28T12:01:04` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones clave y la adición de tipos de retorno explícitos, facilitando la comprensión de las heurísticas de filtrado y el flujo del pipeline de hash.

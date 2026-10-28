@@ -471,19 +471,21 @@ class SystemContext:
                 if val is not None: 
                     updates[key] = val
             
+            # Sanitización robusta de la calificación (grade)
             g_val = source.get("grade") if isinstance(source, dict) else getattr(source, "grade", None)
             if g_val is not None and not callable(g_val):
                 grade_val = self._clean_grade(g_val)
                 if grade_val: updates["grade"] = grade_val
             
             return updates if updates else None
-        except (AttributeError, Exception):
+        except (AttributeError, TypeError, Exception):
             return None
 
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None or callable(source) or not isinstance(source, (dict, object)): 
             return False
+        # Para objetos complejos, restringir la profundidad para evitar recursión innecesaria
         return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list)) else True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
@@ -492,6 +494,7 @@ class SystemContext:
             for k, v in updates.items():
                 setattr(self, k, v)
             self.analyzed = True
+            # Limpieza segura de cachés de propiedades
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)
         except Exception:

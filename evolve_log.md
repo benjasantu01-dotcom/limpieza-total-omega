@@ -951,3 +951,10 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-10-28T13:02:42` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando la ejecución de `is_safe_to_modify` y `is_protected_path` cuando la configuración ya existe en caché, utilizando la marca de tiempo (mtime) y tamaño del archivo como verificadores de validez.
 - `2026-10-28T13:02:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T13:02:42` Corrida terminada. Total usado hoy: 308.
+- `2026-10-28T13:10:49` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-28T13:11:29` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-28T13:12:15` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `ingest` y `_validate_and_sanitize_data` en `SystemContext` para asegurar que, ante datos de entrada malformados (por ejemplo, objetos con atributos inesperados o tipos de datos no numéricos), el asistente no falle catastróficamente ni rompa el flujo de la aplicación, garantizando que solo se procesen datos numéricos válidos.
+- `2026-10-28T13:12:49` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-28T13:12:59` ➖ Sin cambios en browser.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `DirectoryScanner` ante bloqueos de acceso durante el escaneo recursivo, asegurando que el estado de `visited_files` y `visited_dirs` no se corrompa y que los resultados parciales sean consistentes incluso si subdirectorios individuales fallan por permisos, manteniendo la integridad del cálculo total.
+- `2026-10-28T13:12:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T13:12:59` Corrida terminada. Total usado hoy: 312.
