@@ -451,3 +451,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T06:46:36` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `ingest` y `_validate_and_sanitize_data` mediante la captura explícita de `AttributeError` y validaciones de tipo más estrictas, evitando la propagación de fallos cuando los objetos fuente no cumplen con la estructura esperada.
 - `2026-10-28T06:46:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T06:46:36` Corrida terminada. Total usado hoy: 160.
+- `2026-10-28T06:53:03` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-28T06:53:37` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de acceso a datos del módulo `branding.py` mediante una validación de tipo más estricta (`isinstance` en lugar de comparaciones implícitas) y la captura de errores en el parsing de colores y fuentes para asegurar que la UI no colapse ante configuraciones inesperadas.
+- `2026-10-28T06:54:01` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-28T06:54:28` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del análisis de carpetas en `largest_folders` añadiendo validación explícita para evitar errores `IndexError` y `ValueError` al calcular rutas relativas, asegurando que `relative_to` solo se ejecute con rutas válidas y consistentes.
+- `2026-10-28T06:54:38` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-28T06:54:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T06:54:38` Corrida terminada. Total usado hoy: 164.

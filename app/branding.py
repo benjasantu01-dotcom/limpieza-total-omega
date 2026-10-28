@@ -221,8 +221,8 @@ def icon(section: Optional[str]) -> str:
 
 def tab_label(section: Optional[str]) -> str: 
     """Formatea la etiqueta de una pestaña combinando icono y texto."""
-    valid_section = section if isinstance(section, str) and section else "Desconocido"
-    return f"{icon(valid_section)}  {valid_section}"
+    if not isinstance(section, str) or not section: return f"\u2022  Desconocido"
+    return f"{icon(section)}  {section}"
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
     """Valida y normaliza una cadena de texto a un enum de tipo SeverityType."""
@@ -232,6 +232,7 @@ def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
 
 def _get_severity_style(severity_key: Optional[SeverityType]) -> SeverityStyle:
     """Busca el par color/etiqueta para un nivel de severidad determinado."""
+    if not isinstance(severity_key, SeverityType): return (C_TEXT_MUTED, "Desconocido")
     return SEVERITY_STYLES.get(severity_key, (C_TEXT_MUTED, "Desconocido"))
 
 def severity_color(severity: Optional[str]) -> ColorHex: 
@@ -244,11 +245,12 @@ def severity_label(severity: Optional[str]) -> str:
 
 def severity_icon(severity: Optional[str]) -> str: 
     """Retorna el icono Unicode para representar una severidad."""
-    return SEVERITY_MAP.get(_parse_severity(severity), "\u2022")
+    parsed = _parse_severity(severity)
+    return SEVERITY_MAP.get(parsed, "\u2022") if parsed else "\u2022"
 
 def grade_color(grade: Optional[str]) -> ColorHex: 
     """Retorna el color asignado a una calificación de salud (A-F)."""
-    if not grade or not isinstance(grade, str): return C_TEXT_MUTED
+    if not isinstance(grade, str) or not grade: return C_TEXT_MUTED
     return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED)
 
 @lru_cache(maxsize=128)
@@ -288,7 +290,7 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     """Convierte una tupla RGB a formato hexadecimal CSS, asegurando validación de rango."""
-    r, g, b = [max(0, min(255, c)) for c in rgb]
+    r, g, b = [max(0, min(255, int(c))) for c in rgb]
     return f"#{r:02x}{g:02x}{b:02x}"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
