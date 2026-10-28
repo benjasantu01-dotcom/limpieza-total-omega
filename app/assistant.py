@@ -477,7 +477,7 @@ class SystemContext:
                 if grade_val: updates["grade"] = grade_val
             
             return updates if updates else None
-        except Exception:
+        except (AttributeError, Exception):
             return None
 
     def _validate_ingestion_source(self, source: Any) -> bool:
@@ -500,9 +500,9 @@ class SystemContext:
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
         if not self._validate_ingestion_source(source): return False
-        updates = self._validate_and_sanitize_data(source)
-        if updates is None: return False
         try:
+            updates = self._validate_and_sanitize_data(source)
+            if updates is None: return False
             self._apply_updates(updates)
             return True
         except Exception:

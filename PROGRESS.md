@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 234
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 124 | 8 | 51 | 9 | 156 |
-| 2026-10-28 | 50 | 7 | 17 | 4 | 78 |
+| 2026-10-27 | 122 | 8 | 50 | 9 | 155 |
+| 2026-10-28 | 51 | 7 | 17 | 4 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **41**
 - robustez ante casos límite: **40**
+- legibilidad y documentación: **39**
 - seguridad defensiva: **37**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **34**
 - rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
-- `diskreport.py`: **18**
-- `healthscore.py`: **16**
+- `assistant.py`: **17**
+- `diskreport.py`: **17**
 - `memory.py`: **16**
 - `settings.py`: **16**
-- `assistant.py`: **16**
 - `browser.py`: **15**
+- `healthscore.py`: **15**
 - `scanner.py`: **13**
 - `safety.py`: **12**
 - `organizer.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-28T06:46:36` **assistant.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `ingest` y `_validate_and_sanitize_data` mediante la captura explícita de `AttributeError` y validaciones de tipo más estrictas, evitando la propagación de fallos cuando los objetos fuente no cumplen con la estructura esperada.
 - `2026-10-28T05:32:00` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que las rutas del registro obtenidas mediante PowerShell no intenten "escapar" de sus directorios originales mediante ataques de directory traversal (`..`), asegurando que cualquier entrada que intente acceder fuera del alcance permitido sea descartada antes de ser procesada por la lógica de la aplicación.
 - `2026-10-28T05:23:14` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de sustitución (TOCTOU) y validaciones laxas: ahora se verifica que la ruta sea un archivo real absoluto y se asegura que el archivo no sea un enlace simbólico ni un punto de reparse antes de procesarlo, reduciendo riesgos al leer configuraciones desde el disco.
 - `2026-10-28T05:22:59` **scanner.py** (seguridad defensiva): Se ha añadido `entry.is_symlink()` en el método `_safe_stat` y una validación de `st_reparse_tag` para identificar puntos de reanálisis (Junctions) mediante la API de bajo nivel, asegurando que el escáner sea incapaz de seguir enlaces simbólicos o puntos de montaje incluso si el sistema operativo no los marca directamente como symlinks convencionales.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T04:42:34` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `ensure_safe_to_modify` para detectar si el archivo es un punto de reparse (junction point) antes de cualquier operación, protegiendo contra posibles desbordamientos de la lógica de "jail" mediante enlaces simbólicos o de unión que apunten fuera del directorio base permitido.
 - `2026-10-28T04:30:58` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante entradas extremas en `SystemMetrics` mediante la implementación de una validación de `NaN` y límites estrictos antes de acceder al `lru_cache`, evitando así que valores no finitos o desbordamientos corrompan el resumen de salud.
 - `2026-10-28T04:21:41` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante rutas extremadamente largas o inválidas (que pueden ocurrir en sistemas de archivos complejos) añadiendo un manejo explícito de `OSError` y `ValueError` al realizar `path.relative_to` o al procesar entradas que cambian de estado durante la iteración (`FileNotFoundError`), asegurando que el análisis no se detenga por fallos aislados en el acceso al sistema de archivos.
-- `2026-10-28T04:01:08` **quarantine.py** (rendimiento): Se ha optimizado `purge_all` para evitar el acceso al disco innecesario y reducir la complejidad algorítmica al pasar de una búsqueda lineal (O(N*M)) a una búsqueda en tiempo constante (O(N)) mediante el uso de conjuntos (`set`) para la validación de archivos, mejorando significativamente el rendimiento al limpiar grandes cantidades de ítems.
