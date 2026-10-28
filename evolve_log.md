@@ -510,3 +510,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-28T07:56:18` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (específicamente `MappingProxyType` para constantes y retornos de funciones auxiliares) y se añadieron docstrings explicativos en las funciones de validación compleja para clarificar el flujo lógico y los casos de borde considerados, mejorando la mantenibilidad sin alterar la funcionalidad.
 - `2026-10-28T07:56:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-28T07:56:18` Corrida terminada. Total usado hoy: 188.
+- `2026-10-28T08:04:27` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-10-28T08:04:57` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-10-28T08:05:37` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext.__hash__, SystemContext._cached_active_problems, SystemContext._hash_tuple
+- `2026-10-28T08:06:09` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-28T08:06:24` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el rendimiento de `detect_profiles` eliminando el cálculo redundante de `base_norm` y el acceso repetitivo a `kernel32` dentro del bucle interno, además de reutilizar el mismo `ScanContext` para reducir la creación de objetos en escaneos masivos.
+- `2026-10-28T08:06:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-28T08:06:24` Corrida terminada. Total usado hoy: 192.

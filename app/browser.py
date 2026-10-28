@@ -223,13 +223,13 @@ def directory_size(path: Optional[OSPath]) -> int:
     return DirectoryScanner(ctx).get_size(res_str).bytes_found
 
 @safe_path_operation(False)
-def _is_valid_cache_path(candidate: Path, base_norm: str) -> bool:
+def _is_valid_cache_path(candidate: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     if not candidate.exists() or not candidate.is_dir(): return False
     cand_abs = str(candidate.resolve())
     cand_norm = os.path.normcase(cand_abs)
     
     if not is_safe_to_modify(candidate) or not cand_norm.startswith(base_norm): return False
-    if _is_system_hidden(cand_abs, _get_kernel32()): return False
+    if _is_system_hidden(cand_abs, kernel): return False
     
     return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
 
@@ -264,7 +264,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         
         for browser_key, relative_path in browser_map.items():
             candidate = _resolve_browser_path(base_resolved, relative_path)
-            if candidate != Path() and _is_valid_cache_path(candidate, base_norm):
+            if candidate != Path() and _is_valid_cache_path(candidate, base_norm, kernel):
                 scan_res = scanner.get_size(str(candidate))
                 if scan_res.success and scan_res.bytes_found > 0:
                     found.append(BrowserCache(browser_key, candidate, scan_res.bytes_found))
