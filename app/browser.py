@@ -81,7 +81,7 @@ class DirectoryScanner:
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
         
-        root_norm = os.path.normcase(os.path.abspath(root_path))
+        root_norm = os.path.normcase(root_path)
         if not root_norm.startswith(self.ctx.sandbox_base_norm) or root_norm in self.ctx.visited_dirs:
             return ScanResult(0, True)
 
@@ -92,7 +92,8 @@ class DirectoryScanner:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        if entry.name.lower() in self.ctx.never_touch_lower: continue
+                        entry_name_lower = entry.name.lower()
+                        if entry_name_lower in self.ctx.never_touch_lower: continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             if not self.ctx.is_junction(entry.path):

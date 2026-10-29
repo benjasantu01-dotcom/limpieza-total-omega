@@ -265,8 +265,8 @@ def startup_folders() -> List[Path]:
     """
     Identifica las rutas de carpetas 'Startup' del sistema y del usuario.
     
-    Retorna una lista de objetos Path hacia directorios que requieren escaneo.
-    Solo retorna rutas existentes, no protegidas y que no son enlaces simbólicos.
+    Busca en las variables de entorno APPDATA y ProgramData las rutas estándar
+    de Windows. Filtra aquellas que no existen o son sospechosas.
     """
     if os.name != "nt":
         return []
@@ -327,7 +327,8 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     """
     Escanea las carpetas de inicio proporcionadas y retorna objetos StartupEntry válidos.
     
-    Si no se proveen carpetas, utiliza las determinadas por `startup_folders`.
+    Itera sobre cada carpeta de inicio encontrada, descartando duplicados y rutas
+    inaccesibles de forma segura.
     """
     found_entries: StartupEntries = []
     scan_folders = folders if folders is not None else startup_folders()
@@ -339,15 +340,12 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
                 continue
             with os.scandir(folder) as it:
                 for entry in it:
-                    try:
-                        if entry.path in processed_paths:
-                            continue
-                        processed = _process_folder_entry(entry)
-                        if processed:
-                            found_entries.append(processed)
-                            processed_paths.add(entry.path)
-                    except (OSError, PermissionError):
+                    if entry.path in processed_paths:
                         continue
+                    processed = _process_folder_entry(entry)
+                    if processed:
+                        found_entries.append(processed)
+                        processed_paths.add(entry.path)
         except (OSError, PermissionError):
             continue
     return found_entries
@@ -361,7 +359,6 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     if not isinstance(name, str) or not isinstance(command, str):
         return False
     
-    # Prevenir inyección o rutas inválidas mediante caracteres de control
     if len(command) > MAX_PATH_LEN or any(ord(c) < 32 for c in command) or "\0" in command:
         return False
         
@@ -372,16 +369,13 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
         return False
     
     try:
-        # Extraer posible ruta quitando comillas
         path_candidate = clean_cmd.strip('"')
         if not path_candidate:
             return False
         
-        # Validar que sea una ruta absoluta o al menos contenga separadores de disco
         if "\\" not in path_candidate and "/" not in path_candidate:
             return False
         
-        # Seguridad: Prevenir directory traversal
         if ".." in path_candidate.split(os.sep):
             return False
             
@@ -500,7 +494,12 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera un reporte de texto legible por el usuario con el resumen del inventario."""
+    """
+    Genera un reporte de texto legible por el usuario con el resumen del inventario.
+    
+    Toma la lista de entradas detectadas, estima su impacto global y formatea
+    la salida para mostrar el nombre del programa, su origen y ubicación.
+    """
     entries_list = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         
