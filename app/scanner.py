@@ -164,16 +164,24 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Alerta sobre procesos de sistema ubicados fuera de System32."""
     if path is None or not path.name: return None
-    if path.name.lower() in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in str(path).lower():
-            return Suspicion(path, "Nombre de proceso de sistema detectado fuera de directorio protegido", "warning")
+    try:
+        if path.name.lower() in SYSTEM_LOOKALIKES:
+            if SYSTEM32_LOWER not in str(path).lower():
+                return Suspicion(path, "Nombre de proceso de sistema detectado fuera de directorio protegido", "warning")
+    except (AttributeError, ValueError):
+        return None
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Identifica ejecutables recientes en carpetas temporales o de descargas."""
-    if path is None or path.parent is None or entry is None: return None
-    if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
+    if path is None or entry is None: return None
+    try:
+        parent_name = path.parent.name.lower()
+        if parent_name not in TARGETED_DOWNLOAD_FOLDERS:
+            return None
+    except (AttributeError, ValueError):
         return None
+        
     stats = _safe_stat(entry)
     if stats:
         mtime = getattr(stats, "st_mtime", 0.0)

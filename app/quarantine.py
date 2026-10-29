@@ -101,16 +101,20 @@ def _get_win_attributes(path: Path) -> int:
     if p_str in _WIN_ATTR_CACHE: return _WIN_ATTR_CACHE[p_str]
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(p_str)
+        if attrs == -1: return -1
         _WIN_ATTR_CACHE[p_str] = attrs
         return attrs
-    except (OSError, AttributeError):
+    except (OSError, AttributeError, KeyError):
         return -1
 
 def _win_has_system_attributes(path: Path) -> bool:
     """Verifica si el archivo posee atributos de sistema, oculto o temporal."""
-    attrs = _get_win_attributes(path)
-    if attrs == -1: return True
-    return bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
+    try:
+        attrs = _get_win_attributes(path)
+        if attrs == -1: return True
+        return bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
+    except Exception:
+        return True
 
 def _verify_source_fs_permissions(path: Path) -> None:
     """Valida la integridad del origen prohibiendo rutas UNC y atributos críticos."""

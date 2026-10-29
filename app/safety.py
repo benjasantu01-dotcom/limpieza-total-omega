@@ -69,7 +69,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     try:
         # Abre con acceso nulo para obtener metadata sin bloquear ni modificar el archivo
         handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
-        if handle == -1 or handle == -1737075661: # INVALID_HANDLE_VALUE
+        if handle == -1: # INVALID_HANDLE_VALUE
             return (0, 0, 0, 0)
         try:
             if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
@@ -450,8 +450,8 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     path_long = _to_long_path(path_str)
     
     for attempt in range(3):
-        # Intenta abrir con acceso GENERIC_READ y modo de compartición 0 para detectar exclusividad
-        handle = kernel32.CreateFileW(path_long, 0x80000000, 0, None, 3, 0x00000080, None)
+        # Intenta abrir con acceso 0 para metadata sin bloquear
+        handle = kernel32.CreateFileW(path_long, 0, 0, None, 3, 0x00000080, None)
         if handle != -1:
             kernel32.CloseHandle(handle)
             return False
@@ -709,10 +709,13 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     Implementa reintentos para manejar bloqueos transitorios provocados por 
     procesos de segundo plano (indexadores, antivirus).
     """
-    max_retries = 3
     if not isinstance(path, Path):
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     
+    if not path.exists():
+        raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+    
+    max_retries = 3
     for attempt in range(max_retries):
         try:
             if _is_device_file(path):
@@ -720,7 +723,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 
             if os.name == 'nt':
                 kernel32 = ctypes.windll.kernel32
-                # Intenta abrir con acceso de solo lectura y modo de compartición para detectar bloqueos
+                # Intenta abrir con acceso GENERIC_READ para verificar acceso y compartición
                 handle = kernel32.CreateFileW(
                     _to_long_path(str(path)), 0x80000000, 0x01, None, 3, 0x00000080, None
                 )
@@ -729,21 +732,12 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                     if err == ERROR_SHARING_VIOLATION:
                         time.sleep(0.05 * (2 ** attempt))
                         continue
-                    if err == ERROR_FILE_NOT_FOUND:
-                        raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
                     if err == ERROR_ACCESS_DENIED:
                         raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
                 else:
                     kernel32.CloseHandle(handle)
             
-            try:
-                return path.stat()
-            except (OSError, PermissionError) as e:
-                if getattr(e, 'winerror', 0) in (ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
-                    raise UnsafePathError(f"Acceso denegado/inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-                raise
-        except UnsafePathError:
-            raise
+            return path.stat()
         except (OSError, PermissionError) as e:
             if getattr(e, 'errno', 0) in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or getattr(e, 'winerror', 0) == ERROR_SHARING_VIOLATION:
                 if attempt < max_retries - 1:
