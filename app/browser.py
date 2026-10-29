@@ -52,9 +52,16 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 @dataclass
 class ScanContext:
     """
-    Estado inmutable compartido durante el recorrido del árbol de directorios.
-    Contiene la base de confianza para evitar escapes de directorio y
-    memoria de archivos visitados para evitar ciclos en enlaces simbólicos.
+    Contenedor inmutable de configuración para escaneos recursivos.
+    
+    Attributes:
+        sandbox_base_norm: Ruta normalizada raíz (case-insensitive) para prevenir escapes.
+        kernel32: Instancia de la DLL de Windows o None si estamos en otro SO.
+        is_junction: Función callback para detectar puntos de reparse (Junctions).
+        visited_files: Registro de (dev, ino) para evitar conteos duplicados por hardlinks.
+        visited_dirs: Conjunto de rutas normalizadas ya recorridas para evitar ciclos.
+        never_touch_lower: Conjunto de nombres de archivo/directorio prohibidos.
+        max_depth: Límite de recursión para evitar desbordamiento de pila.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -66,17 +73,22 @@ class ScanContext:
 
 class DirectoryScanner:
     """
-    Motor de recorrido recursivo seguro. 
-    Implementa validación de sandbox por ruta normalizada y detección
-    de puntos de reparse para evitar fugas de contexto o bucles infinitos.
+    Motor de recorrido recursivo con enfoque defensivo.
+    
+    Aplica chequeos estrictos de seguridad antes de cada acceso a disco,
+    asegurando que no se sigan enlaces simbólicos que salgan del sandbox
+    y que se respeten los atributos de sistema/oculto de Windows.
     """
     def __init__(self, context: ScanContext):
         self.ctx = context
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
-        Calcula el tamaño acumulado de un directorio, ignorando elementos protegidos.
-        El éxito total depende de que no ocurran excepciones críticas de acceso.
+        Calcula el peso en bytes de un directorio mediante profundidad controlada.
+        
+        Args:
+            root_path: Ruta del directorio a escanear.
+            depth: Profundidad actual de recursión.
         """
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
@@ -101,7 +113,7 @@ class DirectoryScanner:
                                 total_bytes += subdir.bytes_found
                         elif entry.is_file(follow_symlinks=False):
                             if not _is_system_hidden(entry.path, self.ctx.kernel32):
-                                # Verificación de acceso antes de stat para evitar bloqueos
+                                # Verificación de acceso mediante intento de apertura en modo lectura
                                 try:
                                     fd = os.open(entry.path, os.O_RDONLY)
                                     os.close(fd)
@@ -132,7 +144,7 @@ def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     return decorator
 
 class ScanResult(NamedTuple):
-    """Resultado del cálculo de tamaño recursivo."""
+    """Contenedor de resultados del escaneo recursivo."""
     bytes_found: int
     success: bool
 
@@ -259,9 +271,7 @@ def _is_valid_cache_path(candidate: Path, base_norm: str, kernel: Optional[ctype
     return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
 
 def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
-    """
-    Construye y valida una ruta absoluta de caché.
-    """
+    """Construye y valida una ruta absoluta de caché."""
     if not _is_valid_rel_path(rel_str) or not isinstance(base_resolved, Path): 
         return Path()
     try:
@@ -277,10 +287,7 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
         return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """
-    Realiza el escaneo de perfiles de navegador en las bases configuradas.
-    Retorna una lista ordenada de objetos BrowserCache con el tamaño hallado.
-    """
+    """Realiza el escaneo de perfiles de navegador en las bases configuradas."""
     raw_bases = list(bases) if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     

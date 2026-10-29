@@ -175,8 +175,9 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Recorrido BFS para recolectar archivos candidatos para el análisis.
-    Usa el ID del dispositivo y el número de inodo para manejar enlaces duros correctamente.
+    Recorre el sistema de archivos mediante BFS, evitando recursión infinita y puntos de reanálisis.
+    Filtra candidatos basándose en tamaño mínimo y atributos de seguridad. Utiliza una tupla
+    de (dev, ino) para identificar archivos únicos y evitar procesar hardlinks redundantes.
     """
     raw_map: Dict[int, List[Path]] = defaultdict(list)
     size_counts: Dict[int, int] = defaultdict(int)
@@ -229,9 +230,10 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
-    Refinamiento para archivos grandes:
-    1. Agrupa por hash parcial (64KB iniciales).
-    2. Aplica hash completo (SHA256) solo a los grupos que colisionaron.
+    Aplica una estrategia de hashing jerárquica para archivos grandes:
+    1. Fase de filtrado: agrupa archivos por un hash parcial de sus primeros 64KB.
+    2. Fase de verificación: realiza hash SHA256 completo solo en los grupos con
+       potenciales colisiones de hash parcial.
     """
     if not paths: return {}
     partial_groups = _group_paths_by_hash(paths, partial_hash)

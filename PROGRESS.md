@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 59
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 238
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 5 | 1 | 0 | 0 | 8 |
+| 2026-10-27 | 5 | 1 | 0 | 0 | 4 |
 | 2026-10-28 | 117 | 10 | 43 | 15 | 165 |
-| 2026-10-29 | 49 | 2 | 16 | 8 | 65 |
+| 2026-10-29 | 51 | 2 | 16 | 9 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **31**
 - rendimiento: **29**
@@ -32,8 +32,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `scanner.py`: **17**
 - `settings.py`: **17**
+- `browser.py`: **17**
 - `diskreport.py`: **17**
-- `browser.py`: **16**
 - `quarantine.py`: **16**
 - `safety.py`: **15**
 - `healthscore.py`: **14**
@@ -41,11 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **14**
 - `branding.py`: **11**
 - `organizer.py`: **8**
+- `duplicates.py`: **7**
 - `startup.py`: **6**
-- `duplicates.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T06:03:00` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones internas clave (proceso de recolección y estrategia de hashing) mediante docstrings técnicos más precisos, alineados con el enfoque de legibilidad, detallando los algoritmos utilizados y las restricciones de seguridad aplicadas.
+- `2026-10-29T06:01:53` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y tipos descriptivos en `ScanContext` y `DirectoryScanner`, aclarando la lógica de seguridad sin alterar la ejecución para asegurar que futuros colaboradores entiendan el flujo de protección contra bucles y escapes de directorio.
 - `2026-10-29T05:53:18` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo `docstrings` completos y específicos a las funciones de validación y utilidades, clarificando el propósito de cada etapa del pipeline de datos sin alterar la lógica de seguridad preexistente.
 - `2026-10-29T05:51:42` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al manejar explícitamente posibles errores de codificación (`UnicodeDecodeError`) y añadí una validación estricta de tipos tras el `json.loads`, asegurando que los datos cargados no solo sean un diccionario, sino que mantengan la integridad del esquema esperado antes de cualquier procesamiento posterior.
 - `2026-10-29T05:51:11` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de archivos mediante la función `_safe_stat` dentro de `_run_file_heuristics`, evitando excepciones por archivos bloqueados o bloqueos inesperados durante la evaluación de reglas, y asegurando que las funciones de chequeo reciban datos consistentes.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T05:20:52` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para garantizar que la validación de objetos fuente no colapse ante tipos inesperados (como `set` o estructuras recursivas profundas), asegurando que los datos de entrada al asistente se mantengan dentro de límites controlados.
 - `2026-10-29T04:00:21` **startup.py** (seguridad defensiva): Mejoré la seguridad en `entries_from_folders` añadiendo una validación explícita mediante `is_protected_path` sobre el resultado de `resolve()` antes de procesar cualquier entrada, previniendo así el seguimiento de enlaces simbólicos maliciosos o cruces de límites de seguridad fuera de las carpetas de inicio permitidas.
 - `2026-10-29T03:49:05` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita para evitar que se procesen archivos que residen en rutas de solo lectura o volúmenes montados como lectura, evitando errores de E/S impredecibles durante el movimiento atómico.
-- `2026-10-29T03:38:48` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor de puntuación eliminando el riesgo de que el contenido de los mensajes de las reglas contenga rutas del sistema mediante una validación estricta de `_BLOCKED_TERMS` en el punto de entrada de la factoría de mensajes.
-- `2026-10-29T03:29:42` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva al integrar `os.path.realpath` en `_safe_path_check` para prevenir ataques de bypass mediante rutas relativas o enlaces simbólicos que apunten fuera de las carpetas permitidas, asegurando que la validación de seguridad ocurra sobre la ruta absoluta y real del archivo.
