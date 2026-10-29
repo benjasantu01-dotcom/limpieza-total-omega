@@ -130,7 +130,6 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
-        if not path.is_file(): return None
         hasher = hashlib.sha256()
         with open(path, "rb") as f:
             while (chunk := f.read(chunk_size)):
@@ -150,7 +149,6 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
         return None
     if path in _partial_cache: return _partial_cache[path]
     try:
-        if not path.is_file(): return None
         with open(path, "rb") as f:
             header = f.read(read_bytes)
             if not header: return None

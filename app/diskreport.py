@@ -390,16 +390,19 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    for path, size in walk_files(directory, skip_protected):
-        ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-        stats.register_file(size, ext)
-        
-        # Mantener solo los archivos más grandes usando heap
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif top_heap and size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+    try:
+        for path, size in walk_files(directory, skip_protected):
+            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+            stats.register_file(size, ext)
+            
+            # Mantener solo los archivos más grandes usando heap
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif top_heap and size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size, path))
+    except Exception:
+        pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
@@ -410,10 +413,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if root is None: 
         return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]
     
-    try:
-        data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError):
-        return ["Error: Acceso denegado durante el escaneo del directorio."]
+    data = _collect_summary_data(root, skip_protected, limit=20)
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]
