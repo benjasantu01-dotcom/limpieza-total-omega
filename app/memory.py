@@ -405,8 +405,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
         try:
             pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
-            candidates = heapq.nlargest(limit, _iter_process_memory(pmc))
-            _CACHE_TOP_PROC = CacheEntry(now, candidates)
+            _CACHE_TOP_PROC = CacheEntry(now, heapq.nlargest(limit, _iter_process_memory(pmc)))
         except (AttributeError, OSError):
             pass
             

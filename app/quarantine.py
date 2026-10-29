@@ -1099,7 +1099,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el espacio total ocupado en el sandbox (bytes)."""
+    """Calcula el espacio total ocupado en el sandbox (bytes) desde caché."""
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base_path)
@@ -1109,8 +1109,8 @@ def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:
-    """Genera informe legible para la UI."""
-    items: List[QuarantineItem] = list_items(base)
+    """Genera informe legible para la UI utilizando el manifiesto cacheado."""
+    items: List[QuarantineItem] = load_manifest(base)
     if not items:
         return ["La cuarentena está vacía."]
     
