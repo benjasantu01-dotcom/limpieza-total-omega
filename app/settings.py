@@ -380,6 +380,9 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         for k, v in data.items():
             if not isinstance(k, str) or (v is not None and not isinstance(v, (str, int, bool, float))):
                 return None
+        # Validar tipo contra el esquema DEFAULTS
+        for k, v in data.items():
+            if k in DEFAULTS and not isinstance(v, type(DEFAULTS[k])): return None
         return data
     except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
         return None

@@ -558,3 +558,41 @@ FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area -
 - `2026-10-29T05:42:34` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `_get_path_stat_robust` para incluir un manejo más granular de las excepciones durante la llamada a `path.stat()`, capturando específicamente `OSError` con códigos de error asociados a bloqueos de SO para asegurar que el sistema no falle ante archivos en uso transitorio, manteniendo la consistencia con la política de seguridad y los reintentos existentes.
 - `2026-10-29T05:42:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T05:42:34` Corrida terminada. Total usado hoy: 136.
+- `2026-10-29T05:50:42` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-10-29T05:51:11` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas centralizando la validación de archivos mediante la función `_safe_stat` dentro de `_run_file_heuristics`, evitando excepciones por archivos bloqueados o bloqueos inesperados durante la evaluación de reglas, y asegurando que las funciones de chequeo reciban datos consistentes.
+- `2026-10-29T05:51:42` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` al manejar explícitamente posibles errores de codificación (`UnicodeDecodeError`) y añadí una validación estricta de tipos tras el `json.loads`, asegurando que los datos cargados no solo sean un diccionario, sino que mantengan la integridad del esquema esperado antes de cualquier procesamiento posterior.
+- `2026-10-29T05:52:11` Tests FALLARON:
+```
+............................................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:179: SyntaxWarning: invalid escape sequence '\C'
+    Transforma rutas a formato extendido UNC (\\?\C:\...) para permitir el
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.66s
+
+```
+- `2026-10-29T05:52:11` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` y `_resolve_and_cache_path` añadiendo validaciones preventivas de tipos y estados, asegurando que cualquier entrada malformada (como rutas vacías, nulas o con caracteres inválidos) retorne un valor seguro inmediatamente en lugar de procesar objetos potencialmente erróneos.
+- `2026-10-29T05:52:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-29T05:53:18` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo `docstrings` completos y específicos a las funciones de validación y utilidades, clarificando el propósito de cada etapa del pipeline de datos sin alterar la lógica de seguridad preexistente.
+- `2026-10-29T05:53:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T05:53:18` Corrida terminada. Total usado hoy: 140.

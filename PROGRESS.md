@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **168** (33.3% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 5 | 1 | 0 | 0 | 12 |
+| 2026-10-27 | 5 | 1 | 0 | 0 | 8 |
 | 2026-10-28 | 117 | 10 | 43 | 15 | 165 |
-| 2026-10-29 | 46 | 1 | 16 | 8 | 65 |
+| 2026-10-29 | 49 | 2 | 16 | 8 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **38**
-- legibilidad y documentación: **37**
+- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **38**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **31**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `scanner.py`: **17**
+- `settings.py`: **17**
 - `diskreport.py`: **17**
-- `scanner.py`: **16**
-- `settings.py`: **16**
 - `browser.py`: **16**
 - `quarantine.py`: **16**
 - `safety.py`: **15**
 - `healthscore.py`: **14**
 - `memory.py`: **14**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
 - `branding.py`: **11**
 - `organizer.py`: **8**
 - `startup.py`: **6**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T05:53:18` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo `docstrings` completos y específicos a las funciones de validación y utilidades, clarificando el propósito de cada etapa del pipeline de datos sin alterar la lógica de seguridad preexistente.
+- `2026-10-29T05:51:42` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al manejar explícitamente posibles errores de codificación (`UnicodeDecodeError`) y añadí una validación estricta de tipos tras el `json.loads`, asegurando que los datos cargados no solo sean un diccionario, sino que mantengan la integridad del esquema esperado antes de cualquier procesamiento posterior.
+- `2026-10-29T05:51:11` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de archivos mediante la función `_safe_stat` dentro de `_run_file_heuristics`, evitando excepciones por archivos bloqueados o bloqueos inesperados durante la evaluación de reglas, y asegurando que las funciones de chequeo reciban datos consistentes.
 - `2026-10-29T05:42:34` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para incluir un manejo más granular de las excepciones durante la llamada a `path.stat()`, capturando específicamente `OSError` con códigos de error asociados a bloqueos de SO para asegurar que el sistema no falle ante archivos en uso transitorio, manteniendo la consistencia con la política de seguridad y los reintentos existentes.
 - `2026-10-29T05:41:39` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `quarantine_file` agregando validaciones preventivas contra estados inconsistentes del sistema de archivos y capturando excepciones de forma específica durante el proceso de aislamiento, evitando así estados corruptos o bloqueos por archivos en uso.
 - `2026-10-29T05:32:06` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_query_working_set_bytes` capturando explícitamente errores de comunicación con la API (como `ctypes.WinError` o fallos en el buffer) y validando la integridad del resultado antes de procesarlo, evitando propagar fallos silenciosos desde capas de bajo nivel.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T03:49:05` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita para evitar que se procesen archivos que residen en rutas de solo lectura o volúmenes montados como lectura, evitando errores de E/S impredecibles durante el movimiento atómico.
 - `2026-10-29T03:38:48` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor de puntuación eliminando el riesgo de que el contenido de los mensajes de las reglas contenga rutas del sistema mediante una validación estricta de `_BLOCKED_TERMS` en el punto de entrada de la factoría de mensajes.
 - `2026-10-29T03:29:42` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva al integrar `os.path.realpath` en `_safe_path_check` para prevenir ataques de bypass mediante rutas relativas o enlaces simbólicos que apunten fuera de las carpetas permitidas, asegurando que la validación de seguridad ocurra sobre la ruta absoluta y real del archivo.
-- `2026-10-29T03:28:37` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre y asegurando que la operación de escritura sea atómica respecto a la seguridad, evitando rutas ambiguas o potencialmente peligrosas antes de invocar la escritura en disco.
-- `2026-10-29T03:19:40` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad en `_is_safe_payload_structure` y `_ensure_safe_text` introduciendo un filtrado preventivo contra caracteres de control y secuencias de escape potencialmente peligrosas que podrían ser usadas para ofuscar inyecciones en el payload de comunicación remota.
-- `2026-10-29T03:18:47` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_read_and_parse_json` añadiendo un chequeo explícito de codificación y detección de archivos vacíos para prevenir errores al procesar configuraciones corruptas o truncadas.
