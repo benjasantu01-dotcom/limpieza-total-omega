@@ -343,6 +343,8 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     """Ejecutor de reglas con aislamiento (sandbox) para evitar fugas de información."""
     try:
         raw_res = rule.message_factory(metrics)
+        if not _is_safe_string_for_report(raw_res):
+            return ""
         return _sanitize_msg(raw_res)
     except Exception: return ""
 

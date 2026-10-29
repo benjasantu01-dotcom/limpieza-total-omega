@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 58
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 18 | 1 | 5 | 3 | 43 |
+| 2026-10-27 | 18 | 1 | 5 | 3 | 39 |
 | 2026-10-28 | 117 | 10 | 43 | 15 | 165 |
-| 2026-10-29 | 35 | 1 | 10 | 8 | 30 |
+| 2026-10-29 | 36 | 1 | 11 | 8 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,16 +26,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **33**
 - rendimiento: **29**
-- seguridad defensiva: **28**
+- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **17**
 - `settings.py`: **17**
 - `diskreport.py`: **17**
+- `healthscore.py`: **16**
 - `quarantine.py`: **16**
 - `browser.py`: **16**
-- `healthscore.py`: **15**
 - `safety.py`: **15**
 - `memory.py`: **14**
 - `assistant.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T03:38:48` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor de puntuación eliminando el riesgo de que el contenido de los mensajes de las reglas contenga rutas del sistema mediante una validación estricta de `_BLOCKED_TERMS` en el punto de entrada de la factoría de mensajes.
 - `2026-10-29T03:29:42` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva al integrar `os.path.realpath` en `_safe_path_check` para prevenir ataques de bypass mediante rutas relativas o enlaces simbólicos que apunten fuera de las carpetas permitidas, asegurando que la validación de seguridad ocurra sobre la ruta absoluta y real del archivo.
 - `2026-10-29T03:28:37` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre y asegurando que la operación de escritura sea atómica respecto a la seguridad, evitando rutas ambiguas o potencialmente peligrosas antes de invocar la escritura en disco.
 - `2026-10-29T03:19:40` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad en `_is_safe_payload_structure` y `_ensure_safe_text` introduciendo un filtrado preventivo contra caracteres de control y secuencias de escape potencialmente peligrosas que podrían ser usadas para ofuscar inyecciones en el payload de comunicación remota.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T02:48:07` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y la carga de datos mediante un chequeo de tipos más estricto y el uso de `getattr(source, key, None)` para evitar disparar `Property` o métodos de objetos fuente, previniendo errores de ejecución ante datos malformados.
 - `2026-10-29T02:39:01` **settings.py** (rendimiento): Se optimizó el acceso a las claves de configuración mediante la pre-compilación de `ConfigKey.value` en los diccionarios de validación y se reemplazó `dict(DEFAULTS)` por una copia eficiente, reduciendo la sobrecarga de resolución de atributos en operaciones frecuentes de `load` y `validate`.
 - `2026-10-29T02:38:29` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` reemplazando la lógica de `process_entry` (que invocaba `is_file()` y `is_dir()` por separado) por `entry.is_file()` y `entry.is_dir()` directamente sobre la misma instancia de `os.DirEntry` ya obtenida, evitando llamadas repetidas al sistema de archivos (`stat`).
-- `2026-10-29T02:38:01` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_is_kernel_managed` y `is_protected_path` para evitar llamadas redundantes a `os.environ` y normalizaciones costosas de rutas durante recorridos de disco, mejorando significativamente el rendimiento en operaciones de escaneo.
