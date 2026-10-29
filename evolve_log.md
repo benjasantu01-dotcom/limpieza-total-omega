@@ -1184,3 +1184,10 @@ FAILED evolve/tests/test_assistant.py::test_system_prompt_forbids_claiming_actio
 - `2026-10-29T12:42:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-29T12:42:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T12:42:38` Corrida terminada. Total usado hoy: 300.
+- `2026-10-29T12:49:20` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-29T12:50:11` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo la verificación `_is_file_in_use_by_system` dentro de `_validate_preconditions` para prevenir conflictos operativos con módulos cargados por el kernel/SO antes de que se intente cualquier modificación, reforzando la seguridad defensiva.
+- `2026-10-29T12:50:37` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-29T12:51:08` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: seguridad defensiva).
+- `2026-10-29T12:51:22` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-29T12:51:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T12:51:22` Corrida terminada. Total usado hoy: 304.

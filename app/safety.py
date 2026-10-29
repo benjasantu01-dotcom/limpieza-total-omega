@@ -1026,6 +1026,10 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             if attrs & Win32Attr.REPARSE_POINT:
                 raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
+        # Nueva validación de uso activo para prevenir conflictos
+        if _is_file_in_use_by_system(str(target_path)):
+            raise UnsafePathError("Protección defensiva: Archivo en uso por sistema.", SafetyValidationErrorCode.FILE_IN_USE)
+            
         if target_path.parent.exists() and not os.access(target_path.parent, os.W_OK):
             raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
         

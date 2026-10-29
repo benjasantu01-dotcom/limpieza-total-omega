@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 67 | 3 | 26 | 11 | 97 |
-| 2026-10-29 | 120 | 7 | 44 | 14 | 115 |
+| 2026-10-28 | 67 | 3 | 26 | 11 | 93 |
+| 2026-10-29 | 121 | 7 | 44 | 14 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **37**
 - rendimiento: **33**
-- seguridad defensiva: **30**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `memory.py`: **17**
 - `settings.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `scanner.py`: **15**
 - `assistant.py`: **14**
 - `healthscore.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T12:50:11` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_file_in_use_by_system` dentro de `_validate_preconditions` para prevenir conflictos operativos con módulos cargados por el kernel/SO antes de que se intente cualquier modificación, reforzando la seguridad defensiva.
 - `2026-10-29T12:40:55` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `_perform_secure_copy` al restringir explícitamente los permisos de escritura del archivo resultante (haciéndolo `-rw-------` o equivalente) justo después de la copia, minimizando la ventana de exposición del archivo aislado en el sistema de archivos antes de su registro final.
 - `2026-10-29T12:40:11` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `delete_reviewed` implementando la validación estricta de rutas mediante `ensure_safe_to_modify` antes de cualquier iteración, asegurando que ningún archivo fuera de la zona de cuarentena pueda ser afectado accidentalmente por un error de resolución de path o una manipulación indebida de la variable `review_dir`.
 - `2026-10-29T12:30:00` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez ante errores de acceso a disco en la función `hash_file` y `partial_hash` implementando un manejo preventivo que verifica `path.is_file()` antes de intentar abrir el archivo, evitando excepciones de `PermissionError` o `FileNotFoundError` innecesarias y reforzando la naturaleza "solo lectura" del módulo ante archivos que cambian de estado durante la ejecución.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T11:50:05` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante la inyección de tipos inesperados en el constructor y posibles estados corruptos, añadiendo una validación más estricta en `__post_init__` y asegurando que `validate()` siempre se ejecute, evitando así que datos malformados propaguen errores de precisión en el motor de scoring.
 - `2026-10-29T11:48:41` **browser.py** (robustez ante casos límite): Se introdujo una validación robusta para prevenir que `DirectoryScanner` entre en bucles infinitos por enlaces simbólicos o puntos de reparse, verificando la identidad del archivo mediante `os.stat` (st_dev, st_ino) antes de procesar cada directorio, lo cual es crítico ante rutas mal formadas o ciclos en el árbol de archivos.
 - `2026-10-29T11:40:06` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada (`TypeError`, `ValueError`) y fallos en el sistema de archivos al verificar la existencia y accesibilidad de las rutas, asegurando que cualquier operación no crítica no comprometa el flujo principal de la aplicación.
-- `2026-10-29T11:39:47` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_validate_and_sanitize_data` y `_apply_updates` en `SystemContext` para asegurar que el estado del objeto no quede en un limbo inconsistente si ocurre una excepción inesperada durante la ingestión de datos, preservando la integridad del análisis.
