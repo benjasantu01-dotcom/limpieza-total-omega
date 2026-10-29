@@ -314,7 +314,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         if not isinstance(entry_path, str) or len(entry_path) > MAX_PATH_LEN:
             return None
             
-        p = Path(entry_path)
+        p = Path(entry_path).resolve(strict=False)
         if is_protected_path(p):
             return None
             

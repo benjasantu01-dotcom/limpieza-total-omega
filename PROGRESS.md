@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 18 | 1 | 5 | 3 | 35 |
+| 2026-10-27 | 18 | 1 | 5 | 3 | 31 |
 | 2026-10-28 | 117 | 10 | 43 | 15 | 165 |
-| 2026-10-29 | 37 | 1 | 13 | 8 | 33 |
+| 2026-10-29 | 38 | 1 | 13 | 8 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **30**
+- seguridad defensiva: **31**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
@@ -41,11 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **13**
 - `branding.py`: **11**
 - `organizer.py`: **9**
-- `startup.py`: **5**
+- `startup.py`: **6**
 - `duplicates.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T04:00:21` **startup.py** (seguridad defensiva): Mejoré la seguridad en `entries_from_folders` añadiendo una validación explícita mediante `is_protected_path` sobre el resultado de `resolve()` antes de procesar cualquier entrada, previniendo así el seguimiento de enlaces simbólicos maliciosos o cruces de límites de seguridad fuera de las carpetas de inicio permitidas.
 - `2026-10-29T03:49:05` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita para evitar que se procesen archivos que residen en rutas de solo lectura o volúmenes montados como lectura, evitando errores de E/S impredecibles durante el movimiento atómico.
 - `2026-10-29T03:38:48` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor de puntuación eliminando el riesgo de que el contenido de los mensajes de las reglas contenga rutas del sistema mediante una validación estricta de `_BLOCKED_TERMS` en el punto de entrada de la factoría de mensajes.
 - `2026-10-29T03:29:42` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva al integrar `os.path.realpath` en `_safe_path_check` para prevenir ataques de bypass mediante rutas relativas o enlaces simbólicos que apunten fuera de las carpetas permitidas, asegurando que la validación de seguridad ocurra sobre la ruta absoluta y real del archivo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T02:49:07` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo de caché detectando archivos bloqueados de forma explícita mediante el intento de apertura en modo lectura (`os.open`) antes de procesarlos, evitando así que errores de "archivo en uso" interrumpan prematuramente el cálculo recursivo de `DirectoryScanner`.
 - `2026-10-29T02:48:42` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y situaciones de I/O mediante la conversión explícita a tipos soportados, validación de estado de directorio y captura granular de excepciones, asegurando que el módulo mantenga su integridad operativa sin riesgos de propagación de fallos al hilo principal.
 - `2026-10-29T02:48:07` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y la carga de datos mediante un chequeo de tipos más estricto y el uso de `getattr(source, key, None)` para evitar disparar `Property` o métodos de objetos fuente, previniendo errores de ejecución ante datos malformados.
-- `2026-10-29T02:39:01` **settings.py** (rendimiento): Se optimizó el acceso a las claves de configuración mediante la pre-compilación de `ConfigKey.value` en los diccionarios de validación y se reemplazó `dict(DEFAULTS)` por una copia eficiente, reduciendo la sobrecarga de resolución de atributos en operaciones frecuentes de `load` y `validate`.
