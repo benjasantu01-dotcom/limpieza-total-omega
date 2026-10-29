@@ -345,7 +345,8 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
     try:
         if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
-            return BytesValue(val) if 10 * BYTES_IN_MB < val < MAX_VALID_PROCESS_MEM_BYTES else None
+            # Validamos que el WS sea positivo y razonable (evitando errores de lectura)
+            return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
     except (ctypes.WinError, OSError, Exception):
         return None
     return None
@@ -375,7 +376,7 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
             
     path_buf = ctypes.create_unicode_buffer(1024)
     processed_pids: Set[int] = set()
-    count = cb_needed.value // ctypes.sizeof(wintypes.DWORD)
+    count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     
     for i in range(count):
         pid = int(pids[i])
@@ -393,7 +394,7 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
             if WindowsAPI.kernel32:
                 try:
                     WindowsAPI.kernel32.CloseHandle(h_process)
-                except (OSError, Exception):
+                except Exception:
                     pass
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
@@ -484,5 +485,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if WindowsAPI.kernel32:
             try:
                 WindowsAPI.kernel32.CloseHandle(h_process)
-            except (OSError, Exception):
+            except Exception:
                 pass

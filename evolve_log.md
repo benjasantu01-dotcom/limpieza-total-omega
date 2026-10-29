@@ -1123,3 +1123,12 @@ FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount
 - `2026-10-29T11:50:05` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante la inyección de tipos inesperados en el constructor y posibles estados corruptos, añadiendo una validación más estricta en `__post_init__` y asegurando que `validate()` siempre se ejecute, evitando así que datos malformados propaguen errores de precisión en el motor de scoring.
 - `2026-10-29T11:50:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T11:50:05` Corrida terminada. Total usado hoy: 280.
+- `2026-10-29T11:58:22` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-10-29T11:59:24` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-29T12:00:39` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-29T12:01:09` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_is_process_executable_safe` y `_iter_process_memory` ante errores de API Win32 y casos límite de memoria/rutas, asegurando que el cierre de `handles` sea más resiliente y evitando el procesamiento de procesos cuyo tamaño de `WorkingSet` sea reportado como cero o erróneo.
+- `2026-10-29T12:01:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-29T12:01:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-29T12:02:09` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine.py` ante errores de concurrencia y permisos durante el aislamiento atómico, añadiendo un chequeo explícito de la existencia del archivo de origen justo antes de la lectura en `_atomic_isolate_file` y reforzando la gestión de recursos mediante bloques `try...finally` garantizados para asegurar el cierre de descriptores de archivos incluso ante excepciones inesperadas durante la copia I/O.
+- `2026-10-29T12:02:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T12:02:09` Corrida terminada. Total usado hoy: 284.

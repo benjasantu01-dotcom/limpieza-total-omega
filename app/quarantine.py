@@ -686,6 +686,8 @@ def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_has
 
 def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> None:
     """Copia protegida con streaming y sincronización a disco."""
+    f_src = None
+    f_dst = None
     try:
         st = source.stat()
         if not (st.st_mode & 0o100000):
@@ -699,11 +701,11 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         if not is_safe_to_modify(temp_dest.parent):
             raise UnsafePathError("Directorio destino no seguro.")
         
-        with open(source, "rb", buffering=CHUNK_SIZE) as f_src:
-            with open(temp_dest, "wb", buffering=CHUNK_SIZE) as f_dst:
-                shutil.copyfileobj(f_src, f_dst, length=CHUNK_SIZE)
-                f_dst.flush()
-                os.fsync(f_dst.fileno())
+        f_src = open(source, "rb", buffering=CHUNK_SIZE)
+        f_dst = open(temp_dest, "wb", buffering=CHUNK_SIZE)
+        shutil.copyfileobj(f_src, f_dst, length=CHUNK_SIZE)
+        f_dst.flush()
+        os.fsync(f_dst.fileno())
                 
         _verify_copied_data(st, temp_dest, source_hash)
     except (OSError, IOError) as e:
@@ -711,6 +713,9 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
             try: _check_io_error_context(temp_dest.unlink)
             except OSError: pass
         raise OSError(f"Falla durante copia I/O: {e}")
+    finally:
+        if f_src: f_src.close()
+        if f_dst: f_dst.close()
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
@@ -797,6 +802,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if _win_has_system_attributes(source):
         raise UnsafePathError("Aislamiento bloqueado: archivo de sistema.")
     
+    # Validar existencia antes de abrir
+    if not source.exists():
+        raise FileNotFoundError("El origen desapareció antes de abrir.")
+
     with open(source, "rb") as f:
         fd = f.fileno()
         stat_orig = os.fstat(fd)
