@@ -317,7 +317,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             return []
         # Usar resolución no estricta para manejar rutas que podrían bloquearse por sistema
         resolved_path = base_path.resolve(strict=False)
-        if _cached_is_protected(str(resolved_path)):
+        if not _is_valid_path_structure(str(resolved_path)) or _cached_is_protected(str(resolved_path)):
             return []
         scanner: Scanner = Scanner(base_root=resolved_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):

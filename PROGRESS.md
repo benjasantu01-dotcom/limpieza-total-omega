@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **165** (32.7% de aceptación)
+- Mejoras aceptadas: **168** (33.3% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 18 | 1 | 5 | 3 | 51 |
+| 2026-10-27 | 18 | 1 | 5 | 3 | 47 |
 | 2026-10-28 | 117 | 10 | 43 | 15 | 165 |
-| 2026-10-29 | 30 | 1 | 10 | 8 | 27 |
+| 2026-10-29 | 33 | 1 | 10 | 8 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **37**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **33**
 - rendimiento: **29**
-- seguridad defensiva: **25**
+- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
+- `scanner.py`: **17**
+- `settings.py`: **17**
 - `diskreport.py`: **17**
 - `quarantine.py`: **16**
-- `scanner.py`: **16**
-- `settings.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **15**
 - `safety.py`: **15**
 - `memory.py`: **14**
-- `assistant.py`: **12**
+- `assistant.py`: **13**
 - `branding.py`: **10**
 - `organizer.py`: **9**
 - `startup.py`: **5**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T03:19:40` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad en `_is_safe_payload_structure` y `_ensure_safe_text` introduciendo un filtrado preventivo contra caracteres de control y secuencias de escape potencialmente peligrosas que podrían ser usadas para ofuscar inyecciones en el payload de comunicación remota.
+- `2026-10-29T03:18:47` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_read_and_parse_json` añadiendo un chequeo explícito de codificación y detección de archivos vacíos para prevenir errores al procesar configuraciones corruptas o truncadas.
+- `2026-10-29T03:18:16` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recursión y el manejo de rutas al prevenir el procesamiento de rutas con caracteres nulos o inválidos y mejorar la validación de acceso mediante `os.access` en `scan_directory` antes de intentar iterar, evitando excepciones innecesarias en sistemas de archivos restringidos.
 - `2026-10-29T03:08:42` **quarantine.py** (robustez ante casos límite): Se ha añadido una validación de existencia y legibilidad en `_validate_input_path` y `_ensure_disk_space` para capturar explícitamente escenarios donde el disco o el archivo se vuelven inaccesibles entre validaciones, evitando errores no controlados en el flujo de aislamiento.
 - `2026-10-29T03:08:02` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para manejar archivos sin permisos de lectura sin colapsar, y añadí una verificación explícita de `OSError` en `_try_open_win_file` para evitar bloqueos por archivos que se eliminaron entre el escaneo y la verificación (Race Condition).
 - `2026-10-29T02:59:42` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_safe_int_conversion` ante valores numéricos extremos o tipos inesperados que podrían causar errores durante el procesamiento de métricas, asegurando que la función siempre retorne un `BytesValue` válido y evitando posibles excepciones en tiempo de ejecución.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T02:38:01` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_is_kernel_managed` y `is_protected_path` para evitar llamadas redundantes a `os.environ` y normalizaciones costosas de rutas durante recorridos de disco, mejorando significativamente el rendimiento en operaciones de escaneo.
 - `2026-10-29T02:27:24` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-asignando el buffer de memoria una sola vez y reduciendo las llamadas a `ctypes` dentro del bucle principal, evitando el re-procesamiento innecesario de metadatos de procesos.
 - `2026-10-29T02:08:24` **browser.py** (rendimiento): Optimizé `DirectoryScanner.get_size` evitando llamadas repetitivas a `os.path.normcase` y `os.path.abspath` mediante la reutilización del estado del contexto, además de reducir la profundidad de recursión efectiva al filtrar `NEVER_TOUCH` antes de procesar directorios.
-- `2026-10-29T02:07:06` **startup.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones clave (`startup_folders`, `_process_folder_entry`, `summarize`) y se refactorizó `entries_from_folders` para mejorar su legibilidad y cumplir con las normas de estilo senior del proyecto.
-- `2026-10-29T01:58:04` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Optional` y `TypeAlias` de forma consistente), se mejoró la documentación de los métodos de escaneo para clarificar las asunciones de seguridad y se renombraron parámetros internos (como `path_str` a `target_path`) para eliminar ambigüedades técnicas, facilitando el mantenimiento.
-- `2026-10-29T01:57:37` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_ntfs_reparse_redirection` y `_validate_no_reparse_traversal`, extrayendo la lógica repetitiva de validación de profundidad de reparse points y simplificando el flujo de resolución de rutas para facilitar su auditoría.

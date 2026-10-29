@@ -372,10 +372,10 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     try:
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
-        if len(content) > MAX_SETTINGS_SIZE or len(content) < 2: return None
+        if not content or len(content) > MAX_SETTINGS_SIZE or len(content) < 2: return None
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
-        data = json.loads(content.decode("utf-8"))
+        data = json.loads(content.decode("utf-8", errors="strict"))
         if not isinstance(data, dict) or len(data) > 64: return None
         for k, v in data.items():
             if not isinstance(k, str) or (v is not None and not isinstance(v, (str, int, bool, float))):

@@ -341,15 +341,17 @@ def _validate_response_length(text: Any) -> str:
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
-    """Verifica de forma recursiva que la estructura de datos sea plana y contenga tipos permitidos."""
+    """Verifica de forma recursiva que la estructura de datos sea plana y contenga tipos permitidos, bloqueando caracteres de control."""
     if depth > _MAX_NESTING_DEPTH: return False
-    if isinstance(val, (int, float, bool, str)) or val is None: return True
+    if isinstance(val, (int, float, bool)) or val is None: return True
+    if isinstance(val, str):
+        return _ensure_safe_text(val)
     if isinstance(val, (list, tuple, set)):
         if len(val) > _MAX_COLLECTION_SIZE: return False
-        return all(isinstance(item, (int, float, bool, str)) for item in val)
+        return all(_is_safe_payload_structure(item, depth + 1) for item in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return False
-        return all(isinstance(k, str) and isinstance(v, (int, float, bool, str)) for k, v in val.items())
+        return all(isinstance(k, str) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:

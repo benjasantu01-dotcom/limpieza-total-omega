@@ -1477,3 +1477,10 @@ FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area -
 - `2026-10-29T03:09:46` ➖ Sin cambios en safety.py (enfoque: robustez ante casos límite). Motivo: Se implementó una verificación de concurrencia y estado de archivo más robusta mediante `GetFileInformationByHandle` antes de realizar operaciones de acceso, mitigando fallos por bloqueos de archivos temporales de sistema o procesos en ejecución que antes causaban excepciones de I/O no controladas.
 - `2026-10-29T03:09:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T03:09:46` Corrida terminada. Total usado hoy: 76.
+- `2026-10-29T03:17:49` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-10-29T03:18:16` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la recursión y el manejo de rutas al prevenir el procesamiento de rutas con caracteres nulos o inválidos y mejorar la validación de acceso mediante `os.access` en `scan_directory` antes de intentar iterar, evitando excepciones innecesarias en sistemas de archivos restringidos.
+- `2026-10-29T03:18:47` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_read_and_parse_json` añadiendo un chequeo explícito de codificación y detección de archivos vacíos para prevenir errores al procesar configuraciones corruptas o truncadas.
+- `2026-10-29T03:19:16` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-29T03:19:40` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `_is_safe_payload_structure` y `_ensure_safe_text` introduciendo un filtrado preventivo contra caracteres de control y secuencias de escape potencialmente peligrosas que podrían ser usadas para ofuscar inyecciones en el payload de comunicación remota.
+- `2026-10-29T03:19:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T03:19:40` Corrida terminada. Total usado hoy: 80.
