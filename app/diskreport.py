@@ -308,28 +308,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Obtenemos resolución de ruta de forma segura
-                        try:
-                            p_entry = Path(entry.path).resolve()
-                        except (OSError, RuntimeError):
-                            continue
+                        p_entry = Path(entry.path).resolve()
                         
-                        # Defensivo: validar que estamos dentro de la raíz original
                         if root_path not in p_entry.parents and p_entry != root_path:
                             continue
 
-                        # Verificación estricta de seguridad defensiva
                         if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, entry.path)):
                             continue
                         
                         if entry.is_symlink() or _is_reparse_point(p_entry):
                             continue
                         
-                        # Obtener stat controlando posibles bloqueos de acceso
-                        try:
-                            st = entry.stat(follow_symlinks=False)
-                        except (OSError, PermissionError):
-                            continue
+                        st = entry.stat(follow_symlinks=False)
                             
                         if entry.is_dir():
                             inode = (st.st_dev, st.st_ino)
@@ -339,7 +329,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file():
                             yield p_entry, st.st_size
                             
-                    except (OSError, PermissionError, FileNotFoundError):
+                    except (OSError, PermissionError, FileNotFoundError, RuntimeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):
             continue
@@ -378,7 +368,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 metrics = stats[top_level]
                 metrics.size += size
                 metrics.file_count += 1
-        except (ValueError, IndexError, OSError):
+        except (ValueError, IndexError, OSError, PermissionError):
             continue
             
     results = [FolderUsage(path, m.size, m.file_count) for path, m in stats.items()]

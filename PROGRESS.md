@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **163** (32.3% de aceptación)
+- Mejoras aceptadas: **165** (32.7% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 248
+- Sin respuesta de la IA (error o límite): 246
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 8 | 1 | 2 | 0 | 19 |
+| 2026-10-27 | 6 | 1 | 2 | 0 | 17 |
 | 2026-10-28 | 117 | 10 | 43 | 15 | 165 |
-| 2026-10-29 | 38 | 1 | 13 | 8 | 64 |
+| 2026-10-29 | 42 | 1 | 13 | 8 | 64 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **34**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **31**
-- manejo de errores y validación de entradas: **30**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **16**
+- `diskreport.py`: **17**
 - `scanner.py`: **16**
 - `settings.py`: **16**
-- `diskreport.py`: **16**
+- `browser.py`: **16**
 - `safety.py`: **15**
-- `browser.py`: **15**
+- `quarantine.py`: **15**
 - `healthscore.py`: **14**
 - `memory.py`: **13**
-- `assistant.py`: **12**
-- `branding.py`: **10**
-- `organizer.py`: **9**
+- `assistant.py`: **13**
+- `branding.py`: **11**
+- `organizer.py`: **8**
 - `startup.py`: **6**
 - `duplicates.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T05:22:44` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y excepciones específicas para evitar que rutas malformadas o errores de permisos durante la iteración interrumpan el escaneo.
+- `2026-10-29T05:22:29` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_valid_cache_path` y `_resolve_browser_path` agregando validaciones de tipo explícitas y chequeos de estado (`exists()`) más granulares para prevenir que las operaciones de disco fallen ante entradas mal formadas o condiciones de carrera en el sistema de archivos.
+- `2026-10-29T05:21:27` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de acceso a datos (`color`, `font_size`, `icon`, `tab_label`) mediante la validación explícita de `None` y tipos incorrectos, evitando que valores de entrada mal formados provoquen accesos inesperados a diccionarios o retornos de valores inconsistentes.
+- `2026-10-29T05:20:52` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para garantizar que la validación de objetos fuente no colapse ante tipos inesperados (como `set` o estructuras recursivas profundas), asegurando que los datos de entrada al asistente se mantengan dentro de límites controlados.
 - `2026-10-29T04:00:21` **startup.py** (seguridad defensiva): Mejoré la seguridad en `entries_from_folders` añadiendo una validación explícita mediante `is_protected_path` sobre el resultado de `resolve()` antes de procesar cualquier entrada, previniendo así el seguimiento de enlaces simbólicos maliciosos o cruces de límites de seguridad fuera de las carpetas de inicio permitidas.
 - `2026-10-29T03:49:05` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita para evitar que se procesen archivos que residen en rutas de solo lectura o volúmenes montados como lectura, evitando errores de E/S impredecibles durante el movimiento atómico.
 - `2026-10-29T03:38:48` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del motor de puntuación eliminando el riesgo de que el contenido de los mensajes de las reglas contenga rutas del sistema mediante una validación estricta de `_BLOCKED_TERMS` en el punto de entrada de la factoría de mensajes.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T03:08:42` **quarantine.py** (robustez ante casos límite): Se ha añadido una validación de existencia y legibilidad en `_validate_input_path` y `_ensure_disk_space` para capturar explícitamente escenarios donde el disco o el archivo se vuelven inaccesibles entre validaciones, evitando errores no controlados en el flujo de aislamiento.
 - `2026-10-29T03:08:02` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para manejar archivos sin permisos de lectura sin colapsar, y añadí una verificación explícita de `OSError` en `_try_open_win_file` para evitar bloqueos por archivos que se eliminaron entre el escaneo y la verificación (Race Condition).
 - `2026-10-29T02:59:42` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_safe_int_conversion` ante valores numéricos extremos o tipos inesperados que podrían causar errores durante el procesamiento de métricas, asegurando que la función siempre retorne un `BytesValue` válido y evitando posibles excepciones en tiempo de ejecución.
-- `2026-10-29T02:49:23` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular dentro del bucle principal, asegurando que un fallo en el acceso a metadatos de un solo archivo no interrumpa el escaneo completo del árbol.
-- `2026-10-29T02:49:07` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo de caché detectando archivos bloqueados de forma explícita mediante el intento de apertura en modo lectura (`os.open`) antes de procesarlos, evitando así que errores de "archivo en uso" interrumpan prematuramente el cálculo recursivo de `DirectoryScanner`.
-- `2026-10-29T02:48:42` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y situaciones de I/O mediante la conversión explícita a tipos soportados, validación de estado de directorio y captura granular de excepciones, asegurando que el módulo mantenga su integridad operativa sin riesgos de propagación de fallos al hilo principal.
-- `2026-10-29T02:48:07` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y la carga de datos mediante un chequeo de tipos más estricto y el uso de `getattr(source, key, None)` para evitar disparar `Property` o métodos de objetos fuente, previniendo errores de ejecución ante datos malformados.

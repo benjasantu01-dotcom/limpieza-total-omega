@@ -213,21 +213,21 @@ def app_title() -> str:
 
 def color(name: Optional[str]) -> ColorHex: 
     """Acceso seguro a un color de la paleta corporativa por nombre."""
-    if not isinstance(name, str) or not name:
+    if not isinstance(name, str) or name not in PALETTE:
         return "#808080"
-    return PALETTE.get(name.lower(), "#808080")
+    return PALETTE[name]
 
 def font_size(name: Optional[str]) -> int: 
     """Retorna el tamaño de fuente configurado para una categoría dada."""
-    if not isinstance(name, str) or not name:
+    if not isinstance(name, str) or name not in FONT_SIZES:
         return UI_CONFIG.body_size
-    return FONT_SIZES.get(name.lower(), UI_CONFIG.body_size)
+    return FONT_SIZES[name]
 
 def icon(section: Optional[str]) -> str: 
     """Retorna el glifo Unicode asociado a una sección de la aplicación."""
-    if not isinstance(section, str) or not section:
+    if not isinstance(section, str) or section not in ICONS:
         return "\u2022"
-    return ICONS.get(section, "\u2022")
+    return ICONS[section]
 
 def tab_label(section: Optional[str]) -> str: 
     """Formatea la etiqueta de una pestaña combinando icono y texto."""

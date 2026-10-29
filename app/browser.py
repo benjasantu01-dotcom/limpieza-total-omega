@@ -248,7 +248,8 @@ def directory_size(path: Optional[OSPath]) -> int:
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """Valida exhaustivamente una ruta de caché antes de intentar cualquier medición."""
-    if not candidate.exists() or not candidate.is_dir(): return False
+    if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): 
+        return False
     cand_abs = os.path.abspath(candidate)
     cand_norm = os.path.normcase(cand_abs)
     
@@ -260,11 +261,9 @@ def _is_valid_cache_path(candidate: Path, base_norm: str, kernel: Optional[ctype
 def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
     """
     Construye y valida una ruta absoluta de caché.
-    Asegura que la ruta resuelta permanezca dentro del directorio base
-    (evitando ataques de path traversal) y que no sea un enlace simbólico
-    o punto de reparse que apunte fuera del sandbox.
     """
-    if not _is_valid_rel_path(rel_str): return Path()
+    if not _is_valid_rel_path(rel_str) or not isinstance(base_resolved, Path): 
+        return Path()
     try:
         target = base_resolved.joinpath(*rel_str.split("\\"))
         if not target.exists() or not target.is_dir(): return Path()

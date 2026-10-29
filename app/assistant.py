@@ -341,12 +341,11 @@ def _validate_response_length(text: Any) -> str:
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
-    """Verifica de forma recursiva que la estructura de datos sea plana y contenga tipos permitidos, bloqueando caracteres de control."""
+    """Verifica recursivamente que la estructura sea plana y contenga tipos permitidos."""
     if depth > _MAX_NESTING_DEPTH: return False
     if isinstance(val, (int, float, bool)) or val is None: return True
-    if isinstance(val, str):
-        return _ensure_safe_text(val)
-    if isinstance(val, (list, tuple, set)):
+    if isinstance(val, str): return _ensure_safe_text(val)
+    if isinstance(val, (list, tuple)):
         if len(val) > _MAX_COLLECTION_SIZE: return False
         return all(_is_safe_payload_structure(item, depth + 1) for item in val)
     if isinstance(val, dict):
@@ -355,10 +354,10 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
-    """Realiza un escaneo de seguridad para detectar estructuras anidadas o tipos inválidos."""
+    """Escanea estructuras de datos para detectar anidamiento excesivo o tipos inválidos."""
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
-    if isinstance(val, (list, tuple, set)):
+    if isinstance(val, (list, tuple)):
         return len(val) > _MAX_COLLECTION_SIZE or any(_is_input_too_deep_or_complex(item, depth + 1) for item in val)
     if isinstance(val, dict):
         return len(val) > _MAX_COLLECTION_SIZE or any(_is_input_too_deep_or_complex(v, depth + 1) for v in val.values())
@@ -487,7 +486,7 @@ class SystemContext:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None or callable(source) or not isinstance(source, (dict, object)): 
             return False
-        return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list)) else True
+        return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list, tuple)) else True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios validados al contexto y limpia cachés internas."""
