@@ -377,7 +377,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         dest_path = Path(destination).resolve()
         parent = dest_path.parent
         
-        # Validación defensiva estricta para evitar accesos indebidos
+        # Validación defensiva estricta para evitar accesos indebidos o fuera de ruta
         if is_protected_path(dest_path) or is_protected_path(parent):
             return None
         if not is_safe_to_modify(dest_path):

@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
-- Rechazadas por tests: 9
+- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 68
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 67 | 3 | 26 | 11 | 109 |
-| 2026-10-29 | 114 | 6 | 42 | 12 | 114 |
+| 2026-10-28 | 67 | 3 | 26 | 11 | 105 |
+| 2026-10-29 | 116 | 7 | 42 | 13 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,11 +25,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **37**
 - rendimiento: **33**
-- seguridad defensiva: **24**
+- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **19**
+- `browser.py`: **20**
 - `quarantine.py`: **19**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
@@ -38,13 +38,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **15**
 - `assistant.py`: **14**
 - `healthscore.py`: **13**
-- `branding.py`: **10**
+- `branding.py`: **11**
 - `startup.py`: **8**
 - `organizer.py`: **8**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T12:21:33` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `detect_profiles` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta objetivo antes de iniciar el escaneo recursivo, garantizando que incluso rutas internas no sean procesadas si están marcadas como protegidas globalmente.
+- `2026-10-29T12:21:08` **branding.py** (seguridad defensiva): Se introdujo una validación de seguridad proactiva en `save_logo_svg` utilizando `is_protected_path` sobre el directorio padre antes de intentar cualquier operación de disco, garantizando que el diseño defensivo del módulo sea coherente con las políticas de acceso del proyecto.
 - `2026-10-29T12:11:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_secure_to_read` ante archivos malformados o sistemas de archivos inusuales al añadir una validación explícita de `st.st_size` contra valores negativos y agregué un manejo de `PermissionError` más específico durante la lectura del JSON, asegurando que la aplicación siempre recupere `DEFAULTS` en lugar de fallar silenciosamente o entrar en estados inconsistentes.
 - `2026-10-29T12:11:24` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas ante archivos bloqueados o inaccesibles mediante la incorporación de una validación de `stats` dentro de `_run_file_heuristics`, asegurando que ninguna regla reciba metadatos nulos si el archivo no pudo ser leído, evitando así errores en tiempo de ejecución.
 - `2026-10-29T12:10:57` **safety.py** (robustez ante casos límite): Se añadió una verificación de exclusión por longitud de nombre de archivo (`MAX_FILENAME_LENGTH`) dentro de `_validate_structural_safety` para prevenir desbordamientos o comportamientos indefinidos al interactuar con el sistema de archivos de Windows (MAX_PATH en NTFS), fortaleciendo la robustez ante rutas creadas de forma malintencionada o excesivamente largas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T11:38:36` **settings.py** (rendimiento): Optimicé el acceso a la configuración implementando una caché de tipo "Single-Flight" para las validaciones de seguridad de rutas (`_run_safety_checks`) y reutilizando la estructura de datos `MappingProxyType` para evitar copias innecesarias en cada lectura del archivo.
 - `2026-10-29T11:28:33` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño de cuarentena reemplazando el re-procesamiento de toda la lista de objetos por una suma directa sobre los datos cargados en el manifiesto, evitando iteraciones redundantes y aprovechando la estructura de datos ya existente.
 - `2026-10-29T11:20:51` **memory.py** (rendimiento): Se optimizó el proceso de enumeración de memoria moviendo la creación del buffer de nombres de archivo fuera del loop interno y utilizando una tupla de PIDs procesados para evitar re-análisis innecesarios dentro de la misma iteración, reduciendo la presión sobre el recolector de basura y el sistema de E/S.
-- `2026-10-29T11:09:10` **diskreport.py** (rendimiento): Optimizé la función `walk_files` eliminando la llamada innecesaria a `Path.resolve()` dentro del bucle principal, reduciendo significativamente las llamadas al sistema operativo (I/O) y mejorando el rendimiento del escaneo.
-- `2026-10-29T11:08:34` **browser.py** (rendimiento): Optimizé el proceso de detección de perfiles reutilizando la instancia de `DirectoryScanner` y evitando múltiples resoluciones de ruta redundantes dentro del bucle de navegadores, lo cual reduce la sobrecarga de I/O y llamadas al sistema en cada escaneo.

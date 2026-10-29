@@ -100,7 +100,7 @@ class DirectoryScanner:
         
         try:
             p_obj = Path(root_path)
-            if not is_safe_to_modify(p_obj):
+            if not is_safe_to_modify(p_obj) or is_protected_path(p_obj):
                 return ScanResult(0, True)
             root_norm = os.path.normcase(os.path.abspath(root_path))
         except (OSError, RuntimeError, ValueError):
@@ -292,7 +292,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             target_abs = os.path.abspath(target)
             if not os.path.normcase(target_abs).startswith(base_norm): continue
             
-            if _IS_JUNCTION_FN(target_abs) or target.is_symlink() or not is_safe_to_modify(target):
+            if _IS_JUNCTION_FN(target_abs) or target.is_symlink() or not is_safe_to_modify(target) or is_protected_path(target):
                 continue
                 
             if _is_system_hidden(target_abs, kernel) or target.name.lower() in NEVER_TOUCH:
