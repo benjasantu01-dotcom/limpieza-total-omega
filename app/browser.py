@@ -45,7 +45,7 @@ __all__ = [
 JunctionChecker: TypeAlias = Callable[[str], bool]
 BrowserMap: TypeAlias = Dict[str, str]
 OSPath: TypeAlias = Union[str, Path]
-VisitedDirs: TypeAlias = Set[str]
+VisitedDirs: TypeAlias = Set[tuple[int, int]]
 
 PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 
@@ -59,7 +59,7 @@ class ScanContext:
         kernel32: Instancia de la DLL de Windows o None si estamos en otro SO.
         is_junction: Función callback para detectar puntos de reparse (Junctions).
         visited_files: Registro de (dev, ino) para evitar conteos duplicados por hardlinks.
-        visited_dirs: Conjunto de rutas normalizadas ya recorridas para evitar ciclos.
+        visited_dirs: Conjunto de (dev, ino) ya recorridos para evitar bucles de directorios.
         never_touch_lower: Conjunto de nombres de archivo/directorio prohibidos.
         max_depth: Límite de recursión para evitar desbordamiento de pila.
     """
@@ -85,16 +85,19 @@ class DirectoryScanner:
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
         Calcula el peso en bytes de un directorio mediante profundidad controlada.
-        
-        Realiza validaciones de seguridad previas a la entrada, bloquea rutas 
-        protegidas y descarta enlaces simbólicos para prevenir escapes del sandbox.
         """
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
         
-        if not root_path or not os.path.exists(root_path):
+        try:
+            st = os.stat(root_path)
+            dir_id = (st.st_dev, st.st_ino)
+        except (OSError, PermissionError):
             return ScanResult(0, False)
 
+        if dir_id in self.ctx.visited_dirs:
+            return ScanResult(0, True)
+        
         try:
             p_obj = Path(root_path)
             if not is_safe_to_modify(p_obj):
@@ -103,10 +106,10 @@ class DirectoryScanner:
         except (OSError, RuntimeError, ValueError):
             return ScanResult(0, False)
 
-        if not root_norm.startswith(self.ctx.sandbox_base_norm) or root_norm in self.ctx.visited_dirs:
+        if not root_norm.startswith(self.ctx.sandbox_base_norm):
             return ScanResult(0, True)
 
-        self.ctx.visited_dirs.add(root_norm)
+        self.ctx.visited_dirs.add(dir_id)
         total_bytes: int = 0
         
         try:
@@ -121,17 +124,11 @@ class DirectoryScanner:
                                 total_bytes += subdir.bytes_found
                         elif entry.is_file(follow_symlinks=False):
                             if not _is_system_hidden(entry.path, self.ctx.kernel32):
-                                try:
-                                    fd = os.open(entry.path, os.O_RDONLY)
-                                    os.close(fd)
-                                except (OSError, PermissionError, FileNotFoundError):
-                                    continue
-                                    
-                                st = entry.stat(follow_symlinks=False)
-                                file_id = (st.st_dev, st.st_ino)
+                                st_file = entry.stat(follow_symlinks=False)
+                                file_id = (st_file.st_dev, st_file.st_ino)
                                 if file_id not in self.ctx.visited_files:
                                     self.ctx.visited_files.add(file_id)
-                                    total_bytes += st.st_size
+                                    total_bytes += st_file.st_size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
             return ScanResult(total_bytes, True)

@@ -268,6 +268,7 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
+        # Forzar validación completa al inicializar y prevenir asignaciones directas inconsistentes
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
             if not isinstance(val, (int, float)):
