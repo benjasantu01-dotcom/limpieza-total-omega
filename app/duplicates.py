@@ -73,7 +73,14 @@ def is_system_or_hidden(path: Path) -> bool:
 
 @dataclass
 class DuplicateGroup:
-    """Representa un conjunto de archivos con contenido idéntico."""
+    """
+    Agrupación lógica de archivos que comparten un mismo contenido (hash).
+    
+    Attributes:
+        digest: Hash SHA256 que identifica el contenido del grupo.
+        size_bytes: Tamaño individual de cada archivo en el grupo.
+        paths: Lista de rutas que contienen dicho archivo.
+    """
     digest: str
     size_bytes: int
     paths: List[Path]
@@ -104,7 +111,7 @@ def _safe_path_check(path: Path) -> bool:
     return (
         real_path.is_file() and 
         is_safe_to_modify(real_path) and 
-        not is_protected_path(real_path) and 
+        is_protected_path(real_path) is False and 
         not is_junction(real_path)
     )
 
@@ -117,8 +124,14 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo. 
-    Usa caché local para evitar re-cálculos costosos en una misma sesión.
+    Calcula el hash SHA256 completo del archivo para confirmación final.
+    
+    Args:
+        path: Ubicación del archivo.
+        chunk_size: Tamaño del bloque de lectura (default 1MB).
+        
+    Returns:
+        Hexadecimal del hash o None si el acceso está restringido.
     """
     if not isinstance(path, Path) or not _safe_path_check(path): 
         return None
@@ -139,7 +152,10 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Genera un fingerprint rápido leyendo solo el encabezado del archivo.
-    Permite descartar archivos diferentes rápidamente sin leer el contenido completo.
+    
+    Esta técnica optimiza la detección evitando leer archivos pesados que
+    difieren en sus primeros 64KB, descartando falsos positivos de tamaño
+    con un costo de I/O mínimo.
     """
     if not isinstance(path, Path) or not _safe_path_check(path): 
         return None

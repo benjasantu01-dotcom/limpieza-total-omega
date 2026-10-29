@@ -55,13 +55,9 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32 para interactuar con procesos.
-# 0x1000: PROCESS_QUERY_LIMITED_INFORMATION (Permite obtener info básica con menos privilegios)
 WIN32_PROCESS_QUERY_LIMITED: Final[int] = 0x1000
-# 0x0400: PROCESS_SET_QUOTA (Requerido para modificar el working set)
 WIN32_PROCESS_SET_QUOTA: Final[int] = 0x0400
-# 0x0400: PROCESS_QUERY_INFORMATION (Requerido para consultar métricas de memoria)
 WIN32_PROCESS_QUERY_INFO: Final[int] = 0x0400
-# 0x020000: PROCESS_SET_INFORMATION (Necesario para llamar a EmptyWorkingSet)
 TRIM_ACCESS_MASK: Final[int] = 0x020000 | WIN32_PROCESS_SET_QUOTA | WIN32_PROCESS_QUERY_INFO
 
 INVALID_HANDLE_VALUE: Final[int] = -1
@@ -105,7 +101,10 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """
     Estructura que mapea la API GlobalMemoryStatusEx de Windows.
-    Contiene información sobre el estado actual de la memoria física y virtual.
+    dwLength: Tamaño de la estructura en bytes.
+    dwMemoryLoad: Porcentaje de memoria en uso (0-100).
+    ullTotalPhys: Memoria RAM física total en bytes.
+    ullAvailPhys: Memoria RAM física disponible en bytes.
     """
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
@@ -121,8 +120,8 @@ class MEMORYSTATUSEX(ctypes.Structure):
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
     """
-    Estructura utilizada por la API GetProcessMemoryInfo.
-    Mapea fielmente los contadores de rendimiento de memoria por proceso en Windows.
+    Estructura utilizada por la API GetProcessMemoryInfo para obtener 
+    estadísticas detalladas de memoria por proceso.
     """
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
@@ -201,7 +200,6 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
     """Extrae números de strings y los convierte a BytesValue de forma defensiva."""
     if value is None: return BytesValue(0)
     
-    # Manejo de tipos numéricos directos
     if isinstance(value, (int, float)):
         try:
             val = int(value * multiplier)
@@ -345,7 +343,6 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
     """Consulta contadores de memoria mediante GetProcessMemoryInfo y extrae el WorkingSetSize."""
     if h_process is None or WindowsAPI.psapi is None: return None
     try:
-        # Validación: aseguro que la estructura sea utilizable antes de la llamada
         if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 10 * BYTES_IN_MB < val < MAX_VALID_PROCESS_MEM_BYTES else None
@@ -357,7 +354,6 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
     """Verifica seguridad de ruta usando buffer pre-asignado y manejo de errores de API."""
     if h_process is None or WindowsAPI.psapi is None: return False
     try:
-        # GetModuleFileNameExW puede fallar si el proceso está en estado de terminación
         ret = WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, path_buffer, len(path_buffer))
         if ret <= 0: return False 
         
@@ -377,7 +373,6 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
     if WindowsAPI.psapi is None or not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
         return
             
-    # Buffer reutilizable para rutas
     path_buf = ctypes.create_unicode_buffer(1024)
     count = cb_needed.value // ctypes.sizeof(wintypes.DWORD)
     

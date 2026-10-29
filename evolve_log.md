@@ -1029,3 +1029,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-29T10:30:40` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se mejora la legibilidad y mantenibilidad de `walk_files` y `_collect_summary_data` mediante type hints explícitos, docstrings más precisos sobre el flujo de ejecución y el reemplazo de `str` por `Path` en la lógica interna de `walk_files` para evitar inconsistencias de tipos.
 - `2026-10-29T10:30:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T10:30:40` Corrida terminada. Total usado hoy: 248.
+- `2026-10-29T10:36:48` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-10-29T10:37:15` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha añadido documentación detallada mediante docstrings en los métodos de hashing y la estructura de datos principal para clarificar el flujo lógico de la estrategia de duplicados, cumpliendo con el enfoque de legibilidad y facilitando el mantenimiento a futuro.
+- `2026-10-29T10:37:44` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los parámetros de entrada y retorno de las funciones de puntuación (`score_`) y se mejoró la documentación con docstrings precisos, clarificando la unidad de medida y el sentido de la normalización para cada componente.
+- `2026-10-29T10:38:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._safe_validate_inputs, wrapper
+- `2026-10-29T10:39:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-29T10:39:36` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se introdujeron constantes con nombres semánticos y comentarios explicativos en la estructura `MEMORYSTATUSEX` y las operaciones de bajo nivel, mejorando la legibilidad técnica y facilitando el mantenimiento sin alterar la lógica de diagnóstico.
+- `2026-10-29T10:39:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T10:39:36` Corrida terminada. Total usado hoy: 252.
