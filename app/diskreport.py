@@ -51,14 +51,14 @@ Inode: TypeAlias = Tuple[int, int]
 FileRecord: TypeAlias = Tuple[int, Path]
 
 
-def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
+def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
     """
     Obtiene metadatos del archivo sin seguir enlaces simbólicos (evita escapes).
     Maneja explícitamente errores de acceso y condiciones de carrera.
     """
+    if path is None:
+        return None
     try:
-        if not path:
-            return None
         return os.stat(path, follow_symlinks=False)
     except (OSError, PermissionError, ValueError, FileNotFoundError):
         return None

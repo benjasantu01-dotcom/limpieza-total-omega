@@ -111,6 +111,7 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Determina si un archivo es apto para el análisis excluyendo archivos vacíos o de sistema."""
+    if not isinstance(path, Path): return False
     return st_size > 0 and _safe_path_check(path) and not is_system_or_hidden(path)
 
 
@@ -119,10 +120,11 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo del archivo. 
     Usa caché local para evitar re-cálculos costosos en una misma sesión.
     """
-    if not isinstance(path, Path) or not _safe_path_check(path) or not path.exists(): 
+    if not isinstance(path, Path) or not _safe_path_check(path): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
+        if not path.exists(): return None
         hasher = hashlib.sha256()
         with open(path, "rb") as f:
             while (chunk := f.read(chunk_size)):
@@ -139,10 +141,11 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     Genera un fingerprint rápido leyendo solo el encabezado del archivo.
     Permite descartar archivos diferentes rápidamente sin leer el contenido completo.
     """
-    if not isinstance(path, Path) or not _safe_path_check(path) or not path.exists(): 
+    if not isinstance(path, Path) or not _safe_path_check(path): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     try:
+        if not path.exists(): return None
         with open(path, "rb") as f:
             header = f.read(read_bytes)
             if not header: return None
@@ -224,6 +227,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hash a una lista de rutas y agrupa por colisiones."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
+        if not isinstance(path, Path): continue
         if (d := hash_func(path)): groups[d].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
@@ -269,7 +273,8 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Calcula la suma total de bytes recuperables si se eliminan los duplicados."""
-    return sum(g.wasted_bytes for g in groups) if groups else 0
+    if not groups: return 0
+    return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
 def _get_mtime(path: Path) -> float:

@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 90 | 7 | 35 | 14 | 126 |
-| 2026-10-29 | 80 | 5 | 29 | 11 | 107 |
+| 2026-10-28 | 87 | 7 | 34 | 14 | 126 |
+| 2026-10-29 | 83 | 5 | 30 | 11 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **35**
 - rendimiento: **33**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **33**
-- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **18**
-- `quarantine.py`: **17**
-- `safety.py`: **16**
-- `scanner.py`: **16**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `quarantine.py`: **16**
 - `settings.py`: **16**
 - `memory.py`: **15**
+- `safety.py`: **15**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
-- `healthscore.py`: **12**
+- `healthscore.py`: **13**
 - `branding.py`: **9**
 - `organizer.py`: **8**
 - `startup.py`: **7**
-- `duplicates.py`: **6**
+- `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T09:57:22` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` y `_compute_cached` implementando validaciones de entrada más estrictas y manejando explícitamente posibles errores de tipo durante la deserialización de métricas para evitar que la aplicación colapse ante datos corruptos.
+- `2026-10-29T09:56:52` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validaciones de tipo y manejo defensivo de errores en funciones críticas de acceso a disco, asegurando que los valores de retorno sean predecibles ante entradas nulas o rutas inválidas.
+- `2026-10-29T09:56:24` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_safe_stat` al añadir un chequeo explícito de `None` sobre `os.stat_result`, evitando posibles errores de desreferencia en el procesamiento del flujo de datos, además de asegurar que `_safe_stat` maneje correctamente las entradas `None`.
 - `2026-10-29T09:49:30` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner.get_size` implementando validación de entrada con `is_safe_to_modify` para detectar rutas inválidas antes de iniciar operaciones de sistema de archivos, y añadí capturas de excepciones más granulares al iterar el directorio para prevenir fallos durante accesos simultáneos.
 - `2026-10-29T09:47:35` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y sus validadores asociados añadiendo capturas de excepciones más granulares y verificaciones de tipo para prevenir errores de ejecución ante entradas malformadas o tipos de datos inesperados, asegurando que `ingest` sea transaccional y no deje al objeto en un estado parcial si falla la validación.
 - `2026-10-29T08:25:20` **startup.py** (seguridad defensiva): Se introdujo la verificación `is_safe_to_modify(p)` dentro de `_process_folder_entry` para asegurar que, al escanear carpetas de inicio, el archivo detectado no solo no esté protegido por nombre, sino que también cumpla con los requisitos de seguridad de escritura/acceso definidos en `safety.py`, unificando el criterio de seguridad con el resto de la aplicación y evitando procesar archivos sospechosos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T07:54:54` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner.get_size` implementando una comprobación explícita de `is_safe_to_modify` para cada subdirectorio antes de entrar en él, garantizando que el escáner respete estrictamente los límites definidos en `safety.py` incluso en sistemas de archivos complejos.
 - `2026-10-29T07:53:56` **assistant.py** (seguridad defensiva): Mejoré la seguridad de `assistant.py` mediante la implementación de un decorador de validación de entrada (`@_enforce_safe_query`) para todos los manejadores de consultas, asegurando que cualquier entrada que pase por la lógica local haya sido filtrada contra inyecciones y caracteres prohibidos antes de ser procesada por los handlers, cumpliendo con el enfoque de seguridad defensiva.
 - `2026-10-29T07:43:54` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de archivos con nombres que terminan en punto o espacio (comunes en Windows pero problemáticos para APIs de bajo nivel) mediante una validación estricta de normalización en `normalize`, asegurando que estas rutas no eludan los controles de seguridad ni causen comportamientos inesperados en las llamadas a `ctypes`.
-- `2026-10-29T07:34:34` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante fallos en la persistencia del manifiesto al aplicar un patrón de "rollback" manual si el registro falla tras la copia física, evitando dejar archivos huérfanos en la cuarentena.
-- `2026-10-29T07:33:22` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` para manejar casos de procesos que desaparecen durante la enumeración (race conditions) mediante un manejo explícito del `OSError` al intentar cerrar handles y la validación de la integridad del buffer de nombres de módulo, evitando bloqueos en sistemas con alta actividad de procesos.
-- `2026-10-29T07:23:59` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores inesperados de entrada y posibles fallos de ejecución en `_compute_cached` mediante la adición de comprobaciones explícitas de estado y el manejo defensivo de iteradores de métricas.
