@@ -93,7 +93,11 @@ class DirectoryScanner:
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
         
-        root_norm = os.path.normcase(root_path)
+        try:
+            root_norm = os.path.normcase(os.path.abspath(root_path))
+        except (OSError, RuntimeError):
+            return ScanResult(0, False)
+
         if not root_norm.startswith(self.ctx.sandbox_base_norm) or root_norm in self.ctx.visited_dirs:
             return ScanResult(0, True)
 
@@ -112,7 +116,6 @@ class DirectoryScanner:
                                 total_bytes += subdir.bytes_found
                         elif entry.is_file(follow_symlinks=False):
                             if not _is_system_hidden(entry.path, self.ctx.kernel32):
-                                # Verificación rápida de acceso mediante intento de apertura en modo lectura
                                 try:
                                     fd = os.open(entry.path, os.O_RDONLY)
                                     os.close(fd)
@@ -253,7 +256,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return 0
     
     res_str = str(path_obj.resolve())
-    ctx = ScanContext(os.path.normcase(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH)
+    ctx = ScanContext(os.path.normcase(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
     return DirectoryScanner(ctx).get_size(res_str).bytes_found
 
 @safe_path_operation(False)
@@ -261,12 +264,13 @@ def _is_valid_cache_path(candidate: Path, base_norm: str, kernel: Optional[ctype
     """Valida exhaustivamente una ruta de caché antes de intentar cualquier medición."""
     if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): 
         return False
-    cand_abs = os.path.abspath(candidate)
-    
-    if not os.path.normcase(cand_abs).startswith(base_norm): return False
-    if _is_system_hidden(cand_abs, kernel): return False
-    
-    return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or candidate.name.lower() in NEVER_TOUCH)
+    try:
+        cand_abs = os.path.abspath(candidate)
+        if not os.path.normcase(cand_abs).startswith(base_norm): return False
+        if _is_system_hidden(cand_abs, kernel): return False
+        return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or candidate.name.lower() in NEVER_TOUCH)
+    except (OSError, RuntimeError):
+        return False
 
 def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
     """Construye y valida una ruta absoluta de caché."""
@@ -302,7 +306,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             base_norm = os.path.normcase(str(base_resolved))
         except (OSError, RuntimeError): continue
         
-        scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH))
+        scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH))
         
         for browser_key, relative_path in browser_map.items():
             if not isinstance(relative_path, str): continue

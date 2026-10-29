@@ -450,7 +450,9 @@ class SystemContext:
             if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)) or callable(val):
                 return None
             valid_val = _is_valid_numeric_update(val, spec)
-            return spec.type_hint(valid_val) if valid_val is not None else None
+            if valid_val is not None and spec.is_valid_type(valid_val) and _is_metric_within_bounds(valid_val, spec):
+                return spec.type_hint(valid_val)
+            return None
         except (ValueError, TypeError, AttributeError, Exception):
             return None
 

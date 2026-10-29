@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 64
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 232
+- Rechazadas por guardia de seguridad: 63
+- Sin cambios (nada sustancial que mejorar): 25
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 111 | 7 | 41 | 15 | 162 |
-| 2026-10-29 | 62 | 4 | 23 | 9 | 70 |
+| 2026-10-28 | 108 | 7 | 40 | 15 | 162 |
+| 2026-10-29 | 64 | 4 | 23 | 10 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **33**
-- seguridad defensiva: **29**
-- robustez ante casos límite: **26**
+- robustez ante casos límite: **28**
+- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **18**
+- `browser.py`: **18**
 - `settings.py`: **17**
-- `browser.py`: **17**
 - `diskreport.py`: **16**
 - `quarantine.py`: **16**
-- `memory.py`: **15**
-- `healthscore.py`: **14**
+- `assistant.py`: **14**
+- `memory.py`: **14**
 - `safety.py`: **14**
-- `assistant.py`: **13**
+- `healthscore.py`: **13**
 - `branding.py`: **10**
-- `organizer.py`: **9**
+- `organizer.py`: **8**
 - `startup.py`: **7**
 - `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T07:14:37` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo recursivo introduciendo un manejo explícito de la profundidad y la validación de rutas en el método `get_size` para prevenir errores ante recursión infinita o rutas inexistentes durante la ejecución.
+- `2026-10-29T07:13:29` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de métricas en `SystemContext` ante valores inesperados (como `float('inf')` o `nan` que se filtren en la ingesta) mediante una validación más estricta en el método `_apply_field`, asegurando que cada métrica sea validada contra su `MetricSpec` antes de ser asignada, evitando estados corruptos.
 - `2026-10-29T07:04:20` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración implementando `functools.lru_cache` con un TTL lógico implícito en `load` para evitar E/S de disco repetitivas durante el mismo ciclo de ejecución cuando el archivo no ha cambiado.
 - `2026-10-29T07:04:02` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del proceso de escaneo reemplazando las llamadas redundantes a `os.path.normcase(os.path.abspath(...))` dentro del bucle principal con una lógica de caché de resultados y reduciendo el costo de las validaciones heurísticas al filtrar extensiones de forma más eficiente.
 - `2026-10-29T06:54:17` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño de la cuarentena y la gestión del manifiesto reemplazando llamadas redundantes a `stat()` y `load_manifest()` por el uso del caché interno `_MANIFEST_CACHE`, evitando I/O innecesario en cada llamada a `total_quarantined_bytes` y `summarize`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T06:14:47` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos que explican las precondiciones y efectos secundarios de las operaciones con la API de Windows, además de tipado explícito en estructuras críticas (`ctypes`) para mayor claridad.
 - `2026-10-29T06:03:00` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones internas clave (proceso de recolección y estrategia de hashing) mediante docstrings técnicos más precisos, alineados con el enfoque de legibilidad, detallando los algoritmos utilizados y las restricciones de seguridad aplicadas.
 - `2026-10-29T06:01:53` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y tipos descriptivos en `ScanContext` y `DirectoryScanner`, aclarando la lógica de seguridad sin alterar la ejecución para asegurar que futuros colaboradores entiendan el flujo de protección contra bucles y escapes de directorio.
-- `2026-10-29T05:53:18` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo `docstrings` completos y específicos a las funciones de validación y utilidades, clarificando el propósito de cada etapa del pipeline de datos sin alterar la lógica de seguridad preexistente.
-- `2026-10-29T05:51:42` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al manejar explícitamente posibles errores de codificación (`UnicodeDecodeError`) y añadí una validación estricta de tipos tras el `json.loads`, asegurando que los datos cargados no solo sean un diccionario, sino que mantengan la integridad del esquema esperado antes de cualquier procesamiento posterior.
