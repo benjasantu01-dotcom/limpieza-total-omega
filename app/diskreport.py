@@ -304,6 +304,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         p_entry = Path(entry.path).resolve()
                         
+                        # Doble validación de seguridad: jerarquía y protección
                         if root_path not in p_entry.parents and p_entry != root_path:
                             continue
 

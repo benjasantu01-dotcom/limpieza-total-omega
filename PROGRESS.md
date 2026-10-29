@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 64
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 230
+- Sin cambios (nada sustancial que mejorar): 25
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 106 | 7 | 38 | 14 | 155 |
-| 2026-10-29 | 69 | 4 | 26 | 10 | 75 |
+| 2026-10-28 | 106 | 7 | 38 | 14 | 151 |
+| 2026-10-29 | 72 | 4 | 26 | 11 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,18 +25,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **33**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **24**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **18**
-- `diskreport.py`: **17**
+- `browser.py`: **19**
+- `diskreport.py`: **18**
 - `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `settings.py`: **16**
+- `assistant.py`: **15**
 - `memory.py`: **15**
 - `safety.py`: **15**
-- `assistant.py`: **14**
 - `healthscore.py`: **14**
 - `branding.py`: **10**
 - `organizer.py`: **8**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T07:55:06` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad del escaneo recursivo en `walk_files` incorporando un chequeo preventivo con `is_protected_path` sobre la ruta resuelta (`p_entry`) antes de intentar cualquier operación de `stat` o acceso, mitigando posibles desbordamientos hacia rutas de sistema tras resolver enlaces simbólicos.
+- `2026-10-29T07:54:54` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner.get_size` implementando una comprobación explícita de `is_safe_to_modify` para cada subdirectorio antes de entrar en él, garantizando que el escáner respete estrictamente los límites definidos en `safety.py` incluso en sistemas de archivos complejos.
+- `2026-10-29T07:53:56` **assistant.py** (seguridad defensiva): Mejoré la seguridad de `assistant.py` mediante la implementación de un decorador de validación de entrada (`@_enforce_safe_query`) para todos los manejadores de consultas, asegurando que cualquier entrada que pase por la lógica local haya sido filtrada contra inyecciones y caracteres prohibidos antes de ser procesada por los handlers, cumpliendo con el enfoque de seguridad defensiva.
 - `2026-10-29T07:43:54` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de archivos con nombres que terminan en punto o espacio (comunes en Windows pero problemáticos para APIs de bajo nivel) mediante una validación estricta de normalización en `normalize`, asegurando que estas rutas no eludan los controles de seguridad ni causen comportamientos inesperados en las llamadas a `ctypes`.
 - `2026-10-29T07:34:34` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante fallos en la persistencia del manifiesto al aplicar un patrón de "rollback" manual si el registro falla tras la copia física, evitando dejar archivos huérfanos en la cuarentena.
 - `2026-10-29T07:33:22` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` para manejar casos de procesos que desaparecen durante la enumeración (race conditions) mediante un manejo explícito del `OSError` al intentar cerrar handles y la validación de la integridad del buffer de nombres de módulo, evitando bloqueos en sistemas con alta actividad de procesos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T06:54:17` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño de la cuarentena y la gestión del manifiesto reemplazando llamadas redundantes a `stat()` y `load_manifest()` por el uso del caché interno `_MANIFEST_CACHE`, evitando I/O innecesario en cada llamada a `total_quarantined_bytes` y `summarize`.
 - `2026-10-29T06:52:54` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la creación de una lista completa en memoria por un generador dentro de `heapq.nlargest`, evitando el consumo innecesario de RAM y el procesamiento de miles de procesos cuando solo se necesitan los 10 principales.
 - `2026-10-29T06:43:23` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de la creación innecesaria de tuplas en el método `_compute_cached` y el uso de un diccionario de acceso directo en lugar de iteraciones sobre `_FIELDS_TO_VALIDATE` durante la validación crítica.
-- `2026-10-29T06:42:10` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante la pre-compilación de `NEVER_TOUCH` a `frozenset` (ya implementado) y, principalmente, evitando llamadas redundantes a `is_safe_to_modify` y `is_protected_path` dentro de los bucles críticos de `DirectoryScanner`, confiando en la normalización inicial del sandbox para validar el alcance de las rutas.
-- `2026-10-29T06:32:41` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings precisos en métodos críticos y se han refinado los tipos de retorno y firmas para eliminar ambigüedades, facilitando la comprensión del flujo de datos en el inventario de inicio.
-- `2026-10-29T06:32:11` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `settings.py` mediante la adición de docstrings técnicos detallados en funciones clave, la clarificación del propósito de las estrategias de validación y la simplificación de la lógica de tipo en `_read_and_parse_json` para que sea más autoexplicativa.

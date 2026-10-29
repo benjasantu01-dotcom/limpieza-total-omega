@@ -141,6 +141,15 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     except Exception:
         return default
 
+def _enforce_safe_query(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
+    """Valida que la consulta sea segura antes de pasarla a cualquier handler."""
+    @wraps(func)
+    def wrapper(ctx: SystemContext, q: str) -> Answer:
+        if not _ensure_safe_text(q):
+            return Answer("Consulta bloqueada por motivos de seguridad.")
+        return func(ctx, q)
+    return wrapper
+
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
     Decorador para handlers de consulta que garantiza un contexto válido,
@@ -586,6 +595,7 @@ def _format_problem_message(problems: tuple[str, ...], score: int | str) -> str:
         return f"Tu sistema está en buen estado ({clean_score}/100). No hay nada urgente."
     return f"Con un puntaje de {clean_score}/100, por orden de prioridad: {', '.join(problems)}."
 
+@_enforce_safe_query
 @_safe_handler_wrapper
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre memoria RAM usando el contexto validado."""
@@ -603,6 +613,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
         msg += f" Sí te conviene mirar los {startup_count} programas de inicio."
     return Answer(msg, notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
+@_enforce_safe_query
 @_safe_handler_wrapper
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre almacenamiento y recuperación de espacio en disco."""
@@ -619,6 +630,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     msg += " Empezá por Limpieza: mueve los candidatos a revisión."
     return Answer(msg, notice=OFFLINE_NOTICE)
 
+@_enforce_safe_query
 @_safe_handler_wrapper
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre archivos sospechosos encontrados mediante heurística."""
@@ -631,6 +643,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
         texto = f"Hay {count} archivo(s) marcados, {warn} con advertencia. Son señales, no una condena: si no reconocés alguno, usá 'Aislar hallazgos'."
     return Answer(texto, notice=OFFLINE_NOTICE)
 
+@_enforce_safe_query
 @_safe_handler_wrapper
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre el puntaje de salud global obtenido por el sistema."""
@@ -639,6 +652,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     explicacion: str = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
     return Answer(f"{resumen}{grade_str}{explicacion}", notice=OFFLINE_NOTICE)
 
+@_enforce_safe_query
 @_safe_handler_wrapper
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre el listado de aplicaciones de inicio cargadas."""

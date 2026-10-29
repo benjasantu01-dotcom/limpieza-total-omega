@@ -95,6 +95,8 @@ class DirectoryScanner:
         
         try:
             root_norm = os.path.normcase(os.path.abspath(root_path))
+            if not is_safe_to_modify(Path(root_path)):
+                return ScanResult(0, True)
         except (OSError, RuntimeError):
             return ScanResult(0, False)
 
