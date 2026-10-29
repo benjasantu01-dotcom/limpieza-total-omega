@@ -370,7 +370,10 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
     keys = SystemMetrics._FIELDS_TO_VALIDATE[:-1]
     
     # Construcción de objeto local desde tupla pre-validada
-    metrics = SystemMetrics(**dict(zip(keys, metric_tuple)), quarantined_count=quarantined)
+    try:
+        metrics = SystemMetrics(**dict(zip(keys, metric_tuple)), quarantined_count=quarantined)
+    except Exception:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inconsistente."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -410,6 +413,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     try:
         # Extraer valores para caché evitando re-iteraciones redundantes
         raw_vals = tuple(getattr(metrics, f) for f in SystemMetrics._FIELDS_TO_VALIDATE[:-1])
+        # Asegurar que todas las métricas son numéricas antes del caché
+        if not all(isinstance(v, (int, float)) for v in raw_vals):
+            raise ValueError("Métrica no numérica detectada en caché.")
         return _compute_cached(raw_vals, int(metrics.quarantined_count))
     except (TypeError, ValueError, AttributeError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])

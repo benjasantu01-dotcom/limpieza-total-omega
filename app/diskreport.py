@@ -54,16 +54,11 @@ FileRecord: TypeAlias = Tuple[int, Path]
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """
     Obtiene metadatos del archivo sin seguir enlaces simbólicos (evita escapes).
-
-    Args:
-        path: Ruta a inspeccionar.
-
-    Returns:
-        Objeto `os.stat_result` con permisos y tamaño, o None si hay error de acceso.
+    Maneja explícitamente errores de acceso y condiciones de carrera.
     """
-    if not path:
-        return None
     try:
+        if not path:
+            return None
         return os.stat(path, follow_symlinks=False)
     except (OSError, PermissionError, ValueError, FileNotFoundError):
         return None
@@ -79,6 +74,7 @@ def _is_reparse_point(path: Path) -> bool:
             import ctypes
             FILE_ATTRIBUTE_REPARSE_POINT = 0x0400
             attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+            if attrs == -1: return False
             return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
         return path.is_symlink()
     except Exception:
@@ -296,11 +292,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]
     
-    try:
-        root_stat = root_path.stat()
+    root_stat = _safe_stat(root_path)
+    if root_stat:
         visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
-    except (OSError, PermissionError):
-        return
     
     while stack:
         current_dir = stack.pop()

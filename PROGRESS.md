@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 63
-- Sin cambios (nada sustancial que mejorar): 25
+- Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 108 | 7 | 40 | 15 | 162 |
-| 2026-10-29 | 64 | 4 | 23 | 10 | 71 |
+| 2026-10-28 | 107 | 7 | 39 | 14 | 161 |
+| 2026-10-29 | 66 | 4 | 24 | 10 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **33**
-- robustez ante casos límite: **28**
-- seguridad defensiva: **26**
+- robustez ante casos límite: **30**
+- seguridad defensiva: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **18**
 - `browser.py`: **18**
 - `settings.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `scanner.py`: **17**
 - `quarantine.py`: **16**
 - `assistant.py`: **14**
+- `healthscore.py`: **14**
 - `memory.py`: **14**
 - `safety.py`: **14**
-- `healthscore.py`: **13**
 - `branding.py`: **10**
 - `organizer.py`: **8**
 - `startup.py`: **7**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T07:23:59` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores inesperados de entrada y posibles fallos de ejecución en `_compute_cached` mediante la adición de comprobaciones explícitas de estado y el manejo defensivo de iteradores de métricas.
+- `2026-10-29T07:23:02` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_stat` y `_is_reparse_point` al centralizar el manejo de errores y proteger la lógica frente a rutas que sufren condiciones de carrera (archivos borrados o inaccesibles justo después de ser listados por `os.scandir`), evitando que excepciones imprevistas detengan el análisis de disco.
 - `2026-10-29T07:14:37` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo recursivo introduciendo un manejo explícito de la profundidad y la validación de rutas en el método `get_size` para prevenir errores ante recursión infinita o rutas inexistentes durante la ejecución.
 - `2026-10-29T07:13:29` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de métricas en `SystemContext` ante valores inesperados (como `float('inf')` o `nan` que se filtren en la ingesta) mediante una validación más estricta en el método `_apply_field`, asegurando que cada métrica sea validada contra su `MetricSpec` antes de ser asignada, evitando estados corruptos.
 - `2026-10-29T07:04:20` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración implementando `functools.lru_cache` con un TTL lógico implícito en `load` para evitar E/S de disco repetitivas durante el mismo ciclo de ejecución cuando el archivo no ha cambiado.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T06:23:27` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica del módulo `scanner.py` mediante la implementación de `TypeAlias` más claros para las estructuras de datos complejas, la estandarización de docstrings siguiendo el estándar PEP 257, y la explicitación de la intención del flujo de control en las funciones de chequeo mediante type hints mejorados.
 - `2026-10-29T06:15:02` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `organizer.py` mediante la adición de docstrings estructurados (con secciones `Args`, `Returns` y `Raises` cuando aplica), la tipificación explícita de retornos en funciones internas y la clarificación de constantes de seguridad mediante comentarios que explican el propósito de los flags de Win32.
 - `2026-10-29T06:14:47` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos que explican las precondiciones y efectos secundarios de las operaciones con la API de Windows, además de tipado explícito en estructuras críticas (`ctypes`) para mayor claridad.
-- `2026-10-29T06:03:00` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones internas clave (proceso de recolección y estrategia de hashing) mediante docstrings técnicos más precisos, alineados con el enfoque de legibilidad, detallando los algoritmos utilizados y las restricciones de seguridad aplicadas.
-- `2026-10-29T06:01:53` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y tipos descriptivos en `ScanContext` y `DirectoryScanner`, aclarando la lógica de seguridad sin alterar la ejecución para asegurar que futuros colaboradores entiendan el flujo de protección contra bucles y escapes de directorio.
