@@ -170,6 +170,8 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 
 def _verify_pipeline_integrity(weights: Dict[str, int], pipeline: Tuple[PipelineEntry, ...]) -> None:
     """Validación de pre-arranque para asegurar coherencia entre pesos definidos y pipeline."""
+    if not isinstance(weights, dict) or not isinstance(pipeline, tuple):
+        return
     try:
         if sum(weights.values()) != 100:
             logging.error("Integridad de Pipeline fallida: Los pesos no suman 100.")
@@ -380,7 +382,7 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
     Returns:
         HealthResult con el puntaje final, categoría y recomendaciones generadas.
     """
-    if len(metric_values) != len(SystemMetrics._FIELDS_TO_VALIDATE) - 1:
+    if not isinstance(metric_values, tuple) or len(metric_values) != len(SystemMetrics._FIELDS_TO_VALIDATE) - 1:
         return HealthResult(0, "F", {}, ["Error: Métrica incompleta."])
     
     # Validar integridad defensiva de los valores entrantes
@@ -438,8 +440,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema corruptos."])
     
     try:
-        raw_vals = [getattr(metrics, f) for f in SystemMetrics._FIELDS_TO_VALIDATE[:-1]]
-        return _compute_cached(tuple(raw_vals), int(metrics.quarantined_count))
+        raw_vals = tuple(getattr(metrics, f) for f in SystemMetrics._FIELDS_TO_VALIDATE[:-1])
+        return _compute_cached(raw_vals, int(metrics.quarantined_count))
     except (TypeError, ValueError, AttributeError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 
