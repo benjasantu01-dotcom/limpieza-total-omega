@@ -7,37 +7,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **172** (34.1% de aceptación)
-- Rechazadas por tests: 12
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 86 | 7 | 33 | 13 | 125 |
-| 2026-10-29 | 86 | 5 | 31 | 11 | 107 |
+| 2026-10-28 | 84 | 6 | 33 | 13 | 124 |
+| 2026-10-29 | 88 | 5 | 31 | 11 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **35**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **33**
-- rendimiento: **32**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **18**
 - `quarantine.py`: **17**
 - `diskreport.py`: **17**
+- `settings.py`: **17**
+- `browser.py`: **17**
 - `memory.py`: **16**
-- `settings.py`: **16**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `scanner.py`: **15**
-- `healthscore.py`: **13**
 - `assistant.py`: **13**
+- `healthscore.py`: **12**
 - `organizer.py`: **9**
 - `branding.py`: **9**
 - `startup.py`: **7**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T10:18:14` **settings.py** (manejo de errores y validación de entradas): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para capturar inconsistencias estructurales en el JSON antes de que lleguen a la lógica de la app, asegurando que un esquema corrupto se descarte a favor de los valores de fábrica en lugar de causar errores inesperados durante el procesamiento.
+- `2026-10-29T10:17:17` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para incluir un manejo más preciso de excepciones, diferenciando entre errores de acceso al sistema de archivos y errores de validación de estado, asegurando que `ensure_safe_to_modify` siempre reciba metadatos íntegros antes de evaluar reglas de seguridad.
 - `2026-10-29T10:09:22` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `quarantine_dir` centralizando la validación de sus componentes, añadiendo verificaciones explícitas de tipos de datos en la creación del manifiesto y mejorando el manejo de errores al cargar JSON para evitar estados corruptos.
 - `2026-10-29T10:08:37` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de entrada en `stage_for_review` y `delete_reviewed` para evitar excepciones no capturadas al procesar rutas mal formadas, añadiendo chequeos de tipo y condiciones de seguridad más estrictas antes de ejecutar operaciones de disco.
 - `2026-10-29T10:06:47` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_query_working_set_bytes` y `_is_process_accessible` mediante el manejo explícito de errores de bajo nivel y la validación de estados de `kernel32` para prevenir cierres inesperados de la aplicación al interactuar con el sistema operativo.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T08:15:50` **safety.py** (seguridad defensiva): Mejoré la resiliencia de la validación de seguridad incorporando una verificación explícita de archivos en uso mediante `GetFileInformationByHandle` con acceso de compartición exclusivo (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE) en `_is_file_locked_by_other_process`, asegurando que `ensure_safe_to_modify` no falle falsamente ante indexadores de búsqueda o antivirus que mantienen bloqueos de lectura temporal mientras operan.
 - `2026-10-29T08:14:57` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de la función `_atomic_isolate_file` añadiendo una validación explícita para evitar que archivos con flujos de datos alternos (ADS) o nombres de dispositivos reservados en Windows sean procesados, utilizando `_check_path_syntax_integrity` de forma más temprana y asegurando que no se pueda manipular el sistema de archivos mediante inyección de nombres.
 - `2026-10-29T08:14:15` **organizer.py** (seguridad defensiva): Mejoré la seguridad de `delete_reviewed` implementando una validación estricta del nombre y extensión antes de proceder con el `unlink()`, evitando que cualquier archivo no deseado que aparezca en la carpeta de revisión pueda ser eliminado sin pasar los filtros de seguridad de la aplicación.
-- `2026-10-29T08:06:50` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una validación explícita de `path_buf` antes de proceder con `EmptyWorkingSet`, asegurando que la ruta del proceso no sea solo validada, sino que se verifique que el buffer contenga información real y no sea una cadena vacía o corrupta post-lectura, reforzando el cumplimiento de las restricciones de `is_protected_path`.
-- `2026-10-29T07:55:06` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad del escaneo recursivo en `walk_files` incorporando un chequeo preventivo con `is_protected_path` sobre la ruta resuelta (`p_entry`) antes de intentar cualquier operación de `stat` o acceso, mitigando posibles desbordamientos hacia rutas de sistema tras resolver enlaces simbólicos.

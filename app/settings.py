@@ -383,21 +383,22 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         data = json.loads(content.decode("utf-8", errors="strict"))
         if not isinstance(data, dict) or len(data) > 64: return None
         
-        for k, v in data.items():
-            if k in DEFAULTS and not isinstance(v, type(DEFAULTS[k])): return None
+        # Verificar que el JSON contenga al menos una clave válida para considerarlo íntegro
+        if not any(k in DEFAULTS for k in data.keys()): return None
         return data
     except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura la coherencia de tipos y dependencias entre claves de configuración."""
+    coerced = DEFAULTS.copy()
     for k, v in settings.items():
-        if k in DEFAULTS and not isinstance(v, type(DEFAULTS[k])):
-            settings[k] = DEFAULTS[k] # type: ignore
+        if k in DEFAULTS and isinstance(v, type(DEFAULTS[k])):
+            coerced[k] = v # type: ignore
             
-    if settings.get("asistente_activado") and not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
-        settings["asistente_activado"] = False
-    return settings
+    if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
+        coerced["asistente_activado"] = False
+    return coerced
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga configuraciones con caché basada en mtime y tamaño de archivo."""

@@ -723,7 +723,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 
             if os.name == 'nt':
                 kernel32 = ctypes.windll.kernel32
-                # Intenta abrir con acceso GENERIC_READ para verificar acceso y compartición
+                # Intenta abrir con acceso READ para verificar integridad sin modificar
                 handle = kernel32.CreateFileW(
                     _to_long_path(str(path)), 0x80000000, 0x01, None, 3, 0x00000080, None
                 )
@@ -733,20 +733,21 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                         time.sleep(0.05 * (2 ** attempt))
                         continue
                     if err == ERROR_ACCESS_DENIED:
+                        # Si es acceso denegado, reintento no ayudará, lanzar directamente
                         raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
                 else:
                     kernel32.CloseHandle(handle)
             
             return path.stat()
-        except (OSError, PermissionError) as e:
-            # Captura errores específicos de E/S comunes en bloqueos de archivos de sistema
-            if isinstance(e, OSError) and e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN):
+        except PermissionError:
+            raise UnsafePathError(f"Permisos insuficientes: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+        except OSError as e:
+            if e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN):
                 if attempt < max_retries - 1:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
-                raise UnsafePathError(f"Archivo bloqueado tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
-            raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
-    raise UnsafePathError(f"Error tras reintentos leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+            raise UnsafePathError(f"Error de E/S leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+    raise UnsafePathError(f"Archivo bloqueado tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
 
 def _check_file_integrity(state: SafetyState) -> None:
     """
