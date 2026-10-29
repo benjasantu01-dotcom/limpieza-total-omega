@@ -346,7 +346,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
                 dir_fd: int = os.open(str(parent), os.O_RDONLY)
                 try: os.fsync(dir_fd)
                 finally: os.close(dir_fd)
-            except OSError:
+            except (OSError, PermissionError):
                 pass
         return True
     except (OSError, PermissionError, UnsafePathError):
@@ -1022,7 +1022,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
                     dir_fd: int = os.open(str(p), os.O_RDONLY)
                     try: os.fsync(dir_fd)
                     finally: os.close(dir_fd)
-                except OSError:
+                except (OSError, PermissionError):
                     pass
             
         items = load_manifest(base, force_reload=True)
@@ -1099,11 +1099,13 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 continue
             
             item = item_map.get(f.name)
-            if item and _is_item_purgable(f, item):
-                purgado_ids.add(item.item_id)
-            elif not item and f.suffix != ".tmp":
-                try: _safe_unlink(f)
-                except (OSError, UnsafePathError): pass
+            try:
+                if item and _is_item_purgable(f, item):
+                    purgado_ids.add(item.item_id)
+                elif not item and f.suffix != ".tmp":
+                    _safe_unlink(f)
+            except (OSError, PermissionError, UnsafePathError):
+                continue
         
         if purgado_ids:
             new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]
@@ -1112,7 +1114,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             try:
                 with os.fdopen(os.open(str(root_path), os.O_RDONLY), 'r') as dir_fd:
                     os.fsync(dir_fd.fileno())
-            except OSError:
+            except (OSError, PermissionError):
                 pass
             
         return len(purgado_ids)

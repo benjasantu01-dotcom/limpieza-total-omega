@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 52 | 3 | 21 | 10 | 78 |
-| 2026-10-29 | 124 | 7 | 44 | 17 | 148 |
+| 2026-10-28 | 50 | 3 | 20 | 10 | 77 |
+| 2026-10-29 | 126 | 7 | 45 | 17 | 149 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **39**
+- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **37**
-- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **37**
 - rendimiento: **33**
 - seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **20**
 - `browser.py`: **19**
-- `quarantine.py`: **19**
 - `diskreport.py`: **17**
-- `settings.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **16**
-- `memory.py`: **15**
-- `scanner.py`: **14**
+- `settings.py`: **15**
 - `assistant.py`: **14**
+- `scanner.py`: **13**
 - `healthscore.py`: **12**
 - `duplicates.py`: **10**
 - `branding.py`: **9**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T14:34:25` **quarantine.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `purge_all` y `_safe_unlink` capturando `PermissionError` y `OSError` de forma específica durante operaciones de I/O para evitar que fallos en un solo archivo detengan la limpieza masiva, asegurando además que `_safe_unlink` sea más robusto ante estados de archivo inconsistentes.
+- `2026-10-29T14:33:02` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado `trim_working_set` añadiendo una validación explícita para evitar que `EmptyWorkingSet` se invoque sobre un handle nulo o en un estado de error, centralizando la lógica de manejo de errores de la API de Windows mediante un bloque `try-except` más robusto que garantiza el cierre del handle y reporta fallos específicos de comunicación con el sistema operativo.
 - `2026-10-29T14:22:47` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de hash (`hash_file` y `partial_hash`) añadiendo una validación explícita mediante `is_safe_to_modify` antes de abrir cualquier descriptor de archivo, previniendo errores de acceso en rutas bloqueadas y mejorando el manejo de excepciones al cerrar recursos.
 - `2026-10-29T14:22:20` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez en `_collect_summary_data` y `summarize` implementando una gestión de excepciones más granular y controlada para prevenir que errores inesperados durante el acceso a archivos interrumpan el análisis completo.
 - `2026-10-29T14:13:53` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `ingest` y el manejo de datos de entrada en `assistant.py` mediante la validación proactiva contra el diccionario `_VALIDATORS`, evitando la ejecución de código o propagación de tipos incorrectos al usar `getattr` o `dict.get`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T12:11:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_secure_to_read` ante archivos malformados o sistemas de archivos inusuales al añadir una validación explícita de `st.st_size` contra valores negativos y agregué un manejo de `PermissionError` más específico durante la lectura del JSON, asegurando que la aplicación siempre recupere `DEFAULTS` en lugar de fallar silenciosamente o entrar en estados inconsistentes.
 - `2026-10-29T12:11:24` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas ante archivos bloqueados o inaccesibles mediante la incorporación de una validación de `stats` dentro de `_run_file_heuristics`, asegurando que ninguna regla reciba metadatos nulos si el archivo no pudo ser leído, evitando así errores en tiempo de ejecución.
 - `2026-10-29T12:10:57` **safety.py** (robustez ante casos límite): Se añadió una verificación de exclusión por longitud de nombre de archivo (`MAX_FILENAME_LENGTH`) dentro de `_validate_structural_safety` para prevenir desbordamientos o comportamientos indefinidos al interactuar con el sistema de archivos de Windows (MAX_PATH en NTFS), fortaleciendo la robustez ante rutas creadas de forma malintencionada o excesivamente largas.
-- `2026-10-29T12:02:09` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante errores de concurrencia y permisos durante el aislamiento atómico, añadiendo un chequeo explícito de la existencia del archivo de origen justo antes de la lectura en `_atomic_isolate_file` y reforzando la gestión de recursos mediante bloques `try...finally` garantizados para asegurar el cierre de descriptores de archivos incluso ante excepciones inesperadas durante la copia I/O.
-- `2026-10-29T12:01:09` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` y `_iter_process_memory` ante errores de API Win32 y casos límite de memoria/rutas, asegurando que el cierre de `handles` sea más resiliente y evitando el procesamiento de procesos cuyo tamaño de `WorkingSet` sea reportado como cero o erróneo.

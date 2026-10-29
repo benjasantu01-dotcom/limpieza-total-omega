@@ -1404,3 +1404,12 @@ FAILED evolve/tests/test_assistant.py::test_system_prompt_forbids_claiming_actio
 - `2026-10-29T14:23:25` ➖ Sin cambios en healthscore.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejora la robustez de `SystemMetrics` y la integridad del pipeline introduciendo una validación estricta de tipos y valores mediante `isinstance` y chequeos de rango antes de cualquier operación aritmética, evitando así errores de propagación cuando se inyectan datos externos.
 - `2026-10-29T14:23:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T14:23:25` Corrida terminada. Total usado hoy: 340.
+- `2026-10-29T14:31:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-29T14:32:33` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-29T14:33:02` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `trim_working_set` añadiendo una validación explícita para evitar que `EmptyWorkingSet` se invoque sobre un handle nulo o en un estado de error, centralizando la lógica de manejo de errores de la API de Windows mediante un bloque `try-except` más robusto que garantiza el cierre del handle y reporta fallos específicos de comunicación con el sistema operativo.
+- `2026-10-29T14:33:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-29T14:33:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-29T14:33:53` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-29T14:34:25` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `purge_all` y `_safe_unlink` capturando `PermissionError` y `OSError` de forma específica durante operaciones de I/O para evitar que fallos en un solo archivo detengan la limpieza masiva, asegurando además que `_safe_unlink` sea más robusto ante estados de archivo inconsistentes.
+- `2026-10-29T14:34:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T14:34:25` Corrida terminada. Total usado hoy: 344.

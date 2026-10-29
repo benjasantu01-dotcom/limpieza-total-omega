@@ -447,10 +447,6 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta reducir el working set de un proceso específico tras realizar validaciones de seguridad.
-    
-    Precondiciones: El PID debe corresponder a un proceso vivo y no protegido.
-    Efecto: Fuerza al SO a descartar páginas del working set del proceso, liberando RAM física
-    a costa de potenciales fallos de página futuros.
     """
     if not _is_windows or WindowsAPI.kernel32 is None: return False, "Solo soportado en Windows."
     
@@ -478,9 +474,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not _is_process_executable_safe(h_process, path_buf) or not path_buf.value.strip():
             return False, "Proceso protegido, inaccesible o ubicado en zona restringida."
             
-        if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(h_process) == 0:
+        if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(h_process) != 0:
+            return True, f"Working set liberado. {TRIM_WARNING}"
+        else:
             return False, "El sistema operativo rechazó la operación de limpieza."
-        return True, f"Working set liberado. {TRIM_WARNING}"
+            
+    except (ctypes.WinError, OSError, Exception):
+        return False, "Error inesperado al ejecutar la operación de limpieza."
     finally:
         if WindowsAPI.kernel32:
             try:
