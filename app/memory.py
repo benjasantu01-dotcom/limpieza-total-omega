@@ -374,11 +374,13 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         return
             
     path_buf = ctypes.create_unicode_buffer(1024)
+    processed_pids: Set[int] = set()
     count = cb_needed.value // ctypes.sizeof(wintypes.DWORD)
     
     for i in range(count):
         pid = int(pids[i])
-        if _is_system_process(pid): continue
+        if _is_system_process(pid) or pid in processed_pids: continue
+        processed_pids.add(pid)
         
         h_process = _is_process_accessible(pid, WIN32_PROCESS_QUERY_LIMITED)
         if not h_process: continue

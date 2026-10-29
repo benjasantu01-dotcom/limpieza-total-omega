@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 64
+- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Rechazadas por tests: 10
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 79 | 5 | 28 | 11 | 117 |
-| 2026-10-29 | 101 | 6 | 36 | 11 | 110 |
+| 2026-10-28 | 76 | 4 | 28 | 11 | 117 |
+| 2026-10-29 | 102 | 6 | 38 | 11 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **33**
-- robustez ante casos límite: **31**
-- rendimiento: **29**
+- rendimiento: **30**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **19**
 - `diskreport.py`: **18**
-- `settings.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **17**
-- `safety.py`: **16**
-- `scanner.py`: **16**
-- `memory.py`: **16**
+- `settings.py`: **16**
+- `scanner.py`: **15**
+- `safety.py`: **15**
 - `assistant.py`: **14**
 - `healthscore.py`: **12**
 - `branding.py`: **10**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T11:20:51` **memory.py** (rendimiento): Se optimizó el proceso de enumeración de memoria moviendo la creación del buffer de nombres de archivo fuera del loop interno y utilizando una tupla de PIDs procesados para evitar re-análisis innecesarios dentro de la misma iteración, reduciendo la presión sobre el recolector de basura y el sistema de E/S.
 - `2026-10-29T11:09:10` **diskreport.py** (rendimiento): Optimizé la función `walk_files` eliminando la llamada innecesaria a `Path.resolve()` dentro del bucle principal, reduciendo significativamente las llamadas al sistema operativo (I/O) y mejorando el rendimiento del escaneo.
 - `2026-10-29T11:08:34` **browser.py** (rendimiento): Optimizé el proceso de detección de perfiles reutilizando la instancia de `DirectoryScanner` y evitando múltiples resoluciones de ruta redundantes dentro del bucle de navegadores, lo cual reduce la sobrecarga de I/O y llamadas al sistema en cada escaneo.
 - `2026-10-29T10:59:15` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante docstrings más precisos, aclarando las responsabilidades de cada etapa del pipeline de resolución de rutas para facilitar el mantenimiento y la auditoría.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T10:28:29` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica añadiendo docstrings descriptivos a las constantes de la paleta y tipos personalizados, asegurando que el propósito de cada elemento sea claro para futuras expansiones del sistema de diseño.
 - `2026-10-29T10:27:55` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` convirtiendo el `_CONTEXT_SCHEMA` en una lista de objetos `NamedTuple` (creando `ContextMetric`), lo que elimina el uso de índices posicionales (`u[0]`, `u[2]`) y hace que la configuración de la serialización sea explícita y autodocumentada.
 - `2026-10-29T10:18:14` **settings.py** (manejo de errores y validación de entradas): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para capturar inconsistencias estructurales en el JSON antes de que lleguen a la lógica de la app, asegurando que un esquema corrupto se descarte a favor de los valores de fábrica en lugar de causar errores inesperados durante el procesamiento.
-- `2026-10-29T10:17:17` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para incluir un manejo más preciso de excepciones, diferenciando entre errores de acceso al sistema de archivos y errores de validación de estado, asegurando que `ensure_safe_to_modify` siempre reciba metadatos íntegros antes de evaluar reglas de seguridad.
