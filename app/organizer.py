@@ -402,7 +402,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
+                # Validar que sea un archivo, no enlace, y su extensión sea considerada basura
                 if not item.is_file() or item.is_symlink() or _is_junction(item): 
+                    continue
+                if not is_valid_junk_extension(item.name):
                     continue
                 if is_safe_to_modify(item) and not is_protected_path(item):
                     item.unlink()

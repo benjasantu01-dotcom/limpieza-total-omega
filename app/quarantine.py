@@ -774,6 +774,7 @@ class IsolationManager:
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
     """Aisla archivos aplicando validaciones contra race conditions."""
     _check_path_syntax_integrity(destination)
+    _check_path_syntax_integrity(source) # Nueva validación defensiva de origen
     if source is None or not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     

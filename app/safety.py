@@ -441,16 +441,17 @@ def _is_system_directory_junction(path_str: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
-    """Verifica si un archivo está bloqueado por otro proceso usando reintentos."""
+    """Verifica si un archivo está bloqueado por otro proceso usando reintentos y compartición."""
     if not isinstance(path_str, str) or os.name != 'nt' or not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'): return False
     if not os.path.exists(path_str): return False
     
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
     
+    # Intenta abrir con acceso GENERIC_READ y compartición total para no bloquear otros procesos
+    # FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE (0x07)
     for attempt in range(3):
-        # Intenta abrir con acceso 0 para metadata sin bloquear
-        handle = kernel32.CreateFileW(path_long, 0, 0, None, 3, 0x00000080, None)
+        handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
         if handle != -1:
             kernel32.CloseHandle(handle)
             return False
