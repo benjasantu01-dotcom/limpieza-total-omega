@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **163** (32.3% de aceptación)
+- Mejoras aceptadas: **164** (32.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 58
+- Rechazadas por guardia de seguridad: 57
 - Sin cambios (nada sustancial que mejorar): 25
 - Sin respuesta de la IA (error o límite): 246
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 23 | 1 | 8 | 3 | 55 |
+| 2026-10-27 | 20 | 1 | 7 | 3 | 55 |
 | 2026-10-28 | 117 | 10 | 43 | 15 | 165 |
-| 2026-10-29 | 23 | 1 | 7 | 7 | 26 |
+| 2026-10-29 | 27 | 1 | 7 | 7 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **37**
-- seguridad defensiva: **30**
 - rendimiento: **29**
-- robustez ante casos límite: **24**
+- robustez ante casos límite: **28**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **17**
-- `quarantine.py`: **16**
+- `diskreport.py`: **17**
 - `safety.py`: **16**
 - `scanner.py`: **16**
-- `diskreport.py`: **16**
+- `browser.py`: **16**
 - `healthscore.py`: **15**
-- `browser.py`: **15**
-- `memory.py`: **14**
-- `assistant.py`: **11**
-- `organizer.py`: **9**
-- `branding.py`: **9**
+- `quarantine.py`: **15**
+- `memory.py`: **13**
+- `assistant.py`: **12**
+- `branding.py`: **10**
+- `organizer.py`: **8**
 - `startup.py`: **5**
 - `duplicates.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T02:49:23` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular dentro del bucle principal, asegurando que un fallo en el acceso a metadatos de un solo archivo no interrumpa el escaneo completo del árbol.
+- `2026-10-29T02:49:07` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo de caché detectando archivos bloqueados de forma explícita mediante el intento de apertura en modo lectura (`os.open`) antes de procesarlos, evitando así que errores de "archivo en uso" interrumpan prematuramente el cálculo recursivo de `DirectoryScanner`.
+- `2026-10-29T02:48:42` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y situaciones de I/O mediante la conversión explícita a tipos soportados, validación de estado de directorio y captura granular de excepciones, asegurando que el módulo mantenga su integridad operativa sin riesgos de propagación de fallos al hilo principal.
+- `2026-10-29T02:48:07` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` y la carga de datos mediante un chequeo de tipos más estricto y el uso de `getattr(source, key, None)` para evitar disparar `Property` o métodos de objetos fuente, previniendo errores de ejecución ante datos malformados.
 - `2026-10-29T02:39:01` **settings.py** (rendimiento): Se optimizó el acceso a las claves de configuración mediante la pre-compilación de `ConfigKey.value` en los diccionarios de validación y se reemplazó `dict(DEFAULTS)` por una copia eficiente, reduciendo la sobrecarga de resolución de atributos en operaciones frecuentes de `load` y `validate`.
 - `2026-10-29T02:38:29` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` reemplazando la lógica de `process_entry` (que invocaba `is_file()` y `is_dir()` por separado) por `entry.is_file()` y `entry.is_dir()` directamente sobre la misma instancia de `os.DirEntry` ya obtenida, evitando llamadas repetidas al sistema de archivos (`stat`).
 - `2026-10-29T02:38:01` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_is_kernel_managed` y `is_protected_path` para evitar llamadas redundantes a `os.environ` y normalizaciones costosas de rutas durante recorridos de disco, mejorando significativamente el rendimiento en operaciones de escaneo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T01:48:57` **quarantine.py** (legibilidad y documentación): Se han incorporado docstrings de nivel de módulo y función, se normalizaron los type hints, se extrajo la lógica de reintento de E/S de funciones críticas y se añadieron comentarios explicativos en los puntos de validación de seguridad para mejorar la legibilidad y el mantenimiento del código bajo estándares de desarrollo senior.
 - `2026-10-29T01:47:44` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de los docstrings en las funciones críticas de la API Win32 y la adición de Type Hints explícitos en la estructura `MEMORYSTATUSEX` para mejorar la legibilidad y la precisión del análisis de tipos.
 - `2026-10-29T01:37:44` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado en `duplicates.py` para clarificar la lógica de las estrategias de hashing y la naturaleza de las estructuras de datos, garantizando que el flujo de trabajo entre tamaño, hash parcial y hash completo sea transparente para futuros desarrollos.
-- `2026-10-29T01:36:57` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando `docstrings` descriptivos a funciones críticas y aclarando la responsabilidad de las clases de acumulación (`ExtStats`, `GlobalStats`, `FolderMetrics`), facilitando el mantenimiento y la comprensión de las métricas.
-- `2026-10-29T01:36:27` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos en funciones clave y se ha clarificado la intención del `DirectoryScanner`, asegurando que el propósito de la recursión segura sea evidente para futuros mantenedores, sin alterar la lógica de ejecución.
-- `2026-10-29T01:27:46` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados en constantes y tipos complejos, y añadí `TypeAlias` explícitos para mejorar la legibilidad y el mantenimiento del sistema de renderizado visual.
-- `2026-10-29T01:26:23` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_is_file_secure_to_read` para prevenir excepciones ante archivos corruptos o maliciosos, incorporando validaciones de tipo más estrictas y capturando errores de decodificación y estructura de forma centralizada.

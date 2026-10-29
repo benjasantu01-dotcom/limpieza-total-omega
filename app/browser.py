@@ -101,6 +101,13 @@ class DirectoryScanner:
                                 total_bytes += subdir.bytes_found
                         elif entry.is_file(follow_symlinks=False):
                             if not _is_system_hidden(entry.path, self.ctx.kernel32):
+                                # Verificación de acceso antes de stat para evitar bloqueos
+                                try:
+                                    fd = os.open(entry.path, os.O_RDONLY)
+                                    os.close(fd)
+                                except (OSError, PermissionError):
+                                    continue
+                                    
                                 st = entry.stat(follow_symlinks=False)
                                 file_id = (st.st_dev, st.st_ino)
                                 if file_id not in self.ctx.visited_files:

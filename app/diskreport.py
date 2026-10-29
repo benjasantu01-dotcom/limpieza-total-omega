@@ -308,7 +308,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path).resolve()
+                        # Obtenemos resolución de ruta de forma segura
+                        try:
+                            p_entry = Path(entry.path).resolve()
+                        except (OSError, RuntimeError):
+                            continue
                         
                         # Defensivo: validar que estamos dentro de la raíz original
                         if root_path not in p_entry.parents and p_entry != root_path:
@@ -321,8 +325,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if entry.is_symlink() or _is_reparse_point(p_entry):
                             continue
                         
-                        st = _safe_stat(entry.path)
-                        if st is None: continue
+                        # Obtener stat controlando posibles bloqueos de acceso
+                        try:
+                            st = entry.stat(follow_symlinks=False)
+                        except (OSError, PermissionError):
+                            continue
                             
                         if entry.is_dir():
                             inode = (st.st_dev, st.st_ino)

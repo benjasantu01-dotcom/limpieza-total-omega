@@ -1455,3 +1455,11 @@ FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area -
 - `2026-10-29T02:39:13` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-10-29T02:39:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T02:39:13` Corrida terminada. Total usado hoy: 64.
+- `2026-10-29T02:47:15` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-10-29T02:47:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-29T02:48:07` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `ingest` y la carga de datos mediante un chequeo de tipos más estricto y el uso de `getattr(source, key, None)` para evitar disparar `Property` o métodos de objetos fuente, previniendo errores de ejecución ante datos malformados.
+- `2026-10-29T02:48:42` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y situaciones de I/O mediante la conversión explícita a tipos soportados, validación de estado de directorio y captura granular de excepciones, asegurando que el módulo mantenga su integridad operativa sin riesgos de propagación de fallos al hilo principal.
+- `2026-10-29T02:49:07` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escaneo de caché detectando archivos bloqueados de forma explícita mediante el intento de apertura en modo lectura (`os.open`) antes de procesarlos, evitando así que errores de "archivo en uso" interrumpan prematuramente el cálculo recursivo de `DirectoryScanner`.
+- `2026-10-29T02:49:23` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular dentro del bucle principal, asegurando que un fallo en el acceso a metadatos de un solo archivo no interrumpa el escaneo completo del árbol.
+- `2026-10-29T02:49:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T02:49:23` Corrida terminada. Total usado hoy: 68.

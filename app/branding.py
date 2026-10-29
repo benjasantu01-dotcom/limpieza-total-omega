@@ -387,7 +387,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         ensure_safe_to_modify(dest_path)
         dest_path.write_text(logo_svg(int(size)), encoding="utf-8")
         return dest_path
-    except (OSError, PermissionError, RuntimeError, TypeError, ValueError): 
+    except (OSError, PermissionError, RuntimeError, TypeError, ValueError, AttributeError): 
         # Fallo silencioso en la UI para preservar la integridad de la ejecución
         return None
 
