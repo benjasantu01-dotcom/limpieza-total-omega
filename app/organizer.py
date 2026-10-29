@@ -183,8 +183,9 @@ def _try_open_win_file(path: Path) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Comprueba si un archivo está siendo utilizado por otro proceso."""
-    if not path or not path.exists() or not path.is_file(): return True
+    if not path: return True
     try:
+        if not path.exists() or not path.is_file(): return True
         if not os.access(path, os.R_OK): return True
         if os.name == 'nt':
             return not _try_open_win_file(path)

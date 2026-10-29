@@ -636,6 +636,8 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
         raise ValueError("Tamaño requerido inválido.")
     if dest_dir is None or not dest_dir.exists():
         raise FileNotFoundError(f"Directorio inexistente: {dest_dir}")
+    if not dest_dir.is_dir() or not os.access(dest_dir, os.W_OK | os.R_OK):
+        raise PermissionError(f"Directorio inaccesible: {dest_dir}")
     if not is_safe_to_modify(dest_dir) or _is_filesystem_read_only(dest_dir):
         raise PermissionError(f"Sin permisos de escritura seguros: {dest_dir}")
     
@@ -653,7 +655,7 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
         raise UnsafePathError("Directorio destino no seguro.")
     _check_device_consistency(source, destination.parent.resolve())
     _verify_source_fs_permissions(destination)
-    if not source.is_file():
+    if not source.exists() or not source.is_file():
         raise OSError("Archivo origen inaccesible.")
     
     if os.name == 'nt' and _win_has_system_attributes(source):
@@ -712,7 +714,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
     
-    if not source.is_file():
+    if not source.exists() or not source.is_file():
         raise FileNotFoundError("Archivo origen no encontrado.")
         
     source_hash: str = _get_sha256(source)
