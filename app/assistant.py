@@ -465,11 +465,11 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un atributo individual según especificación."""
         try:
-            val = getattr(source, key, None) if not isinstance(source, dict) else source.get(key)
+            val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
             if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)) or callable(val):
                 return None
             valid_val = _is_valid_numeric_update(val, spec)
-            if valid_val is not None and spec.is_valid_type(valid_val) and _is_metric_within_bounds(valid_val, spec):
+            if valid_val is not None:
                 return spec.type_hint(valid_val)
             return None
         except (ValueError, TypeError, AttributeError, Exception):
@@ -495,7 +495,7 @@ class SystemContext:
                 val = self._apply_field(source, key, spec)
                 if val is not None: updates[key] = val
             
-            g_val = getattr(source, "grade", None) if not isinstance(source, dict) else source.get("grade")
+            g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
             if g_val is not None and not callable(g_val):
                 grade_val = self._clean_grade(g_val)
                 if grade_val: updates["grade"] = grade_val
