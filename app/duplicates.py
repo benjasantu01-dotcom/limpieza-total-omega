@@ -93,13 +93,19 @@ def _safe_path_check(path: Path) -> bool:
     """
     Validación de seguridad compuesta: verifica que la ruta sea un archivo, 
     no esté protegida, sea segura para lectura y no sea un punto de reanálisis.
+    Se normaliza a ruta real para evitar bypass mediante enlaces.
     """
+    try:
+        real_path = Path(os.path.realpath(path))
+    except (OSError, RuntimeError):
+        return False
+        
     return (
         isinstance(path, Path) and 
-        path.is_file() and 
-        is_safe_to_modify(path) and 
-        not is_protected_path(path) and 
-        not is_junction(path)
+        real_path.is_file() and 
+        is_safe_to_modify(real_path) and 
+        not is_protected_path(real_path) and 
+        not is_junction(real_path)
     )
 
 

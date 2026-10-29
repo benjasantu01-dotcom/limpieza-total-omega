@@ -1484,3 +1484,10 @@ FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area -
 - `2026-10-29T03:19:40` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `_is_safe_payload_structure` y `_ensure_safe_text` introduciendo un filtrado preventivo contra caracteres de control y secuencias de escape potencialmente peligrosas que podrían ser usadas para ofuscar inyecciones en el payload de comunicación remota.
 - `2026-10-29T03:19:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T03:19:40` Corrida terminada. Total usado hoy: 80.
+- `2026-10-29T03:28:00` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-29T03:28:37` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `save_logo_svg` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre y asegurando que la operación de escritura sea atómica respecto a la seguridad, evitando rutas ambiguas o potencialmente peligrosas antes de invocar la escritura en disco.
+- `2026-10-29T03:29:01` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-29T03:29:33` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-10-29T03:29:42` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al integrar `os.path.realpath` en `_safe_path_check` para prevenir ataques de bypass mediante rutas relativas o enlaces simbólicos que apunten fuera de las carpetas permitidas, asegurando que la validación de seguridad ocurra sobre la ruta absoluta y real del archivo.
+- `2026-10-29T03:29:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T03:29:42` Corrida terminada. Total usado hoy: 84.
