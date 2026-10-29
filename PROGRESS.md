@@ -8,29 +8,29 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **165** (32.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 61
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 247
+- Sin respuesta de la IA (error o límite): 249
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 48 | 3 | 18 | 3 | 66 |
+| 2026-10-27 | 47 | 3 | 16 | 3 | 65 |
 | 2026-10-28 | 117 | 10 | 43 | 15 | 165 |
-| 2026-10-29 | 0 | 0 | 0 | 0 | 16 |
+| 2026-10-29 | 1 | 0 | 0 | 0 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **33**
 - rendimiento: **30**
-- manejo de errores y validación de entradas: **28**
+- manejo de errores y validación de entradas: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **18**
 - `quarantine.py`: **17**
 - `settings.py`: **17**
 - `healthscore.py`: **16**
@@ -38,7 +38,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **15**
 - `browser.py`: **15**
 - `safety.py`: **14**
-- `assistant.py`: **12**
+- `assistant.py`: **13**
 - `organizer.py`: **10**
 - `branding.py`: **7**
 - `startup.py`: **6**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T00:48:49` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `ingest` ante entradas malformadas o inesperadas, añadiendo una validación defensiva en el bucle principal de `_validate_and_sanitize_data` para manejar fallos individuales sin abortar la operación completa de ingesta.
 - `2026-10-28T13:54:58` **diskreport.py** (seguridad defensiva): He refactorizado `walk_files` para integrar una validación de seguridad proactiva que garantiza que la ruta sea un descendiente real de la raíz antes de procesarla, evitando posibles ataques de recorrido de directorios o acceso a rutas fuera del alcance solicitado mediante manipulaciones de `path.resolve()` o enlaces simbólicos maliciosos.
 - `2026-10-28T13:44:24` **startup.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la clase `StartupEntry` añadiendo un bloque `try-except` específico al resolver rutas en `_resolve_and_cache_path` y `_resolve_path_from_command`, evitando que errores imprevistos al procesar nombres de archivo (como caracteres de control ocultos o codificaciones corruptas) bloqueen el escaneo completo.
 - `2026-10-28T13:43:55` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de lectura de archivos JSON integrando una validación de integridad previa a `json.load`, evitando potenciales ataques de denegación de servicio por archivos con estructura JSON maliciosa o excesivamente anidada, además de asegurar que la decodificación de bytes a string no bloquee la ejecución ante bytes corruptos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T12:53:08` **quarantine.py** (rendimiento): Optimicé el cálculo del hash SHA256 implementando una caché de resultados basada en los metadatos del archivo (ruta, tiempo de modificación y tamaño), evitando lecturas de disco innecesarias durante verificaciones recurrentes.
 - `2026-10-28T12:52:07` **memory.py** (rendimiento): Optimizé la función `_iter_process_memory` para realizar la verificación de seguridad `_is_process_executable_safe` solo después de confirmar que el proceso tiene un consumo de memoria relevante, evitando llamadas costosas a la API de archivos y manipulación de buffers para procesos pequeños o irrelevantes.
 - `2026-10-28T12:41:13` **diskreport.py** (rendimiento): Optimicé el cálculo de `largest_folders` para evitar la reconstrucción de rutas `Path` mediante tuplas y `os.path.join` innecesarios, utilizando directamente `path.relative_to` para identificar el subdirectorio de primer nivel de forma eficiente.
-- `2026-10-28T12:40:45` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo eliminando la resolución innecesaria de rutas (`resolve()`) dentro del bucle interno de `DirectoryScanner`, reemplazándola por `normcase` y `normpath` para validar límites, lo que reduce drásticamente las llamadas al sistema de archivos por cada archivo encontrado.

@@ -467,11 +467,11 @@ class SystemContext:
         updates: dict[str, Any] = {}
         try:
             for key, spec in _VALIDATORS.items():
-                val = self._apply_field(source, key, spec)
-                if val is not None: 
-                    updates[key] = val
+                try:
+                    val = self._apply_field(source, key, spec)
+                    if val is not None: updates[key] = val
+                except Exception: continue
             
-            # Sanitización robusta de la calificación (grade)
             g_val = source.get("grade") if isinstance(source, dict) else getattr(source, "grade", None)
             if g_val is not None and not callable(g_val):
                 grade_val = self._clean_grade(g_val)
@@ -485,7 +485,6 @@ class SystemContext:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None or callable(source) or not isinstance(source, (dict, object)): 
             return False
-        # Para objetos complejos, restringir la profundidad para evitar recursión innecesaria
         return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list)) else True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
@@ -494,7 +493,6 @@ class SystemContext:
             for k, v in updates.items():
                 setattr(self, k, v)
             self.analyzed = True
-            # Limpieza segura de cachés de propiedades
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)
         except Exception:
@@ -548,7 +546,6 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Crea y popula un objeto SystemContext a partir de fuentes de datos múltiples."""
-    # Validación estricta: impedir tipos no permitidos como entrada
     for s in (metrics, health, extra):
         if s is not None and not isinstance(s, (dict, object)):
             return SystemContext()
@@ -565,7 +562,6 @@ def context_as_text(context: SystemContext) -> str:
     for k, u, p in _CONTEXT_SCHEMA:
         if k in snap and snap[k] >= 0.0:
             val_str = f"{k}: {snap[k]:.{p}f}{u}"
-            # Filtro adicional de seguridad defensiva para asegurar que la línea serializada sea segura
             if _ensure_safe_text(val_str):
                 lines.append(val_str)
     return "\n".join(lines)
@@ -666,7 +662,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     q_sanitized: str = _sanitize_query(question)
     if not q_sanitized: return Answer("Entrada no válida.")
     
-    # Búsqueda optimizada: revisa si el token existe en el diccionario antes de procesar toda la consulta
     for token in q_sanitized.lower().split():
         token_clean = token.strip("¿?!.,")
         if token_clean in _TOKENS_MAP:
@@ -683,7 +678,6 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     """Parsea la configuración de usuario para el asistente manejando errores de estructura."""
     if not isinstance(raw_cfg, dict): return AssistantConfig("", "gemini-3.1-flash-lite", True)
     
-    # La API key siempre se prioriza desde la variable de entorno para evitar persistencia insegura en disco
     api_key = os.environ.get("LTO_API_KEY", str(raw_cfg.get("asistente_api_key", "")))
     
     try:
