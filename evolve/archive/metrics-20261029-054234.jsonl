@@ -1,4 +1,0 @@
-{"timestamp": "2026-10-27T15:11:23", "day": "2026-10-27", "iteration": 32583, "file": "diskreport.py", "category": "rendimiento", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}
-{"timestamp": "2026-10-27T15:11:47", "day": "2026-10-27", "iteration": 32584, "file": "duplicates.py", "category": "rendimiento", "result": "sin_respuesta", "rationale": "respuesta sin bloque de archivo válido"}
-{"timestamp": "2026-10-27T15:12:30", "day": "2026-10-27", "iteration": 32585, "file": "healthscore.py", "category": "rendimiento", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}
-{"timestamp": "2026-10-27T15:14:01", "day": "2026-10-27", "iteration": 32586, "file": "main.py", "category": "rendimiento", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}

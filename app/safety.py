@@ -817,6 +817,7 @@ def _validate_volume_integrity(path: Path) -> None:
 def _normalize_resolved(path_str: str) -> Path:
     """Normaliza y resuelve rutas absolutas de forma segura."""
     try:
+        # Se asegura que la normalización trate correctamente nombres con espacios/puntos al final
         return Path(os.path.abspath(path_str)).resolve(strict=False)
     except (OSError, RuntimeError, PermissionError):
         return Path(path_str).absolute()
@@ -828,6 +829,10 @@ def normalize(path: PathLike) -> Path:
     """
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
     path_str = str(path).strip()
+    
+    # Pre-validación contra nombres de archivo mal formados en Windows
+    if os.name == 'nt' and (path_str.endswith('.') or path_str.endswith(' ')):
+        raise UnsafePathError("Ruta con terminación inválida (punto o espacio).", SafetyValidationErrorCode.INVALID_CHARS)
     
     if os.name == 'nt' and _is_path_too_long(path_str):
         if not path_str.startswith(LONG_PATH_PREFIX):

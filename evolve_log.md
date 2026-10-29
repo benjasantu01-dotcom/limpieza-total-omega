@@ -728,3 +728,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-29T07:34:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-10-29T07:34:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T07:34:42` Corrida terminada. Total usado hoy: 180.
+- `2026-10-29T07:43:01` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-10-29T07:43:54` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos de archivos con nombres que terminan en punto o espacio (comunes en Windows pero problemáticos para APIs de bajo nivel) mediante una validación estricta de normalización en `normalize`, asegurando que estas rutas no eludan los controles de seguridad ni causen comportamientos inesperados en las llamadas a `ctypes`.
+- `2026-10-29T07:44:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-29T07:44:59` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-29T07:45:48` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: robustez ante casos límite): el archivo se encogió al 58% del original (posible pérdida de código)
+- `2026-10-29T07:46:48` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-29T07:47:17` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-29T07:47:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T07:47:17` Corrida terminada. Total usado hoy: 184.
