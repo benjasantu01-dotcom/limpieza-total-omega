@@ -485,7 +485,7 @@ class SystemContext:
                 try:
                     val = self._apply_field(source, key, spec)
                     if val is not None: updates[key] = val
-                except Exception: continue
+                except (Exception, TypeError): continue
             
             g_val = getattr(source, "grade", None) if not isinstance(source, dict) else source.get("grade")
             if g_val is not None and not callable(g_val):
@@ -506,11 +506,11 @@ class SystemContext:
         """Aplica los cambios validados al objeto y purga cachés para forzar recálculos."""
         try:
             for k, v in updates.items():
-                setattr(self, k, v)
+                if _is_safe_key(k): setattr(self, k, v)
             self.analyzed = True
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)
-        except Exception:
+        except (Exception, AttributeError):
             self.analyzed = False
 
     def ingest(self, source: Any) -> bool:
@@ -562,12 +562,11 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Crea una instancia de SystemContext poblándola desde múltiples fuentes de datos opcionales."""
-    for s in (metrics, health, extra):
-        if s is not None and not isinstance(s, (dict, object)):
-            return SystemContext()
     ctx: SystemContext = SystemContext()
     for s in (metrics, health, extra):
-        if s is not None: ctx.ingest(s)
+        if s is not None:
+            try: ctx.ingest(s)
+            except Exception: continue
     return ctx
 
 def context_as_text(context: SystemContext) -> str:

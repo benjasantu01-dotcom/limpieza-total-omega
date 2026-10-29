@@ -93,11 +93,15 @@ class DirectoryScanner:
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
         
+        if not root_path or not os.path.exists(root_path):
+            return ScanResult(0, False)
+
         try:
-            root_norm = os.path.normcase(os.path.abspath(root_path))
-            if not is_safe_to_modify(Path(root_path)):
+            p_obj = Path(root_path)
+            if not is_safe_to_modify(p_obj):
                 return ScanResult(0, True)
-        except (OSError, RuntimeError):
+            root_norm = os.path.normcase(os.path.abspath(root_path))
+        except (OSError, RuntimeError, ValueError):
             return ScanResult(0, False)
 
         if not root_norm.startswith(self.ctx.sandbox_base_norm) or root_norm in self.ctx.visited_dirs:
@@ -121,7 +125,7 @@ class DirectoryScanner:
                                 try:
                                     fd = os.open(entry.path, os.O_RDONLY)
                                     os.close(fd)
-                                except (OSError, PermissionError):
+                                except (OSError, PermissionError, FileNotFoundError):
                                     continue
                                     
                                 st = entry.stat(follow_symlinks=False)
@@ -129,10 +133,10 @@ class DirectoryScanner:
                                 if file_id not in self.ctx.visited_files:
                                     self.ctx.visited_files.add(file_id)
                                     total_bytes += st.st_size
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
             return ScanResult(total_bytes, True)
-        except (OSError, PermissionError): 
+        except (OSError, PermissionError, FileNotFoundError): 
             return ScanResult(0, False)
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
