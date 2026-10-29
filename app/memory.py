@@ -195,13 +195,22 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
-    """Extrae números de strings (ej: 'MemTotal: 100 kB') y los convierte a BytesValue."""
+    """Extrae números de strings y los convierte a BytesValue de forma defensiva."""
     if value is None: return BytesValue(0)
-    if isinstance(value, int): return BytesValue(max(0, value * multiplier))
+    
+    # Manejo de tipos numéricos directos
+    if isinstance(value, (int, float)):
+        try:
+            val = int(value * multiplier)
+            return BytesValue(max(0, val))
+        except (ValueError, OverflowError):
+            return BytesValue(0)
+            
     if not isinstance(value, str): return BytesValue(0)
     
     digits = "".join(filter(str.isdigit, value))
     if not digits: return BytesValue(0)
+    
     try:
         val = int(digits) * multiplier
         return BytesValue(val) if 0 <= val < (2**63 - 1) else BytesValue(0)
