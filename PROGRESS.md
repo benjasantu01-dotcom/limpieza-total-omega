@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **165** (32.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 59
-- Sin cambios (nada sustancial que mejorar): 18
+- Rechazadas por guardia de seguridad: 58
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 249
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 47 | 3 | 16 | 3 | 65 |
+| 2026-10-27 | 44 | 3 | 15 | 3 | 65 |
 | 2026-10-28 | 117 | 10 | 43 | 15 | 165 |
-| 2026-10-29 | 1 | 0 | 0 | 0 | 19 |
+| 2026-10-29 | 4 | 0 | 0 | 1 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **37**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **33**
+- manejo de errores y validación de entradas: **32**
 - rendimiento: **30**
-- manejo de errores y validación de entradas: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
-- `quarantine.py`: **17**
 - `settings.py`: **17**
+- `browser.py`: **16**
 - `healthscore.py`: **16**
-- `memory.py`: **15**
+- `quarantine.py`: **16**
 - `scanner.py`: **15**
-- `browser.py`: **15**
+- `memory.py`: **14**
 - `safety.py`: **14**
 - `assistant.py`: **13**
-- `organizer.py`: **10**
-- `branding.py`: **7**
+- `organizer.py`: **9**
+- `branding.py`: **8**
 - `startup.py`: **6**
-- `duplicates.py`: **2**
+- `duplicates.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T00:56:58` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` asegurando que el archivo sea cerrado correctamente incluso ante errores inesperados durante la lectura, y añadiendo una validación explícita de existencia antes de abrir.
+- `2026-10-29T00:56:22` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` añadiendo validaciones de tipo y estructura sobre los parámetros de entrada, asegurando que `bases` y `cache_paths` sean iterables válidos antes de procesarlos, evitando así posibles `AttributeError` o `TypeError` en tiempo de ejecución.
+- `2026-10-29T00:55:55` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de acceso a datos (`color`, `font_size`, `icon`, `tab_label`) mediante la validación explícita de tipos y la protección contra valores nulos o vacíos, reemplazando el manejo implícito de errores por retornos seguros predeterminados que garantizan la integridad de la UI.
 - `2026-10-29T00:48:49` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `ingest` ante entradas malformadas o inesperadas, añadiendo una validación defensiva en el bucle principal de `_validate_and_sanitize_data` para manejar fallos individuales sin abortar la operación completa de ingesta.
 - `2026-10-28T13:54:58` **diskreport.py** (seguridad defensiva): He refactorizado `walk_files` para integrar una validación de seguridad proactiva que garantiza que la ruta sea un descendiente real de la raíz antes de procesarla, evitando posibles ataques de recorrido de directorios o acceso a rutas fuera del alcance solicitado mediante manipulaciones de `path.resolve()` o enlaces simbólicos maliciosos.
 - `2026-10-28T13:44:24` **startup.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la clase `StartupEntry` añadiendo un bloque `try-except` específico al resolver rutas en `_resolve_and_cache_path` y `_resolve_path_from_command`, evitando que errores imprevistos al procesar nombres de archivo (como caracteres de control ocultos o codificaciones corruptas) bloqueen el escaneo completo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-28T13:02:42` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución de `is_safe_to_modify` y `is_protected_path` cuando la configuración ya existe en caché, utilizando la marca de tiempo (mtime) y tamaño del archivo como verificadores de validez.
 - `2026-10-28T13:02:26` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del escaneo reemplazando las validaciones redundantes de extensiones mediante la pre-compilación de un conjunto (`frozenset`) eficiente y eliminando llamadas innecesarias a `is_protected_path` cuando la información ya está implícita o cacheada, reduciendo la carga de I/O y el uso de CPU durante el recorrido recursivo.
 - `2026-10-28T13:01:59` **safety.py** (rendimiento): Se implementó un mecanismo de caché en `_validate_structural_safety` para evitar el costo computacional de realizar normalizaciones, validaciones de expresiones regulares y chequeos de sistema de archivos repetitivos sobre una misma ruta en un mismo ciclo de ejecución.
-- `2026-10-28T12:53:08` **quarantine.py** (rendimiento): Optimicé el cálculo del hash SHA256 implementando una caché de resultados basada en los metadatos del archivo (ruta, tiempo de modificación y tamaño), evitando lecturas de disco innecesarias durante verificaciones recurrentes.
-- `2026-10-28T12:52:07` **memory.py** (rendimiento): Optimizé la función `_iter_process_memory` para realizar la verificación de seguridad `_is_process_executable_safe` solo después de confirmar que el proceso tiene un consumo de memoria relevante, evitando llamadas costosas a la API de archivos y manipulación de buffers para procesos pequeños o irrelevantes.
-- `2026-10-28T12:41:13` **diskreport.py** (rendimiento): Optimicé el cálculo de `largest_folders` para evitar la reconstrucción de rutas `Path` mediante tuplas y `os.path.join` innecesarios, utilizando directamente `path.relative_to` para identificar el subdirectorio de primer nivel de forma eficiente.

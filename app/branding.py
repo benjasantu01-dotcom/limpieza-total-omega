@@ -211,33 +211,39 @@ def app_title() -> str:
 
 def color(name: Optional[str]) -> ColorHex: 
     """Acceso seguro a un color de la paleta corporativa por nombre."""
-    if not isinstance(name, str): return "#808080"
+    if not isinstance(name, str) or not name:
+        return "#808080"
     return PALETTE.get(name.lower(), "#808080")
 
 def font_size(name: Optional[str]) -> int: 
     """Retorna el tamaño de fuente configurado para una categoría dada."""
-    if not isinstance(name, str): return UI_CONFIG.body_size
+    if not isinstance(name, str) or not name:
+        return UI_CONFIG.body_size
     return FONT_SIZES.get(name.lower(), UI_CONFIG.body_size)
 
 def icon(section: Optional[str]) -> str: 
     """Retorna el glifo Unicode asociado a una sección de la aplicación."""
-    if not isinstance(section, str): return "\u2022"
+    if not isinstance(section, str) or not section:
+        return "\u2022"
     return ICONS.get(section, "\u2022")
 
 def tab_label(section: Optional[str]) -> str: 
     """Formatea la etiqueta de una pestaña combinando icono y texto."""
-    if not isinstance(section, str) or not section: return f"\u2022  Desconocido"
+    if not isinstance(section, str) or not section:
+        return f"\u2022  Desconocido"
     return f"{icon(section)}  {section}"
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
     """Valida y normaliza una cadena de texto a un enum de tipo SeverityType."""
-    if not isinstance(severity, str): return None
+    if not isinstance(severity, str) or not severity:
+        return None
     try: return SeverityType(severity.strip().lower())
     except (ValueError, AttributeError): return None
 
 def _get_severity_style(severity_key: Optional[SeverityType]) -> SeverityStyle:
     """Busca el par color/etiqueta para un nivel de severidad determinado."""
-    if not isinstance(severity_key, SeverityType): return (C_TEXT_MUTED, "Desconocido")
+    if not isinstance(severity_key, SeverityType): 
+        return (C_TEXT_MUTED, "Desconocido")
     return SEVERITY_STYLES.get(severity_key, (C_TEXT_MUTED, "Desconocido"))
 
 def severity_color(severity: Optional[str]) -> ColorHex: 
@@ -255,20 +261,25 @@ def severity_icon(severity: Optional[str]) -> str:
 
 def grade_color(grade: Optional[str]) -> ColorHex: 
     """Retorna el color asignado a una calificación de salud (A-F)."""
-    if not isinstance(grade, str) or not grade: return C_TEXT_MUTED
+    if not isinstance(grade, str) or not grade: 
+        return C_TEXT_MUTED
     return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED)
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
     """Calcula el color representativo según el umbral de una puntuación (0-100)."""
-    if score is None: return C_TEXT_MUTED
+    if score is None: 
+        return C_TEXT_MUTED
     try:
         valor = float(score)
-        if not math.isfinite(valor) or not (0.0 <= valor <= 100.0): return C_TEXT_MUTED
+        if not math.isfinite(valor) or not (0.0 <= valor <= 100.0): 
+            return C_TEXT_MUTED
         for limit, color_val in SCORE_THRESHOLDS:
-            if valor >= limit: return color_val
+            if valor >= limit: 
+                return color_val
         return C_DANGER
-    except (TypeError, ValueError): return C_TEXT_MUTED
+    except (TypeError, ValueError): 
+        return C_TEXT_MUTED
 
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588", empty: str = "\u2591") -> str:
@@ -276,10 +287,12 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
     try:
         valor = float(percent) if percent is not None else 0.0
         ancho = max(1, int(width))
-        if not math.isfinite(valor): return empty * ancho
+        if not math.isfinite(valor): 
+            return empty * ancho
         llenos = int(round(max(0.0, min(100.0, valor)) / 100 * ancho))
         return filled * llenos + empty * (ancho - llenos)
-    except (TypeError, ValueError): return empty * max(1, int(width))
+    except (TypeError, ValueError): 
+        return empty * max(1, int(width))
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
@@ -307,7 +320,8 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
 
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
     """Optimiza una secuencia de colores agrupando colores adyacentes idénticos."""
-    if not colors: return ()
+    if not colors: 
+        return ()
     segments = []
     curr, start = colors[0], 0
     for i in range(1, len(colors)):
@@ -322,7 +336,8 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
     """Genera una lista de colores interpolados basada en puntos de control (stops)."""
     n = max(1, int(steps))
     n_stops = len(stops)
-    if n_stops < 2: return (stops[0],) * n
+    if n_stops < 2: 
+        return (stops[0],) * n
     rgb_stops = [_hex_to_rgb(s) for s in stops]
     res = []
     for i in range(n):
@@ -343,7 +358,8 @@ SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 9
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Escala y traslada las coordenadas base del escudo de Omega."""
-    if not math.isfinite(scale) or scale <= 0: return ()
+    if not math.isfinite(scale) or scale <= 0: 
+        return ()
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
 
 def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
@@ -353,7 +369,8 @@ def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
     """Guarda el logo SVG en el sistema de archivos tras verificar permisos."""
-    if destination is None: return None
+    if destination is None: 
+        return None
     try:
         dest_path = Path(destination).resolve()
         
@@ -383,7 +400,8 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float], ...]:
     """Calcula los parámetros geométricos para las franjas dinámicas del escudo."""
-    if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
+    if not math.isfinite(scale) or scale <= 0 or n < 1: 
+        return ()
     tf = STRIPE_THICKNESS_SCALE * scale
     params = []
     for i in range(n):
@@ -398,7 +416,8 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         return
     n = max(6, int(STRIPE_COUNT_FACTOR * scale))
     params = _get_stripe_params(scale, n)
-    if not params: return
+    if not params: 
+        return
     by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + 64 * scale
     for s in get_gradient_segments(n):
         p_start, p_end = params[s.start_index], params[s.end_index - 1]
@@ -421,17 +440,21 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     primitivas gráficas escaladas y posicionadas dinámicamente.
     """
     try:
-        if canvas is None or not hasattr(canvas, "create_oval"): return
+        if canvas is None or not hasattr(canvas, "create_oval"): 
+            return
         val_size = float(size)
-        if not math.isfinite(val_size) or val_size <= 0: return
+        if not math.isfinite(val_size) or val_size <= 0: 
+            return
         s = max(_MIN_SCALE, min(_MAX_SCALE, val_size / 128.0))
         poly = _get_scaled_poly(s, canvas_x, canvas_y)
-        if not poly: return
+        if not poly: 
+            return
         canvas.create_oval(canvas_x+(64-75)*s, canvas_y+(58-75)*s, canvas_x+(64+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, s)
-    except Exception: pass
+    except Exception: 
+        pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """
@@ -442,7 +465,8 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         w, h = max(1, int(width)), max(1, int(height))
         for s in get_gradient_segments(w, stops):
             canvas.create_line(canvas_x + s.start_index, canvas_y, canvas_x + s.end_index, canvas_y, fill=s.hex_color, width=h)
-    except Exception: pass
+    except Exception: 
+        pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
@@ -450,13 +474,17 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     utilizando arcos geométricos para representar métricas de estado de salud.
     """
     try:
-        if percent is None: return
+        if percent is None: 
+            return
         val = float(percent)
-        if not math.isfinite(val): return
+        if not math.isfinite(val): 
+            return
         val = max(0.0, min(100.0, val))
         d, t = max(20, min(2048, int(size))), max(2, int(thickness))
         pad = t / 2.0
         bb = (canvas_x + pad, canvas_y + pad, canvas_x + d - pad, canvas_y + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=t)
-        if val > 0: canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=t)
-    except Exception: pass
+        if val > 0: 
+            canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=t)
+    except Exception: 
+        pass

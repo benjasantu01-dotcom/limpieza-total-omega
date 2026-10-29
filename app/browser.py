@@ -262,7 +262,8 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
         return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    raw_bases = list(bases) if (bases is not None) else base_directories()
+    # Validaciones de entrada robustas
+    raw_bases = list(bases) if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
     if not raw_bases or not isinstance(browser_map, dict): return []
