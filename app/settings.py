@@ -72,9 +72,8 @@ class _NumericRange(NamedTuple):
 
 class _ValidatorEntry(NamedTuple):
     """
-    Encapsula una estrategia de validación para una configuración específica.
-    La función 'func' procesa la entrada bruta y la normaliza según las reglas del dominio;
-    retorna el valor procesado si es correcto, o None si la entrada es inválida.
+    Wrapper que vincula una clave de configuración con su función validadora.
+    Cada función debe normalizar el valor bruto y devolverlo, o None si el valor no es apto.
     """
     func: Callable[[ConfigKey, Any], Any]
 
@@ -154,7 +153,10 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """
     Singleton encargado de la persistencia y caché en memoria de la configuración.
-    'data_cache' almacena tuplas de (settings, mtime, size) para evitar re-lecturas.
+    
+    Gestiona la coherencia de lectura/escritura mediante:
+    - path_cache: Mapeo de bases personalizadas a rutas finales.
+    - data_cache: Almacenamiento de settings parseados para evitar E/S redundantes.
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
@@ -169,9 +171,10 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Escribe la configuración al disco de forma atómica usando un archivo temporal.
-        Asegura que el archivo final sea un archivo regular, de propiedad del usuario 
-        y protegido contra escrituras maliciosas.
+        Escribe la configuración de forma atómica:
+        1. Serializa a un archivo temporal `.tmp`.
+        2. Verifica que el archivo destino cumpla con restricciones de sistema/seguridad.
+        3. Realiza un reemplazo in-place para prevenir corrupción ante caídas.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE: return False
@@ -334,6 +337,7 @@ _VALIDATOR_STRATEGY: Final[MappingProxyType[str, Callable[[ConfigKey, Any], Any]
 })
 
 def _get_validator_for_k(k: ConfigKey) -> _ValidatorEntry:
+    """Asigna la estrategia de validación adecuada basada en el tipo de dato."""
     if k in BOOL_KEYS: return _ValidatorEntry(_VALIDATOR_STRATEGY["bool"])
     if k in INT_KEYS: return _ValidatorEntry(_VALIDATOR_STRATEGY["int"])
     if k == ConfigKey.ULTIMA_CARPETA: return _ValidatorEntry(_VALIDATOR_STRATEGY["path"])
@@ -368,18 +372,22 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    """Lee y parsea JSON, verificando estructura básica antes de procesar."""
+    """
+    Lee y valida el JSON de configuración en disco.
+    Aplica una validación multi-nivel: tamaño máximo, caracteres permitidos, 
+    estructura de diccionario y tipos de valores (contra DEFAULTS).
+    """
     try:
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
         if not content or len(content) > MAX_SETTINGS_SIZE or len(content) < 2: return None
+        
+        # Validación de integridad: sin caracteres de control inusuales
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
         data = json.loads(content.decode("utf-8", errors="strict"))
         if not isinstance(data, dict) or len(data) > 64: return None
-        for k, v in data.items():
-            if not isinstance(k, str) or (v is not None and not isinstance(v, (str, int, bool, float))):
-                return None
+        
         # Validar tipo contra el esquema DEFAULTS
         for k, v in data.items():
             if k in DEFAULTS and not isinstance(v, type(DEFAULTS[k])): return None

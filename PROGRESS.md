@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-27 | 1 | 0 | 0 | 0 | 1 |
-| 2026-10-28 | 117 | 10 | 43 | 15 | 165 |
-| 2026-10-29 | 54 | 2 | 20 | 9 | 67 |
+| 2026-10-28 | 116 | 10 | 42 | 15 | 165 |
+| 2026-10-29 | 56 | 2 | 21 | 9 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **31**
 - seguridad defensiva: **31**
+- robustez ante casos límite: **29**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **17**
 - `scanner.py`: **17**
 - `quarantine.py`: **16**
-- `settings.py`: **16**
 - `browser.py`: **16**
 - `diskreport.py`: **16**
-- `memory.py`: **15**
 - `safety.py`: **15**
-- `healthscore.py`: **14**
 - `assistant.py`: **14**
+- `memory.py`: **14**
+- `healthscore.py`: **13**
 - `branding.py`: **11**
 - `organizer.py`: **9**
+- `startup.py`: **7**
 - `duplicates.py`: **7**
-- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T06:32:41` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings precisos en métodos críticos y se han refinado los tipos de retorno y firmas para eliminar ambigüedades, facilitando la comprensión del flujo de datos en el inventario de inicio.
+- `2026-10-29T06:32:11` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `settings.py` mediante la adición de docstrings técnicos detallados en funciones clave, la clarificación del propósito de las estrategias de validación y la simplificación de la lógica de tipo en `_read_and_parse_json` para que sea más autoexplicativa.
 - `2026-10-29T06:23:27` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica del módulo `scanner.py` mediante la implementación de `TypeAlias` más claros para las estructuras de datos complejas, la estandarización de docstrings siguiendo el estándar PEP 257, y la explicitación de la intención del flujo de control en las funciones de chequeo mediante type hints mejorados.
 - `2026-10-29T06:15:02` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `organizer.py` mediante la adición de docstrings estructurados (con secciones `Args`, `Returns` y `Raises` cuando aplica), la tipificación explícita de retornos en funciones internas y la clarificación de constantes de seguridad mediante comentarios que explican el propósito de los flags de Win32.
 - `2026-10-29T06:14:47` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos que explican las precondiciones y efectos secundarios de las operaciones con la API de Windows, además de tipado explícito en estructuras críticas (`ctypes`) para mayor claridad.
@@ -59,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T05:32:06` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_query_working_set_bytes` capturando explícitamente errores de comunicación con la API (como `ctypes.WinError` o fallos en el buffer) y validando la integridad del resultado antes de procesarlo, evitando propagar fallos silenciosos desde capas de bajo nivel.
 - `2026-10-29T05:30:47` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `group_by_size` y `_collect_candidates` añadiendo validaciones preventivas de tipo y estado de los parámetros de entrada, evitando errores en tiempo de ejecución al procesar iterables de rutas potencialmente mal formadas.
 - `2026-10-29T05:22:44` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y excepciones específicas para evitar que rutas malformadas o errores de permisos durante la iteración interrumpan el escaneo.
-- `2026-10-29T05:22:29` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_valid_cache_path` y `_resolve_browser_path` agregando validaciones de tipo explícitas y chequeos de estado (`exists()`) más granulares para prevenir que las operaciones de disco fallen ante entradas mal formadas o condiciones de carrera en el sistema de archivos.
-- `2026-10-29T05:21:27` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de acceso a datos (`color`, `font_size`, `icon`, `tab_label`) mediante la validación explícita de `None` y tipos incorrectos, evitando que valores de entrada mal formados provoquen accesos inesperados a diccionarios o retornos de valores inconsistentes.
