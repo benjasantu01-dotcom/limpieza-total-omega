@@ -1044,3 +1044,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-29T10:49:19` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 342): invalid syntax
 - `2026-10-29T10:49:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T10:49:19` Corrida terminada. Total usado hoy: 256.
+- `2026-10-29T10:57:13` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-29T10:57:44` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad técnica de `scanner.py` mediante la normalización de la estructura de las funciones de heurística, explicitando el contrato de datos requerido para las validaciones y clarificando mediante docstrings el propósito de cada verificación.
+- `2026-10-29T10:58:11` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _Validators.bool, _Validators.int, _Validators.path, _Validators.str
+- `2026-10-29T10:59:15` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante docstrings más precisos, aclarando las responsabilidades de cada etapa del pipeline de resolución de rutas para facilitar el mantenimiento y la auditoría.
+- `2026-10-29T10:59:38` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._apply_field
+- `2026-10-29T10:59:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T10:59:38` Corrida terminada. Total usado hoy: 260.
