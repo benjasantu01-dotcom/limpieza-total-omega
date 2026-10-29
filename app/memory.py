@@ -331,7 +331,7 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
-    """Abre un handle al proceso con la máscara provista; devuelve None si el acceso es denegado."""
+    """Abre un handle al proceso con la máscara provista; devuelve None si hay error o acceso denegado."""
     if WindowsAPI.kernel32 is None: return None
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
@@ -485,4 +485,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally:
         if WindowsAPI.kernel32:
-            WindowsAPI.kernel32.CloseHandle(h_process)
+            try:
+                WindowsAPI.kernel32.CloseHandle(h_process)
+            except (OSError, Exception):
+                pass

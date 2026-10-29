@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 64
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 233
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 87 | 7 | 34 | 14 | 126 |
-| 2026-10-29 | 83 | 5 | 30 | 11 | 107 |
+| 2026-10-28 | 86 | 7 | 33 | 13 | 125 |
+| 2026-10-29 | 86 | 5 | 31 | 11 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **35**
-- rendimiento: **33**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **33**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **18**
+- `quarantine.py`: **17**
 - `diskreport.py`: **17**
-- `quarantine.py`: **16**
+- `memory.py`: **16**
 - `settings.py`: **16**
-- `memory.py`: **15**
 - `safety.py`: **15**
 - `scanner.py`: **15**
-- `assistant.py`: **14**
 - `healthscore.py`: **13**
+- `assistant.py`: **13**
+- `organizer.py`: **9**
 - `branding.py`: **9**
-- `organizer.py`: **8**
 - `startup.py`: **7**
 - `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T10:09:22` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `quarantine_dir` centralizando la validación de sus componentes, añadiendo verificaciones explícitas de tipos de datos en la creación del manifiesto y mejorando el manejo de errores al cargar JSON para evitar estados corruptos.
+- `2026-10-29T10:08:37` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de entrada en `stage_for_review` y `delete_reviewed` para evitar excepciones no capturadas al procesar rutas mal formadas, añadiendo chequeos de tipo y condiciones de seguridad más estrictas antes de ejecutar operaciones de disco.
+- `2026-10-29T10:06:47` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_query_working_set_bytes` y `_is_process_accessible` mediante el manejo explícito de errores de bajo nivel y la validación de estados de `kernel32` para prevenir cierres inesperados de la aplicación al interactuar con el sistema operativo.
 - `2026-10-29T09:57:22` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` y `_compute_cached` implementando validaciones de entrada más estrictas y manejando explícitamente posibles errores de tipo durante la deserialización de métricas para evitar que la aplicación colapse ante datos corruptos.
 - `2026-10-29T09:56:52` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validaciones de tipo y manejo defensivo de errores en funciones críticas de acceso a disco, asegurando que los valores de retorno sean predecibles ante entradas nulas o rutas inválidas.
 - `2026-10-29T09:56:24` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_safe_stat` al añadir un chequeo explícito de `None` sobre `os.stat_result`, evitando posibles errores de desreferencia en el procesamiento del flujo de datos, además de asegurar que `_safe_stat` maneje correctamente las entradas `None`.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T08:14:15` **organizer.py** (seguridad defensiva): Mejoré la seguridad de `delete_reviewed` implementando una validación estricta del nombre y extensión antes de proceder con el `unlink()`, evitando que cualquier archivo no deseado que aparezca en la carpeta de revisión pueda ser eliminado sin pasar los filtros de seguridad de la aplicación.
 - `2026-10-29T08:06:50` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una validación explícita de `path_buf` antes de proceder con `EmptyWorkingSet`, asegurando que la ruta del proceso no sea solo validada, sino que se verifique que el buffer contenga información real y no sea una cadena vacía o corrupta post-lectura, reforzando el cumplimiento de las restricciones de `is_protected_path`.
 - `2026-10-29T07:55:06` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad del escaneo recursivo en `walk_files` incorporando un chequeo preventivo con `is_protected_path` sobre la ruta resuelta (`p_entry`) antes de intentar cualquier operación de `stat` o acceso, mitigando posibles desbordamientos hacia rutas de sistema tras resolver enlaces simbólicos.
-- `2026-10-29T07:54:54` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner.get_size` implementando una comprobación explícita de `is_safe_to_modify` para cada subdirectorio antes de entrar en él, garantizando que el escáner respete estrictamente los límites definidos en `safety.py` incluso en sistemas de archivos complejos.
-- `2026-10-29T07:53:56` **assistant.py** (seguridad defensiva): Mejoré la seguridad de `assistant.py` mediante la implementación de un decorador de validación de entrada (`@_enforce_safe_query`) para todos los manejadores de consultas, asegurando que cualquier entrada que pase por la lógica local haya sido filtrada contra inyecciones y caracteres prohibidos antes de ser procesada por los handlers, cumpliendo con el enfoque de seguridad defensiva.
-- `2026-10-29T07:43:54` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de archivos con nombres que terminan en punto o espacio (comunes en Windows pero problemáticos para APIs de bajo nivel) mediante una validación estricta de normalización en `normalize`, asegurando que estas rutas no eludan los controles de seguridad ni causen comportamientos inesperados en las llamadas a `ctypes`.

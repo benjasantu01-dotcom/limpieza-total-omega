@@ -418,12 +418,11 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         path: Path = Path(str(base)).expanduser().resolve()
         
+        # Validaciones de estructura de ruta
         if len(str(path)) > 240:
              raise UnsafePathError("Ruta de cuarentena excede límites de seguridad.")
-        
         if len(path.parts) > 16:
             raise UnsafePathError("Profundidad de ruta de cuarentena excesiva.")
-        
         if not path.name.strip() or path == path.parent:
             raise UnsafePathError("Ruta de cuarentena inválida: raíz o vacía.")
         
@@ -431,8 +430,6 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
-        
-        _check_for_reparse_points(path)
         
         if path.exists():
             if not path.is_dir():
@@ -579,9 +576,10 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             
         items: List[QuarantineItem] = []
         for d in data:
-            item = QuarantineItem.from_dict(d)
-            if item:
-                items.append(item)
+            if isinstance(d, dict):
+                item = QuarantineItem.from_dict(d)
+                if item:
+                    items.append(item)
                     
         _MANIFEST_CACHE[base_dir] = (items, current_mtime, current_size)
         return items
@@ -774,7 +772,7 @@ class IsolationManager:
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
     """Aisla archivos aplicando validaciones contra race conditions."""
     _check_path_syntax_integrity(destination)
-    _check_path_syntax_integrity(source) # Nueva validación defensiva de origen
+    _check_path_syntax_integrity(source)
     if source is None or not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     

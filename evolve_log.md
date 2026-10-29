@@ -1004,3 +1004,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-29T09:58:14` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-29T09:58:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T09:58:14` Corrida terminada. Total usado hoy: 236.
+- `2026-10-29T10:06:11` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-10-29T10:06:47` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_query_working_set_bytes` y `_is_process_accessible` mediante el manejo explícito de errores de bajo nivel y la validación de estados de `kernel32` para prevenir cierres inesperados de la aplicación al interactuar con el sistema operativo.
+- `2026-10-29T10:07:47` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-29T10:08:37` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones de entrada en `stage_for_review` y `delete_reviewed` para evitar excepciones no capturadas al procesar rutas mal formadas, añadiendo chequeos de tipo y condiciones de seguridad más estrictas antes de ejecutar operaciones de disco.
+- `2026-10-29T10:09:22` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `quarantine_dir` centralizando la validación de sus componentes, añadiendo verificaciones explícitas de tipos de datos en la creación del manifiesto y mejorando el manejo de errores al cargar JSON para evitar estados corruptos.
+- `2026-10-29T10:09:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-10-29T10:09:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T10:09:25` Corrida terminada. Total usado hoy: 240.
