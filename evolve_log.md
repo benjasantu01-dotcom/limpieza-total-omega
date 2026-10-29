@@ -721,3 +721,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-29T07:24:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._safe_run, LimpiezaTotalOmegaApp._safe_validate_inputs, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._validate_process_state, LimpiezaTotalOmegaApp._verify_disk_path, ensure_safety_in_task, wrapper
 - `2026-10-29T07:24:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T07:24:40` Corrida terminada. Total usado hoy: 176.
+- `2026-10-29T07:32:49` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-10-29T07:33:22` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_iter_process_memory` para manejar casos de procesos que desaparecen durante la enumeración (race conditions) mediante un manejo explícito del `OSError` al intentar cerrar handles y la validación de la integridad del buffer de nombres de módulo, evitando bloqueos en sistemas con alta actividad de procesos.
+- `2026-10-29T07:33:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-29T07:34:34` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` ante fallos en la persistencia del manifiesto al aplicar un patrón de "rollback" manual si el registro falla tras la copia física, evitando dejar archivos huérfanos en la cuarentena.
+- `2026-10-29T07:34:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-10-29T07:34:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T07:34:42` Corrida terminada. Total usado hoy: 180.

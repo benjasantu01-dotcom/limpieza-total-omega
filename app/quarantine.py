@@ -903,7 +903,6 @@ def quarantine_file(
     """Aísla archivos de forma atómica. Orquestador de alto nivel."""
     p_source: Path = _validate_input_path(source)
     
-    # Validar si el origen es una unidad/sistema de solo lectura antes de proceder
     if _is_filesystem_read_only(p_source.parent):
         raise OSError("El archivo origen reside en un volumen de solo lectura.")
         
@@ -929,11 +928,11 @@ def quarantine_file(
     try:
         file_hash, file_inode = _atomic_isolate_file(p_source, destination, st_info.st_size)
         
-        dest_st = destination.stat()
-        if dest_st.st_ino != file_inode or _get_sha256(destination) != file_hash:
-            raise RuntimeError("Falla crítica: destino inconsistente.")
-            
-        item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, reason, st_info.st_size, base)
+        try:
+            item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, reason, st_info.st_size, base)
+        except Exception as e:
+            if destination.exists(): _safe_unlink(destination)
+            raise e
             
         if p_source.exists() and not os.path.samefile(p_source, destination):
             try:

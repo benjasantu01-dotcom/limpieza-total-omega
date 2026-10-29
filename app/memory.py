@@ -369,7 +369,7 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
         return False
 
 def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
-    """Enumera procesos con optimización de buffer."""
+    """Enumera procesos con optimización de buffer y manejo de ciclos de vida dinámicos."""
     MAX_PIDS = 4096
     pids = (wintypes.DWORD * MAX_PIDS)()
     cb_needed = wintypes.DWORD(0)
@@ -394,7 +394,10 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
                 yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:
             if WindowsAPI.kernel32:
-                WindowsAPI.kernel32.CloseHandle(h_process)
+                try:
+                    WindowsAPI.kernel32.CloseHandle(h_process)
+                except (OSError, Exception):
+                    pass
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna los procesos con mayor consumo. Implementa caché interna de 60 segundos."""
