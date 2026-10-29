@@ -907,8 +907,15 @@ def quarantine_file(
     if _is_filesystem_read_only(p_source.parent):
         raise OSError("El archivo origen reside en un volumen de solo lectura.")
         
-    dest_dir: Path = quarantine_dir(base)
-    st_info: os.stat_result = _check_io_error_context(p_source.stat)
+    try:
+        dest_dir: Path = quarantine_dir(base)
+    except (OSError, PermissionError) as e:
+        raise RuntimeError(f"Sandbox inaccesible: {e}")
+
+    try:
+        st_info: os.stat_result = _check_io_error_context(p_source.stat)
+    except OSError as e:
+        raise RuntimeError(f"No se pudo acceder al archivo original: {e}")
     
     if _is_file_in_use_by_system(p_source):
         raise IOError("Archivo origen bloqueado por el sistema: abortado.")
@@ -935,7 +942,7 @@ def quarantine_file(
                 raise RuntimeError(f"Falla al remover original post-aislamiento: {e}")
                     
         return item
-    except Exception as e:
+    except (Exception, SystemExit, KeyboardInterrupt) as e:
         if destination and destination.exists():
             _safe_unlink(destination)
         raise RuntimeError(f"Error durante proceso de cuarentena: {e}")

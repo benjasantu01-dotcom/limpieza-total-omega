@@ -738,7 +738,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             
             return path.stat()
         except (OSError, PermissionError) as e:
-            if getattr(e, 'errno', 0) in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or getattr(e, 'winerror', 0) == ERROR_SHARING_VIOLATION:
+            # Captura errores específicos de E/S comunes en bloqueos de archivos de sistema
+            if isinstance(e, OSError) and e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN):
                 if attempt < max_retries - 1:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
