@@ -6,45 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 72 | 4 | 28 | 11 | 117 |
-| 2026-10-29 | 103 | 6 | 40 | 11 | 112 |
+| 2026-10-28 | 71 | 4 | 27 | 11 | 115 |
+| 2026-10-29 | 107 | 6 | 40 | 11 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **41**
-- rendimiento: **31**
-- seguridad defensiva: **29**
-- robustez ante casos límite: **28**
+- rendimiento: **33**
+- robustez ante casos límite: **30**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **18**
 - `quarantine.py`: **18**
-- `memory.py`: **17**
+- `settings.py`: **17**
 - `diskreport.py`: **17**
-- `settings.py`: **16**
+- `memory.py`: **16**
 - `scanner.py`: **15**
 - `safety.py`: **15**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
 - `healthscore.py`: **12**
+- `branding.py`: **10**
 - `organizer.py`: **9**
-- `branding.py`: **9**
-- `startup.py`: **8**
+- `startup.py`: **9**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T11:40:06` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada (`TypeError`, `ValueError`) y fallos en el sistema de archivos al verificar la existencia y accesibilidad de las rutas, asegurando que cualquier operación no crítica no comprometa el flujo principal de la aplicación.
+- `2026-10-29T11:39:47` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_validate_and_sanitize_data` y `_apply_updates` en `SystemContext` para asegurar que el estado del objeto no quede en un limbo inconsistente si ocurre una excepción inesperada durante la ingestión de datos, preservando la integridad del análisis.
+- `2026-10-29T11:39:08` **startup.py** (rendimiento): Se implementó un mecanismo de caché en `startup_folders` y se optimizó la lógica de búsqueda en `entries_from_folders` utilizando un conjunto (`set`) para evitar el acceso redundante al sistema de archivos mediante `is_dir()` y `is_symlink()`, reduciendo drásticamente las llamadas al disco en sistemas con múltiples directorios de inicio.
+- `2026-10-29T11:38:36` **settings.py** (rendimiento): Optimicé el acceso a la configuración implementando una caché de tipo "Single-Flight" para las validaciones de seguridad de rutas (`_run_safety_checks`) y reutilizando la estructura de datos `MappingProxyType` para evitar copias innecesarias en cada lectura del archivo.
 - `2026-10-29T11:28:33` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño de cuarentena reemplazando el re-procesamiento de toda la lista de objetos por una suma directa sobre los datos cargados en el manifiesto, evitando iteraciones redundantes y aprovechando la estructura de datos ya existente.
 - `2026-10-29T11:20:51` **memory.py** (rendimiento): Se optimizó el proceso de enumeración de memoria moviendo la creación del buffer de nombres de archivo fuera del loop interno y utilizando una tupla de PIDs procesados para evitar re-análisis innecesarios dentro de la misma iteración, reduciendo la presión sobre el recolector de basura y el sistema de E/S.
 - `2026-10-29T11:09:10` **diskreport.py** (rendimiento): Optimizé la función `walk_files` eliminando la llamada innecesaria a `Path.resolve()` dentro del bucle principal, reduciendo significativamente las llamadas al sistema operativo (I/O) y mejorando el rendimiento del escaneo.
@@ -56,7 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T10:39:36` **memory.py** (legibilidad y documentación): Se introdujeron constantes con nombres semánticos y comentarios explicativos en la estructura `MEMORYSTATUSEX` y las operaciones de bajo nivel, mejorando la legibilidad técnica y facilitando el mantenimiento sin alterar la lógica de diagnóstico.
 - `2026-10-29T10:37:44` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de entrada y retorno de las funciones de puntuación (`score_`) y se mejoró la documentación con docstrings precisos, clarificando la unidad de medida y el sentido de la normalización para cada componente.
 - `2026-10-29T10:37:15` **duplicates.py** (legibilidad y documentación): Se ha añadido documentación detallada mediante docstrings en los métodos de hashing y la estructura de datos principal para clarificar el flujo lógico de la estrategia de duplicados, cumpliendo con el enfoque de legibilidad y facilitando el mantenimiento a futuro.
-- `2026-10-29T10:30:40` **diskreport.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `walk_files` y `_collect_summary_data` mediante type hints explícitos, docstrings más precisos sobre el flujo de ejecución y el reemplazo de `str` por `Path` en la lógica interna de `walk_files` para evitar inconsistencias de tipos.
-- `2026-10-29T10:30:25` **browser.py** (legibilidad y documentación): Documenté con mayor detalle los métodos de `DirectoryScanner` y `detect_profiles` para clarificar la lógica de exclusión y seguridad, añadiendo type hints faltantes y estructurando mejor los docstrings para cumplir con los estándares de mantenibilidad exigidos.
-- `2026-10-29T10:28:29` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica añadiendo docstrings descriptivos a las constantes de la paleta y tipos personalizados, asegurando que el propósito de cada elemento sea claro para futuras expansiones del sistema de diseño.
-- `2026-10-29T10:27:55` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` convirtiendo el `_CONTEXT_SCHEMA` en una lista de objetos `NamedTuple` (creando `ContextMetric`), lo que elimina el uso de índices posicionales (`u[0]`, `u[2]`) y hace que la configuración de la serialización sea explícita y autodocumentada.

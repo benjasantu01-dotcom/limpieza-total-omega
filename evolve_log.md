@@ -1109,3 +1109,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount
 - `2026-10-29T11:32:47` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-10-29T11:32:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T11:32:47` Corrida terminada. Total usado hoy: 272.
+- `2026-10-29T11:37:59` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-29T11:38:36` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el acceso a la configuración implementando una caché de tipo "Single-Flight" para las validaciones de seguridad de rutas (`_run_safety_checks`) y reutilizando la estructura de datos `MappingProxyType` para evitar copias innecesarias en cada lectura del archivo.
+- `2026-10-29T11:39:08` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se implementó un mecanismo de caché en `startup_folders` y se optimizó la lógica de búsqueda en `entries_from_folders` utilizando un conjunto (`set`) para evitar el acceso redundante al sistema de archivos mediante `is_dir()` y `is_symlink()`, reduciendo drásticamente las llamadas al disco en sistemas con múltiples directorios de inicio.
+- `2026-10-29T11:39:47` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_validate_and_sanitize_data` y `_apply_updates` en `SystemContext` para asegurar que el estado del objeto no quede en un limbo inconsistente si ocurre una excepción inesperada durante la ingestión de datos, preservando la integridad del análisis.
+- `2026-10-29T11:40:06` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada (`TypeError`, `ValueError`) y fallos en el sistema de archivos al verificar la existencia y accesibilidad de las rutas, asegurando que cualquier operación no crítica no comprometa el flujo principal de la aplicación.
+- `2026-10-29T11:40:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T11:40:06` Corrida terminada. Total usado hoy: 276.

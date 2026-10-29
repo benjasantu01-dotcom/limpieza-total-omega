@@ -492,10 +492,8 @@ class SystemContext:
         updates: dict[str, Any] = {}
         try:
             for key, spec in _VALIDATORS.items():
-                try:
-                    val = self._apply_field(source, key, spec)
-                    if val is not None: updates[key] = val
-                except (Exception, TypeError): continue
+                val = self._apply_field(source, key, spec)
+                if val is not None: updates[key] = val
             
             g_val = getattr(source, "grade", None) if not isinstance(source, dict) else source.get("grade")
             if g_val is not None and not callable(g_val):
@@ -503,7 +501,7 @@ class SystemContext:
                 if grade_val: updates["grade"] = grade_val
             
             return updates if updates else None
-        except (AttributeError, TypeError, Exception):
+        except Exception:
             return None
 
     def _validate_ingestion_source(self, source: Any) -> bool:
@@ -518,21 +516,19 @@ class SystemContext:
             for k, v in updates.items():
                 if _is_safe_key(k): setattr(self, k, v)
             self.analyzed = True
+            # Limpieza de caché controlada
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)
-        except (Exception, AttributeError):
+        except Exception:
             self.analyzed = False
 
     def ingest(self, source: Any) -> bool:
         """Normaliza, valida e importa datos externos al contexto de manera segura."""
         if not self._validate_ingestion_source(source): return False
-        try:
-            updates = self._validate_and_sanitize_data(source)
-            if updates is None: return False
-            self._apply_updates(updates)
-            return True
-        except Exception:
-            return False
+        updates = self._validate_and_sanitize_data(source)
+        if updates is None: return False
+        self._apply_updates(updates)
+        return True
 
 @dataclass
 class Answer:

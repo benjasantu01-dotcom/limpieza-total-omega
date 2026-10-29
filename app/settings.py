@@ -410,6 +410,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             st = primary_path.lstat()
             cached = _MANAGER.data_cache.get(path_str)
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
+                # Retornar una copia mutable a partir del Proxy inmutable para el caller
                 return dict(cached[0])
             
             if _is_file_secure_to_read(primary_path, st):

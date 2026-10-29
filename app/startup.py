@@ -68,6 +68,7 @@ MAX_PATH_LEN: int = 260
 _EXISTS_CACHE: Dict[str, bool] = {}
 _COMMAND_CACHE: Dict[str, str] = {}
 _FULL_SCAN_CACHE: Optional[StartupEntries] = None
+_FOLDERS_CACHE: Optional[List[Path]] = None
 
 # Mensaje orientativo para el usuario final sobre la gestión de persistencia.
 HOW_TO_DISABLE: str = (
@@ -267,6 +268,10 @@ def startup_folders() -> List[Path]:
     Identifica las rutas de carpetas 'Startup' del sistema y del usuario,
     verificando la existencia de las mismas según las variables de entorno.
     """
+    global _FOLDERS_CACHE
+    if _FOLDERS_CACHE is not None:
+        return _FOLDERS_CACHE
+
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -291,6 +296,7 @@ def startup_folders() -> List[Path]:
                     valid_folders.append(c)
         except (OSError, RuntimeError, PermissionError):
             continue
+    _FOLDERS_CACHE = valid_folders
     return valid_folders
 
 
@@ -411,7 +417,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
-                
+            
             n, c = raw_name.strip(), raw_cmd.strip()
             if not n or not c:
                 continue
