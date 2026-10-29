@@ -103,7 +103,10 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura de datos utilizada por GlobalMemoryStatusEx para reportar memoria global del sistema."""
+    """
+    Estructura que mapea la API GlobalMemoryStatusEx de Windows.
+    Contiene información sobre el estado actual de la memoria física y virtual.
+    """
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -186,7 +189,7 @@ def format_bytes(num: Optional[int | float]) -> str:
         return "0 B"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Inicializa la estructura requerida por la API Win32 indicando su tamaño en bytes."""
+    """Inicializa la estructura MEMORYSTATUSEX con el tamaño requerido por la API Win32."""
     mem_status = MEMORYSTATUSEX()
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
@@ -327,7 +330,7 @@ def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HAND
         return None
 
 def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
-    """Consulta los contadores de memoria de un proceso y extrae el WorkingSetSize validado."""
+    """Consulta contadores de memoria mediante GetProcessMemoryInfo y extrae el WorkingSetSize."""
     if h_process is None or WindowsAPI.psapi is None: return None
     try:
         if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
@@ -339,7 +342,7 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
 
 def _is_process_executable_safe(h_process: wintypes.HANDLE) -> bool:
     """
-    Verifica mediante la API Win32 que la ruta del ejecutable del proceso no sea un recurso protegido.
+    Verifica que la ruta del ejecutable del proceso no sea un recurso protegido usando GetModuleFileNameExW.
     """
     if h_process is None or h_process == INVALID_HANDLE_VALUE or WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: 
         return False
@@ -374,7 +377,6 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         
         try:
             ws = _query_working_set_bytes(h_process, pmc)
-            # Validamos el consumo antes de abrir buffers de ruta y verificar seguridad en disco
             if ws is not None and _is_process_executable_safe(h_process):
                 yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:
