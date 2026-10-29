@@ -264,42 +264,9 @@ def directory_size(path: Optional[OSPath]) -> int:
     ctx = ScanContext(os.path.normcase(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
     return DirectoryScanner(ctx).get_size(res_str).bytes_found
 
-@safe_path_operation(False)
-def _is_valid_cache_path(candidate: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
-    """Valida exhaustivamente una ruta de caché antes de intentar cualquier medición."""
-    if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): 
-        return False
-    try:
-        cand_abs = os.path.abspath(candidate)
-        if not os.path.normcase(cand_abs).startswith(base_norm): return False
-        if _is_system_hidden(cand_abs, kernel): return False
-        return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or candidate.name.lower() in NEVER_TOUCH)
-    except (OSError, RuntimeError):
-        return False
-
-def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
-    """Construye y valida una ruta absoluta de caché."""
-    if not _is_valid_rel_path(rel_str) or not isinstance(base_resolved, Path): 
-        return Path()
-    try:
-        target = base_resolved.joinpath(*rel_str.split("\\"))
-        if not target.exists() or not target.is_dir(): return Path()
-        
-        target_abs = os.path.abspath(target)
-        if not os.path.normcase(target_abs).startswith(os.path.normcase(str(base_resolved))): return Path()
-        if _IS_JUNCTION_FN(target_abs) or target.is_symlink(): return Path()
-        
-        return target if is_safe_to_modify(target) else Path()
-    except (OSError, RuntimeError):
-        return Path()
-
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """
     Realiza el escaneo de perfiles de navegador en las rutas base configuradas.
-    
-    Itera sobre los navegadores definidos, resuelve sus rutas de caché y 
-    ejecuta el escaneo recursivo solo si los directorios superan los filtros
-    de seguridad y no están protegidos.
     """
     raw_bases = list(bases) if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
@@ -321,11 +288,22 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         
         for browser_key, relative_path in browser_map.items():
             if not isinstance(relative_path, str): continue
-            candidate = _resolve_browser_path(base_resolved, relative_path)
-            if candidate != Path() and _is_valid_cache_path(candidate, base_norm, kernel):
-                scan_res = scanner.get_size(str(candidate))
-                if scan_res.success and scan_res.bytes_found > 0:
-                    found.append(BrowserCache(browser_key, candidate, scan_res.bytes_found))
+            
+            target = base_resolved.joinpath(*relative_path.split("\\"))
+            if not target.exists() or not target.is_dir(): continue
+            
+            target_abs = os.path.abspath(target)
+            if not os.path.normcase(target_abs).startswith(base_norm): continue
+            
+            if _IS_JUNCTION_FN(target_abs) or target.is_symlink() or not is_safe_to_modify(target):
+                continue
+                
+            if _is_system_hidden(target_abs, kernel) or target.name.lower() in NEVER_TOUCH:
+                continue
+
+            scan_res = scanner.get_size(str(target))
+            if scan_res.success and scan_res.bytes_found > 0:
+                found.append(BrowserCache(browser_key, target, scan_res.bytes_found))
     
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found

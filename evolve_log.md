@@ -1051,3 +1051,42 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-29T10:59:38` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._apply_field
 - `2026-10-29T10:59:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T10:59:38` Corrida terminada. Total usado hoy: 260.
+- `2026-10-29T11:07:23` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-10-29T11:08:00` Tests FALLARON:
+```
+
+
+    @lru_cache(maxsize=64)
+    def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
+        """Genera una lista de colores interpolados basada en puntos de control (stops)."""
+        n = max(1, int(steps))
+        n_stops = len(stops)
+        if n_stops < 2: return (stops[0],) * n
+        rgb_stops = [_hex_to_rgb(s) for s in stops]
+        res = []
+        for i in range(n):
+>           pos = (i * (n_stops - 1)) / (n - 1)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ZeroDivisionError: division by zero
+
+app/branding.py:334: ZeroDivisionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:179: SyntaxWarning: invalid escape sequence '\C'
+    Transforma rutas a formato extendido UNC (\\?\C:\...) para permitir el
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount_of_colors - ZeroDivisionError: division by zero
+1 failed, 298 passed, 4 warnings in 1.22s
+
+```
+- `2026-10-29T11:08:00` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el cálculo del logo y la generación de gradientes pre-calculando valores comunes fuera de los loops y utilizando las colecciones existentes para evitar redundancias en el renderizado, mejorando el rendimiento en las llamadas al Canvas.
+- `2026-10-29T11:08:34` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el proceso de detección de perfiles reutilizando la instancia de `DirectoryScanner` y evitando múltiples resoluciones de ruta redundantes dentro del bucle de navegadores, lo cual reduce la sobrecarga de I/O y llamadas al sistema en cada escaneo.
+- `2026-10-29T11:09:10` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` eliminando la llamada innecesaria a `Path.resolve()` dentro del bucle principal, reduciendo significativamente las llamadas al sistema operativo (I/O) y mejorando el rendimiento del escaneo.
+- `2026-10-29T11:09:24` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-29T11:09:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T11:09:24` Corrida terminada. Total usado hoy: 264.

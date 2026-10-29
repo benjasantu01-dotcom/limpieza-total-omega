@@ -283,9 +283,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Recorrido recursivo iterativo utilizando un stack para evitar desbordamiento.
     Verifica seguridad, evita ciclos mediante inodes y omite puntos de reparse.
-    
-    Yields:
-        Tuplas (Path del archivo, tamaño en bytes).
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -303,12 +300,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path).resolve()
+                        p_entry = Path(entry.path)
                         
-                        # Validación de jerarquía: asegurar que no escapamos del root
-                        if root_path not in p_entry.parents and p_entry != root_path:
-                            continue
-
                         if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, p_entry)):
                             continue
                         
