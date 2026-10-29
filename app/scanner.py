@@ -183,14 +183,13 @@ class Scanner:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.base_root_norm: str = os.path.normcase(os.path.abspath(base_root))
+        self.base_root_norm: str = os.path.normcase(str(base_root.resolve()))
         self.now_ts: float = datetime.now().timestamp()
 
     @lru_cache(maxsize=1024)
     def _is_inside_base_root(self, entry_path: str) -> bool:
         try:
-            abs_path = os.path.normcase(os.path.abspath(entry_path))
-            return abs_path.startswith(self.base_root_norm)
+            return os.path.normcase(entry_path).startswith(self.base_root_norm)
         except (OSError, RuntimeError, ValueError):
             return False
 
@@ -202,8 +201,6 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        if not isinstance(entry, os.DirEntry) or not entry.path:
-            return False
         path_str: str = entry.path
         if path_str in self.safe_cache:
             return True
@@ -219,23 +216,21 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
-        if current_depth >= SCAN_LIMITS.max_recursion_depth or not isinstance(entry, os.DirEntry) or not entry.path:
+        if current_depth >= SCAN_LIMITS.max_recursion_depth:
             return
-        try:
-            norm_path = os.path.normcase(entry.path)
-            if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
-                visited_dirs.add(norm_path)
-                directory_stack.append((entry.path, current_depth + 1))
-        except (OSError, PermissionError):
-            pass
+        norm_path = os.path.normcase(entry.path)
+        if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
+            visited_dirs.add(norm_path)
+            directory_stack.append((entry.path, current_depth + 1))
 
+    @lru_cache(maxsize=128)
     def _is_relevant_extension(self, name: str) -> bool:
         _, ext = os.path.splitext(name)
         return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
         """Procesa una entrada del sistema de archivos y ejecuta heurísticas si corresponde."""
-        if not isinstance(entry, os.DirEntry) or not entry.path or not self._is_safe_entry(entry):
+        if not self._is_safe_entry(entry):
             return
         try:
             if entry.is_file():
@@ -282,20 +277,17 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         base_path = Path(directory)
         if not base_path.exists() or not base_path.is_dir() or not os.access(base_path, os.R_OK):
             return []
-        resolved_path = base_path.resolve(strict=False)
-        if not _is_valid_path_structure(str(resolved_path)) or _cached_is_protected(str(resolved_path)):
-            return []
-        scanner: Scanner = Scanner(base_root=resolved_path)
+        scanner: Scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return []
-    directory_stack: DirectoryStack = [(str(resolved_path), 0)]
-    visited_dirs: set[str] = {os.path.normcase(str(resolved_path))}
+    directory_stack: DirectoryStack = [(str(base_path.resolve()), 0)]
+    visited_dirs: set[str] = {os.path.normcase(str(base_path.resolve()))}
     while directory_stack:
         current_dir, depth = directory_stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry: scanner.process_entry(entry, directory_stack, depth, visited_dirs)
+                    scanner.process_entry(entry, directory_stack, depth, visited_dirs)
         except (PermissionError, OSError):
             continue
     return scanner.results

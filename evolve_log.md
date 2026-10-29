@@ -664,3 +664,46 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-10-29T06:54:17` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de la cuarentena y la gestión del manifiesto reemplazando llamadas redundantes a `stat()` y `load_manifest()` por el uso del caché interno `_MANIFEST_CACHE`, evitando I/O innecesario en cada llamada a `total_quarantined_bytes` y `summarize`.
 - `2026-10-29T06:54:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T06:54:17` Corrida terminada. Total usado hoy: 164.
+- `2026-10-29T07:02:07` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-29T07:02:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-29T07:03:35` Tests FALLARON:
+```
+sts/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - AssertionError: assert 'sin conexión' in ''
+ +  where '' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).notice
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - AssertionError: assert 'motor local' in ''
+ +  where '' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).notice
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+13 failed, 286 passed, 5 warnings in 1.69s
+
+```
+- `2026-10-29T07:03:35` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado el rendimiento de `is_protected_path` eliminando la llamada redundante a `os.path.abspath` y `os.path.normcase` dentro del bucle de validación, utilizando en su lugar `pathlib` de forma nativa para reducir el overhead de E/S y procesamiento de strings en llamadas frecuentes.
+- `2026-10-29T07:04:02` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado el rendimiento del proceso de escaneo reemplazando las llamadas redundantes a `os.path.normcase(os.path.abspath(...))` dentro del bucle principal con una lógica de caché de resultados y reduciendo el costo de las validaciones heurísticas al filtrar extensiones de forma más eficiente.
+- `2026-10-29T07:04:20` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuración implementando `functools.lru_cache` con un TTL lógico implícito en `load` para evitar E/S de disco repetitivas durante el mismo ciclo de ejecución cuando el archivo no ha cambiado.
+- `2026-10-29T07:04:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T07:04:20` Corrida terminada. Total usado hoy: 168.

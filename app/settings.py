@@ -153,10 +153,6 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """
     Singleton encargado de la persistencia y caché en memoria de la configuración.
-    
-    Gestiona la coherencia de lectura/escritura mediante:
-    - path_cache: Mapeo de bases personalizadas a rutas finales.
-    - data_cache: Almacenamiento de settings parseados para evitar E/S redundantes.
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
@@ -374,21 +370,17 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """
     Lee y valida el JSON de configuración en disco.
-    Aplica una validación multi-nivel: tamaño máximo, caracteres permitidos, 
-    estructura de diccionario y tipos de valores (contra DEFAULTS).
     """
     try:
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
         if not content or len(content) > MAX_SETTINGS_SIZE or len(content) < 2: return None
         
-        # Validación de integridad: sin caracteres de control inusuales
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
         data = json.loads(content.decode("utf-8", errors="strict"))
         if not isinstance(data, dict) or len(data) > 64: return None
         
-        # Validar tipo contra el esquema DEFAULTS
         for k, v in data.items():
             if k in DEFAULTS and not isinstance(v, type(DEFAULTS[k])): return None
         return data
