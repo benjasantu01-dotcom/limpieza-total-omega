@@ -86,9 +86,8 @@ class DirectoryScanner:
         """
         Calcula el peso en bytes de un directorio mediante profundidad controlada.
         
-        Args:
-            root_path: Ruta del directorio a escanear.
-            depth: Profundidad actual de recursión.
+        Realiza validaciones de seguridad previas a la entrada, bloquea rutas 
+        protegidas y descarta enlaces simbólicos para prevenir escapes del sandbox.
         """
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
@@ -295,7 +294,13 @@ def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
         return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Realiza el escaneo de perfiles de navegador en las bases configuradas."""
+    """
+    Realiza el escaneo de perfiles de navegador en las rutas base configuradas.
+    
+    Itera sobre los navegadores definidos, resuelve sus rutas de caché y 
+    ejecuta el escaneo recursivo solo si los directorios superan los filtros
+    de seguridad y no están protegidos.
+    """
     raw_bases = list(bases) if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     

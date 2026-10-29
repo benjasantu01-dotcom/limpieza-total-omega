@@ -170,7 +170,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(name: str, full_path: str) -> bool:
+def _is_excluded_path(name: str, full_path: Path) -> bool:
     """Verifica si el nombre de un archivo o carpeta es potencialmente malicioso."""
     if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
@@ -281,7 +281,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorrido recursivo iterativo. Evita desbordamiento de pila, reparse points y ciclos.
+    Recorrido recursivo iterativo utilizando un stack para evitar desbordamiento.
+    Verifica seguridad, evita ciclos mediante inodes y omite puntos de reparse.
     
     Yields:
         Tuplas (Path del archivo, tamaño en bytes).
@@ -304,11 +305,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         p_entry = Path(entry.path).resolve()
                         
-                        # Doble validación de seguridad: jerarquía y protección
+                        # Validación de jerarquía: asegurar que no escapamos del root
                         if root_path not in p_entry.parents and p_entry != root_path:
                             continue
 
-                        if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, entry.path)):
+                        if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, p_entry)):
                             continue
                         
                         if entry.is_symlink() or _is_reparse_point(p_entry):
@@ -379,7 +380,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Escaneo centralizado que acumula estadísticas globales y top N archivos mediante heap."""
+    """
+    Ejecuta el escaneo de disco y acumula estadísticas en GlobalStats.
+    Utiliza un min-heap para mantener el Top N de archivos más pesados de forma eficiente.
+    """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
@@ -387,6 +391,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         ext = path.suffix.lower() if path.suffix else "(sin extensión)"
         stats.register_file(size, ext)
         
+        # Mantener solo los archivos más grandes usando heap
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))

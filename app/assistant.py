@@ -88,11 +88,21 @@ _MAX_NESTING_DEPTH: Final[int] = 1
 _MAX_COLLECTION_SIZE: Final[int] = 20
 _MAX_GRADE_LEN: Final[int] = 10
 
-# Esquema que define qué métricas se serializan al motor remoto (clave, sufijo, precisión)
-_CONTEXT_SCHEMA: Final = (
-    ("score", "", 0), ("junk_mb", " MB", 0), ("suspicious_count", "", 0), 
-    ("memory_available_percent", "%", 0), ("disk_free_percent", "%", 0),
-    ("duplicate_mb", " MB", 0), ("startup_count", "", 0)
+class ContextMetric(NamedTuple):
+    """Configuración para exportar una métrica al motor remoto."""
+    key: str
+    suffix: str
+    precision: int
+
+# Esquema que define qué métricas se serializan al motor remoto
+_CONTEXT_SCHEMA: Final[tuple[ContextMetric, ...]] = (
+    ContextMetric("score", "", 0),
+    ContextMetric("junk_mb", " MB", 0),
+    ContextMetric("suspicious_count", "", 0), 
+    ContextMetric("memory_available_percent", "%", 0),
+    ContextMetric("disk_free_percent", "%", 0),
+    ContextMetric("duplicate_mb", " MB", 0),
+    ContextMetric("startup_count", "", 0)
 )
 
 # Conjunto optimizado para validación rápida de caracteres prohibidos
@@ -574,9 +584,10 @@ def context_as_text(context: SystemContext) -> str:
     if context.is_empty: return ""
     snap: MetricsDict = context.metrics_snapshot
     lines = []
-    for k, u, p in _CONTEXT_SCHEMA:
-        if k in snap and snap[k] >= 0.0:
-            val_str = f"{k}: {snap[k]:.{p}f}{u}"
+    for metric in _CONTEXT_SCHEMA:
+        val = snap.get(metric.key, -1.0)
+        if val >= 0.0:
+            val_str = f"{metric.key}: {val:.{metric.precision}f}{metric.suffix}"
             if _ensure_safe_text(val_str):
                 lines.append(val_str)
     return "\n".join(lines)
