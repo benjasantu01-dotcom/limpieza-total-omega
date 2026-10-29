@@ -744,3 +744,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-29T07:55:06` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad del escaneo recursivo en `walk_files` incorporando un chequeo preventivo con `is_protected_path` sobre la ruta resuelta (`p_entry`) antes de intentar cualquier operación de `stat` o acceso, mitigando posibles desbordamientos hacia rutas de sistema tras resolver enlaces simbólicos.
 - `2026-10-29T07:55:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T07:55:06` Corrida terminada. Total usado hoy: 188.
+- `2026-10-29T08:03:27` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-10-29T08:03:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-29T08:04:23` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.is_finite, SystemMetrics.safe_get, SystemMetrics.validate
+- `2026-10-29T08:05:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-29T08:06:32` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-29T08:06:50` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una validación explícita de `path_buf` antes de proceder con `EmptyWorkingSet`, asegurando que la ruta del proceso no sea solo validada, sino que se verifique que el buffer contenga información real y no sea una cadena vacía o corrupta post-lectura, reforzando el cumplimiento de las restricciones de `is_protected_path`.
+- `2026-10-29T08:06:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T08:06:50` Corrida terminada. Total usado hoy: 192.

@@ -477,8 +477,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso no está activo."
         
         path_buf = ctypes.create_unicode_buffer(1024)
-        if not _is_process_executable_safe(h_process, path_buf):
-            return False, "Proceso protegido o ubicado en zona restringida."
+        if not _is_process_executable_safe(h_process, path_buf) or not path_buf.value.strip():
+            return False, "Proceso protegido, inaccesible o ubicado en zona restringida."
             
         if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(h_process) == 0:
             return False, "El sistema operativo rechazó la operación de limpieza."
