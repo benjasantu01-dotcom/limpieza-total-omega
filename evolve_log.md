@@ -1365,3 +1365,78 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-10-29T02:08:24` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé `DirectoryScanner.get_size` evitando llamadas repetitivas a `os.path.normcase` y `os.path.abspath` mediante la reutilización del estado del contexto, además de reducir la profundidad de recursión efectiva al filtrar `NEVER_TOUCH` antes de procesar directorios.
 - `2026-10-29T02:08:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T02:08:24` Corrida terminada. Total usado hoy: 52.
+- `2026-10-29T02:16:44` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-29T02:17:12` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-29T02:17:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-29T02:18:04` Tests FALLARON:
+```
+is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:179: SyntaxWarning: invalid escape sequence '\C'
+    Transforma rutas a formato extendido UNC (\\?\C:\...) para permitir el
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area - AssertionError: assert {('arranque',...guridad', 30)} == {'arranque', ..., 'seguridad'}
+  
+  Extra items in the left set:
+  ('basura', 14)
+  ('disco', 20)
+  ('memoria', 18)
+  ('duplicados', 10)
+  ('seguridad', 30)
+  ('arranque', 8)
+  Extra items in the right set:
+  'memoria'
+  'duplicados'
+  'disco'
+  'basura'
+  'arranque'
+  'seguridad'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+    {
+  +     (
+  -     'arranque',
+  +         'arranque',
+  ? ++++
+  +         8,
+  +     ),
+  +     (
+  -     'basura',
+  +         'basura',
+  ? ++++
+  +         14,
+  +     ),
+  +     (
+  -     'disco',
+  +         'disco',
+  ? ++++
+  +         20,
+  +     ),
+  +     (
+  -     'duplicados',
+  +         'duplicados',
+  ? ++++
+  +         10,
+  +     ),
+  +     (
+  -     'memoria',
+  +         'memoria',
+  ? ++++
+  +         18,
+  +     ),
+  +     (
+  -     'seguridad',
+  +         'seguridad',
+  ? ++++
+  +         30,
+  +     ),
+    }
+1 failed, 298 passed, 4 warnings in 1.59s
+
+```
+- `2026-10-29T02:18:04` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del motor de cálculo implementando `lru_cache` para la función `summarize` y eliminando la redundancia de iteraciones en la generación del informe, asegurando que los datos de entrada inmutables se procesen solo una vez por estado de sistema.
+- `2026-10-29T02:18:59` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-29T02:18:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T02:18:59` Corrida terminada. Total usado hoy: 56.
