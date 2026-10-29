@@ -104,8 +104,7 @@ class DirectoryScanner:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        entry_name_lower = entry.name.lower()
-                        if entry_name_lower in self.ctx.never_touch_lower: continue
+                        if entry.name.lower() in self.ctx.never_touch_lower: continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             if not self.ctx.is_junction(entry.path):
@@ -113,7 +112,7 @@ class DirectoryScanner:
                                 total_bytes += subdir.bytes_found
                         elif entry.is_file(follow_symlinks=False):
                             if not _is_system_hidden(entry.path, self.ctx.kernel32):
-                                # Verificación de acceso mediante intento de apertura en modo lectura
+                                # Verificación rápida de acceso mediante intento de apertura en modo lectura
                                 try:
                                     fd = os.open(entry.path, os.O_RDONLY)
                                     os.close(fd)
@@ -263,12 +262,11 @@ def _is_valid_cache_path(candidate: Path, base_norm: str, kernel: Optional[ctype
     if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): 
         return False
     cand_abs = os.path.abspath(candidate)
-    cand_norm = os.path.normcase(cand_abs)
     
-    if not is_safe_to_modify(candidate) or not cand_norm.startswith(base_norm): return False
+    if not os.path.normcase(cand_abs).startswith(base_norm): return False
     if _is_system_hidden(cand_abs, kernel): return False
     
-    return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or is_protected_path(candidate) or candidate.name.lower() in NEVER_TOUCH)
+    return not (candidate.is_symlink() or _IS_JUNCTION_FN(cand_abs) or candidate.name.lower() in NEVER_TOUCH)
 
 def _resolve_browser_path(base_resolved: Path, rel_str: str) -> Path:
     """Construye y valida una ruta absoluta de caché."""

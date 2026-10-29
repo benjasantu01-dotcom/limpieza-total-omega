@@ -287,9 +287,7 @@ class SystemMetrics:
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
         """Acceso seguro a métricas mediante introspección validada."""
-        if field_name in self._FIELDS_TO_VALIDATE:
-            return getattr(self, field_name, default)
-        return default
+        return getattr(self, field_name, default)
 
     def validate(self) -> None:
         """Normaliza todas las métricas según los rangos definidos en _METRIC_LIMITS."""
@@ -351,14 +349,6 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
     """
     Evalúa las reglas registradas y retorna solo las que disparan advertencias.
-    
-    Args:
-        metrics: Instancia de SystemMetrics con el estado del sistema.
-        rules: Tupla de objetos RecommendationRule a evaluar.
-        normalized_ratio: Ratio de salud actual para el área correspondiente.
-        
-    Returns:
-        Lista de strings conteniendo los mensajes de advertencia sanitizados.
     """
     if not isinstance(rules, tuple): return []
     ratio = _clamp(normalized_ratio)
@@ -373,27 +363,14 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     return findings
 
 @lru_cache(maxsize=128)
-def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> HealthResult:
+def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """
     Motor central que orquestra el cálculo de métricas a través del pipeline.
-    
-    Args:
-        metric_values: Tupla de valores crudos de las métricas.
-        quarantined: Cantidad de archivos en cuarentena.
-        
-    Returns:
-        HealthResult con el puntaje final, categoría y recomendaciones generadas.
     """
-    if not isinstance(metric_values, tuple) or len(metric_values) != len(SystemMetrics._FIELDS_TO_VALIDATE) - 1:
-        return HealthResult(0, "F", {}, ["Error: Métrica incompleta."])
+    keys = SystemMetrics._FIELDS_TO_VALIDATE[:-1]
     
-    # Validar integridad defensiva de los valores entrantes
-    sanitized_values = []
-    for i, field_name in enumerate(SystemMetrics._FIELDS_TO_VALIDATE[:-1]):
-        min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
-        sanitized_values.append(_validate_numeric(metric_values[i], 0.0, min_v, max_v))
-    
-    metrics = SystemMetrics(*sanitized_values, _validate_numeric(quarantined, 0.0, 0.0, 10000.0))
+    # Construcción de objeto local desde tupla pre-validada
+    metrics = SystemMetrics(**dict(zip(keys, metric_tuple)), quarantined_count=quarantined)
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -425,23 +402,13 @@ def _compute_cached(metric_values: Tuple[float, ...], quarantined: int) -> Healt
     )
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Punto de entrada principal para el análisis del sistema.
-    
-    Args:
-        metrics: Instancia de SystemMetrics con los datos del sistema.
-        
-    Returns:
-        HealthResult consolidado tras ejecutar el pipeline de reglas.
-    """
+    """Punto de entrada principal para el análisis del sistema."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
     metrics.validate()
-    if not metrics.is_finite:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema corruptos."])
-    
     try:
+        # Extraer valores para caché evitando re-iteraciones redundantes
         raw_vals = tuple(getattr(metrics, f) for f in SystemMetrics._FIELDS_TO_VALIDATE[:-1])
         return _compute_cached(raw_vals, int(metrics.quarantined_count))
     except (TypeError, ValueError, AttributeError):
@@ -458,17 +425,14 @@ def _render_bar(points: Any, max_val: Any) -> str:
     return "#" * safe_points + "." * (safe_max - safe_points)
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """
-    Serializa el resultado de salud en una lista de líneas para informe legible.
-    """
+    """Serializa el resultado de salud en una lista de líneas para informe legible."""
     if not isinstance(result, HealthResult): 
         return ["Error: Informe de salud no disponible."]
     
     try:
         lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
         for entry in PIPELINE_DEFINITIONS:
-            # Uso de .get con valores seguros en caso de breakdown incompleto
-            val = result.breakdown.get(entry.area, 0) if isinstance(result.breakdown, dict) else 0
+            val = result.breakdown.get(entry.area, 0)
             lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
         
         recs = result.recommendations if isinstance(result.recommendations, list) else []

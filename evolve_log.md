@@ -626,3 +626,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-29T06:33:34` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-10-29T06:33:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T06:33:34` Corrida terminada. Total usado hoy: 156.
+- `2026-10-29T06:41:43` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-29T06:42:10` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante la pre-compilación de `NEVER_TOUCH` a `frozenset` (ya implementado) y, principalmente, evitando llamadas redundantes a `is_safe_to_modify` y `is_protected_path` dentro de los bucles críticos de `DirectoryScanner`, confiando en la normalización inicial del sandbox para validar el alcance de las rutas.
+- `2026-10-29T06:42:40` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-29T06:43:04` Tests FALLARON:
+```
+                          if stat.st_size >= min_size:
+>                                   attrs = ctypes.windll.kernel32.GetFileAttributesW(entry.path)
+                                            ^^^^^^^^^^^^^
+E                                   AttributeError: module 'ctypes' has no attribute 'windll'
+
+app/duplicates.py:164: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:179: SyntaxWarning: invalid escape sequence '\C'
+    Transforma rutas a formato extendido UNC (\\?\C:\...) para permitir el
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: module 'ctypes' has no attribute 'windll'
+3 failed, 296 passed, 4 warnings in 1.64s
+
+```
+- `2026-10-29T06:43:04` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Optimizé la etapa de filtrado de candidatos al reducir drásticamente el número de llamadas a `stat` y `is_safe_to_modify` mediante el uso de `os.scandir` para obtener metadatos (`entry.stat()`) directamente durante la iteración inicial, evitando llamadas redundantes a `Path.stat()` y `path.exists()` dentro del bucle principal.
+- `2026-10-29T06:43:23` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de la creación innecesaria de tuplas en el método `_compute_cached` y el uso de un diccionario de acceso directo en lugar de iteraciones sobre `_FIELDS_TO_VALIDATE` durante la validación crítica.
+- `2026-10-29T06:43:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T06:43:23` Corrida terminada. Total usado hoy: 160.
