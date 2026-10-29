@@ -1175,3 +1175,12 @@ FAILED evolve/tests/test_assistant.py::test_system_prompt_forbids_claiming_actio
 - `2026-10-29T12:33:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-29T12:33:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T12:33:52` Corrida terminada. Total usado hoy: 296.
+- `2026-10-29T12:39:10` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-29T12:39:43` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-29T12:40:11` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `delete_reviewed` implementando la validación estricta de rutas mediante `ensure_safe_to_modify` antes de cualquier iteración, asegurando que ningún archivo fuera de la zona de cuarentena pueda ser afectado accidentalmente por un error de resolución de path o una manipulación indebida de la variable `review_dir`.
+- `2026-10-29T12:40:55` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad de `_perform_secure_copy` al restringir explícitamente los permisos de escritura del archivo resultante (haciéndolo `-rw-------` o equivalente) justo después de la copia, minimizando la ventana de exposición del archivo aislado en el sistema de archivos antes de su registro final.
+- `2026-10-29T12:41:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-29T12:42:00` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-29T12:42:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-29T12:42:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T12:42:38` Corrida terminada. Total usado hoy: 300.

@@ -417,9 +417,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
+        # Seguridad defensiva: ensure_safe_to_modify valida que la ruta sea segura antes de trabajar
+        ensure_safe_to_modify(dest)
         if not dest.exists() or not dest.is_dir(): return 0
-        if not is_safe_to_modify(dest) or is_protected_path(dest) or _has_forbidden_chars(dest): 
-            return 0
+        if _has_forbidden_chars(dest): return 0
         
         count = 0
         for item in dest.iterdir():

@@ -685,7 +685,7 @@ def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_has
         raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
 
 def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """Copia protegida con streaming y sincronización a disco."""
+    """Copia protegida con streaming, restricción de acceso y sincronización a disco."""
     f_src = None
     f_dst = None
     try:
@@ -706,6 +706,12 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         shutil.copyfileobj(f_src, f_dst, length=CHUNK_SIZE)
         f_dst.flush()
         os.fsync(f_dst.fileno())
+        
+        # Restringir permisos a solo lectura/escritura del dueño (octal 0600)
+        try:
+            os.chmod(temp_dest, 0o600)
+        except OSError:
+            pass
                 
         _verify_copied_data(st, temp_dest, source_hash)
     except (OSError, IOError) as e:
