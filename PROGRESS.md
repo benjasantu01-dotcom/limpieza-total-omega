@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **176** (35.1% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 27
 - Sin respuesta de la IA (error o límite): 224
 
@@ -16,35 +16,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 48 | 3 | 20 | 10 | 75 |
-| 2026-10-29 | 129 | 7 | 46 | 17 | 149 |
+| 2026-10-28 | 46 | 3 | 18 | 10 | 75 |
+| 2026-10-29 | 130 | 7 | 47 | 17 | 149 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **37**
 - legibilidad y documentación: **37**
-- rendimiento: **31**
 - seguridad defensiva: **31**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `browser.py`: **18**
 - `safety.py`: **17**
-- `memory.py`: **16**
 - `settings.py`: **16**
 - `diskreport.py`: **16**
+- `memory.py`: **15**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
 - `healthscore.py`: **12**
 - `duplicates.py`: **10**
 - `branding.py`: **9**
-- `organizer.py`: **8**
-- `startup.py`: **7**
+- `startup.py`: **8**
+- `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T14:52:25` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` ante datos malformados o vacíos, añadiendo validaciones estrictas y manejo explícito de errores para evitar que el bucle de procesamiento falle silenciosamente o introduzca entradas inválidas.
 - `2026-10-29T14:43:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` añadiendo validaciones de integridad frente a archivos truncados o con contenido malicioso, asegurando que la app no intente procesar datos inconsistentes.
 - `2026-10-29T14:43:23` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validación defensiva de `stat_result` y `Path.name` contra valores nulos o inesperados, además de centralizar el manejo de excepciones al acceder a metadatos para evitar que errores aislados en `os.stat` detengan el procesamiento de archivos.
 - `2026-10-29T14:42:56` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `path` como `None` o vacío en las funciones de bajo nivel que manejan punteros (`_to_long_path`, `_get_file_attrs`, `_is_virtual_drive`) para evitar excepciones de `TypeError` en tiempo de ejecución, mejorando la robustez ante entradas inesperadas.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T12:30:00` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez ante errores de acceso a disco en la función `hash_file` y `partial_hash` implementando un manejo preventivo que verifica `path.is_file()` antes de intentar abrir el archivo, evitando excepciones de `PermissionError` o `FileNotFoundError` innecesarias y reforzando la naturaleza "solo lectura" del módulo ante archivos que cambian de estado durante la ejecución.
 - `2026-10-29T12:29:34` **diskreport.py** (seguridad defensiva): Mejoré la robustez de `walk_files` y `drive_usage` mediante la validación proactiva de rutas `UNC` y enlaces simbólicos rotos, asegurando que el análisis de disco no intente acceder a rutas de red mal formadas o recursos de sistema inaccesibles que podrían causar bloqueos de ejecución o excepciones no capturadas.
 - `2026-10-29T12:21:33` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `detect_profiles` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta objetivo antes de iniciar el escaneo recursivo, garantizando que incluso rutas internas no sean procesadas si están marcadas como protegidas globalmente.
-- `2026-10-29T12:21:08` **branding.py** (seguridad defensiva): Se introdujo una validación de seguridad proactiva en `save_logo_svg` utilizando `is_protected_path` sobre el directorio padre antes de intentar cualquier operación de disco, garantizando que el diseño defensivo del módulo sea coherente con las políticas de acceso del proyecto.

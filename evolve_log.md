@@ -1420,3 +1420,9 @@ FAILED evolve/tests/test_assistant.py::test_system_prompt_forbids_claiming_actio
 - `2026-10-29T14:43:38` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` y `save` añadiendo validaciones de integridad frente a archivos truncados o con contenido malicioso, asegurando que la app no intente procesar datos inconsistentes.
 - `2026-10-29T14:43:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T14:43:38` Corrida terminada. Total usado hoy: 348.
+- `2026-10-29T14:51:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-29T14:52:25` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_registry_csv` ante datos malformados o vacíos, añadiendo validaciones estrictas y manejo explícito de errores para evitar que el bucle de procesamiento falle silenciosamente o introduzca entradas inválidas.
+- `2026-10-29T14:53:05` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Answer.is_online, AreaExplanation, SystemContext.__hash__, SystemContext._cached_active_problems, SystemContext._hash_tuple, SystemContext.get_metric, SystemContext.is_valid_structure
+- `2026-10-29T14:53:05` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-29T14:53:05` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T14:53:05` Corrida terminada. Total usado hoy: 350.

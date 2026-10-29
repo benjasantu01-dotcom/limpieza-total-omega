@@ -100,9 +100,9 @@ class StartupEntry:
         Valida que la estructura del comando cumpla con las restricciones de 
         seguridad iniciales (longitud, caracteres prohibidos, dispositivos).
         """
-        if self.command is None or not isinstance(self.command, str):
+        if not isinstance(self.command, str) or not self.command.strip():
             return False
-        if not self.command.strip() or len(self.command) > MAX_PATH_LEN:
+        if len(self.command) > MAX_PATH_LEN:
             return False
         if self._is_path_suspicious(self.command) or self._is_reserved_device_name(self.command):
             return False
@@ -146,8 +146,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y valida la ruta contenida en comillas. Bloquea rutas con 
-        navegación '..' para prevenir escapes del directorio base.
+        Extracts and validates path within quotes. Prevents directory traversal.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -190,7 +189,7 @@ class StartupEntry:
         Resuelve rutas relativas a absolutas y normalizadas, utilizando un 
         caché global para optimizar llamadas redundantes al sistema.
         """
-        if path_string is None or not isinstance(path_string, str) or not self.is_valid:
+        if not isinstance(path_string, str) or not self.is_valid:
             return ""
         
         if any(ord(c) < 32 for c in path_string):
@@ -402,7 +401,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
     seen_commands: Set[str] = set()
     
     try:
-        f: io.StringIO = io.StringIO(csv_text.strip())
+        f = io.StringIO(csv_text.strip())
         reader = csv.DictReader(f)
         
         if not reader.fieldnames or "Name" not in reader.fieldnames or "Value" not in reader.fieldnames:
@@ -415,6 +414,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             raw_name = row.get("Name")
             raw_cmd = row.get("Value")
             
+            # Validación estricta de tipos antes de proceder
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
             
