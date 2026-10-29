@@ -27,7 +27,7 @@ import fcntl
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict, Any, TypeAlias, Set, Tuple, Optional, Callable, TypeVar
+from typing import List, Union, Dict, Any, TypeAlias, Set, Tuple, Optional, Callable, TypeVar, Literal
 
 from safety import (
     UnsafePathError,
@@ -75,7 +75,10 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
 }
 
 def _check_for_reparse_points(path: Path) -> None:
-    """Valida que la ruta no sea un Junction o Symlink, evitando fugas del sandbox."""
+    """
+    Valida que la ruta no sea un Junction o Symlink.
+    Los puntos de reparse son vectores de ataque que pueden romper el aislamiento.
+    """
     if path is None: raise UnsafePathError("Ruta nula en chequeo de reparse.")
     if os.name == 'nt':
         try:
@@ -138,8 +141,8 @@ def _is_filesystem_read_only(path: Path) -> bool:
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """
-    Ejecuta operaciones I/O con estrategia de reintento ante bloqueos temporales.
-    Útil dado que el antivirus o sistemas operativos pueden bloquear archivos.
+    Ejecuta operaciones I/O con estrategia de reintento exponencial.
+    Necesario ante bloqueos transitorios por software de seguridad (Antivirus).
     """
     max_retries: int = 3
     for i in range(max_retries):
@@ -152,7 +155,10 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
     raise RuntimeError("Fallo de E/S tras múltiples intentos.")
 
 def _is_file_exclusive(path: Path) -> bool:
-    """Verifica si un archivo está libre de bloqueos mediante locks de sistema."""
+    """
+    Verifica si el archivo está libre de bloqueos exclusivos mediante flags de sistema.
+    En Windows usa CreateFile para testear acceso, en POSIX usa flock.
+    """
     if path is None or not path.exists():
         return False
     if os.name == 'nt':
@@ -178,7 +184,7 @@ def _is_file_exclusive(path: Path) -> bool:
 
 @dataclass
 class QuarantineItem:
-    """Entidad inmutable (lógica) que encapsula metadatos para la auditoría."""
+    """Entidad inmutable que encapsula metadatos para la auditoría de cuarentena."""
     item_id: str
     original_path: str
     stored_name: str
@@ -589,7 +595,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste manifiesto de forma atómica (Atomic File Write)."""
+    """Persiste manifiesto de forma atómica mediante escritura a temporal y reemplazo."""
     base_path: Path = quarantine_dir(base)
     target_path: Path = _manifest_path(base_path)
     
@@ -748,11 +754,14 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
 
 
 class IsolationManager:
-    """Gestor de aislamiento crítico para mitigar condiciones de carrera."""
+    """Gestor de aislamiento crítico para mitigar condiciones de carrera (TOCTOU)."""
     
     @staticmethod
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
-        """Verifica que el archivo no cambió durante el procesamiento."""
+        """
+        Verifica que el archivo no haya cambiado (ej. reemplazo malicioso) durante
+        la ventana de tiempo entre el escaneo y el aislamiento.
+        """
         if source is None or not source.exists():
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
         
@@ -770,7 +779,7 @@ class IsolationManager:
             raise UnsafePathError("Sandbox destino inseguro.")
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
-    """Aisla archivos aplicando validaciones contra race conditions."""
+    """Aisla archivos aplicando validaciones estrictas contra condiciones de carrera."""
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
     if source is None or not source.exists():
@@ -954,7 +963,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
 
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un archivo aislado al destino original previa verificación."""
+    """Restaura un archivo aislado al destino original previa verificación de integridad."""
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem vacío.")
     
