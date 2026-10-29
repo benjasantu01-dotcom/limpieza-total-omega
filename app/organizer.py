@@ -42,11 +42,12 @@ class SecurityLimits:
     MAX_FILE_SIZE_BYTES: Final[int] = 100_000_000_000
     MIN_FREE_SPACE_BYTES: Final[int] = 52_428_800
     MAX_SCAN_DEPTH: Final[int] = 50
-    WIN_ATTR_JUNCTION: Final[int] = 0x400
-    WIN_ATTR_SYSTEM: Final[int] = 0x04
-    WIN_ATTR_HIDDEN: Final[int] = 0x02
+    # Atributos de archivo Win32 usados en consultas de sistema
+    WIN_ATTR_JUNCTION: Final[int] = 0x400  # FILE_ATTRIBUTE_REPARSE_POINT
+    WIN_ATTR_SYSTEM: Final[int] = 0x04     # FILE_ATTRIBUTE_SYSTEM
+    WIN_ATTR_HIDDEN: Final[int] = 0x02     # FILE_ATTRIBUTE_HIDDEN
     WIN_ATTR_MASK: Final[int] = 0x04 | 0x02
-    WIN_ATTR_READONLY: Final[int] = 0x01
+    WIN_ATTR_READONLY: Final[int] = 0x01   # FILE_ATTRIBUTE_READONLY
 
 LIMITS: Final = SecurityLimits()
 
@@ -154,7 +155,13 @@ def _is_unc_path(path: Path) -> bool:
         return True
 
 def _generate_unique_target(target: Path) -> Path:
-    """Asegura un nombre de archivo único para evitar colisiones en destino."""
+    """
+    Genera una ruta única para evitar colisiones de nombres.
+    Args:
+        target: La ruta destino deseada.
+    Returns:
+        Una ruta Path con un sufijo incremental si la original ya existe.
+    """
     if not isinstance(target, Path): return target
     base_target = target
     counter = 1
@@ -232,7 +239,14 @@ def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
         return False
 
 def _can_write_to_destination(dest_real: Path, size: int) -> bool:
-    """Verifica espacio disponible en el disco antes de realizar una operación de movimiento."""
+    """
+    Verifica espacio disponible en el disco antes de realizar una operación de movimiento.
+    Args:
+        dest_real: Ruta de destino absoluta.
+        size: Tamaño en bytes del archivo a mover.
+    Returns:
+        True si hay suficiente espacio (basado en LIMITS.MIN_FREE_SPACE_BYTES).
+    """
     try:
         target_dir = dest_real.parent if dest_real.exists() else dest_real
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK):
