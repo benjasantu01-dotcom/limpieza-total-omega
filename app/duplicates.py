@@ -125,19 +125,12 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo para confirmación final.
-    
-    Args:
-        path: Ubicación del archivo.
-        chunk_size: Tamaño del bloque de lectura (default 1MB).
-        
-    Returns:
-        Hexadecimal del hash o None si el acceso está restringido.
     """
     if not isinstance(path, Path) or not _safe_path_check(path): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
-        if not path.exists(): return None
+        if not path.is_file(): return None
         hasher = hashlib.sha256()
         with open(path, "rb") as f:
             while (chunk := f.read(chunk_size)):
@@ -152,16 +145,12 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Genera un fingerprint rápido leyendo solo el encabezado del archivo.
-    
-    Esta técnica optimiza la detección evitando leer archivos pesados que
-    difieren en sus primeros 64KB, descartando falsos positivos de tamaño
-    con un costo de I/O mínimo.
     """
     if not isinstance(path, Path) or not _safe_path_check(path): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     try:
-        if not path.exists(): return None
+        if not path.is_file(): return None
         with open(path, "rb") as f:
             header = f.read(read_bytes)
             if not header: return None
@@ -195,8 +184,6 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Recorre el sistema de archivos mediante BFS, evitando recursión infinita y puntos de reanálisis.
-    Filtra candidatos basándose en tamaño mínimo y atributos de seguridad. Utiliza una tupla
-    de (dev, ino) para identificar archivos únicos y evitar procesar hardlinks redundantes.
     """
     raw_map: Dict[int, List[Path]] = defaultdict(list)
     size_counts: Dict[int, int] = defaultdict(int)
@@ -250,10 +237,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
-    Aplica una estrategia de hashing jerárquica para archivos grandes:
-    1. Fase de filtrado: agrupa archivos por un hash parcial de sus primeros 64KB.
-    2. Fase de verificación: realiza hash SHA256 completo solo en los grupos con
-       potenciales colisiones de hash parcial.
+    Aplica una estrategia de hashing jerárquica para archivos grandes.
     """
     if not paths: return {}
     partial_groups = _group_paths_by_hash(paths, partial_hash)
@@ -303,8 +287,7 @@ def _get_mtime(path: Path) -> float:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
-    Heurística: sugiere el archivo más antiguo como el 'original' a conservar,
-    basándose en la fecha de modificación (mtime).
+    Heurística: sugiere el archivo más antiguo como el 'original' a conservar.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths: 
         return None

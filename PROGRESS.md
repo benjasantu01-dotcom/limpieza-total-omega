@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 68
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 219
+- Rechazadas por guardia de seguridad: 69
+- Sin cambios (nada sustancial que mejorar): 25
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 67 | 3 | 26 | 11 | 105 |
-| 2026-10-29 | 116 | 7 | 42 | 13 | 114 |
+| 2026-10-28 | 67 | 3 | 26 | 11 | 101 |
+| 2026-10-29 | 118 | 7 | 43 | 14 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,13 +25,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **37**
 - rendimiento: **33**
-- seguridad defensiva: **26**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
 - `quarantine.py`: **19**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `memory.py`: **17**
 - `settings.py`: **17**
 - `safety.py`: **16**
@@ -39,12 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **14**
 - `healthscore.py`: **13**
 - `branding.py`: **11**
+- `duplicates.py`: **9**
 - `startup.py`: **8**
 - `organizer.py`: **8**
-- `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T12:30:00` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez ante errores de acceso a disco en la función `hash_file` y `partial_hash` implementando un manejo preventivo que verifica `path.is_file()` antes de intentar abrir el archivo, evitando excepciones de `PermissionError` o `FileNotFoundError` innecesarias y reforzando la naturaleza "solo lectura" del módulo ante archivos que cambian de estado durante la ejecución.
+- `2026-10-29T12:29:34` **diskreport.py** (seguridad defensiva): Mejoré la robustez de `walk_files` y `drive_usage` mediante la validación proactiva de rutas `UNC` y enlaces simbólicos rotos, asegurando que el análisis de disco no intente acceder a rutas de red mal formadas o recursos de sistema inaccesibles que podrían causar bloqueos de ejecución o excepciones no capturadas.
 - `2026-10-29T12:21:33` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `detect_profiles` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta objetivo antes de iniciar el escaneo recursivo, garantizando que incluso rutas internas no sean procesadas si están marcadas como protegidas globalmente.
 - `2026-10-29T12:21:08` **branding.py** (seguridad defensiva): Se introdujo una validación de seguridad proactiva en `save_logo_svg` utilizando `is_protected_path` sobre el directorio padre antes de intentar cualquier operación de disco, garantizando que el diseño defensivo del módulo sea coherente con las políticas de acceso del proyecto.
 - `2026-10-29T12:11:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_secure_to_read` ante archivos malformados o sistemas de archivos inusuales al añadir una validación explícita de `st.st_size` contra valores negativos y agregué un manejo de `PermissionError` más específico durante la lectura del JSON, asegurando que la aplicación siempre recupere `DEFAULTS` en lugar de fallar silenciosamente o entrar en estados inconsistentes.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T11:39:47` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_validate_and_sanitize_data` y `_apply_updates` en `SystemContext` para asegurar que el estado del objeto no quede en un limbo inconsistente si ocurre una excepción inesperada durante la ingestión de datos, preservando la integridad del análisis.
 - `2026-10-29T11:39:08` **startup.py** (rendimiento): Se implementó un mecanismo de caché en `startup_folders` y se optimizó la lógica de búsqueda en `entries_from_folders` utilizando un conjunto (`set`) para evitar el acceso redundante al sistema de archivos mediante `is_dir()` y `is_symlink()`, reduciendo drásticamente las llamadas al disco en sistemas con múltiples directorios de inicio.
 - `2026-10-29T11:38:36` **settings.py** (rendimiento): Optimicé el acceso a la configuración implementando una caché de tipo "Single-Flight" para las validaciones de seguridad de rutas (`_run_safety_checks`) y reutilizando la estructura de datos `MappingProxyType` para evitar copias innecesarias en cada lectura del archivo.
-- `2026-10-29T11:28:33` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño de cuarentena reemplazando el re-procesamiento de toda la lista de objetos por una suma directa sobre los datos cargados en el manifiesto, evitando iteraciones redundantes y aprovechando la estructura de datos ya existente.
-- `2026-10-29T11:20:51` **memory.py** (rendimiento): Se optimizó el proceso de enumeración de memoria moviendo la creación del buffer de nombres de archivo fuera del loop interno y utilizando una tupla de PIDs procesados para evitar re-análisis innecesarios dentro de la misma iteración, reduciendo la presión sobre el recolector de basura y el sistema de E/S.

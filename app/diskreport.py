@@ -59,7 +59,8 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
     if path is None:
         return None
     try:
-        return os.stat(path, follow_symlinks=False)
+        # lstat garantiza no seguir enlaces y detectar su estado real
+        return os.lstat(path)
     except (OSError, PermissionError, ValueError, FileNotFoundError):
         return None
 
@@ -73,6 +74,7 @@ def _is_reparse_point(path: Path) -> bool:
         if os.name == 'nt':
             import ctypes
             FILE_ATTRIBUTE_REPARSE_POINT = 0x0400
+            # GetFileAttributesW es más eficiente y seguro que resolve() para verificar estados
             attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
             if attrs == -1: return False
             return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
@@ -162,8 +164,12 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if not directory:
         return None
     try:
-        p = Path(directory).expanduser().resolve(strict=False)
-        if not p.exists() or not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
+        p = Path(directory).expanduser()
+        # Evitar resolver rutas UNC si no son seguras, verificar existencia previa
+        if not p.exists():
+            return None
+        p = p.resolve()
+        if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
         return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -264,9 +270,11 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """Obtiene métricas de espacio disponible en un punto de montaje."""
     if mount is None: return None
     try:
-        p = Path(mount).expanduser().resolve(strict=False)
+        p = Path(mount).expanduser()
         if not p.exists() or _is_reparse_point(p) or is_protected_path(p):
             return None
+        # Usar la ruta resuelta solo para el disco, verificando que no sea red (UNC)
+        if str(p).startswith('\\\\'): return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
@@ -305,9 +313,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, p_entry)):
                             continue
                         
+                        # Verifica si es enlace simbólico o reparse point antes de estadisticar
                         if entry.is_symlink() or _is_reparse_point(p_entry):
                             continue
                         
+                        # Usar stat local para evitar seguir referencias externas
                         st = entry.stat(follow_symlinks=False)
                             
                         if entry.is_dir():

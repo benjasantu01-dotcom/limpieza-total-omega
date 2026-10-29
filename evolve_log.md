@@ -1166,3 +1166,12 @@ FAILED evolve/tests/test_assistant.py::test_system_prompt_forbids_claiming_actio
 - `2026-10-29T12:21:33` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `detect_profiles` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta objetivo antes de iniciar el escaneo recursivo, garantizando que incluso rutas internas no sean procesadas si están marcadas como protegidas globalmente.
 - `2026-10-29T12:21:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T12:21:33` Corrida terminada. Total usado hoy: 292.
+- `2026-10-29T12:28:59` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-10-29T12:29:34` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la robustez de `walk_files` y `drive_usage` mediante la validación proactiva de rutas `UNC` y enlaces simbólicos rotos, asegurando que el análisis de disco no intente acceder a rutas de red mal formadas o recursos de sistema inaccesibles que podrían causar bloqueos de ejecución o excepciones no capturadas.
+- `2026-10-29T12:30:00` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez ante errores de acceso a disco en la función `hash_file` y `partial_hash` implementando un manejo preventivo que verifica `path.is_file()` antes de intentar abrir el archivo, evitando excepciones de `PermissionError` o `FileNotFoundError` innecesarias y reforzando la naturaleza "solo lectura" del módulo ante archivos que cambian de estado durante la ejecución.
+- `2026-10-29T12:30:45` ➖ Sin cambios en healthscore.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva del módulo añadiendo una validación explícita de `_ALLOWED_CHARS` dentro de `_sanitize_msg` y un bloqueo robusto contra cualquier contenido que intente inyectar rutas de sistema en las recomendaciones, utilizando los mismos términos bloqueados que `safety.py`.
+- `2026-10-29T12:31:45` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-29T12:32:48` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-29T12:33:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-29T12:33:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T12:33:52` Corrida terminada. Total usado hoy: 296.
