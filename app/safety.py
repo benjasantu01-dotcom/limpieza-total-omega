@@ -315,10 +315,9 @@ SENSITIVE_EXTENSIONS: Final[set[str]] = {
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 }
 
-_SYSTEM_ROOT_PATHS: Final[set[str]] = {
-    os.path.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
-    if os.environ.get(v)
-}
+@lru_cache(maxsize=1)
+def _get_system_root_paths() -> set[str]:
+    return {os.path.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData") if os.environ.get(v)}
 
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
@@ -881,7 +880,7 @@ def is_protected_path(path: PathLike) -> bool:
         norm_str = os.path.normcase(os.path.abspath(str(path)))
         parts = Path(norm_str).parts
         
-        if any(norm_str.startswith(r) for r in _SYSTEM_ROOT_PATHS):
+        if any(norm_str.startswith(r) for r in _get_system_root_paths()):
             return True
             
         if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in parts):

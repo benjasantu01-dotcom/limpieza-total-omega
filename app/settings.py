@@ -345,17 +345,17 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida un diccionario bruto, aplicando los validadores definidos por cada clave."""
-    if not _is_dict(raw_values): return dict(DEFAULTS)
+    if not _is_dict(raw_values): return DEFAULTS.copy()
     
-    config = dict(DEFAULTS)
+    config = DEFAULTS.copy()
     for key_str, raw_val in raw_values.items():
         key_enum = _KEY_TO_ENUM.get(key_str)
         if key_enum and key_enum in _VALIDATOR_MAP:
             validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
             if validated_val is not None:
-                config[key_enum.value] = validated_val
+                config[key_enum.value] = validated_val # type: ignore
             
-    return config # type: ignore
+    return config 
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     """Chequea metadatos del archivo para asegurar que no ha sido alterado maliciosamente."""
@@ -414,7 +414,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                     return settings
     except (OSError, PermissionError): 
         pass
-    return dict(DEFAULTS) # type: ignore
+    return DEFAULTS.copy()
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve y normaliza la ruta del archivo de configuración."""
@@ -469,7 +469,7 @@ def reset(custom_base: PathLike | None = None) -> AppSettings:
     config_path = settings_path(custom_base)
     if is_safe_to_modify(str(config_path)):
         save(DEFAULTS, custom_base)
-    return dict(DEFAULTS) # type: ignore
+    return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
     """Obtiene un valor individual de la configuración."""

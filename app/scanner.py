@@ -272,6 +272,7 @@ class Scanner:
         if not isinstance(entry, os.DirEntry) or not entry.path or not self._is_safe_entry(entry):
             return
         try:
+            # Uso de los métodos de DirEntry ya cacheada (is_file/is_dir) para evitar stat extra
             if entry.is_file():
                 if self._is_relevant_extension(entry.name):
                     path_norm = os.path.normcase(entry.path)

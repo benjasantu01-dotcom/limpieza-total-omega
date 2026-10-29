@@ -1448,3 +1448,10 @@ FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area -
 - `2026-10-29T02:28:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-10-29T02:28:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T02:28:34` Corrida terminada. Total usado hoy: 60.
+- `2026-10-29T02:37:06` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-29T02:38:01` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché para `_is_kernel_managed` y `is_protected_path` para evitar llamadas redundantes a `os.environ` y normalizaciones costosas de rutas durante recorridos de disco, mejorando significativamente el rendimiento en operaciones de escaneo.
+- `2026-10-29T02:38:29` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_directory` reemplazando la lógica de `process_entry` (que invocaba `is_file()` y `is_dir()` por separado) por `entry.is_file()` y `entry.is_dir()` directamente sobre la misma instancia de `os.DirEntry` ya obtenida, evitando llamadas repetidas al sistema de archivos (`stat`).
+- `2026-10-29T02:39:01` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a las claves de configuración mediante la pre-compilación de `ConfigKey.value` en los diccionarios de validación y se reemplazó `dict(DEFAULTS)` por una copia eficiente, reduciendo la sobrecarga de resolución de atributos en operaciones frecuentes de `load` y `validate`.
+- `2026-10-29T02:39:13` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-29T02:39:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T02:39:13` Corrida terminada. Total usado hoy: 64.
