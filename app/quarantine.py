@@ -1106,11 +1106,9 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el espacio total ocupado en el sandbox (bytes) desde caché."""
+    """Calcula el espacio total ocupado en el sandbox (bytes) mediante el manifiesto cacheado."""
     try:
-        base_path = quarantine_dir(base)
-        items = load_manifest(base_path)
-        return sum(item.size_bytes for item in items if item is not None)
+        return sum(item.size_bytes for item in load_manifest(base) if item is not None)
     except (OSError, UnsafePathError):
         return 0
 

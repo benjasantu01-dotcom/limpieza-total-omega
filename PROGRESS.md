@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 76 | 4 | 28 | 11 | 117 |
-| 2026-10-29 | 102 | 6 | 38 | 11 | 111 |
+| 2026-10-28 | 72 | 4 | 28 | 11 | 117 |
+| 2026-10-29 | 103 | 6 | 40 | 11 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **33**
-- rendimiento: **30**
+- rendimiento: **31**
+- seguridad defensiva: **29**
 - robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **19**
-- `diskreport.py`: **18**
+- `browser.py`: **18**
+- `quarantine.py`: **18**
 - `memory.py`: **17**
-- `quarantine.py`: **17**
+- `diskreport.py`: **17**
 - `settings.py`: **16**
 - `scanner.py`: **15**
 - `safety.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **13**
 - `healthscore.py`: **12**
-- `branding.py`: **10**
 - `organizer.py`: **9**
+- `branding.py`: **9**
 - `startup.py`: **8**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T11:28:33` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño de cuarentena reemplazando el re-procesamiento de toda la lista de objetos por una suma directa sobre los datos cargados en el manifiesto, evitando iteraciones redundantes y aprovechando la estructura de datos ya existente.
 - `2026-10-29T11:20:51` **memory.py** (rendimiento): Se optimizó el proceso de enumeración de memoria moviendo la creación del buffer de nombres de archivo fuera del loop interno y utilizando una tupla de PIDs procesados para evitar re-análisis innecesarios dentro de la misma iteración, reduciendo la presión sobre el recolector de basura y el sistema de E/S.
 - `2026-10-29T11:09:10` **diskreport.py** (rendimiento): Optimizé la función `walk_files` eliminando la llamada innecesaria a `Path.resolve()` dentro del bucle principal, reduciendo significativamente las llamadas al sistema operativo (I/O) y mejorando el rendimiento del escaneo.
 - `2026-10-29T11:08:34` **browser.py** (rendimiento): Optimizé el proceso de detección de perfiles reutilizando la instancia de `DirectoryScanner` y evitando múltiples resoluciones de ruta redundantes dentro del bucle de navegadores, lo cual reduce la sobrecarga de I/O y llamadas al sistema en cada escaneo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T10:30:25` **browser.py** (legibilidad y documentación): Documenté con mayor detalle los métodos de `DirectoryScanner` y `detect_profiles` para clarificar la lógica de exclusión y seguridad, añadiendo type hints faltantes y estructurando mejor los docstrings para cumplir con los estándares de mantenibilidad exigidos.
 - `2026-10-29T10:28:29` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica añadiendo docstrings descriptivos a las constantes de la paleta y tipos personalizados, asegurando que el propósito de cada elemento sea claro para futuras expansiones del sistema de diseño.
 - `2026-10-29T10:27:55` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` convirtiendo el `_CONTEXT_SCHEMA` en una lista de objetos `NamedTuple` (creando `ContextMetric`), lo que elimina el uso de índices posicionales (`u[0]`, `u[2]`) y hace que la configuración de la serialización sea explícita y autodocumentada.
-- `2026-10-29T10:18:14` **settings.py** (manejo de errores y validación de entradas): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para capturar inconsistencias estructurales en el JSON antes de que lleguen a la lógica de la app, asegurando que un esquema corrupto se descarte a favor de los valores de fábrica en lugar de causar errores inesperados durante el procesamiento.
