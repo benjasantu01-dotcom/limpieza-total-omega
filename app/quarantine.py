@@ -902,6 +902,11 @@ def quarantine_file(
 ) -> QuarantineItem:
     """Aísla archivos de forma atómica. Orquestador de alto nivel."""
     p_source: Path = _validate_input_path(source)
+    
+    # Validar si el origen es una unidad/sistema de solo lectura antes de proceder
+    if _is_filesystem_read_only(p_source.parent):
+        raise OSError("El archivo origen reside en un volumen de solo lectura.")
+        
     dest_dir: Path = quarantine_dir(base)
     st_info: os.stat_result = _check_io_error_context(p_source.stat)
     

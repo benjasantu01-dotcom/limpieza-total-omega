@@ -1498,3 +1498,10 @@ FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area -
 - `2026-10-29T03:40:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-10-29T03:40:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T03:40:39` Corrida terminada. Total usado hoy: 88.
+- `2026-10-29T03:48:21` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-29T03:49:05` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita para evitar que se procesen archivos que residen en rutas de solo lectura o volúmenes montados como lectura, evitando errores de E/S impredecibles durante el movimiento atómico.
+- `2026-10-29T03:49:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-29T03:49:44` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): el archivo se encogió al 10% del original (posible pérdida de código)
+- `2026-10-29T03:49:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-29T03:49:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T03:49:55` Corrida terminada. Total usado hoy: 92.
