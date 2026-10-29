@@ -258,6 +258,8 @@ class Scanner:
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta la suite de heurísticas sobre un archivo tras validación de metadatos."""
         stats = _safe_stat(entry)
+        if stats is None:
+            return
         for check_fn in ALL_CHECKS:
             try:
                 finding = check_fn(path, entry, self.now_ts, stats)
@@ -271,7 +273,10 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     if not isinstance(path, Path) or not _is_valid_path_structure(str(path)) or _cached_is_protected(str(path)) or not _is_readable(path):
         return []
     findings: ScanResult = []
-    stats = entry.stat() if entry else path.stat()
+    try:
+        stats = entry.stat() if entry else path.stat()
+    except (OSError, PermissionError):
+        return []
     for check_fn in ALL_CHECKS:
         try:
             res = check_fn(path, entry, now_ts, stats)

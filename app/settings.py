@@ -363,10 +363,11 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     """Chequea metadatos del archivo para asegurar que no ha sido alterado maliciosamente."""
     try:
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+        if st.st_size < 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         if _Validators._is_reparse_point(str(file_path)): return False
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        return 2 <= st.st_size <= MAX_SETTINGS_SIZE
+        return st.st_size >= 2
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:

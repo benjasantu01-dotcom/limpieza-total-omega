@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 67
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 67 | 3 | 26 | 11 | 113 |
-| 2026-10-29 | 111 | 6 | 41 | 12 | 114 |
+| 2026-10-28 | 67 | 3 | 26 | 11 | 109 |
+| 2026-10-29 | 114 | 6 | 42 | 12 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **37**
 - rendimiento: **33**
 - seguridad defensiva: **24**
 
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
-- `settings.py`: **16**
-- `safety.py`: **15**
+- `settings.py`: **17**
+- `safety.py`: **16**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
-- `scanner.py`: **14**
 - `healthscore.py`: **13**
 - `branding.py`: **10**
 - `startup.py`: **8**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T12:11:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_secure_to_read` ante archivos malformados o sistemas de archivos inusuales al añadir una validación explícita de `st.st_size` contra valores negativos y agregué un manejo de `PermissionError` más específico durante la lectura del JSON, asegurando que la aplicación siempre recupere `DEFAULTS` en lugar de fallar silenciosamente o entrar en estados inconsistentes.
+- `2026-10-29T12:11:24` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas ante archivos bloqueados o inaccesibles mediante la incorporación de una validación de `stats` dentro de `_run_file_heuristics`, asegurando que ninguna regla reciba metadatos nulos si el archivo no pudo ser leído, evitando así errores en tiempo de ejecución.
+- `2026-10-29T12:10:57` **safety.py** (robustez ante casos límite): Se añadió una verificación de exclusión por longitud de nombre de archivo (`MAX_FILENAME_LENGTH`) dentro de `_validate_structural_safety` para prevenir desbordamientos o comportamientos indefinidos al interactuar con el sistema de archivos de Windows (MAX_PATH en NTFS), fortaleciendo la robustez ante rutas creadas de forma malintencionada o excesivamente largas.
 - `2026-10-29T12:02:09` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante errores de concurrencia y permisos durante el aislamiento atómico, añadiendo un chequeo explícito de la existencia del archivo de origen justo antes de la lectura en `_atomic_isolate_file` y reforzando la gestión de recursos mediante bloques `try...finally` garantizados para asegurar el cierre de descriptores de archivos incluso ante excepciones inesperadas durante la copia I/O.
 - `2026-10-29T12:01:09` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` y `_iter_process_memory` ante errores de API Win32 y casos límite de memoria/rutas, asegurando que el cierre de `handles` sea más resiliente y evitando el procesamiento de procesos cuyo tamaño de `WorkingSet` sea reportado como cero o erróneo.
 - `2026-10-29T11:50:05` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante la inyección de tipos inesperados en el constructor y posibles estados corruptos, añadiendo una validación más estricta en `__post_init__` y asegurando que `validate()` siempre se ejecute, evitando así que datos malformados propaguen errores de precisión en el motor de scoring.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T11:20:51` **memory.py** (rendimiento): Se optimizó el proceso de enumeración de memoria moviendo la creación del buffer de nombres de archivo fuera del loop interno y utilizando una tupla de PIDs procesados para evitar re-análisis innecesarios dentro de la misma iteración, reduciendo la presión sobre el recolector de basura y el sistema de E/S.
 - `2026-10-29T11:09:10` **diskreport.py** (rendimiento): Optimizé la función `walk_files` eliminando la llamada innecesaria a `Path.resolve()` dentro del bucle principal, reduciendo significativamente las llamadas al sistema operativo (I/O) y mejorando el rendimiento del escaneo.
 - `2026-10-29T11:08:34` **browser.py** (rendimiento): Optimizé el proceso de detección de perfiles reutilizando la instancia de `DirectoryScanner` y evitando múltiples resoluciones de ruta redundantes dentro del bucle de navegadores, lo cual reduce la sobrecarga de I/O y llamadas al sistema en cada escaneo.
-- `2026-10-29T10:59:15` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante docstrings más precisos, aclarando las responsabilidades de cada etapa del pipeline de resolución de rutas para facilitar el mantenimiento y la auditoría.
-- `2026-10-29T10:57:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `scanner.py` mediante la normalización de la estructura de las funciones de heurística, explicitando el contrato de datos requerido para las validaciones y clarificando mediante docstrings el propósito de cada verificación.
-- `2026-10-29T10:48:23` **quarantine.py** (legibilidad y documentación): Se introdujeron constantes de tipo `Literal` y se mejoró la documentación técnica de las funciones críticas mediante *docstrings* que explican los riesgos de seguridad (como condiciones de carrera y validación de inodos) para facilitar el mantenimiento y auditoría del módulo.

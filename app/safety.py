@@ -254,6 +254,7 @@ class SafetyValidationErrorCode(IntEnum):
     CIRCULAR_REFERENCE = 35
     ADMIN_PRIVILEGE_VIOLATION = 36
     VOLUME_SHADOW_COPY = 38
+    FILENAME_TOO_LONG = 39
 
 class UnsafePathError(Exception):
     """Excepción base para violaciones de política de seguridad en el sistema de archivos."""
@@ -962,6 +963,10 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     
+    # Verificación de longitud de nombre de archivo (nombre base)
+    if len(target_path.name) > MAX_FILENAME_LENGTH:
+        raise UnsafePathError("Nombre de archivo demasiado largo.", SafetyValidationErrorCode.FILENAME_TOO_LONG)
+
     if re.search(r'[\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_string):
         raise UnsafePathError("Secuencias de escape visual detectadas.", SafetyValidationErrorCode.INVALID_CHARS)
     
