@@ -311,7 +311,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
             return None
             
         p = Path(entry_path).resolve(strict=False)
-        if is_protected_path(p):
+        if is_protected_path(p) or not is_safe_to_modify(p):
             return None
             
         return StartupEntry(name=name_ext[0], command=entry_path, source="carpeta")

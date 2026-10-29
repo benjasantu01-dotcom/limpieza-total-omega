@@ -759,3 +759,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-29T08:15:50` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré la resiliencia de la validación de seguridad incorporando una verificación explícita de archivos en uso mediante `GetFileInformationByHandle` con acceso de compartición exclusivo (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE) en `_is_file_locked_by_other_process`, asegurando que `ensure_safe_to_modify` no falle falsamente ante indexadores de búsqueda o antivirus que mantienen bloqueos de lectura temporal mientras operan.
 - `2026-10-29T08:15:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T08:15:50` Corrida terminada. Total usado hoy: 196.
+- `2026-10-29T08:23:52` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-10-29T08:24:24` Tests FALLARON:
+```
+ath.name and path.name.lower() in SYSTEM_LOOKALIKES:
+>           if SYSTEM32_LOWER not in str(path.resolve()).lower():
+                                         ^^^^^^^^^^^^
+E           AttributeError: 'PurePosixPath' object has no attribute 'resolve'
+
+app/scanner.py:156: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:179: SyntaxWarning: invalid escape sequence '\C'
+    Transforma rutas a formato extendido UNC (\\?\C:\...) para permitir el
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - AttributeError: 'PureWindowsPath' object has no attribute 'resolve'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - AttributeError: 'PureWindowsPath' object has no attribute 'resolve'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - AttributeError: 'PurePosixPath' object has no attribute 'resolve'
+3 failed, 296 passed, 4 warnings in 0.88s
+
+```
+- `2026-10-29T08:24:24` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `scanner.py` implementando una validación estricta de rutas mediante `path.resolve()` antes de realizar cualquier operación de acceso o heurística, evitando que manipulaciones sutiles de la ruta (como redundancias o referencias relativas) evadan los chequeos de `is_protected_path`.
+- `2026-10-29T08:24:52` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad de la escritura atómica en `perform_atomic_write` añadiendo una validación explícita mediante `os.access(temp_path, os.W_OK)` después de la creación y antes de la escritura, mitigando condiciones de carrera y asegurando que el archivo temporal sea tratable bajo las políticas de seguridad del sistema.
+- `2026-10-29T08:25:20` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se introdujo la verificación `is_safe_to_modify(p)` dentro de `_process_folder_entry` para asegurar que, al escanear carpetas de inicio, el archivo detectado no solo no esté protegido por nombre, sino que también cumpla con los requisitos de seguridad de escritura/acceso definidos en `safety.py`, unificando el criterio de seguridad con el resto de la aplicación y evitando procesar archivos sospechosos.
+- `2026-10-29T08:25:21` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-29T08:25:21` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-29T08:25:41` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-29T08:25:41` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-29T08:26:11` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-29T08:26:11` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-29T08:26:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T08:26:11` Corrida terminada. Total usado hoy: 200.

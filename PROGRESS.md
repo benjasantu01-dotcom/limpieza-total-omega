@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 106 | 7 | 38 | 14 | 143 |
-| 2026-10-29 | 76 | 4 | 29 | 11 | 76 |
+| 2026-10-28 | 106 | 7 | 38 | 14 | 139 |
+| 2026-10-29 | 78 | 5 | 29 | 11 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **33**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **31**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,18 +33,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `scanner.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `memory.py`: **16**
 - `safety.py`: **16**
 - `assistant.py`: **15**
 - `healthscore.py`: **14**
 - `branding.py`: **10**
 - `organizer.py`: **9**
-- `startup.py`: **7**
+- `startup.py`: **8**
 - `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T08:25:20` **startup.py** (seguridad defensiva): Se introdujo la verificación `is_safe_to_modify(p)` dentro de `_process_folder_entry` para asegurar que, al escanear carpetas de inicio, el archivo detectado no solo no esté protegido por nombre, sino que también cumpla con los requisitos de seguridad de escritura/acceso definidos en `safety.py`, unificando el criterio de seguridad con el resto de la aplicación y evitando procesar archivos sospechosos.
+- `2026-10-29T08:24:52` **settings.py** (seguridad defensiva): Mejoré la seguridad de la escritura atómica en `perform_atomic_write` añadiendo una validación explícita mediante `os.access(temp_path, os.W_OK)` después de la creación y antes de la escritura, mitigando condiciones de carrera y asegurando que el archivo temporal sea tratable bajo las políticas de seguridad del sistema.
 - `2026-10-29T08:15:50` **safety.py** (seguridad defensiva): Mejoré la resiliencia de la validación de seguridad incorporando una verificación explícita de archivos en uso mediante `GetFileInformationByHandle` con acceso de compartición exclusivo (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE) en `_is_file_locked_by_other_process`, asegurando que `ensure_safe_to_modify` no falle falsamente ante indexadores de búsqueda o antivirus que mantienen bloqueos de lectura temporal mientras operan.
 - `2026-10-29T08:14:57` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de la función `_atomic_isolate_file` añadiendo una validación explícita para evitar que archivos con flujos de datos alternos (ADS) o nombres de dispositivos reservados en Windows sean procesados, utilizando `_check_path_syntax_integrity` de forma más temprana y asegurando que no se pueda manipular el sistema de archivos mediante inyección de nombres.
 - `2026-10-29T08:14:15` **organizer.py** (seguridad defensiva): Mejoré la seguridad de `delete_reviewed` implementando una validación estricta del nombre y extensión antes de proceder con el `unlink()`, evitando que cualquier archivo no deseado que aparezca en la carpeta de revisión pueda ser eliminado sin pasar los filtros de seguridad de la aplicación.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T07:23:59` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores inesperados de entrada y posibles fallos de ejecución en `_compute_cached` mediante la adición de comprobaciones explícitas de estado y el manejo defensivo de iteradores de métricas.
 - `2026-10-29T07:23:02` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_stat` y `_is_reparse_point` al centralizar el manejo de errores y proteger la lógica frente a rutas que sufren condiciones de carrera (archivos borrados o inaccesibles justo después de ser listados por `os.scandir`), evitando que excepciones imprevistas detengan el análisis de disco.
 - `2026-10-29T07:14:37` **browser.py** (robustez ante casos límite): Se ha robustecido el escaneo recursivo introduciendo un manejo explícito de la profundidad y la validación de rutas en el método `get_size` para prevenir errores ante recursión infinita o rutas inexistentes durante la ejecución.
-- `2026-10-29T07:13:29` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de métricas en `SystemContext` ante valores inesperados (como `float('inf')` o `nan` que se filtren en la ingesta) mediante una validación más estricta en el método `_apply_field`, asegurando que cada métrica sea validada contra su `MetricSpec` antes de ser asignada, evitando estados corruptos.
-- `2026-10-29T07:04:20` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración implementando `functools.lru_cache` con un TTL lógico implícito en `load` para evitar E/S de disco repetitivas durante el mismo ciclo de ejecución cuando el archivo no ha cambiado.

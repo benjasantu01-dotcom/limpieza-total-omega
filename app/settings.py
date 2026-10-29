@@ -195,6 +195,8 @@ class _SettingsManager:
                 f.flush()
                 os.fsync(f.fileno())
             
+            if not os.access(temp_path, os.W_OK): return False
+            
             os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
             os.replace(temp_path, resolved_path)
             self.clear(resolved_path)
