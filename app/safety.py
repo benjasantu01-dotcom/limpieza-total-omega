@@ -1095,22 +1095,14 @@ def _validate_path_components(path: Path) -> None:
 
 def _validate_no_reparse_traversal(path: Path) -> None:
     """Impide bypass de jail mediante redirecciones en niveles intermedios de la ruta."""
-    try:
-        current = Path(path.anchor)
-        depth = 0
-        for part in path.parts[1:]:
-            current = current / part
-            if current.is_symlink() or _is_system_directory_junction(str(current)):
-                _validate_junction_depth(current)
-                target = _get_final_path_normalized(current)
-                if not target.is_relative_to(Path(path.anchor)):
-                    raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS)
-            depth += 1
-            if depth > MAX_DIRECTORY_DEPTH:
-                raise UnsafePathError("Profundidad de redirección excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP)
-    except (Exception, UnsafePathError) as e:
-        if isinstance(e, UnsafePathError): raise
-        pass
+    current = Path(path.anchor)
+    for part in path.parts[1:]:
+        current = current / part
+        if current.is_symlink() or _is_system_directory_junction(str(current)):
+            _validate_junction_depth(current)
+            target = _get_final_path_normalized(current)
+            if not target.is_relative_to(Path(path.anchor)):
+                raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS)
 
 def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Valida la integridad de archivos antes de operaciones de escritura."""

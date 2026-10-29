@@ -90,8 +90,8 @@ def _is_valid_file_path(path: Union[Path, str, None]) -> bool:
     if not isinstance(path, (Path, str)) or not path:
         return False
     try:
-        p = Path(path)
-        return not _cached_is_protected(str(p)) and p.is_file()
+        target_path = Path(path)
+        return not _cached_is_protected(str(target_path)) and target_path.is_file()
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
@@ -100,8 +100,8 @@ def _is_readable(path: Union[Path, str, None]) -> bool:
     if not isinstance(path, (Path, str)) or not path:
         return False
     try:
-        path_str = str(path)
-        return not _cached_is_protected(path_str) and os.access(path_str, os.R_OK)
+        target_str = str(path)
+        return not _cached_is_protected(target_str) and os.access(target_str, os.R_OK)
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
