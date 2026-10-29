@@ -173,7 +173,7 @@ class _SettingsManager:
         3. Realiza un reemplazo in-place para prevenir corrupción ante caídas.
         """
         serialized_bytes = serialized.encode("utf-8")
-        if len(serialized_bytes) > MAX_SETTINGS_SIZE: return False
+        if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 2: return False
         if len(str(config_path)) > 260: return False
         
         temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
@@ -363,11 +363,11 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     """Chequea metadatos del archivo para asegurar que no ha sido alterado maliciosamente."""
     try:
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-        if st.st_size < 0 or st.st_size > MAX_SETTINGS_SIZE: return False
+        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         if _Validators._is_reparse_point(str(file_path)): return False
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        return st.st_size >= 2
+        return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
@@ -379,12 +379,13 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             content = f.read(MAX_SETTINGS_SIZE + 1)
         if not content or len(content) > MAX_SETTINGS_SIZE or len(content) < 2: return None
         
+        # Validar que el contenido sea JSON plano sin bytes de control (salvo newlines)
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
         data = json.loads(content.decode("utf-8", errors="strict"))
         if not isinstance(data, dict) or len(data) > 64: return None
         
-        # Verificar que el JSON contenga al menos una clave válida para considerarlo íntegro
+        # Integridad mínima: al menos una clave debe coincidir con DEFAULTS
         if not any(k in DEFAULTS for k in data.keys()): return None
         return data
     except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
@@ -411,7 +412,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             st = primary_path.lstat()
             cached = _MANAGER.data_cache.get(path_str)
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
-                # Retornar una copia mutable a partir del Proxy inmutable para el caller
                 return dict(cached[0])
             
             if _is_file_secure_to_read(primary_path, st):

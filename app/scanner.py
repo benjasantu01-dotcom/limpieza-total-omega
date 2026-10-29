@@ -163,14 +163,14 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Heurística: Identifica ejecutables de creación reciente dentro de carpetas de alto riesgo."""
-    if not path or not entry or not stats: return None
+    if not path or not path.parent or not stats: return None
     try:
         if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
             mtime = getattr(stats, "st_mtime", 0.0)
             if isinstance(mtime, (int, float)) and mtime > 0:
                 if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
                     return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
-    except (AttributeError, ValueError):
+    except (AttributeError, ValueError, TypeError):
         pass
     return None
 
@@ -257,16 +257,19 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta la suite de heurísticas sobre un archivo tras validación de metadatos."""
-        stats = _safe_stat(entry)
-        if stats is None:
-            return
-        for check_fn in ALL_CHECKS:
-            try:
-                finding = check_fn(path, entry, self.now_ts, stats)
-                if finding:
-                    self.results.append(finding)
-            except Exception as e:
-                logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {type(e).__name__}")
+        try:
+            stats = _safe_stat(entry)
+            if stats is None:
+                return
+            for check_fn in ALL_CHECKS:
+                try:
+                    finding = check_fn(path, entry, self.now_ts, stats)
+                    if finding:
+                        self.results.append(finding)
+                except Exception as e:
+                    logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {type(e).__name__}")
+        except Exception as e:
+            logger.debug(f"Error fatal procesando metadatos de {path}: {type(e).__name__}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Realiza un escaneo puntual heurístico sobre un único archivo externo."""
@@ -275,7 +278,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     findings: ScanResult = []
     try:
         stats = entry.stat() if entry else path.stat()
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, FileNotFoundError):
         return []
     for check_fn in ALL_CHECKS:
         try:

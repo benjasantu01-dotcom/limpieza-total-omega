@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 50 | 3 | 20 | 10 | 77 |
-| 2026-10-29 | 126 | 7 | 45 | 17 | 149 |
+| 2026-10-28 | 48 | 3 | 20 | 10 | 75 |
+| 2026-10-29 | 129 | 7 | 46 | 17 | 149 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **37**
 - legibilidad y documentación: **37**
-- rendimiento: **33**
+- rendimiento: **31**
 - seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `browser.py`: **19**
-- `diskreport.py`: **17**
+- `browser.py`: **18**
+- `safety.py`: **17**
 - `memory.py`: **16**
-- `safety.py`: **16**
-- `settings.py`: **15**
+- `settings.py`: **16**
+- `diskreport.py`: **16**
+- `scanner.py`: **14**
 - `assistant.py`: **14**
-- `scanner.py`: **13**
 - `healthscore.py`: **12**
 - `duplicates.py`: **10**
 - `branding.py`: **9**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-29T14:43:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` añadiendo validaciones de integridad frente a archivos truncados o con contenido malicioso, asegurando que la app no intente procesar datos inconsistentes.
+- `2026-10-29T14:43:23` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validación defensiva de `stat_result` y `Path.name` contra valores nulos o inesperados, además de centralizar el manejo de excepciones al acceder a metadatos para evitar que errores aislados en `os.stat` detengan el procesamiento de archivos.
+- `2026-10-29T14:42:56` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `path` como `None` o vacío en las funciones de bajo nivel que manejan punteros (`_to_long_path`, `_get_file_attrs`, `_is_virtual_drive`) para evitar excepciones de `TypeError` en tiempo de ejecución, mejorando la robustez ante entradas inesperadas.
 - `2026-10-29T14:34:25` **quarantine.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `purge_all` y `_safe_unlink` capturando `PermissionError` y `OSError` de forma específica durante operaciones de I/O para evitar que fallos en un solo archivo detengan la limpieza masiva, asegurando además que `_safe_unlink` sea más robusto ante estados de archivo inconsistentes.
 - `2026-10-29T14:33:02` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado `trim_working_set` añadiendo una validación explícita para evitar que `EmptyWorkingSet` se invoque sobre un handle nulo o en un estado de error, centralizando la lógica de manejo de errores de la API de Windows mediante un bloque `try-except` más robusto que garantiza el cierre del handle y reporta fallos específicos de comunicación con el sistema operativo.
 - `2026-10-29T14:22:47` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de hash (`hash_file` y `partial_hash`) añadiendo una validación explícita mediante `is_safe_to_modify` antes de abrir cualquier descriptor de archivo, previniendo errores de acceso en rutas bloqueadas y mejorando el manejo de excepciones al cerrar recursos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T12:29:34` **diskreport.py** (seguridad defensiva): Mejoré la robustez de `walk_files` y `drive_usage` mediante la validación proactiva de rutas `UNC` y enlaces simbólicos rotos, asegurando que el análisis de disco no intente acceder a rutas de red mal formadas o recursos de sistema inaccesibles que podrían causar bloqueos de ejecución o excepciones no capturadas.
 - `2026-10-29T12:21:33` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `detect_profiles` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta objetivo antes de iniciar el escaneo recursivo, garantizando que incluso rutas internas no sean procesadas si están marcadas como protegidas globalmente.
 - `2026-10-29T12:21:08` **branding.py** (seguridad defensiva): Se introdujo una validación de seguridad proactiva en `save_logo_svg` utilizando `is_protected_path` sobre el directorio padre antes de intentar cualquier operación de disco, garantizando que el diseño defensivo del módulo sea coherente con las políticas de acceso del proyecto.
-- `2026-10-29T12:11:41` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_secure_to_read` ante archivos malformados o sistemas de archivos inusuales al añadir una validación explícita de `st.st_size` contra valores negativos y agregué un manejo de `PermissionError` más específico durante la lectura del JSON, asegurando que la aplicación siempre recupere `DEFAULTS` en lugar de fallar silenciosamente o entrar en estados inconsistentes.
-- `2026-10-29T12:11:24` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas ante archivos bloqueados o inaccesibles mediante la incorporación de una validación de `stats` dentro de `_run_file_heuristics`, asegurando que ninguna regla reciba metadatos nulos si el archivo no pudo ser leído, evitando así errores en tiempo de ejecución.
-- `2026-10-29T12:10:57` **safety.py** (robustez ante casos límite): Se añadió una verificación de exclusión por longitud de nombre de archivo (`MAX_FILENAME_LENGTH`) dentro de `_validate_structural_safety` para prevenir desbordamientos o comportamientos indefinidos al interactuar con el sistema de archivos de Windows (MAX_PATH en NTFS), fortaleciendo la robustez ante rutas creadas de forma malintencionada o excesivamente largas.

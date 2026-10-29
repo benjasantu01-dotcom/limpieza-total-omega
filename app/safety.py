@@ -63,7 +63,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     Genera un identificador único (ID de volumen + índice de nodo) para detectar 
     si un archivo cambió bajo la mano (mitigación TOCTOU) utilizando la API de Windows.
     """
-    if os.name != 'nt' or not path_str: return (0, 0, 0, 0)
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return (0, 0, 0, 0)
     info = BY_HANDLE_FILE_INFORMATION()
     kernel32 = ctypes.windll.kernel32
     try:
@@ -114,7 +114,7 @@ class SecurityDescriptor(NamedTuple):
     @classmethod
     def from_path(cls, path_str: str) -> SecurityDescriptor:
         """Extrae atributos desde el SO, calculando flags de riesgo derivados."""
-        if not path_str:
+        if not isinstance(path_str, str) or not path_str:
             return cls(0, True, True, True, True)
         try:
             attrs = _get_file_attrs(path_str)
@@ -195,7 +195,7 @@ def _to_long_path(path_str: str) -> str:
 
 def _is_path_too_long(path_str: str) -> bool:
     """Valida el cumplimiento del límite de longitud de ruta de Windows."""
-    return len(path_str) > MAX_PATH_LENGTH
+    return isinstance(path_str, str) and len(path_str) > MAX_PATH_LENGTH
 
 @lru_cache(maxsize=4096)
 def _get_file_attrs(path_str: Optional[str]) -> int:
@@ -370,7 +370,7 @@ def _is_virtual_drive(path_str: str) -> bool:
 
 def _is_volume_shadow_copy(path_str: str) -> bool:
     """Detecta si la ruta pertenece a un Volumen de Instantánea (VSS) de Windows."""
-    if os.name != 'nt' or not path_str or not path_str.startswith("\\\\?\\"): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not path_str.startswith("\\\\?\\"): return False
     # Las instantáneas de volumen suelen tener una estructura de nombre específica en el namespace global
     return "\\GLOBALROOT\\Device\\HarddiskVolumeShadowCopy" in path_str.upper()
 
@@ -403,7 +403,7 @@ def _has_invalid_chars(path_str: Optional[str]) -> bool:
 
 def _is_path_empty_or_whitespace(path_str: str) -> bool:
     """Valida que la cadena no sea nula o solo espacios."""
-    return not path_str or path_str.strip() == ""
+    return not isinstance(path_str, str) or not path_str or path_str.strip() == ""
 
 def _is_unc_path(path_str: str) -> bool:
     """Determina si la ruta apunta a un recurso compartido UNC (Red)."""
@@ -431,11 +431,11 @@ def _is_device_file(path: Path) -> bool:
 @lru_cache(maxsize=512)
 def _has_alternate_data_stream(path_name: str) -> bool:
     """Detecta flujos alternativos NTFS (ADS) que pueden ocultar contenido malicioso."""
-    return ":" in path_name and len(path_name.split(":")) > 2
+    return isinstance(path_name, str) and ":" in path_name and len(path_name.split(":")) > 2
 
 def _is_system_directory_junction(path_str: str) -> bool:
     """Determina si una ruta es un punto de unión de sistema (reparse point)."""
-    if os.name != 'nt' or not isinstance(path_str, str): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     attrs = _get_file_attrs(path_str)
     if attrs == INVALID_FILE_ATTRIBUTES: return False
     return bool(attrs & Win32Attr.REPARSE_POINT)
@@ -443,7 +443,7 @@ def _is_system_directory_junction(path_str: str) -> bool:
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
     """Verifica si un archivo está bloqueado por otro proceso usando reintentos y compartición."""
-    if not isinstance(path_str, str) or os.name != 'nt' or not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'): return False
+    if not isinstance(path_str, str) or not path_str or os.name != 'nt' or not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'): return False
     if not os.path.exists(path_str): return False
     
     kernel32 = ctypes.windll.kernel32
@@ -470,7 +470,7 @@ def _get_security_descriptor(path: Path) -> SecurityDescriptor:
 
 def _is_file_in_use_by_system(path_str: str) -> bool:
     """Verifica si el archivo está cargado en memoria por algún proceso (GetModuleHandle)."""
-    if os.name != 'nt' or not isinstance(path_str, str): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
         h_module = ctypes.windll.kernel32.GetModuleHandleW(path_str)
         return h_module != 0
@@ -534,7 +534,7 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
 @lru_cache(maxsize=1024)
 def _is_kernel_managed(path_str: str) -> bool:
     """Identifica rutas protegidas que forman parte de la gestión exclusiva del SO."""
-    if not path_str: return False
+    if not isinstance(path_str, str) or not path_str: return False
     p_lower = path_str.lower()
     if any(p_lower.endswith(f) for f in _KERNEL_BLOCKED_FILES): return True
     if os.name == 'nt':
@@ -547,7 +547,7 @@ def _is_kernel_managed(path_str: str) -> bool:
 @lru_cache(maxsize=1024)
 def _is_sensitive_extension(ext: str) -> bool:
     """Determina si la extensión de un archivo sugiere un componente crítico del sistema."""
-    return ext.lower() in SENSITIVE_EXTENSIONS
+    return isinstance(ext, str) and ext.lower() in SENSITIVE_EXTENSIONS
 
 def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _IntegrityCheck:
     """Constructor helper para definir reglas de seguridad."""
@@ -776,7 +776,7 @@ def _check_file_integrity(state: SafetyState) -> None:
 @lru_cache(maxsize=2048)
 def _is_readonly(path_str: str) -> bool:
     """Comprueba permisos efectivos de escritura a nivel de SO."""
-    if not path_str: return True
+    if not isinstance(path_str, str) or not path_str: return True
     try:
         path = Path(path_str)
         if not path.exists(): return True
