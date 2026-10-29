@@ -34,6 +34,8 @@ GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
 SeverityStyle: TypeAlias = Tuple[ColorHex, str]  
 RGBTuple: TypeAlias = Tuple[int, int, int]
 CoordinateSequence: TypeAlias = Tuple[float, ...]
+BoundingBox: TypeAlias = Tuple[float, float, float, float]
+StopPoint: TypeAlias = Tuple[float, ColorHex]
 
 # Constantes de control para renderizado
 _MIN_SCALE: Final[float] = 0.1
@@ -197,7 +199,7 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
 })
 
 GRADIENT_STOPS: Final[Tuple[ColorHex, ...]] = (C_ACCENT, C_ACCENT2, C_ACCENT3)
-SCORE_THRESHOLDS: Final[Tuple[Tuple[float, ColorHex], ...]] = (
+SCORE_THRESHOLDS: Final[Tuple[StopPoint, ...]] = (
     (90.0, C_SUCCESS), (80.0, C_INFO), (65.0, C_WARNING), (50.0, "#ff7b39")
 )
 SEVERITY_MAP: Final[Mapping[SeverityType, str]] = MappingProxyType({
@@ -482,7 +484,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         val = max(0.0, min(100.0, val))
         d, t = max(20, min(2048, int(size))), max(2, int(thickness))
         pad = t / 2.0
-        bb = (canvas_x + pad, canvas_y + pad, canvas_x + d - pad, canvas_y + d - pad)
+        bb: BoundingBox = (canvas_x + pad, canvas_y + pad, canvas_x + d - pad, canvas_y + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=t)
         if val > 0: 
             canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=t)

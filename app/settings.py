@@ -360,15 +360,11 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     """Chequea metadatos del archivo para asegurar que no ha sido alterado maliciosamente."""
     try:
-        # Verifica que sea un archivo regular, sin ser symlink/reparse point, y que pertenezca al usuario actual
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if _Validators._is_reparse_point(str(file_path)): return False
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        
-        # Validaciones de tamaño
-        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
-        return True
+        return 2 <= st.st_size <= MAX_SETTINGS_SIZE
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
@@ -376,27 +372,23 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     try:
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
-        if len(content) > MAX_SETTINGS_SIZE: return None
-        
-        # Validación de integridad de caracteres de control
+        if len(content) > MAX_SETTINGS_SIZE or len(content) < 2: return None
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
         data = json.loads(content.decode("utf-8"))
         if not isinstance(data, dict) or len(data) > 64: return None
-        
         for k, v in data.items():
             if not isinstance(k, str) or (v is not None and not isinstance(v, (str, int, bool, float))):
                 return None
         return data
-    except (OSError, IOError, PermissionError, MemoryError, json.JSONDecodeError, ValueError, TypeError):
+    except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura la coherencia de tipos y dependencias entre claves de configuración."""
     for k, v in settings.items():
-        expected_type = type(DEFAULTS.get(k))
-        if not isinstance(v, expected_type):
-            settings[k] = DEFAULTS.get(k) # type: ignore
+        if k in DEFAULTS and not isinstance(v, type(DEFAULTS[k])):
+            settings[k] = DEFAULTS[k] # type: ignore
             
     if settings.get("asistente_activado") and not (settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         settings["asistente_activado"] = False
