@@ -544,3 +544,10 @@ FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area -
 - `2026-10-29T05:22:44` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y excepciones específicas para evitar que rutas malformadas o errores de permisos durante la iteración interrumpan el escaneo.
 - `2026-10-29T05:22:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-29T05:22:44` Corrida terminada. Total usado hoy: 128.
+- `2026-10-29T05:30:20` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-10-29T05:30:47` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `group_by_size` y `_collect_candidates` añadiendo validaciones preventivas de tipo y estado de los parámetros de entrada, evitando errores en tiempo de ejecución al procesar iterables de rutas potencialmente mal formadas.
+- `2026-10-29T05:31:20` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-29T05:31:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 24% del original (posible pérdida de código)
+- `2026-10-29T05:32:06` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_process_executable_safe` y `_query_working_set_bytes` capturando explícitamente errores de comunicación con la API (como `ctypes.WinError` o fallos en el buffer) y validando la integridad del resultado antes de procesarlo, evitando propagar fallos silenciosos desde capas de bajo nivel.
+- `2026-10-29T05:32:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-29T05:32:06` Corrida terminada. Total usado hoy: 132.

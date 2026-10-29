@@ -342,6 +342,7 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
     """Consulta contadores de memoria mediante GetProcessMemoryInfo y extrae el WorkingSetSize."""
     if h_process is None or WindowsAPI.psapi is None: return None
     try:
+        # Validación: aseguro que la estructura sea utilizable antes de la llamada
         if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 10 * BYTES_IN_MB < val < MAX_VALID_PROCESS_MEM_BYTES else None
@@ -350,14 +351,17 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
     return None
 
 def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.Array) -> bool:
-    """Verifica seguridad de ruta usando buffer pre-asignado."""
+    """Verifica seguridad de ruta usando buffer pre-asignado y manejo de errores de API."""
     if h_process is None or WindowsAPI.psapi is None: return False
     try:
+        # GetModuleFileNameExW puede fallar si el proceso está en estado de terminación
         ret = WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, path_buffer, len(path_buffer))
         if ret <= 0: return False 
         
         exe_path_str = path_buffer.value.strip()
-        return bool(exe_path_str) and not is_protected_path(Path(exe_path_str))
+        if not exe_path_str: return False
+        
+        return not is_protected_path(Path(exe_path_str))
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 

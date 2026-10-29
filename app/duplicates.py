@@ -95,13 +95,13 @@ def _safe_path_check(path: Path) -> bool:
     no esté protegida, sea segura para lectura y no sea un punto de reanálisis.
     Se normaliza a ruta real para evitar bypass mediante enlaces.
     """
+    if not isinstance(path, Path): return False
     try:
         real_path = Path(os.path.realpath(path))
     except (OSError, RuntimeError):
         return False
         
     return (
-        isinstance(path, Path) and 
         real_path.is_file() and 
         is_safe_to_modify(real_path) and 
         not is_protected_path(real_path) and 
@@ -119,7 +119,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo del archivo. 
     Usa caché local para evitar re-cálculos costosos en una misma sesión.
     """
-    if not _safe_path_check(path) or not path.exists(): 
+    if not isinstance(path, Path) or not _safe_path_check(path) or not path.exists(): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     try:
@@ -139,7 +139,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     Genera un fingerprint rápido leyendo solo el encabezado del archivo.
     Permite descartar archivos diferentes rápidamente sin leer el contenido completo.
     """
-    if not _safe_path_check(path) or not path.exists(): 
+    if not isinstance(path, Path) or not _safe_path_check(path) or not path.exists(): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     try:
@@ -160,14 +160,16 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_size
+    
     for p in paths:
         if not p: continue
-        item = Path(p)
         try:
+            item = Path(p)
             st = item.stat()
             if _is_valid_candidate(item, st.st_size):
                 groups_by_size[st.st_size].append(item)
-        except (OSError, PermissionError, FileNotFoundError): continue
+        except (OSError, PermissionError, FileNotFoundError, TypeError): 
+            continue
     return groups_by_size
 
 
@@ -181,9 +183,13 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     if not directories: return raw_map
     queue: deque[Tuple[Path, int]] = deque()
+    
     for d_raw in directories:
-        if d_raw and (d := Path(d_raw)).is_dir() and is_safe_to_modify(d):
-            queue.append((d, 0))
+        if not d_raw: continue
+        with suppress(TypeError, ValueError):
+            d = Path(d_raw)
+            if d.is_dir() and is_safe_to_modify(d):
+                queue.append((d, 0))
     
     visited: set[Tuple[int, int]] = set()
     
