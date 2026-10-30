@@ -203,17 +203,13 @@ class Scanner:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.base_root_norm: str = os.path.normcase(str(base_root.resolve()))
+        self.base_root_norm: str = os.path.normcase(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: Optional[str]) -> bool:
         """Verifica recursivamente si la ruta está contenida en el directorio base del escaneo."""
         if not entry_path: return False
-        try:
-            resolved = str(Path(entry_path).resolve())
-            return os.path.normcase(resolved).startswith(self.base_root_norm)
-        except (OSError, RuntimeError):
-            return False
+        return os.path.normcase(entry_path).startswith(self.base_root_norm)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida si el nombre del archivo contiene caracteres reservados o de control."""

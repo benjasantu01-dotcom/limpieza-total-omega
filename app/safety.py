@@ -62,18 +62,16 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     """
     Genera un identificador único basado en el número de volumen y el índice de nodo.
     """
-    if not isinstance(path_str, str) or not path_str: return (0, 0, 0, 0)
+    if not isinstance(path_str, str) or not path_str or path_str.upper().startswith(("\\\\.\\", "//./")):
+        return (0, 0, 0, 0)
     
-    if path_str.upper().startswith(("\\\\.\\", "//./")): return (0, 0, 0, 0)
-    
-    try:
-        st = os.stat(path_str)
-        if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
+    if os.name != 'nt':
+        try:
+            st = os.stat(path_str)
             return (st.st_dev, st.st_ino, 0, 0)
-    except (OSError, PermissionError):
-        pass
+        except (OSError, PermissionError):
+            return (0, 0, 0, 0)
 
-    if os.name != 'nt': return (0, 0, 0, 0)
     info = BY_HANDLE_FILE_INFORMATION()
     kernel32 = ctypes.windll.kernel32
     try:
@@ -81,12 +79,11 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         if handle == -1: return (0, 0, 0, 0)
         try:
             if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
-                is_dir = bool(info.dwFileAttributes & Win32Attr.DIRECTORY)
-                return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, int(is_dir))
+                return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, int(bool(info.dwFileAttributes & Win32Attr.DIRECTORY)))
         finally:
             kernel32.CloseHandle(handle)
     except (ctypes.ArgumentError, OSError, ValueError, AttributeError):
-        return (0, 0, 0, 0)
+        pass
     return (0, 0, 0, 0)
 
 class SafetyAction(Enum):

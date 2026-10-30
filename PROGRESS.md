@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 60 | 3 | 21 | 6 | 74 |
-| 2026-10-30 | 138 | 8 | 46 | 12 | 136 |
+| 2026-10-29 | 58 | 3 | 20 | 6 | 73 |
+| 2026-10-30 | 140 | 8 | 47 | 12 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **42**
+- seguridad defensiva: **40**
+- rendimiento: **34**
 - robustez ante casos límite: **34**
-- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
-- `diskreport.py`: **21**
 - `quarantine.py`: **20**
+- `browser.py`: **20**
+- `diskreport.py`: **20**
 - `settings.py`: **19**
 - `memory.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `assistant.py`: **15**
+- `scanner.py`: **14**
 - `organizer.py`: **13**
 - `healthscore.py`: **13**
 - `branding.py`: **13**
-- `scanner.py`: **13**
 - `startup.py`: **9**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T14:33:12` **scanner.py** (rendimiento): Optimicé el rendimiento del proceso de escaneo reemplazando el cálculo recursivo repetitivo de rutas resueltas (`resolve()`) por `os.path.normcase` dentro de `Scanner._is_inside_base_root`, evitando bloqueos de I/O y mejorando drásticamente la velocidad en árboles de directorios profundos.
+- `2026-10-30T14:32:44` **safety.py** (rendimiento): Se ha optimizado `_get_file_id` reemplazando llamadas redundantes a `os.stat` (que realiza E/S de sistema) por una estrategia que prioriza el acceso directo mediante la API nativa de Windows cuando es posible, reduciendo la latencia en el bucle principal de validación.
 - `2026-10-30T14:23:47` **quarantine.py** (rendimiento): Optimizé la función `total_quarantined_bytes` y otros accesos al manifiesto mediante la eliminación de redundancias de I/O y el uso del cache global, evitando la deserialización innecesaria de objetos `QuarantineItem` cuando la información ya reside en memoria.
 - `2026-10-30T14:23:05` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `path.exists()` y `path.is_file()` dentro del bucle crítico, reemplazándolas por el uso directo de los metadatos ya obtenidos por `os.scandir` y reduciendo las conversiones repetitivas entre `Path` y `str`.
 - `2026-10-30T14:22:39` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` para evitar la creación redundante de objetos mediante la eliminación de un `set` innecesario y se mejoró el rendimiento de `_extract_process_info` al centralizar la validación, reduciendo ciclos de CPU en el bucle principal de enumeración.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T13:52:39` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_preconditions`, extrayendo las comprobaciones de atributos de archivo en una lógica más clara que utiliza el `SecurityDescriptor` existente, eliminando la duplicación de llamadas a `GetFileAttributesW` y mejorando la documentación interna.
 - `2026-10-30T13:32:18` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de candidatos y la clarificación de los docstrings en las estrategias de hashing para hacer explícito el flujo de datos.
 - `2026-10-30T13:31:44` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las estructuras de datos y funciones de soporte para clarificar el flujo de datos y mejorar la mantenibilidad del módulo.
-- `2026-10-30T13:31:16` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos con tipos de retorno explícitos y aclarando el flujo del `DirectoryScanner` para facilitar el mantenimiento y la auditoría de seguridad del recorrido de archivos.
-- `2026-10-30T13:21:37` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` y `_process_folder_entry` ante datos malformados o faltantes, asegurando que cualquier entrada que no pueda ser procesada de forma segura sea descartada silenciosamente sin comprometer la integridad del bucle principal ni permitir excepciones no capturadas.

@@ -553,3 +553,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-30T14:23:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
 - `2026-10-30T14:23:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T14:23:50` Corrida terminada. Total usado hoy: 340.
+- `2026-10-30T14:31:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-30T14:32:44` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `_get_file_id` reemplazando llamadas redundantes a `os.stat` (que realiza E/S de sistema) por una estrategia que prioriza el acceso directo mediante la API nativa de Windows cuando es posible, reduciendo la latencia en el bucle principal de validación.
+- `2026-10-30T14:33:12` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del proceso de escaneo reemplazando el cálculo recursivo repetitivo de rutas resueltas (`resolve()`) por `os.path.normcase` dentro de `Scanner._is_inside_base_root`, evitando bloqueos de I/O y mejorando drásticamente la velocidad en árboles de directorios profundos.
+- `2026-10-30T14:34:13` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-30T14:35:23` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-30T14:35:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-30T14:35:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T14:35:35` Corrida terminada. Total usado hoy: 344.
