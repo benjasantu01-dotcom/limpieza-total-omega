@@ -33,7 +33,8 @@ PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
 # Caché global de integridad para evitar E/S redundante
-_SECURITY_CACHE: Final[dict[tuple[str, int, int], bool]] = {}
+# Se usa file_id como clave para mayor precisión que mtime
+_SECURITY_CACHE: Final[dict[tuple[int, int, int, int], bool]] = {}
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
 
 class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
@@ -68,8 +69,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     info = BY_HANDLE_FILE_INFORMATION()
     kernel32 = ctypes.windll.kernel32
     try:
-        # Abre el archivo en modo 'no-lock' (dwShareMode = 0x07) para obtener info 
-        # sin impedir que otros procesos accedan a él.
         handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
         if handle == -1: return (0, 0, 0, 0)
         try:
@@ -692,14 +691,13 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 def _evaluate_security_rules(state: SafetyState) -> None:
     """
     Evalúa las reglas de seguridad sobre un archivo dado. Utiliza un caché
-    de resultados basado en los metadatos de archivo (stat) para evitar
-    recomputaciones costosas, invalidando el caché ante cambios en el archivo.
+    de resultados basado en la identidad única del archivo (file_id) para
+    evitar recomputaciones costosas.
     """
     if not state.path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     
-    cache_key = (str(state.path), int(state.stat_result.st_mtime), getattr(state.stat_result, 'st_ino', 0))
-    if _SECURITY_CACHE.get(cache_key):
+    if _SECURITY_CACHE.get(state.file_id):
         return
 
     for rule in _VALIDATORS:
@@ -707,8 +705,8 @@ def _evaluate_security_rules(state: SafetyState) -> None:
             code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
             raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
     
-    if len(_SECURITY_CACHE) > 4096: _SECURITY_CACHE.clear()
-    _SECURITY_CACHE[cache_key] = True
+    if len(_SECURITY_CACHE) > 8192: _SECURITY_CACHE.clear()
+    _SECURITY_CACHE[state.file_id] = True
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """

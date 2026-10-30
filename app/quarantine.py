@@ -1103,15 +1103,14 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or f.is_dir() or not is_within_directory(f.resolve(), root_path):
                 continue
             
-            # Buscamos en el mapa en lugar de iterar la lista
+            # Buscamos en el mapa en lugar de iterar la lista de objetos
             item = item_map.get(f.name)
             try:
                 if item and _is_item_purgable(f, item):
                     purgado_ids.add(item.item_id)
                 elif not item and f.suffix != ".tmp":
-                    # Evitar borrar el manifiesto accidentalmente aunque no esté en el mapa
-                    if f.name != MANIFEST_NAME:
-                        _safe_unlink(f)
+                    # Borrar archivos huérfanos que no están en el manifiesto
+                    _safe_unlink(f)
             except (OSError, PermissionError, UnsafePathError):
                 continue
         
@@ -1133,6 +1132,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     """Calcula el espacio total ocupado en el sandbox (bytes) mediante el manifiesto cacheado."""
     base_dir = quarantine_dir(base)
+    # Acceso directo al cache (tupla de 3 elementos)
     if base_dir in _MANIFEST_CACHE:
         return sum(item.size_bytes for item in _MANIFEST_CACHE[base_dir][0])
     return sum(item.size_bytes for item in load_manifest(base) if item is not None)
