@@ -268,16 +268,13 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
-        for field_name in self._FIELDS_TO_VALIDATE:
-            val = getattr(self, field_name)
-            if not isinstance(val, (int, float)):
-                object.__setattr__(self, field_name, 0.0)
         self.validate()
 
-    def safe_get(self, field_name: str, default: Any = 0) -> Any:
+    def safe_get(self, field_name: str, default: Any = 0.0) -> Any:
         """Acceso restringido para el motor de scoring usando lista blanca interna."""
         if field_name in self._FIELDS_TO_VALIDATE:
-            return getattr(self, field_name, default)
+            val = getattr(self, field_name, default)
+            return val if isinstance(val, (int, float)) else default
         return default
 
     def validate(self) -> None:
@@ -290,7 +287,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        return all(math.isfinite(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
+        return all(math.isfinite(float(getattr(self, f, 0.0))) for f in self._FIELDS_TO_VALIDATE)
 
 @dataclass
 class HealthResult:
@@ -349,10 +346,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Motor central que orquestra el cálculo de métricas a través del pipeline."""
     keys = SystemMetrics._FIELDS_TO_VALIDATE[:-1]
+    
+    # Reconstrucción segura de métricas desde tuplas validadas
     try:
-        m_args = {k: float(v) for k, v in zip(keys, metric_tuple)}
+        m_args = {k: v for k, v in zip(keys, metric_tuple)}
         metrics = SystemMetrics(**m_args, quarantined_count=float(quarantined))
-    except (TypeError, ValueError, AttributeError):
+    except Exception:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inconsistente."])
     
     recommendations: List[str] = []
@@ -368,8 +367,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
             val_int = int(_clamp(round(points), 0.0, float(entry.weight)))
             metric_breakdown[entry.area] = val_int
             total_points += float(val_int)
-        except Exception as e:
-            logging.warning(f"Error procesando área {entry.area}: {e}")
+        except Exception:
             continue
             
     if metrics.quarantined_count > 0:

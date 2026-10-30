@@ -129,6 +129,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     if not isinstance(path, Path) or not _safe_path_check(path): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
+    
     try:
         hasher = hashlib.sha256()
         with open(path, "rb") as f:
@@ -148,6 +149,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     if not isinstance(path, Path) or not _safe_path_check(path): 
         return None
     if path in _partial_cache: return _partial_cache[path]
+    
     try:
         with open(path, "rb") as f:
             header = f.read(read_bytes)

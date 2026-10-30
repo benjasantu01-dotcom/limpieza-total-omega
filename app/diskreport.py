@@ -77,7 +77,7 @@ def _is_reparse_point(path: Path) -> bool:
             if attrs == -1: return False
             return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
         return path.is_symlink()
-    except Exception:
+    except (AttributeError, OSError, TypeError):
         return False
 
 
@@ -183,17 +183,14 @@ def _get_local_windows_drives() -> List[str]:
     """Descubre unidades lógicas disponibles en entorno Windows mediante letras de unidad."""
     import string
     drives: List[str] = []
-    try:
-        for letter in string.ascii_uppercase:
-            drive = f"{letter}:\\"
+    for letter in string.ascii_uppercase:
+        drive = f"{letter}:\\"
+        try:
             if os.path.exists(drive) and not is_protected_path(Path(drive)):
-                try:
-                    if os.access(drive, os.R_OK):
-                        drives.append(drive)
-                except (OSError, PermissionError):
-                    continue
-    except (OSError, PermissionError):
-        pass
+                if os.access(drive, os.R_OK):
+                    drives.append(drive)
+        except (OSError, PermissionError, TypeError):
+            continue
     return drives
 
 
@@ -358,7 +355,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             rel = path.relative_to(root)
             if not rel.parts: continue
             top_level = root / rel.parts[0]
-            if top_level.exists():
+            if top_level.is_dir():
                 metrics = stats[top_level]
                 metrics.size += size
                 metrics.file_count += 1
@@ -384,18 +381,15 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    try:
-        for path, size in walk_files(directory, skip_protected):
-            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-            stats.register_file(size, ext)
-            
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif top_heap and size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-    except Exception:
-        pass
+    for path, size in walk_files(directory, skip_protected):
+        ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+        stats.register_file(size, ext)
+        
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif top_heap and size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
