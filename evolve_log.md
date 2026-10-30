@@ -941,3 +941,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-30T06:41:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-30T06:41:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T06:41:28` Corrida terminada. Total usado hoy: 160.
+- `2026-10-30T06:49:57` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-30T06:50:48` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejora la robustez de `ensure_safe_to_modify` añadiendo una comprobación de atomicidad mediante el estado de bloqueo del archivo antes de la validación, lo cual refuerza la prevención de condiciones de carrera (Race Conditions) y mejora la integridad defensiva al manejar archivos que podrían ser bloqueados por el sistema operativo durante el proceso.
+- `2026-10-30T06:51:14` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado `Scanner._handle_directory` para integrar explícitamente `is_protected_path` antes de agregar subdirectorios al stack de exploración, asegurando que el escáner no profundice siquiera en ubicaciones restringidas, alineándose con la estrategia de seguridad defensiva.
+- `2026-10-30T06:52:00` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la seguridad en `_read_and_parse_json` y `_is_file_secure_to_read` mediante la implementación de una verificación explícita de `st_uid` contra el ID de usuario actual en todas las plataformas, asegurando que el archivo de configuración pertenezca legítimamente al usuario y no a un proceso malicioso que haya podido inyectar un archivo en el directorio de la aplicación.
+- `2026-10-30T06:52:11` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-30T06:52:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T06:52:11` Corrida terminada. Total usado hoy: 164.

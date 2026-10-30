@@ -196,7 +196,6 @@ class _SettingsManager:
             if not os.access(temp_path, os.W_OK): return False
             
             os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
-            # Reemplazo atómico: si el archivo existe debe estar libre de bloqueos exclusivos
             os.replace(temp_path, resolved_path)
             self.clear(resolved_path)
             return True
@@ -366,7 +365,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         data = json.loads(content.decode("utf-8", errors="strict"))
         if not isinstance(data, dict) or len(data) > 64: return None
-        # Validar tipo de datos básico vs DEFAULTS
         for k, v in data.items():
             if k in DEFAULTS and not isinstance(v, type(DEFAULTS[k])): return None
         if not any(k in DEFAULTS for k in data.keys()): return None

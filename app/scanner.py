@@ -231,6 +231,8 @@ class Scanner:
         """Gestiona la navegación de directorios, respetando límites de profundidad y ciclos."""
         if current_depth >= SCAN_LIMITS.max_recursion_depth:
             return
+        if _cached_is_protected(entry.path):
+            return
         norm_path = os.path.normcase(entry.path)
         if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
             visited_dirs.add(norm_path)

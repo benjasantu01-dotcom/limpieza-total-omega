@@ -1020,6 +1020,10 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             raise UnsafePathError("Operación denegada en modo privilegiado.", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION)
 
     try:
+        # Pre-chequeo de atomicidad: si el archivo está en uso por sistema no avanzamos
+        if _is_file_locked_by_other_process(str(target_path)):
+            raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
+
         attrs = _get_file_attrs(str(target_path))
         if attrs != INVALID_FILE_ATTRIBUTES:
             if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN):
