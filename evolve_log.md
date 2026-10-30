@@ -864,3 +864,10 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-10-30T05:31:00` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-10-30T05:31:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T05:31:00` Corrida terminada. Total usado hoy: 132.
+- `2026-10-30T05:38:45` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-10-30T05:39:13` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._run_safety_checks, _Validators._validate_enum_str
+- `2026-10-30T05:39:40` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-30T05:40:16` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez del método `ingest` y el proceso de deserialización de métricas en `SystemContext`, introduciendo una validación de tipo más estricta para evitar que valores `inf` o `nan` provenientes de fuentes externas corrompan el estado interno o el caché de métricas, cumpliendo con el enfoque de robustez ante valores inesperados.
+- `2026-10-30T05:40:30` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-30T05:40:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T05:40:30` Corrida terminada. Total usado hoy: 136.
