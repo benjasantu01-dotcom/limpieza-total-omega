@@ -289,6 +289,9 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             target = base_resolved.joinpath(*relative_path.split("\\"))
             if not target.exists() or not target.is_dir(): continue
             
+            # Validación defensiva adicional para cada ruta detectada
+            if not is_safe_to_modify(target) or is_protected_path(target): continue
+            
             target_str = str(target)
             if not scanner._is_path_allowed(target_str): continue
             if _IS_JUNCTION_FN(target_str) or target.is_symlink(): continue

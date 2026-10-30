@@ -206,7 +206,7 @@ class ProblemCriterion(NamedTuple):
     Attributes:
         metric_key: Clave en SystemContext.
         threshold: Valor límite para comparar.
-        operator: Operador lógico ('<' o '>').
+        operator: Opereador lógico ('<' o '>').
         message_format: Plantilla de string para el mensaje resultante.
     """
     metric_key: str
@@ -485,6 +485,7 @@ class SystemContext:
         if not isinstance(val, str) or callable(val): return ""
         try:
             clean: str = _REGEX_CONTROL_CHARS.sub(" ", val)[:_MAX_GRADE_LEN].strip()
+            # Seguridad adicional: verificar que la calificación no sea una ruta protegida
             if not clean or is_protected_path(clean) or not _ensure_safe_text(clean): 
                 return ""
             return clean
