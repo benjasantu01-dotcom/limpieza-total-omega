@@ -352,10 +352,8 @@ def validate(raw_values: Any) -> AppSettings:
     
     config = DEFAULTS.copy()
     for key_str, raw_val in raw_values.items():
-        key_enum = _KEY_TO_ENUM.get(key_str)
-        if key_enum and key_enum in _VALIDATOR_MAP:
-            validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
-            if validated_val is not None:
+        if (key_enum := _KEY_TO_ENUM.get(key_str)) and key_enum in _VALIDATOR_MAP:
+            if (validated_val := _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)) is not None:
                 config[key_enum.value] = validated_val # type: ignore
             
     return config 

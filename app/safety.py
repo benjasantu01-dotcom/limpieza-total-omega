@@ -691,9 +691,9 @@ def _evaluate_security_rules(state: SafetyState) -> None:
     if not state.path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     
-    # La clave de caché garantiza que no se valide innecesariamente un archivo inmutable
+    # Comprobación rápida de caché mediante mtime e índice de inodo (si está disponible)
     cache_key = (str(state.path), int(state.stat_result.st_mtime), getattr(state.stat_result, 'st_ino', 0))
-    if cache_key in _SECURITY_CACHE:
+    if _SECURITY_CACHE.get(cache_key):
         return
 
     for rule in _VALIDATORS:

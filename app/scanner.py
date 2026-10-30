@@ -194,13 +194,9 @@ class Scanner:
         self.base_root_norm: str = os.path.normcase(str(base_root.resolve()))
         self.now_ts: float = datetime.now().timestamp()
 
-    @lru_cache(maxsize=1024)
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica recursivamente si la ruta está contenida en el directorio base del escaneo."""
-        try:
-            return os.path.normcase(entry_path).startswith(self.base_root_norm)
-        except (OSError, RuntimeError, ValueError):
-            return False
+        return os.path.normcase(entry_path).startswith(self.base_root_norm)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida si el nombre del archivo contiene caracteres reservados o de control."""
@@ -216,16 +212,13 @@ class Scanner:
         path_str: str = entry.path
         if path_str in self.safe_cache:
             return True
-        try:
-            if self._has_invalid_name(entry.name): return False
-            if entry.is_symlink() or self._is_reparse_point(entry): return False
-            if _cached_is_protected(path_str): return False
-            if not _is_valid_path_structure(path_str): return False
-            if not self._is_inside_base_root(path_str): return False
-            self.safe_cache.add(path_str)
-            return True
-        except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
-            return False
+        if self._has_invalid_name(entry.name): return False
+        if entry.is_symlink() or self._is_reparse_point(entry): return False
+        if _cached_is_protected(path_str): return False
+        if not _is_valid_path_structure(path_str): return False
+        if not self._is_inside_base_root(path_str): return False
+        self.safe_cache.add(path_str)
+        return True
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
         """Gestiona la navegación de directorios, respetando límites de profundidad y ciclos."""
