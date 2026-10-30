@@ -6,41 +6,41 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 90 | 6 | 34 | 9 | 85 |
-| 2026-10-30 | 114 | 8 | 37 | 9 | 112 |
+| 2026-10-29 | 87 | 6 | 33 | 9 | 85 |
+| 2026-10-30 | 114 | 8 | 37 | 9 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **44**
 - seguridad defensiva: **43**
+- manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **41**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **23**
 - `quarantine.py`: **22**
-- `diskreport.py`: **20**
+- `browser.py`: **22**
 - `settings.py`: **20**
 - `memory.py`: **19**
+- `diskreport.py`: **19**
 - `safety.py`: **16**
 - `assistant.py`: **16**
 - `scanner.py`: **14**
 - `healthscore.py`: **14**
 - `organizer.py`: **12**
 - `branding.py`: **11**
-- `duplicates.py`: **9**
+- `duplicates.py`: **8**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
