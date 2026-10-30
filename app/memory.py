@@ -323,7 +323,7 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
     """Obtiene un handle de proceso con la máscara de seguridad especificada."""
     if WindowsAPI.kernel32 is None: return None
     handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-    if handle is None or handle == 0 or handle == INVALID_HANDLE_VALUE:
+    if not handle:
         return None
     return wintypes.HANDLE(handle)
 
@@ -381,11 +381,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             if ws is not None and _is_process_executable_safe(h_process, path_buf):
                 yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:
-            if WindowsAPI.kernel32:
-                try:
-                    WindowsAPI.kernel32.CloseHandle(h_process)
-                except Exception:
-                    pass
+            WindowsAPI.kernel32.CloseHandle(h_process)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna los procesos con mayor consumo. Implementa caché interna de 60 segundos."""
@@ -443,7 +439,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida en procesos del sistema."
     
     h_process = _get_process_handle(target_pid, TRIM_ACCESS_MASK)
-    if h_process is None:
+    if not h_process:
         return False, "Acceso denegado o proceso no encontrado."
 
     try:
@@ -463,11 +459,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         else:
             return False, "El sistema operativo rechazó la operación de limpieza."
             
-    except (ctypes.WinError, OSError, Exception):
-        return False, "Error inesperado al ejecutar la operación de limpieza."
     finally:
-        if WindowsAPI.kernel32:
-            try:
-                WindowsAPI.kernel32.CloseHandle(h_process)
-            except Exception:
-                pass
+        WindowsAPI.kernel32.CloseHandle(h_process)

@@ -347,6 +347,8 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
     """Eliminación controlada con sincronización de fsync para integridad de disco."""
+    if not path or not path.exists():
+        return False
     try:
         _validate_file_for_unlink(path, expected_hash, expected_inode)
         parent: Path = path.parent
