@@ -516,3 +516,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-30T13:32:31` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.is_finite
 - `2026-10-30T13:32:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T13:32:31` Corrida terminada. Total usado hoy: 320.
+- `2026-10-30T13:41:02` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-30T13:42:05` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-30T13:43:10` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-30T13:43:35` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: legibilidad y documentación).
+- `2026-10-30T13:44:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
+- `2026-10-30T13:44:10` 🛑 Propuesta bloqueada por la guardia en quarantine.py (enfoque: legibilidad y documentación): el archivo se encogió al 22% del original (posible pérdida de código)
+- `2026-10-30T13:44:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T13:44:10` Corrida terminada. Total usado hoy: 324.
