@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 68
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 67
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 65 | 3 | 24 | 7 | 77 |
-| 2026-10-30 | 130 | 8 | 44 | 11 | 135 |
+| 2026-10-29 | 63 | 3 | 23 | 7 | 76 |
+| 2026-10-30 | 133 | 8 | 44 | 12 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **43**
-- legibilidad y documentación: **42**
-- robustez ante casos límite: **38**
-- rendimiento: **25**
+- legibilidad y documentación: **43**
+- robustez ante casos límite: **36**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,18 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `diskreport.py`: **20**
 - `settings.py`: **19**
-- `memory.py`: **17**
 - `safety.py`: **17**
-- `assistant.py`: **15**
-- `healthscore.py`: **13**
+- `assistant.py`: **16**
+- `memory.py`: **16**
+- `branding.py`: **13**
 - `scanner.py`: **13**
 - `organizer.py`: **12**
-- `branding.py`: **12**
-- `startup.py`: **8**
+- `healthscore.py`: **12**
+- `startup.py`: **9**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T14:03:20` **branding.py** (rendimiento): Se ha optimizado la gestión de las constantes de la paleta eliminando la generación dinámica mediante `globals()` y reemplazándola por una estructura de datos estática y tipada, lo que mejora el rendimiento de acceso, reduce la carga sobre el *lookup* del intérprete y facilita la resolución estática de tipos para el análisis de código.
+- `2026-10-30T14:02:49` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando la serialización repetida de métricas a strings dentro de `context_as_text` por una generación eficiente de la lista de métricas, y mejoré la lógica de búsqueda de tokens en `local_answer` utilizando un conjunto de búsqueda directa para evitar múltiples iteraciones sobre la cadena del usuario.
+- `2026-10-30T14:01:50` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructuradas en las funciones de procesamiento de datos, explicitando los contratos de entrada/salida y las excepciones esperadas, y corregí la ambigüedad en el tratamiento de rutas de registro en `_is_registry_entry_safe` mediante un nombre de variable más descriptivo (`path_candidate_str`).
 - `2026-10-30T13:53:23` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` documentando los límites de seguridad en `_read_and_parse_json` y extrayendo la lógica de validación de los datos JSON crudos a una función privada dedicada `_is_structure_valid`, lo que aclara el PORQUÉ de las restricciones de seguridad sobre el tamaño y el contenido del archivo.
 - `2026-10-30T13:53:06` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del protocolo `SuspicionCheck` y se añadieron type hints consistentes en los parámetros de las funciones heurísticas para clarificar el contrato entre el motor y las reglas de detección.
 - `2026-10-30T13:52:39` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_preconditions`, extrayendo las comprobaciones de atributos de archivo en una lógica más clara que utiliza el `SecurityDescriptor` existente, eliminando la duplicación de llamadas a `GetFileAttributesW` y mejorando la documentación interna.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T13:12:27` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de las validaciones de seguridad en `safety.py` mediante la implementación de chequeos explícitos de `None` y tipos de entrada en funciones críticas, sustituyendo capturas de excepciones genéricas (`except:`) por lógica de validación preventiva que evita el comportamiento indefinido y mejora el manejo de errores.
 - `2026-10-30T13:06:00` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante una validación de parámetros más estricta y el uso de `ensure_safe_to_modify` para transformar errores silenciosos en excepciones controladas al intentar interactuar con el sistema de archivos, cumpliendo con el enfoque de manejo de errores y seguridad del proyecto.
 - `2026-10-30T13:05:45` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la captura explícita de `ctypes.WinError` y validaciones adicionales de estado, asegurando que los recursos (handles) se liberen siempre bajo cualquier falla inesperada durante la llamada a APIs de Windows.
-- `2026-10-30T12:51:34` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `largest_folders` añadiendo chequeos de integridad antes de realizar operaciones de sistema de archivos (`relative_to` y `resolve`), previniendo errores de ejecución ante rutas mal formadas o inaccesibles.
-- `2026-10-30T12:51:04` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `detect_profiles` añadiendo validaciones de tipo y de estado antes de operar, previniendo errores de ejecución si los parámetros de entrada son inesperadamente `None` o rutas mal formadas.
-- `2026-10-30T12:50:35` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `save_logo_svg` y `draw_logo` mediante la validación explícita de tipos, asegurando que los argumentos numéricos sean finitos y manejando correctamente casos donde las operaciones geométricas podrían derivar en valores inválidos (división por cero o desbordamiento).

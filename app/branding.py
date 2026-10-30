@@ -76,8 +76,15 @@ APP_SHORT_NAME: Final[str] = "Omega"
 APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
-# Paleta Maestra: Colores base de la interfaz y elementos funcionales
-_RAW_PALETTE: Final[dict[str, ColorHex]] = {
+# Paleta Maestra estática para acceso eficiente
+class PaletteDict(TypedDict):
+    background: ColorHex; surface: ColorHex; surface_alt: ColorHex; surface_hover: ColorHex
+    card: ColorHex; accent: ColorHex; accent_hover: ColorHex; accent_dim: ColorHex
+    accent2: ColorHex; accent2_hover: ColorHex; accent3: ColorHex; success: ColorHex
+    info: ColorHex; warning: ColorHex; danger: ColorHex; danger_hover: ColorHex
+    text: ColorHex; text_muted: ColorHex; text_dim: ColorHex; border: ColorHex; glow: ColorHex
+
+_RAW_PALETTE: Final[PaletteDict] = {
     "background": "#0a0e17", "surface": "#141b2d", "surface_alt": "#1e2740",
     "surface_hover": "#28324f", "card": "#182135", "accent": "#00f0c0",
     "accent_hover": "#00d0a4", "accent_dim": "#0a6b58", "accent2": "#7c5cff",
@@ -87,10 +94,22 @@ _RAW_PALETTE: Final[dict[str, ColorHex]] = {
     "text_dim": "#5c6b85", "border": "#2a3654", "glow": "#00f0c0",
 }
 
-# Inyección de constantes para compatibilidad con el resto del módulo
-globals().update({f"C_{k.upper()}": v for k, v in _RAW_PALETTE.items()})
+PALETTE: Final[Mapping[str, ColorHex]] = MappingProxyType(_RAW_PALETTE)
 
-PALETTE: Final[PaletteDict] = MappingProxyType(_RAW_PALETTE) # type: ignore
+# Constantes directas para evitar acceso a diccionario en renderizado
+C_BACKGROUND: Final[ColorHex] = _RAW_PALETTE["background"]
+C_SURFACE: Final[ColorHex] = _RAW_PALETTE["surface"]
+C_SURFACE_ALT: Final[ColorHex] = _RAW_PALETTE["surface_alt"]
+C_ACCENT: Final[ColorHex] = _RAW_PALETTE["accent"]
+C_ACCENT2: Final[ColorHex] = _RAW_PALETTE["accent2"]
+C_ACCENT3: Final[ColorHex] = _RAW_PALETTE["accent3"]
+C_SUCCESS: Final[ColorHex] = _RAW_PALETTE["success"]
+C_INFO: Final[ColorHex] = _RAW_PALETTE["info"]
+C_WARNING: Final[ColorHex] = _RAW_PALETTE["warning"]
+C_DANGER: Final[ColorHex] = _RAW_PALETTE["danger"]
+C_TEXT: Final[ColorHex] = _RAW_PALETTE["text"]
+C_TEXT_MUTED: Final[ColorHex] = _RAW_PALETTE["text_muted"]
+C_GLOW: Final[ColorHex] = _RAW_PALETTE["glow"]
 
 # Plantilla SVG parametrizada con marcadores de posición para inyección segura
 _SVG_TEMPLATE: Final[str] = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{{s}}" height="{{s}}" viewBox="0 0 128 128">
@@ -124,44 +143,14 @@ class ColorSegment(NamedTuple):
     start_index: int
     end_index: int
 
-class PaletteDict(TypedDict):
-    """Diccionario que agrupa los valores hexadecimales de todos los colores del sistema."""
-    background: ColorHex
-    surface: ColorHex
-    surface_alt: ColorHex
-    surface_hover: ColorHex
-    card: ColorHex
-    accent: ColorHex
-    accent_hover: ColorHex
-    accent_dim: ColorHex
-    accent2: ColorHex
-    accent2_hover: ColorHex
-    accent3: ColorHex
-    success: ColorHex
-    info: ColorHex
-    warning: ColorHex
-    danger: ColorHex
-    danger_hover: ColorHex
-    text: ColorHex
-    text_muted: ColorHex
-    text_dim: ColorHex
-    border: ColorHex
-    glow: ColorHex
-
 class FontSizesDict(TypedDict):
     """Mapa de categorías de texto a tamaños definidos en puntos para consistencia tipográfica."""
-    display: int
-    title: int
-    subtitle: int
-    heading: int
-    body: int
-    mono: int
-    caption: int
+    display: int; title: int; subtitle: int; heading: int; body: int; mono: int; caption: int
 
-FONT_SIZES: Final[FontSizesDict] = MappingProxyType({
+FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
     "display": 46, "title": 26, "subtitle": 13, "heading": 16,
     "body": UI_CONFIG.body_size, "mono": 11, "caption": 10,
-}) # type: ignore
+})
 
 SEVERITY_STYLES: Final[Mapping[SeverityType, SeverityStyle]] = MappingProxyType({
     SeverityType.OK: (C_SUCCESS, "Correcto"),
@@ -202,7 +191,7 @@ def color(name: Optional[str]) -> ColorHex:
 
 def font_size(name: Optional[str]) -> int: 
     """Retorna el tamaño de fuente configurado para una categoría dada."""
-    if not isinstance(name, str) or not isinstance(FONT_SIZES, dict) or name not in FONT_SIZES:
+    if not isinstance(name, str) or name not in FONT_SIZES:
         return UI_CONFIG.body_size
     return FONT_SIZES[name]
 
@@ -339,7 +328,6 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
     return _get_grouped_segments(gradient_colors(steps, stops))
 
 # Coordenadas relativas del escudo Omega (128x128 viewbox). 
-# Estructura: (x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7, x8, y8)
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
 @lru_cache(maxsize=128)
@@ -362,7 +350,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         dest_path = Path(destination).resolve()
         parent = dest_path.parent
         
-        # Validación defensiva estricta para evitar accesos indebidos antes de cualquier operación
         if not is_safe_to_modify(dest_path) or not is_safe_to_modify(parent):
             return None
         if is_protected_path(dest_path) or is_protected_path(parent):
@@ -375,7 +362,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         dest_path.write_text(logo_svg(int(size)), encoding="utf-8")
         return dest_path
     except (OSError, PermissionError, RuntimeError, TypeError, ValueError, AttributeError, Exception): 
-        # Fallo silencioso controlado para mantener la estabilidad del hilo UI
         return None
 
 def logo_ascii() -> str: 

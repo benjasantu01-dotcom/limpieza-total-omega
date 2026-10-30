@@ -354,8 +354,16 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     """
-    Filtro de seguridad para entradas del registro: impide inyecciones, 
-    rutas UNC y elementos ya procesados en la sesión actual.
+    Valida que una entrada del registro sea segura, comprobando longitud,
+    caracteres prohibidos, rutas UNC y evitando procesar duplicados.
+    
+    Args:
+        name: Nombre de la entrada del registro.
+        command: Ruta o comando asociada a la entrada.
+        seen: Conjunto de comandos ya procesados en la sesión.
+        
+    Returns:
+        True si la entrada es segura y válida, False en caso contrario.
     """
     if not isinstance(name, str) or not isinstance(command, str): return False
     if len(command) > MAX_PATH_LEN or any(ord(c) < 32 for c in command) or "\0" in command: return False
@@ -364,11 +372,11 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen: return False
     
     try:
-        path_candidate = clean_cmd.strip('"')
-        if not path_candidate or ("\\" not in path_candidate and "/" not in path_candidate): return False
-        if ".." in path_candidate.split(os.sep): return False
+        path_candidate_str = clean_cmd.strip('"')
+        if not path_candidate_str or ("\\" not in path_candidate_str and "/" not in path_candidate_str): return False
+        if ".." in path_candidate_str.split(os.sep): return False
             
-        target_path = Path(path_candidate)
+        target_path = Path(path_candidate_str)
         if any(c in str(target_path) for c in SUSPICIOUS_CHARS): return False
         if is_protected_path(target_path): return False
         return True
@@ -380,6 +388,13 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
     """
     Convierte el reporte crudo en CSV (producido por PowerShell) en una 
     lista de objetos `StartupEntry` validados.
+    
+    Args:
+        csv_text: Salida del comando PowerShell en formato CSV.
+        source: Identificador de la fuente para el objeto `StartupEntry`.
+        
+    Returns:
+        Lista de `StartupEntry` correctamente parseadas y validadas.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []

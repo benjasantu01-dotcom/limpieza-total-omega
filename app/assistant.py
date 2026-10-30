@@ -588,14 +588,12 @@ def context_as_text(context: SystemContext) -> str:
     """Serializa las métricas del contexto a un formato de texto seguro para el asistente remoto."""
     if context.is_empty: return ""
     snap: MetricsDict = context.metrics_snapshot
-    lines = []
-    for metric in _CONTEXT_SCHEMA:
-        val = snap.get(metric.key, -1.0)
-        if val >= 0.0:
-            val_str = f"{metric.key}: {val:.{metric.precision}f}{metric.suffix}"
-            if _ensure_safe_text(val_str):
-                lines.append(val_str)
-    return "\n".join(lines)
+    lines = [
+        f"{m.key}: {snap.get(m.key, -1.0):.{m.precision}f}{m.suffix}"
+        for m in _CONTEXT_SCHEMA
+        if snap.get(m.key, -1.0) >= 0.0
+    ]
+    return "\n".join(filter(_ensure_safe_text, lines))
 
 def explain_area(area: Any) -> str:
     """Retorna una breve explicación pedagógica sobre el área de la app solicitada por el usuario."""
@@ -698,10 +696,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     q_sanitized: str = _sanitize_query(question)
     if not q_sanitized: return Answer("Entrada no válida.")
     
-    for token in q_sanitized.lower().split():
+    tokens = q_sanitized.lower().split()
+    for token in tokens:
         token_clean = token.strip("¿?!.,")
-        if token_clean in _TOKENS_MAP:
-            return _TOKENS_MAP[token_clean](context, question)
+        if (handler := _TOKENS_MAP.get(token_clean)):
+            return handler(context, question)
             
     return Answer(_format_problem_message(context.active_problems, context.score if context.score is not None else "N/A"), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
