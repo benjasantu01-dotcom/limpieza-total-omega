@@ -434,3 +434,29 @@ ERROR evolve/tests/test_assistant.py - NameError: name '_TOKENS_MAP' is not defi
 - `2026-10-30T00:34:56` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el rendimiento de los cálculos geométricos frecuentes en el logo y las barras moviendo el pre-cálculo de parámetros de escala a `lru_cache` y reduciendo la complejidad de iteración en `draw_gradient_bar`, minimizando la creación de objetos innecesarios durante el refresco de la UI.
 - `2026-10-30T00:34:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T00:34:56` Corrida terminada. Total usado hoy: 16.
+- `2026-10-30T00:43:16` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-30T00:43:40` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Optimizé el rendimiento de `directory_size` y `detect_profiles` reutilizando el `ScanContext` y los handles de `kernel32` dentro de una sesión de escaneo, evitando la reinstanciación innecesaria de objetos en cada iteración del bucle de navegadores.
+- `2026-10-30T00:44:05` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-30T00:44:27` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-30T00:44:42` Tests FALLARON:
+```
+otal-omega/limpieza-total-omega/app/safety.py:179: SyntaxWarning: invalid escape sequence '\C'
+    Transforma rutas a formato extendido UNC (\\?\C:\...) para permitir el
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_clean_system_scores_high - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_a_broken_system_scores_low - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_score_never_leaves_the_zero_to_hundred_range - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommendation - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_quarantined_files_are_mentioned - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_compute_score_is_pure_and_repeatable - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recommendations - TypeError: unhashable type: 'SystemMetrics'
+9 failed, 290 passed, 4 warnings in 1.79s
+
+```
+- `2026-10-30T00:44:42` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del motor analítico reemplazando la serialización repetitiva de datos en `compute_score` por un uso más eficiente de `lru_cache`, eliminando la necesidad de iterar sobre atributos mediante reflexión en el bucle crítico del caché y reduciendo la complejidad de las conversiones de tipos.
+- `2026-10-30T00:44:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T00:44:42` Corrida terminada. Total usado hoy: 20.
