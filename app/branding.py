@@ -376,7 +376,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: 
         return None
     try:
-        dest_path = Path(destination).resolve()
+        dest_path = Path(destination)
         parent = dest_path.parent
         
         # Validación defensiva estricta para evitar accesos indebidos

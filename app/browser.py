@@ -75,6 +75,7 @@ class DirectoryScanner:
             return False
         
         try:
+            # Resolvemos enlaces y normalizamos para evitar bypass mediante .. o links
             path_norm = os.path.normcase(str(path_obj.resolve()))
             return path_norm.startswith(self.ctx.sandbox_base_norm)
         except (OSError, RuntimeError):
@@ -87,6 +88,11 @@ class DirectoryScanner:
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
         
+        # Defensivo: no seguimos symlinks/junctions para no salir del contexto
+        p = Path(root_path)
+        if p.is_symlink() or self.ctx.is_junction(root_path):
+            return ScanResult(0, True)
+
         try:
             st = os.stat(root_path)
             dir_id = (st.st_dev, st.st_ino)
@@ -96,7 +102,7 @@ class DirectoryScanner:
         if dir_id in self.ctx.visited_dirs:
             return ScanResult(0, True)
         
-        if not self._is_path_allowed(Path(root_path)):
+        if not self._is_path_allowed(p):
             return ScanResult(0, True)
 
         self.ctx.visited_dirs.add(dir_id)

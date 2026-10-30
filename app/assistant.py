@@ -751,7 +751,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload: Optional[bytes] = _build_payload(question, context_text)
     if not payload: return None
     target_url: str = _ENDPOINT_BASE.format(model=model)
-    if not (target_url.startswith(_API_HOST_ROOT) and not any(c in target_url for c in "<>\"' \t\n\r&?=")): return None
+    # Seguridad reforzada: comprobamos estructura y protegemos contra rutas del sistema
+    if not (target_url.startswith(_API_HOST_ROOT) and not any(c in target_url for c in "<>\"' \t\n\r&?=") and not is_protected_path(target_url)): return None
     try:
         req: urllib.request.Request = urllib.request.Request(f"{target_url}?key={api_key}", data=payload, headers={"Content-Type": "application/json", "Accept": "application/json"}, method="POST")
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
