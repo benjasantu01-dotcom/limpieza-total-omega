@@ -74,8 +74,11 @@ class DirectoryScanner:
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return False
         
-        path_norm = os.path.normcase(os.path.abspath(path_obj))
-        return path_norm.startswith(self.ctx.sandbox_base_norm)
+        try:
+            path_norm = os.path.normcase(str(path_obj.resolve()))
+            return path_norm.startswith(self.ctx.sandbox_base_norm)
+        except (OSError, RuntimeError):
+            return False
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
@@ -87,7 +90,7 @@ class DirectoryScanner:
         try:
             st = os.stat(root_path)
             dir_id = (st.st_dev, st.st_ino)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             return ScanResult(0, False)
 
         if dir_id in self.ctx.visited_dirs:

@@ -735,11 +735,13 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     if not isinstance(data, dict) or not _is_safe_payload_structure(data): return None
     try:
         candidates = data.get("candidates")
-        if isinstance(candidates, list) and candidates and candidates[0].get("finishReason") == "STOP":
-            text_val = candidates[0].get("content", {}).get("parts", [{}])[0].get("text")
-            if isinstance(text_val, str):
-                sanitized: str = _validate_response_length(text_val)
-                return sanitized if _ensure_safe_text(sanitized) else None
+        if isinstance(candidates, list) and candidates and isinstance(candidates[0], dict) and candidates[0].get("finishReason") == "STOP":
+            parts = candidates[0].get("content", {}).get("parts")
+            if isinstance(parts, list) and parts and isinstance(parts[0], dict):
+                text_val = parts[0].get("text")
+                if isinstance(text_val, str):
+                    sanitized: str = _validate_response_length(text_val)
+                    return sanitized if _ensure_safe_text(sanitized) else None
     except (KeyError, AttributeError, TypeError): return None
     return None
 
@@ -755,7 +757,9 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
             raw_res: bytes = res.read(_MAX_RESPONSE_BYTES + 1)
-            return _extract_text_from_gemini_json(json.loads(raw_res.decode("utf-8"))) if len(raw_res) <= _MAX_RESPONSE_BYTES else None
+            if len(raw_res) > _MAX_RESPONSE_BYTES: return None
+            decoded_res = json.loads(raw_res.decode("utf-8"))
+            return _extract_text_from_gemini_json(decoded_res)
     except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, OSError, ValueError): return None
 
 def ask(question: str, context: Optional[SystemContext] = None, base: Optional[Union[str, Path]] = None) -> Answer:

@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 34 | 3 | 14 | 8 | 67 |
+| 2026-10-28 | 33 | 3 | 13 | 8 | 65 |
 | 2026-10-29 | 130 | 7 | 47 | 17 | 149 |
-| 2026-10-30 | 14 | 3 | 5 | 2 | 4 |
+| 2026-10-30 | 17 | 3 | 6 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **35**
 - rendimiento: **31**
-- seguridad defensiva: **28**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `browser.py`: **18**
+- `browser.py`: **19**
 - `settings.py`: **17**
 - `safety.py`: **16**
 - `memory.py`: **16**
 - `scanner.py`: **15**
 - `diskreport.py`: **15**
-- `assistant.py`: **13**
-- `healthscore.py`: **11**
+- `assistant.py`: **14**
+- `branding.py`: **11**
+- `healthscore.py`: **10**
 - `duplicates.py`: **10**
-- `branding.py`: **10**
 - `startup.py`: **9**
 - `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T01:15:56` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo de directorios implementando un control estricto sobre `os.scandir` para manejar errores de acceso a nivel de entrada y protegiendo la integridad de `DirectoryScanner` ante rutas inexistentes o inaccesibles que ocurran durante la recursión.
+- `2026-10-30T01:15:46` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante casos límite en la resolución de rutas, asegurando que el directorio destino sea validado como seguro antes de intentar cualquier operación de disco.
+- `2026-10-30T01:15:14` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en la carga de datos del asistente mediante la validación estricta de tipos en `_apply_field` y la implementación de un mecanismo de recuperación ante errores de serialización JSON, garantizando que el `SystemContext` mantenga la integridad incluso ante entradas inesperadamente corruptas o mal formadas.
 - `2026-10-30T01:06:39` **settings.py** (rendimiento): Se optimizó la validación en `validate` eliminando la creación repetitiva de diccionarios copia en cada iteración y se reemplazó `DEFAULTS.copy()` por una actualización directa del `config` inicial, reduciendo la presión sobre el recolector de basura.
 - `2026-10-30T01:06:24` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner eliminando llamadas redundantes a `os.path.normcase` y `resolve()` mediante el almacenamiento en caché de la ruta base normalizada en `Scanner`, y reemplacé la conversión frecuente a objetos `Path` por comparaciones de cadenas directas donde es posible, reduciendo la carga de CPU en sistemas con gran cantidad de archivos.
 - `2026-10-30T01:05:55` **safety.py** (rendimiento): Se ha optimizado la validación de integridad mediante la introducción de una comprobación rápida de `mtime` y `st_ino` (inode/file index) al inicio de `_evaluate_security_rules`, evitando la ejecución costosa de predicados lógicos y syscalls cuando el archivo no ha sido modificado desde la última inspección exitosa en el caché.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T00:23:34` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para reducir su complejidad ciclomática, la clarificación de docstrings en métodos de validación crítica y la adición de type hints faltantes en operaciones de I/O.
 - `2026-10-30T00:14:58` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de validación y utilería, clarificando las precondiciones, argumentos y el propósito específico de cada chequeo de seguridad para cumplir con el enfoque de legibilidad.
 - `2026-10-30T00:04:23` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con el propósito de las funciones y se tiparon explícitamente los retornos de funciones auxiliares para mejorar la mantenibilidad y claridad del código bajo el enfoque de legibilidad.
-- `2026-10-30T00:03:57` **browser.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la centralización de la lógica de "escaneo seguro" dentro de la clase `DirectoryScanner`, reemplazando bloques de código duplicados por un método privado `_is_path_allowed` que unifica los criterios de seguridad.
-- `2026-10-30T00:03:09` **branding.py** (legibilidad y documentación): Documenté con precisión los parámetros geométricos del escudo y las reglas de escalado en `branding.py` para facilitar el mantenimiento futuro de la identidad visual, aplicando type hints explícitos en la estructura del escudo (`SHIELD_BASE_COORDS`).
-- `2026-10-29T14:52:25` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_registry_csv` ante datos malformados o vacíos, añadiendo validaciones estrictas y manejo explícito de errores para evitar que el bucle de procesamiento falle silenciosamente o introduzca entradas inválidas.
