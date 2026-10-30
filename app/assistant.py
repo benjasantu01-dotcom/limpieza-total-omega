@@ -507,8 +507,7 @@ class SystemContext:
                 if grade_val: updates["grade"] = grade_val
             
             return updates if updates else None
-        except Exception as e:
-            logging.error(f"Error procesando fuente de datos: {e}")
+        except Exception:
             return None
 
     def _validate_ingestion_source(self, source: Any) -> bool:
@@ -521,7 +520,8 @@ class SystemContext:
         """Aplica los cambios validados al objeto y purga cachés para forzar recálculos."""
         try:
             for k, v in updates.items():
-                if _is_safe_key(k): setattr(self, k, v)
+                if _is_safe_key(k) and isinstance(v, (int, float, str, bool)):
+                    setattr(self, k, v)
             self.analyzed = True
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)

@@ -561,3 +561,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-30T14:35:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-10-30T14:35:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T14:35:35` Corrida terminada. Total usado hoy: 344.
+- `2026-10-30T14:42:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-30T14:42:48` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `SystemContext.ingest` y sus métodos de validación asociados (especialmente en la detección de fuentes maliciosas o tipos inesperados) mediante la implementación de comprobaciones de "tipo estricto" y validación de `__dict__` antes de la mutación, previniendo inyecciones de datos corruptos desde fuentes externas.
+- `2026-10-30T14:43:21` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos, asegurando que la validación de rutas sea absoluta, que la creación de directorios sea atómica en cuanto a permisos y que el manejo de excepciones sea preciso para no bloquear el hilo de UI.
+- `2026-10-30T14:43:50` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-30T14:43:59` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-10-30T14:43:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T14:43:59` Corrida terminada. Total usado hoy: 348.
