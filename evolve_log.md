@@ -871,3 +871,10 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-10-30T05:40:30` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-10-30T05:40:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T05:40:30` Corrida terminada. Total usado hoy: 136.
+- `2026-10-30T05:48:53` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-10-30T05:49:30` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escaneo de carpetas de caché ante condiciones inesperadas como el acceso a archivos bloqueados por el propio navegador (común durante la navegación) o cambios dinámicos en el sistema de archivos durante la iteración, mediante la implementación de un manejo de excepciones más granular en `DirectoryScanner.get_size`.
+- `2026-10-30T05:50:00` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` ante archivos bloqueados por el sistema operativo o con metadatos inconsistentes, añadiendo un chequeo explícito `is_file()` previo a la lectura de `st_size` y un bloque `try-except` más granular en el acceso a atributos de `DirEntry`.
+- `2026-10-30T05:50:23` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-30T05:50:38` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante instanciaciones mal formadas agregando una validación explícita en `__post_init__` y asegurando que `_validate_numeric` sea el único punto de entrada para sanitización de datos, evitando que valores inesperados (como `None` o tipos incorrectos) causen fallos silenciosos o resultados erróneos en el cálculo del score.
+- `2026-10-30T05:50:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T05:50:38` Corrida terminada. Total usado hoy: 140.

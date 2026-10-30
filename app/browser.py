@@ -119,11 +119,14 @@ class DirectoryScanner:
                                 total_bytes += subdir.bytes_found
                         elif entry.is_file(follow_symlinks=False):
                             if not _is_system_hidden(entry.path, self.ctx.kernel32):
-                                st_file = entry.stat(follow_symlinks=False)
-                                file_id = (st_file.st_dev, st_file.st_ino)
-                                if file_id not in self.ctx.visited_files:
-                                    self.ctx.visited_files.add(file_id)
-                                    total_bytes += st_file.st_size
+                                try:
+                                    st_file = entry.stat(follow_symlinks=False)
+                                    file_id = (st_file.st_dev, st_file.st_ino)
+                                    if file_id not in self.ctx.visited_files:
+                                        self.ctx.visited_files.add(file_id)
+                                        total_bytes += st_file.st_size
+                                except (OSError, PermissionError):
+                                    continue
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
             return ScanResult(total_bytes, True)

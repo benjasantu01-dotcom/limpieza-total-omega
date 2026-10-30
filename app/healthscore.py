@@ -244,7 +244,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
     """Sanitiza métricas numéricas evitando valores fuera de rango o NaN."""
     try:
-        if not isinstance(value, (int, float, bool)):
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
             return default
         val = float(value)
         if not math.isfinite(val):

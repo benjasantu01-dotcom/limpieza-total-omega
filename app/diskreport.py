@@ -302,7 +302,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Usamos Path(entry.path) directamente; resolve() es costoso
                         p_entry = Path(entry.path)
                         
                         if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, p_entry)):
