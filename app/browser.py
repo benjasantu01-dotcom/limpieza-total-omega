@@ -75,8 +75,11 @@ class DirectoryScanner:
         restricciones de seguridad o punteros de sistema.
         """
         if _is_unc_path(path_str): return False
-        path_obj = Path(path_str)
-        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+        try:
+            path_obj = Path(path_str)
+            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+                return False
+        except (OSError, RuntimeError):
             return False
         
         path_norm = os.path.normcase(path_str)
@@ -92,10 +95,12 @@ class DirectoryScanner:
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
         
-        if self.ctx.is_junction(root_path) or Path(root_path).is_symlink():
+        if self.ctx.is_junction(root_path):
             return ScanResult(0, True)
 
         try:
+            path_obj = Path(root_path)
+            if path_obj.is_symlink(): return ScanResult(0, True)
             st = os.stat(root_path)
             dir_id = (st.st_dev, st.st_ino)
         except (OSError, PermissionError, FileNotFoundError):
@@ -265,7 +270,11 @@ def directory_size(path: Optional[OSPath]) -> int:
     p = Path(path)
     if not p.exists() or not p.is_dir(): return 0
     
-    root_norm = os.path.normcase(str(p.absolute()))
+    try:
+        root_norm = os.path.normcase(str(p.resolve()))
+    except (OSError, RuntimeError):
+        return 0
+
     ctx = ScanContext(root_norm, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
     return DirectoryScanner(ctx).get_size(str(p)).bytes_found
 
@@ -280,8 +289,12 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
-        if not isinstance(base, Path): continue
-        base_norm = os.path.normcase(str(base.absolute()))
+        if not isinstance(base, Path) or not base.exists(): continue
+        try:
+            base_norm = os.path.normcase(str(base.resolve()))
+        except (OSError, RuntimeError):
+            continue
+            
         ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
         scanner = DirectoryScanner(ctx)
         

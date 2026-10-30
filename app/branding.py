@@ -345,7 +345,7 @@ SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 9
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Escala y traslada las coordenadas base del escudo de Omega usando una transformación afín."""
-    if not math.isfinite(scale) or scale <= 0: 
+    if not math.isfinite(scale) or scale <= 0 or not math.isfinite(x) or not math.isfinite(y): 
         return ()
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
 
@@ -360,8 +360,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         return None
     try:
         dest_path = Path(destination).resolve()
-        if not dest_path.is_absolute():
-            return None
         parent = dest_path.parent
         
         # Validación defensiva estricta para evitar accesos indebidos antes de cualquier operación
@@ -424,7 +422,8 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     Renderiza el logo vectorial del escudo Omega en un widget Canvas mediante 
     primitivas gráficas escaladas y posicionadas dinámicamente.
     """
-    if not canvas: return
+    if not canvas or not math.isfinite(size) or not math.isfinite(canvas_x) or not math.isfinite(canvas_y):
+        return
     try:
         val_size = float(size)
         s = max(_MIN_SCALE, min(_MAX_SCALE, val_size / 128.0))
