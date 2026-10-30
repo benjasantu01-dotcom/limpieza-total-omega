@@ -238,6 +238,9 @@ class Scanner:
             return
         if _cached_is_protected(entry.path):
             return
+        # Verificación extra: Asegurar que la subcarpeta sigue estando bajo base_root
+        if not self._is_inside_base_root(entry.path):
+            return
         norm_path = os.path.normcase(entry.path)
         if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
             visited_dirs.add(norm_path)
@@ -306,14 +309,16 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Realiza un escaneo recursivo completo aplicando filtros de seguridad."""
     if directory is None: return []
     try:
-        base_path = Path(directory)
+        base_path = Path(directory).resolve()
         if not base_path.exists() or not base_path.is_dir() or not os.access(base_path, os.R_OK):
+            return []
+        if _cached_is_protected(str(base_path)):
             return []
         scanner: Scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return []
-    directory_stack: DirectoryStack = [(str(base_path.resolve()), 0)]
-    visited_dirs: set[str] = {os.path.normcase(str(base_path.resolve()))}
+    directory_stack: DirectoryStack = [(str(base_path), 0)]
+    visited_dirs: set[str] = {os.path.normcase(str(base_path))}
     while directory_stack:
         current_dir, depth = directory_stack.pop()
         try:

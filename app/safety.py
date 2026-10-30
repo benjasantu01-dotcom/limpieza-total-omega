@@ -67,6 +67,9 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     """
     if not isinstance(path_str, str) or not path_str: return (0, 0, 0, 0)
     
+    # Prevenir acceso a dispositivos
+    if path_str.upper().startswith(("\\\\.\\", "//./")): return (0, 0, 0, 0)
+    
     # Intento de obtener ID de archivo multiplataforma vía st_ino si está disponible
     try:
         st = os.stat(path_str)

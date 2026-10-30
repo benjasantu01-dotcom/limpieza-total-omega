@@ -191,6 +191,7 @@ class _SettingsManager:
                 f.flush()
                 os.fsync(f.fileno())
             
+            # Verificación post-escritura de integridad
             if not os.access(temp_path, os.W_OK): return False
             
             os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
@@ -343,10 +344,12 @@ def validate(raw_values: Any) -> AppSettings:
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     try:
+        # Validación de seguridad defensiva
         if not is_safe_to_modify(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         if _Validators._is_reparse_point(str(file_path)): return False
+        # Permisos restringidos (solo propietario, lectura/escritura)
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         return True
@@ -361,6 +364,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
         if not content or len(content) > MAX_SETTINGS_SIZE or len(content) < 2: return None
+        # Validar caracteres de control sospechosos
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         data = json.loads(content.decode("utf-8", errors="strict"))
         if not isinstance(data, dict) or len(data) > 64: return None
