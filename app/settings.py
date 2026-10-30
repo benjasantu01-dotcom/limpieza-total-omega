@@ -12,7 +12,6 @@ from __future__ import annotations
 import json
 import os
 import stat
-import hashlib
 import errno
 from enum import Enum
 from pathlib import Path
@@ -158,17 +157,16 @@ class _SettingsManager:
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
+        # Cache: {abs_path: (data_proxy, mtime, size)}
         self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
 
     def clear(self, path: Optional[Path] = None) -> None:
-        """Limpia la caché de datos para una ruta específica o globalmente."""
         if path:
-            self.data_cache.pop(str(path), None)
+            self.data_cache.pop(str(path.resolve()), None)
         else:
             self.data_cache.clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """Escribe la configuración de forma atómica usando un archivo temporal."""
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 2: return False
         if len(str(config_path)) > 260: return False
@@ -388,18 +386,18 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     primary_path = settings_path(custom_base)
-    path_str = str(primary_path)
+    path_resolved_str = str(primary_path.resolve())
     try:
         if primary_path.exists() and primary_path.is_file():
             st = primary_path.lstat()
-            cached = _MANAGER.data_cache.get(path_str)
+            cached = _MANAGER.data_cache.get(path_resolved_str)
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
                 return dict(cached[0])
             if _is_file_secure_to_read(primary_path, st):
                 data = _read_and_parse_json(primary_path)
                 if data is not None:
                     settings = _coerce_and_verify(validate(data))
-                    _MANAGER.data_cache[path_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
+                    _MANAGER.data_cache[path_resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
                     return settings
     except (OSError, PermissionError): 
         pass
@@ -430,7 +428,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if _MANAGER.perform_atomic_write(config_path, serialized):
             try:
                 st = config_path.stat()
-                _MANAGER.data_cache[str(config_path)] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size)
+                _MANAGER.data_cache[str(config_path.resolve())] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size)
             except OSError:
                 pass
             return config_path

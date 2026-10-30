@@ -482,9 +482,10 @@ class SystemContext:
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres no permitidos o peligrosos."""
-        if not isinstance(val, str) or callable(val): return ""
+        if not isinstance(val, (str, int, float)): return ""
         try:
-            clean: str = _REGEX_CONTROL_CHARS.sub(" ", val)[:_MAX_GRADE_LEN].strip()
+            clean: str = str(val)
+            clean = _REGEX_CONTROL_CHARS.sub(" ", clean)[:_MAX_GRADE_LEN].strip()
             if not clean or is_protected_path(clean) or not _ensure_safe_text(clean): 
                 return ""
             return clean
