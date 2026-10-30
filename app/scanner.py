@@ -202,12 +202,13 @@ class Scanner:
         self.base_root_norm: str = os.path.normcase(str(base_root.resolve()))
         self.now_ts: float = datetime.now().timestamp()
 
-    def _is_inside_base_root(self, entry_path: str) -> bool:
+    def _is_inside_base_root(self, entry_path: Optional[str]) -> bool:
         """Verifica recursivamente si la ruta está contenida en el directorio base del escaneo."""
+        if not entry_path: return False
         try:
             resolved = str(Path(entry_path).resolve())
             return os.path.normcase(resolved).startswith(self.base_root_norm)
-        except OSError:
+        except (OSError, RuntimeError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
@@ -238,7 +239,6 @@ class Scanner:
             return
         if _cached_is_protected(entry.path):
             return
-        # Verificación extra: Asegurar que la subcarpeta sigue estando bajo base_root
         if not self._is_inside_base_root(entry.path):
             return
         norm_path = os.path.normcase(entry.path)
