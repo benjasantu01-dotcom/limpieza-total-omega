@@ -369,14 +369,19 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             if k in DEFAULTS and not isinstance(v, type(DEFAULTS[k])): return None
         if not any(k in DEFAULTS for k in data.keys()): return None
         return data
-    except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
+    except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError, TypeError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
+    """Asegura integridad: claves faltantes se rellenan, incompatibilidades se corrigen."""
     coerced = DEFAULTS.copy()
     for k, v in settings.items():
-        if k in DEFAULTS and isinstance(v, type(DEFAULTS[k])):
-            coerced[k] = v # type: ignore
+        if k in DEFAULTS:
+            try:
+                if isinstance(v, type(DEFAULTS[k])):
+                    coerced[k] = v # type: ignore
+            except (TypeError, AttributeError):
+                continue
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
     return coerced
