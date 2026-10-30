@@ -355,8 +355,10 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
     """Verifica seguridad de ruta usando buffer pre-asignado y manejo de errores de API."""
     if h_process is None or WindowsAPI.psapi is None: return False
     try:
-        ret = WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, path_buffer, len(path_buffer))
-        if ret <= 0: return False 
+        # Buffer overflow check: GetModuleFileNameExW requiere tamaño en caracteres
+        char_count = len(path_buffer)
+        ret = WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, path_buffer, char_count)
+        if ret <= 0 or ret >= char_count: return False 
         
         exe_path_str = path_buffer.value.strip()
         if not exe_path_str: return False
@@ -468,7 +470,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso no está activo."
         
         path_buf = ctypes.create_unicode_buffer(1024)
-        if not _is_process_executable_safe(h_process, path_buf) or not path_buf.value.strip():
+        if not _is_process_executable_safe(h_process, path_buf):
             return False, "Proceso protegido, inaccesible o ubicado en zona restringida."
             
         if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(h_process) != 0:

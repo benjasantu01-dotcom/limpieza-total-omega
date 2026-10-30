@@ -592,6 +592,8 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     except (OSError, json.JSONDecodeError, ValueError):
         _MANIFEST_CACHE[base_dir] = ([], 0.0, 0)
         return []
+    finally:
+        pass
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:

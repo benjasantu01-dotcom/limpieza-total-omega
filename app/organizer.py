@@ -290,7 +290,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         dest_real = dest.resolve(strict=False)
         
         if is_protected_path(src_real) or is_protected_path(dest_real): return False
-        ensure_safe_to_modify(dest_real)
+        if not is_safe_to_modify(dest_real): return False
         
         if src_real == dest_real or src_real.parent == dest_real: return False
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
@@ -340,7 +340,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                             stats = entry.stat(follow_symlinks=False)
                             if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
                                 p = Path(entry.path)
-                                if not _is_file_locked(p):
+                                if is_safe_to_modify(p) and not _is_file_locked(p):
                                     found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue

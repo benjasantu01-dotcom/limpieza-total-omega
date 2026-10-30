@@ -489,3 +489,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-10-30T01:26:19` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-10-30T01:26:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T01:26:19` Corrida terminada. Total usado hoy: 36.
+- `2026-10-30T01:34:06` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-10-30T01:34:38` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_process_executable_safe` y `trim_working_set` añadiendo validaciones explícitas contra handles nulos y buffers corruptos, además de asegurar que la lectura de `GetModuleFileNameExW` no sobrepase los límites del buffer.
+- `2026-10-30T01:35:06` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_is_safe_for_disk_op` y `_process_directory` ante fallos de permisos o archivos bloqueados mediante el uso de `is_safe_to_modify` para evitar excepciones no controladas durante la validación, protegiendo al motor de escaneo de bloqueos abruptos.
+- `2026-10-30T01:35:49` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de E/S en la carga del manifiesto mediante un manejo de excepciones más granular y un bloque `finally` para asegurar el cierre de archivos, previniendo estados inconsistentes de la caché en situaciones de archivos dañados o bloqueos.
+- `2026-10-30T01:35:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-30T01:35:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T01:35:52` Corrida terminada. Total usado hoy: 40.
