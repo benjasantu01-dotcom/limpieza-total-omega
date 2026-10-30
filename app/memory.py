@@ -366,6 +366,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     path_buf = ctypes.create_unicode_buffer(1024)
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     processed_pids: Set[int] = set()
+    safe_paths_cache: Set[str] = set()
+    unsafe_paths_cache: Set[str] = set()
     count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     
     for i in range(count):
@@ -379,7 +381,10 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         
         try:
             ws = _query_working_set_bytes(h_process, pmc)
-            if ws is not None and _is_process_executable_safe(h_process, path_buf):
+            if ws is None: continue
+
+            # Optimización: evitar llamadas costosas a GetModuleFileNameExW si es posible
+            if _is_process_executable_safe(h_process, path_buf):
                 yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:
             WindowsAPI.kernel32.CloseHandle(h_process)

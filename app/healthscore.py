@@ -47,6 +47,12 @@ _METRIC_LIMITS: Final[Dict[str, Tuple[float, float]]] = {
     "quarantined_count": (0.0, 10000.0)
 }
 
+_VALIDATION_KEYS: Final[Tuple[str, ...]] = (
+    "junk_mb", "suspicious_count", "suspicious_warnings", 
+    "memory_available_percent", "disk_free_percent", 
+    "duplicate_mb", "startup_count"
+)
+
 class Scorer(Protocol):
     """
     Protocolo funcional para transformar SystemMetrics en un ratio de salud [0.0, 1.0].
@@ -268,26 +274,21 @@ class SystemMetrics:
     startup_count: int = 0
     quarantined_count: int = 0
 
-    _FIELDS_TO_VALIDATE: Final[Tuple[str, ...]] = (
-        "junk_mb", "suspicious_count", "suspicious_warnings", 
-        "memory_available_percent", "disk_free_percent", 
-        "duplicate_mb", "startup_count", "quarantined_count"
-    )
-
     def __post_init__(self) -> None:
         """Asegura integridad post-instanciación."""
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any:
         """Acceso restringido para el motor de scoring usando lista blanca interna."""
-        if field_name in self._FIELDS_TO_VALIDATE:
+        if field_name in _VALIDATION_KEYS or field_name == "quarantined_count":
             val = getattr(self, field_name, default)
             return val if isinstance(val, (int, float)) else default
         return default
 
     def validate(self) -> None:
         """Normaliza todas las métricas según los rangos definidos en _METRIC_LIMITS."""
-        for field_name in self._FIELDS_TO_VALIDATE:
+        all_keys = _VALIDATION_KEYS + ("quarantined_count",)
+        for field_name in all_keys:
             val = getattr(self, field_name, 0.0)
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
@@ -295,7 +296,8 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        return all(math.isfinite(float(getattr(self, f, 0.0))) for f in self._FIELDS_TO_VALIDATE)
+        all_keys = _VALIDATION_KEYS + ("quarantined_count",)
+        return all(math.isfinite(float(getattr(self, f, 0.0))) for f in all_keys)
 
 @dataclass
 class HealthResult:
@@ -371,11 +373,8 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
     Motor central que orquestra el cálculo de métricas. 
     Usa caché LRU para optimizar el rendimiento al recibir métricas idénticas.
     """
-    keys = SystemMetrics._FIELDS_TO_VALIDATE[:-1]
-    
-    # Reconstrucción segura de métricas desde tuplas validadas
     try:
-        m_args = {k: v for k, v in zip(keys, metric_tuple)}
+        m_args = {k: v for k, v in zip(_VALIDATION_KEYS, metric_tuple)}
         metrics = SystemMetrics(**m_args, quarantined_count=float(quarantined))
     except Exception:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inconsistente."])
@@ -415,8 +414,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     metrics.validate()
     try:
-        # Extraer mediante lista blanca para asegurar integridad absoluta en caché
-        raw_vals = tuple(float(metrics.safe_get(f)) for f in SystemMetrics._FIELDS_TO_VALIDATE[:-1])
+        raw_vals = tuple(float(metrics.safe_get(f)) for f in _VALIDATION_KEYS)
         return _compute_cached(raw_vals, int(metrics.safe_get("quarantined_count")))
     except (TypeError, ValueError, AttributeError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
@@ -431,23 +429,32 @@ def _render_bar(points: Any, max_val: Any) -> str:
     safe_points = int(max(0, min(int(points), safe_max)))
     return "#" * safe_points + "." * (safe_max - safe_points)
 
+@lru_cache(maxsize=32)
+def _render_summarize(result_id: int, breakdown: Tuple[Tuple[str, int], ...], recommendations: Tuple[str, ...]) -> List[str]:
+    """Caché interno para evitar regenerar el reporte si los datos son idénticos."""
+    score, grade = result_id // 1000, "ABCDEF"[result_id % 1000]
+    lines = [f"Salud del sistema: {score}/100  (nota {grade})", "", "Desglose por área:"]
+    for area, val in breakdown:
+        weight = WEIGHTS.get(area, 10)
+        lines.append(f"  {area.capitalize():<12} {val:>2}/{weight:<2} [{_render_bar(val, weight)}]")
+    
+    lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recommendations]))
+    return lines
+
 def summarize(result: HealthResult | None) -> List[str]:
     """Serializa el resultado de salud en una lista de líneas para informe legible."""
     if not isinstance(result, HealthResult): 
         return ["Error: Informe de salud no disponible."]
     
     try:
-        lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-        for entry in PIPELINE_DEFINITIONS:
-            val = result.breakdown.get(entry.area, 0)
-            lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
+        recs = tuple(result.recommendations) if isinstance(result.recommendations, list) else ()
+        if not recs: recs = ("No hay advertencias activas.",)
         
-        recs = result.recommendations if isinstance(result.recommendations, list) else []
-        if not recs:
-            recs = ["No hay advertencias activas."]
-            
-        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recs]))
-        return lines
+        # ID para caché único basado en estado
+        res_id = (result.score * 1000) + ["A", "B", "C", "D", "F"].index(result.grade)
+        breakdown = tuple(sorted(result.breakdown.items()))
+        
+        return _render_summarize(res_id, breakdown, recs)
     except Exception:
         return ["Error: Fallo crítico al generar resumen de informe."]
 

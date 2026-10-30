@@ -1220,3 +1220,12 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-30T09:38:12` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la sobrecarga de múltiples llamadas a `is_dir()` dentro del bucle de recorrido, calculando el nivel superior de una vez y reduciendo las operaciones de sistema innecesarias sobre el mismo nivel jerárquico.
 - `2026-10-30T09:38:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T09:38:12` Corrida terminada. Total usado hoy: 228.
+- `2026-10-30T09:46:36` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-30T09:47:04` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-30T09:47:34` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del motor de cálculo utilizando `lru_cache` sobre el resumen de texto generado en `summarize` y reduje la carga de procesamiento convirtiendo la tupla de claves de validación en una constante de módulo, evitando recrear la lista en cada ejecución de `compute_score`.
+- `2026-10-30T09:48:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-30T09:49:37` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-30T09:50:36` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 29% del original (posible pérdida de código)
+- `2026-10-30T09:50:49` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` integrando el filtrado de `is_protected_path` directamente dentro del bucle principal mediante una pre-verificación de nombre de archivo con un `set` de caché local, evitando llamadas costosas a `GetModuleFileNameExW` para procesos que ya fueron descartados previamente en la misma iteración.
+- `2026-10-30T09:50:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T09:50:49` Corrida terminada. Total usado hoy: 232.

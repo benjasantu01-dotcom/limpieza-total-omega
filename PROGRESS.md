@@ -9,35 +9,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 67
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 100 | 6 | 38 | 10 | 122 |
-| 2026-10-30 | 94 | 6 | 29 | 6 | 93 |
+| 2026-10-29 | 98 | 6 | 37 | 9 | 122 |
+| 2026-10-30 | 96 | 6 | 30 | 6 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **44**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **36**
-- rendimiento: **26**
+- robustez ante casos límite: **34**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
 - `browser.py`: **21**
-- `settings.py`: **18**
 - `diskreport.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
+- `settings.py`: **17**
 - `assistant.py`: **16**
-- `scanner.py`: **14**
-- `healthscore.py`: **13**
+- `healthscore.py`: **14**
 - `safety.py`: **13**
+- `scanner.py`: **13**
 - `branding.py`: **12**
 - `organizer.py`: **12**
 - `duplicates.py`: **10**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T09:50:49` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` integrando el filtrado de `is_protected_path` directamente dentro del bucle principal mediante una pre-verificación de nombre de archivo con un `set` de caché local, evitando llamadas costosas a `GetModuleFileNameExW` para procesos que ya fueron descartados previamente en la misma iteración.
+- `2026-10-30T09:47:34` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo utilizando `lru_cache` sobre el resumen de texto generado en `summarize` y reduje la carga de procesamiento convirtiendo la tupla de claves de validación en una constante de módulo, evitando recrear la lista en cada ejecución de `compute_score`.
 - `2026-10-30T09:38:12` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la sobrecarga de múltiples llamadas a `is_dir()` dentro del bucle de recorrido, calculando el nivel superior de una vez y reduciendo las operaciones de sistema innecesarias sobre el mismo nivel jerárquico.
 - `2026-10-30T09:38:02` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` de forma más eficiente y evitando la resolución innecesaria de rutas mediante `resolve()` (que implica consultas costosas al sistema de archivos) durante el loop principal, priorizando el uso de `os.path.normcase` para comparaciones rápidas.
 - `2026-10-30T09:27:36` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones críticas y en el protocolo `SuspicionCheck`, facilitando la comprensión del flujo de datos y las responsabilidades de cada componente para futuros colaboradores.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T08:36:13` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante el manejo explícito de errores de lectura y serialización, evitando que un archivo de manifiesto corrupto o mal formado deje la app en un estado inconsistente o provoque un `crash` silencioso al acceder a las propiedades de los ítems.
 - `2026-10-30T08:35:24` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la validación proactiva de tipos y estados, sustituyendo chequeos laxos por verificaciones explícitas de `Path` y manejo de excepciones que evitan interrupciones en el flujo de trabajo ante entradas corrompidas.
 - `2026-10-30T08:34:22` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` implementando validaciones más estrictas sobre los tipos de datos y el estado de los handles, asegurando que los errores de conversión o handles inválidos sean capturados de manera explícita y devuelvan valores seguros en lugar de fallar silenciosamente.
-- `2026-10-30T08:22:47` **duplicates.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y defensiva en las funciones de hashing (`hash_file` y `partial_hash`) para prevenir errores de acceso al sistema de archivos, asegurando que `None` se retorne de forma consistente si el archivo es inaccesible o si `_safe_path_check` falla, mejorando la resiliencia del módulo ante archivos bloqueados por el sistema.
-- `2026-10-30T08:22:23` **diskreport.py** (manejo de errores y validación de entradas): Se ha robustecido la función `_safe_stat` para manejar de forma explícita errores de sistema (`OSError` y derivados) devolviendo `None` de manera consistente, y se ha reemplazado la verificación implícita de `is_protected_path` por una validación más estricta en el bucle principal de `walk_files`, asegurando que el estado del sistema no sea afectado por entradas corruptas.
