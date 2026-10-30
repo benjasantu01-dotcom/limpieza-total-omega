@@ -374,7 +374,8 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
     Usa caché LRU para optimizar el rendimiento al recibir métricas idénticas.
     """
     try:
-        metrics = SystemMetrics(**dict(zip(_VALIDATION_KEYS, metric_tuple)), quarantined_count=float(quarantined))
+        data_map = dict(zip(_VALIDATION_KEYS, metric_tuple))
+        metrics = SystemMetrics(**data_map, quarantined_count=float(quarantined))
     except Exception:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inconsistente."])
     

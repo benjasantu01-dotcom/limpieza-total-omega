@@ -5,46 +5,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 66
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **196** (39.0% de aceptación)
+- Rechazadas por tests: 10
+- Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 55 | 3 | 19 | 6 | 73 |
-| 2026-10-30 | 142 | 8 | 47 | 12 | 139 |
+| 2026-10-29 | 53 | 2 | 18 | 6 | 73 |
+| 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **37**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **35**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
 - `diskreport.py`: **20**
-- `settings.py`: **19**
 - `quarantine.py`: **19**
-- `safety.py`: **17**
+- `settings.py`: **18**
 - `assistant.py`: **16**
 - `memory.py`: **16**
+- `safety.py`: **16**
+- `healthscore.py`: **14**
 - `branding.py`: **14**
 - `scanner.py`: **14**
-- `healthscore.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **9**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T14:53:08` **healthscore.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de ejecución en el cálculo del pipeline utilizando un bloque `try-except` más granular y protegiendo el `zip` para evitar el colapso del motor si las métricas o los pesos sufren discrepancias estructurales inesperadas.
 - `2026-10-30T14:43:21` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos, asegurando que la validación de rutas sea absoluta, que la creación de directorios sea atómica en cuanto a permisos y que el manejo de excepciones sea preciso para no bloquear el hilo de UI.
 - `2026-10-30T14:42:48` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemContext.ingest` y sus métodos de validación asociados (especialmente en la detección de fuentes maliciosas o tipos inesperados) mediante la implementación de comprobaciones de "tipo estricto" y validación de `__dict__` antes de la mutación, previniendo inyecciones de datos corruptos desde fuentes externas.
 - `2026-10-30T14:33:12` **scanner.py** (rendimiento): Optimicé el rendimiento del proceso de escaneo reemplazando el cálculo recursivo repetitivo de rutas resueltas (`resolve()`) por `os.path.normcase` dentro de `Scanner._is_inside_base_root`, evitando bloqueos de I/O y mejorando drásticamente la velocidad en árboles de directorios profundos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T14:01:50` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructuradas en las funciones de procesamiento de datos, explicitando los contratos de entrada/salida y las excepciones esperadas, y corregí la ambigüedad en el tratamiento de rutas de registro en `_is_registry_entry_safe` mediante un nombre de variable más descriptivo (`path_candidate_str`).
 - `2026-10-30T13:53:23` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` documentando los límites de seguridad en `_read_and_parse_json` y extrayendo la lógica de validación de los datos JSON crudos a una función privada dedicada `_is_structure_valid`, lo que aclara el PORQUÉ de las restricciones de seguridad sobre el tamaño y el contenido del archivo.
 - `2026-10-30T13:53:06` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del protocolo `SuspicionCheck` y se añadieron type hints consistentes en los parámetros de las funciones heurísticas para clarificar el contrato entre el motor y las reglas de detección.
-- `2026-10-30T13:52:39` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_preconditions`, extrayendo las comprobaciones de atributos de archivo en una lógica más clara que utiliza el `SecurityDescriptor` existente, eliminando la duplicación de llamadas a `GetFileAttributesW` y mejorando la documentación interna.

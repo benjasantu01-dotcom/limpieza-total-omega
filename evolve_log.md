@@ -568,3 +568,9 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-30T14:43:59` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
 - `2026-10-30T14:43:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T14:43:59` Corrida terminada. Total usado hoy: 348.
+- `2026-10-30T14:52:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-30T14:52:40` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-30T14:53:08` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de ejecución en el cálculo del pipeline utilizando un bloque `try-except` más granular y protegiendo el `zip` para evitar el colapso del motor si las métricas o los pesos sufren discrepancias estructurales inesperadas.
+- `2026-10-30T14:53:08` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-30T14:53:08` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T14:53:08` Corrida terminada. Total usado hoy: 350.
