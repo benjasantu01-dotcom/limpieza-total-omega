@@ -192,11 +192,9 @@ class StartupEntry:
         if not isinstance(path_string, str) or not self.is_valid:
             return ""
         
-        if any(ord(c) < 32 for c in path_string):
-            return ""
-        
-        if len(path_string) > MAX_PATH_LEN or path_string.startswith(r"\\") or "\0" in path_string:
-            return ""
+        # Validaciones de seguridad pre-normalización
+        if any(ord(c) < 32 for c in path_string): return ""
+        if len(path_string) > MAX_PATH_LEN or path_string.startswith(r"\\") or "\0" in path_string: return ""
             
         try:
             norm: str = os.path.normpath(path_string)
@@ -356,34 +354,20 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     Aplica filtros de seguridad sobre los datos extraídos del Registro para evitar
     inyecciones de comandos o rutas que violen las políticas de seguridad.
     """
-    if not isinstance(name, str) or not isinstance(command, str):
-        return False
-    
-    if len(command) > MAX_PATH_LEN or any(ord(c) < 32 for c in command) or "\0" in command:
-        return False
+    if not isinstance(name, str) or not isinstance(command, str): return False
+    if len(command) > MAX_PATH_LEN or any(ord(c) < 32 for c in command) or "\0" in command: return False
         
-    clean_name = name.strip()
-    clean_cmd = command.strip()
-    
-    if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen:
-        return False
+    clean_name, clean_cmd = name.strip(), command.strip()
+    if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen: return False
     
     try:
         path_candidate = clean_cmd.strip('"')
-        if not path_candidate:
-            return False
-        
-        if "\\" not in path_candidate and "/" not in path_candidate:
-            return False
-        
-        if ".." in path_candidate.split(os.sep):
-            return False
+        if not path_candidate or ("\\" not in path_candidate and "/" not in path_candidate): return False
+        if ".." in path_candidate.split(os.sep): return False
             
         target_path = Path(path_candidate)
-        if any(c in str(target_path) for c in SUSPICIOUS_CHARS):
-            return False
-        if is_protected_path(target_path):
-            return False
+        if any(c in str(target_path) for c in SUSPICIOUS_CHARS): return False
+        if is_protected_path(target_path): return False
         return True
     except (ValueError, TypeError, OSError, RuntimeError):
         return False

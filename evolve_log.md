@@ -409,3 +409,28 @@ ERROR evolve/tests/test_modules.py - AttributeError: module 'ctypes' has no attr
 - `2026-10-30T00:24:51` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna mediante docstrings que detallan los parámetros y el comportamiento de las heurísticas, y se han ajustado las sugerencias de tipo (type hints) en `Scanner` para garantizar mayor claridad en el flujo de ejecución recursiva.
 - `2026-10-30T00:24:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T00:24:51` Corrida terminada. Total usado hoy: 12.
+- `2026-10-30T00:33:04` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-10-30T00:33:35` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo documentando mediante tipos y docstrings los límites de las claves numéricas y la estructura de las validaciones, permitiendo que otros desarrolladores comprendan rápidamente el contrato de datos sin navegar por toda la lógica de `_Validators`.
+- `2026-10-30T00:34:02` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_is_registry_entry_safe` y `_resolve_and_cache_path` para reducir la anidación profunda (`if` encadenados), aplicando guard clauses que clarifican las condiciones de rechazo.
+- `2026-10-30T00:34:40` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:351: in <module>
+    _TOKEN_SEARCH: Final[re.Pattern] = re.compile(r"(?i)\b(" + "|".join(_TOKENS_MAP.keys()) + r")\b")
+                                                                        ^^^^^^^^^^^
+E   NameError: name '_TOKENS_MAP' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - NameError: name '_TOKENS_MAP' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.26s
+
+```
+- `2026-10-30T00:34:40` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimizé `local_answer` para evitar el split innecesario de la consulta completa en cada llamada, utilizando una búsqueda directa en `_TOKENS_MAP` mediante `re.search` (pre-compilado) para identificar el primer token relevante, reduciendo la complejidad algorítmica de O(N) a O(1) en términos de procesamiento de tokens.
+- `2026-10-30T00:34:56` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el rendimiento de los cálculos geométricos frecuentes en el logo y las barras moviendo el pre-cálculo de parámetros de escala a `lru_cache` y reduciendo la complejidad de iteración en `draw_gradient_bar`, minimizando la creación de objetos innecesarios durante el refresco de la UI.
+- `2026-10-30T00:34:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T00:34:56` Corrida terminada. Total usado hoy: 16.

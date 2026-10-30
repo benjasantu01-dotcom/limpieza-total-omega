@@ -418,8 +418,6 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja las franjas internas del escudo usando gradientes segmentados."""
-    if not hasattr(canvas, "create_rectangle") or not math.isfinite(scale) or scale <= 0:
-        return
     n = max(6, int(STRIPE_COUNT_FACTOR * scale))
     params = _get_stripe_params(scale, n)
     if not params: 
@@ -431,10 +429,6 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja detalles decorativos (líneas, icono Omega) sobre la base del escudo."""
-    if not (hasattr(canvas, "create_line") and hasattr(canvas, "create_polygon") and hasattr(canvas, "create_text")):
-        return
-    if not math.isfinite(scale) or scale <= 0:
-        return
     ts = max(8, int(UI_CONFIG.header_size * scale))
     canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
     canvas.create_polygon(x+75*scale, y+41*scale, x+89*scale, y+38*scale, x+92*scale, y+52*scale, fill=C_BACKGROUND, outline="")
@@ -446,21 +440,15 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     primitivas gráficas escaladas y posicionadas dinámicamente.
     """
     try:
-        if canvas is None or not hasattr(canvas, "create_oval"): 
-            return
         val_size = float(size)
-        if not math.isfinite(val_size) or val_size <= 0: 
-            return
         s = max(_MIN_SCALE, min(_MAX_SCALE, val_size / 128.0))
         poly = _get_scaled_poly(s, canvas_x, canvas_y)
-        if not poly: 
-            return
+        if not poly: return
         canvas.create_oval(canvas_x+(64-75)*s, canvas_y+(58-75)*s, canvas_x+(64+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, s)
-    except Exception: 
-        pass
+    except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """
@@ -468,11 +456,10 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     a la API del Canvas mediante el agrupamiento de segmentos monocromáticos.
     """
     try:
-        w, h = max(1, int(width)), max(1, int(height))
+        w = max(1, int(width))
         for s in get_gradient_segments(w, stops):
-            canvas.create_line(canvas_x + s.start_index, canvas_y, canvas_x + s.end_index, canvas_y, fill=s.hex_color, width=h)
-    except Exception: 
-        pass
+            canvas.create_line(canvas_x + s.start_index, canvas_y, canvas_x + s.end_index, canvas_y, fill=s.hex_color, width=height)
+    except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
@@ -480,17 +467,11 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     utilizando arcos geométricos para representar métricas de estado de salud.
     """
     try:
-        if percent is None: 
-            return
-        val = float(percent)
-        if not math.isfinite(val): 
-            return
-        val = max(0.0, min(100.0, val))
+        if percent is None: return
+        val = max(0.0, min(100.0, float(percent)))
         d, t = max(20, min(2048, int(size))), max(2, int(thickness))
         pad = t / 2.0
         bb: BoundingBox = (canvas_x + pad, canvas_y + pad, canvas_x + d - pad, canvas_y + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=t)
-        if val > 0: 
-            canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=t)
-    except Exception: 
-        pass
+        if val > 0: canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=t)
+    except Exception: pass

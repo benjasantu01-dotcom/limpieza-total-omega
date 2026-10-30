@@ -66,7 +66,7 @@ class AppSettings(TypedDict):
     asistente_modelo: str
 
 class _NumericRange(NamedTuple):
-    """Define los límites inferior y superior permitidos para valores numéricos."""
+    """Define los límites [min, max] para validar valores numéricos (KB, contadores)."""
     min: int
     max: int
 
@@ -138,6 +138,7 @@ DEFAULTS: Final[AppSettings] = {
     "asistente_modelo": "gemini-3.1-flash-lite",
 }
 
+# Límites estrictos definidos para prevenir configuraciones extremas o denegación de servicio
 _NUMERIC_LIMITS: Final[MappingProxyType[ConfigKey, _NumericRange]] = MappingProxyType({
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _NumericRange(0, 1024 * 1024),
     ConfigKey.TOP_ARCHIVOS: _NumericRange(1, 500),
