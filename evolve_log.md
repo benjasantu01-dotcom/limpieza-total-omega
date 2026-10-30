@@ -482,3 +482,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-10-30T01:15:56` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escaneo de directorios implementando un control estricto sobre `os.scandir` para manejar errores de acceso a nivel de entrada y protegiendo la integridad de `DirectoryScanner` ante rutas inexistentes o inaccesibles que ocurran durante la recursión.
 - `2026-10-30T01:15:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T01:15:56` Corrida terminada. Total usado hoy: 32.
+- `2026-10-30T01:23:55` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-10-30T01:24:27` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo frente a archivos o directorios con nombres inusualmente largos, caracteres nulos o rutas mal formadas, añadiendo una comprobación de seguridad en `walk_files` que evita excepciones inesperadas al procesar `os.scandir` y `stat`.
+- `2026-10-30T01:24:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-30T01:25:24` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el motor de puntuación añadiendo una validación explícita de `SystemMetrics` antes de la ejecución del pipeline y mejorando la resiliencia ante `None` o estados inconsistentes en la caché, garantizando que el sistema nunca colapse ante datos de entrada mal formados o erróneos.
+- `2026-10-30T01:26:19` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-30T01:26:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T01:26:19` Corrida terminada. Total usado hoy: 36.

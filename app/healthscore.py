@@ -353,10 +353,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Motor central que orquestra el cálculo de métricas a través del pipeline."""
     keys = SystemMetrics._FIELDS_TO_VALIDATE[:-1]
+    # Recuperación robusta: asegurar que los datos de entrada tengan el formato correcto antes del init
     try:
         m_args = {k: float(v) for k, v in zip(keys, metric_tuple)}
         metrics = SystemMetrics(**m_args, quarantined_count=float(quarantined))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, AttributeError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inconsistente."])
     
     recommendations: List[str] = []
@@ -393,6 +394,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
+    # Validar explícitamente antes de delegar a caché para asegurar integridad de estado
     metrics.validate()
     try:
         raw_vals = tuple(float(getattr(metrics, f)) for f in SystemMetrics._FIELDS_TO_VALIDATE[:-1])

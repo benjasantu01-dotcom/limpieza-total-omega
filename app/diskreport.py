@@ -176,7 +176,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _is_excluded_path(name: str, full_path: Path) -> bool:
     """Valida si un nombre de archivo contiene caracteres sospechosos."""
-    if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
+    if not name or '\0' in name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
     return any(c in name for c in SUSPICIOUS_CHARS) or any(char in name for char in ('<', '>', ':', '"', '|', '?', '*'))
             
@@ -324,7 +324,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file():
                             yield p_entry, st.st_size
                             
-                    except (OSError, PermissionError, FileNotFoundError, RuntimeError):
+                    except (OSError, PermissionError, FileNotFoundError, RuntimeError, AttributeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):
             continue
