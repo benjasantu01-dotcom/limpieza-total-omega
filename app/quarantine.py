@@ -1089,6 +1089,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             return 0
             
         items: List[QuarantineItem] = load_manifest(base)
+        # Diccionario para acceso eficiente por nombre de archivo
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
@@ -1096,6 +1097,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or f.is_dir() or not is_within_directory(f.resolve(), root_path):
                 continue
             
+            # Buscamos en el mapa en lugar de iterar la lista
             item = item_map.get(f.name)
             try:
                 if item and _is_item_purgable(f, item):

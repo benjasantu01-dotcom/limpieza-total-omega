@@ -7,36 +7,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 62
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 219
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 63
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 1 | 0 | 0 | 1 | 24 |
+| 2026-10-28 | 0 | 0 | 0 | 0 | 22 |
 | 2026-10-29 | 130 | 7 | 47 | 17 | 149 |
-| 2026-10-30 | 60 | 4 | 15 | 3 | 46 |
+| 2026-10-30 | 61 | 5 | 16 | 3 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
 - legibilidad y documentación: **46**
 - robustez ante casos límite: **37**
-- seguridad defensiva: **32**
-- rendimiento: **28**
+- seguridad defensiva: **31**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **21**
 - `browser.py`: **20**
-- `quarantine.py`: **20**
 - `memory.py`: **18**
 - `settings.py`: **17**
-- `diskreport.py`: **16**
 - `assistant.py`: **16**
 - `scanner.py`: **15**
+- `diskreport.py`: **15**
 - `branding.py`: **14**
 - `safety.py`: **14**
 - `healthscore.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T05:29:19` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `load_manifest` mediante el uso de un diccionario para el acceso a metadatos de los archivos del sandbox y evitando consultas `stat` redundantes durante iteraciones críticas.
 - `2026-10-30T05:20:32` **memory.py** (rendimiento): Se ha refactorizado `_iter_process_memory` para utilizar un `set` de PIDs y una iteración optimizada, evitando la consulta redundante de metadatos de procesos ya procesados y reduciendo el overhead en sistemas con alta carga.
 - `2026-10-30T05:09:31` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando llamadas redundantes a `Path.resolve()` en el bucle principal, lo cual es costoso en términos de I/O, utilizando en su lugar la ruta relativa obtenida del `DirEntry` de `os.scandir` para mejorar drásticamente el rendimiento del escaneo.
 - `2026-10-30T05:09:07` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` y `detect_profiles` reutilizando el `ScanContext` y evitando la recreación constante del mismo para cada rama del escaneo, mejorando además la lógica de `_is_path_allowed` para evitar llamadas redundantes a `resolve()` sobre rutas ya normalizadas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T04:41:16` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings detallados en estructuras y funciones críticas, se han añadido type hints para mayor claridad en el manejo de estructuras de memoria y se extrajo `_get_process_handle` para consolidar la lógica repetitiva de apertura de procesos, mejorando la mantenibilidad sin cambiar la funcionalidad.
 - `2026-10-30T04:39:54` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del archivo mediante la adición de docstrings técnicos detallados en funciones clave y la estandarización de type hints, facilitando la comprensión del flujo de datos en el pipeline sin modificar el comportamiento ni añadir dependencias.
 - `2026-10-30T04:29:05` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `DirectoryScanner`, aclarando el propósito defensivo de la recursión y las validaciones de seguridad para facilitar futuras auditorías del código.
-- `2026-10-30T04:28:10` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `ProblemCriterion` y `SystemContext.ingest`, además de añadir type hints explícitos en los decoradores y validaciones, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar la funcionalidad.

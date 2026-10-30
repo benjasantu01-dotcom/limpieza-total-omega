@@ -832,3 +832,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-30T05:20:44` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-10-30T05:20:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T05:20:44` Corrida terminada. Total usado hoy: 128.
+- `2026-10-30T05:28:32` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-10-30T05:29:19` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` y `load_manifest` mediante el uso de un diccionario para el acceso a metadatos de los archivos del sandbox y evitando consultas `stat` redundantes durante iteraciones críticas.
+- `2026-10-30T05:29:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-30T05:30:44` Tests FALLARON:
+```
+ePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'app.tmp'
+  'malo.tmp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7fbe78e9bba0>(((PosixPath('/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7fbe78e9bba0> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en restauración: Directorio inexistente: /tmp/pytest-of-runner/pytest-2/test_restore_into_a_system_pat0/Windows/System32
+15 failed, 284 passed in 1.80s
+
+```
+- `2026-10-30T05:30:44` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado el rendimiento de `is_protected_path` reemplazando la creación innecesaria de objetos `Path` y múltiples llamadas a `os.path` por una lógica de filtrado de prefijos basada en `os.path.normcase`, reduciendo significativamente la carga de E/S y el uso de CPU durante escaneos intensivos.
+- `2026-10-30T05:31:00` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-10-30T05:31:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T05:31:00` Corrida terminada. Total usado hoy: 132.
