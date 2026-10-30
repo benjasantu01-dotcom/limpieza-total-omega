@@ -99,7 +99,8 @@ class RecommendationRule(NamedTuple):
 
 class PipelineEntry(NamedTuple):
     """
-    Estructura de procesamiento para cada métrica en el sistema.
+    Estructura de procesamiento para cada métrica en el sistema, vinculando 
+    la métrica con su función de cálculo y sus reglas asociadas.
     """
     area: MetricKey
     weight: int
@@ -130,7 +131,8 @@ _LIMIT_DISK_PERCENT: Final[float] = 25.0
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """
-    Recorta un valor numérico para asegurar que esté dentro de un rango inclusivo.
+    Asegura que un valor numérico se encuentre dentro del rango [min_val, max_val].
+    Maneja entradas no finitas devolviendo el valor mínimo por seguridad.
     """
     if not isinstance(value, (int, float)) or not math.isfinite(value): return min_val
     return float(max(min_val, min(max_val, value)))
@@ -138,6 +140,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """
     Fábrica que genera funciones de normalización lineal.
+    Si inverse es True, un valor mayor al límite resulta en una salud menor (penalización).
     """
     def scorer(val: float) -> NormalizedRatio:
         if not math.isfinite(val) or limit <= 0.0: return 0.0
@@ -160,7 +163,10 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 }
 
 def _verify_pipeline_integrity(weights: Dict[str, int], pipeline: Tuple[PipelineEntry, ...]) -> None:
-    """Validación de pre-arranque para asegurar coherencia entre pesos definidos y pipeline."""
+    """
+    Validación interna para asegurar que la configuración de pesos y el pipeline
+    estén sincronizados y sumen 100%. Se ejecuta al cargar el módulo.
+    """
     if not isinstance(weights, dict) or not isinstance(pipeline, tuple):
         return
     try:
@@ -251,6 +257,7 @@ def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) ->
 class SystemMetrics:
     """
     Contenedor de datos inmutable utilizado como entrada para el análisis.
+    Realiza una validación automática post-inicialización mediante `validate()`.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
@@ -344,7 +351,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
-    """Motor central que orquestra el cálculo de métricas a través del pipeline."""
+    """
+    Motor central que orquestra el cálculo de métricas. 
+    Usa caché LRU para optimizar el rendimiento al recibir métricas idénticas.
+    """
     keys = SystemMetrics._FIELDS_TO_VALIDATE[:-1]
     
     # Reconstrucción segura de métricas desde tuplas validadas
