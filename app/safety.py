@@ -691,8 +691,9 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 
 def _evaluate_security_rules(state: SafetyState) -> None:
     """
-    Ejecuta el conjunto de reglas de integridad sobre la ruta y lanza UnsafePathError.
-    Utiliza un caché de integridad para optimizar el rendimiento.
+    Evalúa las reglas de seguridad sobre un archivo dado. Utiliza un caché
+    de resultados basado en los metadatos de archivo (stat) para evitar
+    recomputaciones costosas, invalidando el caché ante cambios en el archivo.
     """
     if not state.path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
@@ -760,7 +761,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
 def _check_file_integrity(state: SafetyState) -> None:
     """
     Verifica que el archivo no haya cambiado entre validaciones (mitigación TOCTOU).
-    Compara el file_id actual contra el registrado originalmente en 'state'.
+    Compara el file_id actual contra el registrado originalmente en 'state'. 
+    Si la identidad del archivo cambia, aborta la operación para evitar race conditions.
     """
     if not state.path.exists():
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
@@ -1082,7 +1084,11 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
                 raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def _validate_path_components(path: Path) -> None:
-    """Verifica recursión circular y spoofing en componentes de ruta."""
+    """
+    Verifica recursión circular y spoofing en componentes de ruta. Analiza cada
+    segmento para detectar enlaces simbólicos o junctions que puedan inducir
+    caminos circulares o escapar del sandbox de directorios permitido.
+    """
     try:
         resolved_path = path.resolve()
     except (OSError, RuntimeError, PermissionError):
