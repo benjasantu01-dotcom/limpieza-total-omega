@@ -171,6 +171,7 @@ class _SettingsManager:
         
         temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
         try:
+            if not is_safe_to_modify(str(config_path)): return False
             parent_dir = config_path.parent
             if not parent_dir.exists() or not os.access(parent_dir, os.W_OK): return False
             
@@ -336,6 +337,7 @@ def validate(raw_values: Any) -> AppSettings:
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     try:
+        if not is_safe_to_modify(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         if _Validators._is_reparse_point(str(file_path)): return False

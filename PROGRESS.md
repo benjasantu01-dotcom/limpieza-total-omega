@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 29 | 3 | 12 | 8 | 46 |
+| 2026-10-28 | 29 | 3 | 12 | 8 | 42 |
 | 2026-10-29 | 130 | 7 | 47 | 17 | 149 |
-| 2026-10-30 | 33 | 3 | 10 | 3 | 7 |
+| 2026-10-30 | 35 | 3 | 10 | 3 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **42**
+- seguridad defensiva: **32**
 - rendimiento: **31**
-- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
 - `browser.py`: **20**
+- `settings.py`: **18**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
-- `settings.py`: **17**
 - `safety.py`: **16**
+- `scanner.py`: **16**
 - `assistant.py`: **15**
-- `scanner.py`: **15**
 - `healthscore.py`: **12**
 - `branding.py`: **12**
 - `duplicates.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T02:26:04` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` al añadir una validación estricta de la ruta del archivo de configuración antes de cualquier operación de lectura o escritura, garantizando mediante `is_safe_to_modify` que nunca se interactúe con rutas fuera de los límites permitidos, incluso si el archivo es manipulado externamente.
+- `2026-10-30T02:25:30` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scanner.py` al implementar una validación estricta de rutas relativas mediante el uso de `pathlib.Path.resolve()` tanto en la inicialización como durante el procesamiento, evitando ataques de tipo "Path Traversal" (salida del directorio base) si una entrada fuera un enlace simbólico o un punto de reanálisis que lograra evadir los filtros previos.
 - `2026-10-30T02:16:07` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `quarantine_file` añadiendo una validación de `st_nlink` después del aislamiento, asegurando que no se crearon enlaces físicos inesperados durante la operación, y unificando la verificación del sistema de archivos (`st_dev`) para prevenir movimientos entre volúmenes, cumpliendo con el enfoque de seguridad defensiva y robustez frente a condiciones de carrera.
 - `2026-10-30T02:15:21` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita para asegurar que el archivo de origen no se encuentre dentro de la estructura de la carpeta de destino (`dest_base`), previniendo así un posible error lógico donde la herramienta intente mover archivos que ya están en el área de cuarentena o en subdirectorios de la misma.
 - `2026-10-30T02:05:35` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción del acceso a los atributos internos de `SystemMetrics` utilizando el patrón de "acceso por nombre" para prevenir inyecciones de datos no validados en el motor de scoring, asegurando que `_compute_cached` solo procese valores sanitizados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T01:45:11` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "disponibilidad de metadatos" en `_get_path_stat_robust` para detectar si el sistema de archivos devuelve valores de tiempo de acceso/modificación inválidos o nulos (común en ciertos estados de corrupción de sistema de archivos o bloqueos de controlador), evitando así que la app procese objetos con metadatos corruptos.
 - `2026-10-30T01:35:49` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en la carga del manifiesto mediante un manejo de excepciones más granular y un bloque `finally` para asegurar el cierre de archivos, previniendo estados inconsistentes de la caché en situaciones de archivos dañados o bloqueos.
 - `2026-10-30T01:35:06` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_for_disk_op` y `_process_directory` ante fallos de permisos o archivos bloqueados mediante el uso de `is_safe_to_modify` para evitar excepciones no controladas durante la validación, protegiendo al motor de escaneo de bloqueos abruptos.
-- `2026-10-30T01:34:38` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` y `trim_working_set` añadiendo validaciones explícitas contra handles nulos y buffers corruptos, además de asegurar que la lectura de `GetModuleFileNameExW` no sobrepase los límites del buffer.
-- `2026-10-30T01:25:24` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de puntuación añadiendo una validación explícita de `SystemMetrics` antes de la ejecución del pipeline y mejorando la resiliencia ante `None` o estados inconsistentes en la caché, garantizando que el sistema nunca colapse ante datos de entrada mal formados o erróneos.

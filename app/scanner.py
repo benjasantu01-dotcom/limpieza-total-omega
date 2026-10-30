@@ -201,7 +201,11 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica recursivamente si la ruta está contenida en el directorio base del escaneo."""
-        return os.path.normcase(entry_path).startswith(self.base_root_norm)
+        try:
+            resolved = str(Path(entry_path).resolve())
+            return os.path.normcase(resolved).startswith(self.base_root_norm)
+        except OSError:
+            return False
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida si el nombre del archivo contiene caracteres reservados o de control."""
