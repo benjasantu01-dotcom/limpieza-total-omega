@@ -538,3 +538,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-30T14:03:28` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `detect_profiles` eliminando la creación redundante de objetos `ScanContext` y `DirectoryScanner` dentro del bucle de navegadores, reutilizando una única instancia del escáner por cada carpeta base.
 - `2026-10-30T14:03:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T14:03:28` Corrida terminada. Total usado hoy: 332.
+- `2026-10-30T14:11:32` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-30T14:12:07` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` moviendo la resolución de `is_protected_path` fuera del ciclo de iteración principal y aprovechando el cache de resultados de `is_protected_path` (que ya está implementado internamente en el módulo `safety`) al reducir las llamadas repetitivas a `path.resolve()` que disparaban E/S innecesaria.
+- `2026-10-30T14:12:30` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-30T14:13:26` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `_compute_cached` eliminando la creación repetida de diccionarios dentro del bucle principal y moviendo la resolución de constantes fuera de las iteraciones, aprovechando que `PIPELINE_DEFINITIONS` es inmutable.
+- `2026-10-30T14:14:26` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-30T14:15:16` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, ensure_safety_in_task, wrapper
+- `2026-10-30T14:15:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T14:15:16` Corrida terminada. Total usado hoy: 336.

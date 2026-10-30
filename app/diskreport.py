@@ -312,14 +312,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         p_entry = Path(entry.path)
                         if _is_excluded_path(entry.name, p_entry):
                             continue
-                            
-                        # Resolución de seguridad contra symlink escapes
-                        if skip_protected:
-                            try:
-                                if is_protected_path(p_entry.resolve(strict=False)):
-                                    continue
-                            except (OSError, RuntimeError):
-                                continue
                         
                         if entry.is_symlink() or _is_reparse_point(p_entry):
                             continue
@@ -327,6 +319,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         st = entry.stat(follow_symlinks=False)
                             
                         if entry.is_dir():
+                            # El chequeo de seguridad principal ya se hace en _validate_root
+                            # y se mantiene consistente aquí sin llamar a resolve() innecesariamente
+                            if skip_protected and is_protected_path(p_entry):
+                                continue
+                            
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
@@ -371,12 +368,8 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             top_level = root / rel.parts[0]
             
             # Verificación de seguridad adicional al procesar subcarpetas
-            if skip_protected:
-                try:
-                    if is_protected_path(top_level.resolve(strict=False)):
-                        continue
-                except (OSError, RuntimeError):
-                    continue
+            if skip_protected and is_protected_path(top_level):
+                continue
 
             metrics = stats[top_level]
             metrics.size += size
