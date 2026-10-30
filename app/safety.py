@@ -937,6 +937,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     _STRUCTURAL_CACHE[path_string] = True
 
 def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> None:
+    """Verifica precondiciones de seguridad del archivo antes de cualquier modificación."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
@@ -948,13 +949,14 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if _is_file_locked_by_other_process(str(target_path)):
             raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
 
-        attrs = _get_file_attrs(str(target_path))
-        if attrs != INVALID_FILE_ATTRIBUTES:
-            if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN):
-                raise UnsafePathError("Protección defensiva: Archivo de sistema oculto.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-            if attrs & Win32Attr.OFFLINE:
+        # Usamos el descriptor de seguridad para evaluar atributos de riesgo sin llamadas redundantes
+        sd = _get_security_descriptor(str(target_path))
+        if sd.attrs != INVALID_FILE_ATTRIBUTES:
+            if sd.is_protected_system:
+                raise UnsafePathError("Protección defensiva: Archivo de sistema oculto/protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+            if sd.has_flag(Win32Attr.OFFLINE):
                 raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE)
-            if attrs & Win32Attr.REPARSE_POINT:
+            if sd.is_reparse:
                 raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
         if _is_file_in_use_by_system(str(target_path)):

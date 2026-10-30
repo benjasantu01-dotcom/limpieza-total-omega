@@ -49,16 +49,20 @@ class Suspicion:
 
 class SuspicionCheck(Protocol):
     """
-    Protocolo de interfaz para las heurísticas.
+    Protocolo de interfaz para definir una nueva heurística de seguridad.
+    
+    Toda función que implemente este protocolo debe ser pura en la medida de lo 
+    posible, basándose únicamente en los datos proporcionados por los parámetros 
+    para evaluar si un archivo constituye un riesgo.
     
     Args:
-        path: Ruta absoluta al archivo a analizar.
-        entry: Objeto DirEntry si el archivo fue descubierto durante un recorrido.
-        now_ts: Timestamp actual para comparaciones temporales.
-        stats: Metadatos del archivo obtenidos previamente.
+        path: Ruta completa (objeto Path) del archivo siendo analizado.
+        entry: Objeto `os.DirEntry` opcional, usado para optimizar el acceso a metadatos.
+        now_ts: Timestamp (float) del inicio del escaneo para cálculos de antigüedad.
+        stats: Resultados de `os.stat()` obtenidos previamente mediante `_safe_stat`.
 
     Returns:
-        Objeto Suspicion si se identifica un riesgo, None si el archivo es seguro.
+        Objeto `Suspicion` si se detecta una anomalía, None si el archivo es considerado seguro.
     """
     def __call__(self, path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]: ...
 

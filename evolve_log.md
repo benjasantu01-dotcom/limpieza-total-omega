@@ -524,3 +524,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-30T13:44:10` 🛑 Propuesta bloqueada por la guardia en quarantine.py (enfoque: legibilidad y documentación): el archivo se encogió al 22% del original (posible pérdida de código)
 - `2026-10-30T13:44:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T13:44:10` Corrida terminada. Total usado hoy: 324.
+- `2026-10-30T13:51:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-30T13:51:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-30T13:52:39` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_preconditions`, extrayendo las comprobaciones de atributos de archivo en una lógica más clara que utiliza el `SecurityDescriptor` existente, eliminando la duplicación de llamadas a `GetFileAttributesW` y mejorando la documentación interna.
+- `2026-10-30T13:53:06` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del protocolo `SuspicionCheck` y se añadieron type hints consistentes en los parámetros de las funciones heurísticas para clarificar el contrato entre el motor y las reglas de detección.
+- `2026-10-30T13:53:23` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `settings.py` documentando los límites de seguridad en `_read_and_parse_json` y extrayendo la lógica de validación de los datos JSON crudos a una función privada dedicada `_is_structure_valid`, lo que aclara el PORQUÉ de las restricciones de seguridad sobre el tamaño y el contenido del archivo.
+- `2026-10-30T13:53:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T13:53:23` Corrida terminada. Total usado hoy: 328.
