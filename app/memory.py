@@ -245,7 +245,7 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Procesa una línea de CSV externo."""
+    """Procesa una línea de CSV externo con validación estricta de formato."""
     if not isinstance(line, str) or not line.strip(): 
         return None
         
@@ -257,16 +257,17 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         name = parts[0].strip()
         if not name or any(ord(c) < 32 for c in name):
             return None
-        pid = int(parts[1])
-        if _is_system_process(pid) or pid <= 0:
+        
+        pid_val = int(parts[1])
+        if _is_system_process(pid_val) or pid_val <= 0:
             return None
             
         ws = _safe_int_conversion(parts[2])
         if not (0 < ws < MAX_VALID_PROCESS_MEM_BYTES):
             return None
             
-        return ProcessMemory(name, pid, ws)
-    except (ValueError, TypeError, IndexError):
+        return ProcessMemory(name, pid_val, ws)
+    except (ValueError, TypeError):
         return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -439,7 +440,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida en procesos del sistema."
     
     h_process = _get_process_handle(target_pid, TRIM_ACCESS_MASK)
-    if not h_process:
+    if not h_process or h_process.value == INVALID_HANDLE_VALUE:
         return False, "Acceso denegado o proceso no encontrado."
 
     try:

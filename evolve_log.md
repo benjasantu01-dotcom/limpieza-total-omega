@@ -1161,3 +1161,12 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-30T08:22:56` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.__post_init__, SystemMetrics.is_finite, SystemMetrics.safe_get, SystemMetrics.validate
 - `2026-10-30T08:22:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T08:22:56` Corrida terminada. Total usado hoy: 200.
+- `2026-10-30T08:31:38` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-30T08:32:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-30T08:33:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-30T08:34:22` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_extract_process_info` y `trim_working_set` implementando validaciones más estrictas sobre los tipos de datos y el estado de los handles, asegurando que los errores de conversión o handles inválidos sean capturados de manera explícita y devuelvan valores seguros en lugar de fallar silenciosamente.
+- `2026-10-30T08:35:24` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la validación proactiva de tipos y estados, sustituyendo chequeos laxos por verificaciones explícitas de `Path` y manejo de excepciones que evitan interrupciones en el flujo de trabajo ante entradas corrompidas.
+- `2026-10-30T08:35:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-30T08:36:13` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` mediante el manejo explícito de errores de lectura y serialización, evitando que un archivo de manifiesto corrupto o mal formado deje la app en un estado inconsistente o provoque un `crash` silencioso al acceder a las propiedades de los ítems.
+- `2026-10-30T08:36:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T08:36:13` Corrida terminada. Total usado hoy: 204.

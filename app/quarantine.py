@@ -595,23 +595,23 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             data: Any = json.load(f)
         
         if not isinstance(data, list):
-            raise ValueError("Formato de manifiesto inválido.")
+            raise ValueError("Formato de manifiesto inválido: no es una lista.")
             
         items: List[QuarantineItem] = []
         for d in data:
             if isinstance(d, dict):
-                item = QuarantineItem.from_dict(d)
-                if item:
-                    items.append(item)
+                try:
+                    item = QuarantineItem.from_dict(d)
+                    if item:
+                        items.append(item)
+                except (ValueError, TypeError, KeyError):
+                    continue
                     
         _MANIFEST_CACHE[base_dir] = (items, current_mtime, current_size)
         return items
     except (OSError, json.JSONDecodeError, ValueError):
         _MANIFEST_CACHE[base_dir] = ([], 0.0, 0)
         return []
-    finally:
-        pass
-
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """Persiste manifiesto de forma atómica mediante escritura a temporal y reemplazo."""

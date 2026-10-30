@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 65
-- Sin cambios (nada sustancial que mejorar): 17
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 114 | 7 | 43 | 12 | 128 |
-| 2026-10-30 | 81 | 6 | 22 | 5 | 86 |
+| 2026-10-29 | 112 | 7 | 42 | 11 | 128 |
+| 2026-10-30 | 84 | 6 | 23 | 5 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **41**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **37**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **22**
 - `browser.py`: **21**
-- `quarantine.py`: **21**
-- `memory.py`: **18**
+- `memory.py`: **19**
 - `settings.py`: **18**
 - `assistant.py`: **17**
 - `diskreport.py`: **17**
-- `scanner.py`: **15**
+- `scanner.py`: **14**
 - `safety.py`: **13**
 - `branding.py`: **13**
+- `organizer.py`: **12**
 - `healthscore.py`: **12**
-- `organizer.py`: **11**
-- `startup.py`: **10**
 - `duplicates.py`: **9**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T08:36:13` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante el manejo explícito de errores de lectura y serialización, evitando que un archivo de manifiesto corrupto o mal formado deje la app en un estado inconsistente o provoque un `crash` silencioso al acceder a las propiedades de los ítems.
+- `2026-10-30T08:35:24` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la validación proactiva de tipos y estados, sustituyendo chequeos laxos por verificaciones explícitas de `Path` y manejo de excepciones que evitan interrupciones en el flujo de trabajo ante entradas corrompidas.
+- `2026-10-30T08:34:22` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` implementando validaciones más estrictas sobre los tipos de datos y el estado de los handles, asegurando que los errores de conversión o handles inválidos sean capturados de manera explícita y devuelvan valores seguros en lugar de fallar silenciosamente.
 - `2026-10-30T08:22:47` **duplicates.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y defensiva en las funciones de hashing (`hash_file` y `partial_hash`) para prevenir errores de acceso al sistema de archivos, asegurando que `None` se retorne de forma consistente si el archivo es inaccesible o si `_safe_path_check` falla, mejorando la resiliencia del módulo ante archivos bloqueados por el sistema.
 - `2026-10-30T08:22:23` **diskreport.py** (manejo de errores y validación de entradas): Se ha robustecido la función `_safe_stat` para manejar de forma explícita errores de sistema (`OSError` y derivados) devolviendo `None` de manera consistente, y se ha reemplazado la verificación implícita de `is_protected_path` por una validación más estricta en el bucle principal de `walk_files`, asegurando que el estado del sistema no sea afectado por entradas corruptas.
 - `2026-10-30T08:21:57` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` añadiendo validaciones de tipo y estructura sobre los parámetros de entrada, asegurando que cualquier entrada maliciosa o malformada (como tipos incorrectos en la lista de bases o el mapa de navegadores) no provoque excepciones inesperadas durante el escaneo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T06:31:03` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo añadiendo una validación estricta de "input" en el método `__post_init__` y en `validate`, asegurando que `SystemMetrics` no pueda ser instanciado con tipos de datos o valores que escapen de las restricciones definidas, mitigando posibles ataques por inyección de métricas mal formadas.
 - `2026-10-30T06:30:01` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al reemplazar `.resolve()` (que puede seguir enlaces simbólicos fuera de la ruta deseada o fallar en accesos restringidos) por una validación de ruta absoluta normalizada, y añadí una verificación explícita de `is_protected_path` al inicio para evitar cualquier escaneo accidental de directorios bloqueados antes de cualquier procesamiento de disco.
 - `2026-10-30T06:21:21` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `detect_profiles` añadiendo una validación explícita mediante `is_safe_to_modify` para cada ruta de navegador detectada, evitando que el escáner acceda a directorios que hayan sido marcados como protegidos o fuera del scope permitido por la configuración de seguridad del sistema.
-- `2026-10-30T06:21:11` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` aplicando una validación explícita mediante `is_safe_to_modify` antes de la creación del directorio padre, asegurando que ninguna operación de escritura (ni siquiera la creación de carpetas) se realice fuera del alcance permitido.
-- `2026-10-30T06:20:39` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `assistant.py` implementando una validación explícita mediante `is_protected_path` en la carga del `grade` dentro del contexto, garantizando que el asistente no procese como calificación de salud rutas sensibles o bloqueadas, alineado con las directrices de seguridad defensiva del proyecto.
-- `2026-10-30T06:11:05` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` añadiendo una verificación de existencia previa en `os.replace` y encapsulando el manejo de permisos en una lógica más resiliente para evitar fallos catastróficos ante archivos bloqueados o sistemas de archivos de solo lectura.
