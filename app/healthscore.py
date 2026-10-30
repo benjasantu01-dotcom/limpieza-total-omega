@@ -268,7 +268,6 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
-        # Forzar validación completa al inicializar y prevenir asignaciones directas inconsistentes
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
             if not isinstance(val, (int, float)):
@@ -276,8 +275,10 @@ class SystemMetrics:
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
-        """Acceso seguro a métricas mediante introspección validada."""
-        return getattr(self, field_name, default)
+        """Acceso restringido para el motor de scoring usando lista blanca interna."""
+        if field_name in self._FIELDS_TO_VALIDATE:
+            return getattr(self, field_name, default)
+        return default
 
     def validate(self) -> None:
         """Normaliza todas las métricas según los rangos definidos en _METRIC_LIMITS."""
@@ -289,12 +290,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verificación booleana de integridad de los datos en el contenedor."""
-        for field_name in self._FIELDS_TO_VALIDATE:
-            val = getattr(self, field_name, 0.0)
-            if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
-                return False
-        return True
+        return all(math.isfinite(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
 
 @dataclass
 class HealthResult:
@@ -353,7 +349,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
     """Motor central que orquestra el cálculo de métricas a través del pipeline."""
     keys = SystemMetrics._FIELDS_TO_VALIDATE[:-1]
-    # Recuperación robusta: asegurar que los datos de entrada tengan el formato correcto antes del init
     try:
         m_args = {k: float(v) for k, v in zip(keys, metric_tuple)}
         metrics = SystemMetrics(**m_args, quarantined_count=float(quarantined))
@@ -394,11 +389,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
-    # Validar explícitamente antes de delegar a caché para asegurar integridad de estado
     metrics.validate()
     try:
-        raw_vals = tuple(float(getattr(metrics, f)) for f in SystemMetrics._FIELDS_TO_VALIDATE[:-1])
-        return _compute_cached(raw_vals, int(metrics.quarantined_count))
+        # Extraer mediante lista blanca para asegurar integridad absoluta en caché
+        raw_vals = tuple(float(metrics.safe_get(f)) for f in SystemMetrics._FIELDS_TO_VALIDATE[:-1])
+        return _compute_cached(raw_vals, int(metrics.safe_get("quarantined_count")))
     except (TypeError, ValueError, AttributeError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 

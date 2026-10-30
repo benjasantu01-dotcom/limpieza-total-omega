@@ -510,3 +510,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-10-30T01:56:44` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `walk_files` y `drive_usage` para prevenir ataques de escalada de privilegios o lectura de rutas fuera del alcance mediante la validación estricta de rutas UNC (`\\`) y el uso de `pathlib.Path.resolve()` en todos los puntos de entrada para normalizar posibles travesías de directorios.
 - `2026-10-30T01:56:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T01:56:44` Corrida terminada. Total usado hoy: 48.
+- `2026-10-30T02:04:37` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-10-30T02:05:04` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-30T02:05:35` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la restricción del acceso a los atributos internos de `SystemMetrics` utilizando el patrón de "acceso por nombre" para prevenir inyecciones de datos no validados en el motor de scoring, asegurando que `_compute_cached` solo procese valores sanitizados.
+- `2026-10-30T02:06:50` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-10-30T02:07:03` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-30T02:07:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T02:07:03` Corrida terminada. Total usado hoy: 52.
