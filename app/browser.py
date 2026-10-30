@@ -53,6 +53,7 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 class ScanContext:
     """
     Contenedor inmutable de configuración para escaneos recursivos.
+    Mantiene el estado necesario para evitar ciclos de enlaces y duplicados.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -65,6 +66,7 @@ class ScanContext:
 class DirectoryScanner:
     """
     Motor de recorrido recursivo con enfoque defensivo.
+    Procesa directorios de forma segura respetando las restricciones de safety.py.
     """
     def __init__(self, context: ScanContext) -> None:
         self.ctx = context
@@ -89,8 +91,8 @@ class DirectoryScanner:
         """
         Calcula el peso en bytes de un directorio mediante un recorrido 
         profundidad-limitada. 
-        Detecta ciclos vía (dev, inode) y aborta si la ruta es un punto de unión 
-        (junction) o viola las reglas de seguridad de safety.py.
+        Detecta ciclos mediante tuplas de (dev, inode) y aborta si la ruta es un 
+        punto de unión o viola las reglas de seguridad.
         """
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
@@ -119,9 +121,10 @@ class DirectoryScanner:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Saltar archivos protegidos o definidos en NEVER_TOUCH
                         if entry.name.lower() in self.ctx.never_touch_lower: continue
                         
-                        # Prevención de escalada mediante enlaces simbólicos o puntos de reparse
+                        # Prevención de escalada mediante enlaces simbólicos
                         if entry.is_symlink(): continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -145,7 +148,7 @@ class DirectoryScanner:
             return ScanResult(0, False)
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
-    """Decorador para envolver operaciones de disco en bloques try-except."""
+    """Decorador para envolver operaciones de disco en bloques try-except y retornar un valor seguro."""
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -157,7 +160,7 @@ def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     return decorator
 
 class ScanResult(NamedTuple):
-    """Contenedor de resultados del escaneo recursivo."""
+    """Resultado del escaneo recursivo: bytes acumulados y flag de éxito."""
     bytes_found: int
     success: bool
 
@@ -219,8 +222,7 @@ BYTES_TO_MB: float = 1024 * 1024
 @dataclass
 class BrowserCache:
     """
-    Modelo de datos para un caché de navegador detectado.
-    Contiene la referencia al navegador y la ruta al directorio de caché.
+    Representa un caché detectado en el sistema del usuario.
     """
     browser: str
     path: Path
@@ -233,6 +235,7 @@ class BrowserCache:
 
 @safe_path_operation(None)
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
+    """Carga kernel32.dll para acceder a atributos extendidos de archivos en Windows."""
     if os.name != 'nt': return None
     dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
     return dll if hasattr(dll, 'GetFileAttributesW') else None
@@ -242,7 +245,7 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def base_directories() -> List[Path]:
-    """Retorna las rutas base permitidas para escaneo basadas en el perfil de usuario."""
+    """Retorna las rutas base permitidas para escaneo basadas en el perfil de usuario (LOCALAPPDATA)."""
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env.strip() or _is_unc_path(local_env):
         return []
@@ -258,14 +261,14 @@ def base_directories() -> List[Path]:
 
 @safe_path_operation(False)
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Verifica si un archivo posee atributos de sistema o hidden mediante WinAPI."""
+    """Verifica si un archivo posee atributos de sistema o hidden mediante WinAPI (Windows)."""
     if kernel32 is None: return False
     attrs = kernel32.GetFileAttributesW(entry_path)
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    """Calcula el peso en bytes de un directorio, aplicando filtros de seguridad."""
+    """Calcula el peso total en bytes de un directorio, aplicando filtros de seguridad."""
     if not isinstance(path, (str, Path)): return 0
     p = Path(path)
     if not p.exists() or not p.is_dir(): return 0
@@ -279,7 +282,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     return DirectoryScanner(ctx).get_size(str(p)).bytes_found
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Realiza el escaneo de perfiles de navegador en las rutas base configuradas."""
+    """Escanea perfiles de navegador en las rutas base configuradas para encontrar cachés recuperables."""
     raw_bases = list(bases) if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
@@ -320,11 +323,11 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     return found
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
-    """Calcula el total en bytes de una colección de cachés."""
+    """Calcula la suma total en bytes de una colección de cachés."""
     return sum(c.size_bytes for c in caches if isinstance(c, BrowserCache)) if caches else 0
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera un reporte legible en formato de lista para la UI."""
+    """Genera un reporte legible (lista de strings) para la UI."""
     current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches: return ["No se detectaron cachés de navegador en este sistema."]
     

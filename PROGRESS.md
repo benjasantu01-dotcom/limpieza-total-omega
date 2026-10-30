@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 71 | 4 | 25 | 8 | 80 |
-| 2026-10-30 | 124 | 8 | 40 | 11 | 133 |
+| 2026-10-29 | 70 | 3 | 24 | 8 | 79 |
+| 2026-10-30 | 127 | 8 | 41 | 11 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **43**
 - robustez ante casos límite: **41**
-- legibilidad y documentación: **36**
-- rendimiento: **28**
+- legibilidad y documentación: **39**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `browser.py`: **21**
-- `diskreport.py`: **20**
+- `browser.py`: **22**
+- `diskreport.py`: **21**
+- `quarantine.py`: **20**
 - `settings.py`: **19**
 - `memory.py`: **17**
 - `assistant.py`: **16**
@@ -41,10 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **8**
-- `duplicates.py`: **7**
+- `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T13:32:18` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de candidatos y la clarificación de los docstrings en las estrategias de hashing para hacer explícito el flujo de datos.
+- `2026-10-30T13:31:44` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las estructuras de datos y funciones de soporte para clarificar el flujo de datos y mejorar la mantenibilidad del módulo.
+- `2026-10-30T13:31:16` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos con tipos de retorno explícitos y aclarando el flujo del `DirectoryScanner` para facilitar el mantenimiento y la auditoría de seguridad del recorrido de archivos.
 - `2026-10-30T13:21:37` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` y `_process_folder_entry` ante datos malformados o faltantes, asegurando que cualquier entrada que no pueda ser procesada de forma segura sea descartada silenciosamente sin comprometer la integridad del bucle principal ni permitir excepciones no capturadas.
 - `2026-10-30T13:21:08` **settings.py** (manejo de errores y validación de entradas): Mejoré `_read_and_parse_json` para capturar errores de forma más granular y robusta, validando la integridad estructural del JSON tras el parseo para evitar accesos a claves inexistentes o tipos inesperados antes de procesar la configuración.
 - `2026-10-30T13:12:39` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del escáner implementando validación estricta de parámetros en `scan_directory` y `_is_inside_base_root`, evitando errores de tipo y accesos a rutas malformadas o None antes de procesar el disco.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T12:43:30` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de datos externos en `SystemContext.ingest` y `_validate_and_sanitize_data` para evitar errores silenciosos, asegurando que si una fuente es inválida, se registre apropiadamente y se valide explícitamente antes de intentar aplicar cambios, cumpliendo con el enfoque de validación proactiva.
 - `2026-10-30T11:20:07` **settings.py** (seguridad defensiva): Se endureció la seguridad en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones explícitas de integridad de metadatos (comprobando el dueño del archivo y permisos) para prevenir ataques de sustitución mediante enlaces simbólicos o condiciones de carrera, alineándose con las reglas de seguridad defensiva solicitadas.
 - `2026-10-30T11:19:53` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` implementando una validación estricta del `base_root` antes de iniciar el escaneo recursivo, evitando que rutas relativas o maliciosas escapen del contexto esperado incluso si se intenta inyectar mediante `directory_stack`.
-- `2026-10-30T11:19:26` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar que `_get_file_id` intente abrir descriptores de archivos de dispositivo, previniendo cuelgues del sistema o comportamiento inesperado al acceder a hardware a bajo nivel.
-- `2026-10-30T11:11:44` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de seguridad en `_safe_unlink` mediante la inclusión explícita de `is_protected_path(path.parent)`, garantizando que incluso durante el borrado de archivos aislados (cuarentena), no exista riesgo de manipular directorios protegidos por jerarquía, fortaleciendo la defensa contra posibles escape de sandbox.
-- `2026-10-30T11:10:49` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_iter_process_memory` al asegurar que el manejo de recursos (handles de procesos) sea robusto incluso ante errores inesperados, moviendo la lógica de filtrado de seguridad antes de cualquier operación de consulta costosa para minimizar la superficie de ataque.

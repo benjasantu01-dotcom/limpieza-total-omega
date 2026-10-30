@@ -84,6 +84,7 @@ def _is_reparse_point(path: Path) -> bool:
 class ExtStats:
     """
     Contenedor de métricas para un grupo de archivos con la misma extensión.
+    Utiliza __slots__ para optimizar el consumo de memoria durante escaneos intensivos.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -174,7 +175,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(name: str, full_path: Path) -> bool:
-    """Valida si un nombre de archivo contiene caracteres sospechosos."""
+    """Valida si un nombre de archivo contiene caracteres sospechosos o inválidos."""
     if not name or '\0' in name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
     return any(c in name for c in SUSPICIOUS_CHARS) or any(char in name for char in ('<', '>', ':', '"', '|', '?', '*'))
@@ -202,6 +203,7 @@ class FileEntry:
 
     @property
     def size_mb(self) -> float:
+        """Conversión interna a MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -214,6 +216,7 @@ class ExtensionUsage:
 
     @property
     def size_mb(self) -> float:
+        """Conversión interna a MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -226,6 +229,7 @@ class FolderUsage:
 
     @property
     def size_mb(self) -> float:
+        """Conversión interna a MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -239,7 +243,7 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
-        """Calcula el porcentaje de uso actual."""
+        """Calcula el porcentaje de uso actual (0.0 a 100.0)."""
         return round(self.used / self.total * 100, 1) if self.total > 0 else 0.0
 
     @property
@@ -395,6 +399,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Ejecuta el escaneo completo y acumula las estadísticas y el top de archivos.
+    El límite define cuántos archivos top se guardan en el heap de memoria.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
