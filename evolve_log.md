@@ -1314,3 +1314,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-30T10:59:27` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.is_finite
 - `2026-10-30T10:59:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T10:59:27` Corrida terminada. Total usado hoy: 260.
+- `2026-10-30T11:08:05` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-10-30T11:09:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-30T11:10:22` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-30T11:10:49` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_iter_process_memory` al asegurar que el manejo de recursos (handles de procesos) sea robusto incluso ante errores inesperados, moviendo la lógica de filtrado de seguridad antes de cualquier operación de consulta costosa para minimizar la superficie de ataque.
+- `2026-10-30T11:11:17` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-30T11:11:44` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las validaciones de seguridad en `_safe_unlink` mediante la inclusión explícita de `is_protected_path(path.parent)`, garantizando que incluso durante el borrado de archivos aislados (cuarentena), no exista riesgo de manipular directorios protegidos por jerarquía, fortaleciendo la defensa contra posibles escape de sandbox.
+- `2026-10-30T11:11:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T11:11:44` Corrida terminada. Total usado hoy: 264.

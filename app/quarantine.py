@@ -333,6 +333,9 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
         raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     
     ensure_safe_to_modify(path)
+    if is_protected_path(path.parent):
+        raise UnsafePathError("Protección de jerarquía: directorio padre no seguro.")
+        
     _check_for_reparse_points(path)
     if is_protected_path(path) or ":" in path.name:
         raise UnsafePathError("Ruta protegida o ADS detectado.")
