@@ -7,32 +7,32 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 13
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 111 | 7 | 42 | 11 | 125 |
-| 2026-10-30 | 85 | 6 | 24 | 5 | 88 |
+| 2026-10-29 | 110 | 6 | 41 | 11 | 124 |
+| 2026-10-30 | 86 | 6 | 25 | 5 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **43**
 - seguridad defensiva: **41**
-- legibilidad y documentación: **37**
-- rendimiento: **28**
+- legibilidad y documentación: **38**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `browser.py`: **20**
-- `memory.py`: **19**
+- `browser.py`: **21**
 - `settings.py`: **19**
+- `memory.py`: **18**
 - `assistant.py`: **17**
 - `diskreport.py`: **17**
 - `scanner.py`: **14**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T08:57:28` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings técnicos explícitos a los métodos de la clase `DirectoryScanner` y `BrowserCache`, detallando el propósito, comportamiento ante errores y restricciones, además de agregar Type Hints en las funciones faltantes para asegurar la integridad estática del código.
 - `2026-10-30T08:45:48` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la deserialización en `_read_and_parse_json` y la validación en `_coerce_and_verify`, añadiendo comprobaciones de integridad y manejo de excepciones más preciso para evitar propagar errores en caso de archivos JSON malformados o con estructuras inesperadas.
 - `2026-10-30T08:36:13` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante el manejo explícito de errores de lectura y serialización, evitando que un archivo de manifiesto corrupto o mal formado deje la app en un estado inconsistente o provoque un `crash` silencioso al acceder a las propiedades de los ítems.
 - `2026-10-30T08:35:24` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la validación proactiva de tipos y estados, sustituyendo chequeos laxos por verificaciones explícitas de `Path` y manejo de excepciones que evitan interrupciones en el flujo de trabajo ante entradas corrompidas.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T06:41:25` **quarantine.py** (seguridad defensiva): Se añadió una validación crítica en `_safe_unlink` y `purge_all` para asegurar que el archivo a eliminar no sea el propio manifiesto, evitando una posible eliminación accidental del archivo de control mediante una validación de ruta explícita y preventiva.
 - `2026-10-30T06:40:43` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad en `organizer.py` al añadir una validación estricta contra archivos que poseen el atributo de sistema en Windows durante el proceso de escaneo recursivo, integrando `_is_system_hidden` en `_is_candidate_for_scan` para evitar que archivos críticos marcados con este atributo (incluso si no están en `SYSTEM_CRITICAL_NAMES`) sean procesados para limpieza.
 - `2026-10-30T06:31:03` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo añadiendo una validación estricta de "input" en el método `__post_init__` y en `validate`, asegurando que `SystemMetrics` no pueda ser instanciado con tipos de datos o valores que escapen de las restricciones definidas, mitigando posibles ataques por inyección de métricas mal formadas.
-- `2026-10-30T06:30:01` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al reemplazar `.resolve()` (que puede seguir enlaces simbólicos fuera de la ruta deseada o fallar en accesos restringidos) por una validación de ruta absoluta normalizada, y añadí una verificación explícita de `is_protected_path` al inicio para evitar cualquier escaneo accidental de directorios bloqueados antes de cualquier procesamiento de disco.

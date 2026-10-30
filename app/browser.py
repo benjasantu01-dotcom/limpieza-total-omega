@@ -66,7 +66,7 @@ class DirectoryScanner:
     """
     Motor de recorrido recursivo con enfoque defensivo.
     """
-    def __init__(self, context: ScanContext):
+    def __init__(self, context: ScanContext) -> None:
         self.ctx = context
 
     def _is_path_allowed(self, path_str: str) -> bool:
@@ -84,7 +84,9 @@ class DirectoryScanner:
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
         Calcula el peso en bytes de un directorio mediante un recorrido 
-        profundidad-limitada que detecta ciclos y respeta los bloqueos definidos.
+        profundidad-limitada. 
+        Detecta ciclos vía (dev, inode) y aborta si la ruta es un punto de unión 
+        (junction) o viola las reglas de seguridad de safety.py.
         """
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
@@ -207,12 +209,17 @@ BYTES_TO_MB: float = 1024 * 1024
 
 @dataclass
 class BrowserCache:
+    """
+    Modelo de datos para un caché de navegador detectado.
+    Contiene la referencia al navegador y la ruta al directorio de caché.
+    """
     browser: str
     path: Path
     size_bytes: int
 
     @property
     def size_mb(self) -> float:
+        """Retorna el peso del caché convertido a Megabytes (float, 2 decimales)."""
         return round(self.size_bytes / BYTES_TO_MB, 2)
 
 @safe_path_operation(None)
