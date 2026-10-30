@@ -253,6 +253,7 @@ class _Validators:
     def _is_safe_path(path_str: str) -> bool:
         if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
+        if ".." in path_str: return False
         if is_protected_path(path_str): return False
         try:
             return _Validators._check_path_safety(Path(path_str))
@@ -364,7 +365,9 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         data = json.loads(content.decode("utf-8", errors="strict"))
         if not isinstance(data, dict) or len(data) > 64: return None
         for k, v in data.items():
-            if k in DEFAULTS and not isinstance(v, type(DEFAULTS[k])): return None
+            if k in DEFAULTS:
+                if not isinstance(v, type(DEFAULTS[k])): return None
+                if k == ConfigKey.ULTIMA_CARPETA.value and isinstance(v, str) and ".." in v: return None
         if not any(k in DEFAULTS for k in data.keys()): return None
         return data
     except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError, TypeError):

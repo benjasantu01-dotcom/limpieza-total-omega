@@ -1300,3 +1300,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-30T10:39:33` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-10-30T10:39:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T10:39:33` Corrida terminada. Total usado hoy: 252.
+- `2026-10-30T10:47:42` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-10-30T10:48:14` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido una validación estricta de "path traversal" en `_read_and_parse_json` y en la gestión de rutas para asegurar que ningún valor de configuración cargado desde el disco intente escapar de las rutas permitidas o contenga caracteres de control que puedan comprometer la integridad del sistema.
+- `2026-10-30T10:48:39` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-30T10:49:14` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` para prevenir inyecciones y mejorar la validación de la URL de destino, asegurando que el motor de IA no pueda ser redirigido mediante manipulación de parámetros de configuración.
+- `2026-10-30T10:49:31` ➖ Sin cambios en branding.py (enfoque: seguridad defensiva). Motivo: Se ha endurecido la seguridad en `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier interacción con el sistema de archivos, asegurando que ni el destino ni su directorio padre sean rutas críticas del sistema, reforzando así la robustez ante intentos de escritura malintencionados.
+- `2026-10-30T10:49:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T10:49:31` Corrida terminada. Total usado hoy: 256.
