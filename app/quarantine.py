@@ -328,6 +328,10 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     if path is None or not path.exists():
         raise UnsafePathError("Ruta nula o inexistente para unlink.")
     
+    # Prevenir borrado del manifiesto
+    if path.name == MANIFEST_NAME:
+        raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
+    
     ensure_safe_to_modify(path)
     _check_for_reparse_points(path)
     if is_protected_path(path) or ":" in path.name:
@@ -1105,7 +1109,9 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 if item and _is_item_purgable(f, item):
                     purgado_ids.add(item.item_id)
                 elif not item and f.suffix != ".tmp":
-                    _safe_unlink(f)
+                    # Evitar borrar el manifiesto accidentalmente aunque no esté en el mapa
+                    if f.name != MANIFEST_NAME:
+                        _safe_unlink(f)
             except (OSError, PermissionError, UnsafePathError):
                 continue
         

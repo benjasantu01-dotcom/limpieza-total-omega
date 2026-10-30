@@ -326,7 +326,7 @@ def _is_candidate_for_scan(entry: os.DirEntry, stats: os.stat_result) -> bool:
         return False
     if stats.st_size >= LIMITS.MAX_FILE_SIZE_BYTES:
         return False
-    if bool(_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
+    if _is_system_hidden(entry):
         return False
     p = Path(entry.path)
     return is_safe_to_modify(p) and not _is_file_locked(p)
