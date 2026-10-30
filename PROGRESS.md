@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 64
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 215
+- Rechazadas por guardia de seguridad: 65
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 77 | 5 | 27 | 8 | 83 |
-| 2026-10-30 | 118 | 8 | 37 | 9 | 132 |
+| 2026-10-29 | 74 | 5 | 27 | 8 | 82 |
+| 2026-10-30 | 120 | 8 | 38 | 10 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **41**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **36**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -32,19 +32,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **22**
 - `quarantine.py`: **21**
 - `diskreport.py`: **20**
-- `settings.py`: **19**
-- `memory.py`: **17**
+- `memory.py`: **18**
+- `settings.py`: **18**
 - `assistant.py`: **16**
 - `safety.py`: **15**
 - `healthscore.py`: **14**
-- `scanner.py`: **13**
+- `scanner.py`: **12**
+- `organizer.py`: **12**
 - `branding.py`: **12**
-- `organizer.py`: **11**
-- `startup.py`: **8**
+- `startup.py`: **7**
 - `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T13:06:00` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante una validación de parámetros más estricta y el uso de `ensure_safe_to_modify` para transformar errores silenciosos en excepciones controladas al intentar interactuar con el sistema de archivos, cumpliendo con el enfoque de manejo de errores y seguridad del proyecto.
+- `2026-10-30T13:05:45` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y las funciones auxiliares de manejo de procesos mediante la captura explícita de `ctypes.WinError` y validaciones adicionales de estado, asegurando que los recursos (handles) se liberen siempre bajo cualquier falla inesperada durante la llamada a APIs de Windows.
 - `2026-10-30T12:51:34` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `largest_folders` añadiendo chequeos de integridad antes de realizar operaciones de sistema de archivos (`relative_to` y `resolve`), previniendo errores de ejecución ante rutas mal formadas o inaccesibles.
 - `2026-10-30T12:51:04` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `detect_profiles` añadiendo validaciones de tipo y de estado antes de operar, previniendo errores de ejecución si los parámetros de entrada son inesperadamente `None` o rutas mal formadas.
 - `2026-10-30T12:50:35` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `save_logo_svg` y `draw_logo` mediante la validación explícita de tipos, asegurando que los argumentos numéricos sean finitos y manejando correctamente casos donde las operaciones geométricas podrían derivar en valores inválidos (división por cero o desbordamiento).
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T10:58:23` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner` al añadir una validación estricta para detectar y prevenir el seguimiento de enlaces simbólicos (`is_symlink`) y puntos de reparse durante la iteración, garantizando que el escáner se mantenga estrictamente dentro de los límites del sistema de archivos real y seguro.
 - `2026-10-30T10:49:14` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` para prevenir inyecciones y mejorar la validación de la URL de destino, asegurando que el motor de IA no pueda ser redirigido mediante manipulación de parámetros de configuración.
 - `2026-10-30T10:48:14` **settings.py** (robustez ante casos límite): Se ha añadido una validación estricta de "path traversal" en `_read_and_parse_json` y en la gestión de rutas para asegurar que ningún valor de configuración cargado desde el disco intente escapar de las rutas permitidas o contenga caracteres de control que puedan comprometer la integridad del sistema.
-- `2026-10-30T10:39:22` **safety.py** (robustez ante casos límite): Mejora la robustez del chequeo de integridad al implementar una validación de `st_ino` (número de índice) en sistemas donde esté disponible, fortaleciendo la defensa contra ataques TOCTOU y asegurando que la identidad del objeto sea persistente entre la lectura de metadatos y el acceso al archivo, cubriendo así un caso límite en el manejo de punteros de archivo.
-- `2026-10-30T10:27:50` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de scoring ante métricas con valores extremos o malformados mediante la implementación de `math.isfinite` en todas las evaluaciones del pipeline, previniendo errores de cálculo (`NaN`/`Inf`) que podrían romper la interfaz o corromper el histórico de puntajes.

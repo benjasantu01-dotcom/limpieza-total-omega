@@ -323,10 +323,11 @@ def read_snapshot() -> MemorySnapshot:
 def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
     """Obtiene un handle de proceso con la máscara de seguridad especificada."""
     if WindowsAPI.kernel32 is None: return None
-    handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-    if not handle:
+    try:
+        handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
+        return wintypes.HANDLE(handle) if handle else None
+    except (ctypes.WinError, OSError):
         return None
-    return wintypes.HANDLE(handle)
 
 def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Consulta contadores de memoria mediante GetProcessMemoryInfo."""
@@ -335,7 +336,7 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
         if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
-    except (ctypes.WinError, OSError, Exception):
+    except (ctypes.WinError, OSError):
         return None
     return None
 
@@ -466,5 +467,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         else:
             return False, "El sistema operativo rechazó la operación de limpieza."
             
+    except (ctypes.WinError, OSError, Exception):
+        return False, "Error interno al intentar comunicarse con el proceso."
     finally:
         WindowsAPI.kernel32.CloseHandle(h_process)

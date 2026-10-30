@@ -382,13 +382,13 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     """
     Mueve archivos candidatos a la carpeta de revisión segura, validando cada operación de escritura.
     """
-    if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
+    if not isinstance(files, (list, tuple)) or not review_dir: 
         return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        if not isinstance(dest_base, Path) or not is_safe_to_modify(dest_base): return None
-        if is_protected_path(dest_base) or _has_forbidden_chars(dest_base): return None
+        # Forzar chequeo de seguridad en la carpeta destino
+        ensure_safe_to_modify(dest_base)
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
@@ -396,6 +396,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 if not _is_safe_for_disk_op(junk_file, dest_base): continue
                 target_path = _can_move_file(junk_file, dest_base)
                 if target_path and junk_file.path.exists(): 
+                    # Asegurar que el origen es tratable antes del movimiento
+                    ensure_safe_to_modify(junk_file.path)
                     shutil.move(str(junk_file.path), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
@@ -416,22 +418,22 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos desde la carpeta de revisión tras validar seguridad.
-    Esta es una operación destructiva controlada por `is_safe_to_modify`.
     """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest): return 0
-        if _has_forbidden_chars(dest): return 0
+        if not dest.exists() or not dest.is_dir(): return 0
+        ensure_safe_to_modify(dest)
         
         count = 0
         for item in dest.iterdir():
             try:
-                if not isinstance(item, Path) or not item.is_file(): continue
-                if item.is_symlink() or _is_junction(item) or not is_valid_junk_extension(item.name): continue
-                if is_safe_to_modify(item) and not is_protected_path(item):
-                    item.unlink()
-                    count += 1
+                if not item.is_file() or item.is_symlink() or _is_junction(item): continue
+                if not is_valid_junk_extension(item.name): continue
+                # Validación estricta mediante ensure antes de unlink
+                ensure_safe_to_modify(item)
+                item.unlink()
+                count += 1
             except (OSError, PermissionError, ValueError, AttributeError) as e:
                 logger.warning(f"No se pudo eliminar {item}: {e}")
         return count
