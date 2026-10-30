@@ -477,7 +477,7 @@ class SystemContext:
             if valid_val is not None:
                 return spec.type_hint(valid_val)
             return None
-        except (ValueError, TypeError, AttributeError, Exception):
+        except Exception:
             return None
 
     def _clean_grade(self, val: Any) -> str:
@@ -485,11 +485,10 @@ class SystemContext:
         if not isinstance(val, str) or callable(val): return ""
         try:
             clean: str = _REGEX_CONTROL_CHARS.sub(" ", val)[:_MAX_GRADE_LEN].strip()
-            # Seguridad adicional: verificar que la calificación no sea una ruta protegida
             if not clean or is_protected_path(clean) or not _ensure_safe_text(clean): 
                 return ""
             return clean
-        except (TypeError, Exception):
+        except Exception:
             return ""
 
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
@@ -522,7 +521,6 @@ class SystemContext:
             for k, v in updates.items():
                 if _is_safe_key(k): setattr(self, k, v)
             self.analyzed = True
-            # Limpieza de caché controlada
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)
         except Exception:
@@ -757,7 +755,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload: Optional[bytes] = _build_payload(question, context_text)
     if not payload: return None
     target_url: str = _ENDPOINT_BASE.format(model=model)
-    # Seguridad reforzada: comprobamos estructura y protegemos contra rutas del sistema
     if not (target_url.startswith(_API_HOST_ROOT) and not any(c in target_url for c in "<>\"' \t\n\r&?=") and not is_protected_path(target_url)): return None
     try:
         req: urllib.request.Request = urllib.request.Request(f"{target_url}?key={api_key}", data=payload, headers={"Content-Type": "application/json", "Accept": "application/json"}, method="POST")
