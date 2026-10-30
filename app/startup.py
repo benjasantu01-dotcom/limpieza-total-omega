@@ -322,7 +322,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
             return None
             
         return StartupEntry(name=name_ext[0], command=entry_path, source="carpeta")
-    except (OSError, PermissionError, ValueError, TypeError):
+    except (OSError, PermissionError, ValueError, TypeError, AttributeError):
         return None
 
 
@@ -412,7 +412,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
                 seen_commands.add(c)
                 parsed_entries.append(StartupEntry(name=n, command=c, source=source))
             
-    except (csv.Error, OSError, ValueError, TypeError):
+    except (csv.Error, OSError, ValueError, TypeError, AttributeError):
         return parsed_entries
     return parsed_entries
 

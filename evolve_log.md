@@ -502,3 +502,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-30T13:12:39` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del escáner implementando validación estricta de parámetros en `scan_directory` y `_is_inside_base_root`, evitando errores de tipo y accesos a rutas malformadas o None antes de procesar el disco.
 - `2026-10-30T13:12:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T13:12:39` Corrida terminada. Total usado hoy: 312.
+- `2026-10-30T13:20:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-30T13:21:08` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré `_read_and_parse_json` para capturar errores de forma más granular y robusta, validando la integridad estructural del JSON tras el parseo para evitar accesos a claves inexistentes o tipos inesperados antes de procesar la configuración.
+- `2026-10-30T13:21:37` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `parse_registry_csv` y `_process_folder_entry` ante datos malformados o faltantes, asegurando que cualquier entrada que no pueda ser procesada de forma segura sea descartada silenciosamente sin comprometer la integridad del bucle principal ni permitir excepciones no capturadas.
+- `2026-10-30T13:22:13` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: AreaExplanation
+- `2026-10-30T13:22:28` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-30T13:22:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T13:22:28` Corrida terminada. Total usado hoy: 316.
