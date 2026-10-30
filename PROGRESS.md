@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 64
-- Sin cambios (nada sustancial que mejorar): 29
-- Sin respuesta de la IA (error o límite): 222
+- Rechazadas por guardia de seguridad: 65
+- Sin cambios (nada sustancial que mejorar): 28
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 37 | 3 | 14 | 10 | 70 |
+| 2026-10-28 | 36 | 3 | 14 | 9 | 68 |
 | 2026-10-29 | 130 | 7 | 47 | 17 | 149 |
-| 2026-10-30 | 9 | 3 | 3 | 2 | 3 |
+| 2026-10-30 | 11 | 3 | 4 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **32**
-- seguridad defensiva: **31**
-- rendimiento: **26**
+- seguridad defensiva: **30**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **20**
 - `browser.py`: **19**
-- `quarantine.py`: **19**
 - `diskreport.py`: **16**
 - `settings.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **15**
-- `memory.py`: **15**
-- `assistant.py`: **14**
 - `scanner.py`: **14**
+- `assistant.py`: **13**
 - `healthscore.py`: **11**
 - `duplicates.py`: **10**
 - `branding.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T00:55:46` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño de la cuarentena y la gestión del manifiesto reemplazando el cálculo recursivo/iterativo dentro de `total_quarantined_bytes` por un acceso directo al caché y agregando una lógica de filtrado eficiente en `purge_all` para evitar consultas innecesarias al sistema de archivos mediante el uso de un diccionario de búsqueda (hash map).
+- `2026-10-30T00:54:37` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria mediante la pre-asignación del búfer `PROCESS_MEMORY_COUNTERS` fuera del bucle y el reemplazo del uso repetitivo de `int(pids[i])` y conversiones innecesarias dentro del iterador de procesos, mejorando el rendimiento de `top_memory_processes`.
 - `2026-10-30T00:34:56` **branding.py** (rendimiento): Se optimizó el rendimiento de los cálculos geométricos frecuentes en el logo y las barras moviendo el pre-cálculo de parámetros de escala a `lru_cache` y reduciendo la complejidad de iteración en `draw_gradient_bar`, minimizando la creación de objetos innecesarios durante el refresco de la UI.
 - `2026-10-30T00:34:02` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_is_registry_entry_safe` y `_resolve_and_cache_path` para reducir la anidación profunda (`if` encadenados), aplicando guard clauses que clarifican las condiciones de rechazo.
 - `2026-10-30T00:33:35` **settings.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante tipos y docstrings los límites de las claves numéricas y la estructura de las validaciones, permitiendo que otros desarrolladores comprendan rápidamente el contrato de datos sin navegar por toda la lógica de `_Validators`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-29T14:43:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` añadiendo validaciones de integridad frente a archivos truncados o con contenido malicioso, asegurando que la app no intente procesar datos inconsistentes.
 - `2026-10-29T14:43:23` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validación defensiva de `stat_result` y `Path.name` contra valores nulos o inesperados, además de centralizar el manejo de excepciones al acceder a metadatos para evitar que errores aislados en `os.stat` detengan el procesamiento de archivos.
 - `2026-10-29T14:42:56` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `path` como `None` o vacío en las funciones de bajo nivel que manejan punteros (`_to_long_path`, `_get_file_attrs`, `_is_virtual_drive`) para evitar excepciones de `TypeError` en tiempo de ejecución, mejorando la robustez ante entradas inesperadas.
-- `2026-10-29T14:34:25` **quarantine.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `purge_all` y `_safe_unlink` capturando `PermissionError` y `OSError` de forma específica durante operaciones de I/O para evitar que fallos en un solo archivo detengan la limpieza masiva, asegurando además que `_safe_unlink` sea más robusto ante estados de archivo inconsistentes.
-- `2026-10-29T14:33:02` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado `trim_working_set` añadiendo una validación explícita para evitar que `EmptyWorkingSet` se invoque sobre un handle nulo o en un estado de error, centralizando la lógica de manejo de errores de la API de Windows mediante un bloque `try-except` más robusto que garantiza el cierre del handle y reporta fallos específicos de comunicación con el sistema operativo.

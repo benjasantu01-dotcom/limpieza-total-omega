@@ -365,7 +365,7 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 
-def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
+def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Enumera procesos con optimización de buffer y manejo de ciclos de vida dinámicos."""
     MAX_PIDS = 4096
     pids = (wintypes.DWORD * MAX_PIDS)()
@@ -375,6 +375,7 @@ def _iter_process_memory(pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory
         return
             
     path_buf = ctypes.create_unicode_buffer(1024)
+    pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     processed_pids: Set[int] = set()
     count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     
@@ -404,11 +405,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
-        try:
-            pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
-            _CACHE_TOP_PROC = CacheEntry(now, heapq.nlargest(limit, _iter_process_memory(pmc)))
-        except (AttributeError, OSError):
-            pass
+        _CACHE_TOP_PROC = CacheEntry(now, heapq.nlargest(limit, _iter_process_memory()))
             
     return _CACHE_TOP_PROC.data
 
