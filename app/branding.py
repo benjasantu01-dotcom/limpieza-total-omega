@@ -359,7 +359,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: 
         return None
     try:
-        dest_path = Path(destination)
+        dest_path = Path(destination).resolve()
+        if not dest_path.is_absolute():
+            return None
         parent = dest_path.parent
         
         # Validación defensiva estricta para evitar accesos indebidos antes de cualquier operación
@@ -374,7 +376,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         ensure_safe_to_modify(dest_path)
         dest_path.write_text(logo_svg(int(size)), encoding="utf-8")
         return dest_path
-    except (OSError, PermissionError, RuntimeError, TypeError, ValueError, AttributeError): 
+    except (OSError, PermissionError, RuntimeError, TypeError, ValueError, AttributeError, Exception): 
         # Fallo silencioso controlado para mantener la estabilidad del hilo UI
         return None
 

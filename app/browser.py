@@ -74,6 +74,7 @@ class DirectoryScanner:
         Valida que la ruta esté dentro del sandbox permitido y no contenga 
         restricciones de seguridad o punteros de sistema.
         """
+        if _is_unc_path(path_str): return False
         path_obj = Path(path_str)
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return False

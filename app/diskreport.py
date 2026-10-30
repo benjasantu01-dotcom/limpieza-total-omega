@@ -289,7 +289,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if root_path is None: return
     
-    # Pre-chequeo crítico de seguridad antes de iniciar el recorrido
     if skip_protected and is_protected_path(root_path):
         return
     
@@ -307,12 +306,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                 for entry in iterator:
                     try:
                         p_entry = Path(entry.path)
-                        
-                        # Verificación explícita de seguridad antes de seguir
                         if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, p_entry)):
                             continue
                         
-                        # Excluir puntos de reparse para evitar recursión infinita o escaneo fuera de unidad
                         if entry.is_symlink() or _is_reparse_point(p_entry):
                             continue
                         
@@ -328,7 +324,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             
                     except (OSError, PermissionError, FileNotFoundError, RuntimeError, AttributeError):
                         continue
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError, NotADirectoryError):
             continue
 
 
@@ -360,8 +356,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
         try:
             rel = path.relative_to(root)
             if not rel.parts: continue
-            
-            # Identificamos el primer nivel una sola vez
             top_level = root / rel.parts[0]
             metrics = stats[top_level]
             metrics.size += size
