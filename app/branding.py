@@ -392,7 +392,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         dest_path.write_text(logo_svg(int(size)), encoding="utf-8")
         return dest_path
     except (OSError, PermissionError, RuntimeError, TypeError, ValueError, AttributeError): 
-        # Fallo silencioso en la UI para preservar la integridad de la ejecución
+        # Fallo silencioso controlado para mantener la estabilidad del hilo UI
         return None
 
 def logo_ascii() -> str: 
@@ -439,6 +439,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     Renderiza el logo vectorial del escudo Omega en un widget Canvas mediante 
     primitivas gráficas escaladas y posicionadas dinámicamente.
     """
+    if not canvas: return
     try:
         val_size = float(size)
         s = max(_MIN_SCALE, min(_MAX_SCALE, val_size / 128.0))
@@ -448,30 +449,34 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, s)
-    except Exception: pass
+    except (AttributeError, TypeError, ValueError):
+        pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """
     Dibuja una barra de progreso horizontal con degradado, optimizando las llamadas
     a la API del Canvas mediante el agrupamiento de segmentos monocromáticos.
     """
+    if not canvas: return
     try:
         w = max(1, int(width))
         for s in get_gradient_segments(w, stops):
             canvas.create_line(canvas_x + s.start_index, canvas_y, canvas_x + s.end_index, canvas_y, fill=s.hex_color, width=height)
-    except Exception: pass
+    except (AttributeError, TypeError, ValueError):
+        pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
     Dibuja un indicador circular de progreso (anillo) basado en un valor porcentual,
     utilizando arcos geométricos para representar métricas de estado de salud.
     """
+    if not canvas or percent is None: return
     try:
-        if percent is None: return
         val = max(0.0, min(100.0, float(percent)))
         d, t = max(20, min(2048, int(size))), max(2, int(thickness))
         pad = t / 2.0
         bb: BoundingBox = (canvas_x + pad, canvas_y + pad, canvas_x + d - pad, canvas_y + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=t)
         if val > 0: canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=t)
-    except Exception: pass
+    except (AttributeError, TypeError, ValueError):
+        pass

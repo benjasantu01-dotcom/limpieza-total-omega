@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 22 | 1 | 9 | 4 | 30 |
+| 2026-10-28 | 19 | 1 | 8 | 4 | 30 |
 | 2026-10-29 | 130 | 7 | 47 | 17 | 149 |
-| 2026-10-30 | 35 | 3 | 10 | 3 | 37 |
+| 2026-10-30 | 38 | 3 | 10 | 3 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
-- legibilidad y documentación: **42**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **41**
+- legibilidad y documentación: **39**
 - seguridad defensiva: **32**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
+- `browser.py`: **19**
 - `settings.py`: **18**
-- `browser.py`: **18**
-- `memory.py`: **17**
+- `assistant.py`: **16**
 - `diskreport.py`: **16**
+- `memory.py`: **16**
 - `scanner.py`: **16**
 - `safety.py`: **15**
-- `assistant.py`: **15**
-- `branding.py`: **12**
-- `healthscore.py`: **11**
-- `organizer.py`: **10**
+- `branding.py`: **13**
+- `healthscore.py`: **10**
 - `startup.py`: **10**
 - `duplicates.py`: **9**
+- `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T03:49:33` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `detect_profiles` añadiendo validaciones de tipo y estructura frente a entradas mal formadas o corruptas (como rutas `None` o `Path` no normalizadas), evitando que fallos de entrada propaguen excepciones en procesos de escaneo masivo.
+- `2026-10-30T03:49:24` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo (`draw_logo`, `draw_gradient_bar`, `draw_ring`) reemplazando capturas de excepciones genéricas (`except Exception:`) por manejo específico, y añadiendo validación de precondiciones (`if not canvas: return`) para prevenir errores de tipo o de punteros nulos durante el renderizado.
+- `2026-10-30T03:48:54` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos externos en `SystemContext.ingest` y su método auxiliar `_apply_field`, asegurando que cualquier entrada maliciosa o inesperada (especialmente objetos con atributos invocables) sea rechazada de forma explícita antes de intentar cualquier operación.
 - `2026-10-30T02:26:04` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` al añadir una validación estricta de la ruta del archivo de configuración antes de cualquier operación de lectura o escritura, garantizando mediante `is_safe_to_modify` que nunca se interactúe con rutas fuera de los límites permitidos, incluso si el archivo es manipulado externamente.
 - `2026-10-30T02:25:30` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scanner.py` al implementar una validación estricta de rutas relativas mediante el uso de `pathlib.Path.resolve()` tanto en la inicialización como durante el procesamiento, evitando ataques de tipo "Path Traversal" (salida del directorio base) si una entrada fuera un enlace simbólico o un punto de reanálisis que lograra evadir los filtros previos.
 - `2026-10-30T02:16:07` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `quarantine_file` añadiendo una validación de `st_nlink` después del aislamiento, asegurando que no se crearon enlaces físicos inesperados durante la operación, y unificando la verificación del sistema de archivos (`st_dev`) para prevenir movimientos entre volúmenes, cumpliendo con el enfoque de seguridad defensiva y robustez frente a condiciones de carrera.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T01:46:15` **startup.py** (robustez ante casos límite): Se ha robustecido `_resolve_and_cache_path` añadiendo una validación explícita para evitar procesar rutas que superen `MAX_PATH_LEN` o contengan bytes nulos antes de cualquier operación de I/O, previniendo errores de sistema en rutas malformadas o excesivamente largas durante el escaneo del registro.
 - `2026-10-30T01:46:04` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante escenarios de E/S fallidos o archivos corruptos mediante la adición de un bloque `try-except` en la serialización atómica y la validación estricta de la integridad del JSON antes de cargarlo, previniendo que un archivo vacío o con formato inválido rompa el flujo de carga.
 - `2026-10-30T01:45:36` **scanner.py** (robustez ante casos límite): Se mejora la robustez de `_safe_stat` para gestionar específicamente `ERROR_SHARING_VIOLATION` (código 32), permitiendo que el escáner ignore elegantemente archivos bloqueados por el sistema u otros procesos en lugar de descartarlos silenciosamente o abortar, y se añade un manejo más estricto de `OSError` al obtener atributos.
-- `2026-10-30T01:45:11` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "disponibilidad de metadatos" en `_get_path_stat_robust` para detectar si el sistema de archivos devuelve valores de tiempo de acceso/modificación inválidos o nulos (común en ciertos estados de corrupción de sistema de archivos o bloqueos de controlador), evitando así que la app procese objetos con metadatos corruptos.
-- `2026-10-30T01:35:49` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en la carga del manifiesto mediante un manejo de excepciones más granular y un bloque `finally` para asegurar el cierre de archivos, previniendo estados inconsistentes de la caché en situaciones de archivos dañados o bloqueos.
-- `2026-10-30T01:35:06` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_for_disk_op` y `_process_directory` ante fallos de permisos o archivos bloqueados mediante el uso de `is_safe_to_modify` para evitar excepciones no controladas durante la validación, protegiendo al motor de escaneo de bloqueos abruptos.

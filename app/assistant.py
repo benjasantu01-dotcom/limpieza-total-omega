@@ -466,7 +466,7 @@ class SystemContext:
         """Valida, convierte y verifica límites de un atributo individual según especificación."""
         try:
             val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
-            if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)) or callable(val):
+            if val is None or isinstance(val, bool) or callable(val):
                 return None
             valid_val = _is_valid_numeric_update(val, spec)
             if valid_val is not None:

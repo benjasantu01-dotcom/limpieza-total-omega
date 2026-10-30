@@ -248,7 +248,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el peso en bytes de un directorio, aplicando filtros de seguridad."""
-    if not isinstance(path, (str, Path)) or not path: return 0
+    if not isinstance(path, (str, Path)): return 0
     path_obj = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0
     
