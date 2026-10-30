@@ -386,6 +386,8 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
     for entry in PIPELINE_DEFINITIONS:
         try:
             area_ratio = entry.scorer(metrics)
+            if not math.isfinite(area_ratio):
+                continue
             recs = _evaluate_rules(metrics, entry.rules, area_ratio)
             recommendations.extend(recs)
             points = area_ratio * float(entry.weight)
@@ -422,7 +424,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 @lru_cache(maxsize=128)
 def _render_bar(points: Any, max_val: Any) -> str:
     """Generador visual de barras de progreso para reportes en texto."""
-    if not isinstance(points, (int, float)) or not isinstance(max_val, (int, float)):
+    if not isinstance(points, (int, float)) or not isinstance(max_val, (int, float)) or not math.isfinite(points):
         return "." * 10
     
     safe_max = int(max(1, int(max_val)))

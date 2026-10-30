@@ -1285,3 +1285,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-30T10:19:04` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-10-30T10:19:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T10:19:04` Corrida terminada. Total usado hoy: 244.
+- `2026-10-30T10:27:18` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-10-30T10:27:50` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor de scoring ante métricas con valores extremos o malformados mediante la implementación de `math.isfinite` en todas las evaluaciones del pipeline, previniendo errores de cálculo (`NaN`/`Inf`) que podrían romper la interfaz o corromper el histórico de puntajes.
+- `2026-10-30T10:28:50` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-30T10:30:03` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-30T10:30:29` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-30T10:30:39` ➖ Sin cambios en organizer.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de las operaciones de escaneo y borrado al detectar explícitamente errores de acceso denegado en directorios hijos, evitando que una sola carpeta bloqueada interrumpa el recorrido completo del sistema, y refiné las verificaciones de seguridad para archivos inexistentes o inaccesibles.
+- `2026-10-30T10:30:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T10:30:39` Corrida terminada. Total usado hoy: 248.
