@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 103 | 6 | 39 | 10 | 122 |
-| 2026-10-30 | 92 | 6 | 29 | 6 | 91 |
+| 2026-10-29 | 100 | 6 | 38 | 10 | 122 |
+| 2026-10-30 | 94 | 6 | 29 | 6 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **44**
 - seguridad defensiva: **41**
-- robustez ante casos límite: **39**
-- rendimiento: **24**
+- robustez ante casos límite: **36**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
-- `browser.py`: **20**
-- `memory.py`: **18**
+- `quarantine.py`: **21**
+- `browser.py`: **21**
 - `settings.py`: **18**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `memory.py`: **17**
 - `assistant.py`: **16**
 - `scanner.py`: **14**
-- `organizer.py`: **13**
 - `healthscore.py`: **13**
 - `safety.py`: **13**
 - `branding.py`: **12**
+- `organizer.py`: **12**
 - `duplicates.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T09:38:12` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la sobrecarga de múltiples llamadas a `is_dir()` dentro del bucle de recorrido, calculando el nivel superior de una vez y reduciendo las operaciones de sistema innecesarias sobre el mismo nivel jerárquico.
+- `2026-10-30T09:38:02` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` de forma más eficiente y evitando la resolución innecesaria de rutas mediante `resolve()` (que implica consultas costosas al sistema de archivos) durante el loop principal, priorizando el uso de `os.path.normcase` para comparaciones rápidas.
 - `2026-10-30T09:27:36` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones críticas y en el protocolo `SuspicionCheck`, facilitando la comprensión del flujo de datos y las responsabilidades de cada componente para futuros colaboradores.
 - `2026-10-30T09:27:09` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en las funciones críticas de validación de integridad (`_evaluate_security_rules`, `_check_file_integrity`, `_validate_path_components`), aclarando el propósito y el mecanismo de mitigación de ataques TOCTOU y recursión que emplean.
 - `2026-10-30T09:17:12` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en las firmas de funciones, convirtiendo docstrings breves en explicaciones detalladas sobre el "porqué" de las validaciones, y extrayendo lógicas complejas de chequeo de atributos a una función helper descriptiva para mejorar la mantenibilidad.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T08:34:22` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` implementando validaciones más estrictas sobre los tipos de datos y el estado de los handles, asegurando que los errores de conversión o handles inválidos sean capturados de manera explícita y devuelvan valores seguros en lugar de fallar silenciosamente.
 - `2026-10-30T08:22:47` **duplicates.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y defensiva en las funciones de hashing (`hash_file` y `partial_hash`) para prevenir errores de acceso al sistema de archivos, asegurando que `None` se retorne de forma consistente si el archivo es inaccesible o si `_safe_path_check` falla, mejorando la resiliencia del módulo ante archivos bloqueados por el sistema.
 - `2026-10-30T08:22:23` **diskreport.py** (manejo de errores y validación de entradas): Se ha robustecido la función `_safe_stat` para manejar de forma explícita errores de sistema (`OSError` y derivados) devolviendo `None` de manera consistente, y se ha reemplazado la verificación implícita de `is_protected_path` por una validación más estricta en el bucle principal de `walk_files`, asegurando que el estado del sistema no sea afectado por entradas corruptas.
-- `2026-10-30T08:21:57` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` añadiendo validaciones de tipo y estructura sobre los parámetros de entrada, asegurando que cualquier entrada maliciosa o malformada (como tipos incorrectos en la lista de bases o el mapa de navegadores) no provoque excepciones inesperadas durante el escaneo.
-- `2026-10-30T08:14:15` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `ingest` ante entradas maliciosas o malformadas añadiendo validaciones explícitas de tipos y manejo de errores dentro del bucle de actualización, garantizando que un objeto no conforme no corrompa el contexto ni bloquee el funcionamiento de la app.

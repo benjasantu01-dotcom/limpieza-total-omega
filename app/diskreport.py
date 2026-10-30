@@ -360,11 +360,12 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
         try:
             rel = path.relative_to(root)
             if not rel.parts: continue
+            
+            # Identificamos el primer nivel una sola vez
             top_level = root / rel.parts[0]
-            if top_level.is_dir():
-                metrics = stats[top_level]
-                metrics.size += size
-                metrics.file_count += 1
+            metrics = stats[top_level]
+            metrics.size += size
+            metrics.file_count += 1
         except (ValueError, IndexError, OSError, PermissionError):
             continue
             
