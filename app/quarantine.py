@@ -27,7 +27,7 @@ import fcntl
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict, Any, TypeAlias, Set, Tuple, Optional, Callable, TypeVar, Literal
+from typing import List, Union, Dict, Any, TypeAlias, Set, Tuple, Optional, Callable, TypeVar, Iterable, Iterator
 
 from safety import (
     UnsafePathError,
@@ -73,6 +73,14 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
     "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", 
     "LPT6", "LPT7", "LPT8", "LPT9"
 }
+
+def _get_read_chunk(file_obj: Any) -> Iterator[bytes]:
+    """Generador para leer el archivo en bloques sin agotar la memoria."""
+    while True:
+        data = file_obj.read(CHUNK_SIZE)
+        if not data:
+            break
+        yield data
 
 def _check_for_reparse_points(path: Path) -> None:
     """
@@ -156,14 +164,16 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
 
 def _is_file_exclusive(path: Path) -> bool:
     """
-    Verifica si el archivo está libre de bloqueos exclusivos mediante flags de sistema.
-    En Windows usa CreateFile para testear acceso, en POSIX usa flock.
+    Verifica si el archivo está libre de bloqueos exclusivos.
+    Windows: Intenta abrir con acceso 0 (no exclusivo) sin share modes.
+    POSIX: Usa fcntl (flock) para intentar adquirir bloqueo de escritura exclusivo.
     """
     if path is None or not path.exists():
         return False
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
-        handle: int = k32.CreateFileW(str(path), 0, 0, None, 3, 0x00000080, None)
+        # OPEN_EXISTING = 3, FILE_ATTRIBUTE_NORMAL = 0x80
+        handle: int = k32.CreateFileW(str(path), 0, 0, None, 3, 0x80, None)
         if handle == -1: return False
         try:
             k32.CloseHandle(handle)
@@ -174,6 +184,7 @@ def _is_file_exclusive(path: Path) -> bool:
     try:
         fd: int = os.open(path, os.O_RDONLY) 
         try:
+            # LOCK_EX: exclusivo, LOCK_NB: no bloqueante (retorna error si falla)
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             fcntl.flock(fd, fcntl.LOCK_UN)
             return True
@@ -278,7 +289,7 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula hash SHA256 con buffering para minimizar presión de memoria."""
+    """Calcula hash SHA256 con streaming para minimizar presión de memoria."""
     if path is None or not path.exists(): return ""
     try:
         st = path.stat()
@@ -288,7 +299,7 @@ def _get_sha256(path: Path) -> str:
         
         sha256_hash = hashlib.sha256()
         with open(path, "rb", buffering=CHUNK_SIZE) as f:
-            for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
+            for chunk in _get_read_chunk(f):
                 sha256_hash.update(chunk)
         res = sha256_hash.hexdigest()
         _HASH_CACHE[cache_key] = res

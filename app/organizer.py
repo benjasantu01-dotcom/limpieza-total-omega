@@ -320,15 +320,29 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
         return False
     return True
 
+def _is_candidate_for_scan(entry: os.DirEntry, stats: os.stat_result) -> bool:
+    """Determina si un archivo cumple con los criterios de ser basura según políticas."""
+    if not is_valid_junk_extension(entry.name):
+        return False
+    if stats.st_size >= LIMITS.MAX_FILE_SIZE_BYTES:
+        return False
+    if bool(_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
+        return False
+    p = Path(entry.path)
+    return is_safe_to_modify(p) and not _is_file_locked(p)
+
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
     Ejecuta un recorrido recursivo del árbol de directorios con control de profundidad.
     """
-    if depth > LIMITS.MAX_SCAN_DEPTH: return
+    if depth > LIMITS.MAX_SCAN_DEPTH: 
+        return
+        
     try:
         c_abs = current_dir.absolute()
         path_str = str(c_abs)
-        if path_str in visited: return
+        if path_str in visited: 
+            return
         visited.add(path_str)
         
         with os.scandir(c_abs) as iterator:
@@ -337,13 +351,13 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
+                    
                     elif entry.is_file(follow_symlinks=False):
-                        if is_valid_junk_extension(entry.name):
-                            stats = entry.stat(follow_symlinks=False)
-                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not (_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK):
-                                p = Path(entry.path)
-                                if is_safe_to_modify(p) and not _is_file_locked(p):
-                                    found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                        stats = entry.stat(follow_symlinks=False)
+                        if _is_candidate_for_scan(entry, stats):
+                            p = Path(entry.path)
+                            found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                            
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
