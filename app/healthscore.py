@@ -319,7 +319,14 @@ def _is_safe_string_for_report(text: str) -> bool:
     return not any(term in t_low for term in _BLOCKED_TERMS)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Filtro de seguridad que limpia caracteres no permitidos y bloquea términos sensibles."""
+    """
+    Filtro de seguridad que limpia caracteres no permitidos y bloquea términos sensibles.
+    
+    Args:
+        msg: Texto potencialmente inseguro del motor de reglas.
+    Returns:
+        Cadena sanitizada y truncada, o vacía si el contenido viola las reglas.
+    """
     if not isinstance(msg, str) or len(msg) > (_MAX_MSG_LEN * 4): 
         return ""
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
@@ -328,7 +335,11 @@ def _sanitize_msg(msg: str | Any) -> str:
     return clean.strip()[:_MAX_MSG_LEN]
 
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
-    """Ejecutor de reglas con aislamiento (sandbox) para evitar fugas de información."""
+    """
+    Ejecutor de reglas con aislamiento (sandbox) para evitar fugas de información.
+    
+    Procesa la factoría de mensajes y aplica un filtrado estricto antes de la salida.
+    """
     try:
         raw_res = rule.message_factory(metrics)
         if not _is_safe_string_for_report(raw_res):
@@ -337,7 +348,11 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     except Exception: return ""
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
-    """Evalúa las reglas registradas y retorna solo las que disparan advertencias."""
+    """
+    Evalúa las reglas registradas y retorna solo las que disparan advertencias.
+    
+    Filtra los resultados mediante _apply_rule_safely para garantizar seguridad.
+    """
     if not isinstance(rules, tuple): return []
     ratio = _clamp(normalized_ratio)
     findings: List[str] = []

@@ -284,7 +284,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorrido recursivo iterativo utilizando un stack para evitar desbordamiento.
-    Verifica seguridad, evita ciclos mediante inodes y omite puntos de reparse.
+    Verifica seguridad, evita ciclos mediante inodes y omite puntos de reparse (junctions).
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -312,6 +312,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, p_entry)):
                             continue
                         
+                        # Excluir puntos de reparse para evitar recursión infinita o escaneo fuera de unidad
                         if entry.is_symlink() or _is_reparse_point(p_entry):
                             continue
                         
