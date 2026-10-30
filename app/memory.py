@@ -333,7 +333,8 @@ def _is_process_accessible(pid: int, access_mask: int) -> Optional[wintypes.HAND
     if WindowsAPI.kernel32 is None: return None
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-        if not handle or handle == INVALID_HANDLE_VALUE:
+        # Verifica que el handle sea un puntero válido y no un código de error de acceso
+        if handle is None or handle == 0 or handle == INVALID_HANDLE_VALUE:
             return None
         return wintypes.HANDLE(handle)
     except (ctypes.WinError, OSError, Exception):
@@ -343,6 +344,7 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
     """Consulta contadores de memoria mediante GetProcessMemoryInfo y extrae el WorkingSetSize."""
     if h_process is None or WindowsAPI.psapi is None: return None
     try:
+        # pmc.cb debe estar inicializado con el tamaño de la estructura antes de la llamada
         if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             # Validamos que el WS sea positivo y razonable (evitando errores de lectura)

@@ -598,7 +598,11 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """Persiste manifiesto de forma atómica mediante escritura a temporal y reemplazo."""
-    base_path: Path = quarantine_dir(base)
+    try:
+        base_path: Path = quarantine_dir(base)
+    except (OSError, PermissionError) as e:
+        raise OSError(f"Sandbox inaccesible para guardar manifiesto: {e}")
+        
     target_path: Path = _manifest_path(base_path)
     
     if not isinstance(items, list):
