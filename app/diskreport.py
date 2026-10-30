@@ -54,13 +54,13 @@ FileRecord: TypeAlias = Tuple[int, Path]
 def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
     """
     Intenta obtener los metadatos del sistema de archivos mediante lstat.
-    Retorna None si la ruta es inaccesible o no existe, evitando excepciones.
+    Retorna None si la ruta es inaccesible o no existe, manejando excepciones de sistema.
     """
     if path is None:
         return None
     try:
         return os.lstat(path)
-    except (OSError, PermissionError, ValueError, FileNotFoundError):
+    except (OSError, PermissionError, ValueError, FileNotFoundError, AttributeError):
         return None
 
 
@@ -308,6 +308,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         p_entry = Path(entry.path)
                         
+                        # Verificación explícita de seguridad antes de seguir
                         if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, p_entry)):
                             continue
                         

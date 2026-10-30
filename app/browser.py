@@ -254,15 +254,12 @@ def directory_size(path: Optional[OSPath]) -> int:
     p = Path(path)
     if not p.exists() or not p.is_dir(): return 0
     
-    # Usamos la ruta resuelta una sola vez
     root_norm = os.path.normcase(str(p.resolve()))
     ctx = ScanContext(root_norm, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
     return DirectoryScanner(ctx).get_size(str(p)).bytes_found
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """
-    Realiza el escaneo de perfiles de navegador en las rutas base configuradas.
-    """
+    """Realiza el escaneo de perfiles de navegador en las rutas base configuradas."""
     raw_bases = list(bases) if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
@@ -279,28 +276,29 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             base_norm = os.path.normcase(str(base_resolved))
         except (OSError, RuntimeError): continue
         
-        # Contexto compartido para el base actual
         ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
         scanner = DirectoryScanner(ctx)
         
         for browser_key, relative_path in browser_map.items():
-            if not isinstance(relative_path, str): continue
+            if not isinstance(relative_path, str) or not _is_valid_rel_path(relative_path): continue
             
-            target = base_resolved.joinpath(*relative_path.split("\\"))
-            if not target.exists() or not target.is_dir(): continue
-            
-            # Validación defensiva adicional para cada ruta detectada
-            if not is_safe_to_modify(target) or is_protected_path(target): continue
-            
-            target_str = str(target)
-            if not scanner._is_path_allowed(target_str): continue
-            if _IS_JUNCTION_FN(target_str) or target.is_symlink(): continue
-            if _is_system_hidden(target_str, kernel) or target.name.lower() in NEVER_TOUCH:
-                continue
+            try:
+                target = base_resolved.joinpath(*relative_path.split("\\"))
+                if not target.exists() or not target.is_dir(): continue
+                
+                if not is_safe_to_modify(target) or is_protected_path(target): continue
+                
+                target_str = str(target)
+                if not scanner._is_path_allowed(target_str): continue
+                if _IS_JUNCTION_FN(target_str) or target.is_symlink(): continue
+                if _is_system_hidden(target_str, kernel) or target.name.lower() in NEVER_TOUCH:
+                    continue
 
-            scan_res = scanner.get_size(target_str)
-            if scan_res.success and scan_res.bytes_found > 0:
-                found.append(BrowserCache(browser_key, target, scan_res.bytes_found))
+                scan_res = scanner.get_size(target_str)
+                if scan_res.success and scan_res.bytes_found > 0:
+                    found.append(BrowserCache(str(browser_key), target, scan_res.bytes_found))
+            except (OSError, TypeError, ValueError):
+                continue
     
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found
