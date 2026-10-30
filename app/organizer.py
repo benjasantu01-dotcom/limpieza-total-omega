@@ -292,7 +292,9 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if is_protected_path(src_real) or is_protected_path(dest_real): return False
         if not is_safe_to_modify(dest_real): return False
         
-        if src_real == dest_real or src_real.parent == dest_real: return False
+        # Evitar mover archivos que ya están en la carpeta de destino o sus subcarpetas
+        if dest_real in src_real.parents or src_real == dest_real: return False
+        if src_real.parent == dest_real: return False
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or _is_junction(junk_file.path): return False
         

@@ -821,7 +821,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         destination.parent.mkdir(parents=True, exist_ok=True)
         h, i = _write_temp_to_final(source, destination)
         
-        if destination.stat().st_ino != i or _get_sha256(destination) != h:
+        if destination.stat().st_ino != i or _get_sha256(destination) != h or destination.stat().st_nlink > 1:
             raise RuntimeError("Integridad comprometida: destino inconsistente.")
         return h, i
 
