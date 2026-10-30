@@ -788,3 +788,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-30T04:19:41` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `parse_registry_csv` y `_resolve_and_cache_path` mediante la validación explícita de `None` y tipos, garantizando que errores inesperados en la entrada de datos del sistema no propaguen excepciones hacia el bucle principal.
 - `2026-10-30T04:19:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T04:19:41` Corrida terminada. Total usado hoy: 104.
+- `2026-10-30T04:27:27` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-10-30T04:28:10` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `ProblemCriterion` y `SystemContext.ingest`, además de añadir type hints explícitos en los decoradores y validaciones, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar la funcionalidad.
+- `2026-10-30T04:28:40` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-30T04:29:05` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `DirectoryScanner`, aclarando el propósito defensivo de la recursión y las validaciones de seguridad para facilitar futuras auditorías del código.
+- `2026-10-30T04:29:14` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: legibilidad y documentación).
+- `2026-10-30T04:29:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T04:29:14` Corrida terminada. Total usado hoy: 108.

@@ -70,7 +70,10 @@ class DirectoryScanner:
         self.ctx = context
 
     def _is_path_allowed(self, path_obj: Path) -> bool:
-        """Verifica si una ruta cumple con los requisitos de seguridad del sandbox."""
+        """
+        Valida que la ruta esté dentro del sandbox permitido y no contenga 
+        restricciones de seguridad o punteros de sistema.
+        """
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return False
         
@@ -83,7 +86,8 @@ class DirectoryScanner:
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
-        Calcula el peso en bytes de un directorio mediante profundidad controlada.
+        Calcula el peso en bytes de un directorio mediante un recorrido 
+        profundidad-limitada que detecta ciclos y respeta los bloqueos definidos.
         """
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)

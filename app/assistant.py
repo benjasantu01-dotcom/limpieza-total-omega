@@ -201,13 +201,13 @@ class MetricSpec:
 
 class ProblemCriterion(NamedTuple):
     """
-    Define una regla lógica para evaluar el estado del sistema.
+    Regla lógica para evaluar la salud del sistema.
     
     Attributes:
-        metric_key: Nombre del atributo en SystemContext a evaluar.
+        metric_key: Clave en SystemContext.
         threshold: Valor límite para comparar.
-        operator: Comparador lógico ('<' o '>').
-        message_format: Plantilla de mensaje con un marcador '{:.0f}' o '{:d}'.
+        operator: Operador lógico ('<' o '>').
+        message_format: Plantilla de string para el mensaje resultante.
     """
     metric_key: str
     threshold: float
@@ -215,17 +215,17 @@ class ProblemCriterion(NamedTuple):
     message_format: str
 
     def _evaluate_metric(self, val: float) -> bool:
-        """Determina si la métrica excede el umbral basándose en el operador lógico configurado."""
+        """Aplica el operador lógico configurado sobre la métrica y su umbral."""
         if not _check_metric_integrity(val):
             return False
         return (val < self.threshold) if self.operator == "<" else (val > self.threshold)
 
     def is_triggered_by(self, val: float) -> bool:
-        """Verifica si el valor es positivo y cumple la condición de umbral de riesgo."""
+        """Verifica si el valor excede el umbral de riesgo definido."""
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, val: float) -> Optional[str]:
-        """Formatea el mensaje de advertencia solo si la condición es verdadera y es texto seguro."""
+        """Devuelve el mensaje formateado si el criterio de riesgo se cumple."""
         if not self.is_triggered_by(val):
             return None
         try:
