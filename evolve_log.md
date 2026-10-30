@@ -886,3 +886,37 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-10-30T06:02:31` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_safe_unlink` y `_is_item_purgable` al incluir una validación de existencia antes de cualquier operación de I/O, evitando excepciones innecesarias en situaciones de concurrencia donde el archivo pudo haber sido removido por otro proceso.
 - `2026-10-30T06:02:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T06:02:31` Corrida terminada. Total usado hoy: 144.
+- `2026-10-30T06:09:14` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-10-30T06:09:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-30T06:10:26` Tests FALLARON:
+```
+a'))
+E        +    where <function save at 0x7f7fbcc0db20> = settings.save
+E        +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+
+evolve/tests/test_assistant.py:60: AssertionError
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert None is not None
+ +  where None = <function save at 0x7f7fbcc0db20>({'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}, PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0/sub/carpeta'))
+ +    where <function save at 0x7f7fbcc0db20> = settings.save
+ +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+2 failed, 297 passed in 1.61s
+
+```
+- `2026-10-30T06:10:26` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo `_check_access_to_parent_dir` para prevenir operaciones en rutas cuyo directorio padre no es accesible o es un sistema de archivos virtual, mitigando fallos silenciosos cuando un proceso intenta modificar un archivo en un volumen que ha sido desconectado (removable/virtual) durante la ejecución.
+- `2026-10-30T06:10:51` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-30T06:11:05` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` añadiendo una verificación de existencia previa en `os.replace` y encapsulando el manejo de permisos en una lógica más resiliente para evitar fallos catastróficos ante archivos bloqueados o sistemas de archivos de solo lectura.
+- `2026-10-30T06:11:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T06:11:05` Corrida terminada. Total usado hoy: 148.

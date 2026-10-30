@@ -196,6 +196,7 @@ class _SettingsManager:
             if not os.access(temp_path, os.W_OK): return False
             
             os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
+            # Reemplazo atómico: si el archivo existe debe estar libre de bloqueos exclusivos
             os.replace(temp_path, resolved_path)
             self.clear(resolved_path)
             return True

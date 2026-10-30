@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 65
+- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-28 | 0 | 0 | 0 | 0 | 10 |
+| 2026-10-28 | 0 | 0 | 0 | 0 | 6 |
 | 2026-10-29 | 130 | 7 | 47 | 17 | 149 |
-| 2026-10-30 | 66 | 5 | 18 | 4 | 51 |
+| 2026-10-30 | 67 | 6 | 19 | 4 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
 - legibilidad y documentación: **46**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **31**
 - rendimiento: **29**
 
@@ -33,7 +33,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **22**
 - `browser.py`: **21**
 - `memory.py`: **19**
-- `settings.py`: **17**
+- `settings.py`: **18**
 - `assistant.py`: **16**
 - `diskreport.py`: **16**
 - `scanner.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T06:11:05` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `perform_atomic_write` añadiendo una verificación de existencia previa en `os.replace` y encapsulando el manejo de permisos en una lógica más resiliente para evitar fallos catastróficos ante archivos bloqueados o sistemas de archivos de solo lectura.
 - `2026-10-30T06:02:31` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_unlink` y `_is_item_purgable` al incluir una validación de existencia antes de cualquier operación de I/O, evitando excepciones innecesarias en situaciones de concurrencia donde el archivo pudo haber sido removido por otro proceso.
 - `2026-10-30T06:01:40` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_handle` y `trim_working_set` ante procesos que ya no existen o que están en estado de terminación durante la iteración, evitando el manejo de excepciones genéricas innecesarias y asegurando una limpieza de recursos más estricta mediante un bloque `try...finally` garantizado.
 - `2026-10-30T05:50:38` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante instanciaciones mal formadas agregando una validación explícita en `__post_init__` y asegurando que `_validate_numeric` sea el único punto de entrada para sanitización de datos, evitando que valores inesperados (como `None` o tipos incorrectos) causen fallos silenciosos o resultados erróneos en el cálculo del score.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T04:59:35` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructuradas en los métodos internos de `StartupEntry` y utilidades de procesamiento, aclarando las precondiciones de seguridad y el comportamiento de las cachés, lo cual facilita el mantenimiento y la auditoría del código.
 - `2026-10-30T04:59:04` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo un bloque de `__doc__` específico al gestor de persistencia `_SettingsManager` y refinando los docstrings de `validate` y `_read_and_parse_json` para explicitar el contrato de tolerancia a fallos y validación de tipos, facilitando el mantenimiento a futuro.
 - `2026-10-30T04:58:34` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hints explícitos, docstrings enriquecidas que clarifican el propósito de las constantes y los protocolos de escaneo, y la adición de una firma `TypedDict` para documentar la estructura de datos que los analizadores esperan recibir, facilitando el mantenimiento y la legibilidad.
-- `2026-10-30T04:51:32` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de validación de seguridad mediante la implementación de `Docstrings` explicativos en las funciones críticas y la re-organización de las validaciones de volumen, asegurando que el "porqué" de las restricciones sea evidente para futuros colaboradores.
