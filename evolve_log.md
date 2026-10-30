@@ -751,3 +751,40 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-10-30T04:08:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
 - `2026-10-30T04:08:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T04:08:43` Corrida terminada. Total usado hoy: 100.
+- `2026-10-30T04:17:15` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-30T04:18:23` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones en `ensure_safe_to_modify` capturando excepciones específicas en los bloques de inicialización y normalización, reemplazando la captura genérica `Exception` por tipos precisos, lo cual evita que errores inesperados durante el proceso de validación aborten silenciosamente el escaneo completo.
+- `2026-10-30T04:18:48` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-30T04:19:19` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé `_read_and_parse_json` añadiendo una validación explícita de tipos contra `DEFAULTS` tras el parsing, evitando que un JSON con tipos de datos maliciosos o inesperados (ej. `top_archivos` como string largo) se propague al resto del sistema antes de pasar por `validate`.
+- `2026-10-30T04:19:41` Tests FALLARON:
+```
+............................................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:179: SyntaxWarning: invalid escape sequence '\C'
+    Transforma rutas a formato extendido UNC (\\?\C:\...) para permitir el
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.24s
+
+```
+- `2026-10-30T04:19:41` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `parse_registry_csv` y `_resolve_and_cache_path` mediante la validación explícita de `None` y tipos, garantizando que errores inesperados en la entrada de datos del sistema no propaguen excepciones hacia el bucle principal.
+- `2026-10-30T04:19:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T04:19:41` Corrida terminada. Total usado hoy: 104.

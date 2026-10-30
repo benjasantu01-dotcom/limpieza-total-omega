@@ -563,7 +563,7 @@ def _validate_junction_depth(path: Path) -> None:
             raise UnsafePathError("Profundidad de reparse point excesiva.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         try:
             curr = _get_final_path_normalized(curr)
-        except Exception:
+        except (OSError, PermissionError, RuntimeError):
             break
 
 def _validate_drive_restrictions(target_path: Path) -> None:
