@@ -65,7 +65,17 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     Esta técnica mitiga ataques TOCTOU asegurando que la referencia del archivo 
     se mantenga constante durante el ciclo de vida de la operación.
     """
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return (0, 0, 0, 0)
+    if not isinstance(path_str, str) or not path_str: return (0, 0, 0, 0)
+    
+    # Intento de obtener ID de archivo multiplataforma vía st_ino si está disponible
+    try:
+        st = os.stat(path_str)
+        if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
+            return (st.st_dev, st.st_ino, 0, 0)
+    except OSError:
+        pass
+
+    if os.name != 'nt': return (0, 0, 0, 0)
     info = BY_HANDLE_FILE_INFORMATION()
     kernel32 = ctypes.windll.kernel32
     try:
@@ -769,6 +779,7 @@ def _check_file_integrity(state: SafetyState) -> None:
         current_stat = _get_path_stat_robust(state.path)
         current_id = _get_file_id(str(state.path))
         
+        # Validar consistencia de identidad (incluyendo st_ino/st_dev)
         if state.file_id != (0, 0, 0, 0) and current_id != state.file_id:
             raise UnsafePathError(f"Manipulación de identidad detectada (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
         
