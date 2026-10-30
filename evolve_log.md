@@ -574,3 +574,4 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-30T14:53:08` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-10-30T14:53:08` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T14:53:08` Corrida terminada. Total usado hoy: 350.
+- `2026-10-30T15:02:28` Presupuesto diario agotado (350 usados). Corte hasta mañana.
