@@ -53,13 +53,12 @@ FileRecord: TypeAlias = Tuple[int, Path]
 
 def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
     """
-    Obtiene metadatos del archivo sin seguir enlaces simbólicos (evita escapes).
-    Maneja explícitamente errores de acceso y condiciones de carrera.
+    Intenta obtener los metadatos del sistema de archivos mediante lstat.
+    Retorna None si la ruta es inaccesible o no existe, evitando excepciones.
     """
     if path is None:
         return None
     try:
-        # lstat garantiza no seguir enlaces y detectar su estado real
         return os.lstat(path)
     except (OSError, PermissionError, ValueError, FileNotFoundError):
         return None
@@ -67,14 +66,13 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
 
 def _is_reparse_point(path: Path) -> bool:
     """
-    Detecta si un directorio es un punto de reparse (junction o symlink).
-    En Windows utiliza llamadas nativas de Kernel32, en otros SO delega a pathlib.
+    Determina si un directorio es un punto de unión o enlace simbólico.
+    Usa la API de Windows en entorno nt para máxima precisión y pathlib en otros.
     """
     try:
         if os.name == 'nt':
             import ctypes
             FILE_ATTRIBUTE_REPARSE_POINT = 0x0400
-            # GetFileAttributesW es más eficiente y seguro que resolve() para verificar estados
             attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
             if attrs == -1: return False
             return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
@@ -159,13 +157,13 @@ def _validate_limit(limit: Any) -> int:
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
-    Normaliza, expande y valida si un directorio es candidato seguro para ser escaneado.
+    Normaliza y valida si un directorio es candidato seguro para ser escaneado.
+    Retorna la ruta absoluta o None si es inválida, protegida o inaccesible.
     """
     if not directory:
         return None
     try:
         p = Path(directory).expanduser()
-        # Evitar resolver rutas UNC si no son seguras, verificar existencia previa
         if not p.exists():
             return None
         p = p.resolve()
@@ -177,13 +175,13 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(name: str, full_path: Path) -> bool:
-    """Verifica si el nombre de un archivo o carpeta es potencialmente malicioso."""
+    """Valida si un nombre de archivo contiene caracteres sospechosos."""
     if not name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
     return any(c in name for c in SUSPICIOUS_CHARS) or any(char in name for char in ('<', '>', ':', '"', '|', '?', '*'))
             
 def _get_local_windows_drives() -> List[str]:
-    """Descubre unidades lógicas disponibles en entorno Windows."""
+    """Descubre unidades lógicas disponibles en entorno Windows mediante letras de unidad."""
     import string
     drives: List[str] = []
     try:
@@ -245,6 +243,7 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
+        """Calcula el porcentaje de uso actual."""
         return round(self.used / self.total * 100, 1) if self.total > 0 else 0.0
 
     @property
@@ -254,7 +253,7 @@ class DriveUsage:
 
 
 def format_size(num: Union[int, float, None]) -> str:
-    """Formatea bytes a string legible (ej. 1.2 GB)."""
+    """Formatea bytes a string legible usando prefijos binarios."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     value = float(num)
@@ -273,7 +272,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         p = Path(mount).expanduser()
         if not p.exists() or _is_reparse_point(p) or is_protected_path(p):
             return None
-        # Usar la ruta resuelta solo para el disco, verificando que no sea red (UNC)
         if str(p).startswith('\\\\'): return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -313,11 +311,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, p_entry)):
                             continue
                         
-                        # Verifica si es enlace simbólico o reparse point antes de estadisticar
                         if entry.is_symlink() or _is_reparse_point(p_entry):
                             continue
                         
-                        # Usar stat local para evitar seguir referencias externas
                         st = entry.stat(follow_symlinks=False)
                             
                         if entry.is_dir():
@@ -335,7 +331,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Obtiene los N archivos más grandes en la ruta dada."""
+    """Retorna los N archivos más grandes encontrados en la ruta."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
@@ -343,7 +339,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Obtiene el volumen total ocupado por cada tipo de extensión."""
+    """Retorna una lista de extensiones ordenadas por peso ocupado."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -352,7 +348,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Analiza subcarpetas inmediatas y retorna las de mayor peso."""
+    """Analiza carpetas de primer nivel y retorna las que más espacio consumen."""
     root = _validate_root(directory)
     if root is None: return []
     
@@ -375,7 +371,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
-    """Calcula bytes totales y cantidad de archivos encontrados."""
+    """Retorna bytes totales y cantidad de archivos encontrados en la ruta."""
     root = _validate_root(directory)
     if root is None: return (0, 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -384,8 +380,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Ejecuta el escaneo de disco y acumula estadísticas en GlobalStats.
-    Utiliza un min-heap para mantener el Top N de archivos más pesados de forma eficiente.
+    Ejecuta el escaneo completo y acumula las estadísticas y el top de archivos.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -395,7 +390,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             ext = path.suffix.lower() if path.suffix else "(sin extensión)"
             stats.register_file(size, ext)
             
-            # Mantener solo los archivos más grandes usando heap
             if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size, path))
@@ -408,7 +402,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Genera una vista previa del análisis de disco en formato de texto."""
+    """Genera un reporte textual con el resumen del uso de disco."""
     root = _validate_root(directory)
     if root is None: 
         return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]

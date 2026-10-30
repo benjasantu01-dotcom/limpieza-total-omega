@@ -53,15 +53,6 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 class ScanContext:
     """
     Contenedor inmutable de configuración para escaneos recursivos.
-    
-    Attributes:
-        sandbox_base_norm: Ruta normalizada raíz (case-insensitive) para prevenir escapes.
-        kernel32: Instancia de la DLL de Windows o None si estamos en otro SO.
-        is_junction: Función callback para detectar puntos de reparse (Junctions).
-        visited_files: Registro de (dev, ino) para evitar conteos duplicados por hardlinks.
-        visited_dirs: Conjunto de (dev, ino) ya recorridos para evitar bucles de directorios.
-        never_touch_lower: Conjunto de nombres de archivo/directorio prohibidos.
-        max_depth: Límite de recursión para evitar desbordamiento de pila.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -74,13 +65,17 @@ class ScanContext:
 class DirectoryScanner:
     """
     Motor de recorrido recursivo con enfoque defensivo.
-    
-    Aplica chequeos estrictos de seguridad antes de cada acceso a disco,
-    asegurando que no se sigan enlaces simbólicos que salgan del sandbox
-    y que se respeten los atributos de sistema/oculto de Windows.
     """
     def __init__(self, context: ScanContext):
         self.ctx = context
+
+    def _is_path_allowed(self, path_obj: Path) -> bool:
+        """Verifica si una ruta cumple con los requisitos de seguridad del sandbox."""
+        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+            return False
+        
+        path_norm = os.path.normcase(os.path.abspath(path_obj))
+        return path_norm.startswith(self.ctx.sandbox_base_norm)
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
@@ -98,15 +93,7 @@ class DirectoryScanner:
         if dir_id in self.ctx.visited_dirs:
             return ScanResult(0, True)
         
-        try:
-            p_obj = Path(root_path)
-            if not is_safe_to_modify(p_obj) or is_protected_path(p_obj):
-                return ScanResult(0, True)
-            root_norm = os.path.normcase(os.path.abspath(root_path))
-        except (OSError, RuntimeError, ValueError):
-            return ScanResult(0, False)
-
-        if not root_norm.startswith(self.ctx.sandbox_base_norm):
+        if not self._is_path_allowed(Path(root_path)):
             return ScanResult(0, True)
 
         self.ctx.visited_dirs.add(dir_id)
@@ -255,7 +242,6 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not isinstance(path, (str, Path)) or not path: return 0
     path_obj = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0
-    if not is_safe_to_modify(path_obj) or is_protected_path(path_obj): return 0
     
     res_str = str(path_obj.resolve())
     ctx = ScanContext(os.path.normcase(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
@@ -289,13 +275,12 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             target = base_resolved.joinpath(*relative_path.split("\\"))
             if not target.exists() or not target.is_dir(): continue
             
-            target_abs = os.path.abspath(target)
-            if not os.path.normcase(target_abs).startswith(base_norm): continue
+            # Verificación de seguridad centralizada
+            if not scanner._is_path_allowed(target): continue
             
-            if _IS_JUNCTION_FN(target_abs) or target.is_symlink() or not is_safe_to_modify(target) or is_protected_path(target):
-                continue
+            if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): continue
                 
-            if _is_system_hidden(target_abs, kernel) or target.name.lower() in NEVER_TOUCH:
+            if _is_system_hidden(str(target), kernel) or target.name.lower() in NEVER_TOUCH:
                 continue
 
             scan_res = scanner.get_size(str(target))

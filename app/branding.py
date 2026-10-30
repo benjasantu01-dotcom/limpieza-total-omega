@@ -355,11 +355,13 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
     """Caché para los segmentos de gradiente calculados para una longitud específica."""
     return _get_grouped_segments(gradient_colors(steps, stops))
 
+# Coordenadas relativas del escudo Omega (128x128 viewbox). 
+# Estructura: (x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7, x8, y8)
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
-    """Escala y traslada las coordenadas base del escudo de Omega."""
+    """Escala y traslada las coordenadas base del escudo de Omega usando una transformación afín."""
     if not math.isfinite(scale) or scale <= 0: 
         return ()
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
