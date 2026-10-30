@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 92 | 6 | 34 | 9 | 107 |
-| 2026-10-30 | 107 | 7 | 34 | 9 | 99 |
+| 2026-10-29 | 92 | 6 | 34 | 9 | 103 |
+| 2026-10-30 | 109 | 7 | 35 | 9 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **44**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **36**
+- seguridad defensiva: **38**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **22**
+- `browser.py`: **23**
 - `quarantine.py`: **21**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `settings.py`: **19**
 - `memory.py`: **18**
 - `assistant.py`: **17**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T10:58:50` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre el resultado de `path.resolve()` antes de procesar archivos o carpetas, evitando así que manipulaciones de rutas (como enlaces simbólicos relativos) escapen al escáner.
+- `2026-10-30T10:58:23` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner` al añadir una validación estricta para detectar y prevenir el seguimiento de enlaces simbólicos (`is_symlink`) y puntos de reparse durante la iteración, garantizando que el escáner se mantenga estrictamente dentro de los límites del sistema de archivos real y seguro.
 - `2026-10-30T10:49:14` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` para prevenir inyecciones y mejorar la validación de la URL de destino, asegurando que el motor de IA no pueda ser redirigido mediante manipulación de parámetros de configuración.
 - `2026-10-30T10:48:14` **settings.py** (robustez ante casos límite): Se ha añadido una validación estricta de "path traversal" en `_read_and_parse_json` y en la gestión de rutas para asegurar que ningún valor de configuración cargado desde el disco intente escapar de las rutas permitidas o contenga caracteres de control que puedan comprometer la integridad del sistema.
 - `2026-10-30T10:39:22` **safety.py** (robustez ante casos límite): Mejora la robustez del chequeo de integridad al implementar una validación de `st_ino` (número de índice) en sistemas donde esté disponible, fortaleciendo la defensa contra ataques TOCTOU y asegurando que la identidad del objeto sea persistente entre la lectura de metadatos y el acceso al archivo, cubriendo así un caso límite en el manejo de punteros de archivo.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T09:57:59` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `total_quarantined_bytes` evitando recrear el manifiesto completo y mejorando la eficiencia de búsqueda en la limpieza masiva mediante el uso del diccionario de ítems ya cargado, reduciendo la complejidad algorítmica de O(N^2) a O(N).
 - `2026-10-30T09:50:49` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` integrando el filtrado de `is_protected_path` directamente dentro del bucle principal mediante una pre-verificación de nombre de archivo con un `set` de caché local, evitando llamadas costosas a `GetModuleFileNameExW` para procesos que ya fueron descartados previamente en la misma iteración.
 - `2026-10-30T09:47:34` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo utilizando `lru_cache` sobre el resumen de texto generado en `summarize` y reduje la carga de procesamiento convirtiendo la tupla de claves de validación en una constante de módulo, evitando recrear la lista en cada ejecución de `compute_score`.
-- `2026-10-30T09:38:12` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la sobrecarga de múltiples llamadas a `is_dir()` dentro del bucle de recorrido, calculando el nivel superior de una vez y reduciendo las operaciones de sistema innecesarias sobre el mismo nivel jerárquico.
-- `2026-10-30T09:38:02` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` de forma más eficiente y evitando la resolución innecesaria de rutas mediante `resolve()` (que implica consultas costosas al sistema de archivos) durante el loop principal, priorizando el uso de `os.path.normcase` para comparaciones rápidas.

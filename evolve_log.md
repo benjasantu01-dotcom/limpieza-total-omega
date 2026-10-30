@@ -1307,3 +1307,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-30T10:49:31` ➖ Sin cambios en branding.py (enfoque: seguridad defensiva). Motivo: Se ha endurecido la seguridad en `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier interacción con el sistema de archivos, asegurando que ni el destino ni su directorio padre sean rutas críticas del sistema, reforzando así la robustez ante intentos de escritura malintencionados.
 - `2026-10-30T10:49:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T10:49:31` Corrida terminada. Total usado hoy: 256.
+- `2026-10-30T10:57:54` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-30T10:58:23` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `DirectoryScanner` al añadir una validación estricta para detectar y prevenir el seguimiento de enlaces simbólicos (`is_symlink`) y puntos de reparse durante la iteración, garantizando que el escáner se mantenga estrictamente dentro de los límites del sistema de archivos real y seguro.
+- `2026-10-30T10:58:50` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre el resultado de `path.resolve()` antes de procesar archivos o carpetas, evitando así que manipulaciones de rutas (como enlaces simbólicos relativos) escapen al escáner.
+- `2026-10-30T10:59:13` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-30T10:59:27` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.is_finite
+- `2026-10-30T10:59:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T10:59:27` Corrida terminada. Total usado hoy: 260.

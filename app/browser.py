@@ -92,7 +92,7 @@ class DirectoryScanner:
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
         
-        if self.ctx.is_junction(root_path):
+        if self.ctx.is_junction(root_path) or Path(root_path).is_symlink():
             return ScanResult(0, True)
 
         try:
@@ -115,6 +115,9 @@ class DirectoryScanner:
                 for entry in iterator:
                     try:
                         if entry.name.lower() in self.ctx.never_touch_lower: continue
+                        
+                        # Prevención de escalada mediante enlaces simbólicos o puntos de reparse
+                        if entry.is_symlink(): continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             if not self.ctx.is_junction(entry.path):

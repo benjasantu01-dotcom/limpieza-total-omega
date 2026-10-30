@@ -306,7 +306,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                 for entry in iterator:
                     try:
                         p_entry = Path(entry.path)
-                        if skip_protected and (is_protected_path(p_entry) or _is_excluded_path(entry.name, p_entry)):
+                        # Resolución final para verificar seguridad ante posibles escapes de symlinks
+                        if skip_protected and (is_protected_path(p_entry.resolve()) or _is_excluded_path(entry.name, p_entry)):
                             continue
                         
                         if entry.is_symlink() or _is_reparse_point(p_entry):
@@ -357,6 +358,9 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             rel = path.relative_to(root)
             if not rel.parts: continue
             top_level = root / rel.parts[0]
+            # Validar que no se procesen rutas que hayan quedado fuera de lo esperado tras el walk
+            if skip_protected and is_protected_path(top_level.resolve()):
+                continue
             metrics = stats[top_level]
             metrics.size += size
             metrics.file_count += 1
