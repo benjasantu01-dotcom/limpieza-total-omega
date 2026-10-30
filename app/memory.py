@@ -369,7 +369,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     for i in range(count):
         pid = int(pids[i])
-        if _is_system_process(pid) or pid in processed_pids: continue
+        if pid <= 0 or pid in processed_pids or _is_system_process(pid):
+            continue
         processed_pids.add(pid)
         
         h_process = _get_process_handle(pid, WIN32_PROCESS_QUERY_LIMITED)
