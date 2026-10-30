@@ -739,7 +739,12 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 else:
                     kernel32.CloseHandle(handle)
             
-            return path.stat()
+            st = path.stat()
+            # Validación de metadatos críticos
+            if st.st_atime == 0 and st.st_mtime == 0:
+                 raise UnsafePathError(f"Metadatos corruptos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+            return st
+            
         except PermissionError:
             raise UnsafePathError(f"Permisos insuficientes: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         except OSError as e:

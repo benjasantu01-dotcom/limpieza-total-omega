@@ -189,12 +189,12 @@ class StartupEntry:
         Resuelve rutas relativas a absolutas y normalizadas, utilizando un 
         caché global para optimizar llamadas redundantes al sistema.
         """
-        if not isinstance(path_string, str) or not self.is_valid:
+        if not isinstance(path_string, str) or not path_string:
             return ""
         
-        # Validaciones de seguridad pre-normalización
-        if any(ord(c) < 32 for c in path_string): return ""
-        if len(path_string) > MAX_PATH_LEN or path_string.startswith(r"\\") or "\0" in path_string: return ""
+        # Validaciones de seguridad pre-normalización estricta
+        if len(path_string) > MAX_PATH_LEN or "\0" in path_string or any(ord(c) < 32 for c in path_string):
+            return ""
             
         try:
             norm: str = os.path.normpath(path_string)

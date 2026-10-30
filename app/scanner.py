@@ -120,7 +120,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Obtiene metadatos asegurando que no se sigan puntos de reanálisis."""
+    """Obtiene metadatos asegurando que no se sigan puntos de reanálisis y manejando archivos bloqueados."""
     if not isinstance(entry, os.DirEntry):
         return None
     try:
@@ -132,7 +132,12 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if not entry.is_file() or _cached_is_protected(entry.path):
             return None
         return entry.stat(follow_symlinks=False)
-    except (OSError, PermissionError, FileNotFoundError):
+    except OSError as e:
+        if e.winerror == ERROR_SHARING_VIOLATION:
+            logger.debug(f"Archivo bloqueado, omitiendo análisis de contenido: {entry.path}")
+            return None
+        return None
+    except (PermissionError, FileNotFoundError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
