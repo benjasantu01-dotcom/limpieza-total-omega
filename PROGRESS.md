@@ -8,23 +8,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 68
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 211
+- Rechazadas por guardia de seguridad: 66
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 80 | 5 | 31 | 9 | 83 |
-| 2026-10-30 | 114 | 8 | 37 | 9 | 128 |
+| 2026-10-29 | 79 | 5 | 29 | 8 | 83 |
+| 2026-10-30 | 115 | 8 | 37 | 9 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **38**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -34,17 +34,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **19**
 - `diskreport.py`: **19**
 - `memory.py`: **18**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
 - `safety.py`: **15**
 - `healthscore.py`: **14**
 - `scanner.py`: **13**
 - `organizer.py`: **12**
 - `branding.py`: **11**
-- `duplicates.py`: **8**
 - `startup.py`: **8**
+- `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-30T12:43:30` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de datos externos en `SystemContext.ingest` y `_validate_and_sanitize_data` para evitar errores silenciosos, asegurando que si una fuente es inválida, se registre apropiadamente y se valide explícitamente antes de intentar aplicar cambios, cumpliendo con el enfoque de validación proactiva.
 - `2026-10-30T11:20:07` **settings.py** (seguridad defensiva): Se endureció la seguridad en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones explícitas de integridad de metadatos (comprobando el dueño del archivo y permisos) para prevenir ataques de sustitución mediante enlaces simbólicos o condiciones de carrera, alineándose con las reglas de seguridad defensiva solicitadas.
 - `2026-10-30T11:19:53` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` implementando una validación estricta del `base_root` antes de iniciar el escaneo recursivo, evitando que rutas relativas o maliciosas escapen del contexto esperado incluso si se intenta inyectar mediante `directory_stack`.
 - `2026-10-30T11:19:26` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar que `_get_file_id` intente abrir descriptores de archivos de dispositivo, previniendo cuelgues del sistema o comportamiento inesperado al acceder a hardware a bajo nivel.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T10:18:58` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` y `largest_folders` ante la posible modificación de la estructura de directorios durante el escaneo (condición de carrera o archivos eliminados), envolviendo el acceso a metadatos y la navegación en bloques de error más específicos para evitar abortos inesperados.
 - `2026-10-30T10:18:32` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `DirectoryScanner` frente a archivos bloqueados por el sistema operativo durante el escaneo, añadiendo una comprobación explícita para evitar errores en `os.scandir` si la ruta es inaccesible justo después de ser listada (condición de carrera o permisos cambiantes), además de asegurar que las rutas `UNC` se descarten preventivamente en el `ScanContext`.
 - `2026-10-30T10:18:07` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y estados inválidos, implementando un chequeo previo de `Path.is_absolute()` y una limpieza más agresiva de excepciones para evitar cualquier propagación innecesaria al hilo de UI.
-- `2026-10-30T10:08:53` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_sanitize_query` y `_clean_grade` ante valores de entrada inesperados (como listas o diccionarios anidados) asegurando que no se produzcan excepciones de tipo `AttributeError` o fallos en el filtrado, previniendo así un posible crash del asistente.

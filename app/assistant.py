@@ -507,7 +507,8 @@ class SystemContext:
                 if grade_val: updates["grade"] = grade_val
             
             return updates if updates else None
-        except Exception:
+        except Exception as e:
+            logging.error(f"Error procesando fuente de datos: {e}")
             return None
 
     def _validate_ingestion_source(self, source: Any) -> bool:
@@ -529,9 +530,12 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """Normaliza, valida e importa datos externos al contexto de manera segura."""
-        if not self._validate_ingestion_source(source): return False
+        if not self._validate_ingestion_source(source): 
+            logging.warning("Intento de ingesta con fuente insegura o compleja bloqueado.")
+            return False
         updates = self._validate_and_sanitize_data(source)
-        if updates is None: return False
+        if updates is None: 
+            return False
         self._apply_updates(updates)
         return True
 
