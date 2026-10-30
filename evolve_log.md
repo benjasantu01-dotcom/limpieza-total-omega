@@ -927,3 +927,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-30T06:21:21` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `detect_profiles` añadiendo una validación explícita mediante `is_safe_to_modify` para cada ruta de navegador detectada, evitando que el escáner acceda a directorios que hayan sido marcados como protegidos o fuera del scope permitido por la configuración de seguridad del sistema.
 - `2026-10-30T06:21:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T06:21:21` Corrida terminada. Total usado hoy: 152.
+- `2026-10-30T06:29:34` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-10-30T06:30:01` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_validate_root` al reemplazar `.resolve()` (que puede seguir enlaces simbólicos fuera de la ruta deseada o fallar en accesos restringidos) por una validación de ruta absoluta normalizada, y añadí una verificación explícita de `is_protected_path` al inicio para evitar cualquier escaneo accidental de directorios bloqueados antes de cualquier procesamiento de disco.
+- `2026-10-30T06:30:31` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-30T06:31:03` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva del módulo añadiendo una validación estricta de "input" en el método `__post_init__` y en `validate`, asegurando que `SystemMetrics` no pueda ser instanciado con tipos de datos o valores que escapen de las restricciones definidas, mitigando posibles ataques por inyección de métricas mal formadas.
+- `2026-10-30T06:31:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-10-30T06:31:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T06:31:53` Corrida terminada. Total usado hoy: 156.

@@ -163,7 +163,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if not directory:
         return None
     try:
-        p = Path(directory).expanduser().resolve()
+        p = Path(directory).expanduser().absolute()
         if not p.exists() or str(p).startswith('\\\\'):
             return None
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
@@ -265,7 +265,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """Obtiene métricas de espacio disponible en un punto de montaje."""
     if mount is None: return None
     try:
-        p = Path(mount).expanduser().resolve()
+        p = Path(mount).expanduser().absolute()
         if not p.exists() or _is_reparse_point(p) or is_protected_path(p):
             return None
         if str(p).startswith('\\\\'): return None
@@ -288,6 +288,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     root_path = _validate_root(directory)
     if root_path is None: return
+    
+    # Pre-chequeo crítico de seguridad antes de iniciar el recorrido
+    if skip_protected and is_protected_path(root_path):
+        return
     
     visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]

@@ -275,6 +275,7 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
+        """Asegura integridad post-instanciación."""
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any:
