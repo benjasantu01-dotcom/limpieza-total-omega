@@ -201,8 +201,6 @@ def _is_file_locked(path: Path) -> bool:
     """
     if not path: return True
     try:
-        if not path.exists() or not path.is_file(): return True
-        if not os.access(path, os.R_OK): return True
         if os.name == 'nt':
             return not _try_open_win_file(path)
         with open(path, "rb"): return False
@@ -277,11 +275,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
     try:
-        if not junk_file.path.exists() or not junk_file.path.is_file(): return False
-        
-        if os.name == 'nt':
-            if _is_file_read_only(junk_file.path) or _is_system_hidden(junk_file.path): return False
-        
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
@@ -324,8 +317,8 @@ def _is_candidate_for_scan(entry: os.DirEntry, stats: os.stat_result) -> bool:
         return False
     if _is_system_hidden(entry):
         return False
-    p = Path(entry.path)
-    return is_safe_to_modify(p) and not _is_file_locked(p)
+    # El chequeo de seguridad completo se realiza solo si los filtros previos pasan
+    return is_safe_to_modify(Path(entry.path))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """Ejecuta un recorrido recursivo del árbol de directorios con control de profundidad."""
@@ -333,13 +326,12 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         return
         
     try:
-        c_abs = current_dir.absolute()
-        path_str = str(c_abs)
+        path_str = str(current_dir.absolute())
         if path_str in visited: 
             return
         visited.add(path_str)
         
-        with os.scandir(c_abs) as iterator:
+        with os.scandir(path_str) as iterator:
             for entry in iterator:
                 try:
                     if entry.is_dir(follow_symlinks=False):
@@ -350,7 +342,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         stats = entry.stat(follow_symlinks=False)
                         if _is_candidate_for_scan(entry, stats):
                             p = Path(entry.path)
-                            found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                            if not _is_file_locked(p):
+                                found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                             
                 except (PermissionError, OSError):
                     continue

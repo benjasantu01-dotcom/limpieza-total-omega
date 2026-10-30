@@ -546,3 +546,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-30T14:15:16` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, ensure_safety_in_task, wrapper
 - `2026-10-30T14:15:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-30T14:15:16` Corrida terminada. Total usado hoy: 336.
+- `2026-10-30T14:21:46` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-30T14:22:39` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `_iter_process_memory` para evitar la creación redundante de objetos mediante la eliminación de un `set` innecesario y se mejoró el rendimiento de `_extract_process_info` al centralizar la validación, reduciendo ciclos de CPU en el bucle principal de enumeración.
+- `2026-10-30T14:23:05` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `path.exists()` y `path.is_file()` dentro del bucle crítico, reemplazándolas por el uso directo de los metadatos ya obtenidos por `os.scandir` y reduciendo las conversiones repetitivas entre `Path` y `str`.
+- `2026-10-30T14:23:47` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la función `total_quarantined_bytes` y otros accesos al manifiesto mediante la eliminación de redundancias de I/O y el uso del cache global, evitando la deserialización innecesaria de objetos `QuarantineItem` cuando la información ya reside en memoria.
+- `2026-10-30T14:23:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-10-30T14:23:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-30T14:23:50` Corrida terminada. Total usado hoy: 340.

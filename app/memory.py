@@ -254,12 +254,12 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         return None
     
     try:
-        name = parts[0].strip()
-        if not name or any(ord(c) < 32 for c in name):
-            return None
-        
         pid_val = int(parts[1])
         if _is_system_process(pid_val) or pid_val <= 0:
+            return None
+        
+        name = parts[0].strip()
+        if not name or any(ord(c) < 32 for c in name):
             return None
             
         ws = _safe_int_conversion(parts[2])
@@ -366,20 +366,17 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             
     path_buf = ctypes.create_unicode_buffer(1024)
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
-    processed_pids: Set[int] = set()
     count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     
     for i in range(count):
         pid = int(pids[i])
-        if pid <= 0 or pid in processed_pids or _is_system_process(pid):
+        if pid <= 0 or _is_system_process(pid):
             continue
-        processed_pids.add(pid)
         
         h_process = _get_process_handle(pid, WIN32_PROCESS_QUERY_LIMITED)
         if not h_process: continue
         
         try:
-            # Primero validamos seguridad antes de realizar consultas de memoria pesadas
             if not _is_process_executable_safe(h_process, path_buf):
                 continue
                 
