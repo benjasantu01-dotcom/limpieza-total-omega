@@ -69,20 +69,17 @@ class DirectoryScanner:
     def __init__(self, context: ScanContext):
         self.ctx = context
 
-    def _is_path_allowed(self, path_obj: Path) -> bool:
+    def _is_path_allowed(self, path_str: str) -> bool:
         """
         Valida que la ruta esté dentro del sandbox permitido y no contenga 
         restricciones de seguridad o punteros de sistema.
         """
+        path_obj = Path(path_str)
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return False
         
-        try:
-            # Resolvemos enlaces y normalizamos para evitar bypass mediante .. o links
-            path_norm = os.path.normcase(str(path_obj.resolve()))
-            return path_norm.startswith(self.ctx.sandbox_base_norm)
-        except (OSError, RuntimeError):
-            return False
+        path_norm = os.path.normcase(path_str)
+        return path_norm.startswith(self.ctx.sandbox_base_norm)
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
@@ -92,9 +89,7 @@ class DirectoryScanner:
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
         
-        # Defensivo: no seguimos symlinks/junctions para no salir del contexto
-        p = Path(root_path)
-        if p.is_symlink() or self.ctx.is_junction(root_path):
+        if self.ctx.is_junction(root_path):
             return ScanResult(0, True)
 
         try:
@@ -106,7 +101,7 @@ class DirectoryScanner:
         if dir_id in self.ctx.visited_dirs:
             return ScanResult(0, True)
         
-        if not self._is_path_allowed(p):
+        if not self._is_path_allowed(root_path):
             return ScanResult(0, True)
 
         self.ctx.visited_dirs.add(dir_id)
@@ -253,12 +248,13 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el peso en bytes de un directorio, aplicando filtros de seguridad."""
     if not isinstance(path, (str, Path)): return 0
-    path_obj = Path(path)
-    if not path_obj.exists() or not path_obj.is_dir(): return 0
+    p = Path(path)
+    if not p.exists() or not p.is_dir(): return 0
     
-    res_str = str(path_obj.resolve())
-    ctx = ScanContext(os.path.normcase(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
-    return DirectoryScanner(ctx).get_size(res_str).bytes_found
+    # Usamos la ruta resuelta una sola vez
+    root_norm = os.path.normcase(str(p.resolve()))
+    ctx = ScanContext(root_norm, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
+    return DirectoryScanner(ctx).get_size(str(p)).bytes_found
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """
@@ -280,7 +276,9 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             base_norm = os.path.normcase(str(base_resolved))
         except (OSError, RuntimeError): continue
         
-        scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH))
+        # Contexto compartido para el base actual
+        ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
+        scanner = DirectoryScanner(ctx)
         
         for browser_key, relative_path in browser_map.items():
             if not isinstance(relative_path, str): continue
@@ -288,15 +286,13 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             target = base_resolved.joinpath(*relative_path.split("\\"))
             if not target.exists() or not target.is_dir(): continue
             
-            # Verificación de seguridad centralizada
-            if not scanner._is_path_allowed(target): continue
-            
-            if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): continue
-                
-            if _is_system_hidden(str(target), kernel) or target.name.lower() in NEVER_TOUCH:
+            target_str = str(target)
+            if not scanner._is_path_allowed(target_str): continue
+            if _IS_JUNCTION_FN(target_str) or target.is_symlink(): continue
+            if _is_system_hidden(target_str, kernel) or target.name.lower() in NEVER_TOUCH:
                 continue
 
-            scan_res = scanner.get_size(str(target))
+            scan_res = scanner.get_size(target_str)
             if scan_res.success and scan_res.bytes_found > 0:
                 found.append(BrowserCache(browser_key, target, scan_res.bytes_found))
     

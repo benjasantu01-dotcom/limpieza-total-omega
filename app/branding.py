@@ -77,27 +77,20 @@ APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
 # Paleta Maestra: Colores base de la interfaz y elementos funcionales
-C_BACKGROUND: Final[ColorHex] = "#0a0e17"     # Fondo principal profundo
-C_SURFACE: Final[ColorHex] = "#141b2d"        # Capas de superficie primaria
-C_SURFACE_ALT: Final[ColorHex] = "#1e2740"    # Capas de superficie secundaria
-C_SURFACE_HOVER: Final[ColorHex] = "#28324f"  # Estado de interacción para superficies
-C_CARD: Final[ColorHex] = "#182135"           # Contenedores de tarjetas
-C_ACCENT: Final[ColorHex] = "#00f0c0"         # Color primario de marca (Turquesa)
-C_ACCENT_HOVER: Final[ColorHex] = "#00d0a4"   # Estado de interacción primario
-C_ACCENT_DIM: Final[ColorHex] = "#0a6b58"     # Versión atenuada del acento
-C_ACCENT2: Final[ColorHex] = "#7c5cff"        # Color secundario (Violeta)
-C_ACCENT2_HOVER: Final[ColorHex] = "#6a48f0"  # Estado de interacción secundario
-C_ACCENT3: Final[ColorHex] = "#ff2d78"        # Color terciario (Fucsia)
-C_SUCCESS: Final[ColorHex] = "#22e39a"        # Indicador de estado positivo
-C_INFO: Final[ColorHex] = "#38bdf8"           # Indicador informativo
-C_WARNING: Final[ColorHex] = "#ffb020"        # Indicador de advertencia
-C_DANGER: Final[ColorHex] = "#ff4757"         # Indicador de peligro
-C_DANGER_HOVER: Final[ColorHex] = "#e02e3d"   # Estado de interacción crítico
-C_TEXT: Final[ColorHex] = "#f0f6fc"           # Texto primario de alta legibilidad
-C_TEXT_MUTED: Final[ColorHex] = "#94a3b8"     # Texto secundario/desactivado
-C_TEXT_DIM: Final[ColorHex] = "#5c6b85"       # Texto de soporte o placeholders
-C_BORDER: Final[ColorHex] = "#2a3654"         # Bordes y separadores UI
-C_GLOW: Final[ColorHex] = "#00f0c0"           # Efecto de resplandor para íconos
+_RAW_PALETTE: Final[dict[str, ColorHex]] = {
+    "background": "#0a0e17", "surface": "#141b2d", "surface_alt": "#1e2740",
+    "surface_hover": "#28324f", "card": "#182135", "accent": "#00f0c0",
+    "accent_hover": "#00d0a4", "accent_dim": "#0a6b58", "accent2": "#7c5cff",
+    "accent2_hover": "#6a48f0", "accent3": "#ff2d78", "success": "#22e39a",
+    "info": "#38bdf8", "warning": "#ffb020", "danger": "#ff4757",
+    "danger_hover": "#e02e3d", "text": "#f0f6fc", "text_muted": "#94a3b8",
+    "text_dim": "#5c6b85", "border": "#2a3654", "glow": "#00f0c0",
+}
+
+# Inyección de constantes para compatibilidad con el resto del módulo
+globals().update({f"C_{k.upper()}": v for k, v in _RAW_PALETTE.items()})
+
+PALETTE: Final[PaletteDict] = MappingProxyType(_RAW_PALETTE) # type: ignore
 
 # Plantilla SVG parametrizada con marcadores de posición para inyección segura
 _SVG_TEMPLATE: Final[str] = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{{s}}" height="{{s}}" viewBox="0 0 128 128">
@@ -165,16 +158,6 @@ class FontSizesDict(TypedDict):
     mono: int
     caption: int
 
-PALETTE: Final[PaletteDict] = MappingProxyType({
-    "background": C_BACKGROUND, "surface": C_SURFACE, "surface_alt": C_SURFACE_ALT,
-    "surface_hover": C_SURFACE_HOVER, "card": C_CARD, "accent": C_ACCENT,
-    "accent_hover": C_ACCENT_HOVER, "accent_dim": C_ACCENT_DIM, "accent2": C_ACCENT2,
-    "accent2_hover": C_ACCENT2_HOVER, "accent3": C_ACCENT3, "success": C_SUCCESS,
-    "info": C_INFO, "warning": C_WARNING, "danger": C_DANGER,
-    "danger_hover": C_DANGER_HOVER, "text": C_TEXT, "text_muted": C_TEXT_MUTED,
-    "text_dim": C_TEXT_DIM, "border": C_BORDER, "glow": C_GLOW,
-}) # type: ignore
-
 FONT_SIZES: Final[FontSizesDict] = MappingProxyType({
     "display": 46, "title": 26, "subtitle": 13, "heading": 16,
     "body": UI_CONFIG.body_size, "mono": 11, "caption": 10,
@@ -219,7 +202,7 @@ def color(name: Optional[str]) -> ColorHex:
 
 def font_size(name: Optional[str]) -> int: 
     """Retorna el tamaño de fuente configurado para una categoría dada."""
-    if not isinstance(name, str) or name not in FONT_SIZES:
+    if not isinstance(name, str) or not isinstance(FONT_SIZES, dict) or name not in FONT_SIZES:
         return UI_CONFIG.body_size
     return FONT_SIZES[name]
 
