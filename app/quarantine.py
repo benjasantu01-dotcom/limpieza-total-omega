@@ -770,8 +770,8 @@ class IsolationManager:
     @staticmethod
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
         """
-        Verifica que el archivo no haya cambiado (ej. reemplazo malicioso) durante
-        la ventana de tiempo entre el escaneo y el aislamiento.
+        Verifica que el archivo origen mantenga su identidad y estado íntegro
+        durante la ventana de tiempo de aislamiento.
         """
         if source is None or not source.exists():
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
@@ -790,40 +790,25 @@ class IsolationManager:
             raise UnsafePathError("Sandbox destino inseguro.")
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
-    """Aisla archivos aplicando validaciones estrictas contra condiciones de carrera."""
+    """Aisla archivos aplicando validaciones de integridad estrictas contra TOCTOU."""
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
-    if source is None or not source.exists():
+    if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     
     if source.parent.resolve() == destination.parent.resolve():
         raise UnsafePathError("Origen y destino colisionan en la misma carpeta.")
     
-    if source.stat().st_dev == 0:
-        raise UnsafePathError("Archivo origen en dispositivo no soportado.")
+    if _win_has_system_attributes(source) or not source.is_file():
+        raise UnsafePathError("Aislamiento denegado: atributo de sistema o no regular.")
     
-    if not source.is_file():
-        raise UnsafePathError("Solo se admiten archivos regulares.")
-    
-    if _win_has_system_attributes(source):
-        raise UnsafePathError("Aislamiento bloqueado: archivo de sistema.")
-    
-    # Validar existencia antes de abrir
-    if not source.exists():
-        raise FileNotFoundError("El origen desapareció antes de abrir.")
-
     with open(source, "rb") as f:
-        fd = f.fileno()
-        stat_orig = os.fstat(fd)
-        
+        stat_orig = os.fstat(f.fileno())
         if stat_orig.st_size != original_size or stat_orig.st_nlink > 1:
             raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
         
         IsolationManager.validate_atomicity(source, stat_orig, destination)
         
-        if len(str(destination)) >= 250:
-            raise OSError("Ruta destino demasiado larga.")
-            
         existing_items: List[QuarantineItem] = load_manifest(destination.parent.parent)
         if any(i.file_inode == stat_orig.st_ino for i in existing_items):
             raise RuntimeError("Colisión de inodo: archivo ya registrado.")
@@ -831,15 +816,11 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         if destination.exists():
             raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         
-        if not destination.parent.exists():
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            
+        destination.parent.mkdir(parents=True, exist_ok=True)
         h, i = _write_temp_to_final(source, destination)
         
-        dest_stat = destination.stat()
-        if dest_stat.st_ino != i or _get_sha256(destination) != h:
+        if destination.stat().st_ino != i or _get_sha256(destination) != h:
             raise RuntimeError("Integridad comprometida: destino inconsistente.")
-        _check_for_reparse_points(destination)
         return h, i
 
 

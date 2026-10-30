@@ -50,9 +50,12 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Protocolo de interfaz para las heurísticas.
-    Los parámetros son opcionales porque algunas reglas solo requieren el nombre 
-    del archivo, mientras que otras necesitan metadatos de sistema (stat) o 
-    contexto temporal (now_ts).
+    
+    Args:
+        path: Ruta absoluta del archivo analizado.
+        entry: Entrada opcional del escáner (os.DirEntry).
+        now_ts: Marca de tiempo actual (timestamp) para cálculos temporales.
+        stats: Metadatos del archivo (os.stat_result) obtenidos previamente.
     """
     def __call__(self, path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]: ...
 
@@ -143,13 +146,13 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     return True
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta archivos con tamaño 0 bytes."""
+    """Heurística: Detecta archivos con tamaño 0 bytes (potencialmente corruptos o marcadores)."""
     if stats and getattr(stats, "st_size", -1) == 0:
         return Suspicion(path, "Archivo vacío detectado (posible marcador de relleno)", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Heurística: Detecta doble extensión para ocultar la verdadera naturaleza del archivo."""
+    """Heurística: Detecta doble extensión para ocultar la verdadera naturaleza del ejecutable."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de ofuscación", "warning")
     return None
@@ -240,7 +243,10 @@ class Scanner:
         return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
-        """Procesa una entrada (archivo o carpeta) aplicando las reglas heurísticas."""
+        """
+        Procesa una entrada (archivo o carpeta) y decide si aplicar heurísticas 
+        o continuar la recursión en directorios.
+        """
         if not self._is_safe_entry(entry):
             return
         try:
