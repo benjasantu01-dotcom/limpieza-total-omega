@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
-from typing import List, Optional, Union, Final, Protocol, NamedTuple, Sequence, Tuple, TypeAlias
+from typing import List, Optional, Union, Final, Protocol, NamedTuple, Sequence, Tuple, TypeAlias, TypedDict
 from safety import is_protected_path
 
 # Configuración de logger para el seguimiento de excepciones en el escaneo
@@ -51,11 +51,9 @@ class SuspicionCheck(Protocol):
     """
     Protocolo de interfaz para las heurísticas.
     
-    Args:
-        path: Ruta absoluta del archivo analizado.
-        entry: Entrada opcional del escáner (os.DirEntry).
-        now_ts: Marca de tiempo actual (timestamp) para cálculos temporales.
-        stats: Metadatos del archivo (os.stat_result) obtenidos previamente.
+    Toda heurística debe implementar esta firma: recibe el contexto del archivo 
+    (Path, entrada de directorio opcional, timestamp actual y metadatos) y 
+    devuelve un objeto Suspicion si detecta riesgo, o None en caso contrario.
     """
     def __call__(self, path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]: ...
 
@@ -83,7 +81,7 @@ SYSTEM32_LOWER: Final[str] = "system32"
 
 @lru_cache(maxsize=4096)
 def _cached_is_protected(path_str: str) -> bool:
-    """Verifica si la cadena de ruta corresponde a una ubicación protegida."""
+    """Verifica si la cadena de ruta corresponde a una ubicación protegida usando caché para rendimiento."""
     try:
         return is_protected_path(Path(path_str))
     except (ValueError, TypeError, OSError):

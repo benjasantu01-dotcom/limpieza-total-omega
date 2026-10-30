@@ -151,20 +151,24 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 })
 
 class _SettingsManager:
-    """Singleton encargado de la persistencia y caché en memoria de la configuración."""
+    """
+    Singleton que gestiona el acceso a disco y la caché en memoria de la configuración.
+    Garantiza que las escrituras sean atómicas y que los datos leídos no superen
+    los límites de seguridad establecidos.
+    """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
         self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
 
     def clear(self, path: Optional[Path] = None) -> None:
-        """Limpia la caché de datos."""
+        """Limpia la caché de datos para una ruta específica o globalmente."""
         if path:
             self.data_cache.pop(str(path), None)
         else:
             self.data_cache.clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """Escribe la configuración de forma atómica."""
+        """Escribe la configuración de forma atómica usando un archivo temporal."""
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 2: return False
         if len(str(config_path)) > 260: return False
@@ -326,7 +330,10 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 })
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un diccionario bruto."""
+    """
+    Valida un diccionario de configuración arbitrario contra el esquema definido.
+    Descarta claves desconocidas o valores cuyo tipo/rango no sea admisible.
+    """
     if not _is_dict(raw_values): return DEFAULTS.copy()
     config = DEFAULTS.copy()
     for key_str, raw_val in raw_values.items():
@@ -347,7 +354,10 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    """Lee y valida el JSON de configuración en disco."""
+    """
+    Intenta leer y parsear el archivo JSON, aplicando filtros de seguridad
+    de contenido y validación estructural estricta antes de retornar los datos.
+    """
     try:
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)

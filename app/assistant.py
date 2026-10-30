@@ -244,6 +244,11 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
+# Mapa para acceso rápido por clave
+_CRITERIOS_MAP: Final[dict[str, list[ProblemCriterion]]] = {}
+for c in _CRITERIOS_SALUD:
+    _CRITERIOS_MAP.setdefault(c.metric_key, []).append(c)
+
 class AreaExplanation(NamedTuple):
     """Mapeo para descripciones pedagógicas de áreas de la aplicación."""
     key: str
@@ -428,7 +433,7 @@ class SystemContext:
         """Versión cacheada de los problemas de salud detectados basándose en datos actuales."""
         if self.analyzed is not True: return ()
         snap = self.metrics_snapshot
-        key_vals = tuple((c.metric_key, snap.get(c.metric_key, -1.0)) for c in _CRITERIOS_SALUD)
+        key_vals = tuple((k, snap.get(k, -1.0)) for k in _CRITERIOS_MAP.keys())
         return _evaluate_active_problems(key_vals)
 
     @property
