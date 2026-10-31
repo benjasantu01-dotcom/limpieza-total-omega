@@ -782,3 +782,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-10-31T13:27:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-31T13:27:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T13:27:56` Corrida terminada. Total usado hoy: 316.
+- `2026-10-31T13:34:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-31T13:35:19` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-31T13:35:47` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-31T13:36:27` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez del gestor de aislamiento ante fallos de I/O y condiciones de carrera en `quarantine_file`, asegurando que cualquier recurso temporal creado durante un error de escritura sea limpiado explícitamente antes de propagar la excepción hacia arriba, evitando dejar archivos basura en el directorio de cuarentena.
+- `2026-10-31T13:36:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-31T13:36:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T13:36:44` Corrida terminada. Total usado hoy: 320.
