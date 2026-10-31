@@ -674,8 +674,11 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                     kernel32.CloseHandle(handle)
             
             st = path.stat()
+            # Validación de integridad post-estat: asegurar que el objeto no fue reemplazado o borrado
             if st.st_atime == 0 and st.st_mtime == 0:
                  raise UnsafePathError(f"Metadatos corruptos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+            if hasattr(st, 'st_nlink') and st.st_nlink == 0:
+                 raise UnsafePathError(f"Archivo borrado durante validación (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
             return st
             
         except PermissionError:

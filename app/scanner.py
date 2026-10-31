@@ -235,6 +235,7 @@ class Scanner:
             return
         norm_path = os.path.normcase(entry.path)
         try:
+            # Validamos acceso antes de agregar al stack para fallar temprano
             if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
                 visited_dirs.add(norm_path)
                 directory_stack.append((entry.path, current_depth + 1))

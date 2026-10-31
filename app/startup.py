@@ -184,6 +184,10 @@ class StartupEntry:
             if is_protected_path(p):
                 _VALIDATION_CACHE[p_str] = False
                 return False
+            # Checkear si el archivo está bloqueado (in uso exclusivo) de forma no destructiva
+            if not os.access(p, os.R_OK):
+                _VALIDATION_CACHE[p_str] = False
+                return False
             if not p.is_file() or p.is_symlink():
                 _VALIDATION_CACHE[p_str] = False
                 return False
