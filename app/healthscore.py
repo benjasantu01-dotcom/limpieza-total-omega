@@ -417,9 +417,17 @@ def _render_bar(points: Any, max_val: Any) -> str:
     return "#" * safe_points + "." * (safe_max - safe_points)
 
 @lru_cache(maxsize=32)
-def _render_summarize(result_id: int, breakdown: Tuple[Tuple[str, int], ...], recommendations: Tuple[str, ...]) -> List[str]:
-    """Caché interno para evitar regenerar el reporte si los datos son idénticos."""
-    score, grade = result_id // 1000, "ABCDEF"[result_id % 1000]
+def _render_summarize(composite_id: int, breakdown: Tuple[Tuple[str, int], ...], recommendations: Tuple[str, ...]) -> List[str]:
+    """
+    Genera un informe textual resumen. 
+    
+    Args:
+        composite_id: Identificador único que combina score y categoría para el cacheo.
+        breakdown: Tupla de tuplas con el desglose por área (nombre, valor).
+        recommendations: Tupla con los mensajes de recomendación activos.
+    """
+    score, grade_idx = divmod(composite_id, 1000)
+    grade = "ABCDEF"[grade_idx]
     lines = [f"Salud del sistema: {score}/100  (nota {grade})", "", "Desglose por área:"]
     for area, val in breakdown:
         weight = WEIGHTS.get(area, 10)

@@ -52,8 +52,16 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 @dataclass
 class ScanContext:
     """
-    Contenedor inmutable de configuración para escaneos recursivos.
-    Mantiene el estado necesario para evitar ciclos de enlaces y duplicados.
+    Estado compartido durante el escaneo recursivo.
+    
+    Attributes:
+        sandbox_base_norm: Ruta absoluta normalizada que actúa como raíz permitida.
+        kernel32: Instancia de WinDLL para llamadas a sistema o None si no es Windows.
+        is_junction: Función callback para detectar puntos de reparse/junctions.
+        visited_files: Conjunto de tuplas (dev, ino) para prevenir contar el mismo archivo dos veces.
+        visited_dirs: Conjunto de tuplas (dev, ino) para evitar ciclos recursivos en directorios.
+        never_touch_lower: Lista de nombres de archivos/carpetas prohibidos en minúsculas.
+        max_depth: Límite de recursión para evitar desbordamiento de pila.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -66,19 +74,26 @@ class ScanContext:
 class DirectoryScanner:
     """
     Motor de recorrido recursivo con enfoque defensivo.
-    Procesa directorios de forma segura respetando las restricciones de safety.py.
+    Implementa lógica de filtrado de rutas y cálculo de tamaño de árbol.
     """
     def __init__(self, context: ScanContext) -> None:
         self.ctx = context
 
     def _is_path_allowed(self, path_str: str) -> bool:
         """
-        Valida que la ruta esté dentro del sandbox permitido y no contenga 
-        restricciones de seguridad o punteros de sistema.
+        Verifica si la ruta está dentro del sandbox y cumple con los estándares de safety.
+        
+        Args:
+            path_str: Ruta absoluta a evaluar.
+            
+        Returns:
+            True si la ruta es segura para lectura, False si está prohibida o fuera de alcance.
         """
         if _is_unc_path(path_str): return False
         try:
             path_obj = Path(path_str)
+            # is_safe_to_modify confirma permisos de escritura, pero aquí lo usamos para
+            # validar que la ruta no sea un sistema crítico que no debe ser tocado.
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
         except (OSError, RuntimeError):
@@ -89,8 +104,11 @@ class DirectoryScanner:
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
-        Calcula el peso total en bytes de un directorio mediante un recorrido 
-        profundidad-limitada, evitando la recursión infinita y accesos indebidos.
+        Realiza una suma recursiva de pesos de archivos.
+        
+        Args:
+            root_path: Directorio donde iniciar.
+            depth: Profundidad actual de recursión.
         """
         if depth > self.ctx.max_depth or self.ctx.is_junction(root_path):
             return ScanResult(0, True)
@@ -114,6 +132,7 @@ class DirectoryScanner:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
+                        # Saltar archivos de configuración sensibles definidos en NEVER_TOUCH
                         if entry.name.lower() in self.ctx.never_touch_lower: continue
                         if entry.is_symlink(): continue
                         
@@ -211,9 +230,7 @@ BYTES_TO_MB: float = 1024 * 1024
 
 @dataclass
 class BrowserCache:
-    """
-    Representa un caché detectado en el sistema del usuario.
-    """
+    """Representa un caché detectado en el sistema del usuario."""
     browser: str
     path: Path
     size_bytes: int
@@ -299,6 +316,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             target = base.joinpath(*relative_path.split("\\"))
             if not target.exists() or not target.is_dir(): continue
             
+            # Chequeos de seguridad antes de procesar el directorio
             if not is_safe_to_modify(target) or is_protected_path(target): continue
             
             target_str = str(target)
