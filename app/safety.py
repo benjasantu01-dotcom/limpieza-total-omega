@@ -263,6 +263,7 @@ class SafetyValidationErrorCode(IntEnum):
     ADMIN_PRIVILEGE_VIOLATION = 36
     VOLUME_SHADOW_COPY = 38
     FILENAME_TOO_LONG = 39
+    INVALID_PATH_TYPE = 40
 
 class UnsafePathError(Exception):
     def __init__(self, message: str, code: SafetyValidationErrorCode = SafetyValidationErrorCode.GENERIC):
@@ -299,6 +300,7 @@ class ProtectionReason(Enum):
     CIRCULAR_REF = auto()
     ADMIN_PRIVILEGE = auto()
     SHADOW_COPY = auto()
+    INVALID_PATH_TYPE = auto()
 
 class ValidationContext(Enum):
     STRUCTURAL = auto()
@@ -593,6 +595,7 @@ _VALIDATOR_MAP: Final[dict[ProtectionReason, ViolationPredicate]] = {
     ProtectionReason.SYSTEM_OWNER: lambda p, st, sd: _is_file_owned_by_system(str(p)),
     ProtectionReason.VIRTUAL_DRIVE: lambda p, st, sd: _is_virtual_drive(str(p)),
     ProtectionReason.SHADOW_COPY: lambda p, st, sd: _is_volume_shadow_copy(str(p)),
+    ProtectionReason.INVALID_PATH_TYPE: lambda p, st, sd: bool(sd.attrs & (Win32Attr.OFFLINE)) and not p.is_file(),
 }
 
 _VALIDATORS: Final[list[_IntegrityCheck]] = [_rule(r, p) for r, p in _VALIDATOR_MAP.items()]
@@ -617,6 +620,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.SYSTEM_OWNER: SafetyValidationErrorCode.SYSTEM_OWNER_PROTECTION,
     ProtectionReason.VIRTUAL_DRIVE: SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED,
     ProtectionReason.SHADOW_COPY: SafetyValidationErrorCode.VOLUME_SHADOW_COPY,
+    ProtectionReason.INVALID_PATH_TYPE: SafetyValidationErrorCode.INVALID_PATH_TYPE,
 }
 
 def _evaluate_security_rules(state: SafetyState) -> None:

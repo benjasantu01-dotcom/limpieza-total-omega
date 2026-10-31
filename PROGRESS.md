@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
-- Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 62
+- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Rechazadas por tests: 8
+- Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 246
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 108 | 5 | 37 | 9 | 133 |
-| 2026-10-31 | 64 | 2 | 25 | 8 | 113 |
+| 2026-10-30 | 108 | 5 | 37 | 9 | 129 |
+| 2026-10-31 | 65 | 3 | 26 | 8 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,12 +25,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **40**
 - seguridad defensiva: **33**
 - rendimiento: **32**
-- robustez ante casos límite: **27**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `browser.py`: **17**
 - `quarantine.py`: **17**
 - `healthscore.py`: **15**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T09:12:03` **safety.py** (robustez ante casos límite): Se ha añadido `ProtectionReason.INVALID_PATH_TYPE` y una regla de validación robusta para detectar rutas que, siendo válidas a nivel de sistema de archivos, son objetos especiales no manipulables (como *Named Pipes* o *Mailslots*), reforzando la seguridad frente a intentos de interacción con dispositivos mediante `CreateFileW`.
 - `2026-10-31T09:02:02` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` al añadir una validación de `path_buf` frente a posibles errores de codificación o buffers incompletos, y se asegura que el manejo de `h_process` sea consistente para prevenir fugas de handles ante excepciones inesperadas durante la inspección de procesos.
 - `2026-10-31T09:00:43` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del pipeline al proteger la integridad de los datos procesados en el caché y se añadieron salvaguardas contra desbordamientos numéricos o tipos inesperados durante la generación del informe, evitando que una métrica inyectada erróneamente rompa la interfaz.
 - `2026-10-31T08:51:30` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante bloqueos de archivos y errores de acceso al usar un `_safe_stat` más defensivo y un filtrado de rutas más estricto, asegurando que los errores de sistema (como archivos de sistema en uso o permisos negados) se gestionen silenciosamente sin abortar el escaneo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T07:50:08` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando tipos explícitos en los argumentos de las funciones del núcleo, docstrings detallados en funciones críticas como `_process_directory` y `_is_safe_for_disk_op` (explicando la lógica de seguridad y prevención de TOCTOU), y se ha reorganizado el código para mejorar la legibilidad de las constantes de seguridad.
 - `2026-10-31T07:40:02` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo agregando docstrings detallados en funciones críticas y reemplazando los nombres de variables ambiguos en `_render_summarize` por otros que expresan claramente su intención.
 - `2026-10-31T07:39:45` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad semántica de `duplicates.py` mediante docstrings más precisos, la adición de Type Hints en las estructuras de datos críticas y la consolidación de los nombres de los parámetros para reflejar mejor la intención de las funciones de filtrado y análisis.
-- `2026-10-31T07:39:21` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad técnica del módulo mediante la adición de Type Hints faltantes, la estandarización de docstrings (siguiendo el estándar Google/Numpy para claridad) y la eliminación de redundancias tipográficas, facilitando la comprensión del flujo de datos en el análisis de disco.

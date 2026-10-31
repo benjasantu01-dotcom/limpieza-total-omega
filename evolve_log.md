@@ -1401,3 +1401,28 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'SystemContext' is not de
 - `2026-10-31T09:02:02` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_is_process_executable_safe` al añadir una validación de `path_buf` frente a posibles errores de codificación o buffers incompletos, y se asegura que el manejo de `h_process` sea consistente para prevenir fugas de handles ante excepciones inesperadas durante la inspección de procesos.
 - `2026-10-31T09:02:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T09:02:02` Corrida terminada. Total usado hoy: 212.
+- `2026-10-31T09:10:04` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-10-31T09:10:32` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-31T09:11:13` Tests FALLARON:
+```
+ NameError: name '_check_path_junctions' is not defined
+
+app/quarantine.py:134: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name '_check_path_junctions' is not defined
+9 failed, 290 passed in 1.70s
+
+```
+- `2026-10-31T09:11:13` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` ante fallos de E/S y condiciones de carrera al implementar una limpieza de archivos temporales huérfanos más estricta en el bloque de excepciones, asegurando que no queden residuos en caso de una interrupción abrupta durante el proceso de aislamiento.
+- `2026-10-31T09:11:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-31T09:12:03` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido `ProtectionReason.INVALID_PATH_TYPE` y una regla de validación robusta para detectar rutas que, siendo válidas a nivel de sistema de archivos, son objetos especiales no manipulables (como *Named Pipes* o *Mailslots*), reforzando la seguridad frente a intentos de interacción con dispositivos mediante `CreateFileW`.
+- `2026-10-31T09:12:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T09:12:03` Corrida terminada. Total usado hoy: 216.
