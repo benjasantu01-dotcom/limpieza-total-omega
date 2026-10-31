@@ -570,73 +570,32 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     except (AttributeError, OSError, ctypes.ArgumentError):
         pass
 
-@lru_cache(maxsize=2048)
-def _check_symlink(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return p.is_symlink()
-@lru_cache(maxsize=2048)
-def _check_reparse(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.is_reparse
-@lru_cache(maxsize=2048)
-def _check_kernel_locked(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _is_kernel_managed(str(p))
-@lru_cache(maxsize=2048)
-def _check_read_only(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly
-@lru_cache(maxsize=2048)
-def _check_vol_read_only(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _is_volume_readonly(str(p))
-@lru_cache(maxsize=2048)
-def _check_vol_removable(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _is_volume_removable_media(str(p))
-@lru_cache(maxsize=2048)
-def _check_vol_restricted(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _is_volume_compressed_or_encrypted(str(p))
-@lru_cache(maxsize=2048)
-def _check_in_use(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.is_in_use
-@lru_cache(maxsize=2048)
-def _check_sys_hidden(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.is_protected_system
-@lru_cache(maxsize=2048)
-def _check_offline(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.OFFLINE)
-@lru_cache(maxsize=2048)
-def _check_enc_comp(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.COMPRESSED) or sd.has_flag(Win32Attr.ENCRYPTED)
-@lru_cache(maxsize=2048)
-def _check_sparse(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.SPARSE_FILE)
-@lru_cache(maxsize=2048)
-def _check_hard_link(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return p.is_file() and st.st_nlink > 1
-@lru_cache(maxsize=2048)
-def _check_ads(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _has_alternate_data_stream(p.name)
-@lru_cache(maxsize=2048)
-def _check_empty(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: 
-    return p.is_file() and (st.st_size == 0 and not (sd.is_reparse or sd.has_flag(Win32Attr.SPARSE_FILE)))
-@lru_cache(maxsize=2048)
-def _check_size(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return p.is_file() and st.st_size > MAX_FILE_SIZE
-@lru_cache(maxsize=2048)
-def _check_mount(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return os.path.ismount(p)
-@lru_cache(maxsize=2048)
-def _check_type(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))
-@lru_cache(maxsize=2048)
-def _check_owner(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _is_file_owned_by_system(str(p))
-@lru_cache(maxsize=2048)
-def _check_virtual(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _is_virtual_drive(str(p))
-@lru_cache(maxsize=2048)
-def _check_shadow(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _is_volume_shadow_copy(str(p))
+# Definición centralizada de reglas de integridad
+_VALIDATOR_MAP: Final[dict[ProtectionReason, ViolationPredicate]] = {
+    ProtectionReason.SYMLINK: lambda p, st, sd: p.is_symlink(),
+    ProtectionReason.REPARSE_POINT: lambda p, st, sd: sd.is_reparse,
+    ProtectionReason.KERNEL_LOCKED: lambda p, st, sd: _is_kernel_managed(str(p)),
+    ProtectionReason.READ_ONLY: lambda p, st, sd: not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly,
+    ProtectionReason.VOLUME_READ_ONLY: lambda p, st, sd: _is_volume_readonly(str(p)),
+    ProtectionReason.REMOVABLE_DRIVE: lambda p, st, sd: _is_volume_removable_media(str(p)),
+    ProtectionReason.VOLUME_RESTRICTED: lambda p, st, sd: _is_volume_compressed_or_encrypted(str(p)),
+    ProtectionReason.IN_USE: lambda p, st, sd: sd.is_in_use,
+    ProtectionReason.SYSTEM_HIDDEN: lambda p, st, sd: sd.is_protected_system,
+    ProtectionReason.OFFLINE: lambda p, st, sd: sd.has_flag(Win32Attr.OFFLINE),
+    ProtectionReason.ENCRYPTED_OR_COMPRESSED: lambda p, st, sd: sd.has_flag(Win32Attr.COMPRESSED) or sd.has_flag(Win32Attr.ENCRYPTED),
+    ProtectionReason.SPARSE_FILE: lambda p, st, sd: sd.has_flag(Win32Attr.SPARSE_FILE),
+    ProtectionReason.HARD_LINK: lambda p, st, sd: p.is_file() and st.st_nlink > 1,
+    ProtectionReason.ADS: lambda p, st, sd: _has_alternate_data_stream(p.name),
+    ProtectionReason.EMPTY_FILE: lambda p, st, sd: p.is_file() and (st.st_size == 0 and not (sd.is_reparse or sd.has_flag(Win32Attr.SPARSE_FILE))),
+    ProtectionReason.EXCESSIVE_SIZE: lambda p, st, sd: p.is_file() and st.st_size > MAX_FILE_SIZE,
+    ProtectionReason.MOUNT_POINT: lambda p, st, sd: os.path.ismount(p),
+    ProtectionReason.INVALID_TYPE: lambda p, st, sd: not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode)),
+    ProtectionReason.SYSTEM_OWNER: lambda p, st, sd: _is_file_owned_by_system(str(p)),
+    ProtectionReason.VIRTUAL_DRIVE: lambda p, st, sd: _is_virtual_drive(str(p)),
+    ProtectionReason.SHADOW_COPY: lambda p, st, sd: _is_volume_shadow_copy(str(p)),
+}
 
-_VALIDATORS: Final[list[_IntegrityCheck]] = [
-    _rule(ProtectionReason.SYMLINK, _check_symlink),
-    _rule(ProtectionReason.REPARSE_POINT, _check_reparse),
-    _rule(ProtectionReason.KERNEL_LOCKED, _check_kernel_locked),
-    _rule(ProtectionReason.READ_ONLY, _check_read_only),
-    _rule(ProtectionReason.VOLUME_READ_ONLY, _check_vol_read_only),
-    _rule(ProtectionReason.REMOVABLE_DRIVE, _check_vol_removable),
-    _rule(ProtectionReason.VOLUME_RESTRICTED, _check_vol_restricted),
-    _rule(ProtectionReason.IN_USE, _check_in_use),
-    _rule(ProtectionReason.SYSTEM_HIDDEN, _check_sys_hidden),
-    _rule(ProtectionReason.OFFLINE, _check_offline),
-    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, _check_enc_comp),
-    _rule(ProtectionReason.SPARSE_FILE, _check_sparse),
-    _rule(ProtectionReason.HARD_LINK, _check_hard_link),
-    _rule(ProtectionReason.ADS, _check_ads),
-    _rule(ProtectionReason.EMPTY_FILE, _check_empty),
-    _rule(ProtectionReason.EXCESSIVE_SIZE, _check_size),
-    _rule(ProtectionReason.MOUNT_POINT, _check_mount),
-    _rule(ProtectionReason.INVALID_TYPE, _check_type),
-    _rule(ProtectionReason.SYSTEM_OWNER, _check_owner),
-    _rule(ProtectionReason.VIRTUAL_DRIVE, _check_virtual),
-    _rule(ProtectionReason.SHADOW_COPY, _check_shadow),
-]
+_VALIDATORS: Final[list[_IntegrityCheck]] = [_rule(r, p) for r, p in _VALIDATOR_MAP.items()]
 
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.SYMLINK: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,

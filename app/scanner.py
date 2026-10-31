@@ -192,7 +192,7 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 )
 
 class Scanner:
-    """Controlador encargado de la orquestación del análisis recursivo del sistema."""
+    """Controlador central que gestiona el estado y la lógica de recorrido recursivo."""
     
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
@@ -202,12 +202,12 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: Optional[str]) -> bool:
-        """Verifica que la entrada permanezca dentro del alcance del directorio base."""
+        """Determina si la ruta está contenida dentro de la jerarquía del directorio raíz."""
         if not entry_path: return False
         return os.path.normcase(entry_path).startswith(self.base_root_norm)
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Determina si un nombre contiene caracteres o nombres reservados del SO."""
+        """Valida que el nombre del componente no contenga caracteres o patrones prohibidos."""
         if not isinstance(name, str) or not name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name) or "\0" in name)
 
@@ -216,7 +216,7 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida que la entrada cumpla con todos los criterios de seguridad definidos."""
+        """Realiza múltiples filtros de seguridad antes de permitir el procesamiento de una entrada."""
         path_str: str = entry.path
         if path_str in self.safe_cache:
             return True
@@ -229,7 +229,7 @@ class Scanner:
         return True
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
-        """Gestiona la inserción de directorios en el stack para el recorrido iterativo."""
+        """Prepara un directorio hijo para su posterior exploración, verificando límites de profundidad."""
         if current_depth >= SCAN_LIMITS.max_recursion_depth:
             return
         if _cached_is_protected(entry.path):
@@ -246,12 +246,12 @@ class Scanner:
 
     @lru_cache(maxsize=128)
     def _is_relevant_extension(self, name: str) -> bool:
-        """Filtra archivos de interés según extensiones definidas como sospechosas."""
+        """Verifica si el archivo posee una extensión que requiere análisis heurístico."""
         _, ext = os.path.splitext(name)
         return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
-        """Procesa una entrada del sistema de archivos, delegando según su tipo."""
+        """Orquestador principal que delega el manejo según si la entrada es archivo o directorio."""
         if not self._is_safe_entry(entry):
             return
         try:
@@ -267,7 +267,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta la suite de heurísticas sobre el archivo indicado."""
+        """Aplica la suite de heurísticas sobre el archivo y recolecta las sospechas encontradas."""
         try:
             stats = _safe_stat(entry)
             if stats is None:
