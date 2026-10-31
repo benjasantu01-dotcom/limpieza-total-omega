@@ -275,7 +275,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """Recorrido recursivo iterativo para evitar desbordamiento de pila."""
     root_path = _validate_root(directory)
-    if root_path is None: return
+    if not root_path: return
     
     visited_inodes: set[Inode] = set()
     stack: List[str] = [str(root_path)]
@@ -290,6 +290,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        if not entry: continue
                         if _is_excluded_path(entry.name, Path(entry.path)):
                             continue
                         
@@ -364,19 +365,25 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """Escaneo centralizado que acumula estadísticas y mantiene el heap de top archivos."""
+    if not isinstance(directory, Path):
+        return SummaryData(0, 0, defaultdict(ExtStats), [])
+        
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        _, ext = os.path.splitext(path.name)
-        ext = ext.lower() if ext else "(sin extensión)"
-        stats.register_file(size, ext)
-        
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+        try:
+            _, ext = os.path.splitext(path.name)
+            ext = ext.lower() if ext else "(sin extensión)"
+            stats.register_file(size, ext)
+            
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size, path))
+        except (OSError, AttributeError):
+            continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
