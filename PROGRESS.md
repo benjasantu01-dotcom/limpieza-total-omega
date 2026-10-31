@@ -16,22 +16,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 10 | 0 | 3 | 3 | 34 |
+| 2026-10-29 | 9 | 0 | 3 | 3 | 31 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
-| 2026-10-31 | 31 | 1 | 11 | 5 | 56 |
+| 2026-10-31 | 32 | 1 | 11 | 5 | 59 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **40**
 - rendimiento: **35**
-- seguridad defensiva: **34**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **33**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
 - `diskreport.py`: **19**
+- `safety.py`: **18**
 - `quarantine.py`: **17**
 - `settings.py`: **17**
 - `browser.py`: **16**
@@ -39,13 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **15**
 - `scanner.py`: **15**
 - `branding.py`: **14**
-- `healthscore.py`: **13**
+- `healthscore.py`: **14**
 - `organizer.py`: **10**
 - `duplicates.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T04:35:45` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemMetrics` ante valores `None` u objetos inesperados durante la inicialización, asegurando que `validate` y `safe_get` manejen errores de tipo sin romper el flujo de ejecución mediante una validación más estricta de tipos.
 - `2026-10-31T04:16:41` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext` ante valores inesperados en `ingest` mediante una validación de tipo más estricta durante la deserialización y la protección del acceso a atributos, evitando que valores de tipo `None` o `callable` corrompan el estado interno del contexto.
 - `2026-10-31T04:16:16` **startup.py** (rendimiento): Se implementó un filtrado preventivo mediante un `set` de rutas protegidas en `_validate_file_access` y `_is_registry_entry_safe` para evitar que la lógica de resolución (que es costosa debido al I/O y a `path.resolve()`) procese archivos que ya sabemos que son de sistema, mejorando el rendimiento y reduciendo llamadas innecesarias al disco.
 - `2026-10-31T04:15:49` **settings.py** (rendimiento): Optimizé la gestión de la caché en el singleton `_SettingsManager` reemplazando búsquedas repetitivas de `path.resolve()` por una resolución única durante la inicialización de la ruta, reduciendo el overhead de llamadas al sistema de archivos en operaciones frecuentes de lectura.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T03:14:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en el nombre de un parámetro de configuración (`PARTIAL_READ_BYTES` frente a `read_bytes`) y la clarificación de los docstrings en las funciones críticas de hashing para alinear la documentación con el comportamiento real del motor de detección.
 - `2026-10-31T03:14:17` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad mediante la adición de Type Hints detallados en las funciones de procesamiento de datos, la clarificación de docstrings en las clases internas y la simplificación de la lógica de `_collect_summary_data` para hacer más explícito el flujo de agregación de estadísticas.
 - `2026-10-31T03:05:48` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo un Docstring detallado a `DirectoryScanner.get_size` y aclarando el propósito de la lógica de filtrado en el recorrido de archivos para asegurar que otros desarrolladores comprendan por qué ciertas rutas se omiten silenciosamente.
-- `2026-10-31T03:05:30` **branding.py** (legibilidad y documentación): Se introdujeron docstrings explicativos en las funciones de manipulación de color y geometría (`blend`, `_hex_to_rgb`, `_get_scaled_poly`) y se añadieron type hints más precisos en los parámetros de entrada, mejorando la documentación técnica y la mantenibilidad del módulo sin alterar su lógica.

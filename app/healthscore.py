@@ -285,6 +285,7 @@ class SystemMetrics:
         all_keys = _VALIDATION_KEYS + ("quarantined_count",)
         for field_name in all_keys:
             val = getattr(self, field_name, 0.0)
+            # Asegura que val sea procesable incluso si es None por error externo
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
             setattr(self, field_name, sanitized)
