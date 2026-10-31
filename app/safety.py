@@ -29,15 +29,12 @@ INVALID_FILE_ATTRIBUTES: Final[int] = 0xFFFFFFFF
 LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 
 PathLike: TypeAlias = Union[str, os.PathLike]
-# Predicado de violación: retorna True si se detecta una condición insegura
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
-# Caché global de integridad para evitar E/S redundante
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], bool]] = {}
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
 
 class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
-    """Estructura de bajo nivel que mapea la API GetFileInformationByHandle de Windows."""
     _fields_ = [
         ("dwFileAttributes", ctypes.c_uint32),
         ("ftCreationTime", ctypes.c_uint64),
@@ -52,16 +49,12 @@ class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
     ]
 
 class SafetyState(NamedTuple):
-    """Contexto inmutable que encapsula el estado crítico de un archivo para validación."""
     path: Path
     descriptor: SecurityDescriptor
     stat_result: os.stat_result
     file_id: tuple[int, int, int, int]
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
-    """
-    Genera un identificador único basado en el número de volumen y el índice de nodo.
-    """
     if not isinstance(path_str, str) or not path_str or path_str.upper().startswith(("\\\\.\\", "//./")):
         return (0, 0, 0, 0)
     
@@ -76,7 +69,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
     
-    # Intentar obtener handle con acceso mínimo de lectura
     handle = kernel32.CreateFileW(path_long, 0x80000000, 0x07, None, 3, 0x02000000, None)
     if handle == -1: 
         return (0, 0, 0, 0)
@@ -147,18 +139,9 @@ class FileMetadata(TypedDict):
     is_in_use: bool
 
 __all__ = [
-    "UnsafePathError",
-    "PROTECTED_DIR_NAMES",
-    "SENSITIVE_EXTENSIONS",
-    "normalize",
-    "is_drive_root",
-    "is_protected_path",
-    "is_within_directory",
-    "ensure_safe_to_modify",
-    "is_safe_to_modify",
-    "filter_safe_paths",
-    "is_sensitive_file",
-    "describe_protection",
+    "UnsafePathError", "PROTECTED_DIR_NAMES", "SENSITIVE_EXTENSIONS", "normalize",
+    "is_drive_root", "is_protected_path", "is_within_directory", "ensure_safe_to_modify",
+    "is_safe_to_modify", "filter_safe_paths", "is_sensitive_file", "describe_protection",
     "is_running_as_admin",
 ]
 
@@ -167,7 +150,6 @@ MAX_FILENAME_LENGTH: Final[int] = 255
 MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024
 MAX_DIRECTORY_DEPTH: Final[int] = 32
 MAX_REPARSE_DEPTH: Final[int] = 4
-
 DRIVE_UNKNOWN: Final[int] = 0
 DRIVE_NO_ROOT_DIR: Final[int] = 1
 DRIVE_REMOVABLE: Final[int] = 2 
@@ -648,6 +630,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _evaluate_security_rules(state: SafetyState) -> None:
+    """Verifica que el estado del archivo cumpla con las políticas de seguridad actuales."""
     if not state.path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     
@@ -939,7 +922,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     _STRUCTURAL_CACHE[path_string] = True
 
 def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> None:
-    """Verifica precondiciones de seguridad del archivo antes de cualquier modificación."""
+    """Verifica precondiciones de seguridad: bloqueos, propiedad del sistema y permisos antes de modificar."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
@@ -951,7 +934,6 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if _is_file_locked_by_other_process(str(target_path)):
             raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
 
-        # Usamos el descriptor de seguridad para evaluar atributos de riesgo sin llamadas redundantes
         sd = _get_security_descriptor(str(target_path))
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
             if sd.is_protected_system:
