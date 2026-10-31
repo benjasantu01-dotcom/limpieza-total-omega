@@ -175,7 +175,7 @@ class StartupEntry:
         Verifica la existencia física, integridad de sistema (no symlink) y 
         cumplimiento de las políticas de seguridad en `safety.py`.
         """
-        p_str = str(p)
+        p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
             return _VALIDATION_CACHE[p_str]
             
@@ -191,7 +191,7 @@ class StartupEntry:
                 _VALIDATION_CACHE[p_str] = False
                 return False
                 
-            exists = p.exists()
+            exists: bool = p.exists()
             _VALIDATION_CACHE[p_str] = exists
             return exists
         except (OSError, PermissionError, RuntimeError):
@@ -247,7 +247,7 @@ class StartupEntry:
             if command_line.startswith('"'):
                 result = self._extract_quoted_path(command_line)
             else:
-                parts = command_line.split()
+                parts: List[str] = command_line.split()
                 if parts and isinstance(parts[0], str) and ( "\\" in parts[0] or "/" in parts[0] ):
                     result = self._resolve_and_cache_path(parts[0])
         except (AttributeError, ValueError, IndexError, OSError, TypeError):
@@ -302,7 +302,7 @@ def startup_folders() -> List[Path]:
     for c in candidates:
         try:
             if c and c.is_dir():
-                resolved_str = str(c.resolve(strict=False))
+                resolved_str: str = str(c.resolve(strict=False))
                 if resolved_str not in seen_paths and not c.is_symlink() and not is_protected_path(c):
                     seen_paths.add(resolved_str)
                     valid_folders.append(c)
@@ -321,15 +321,15 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
         
-        name_ext = os.path.splitext(entry.name)
+        name_ext: Tuple[str, str] = os.path.splitext(entry.name)
         if name_ext[1].lower() not in EXECUTABLE_EXTS:
             return None
             
-        entry_path = entry.path
+        entry_path: str = entry.path
         if not isinstance(entry_path, str) or len(entry_path) > MAX_PATH_LEN:
             return None
             
-        p = Path(entry_path).resolve(strict=False)
+        p: Path = Path(entry_path).resolve(strict=False)
         if is_protected_path(p) or not is_safe_to_modify(p):
             return None
             
@@ -344,7 +344,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     filtrando duplicados y elementos protegidos.
     """
     found_entries: StartupEntries = []
-    scan_folders = folders if folders is not None else startup_folders()
+    scan_folders: Iterable[Path] = folders if folders is not None else startup_folders()
     processed_paths: Set[str] = set()
     
     for folder in scan_folders:
@@ -355,7 +355,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
                 for entry in it:
                     if entry.path in processed_paths:
                         continue
-                    processed = _process_folder_entry(entry)
+                    processed: Optional[StartupEntry] = _process_folder_entry(entry)
                     if processed:
                         found_entries.append(processed)
                         processed_paths.add(entry.path)
@@ -364,18 +364,17 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     return found_entries
 
 
+def _is_valid_registry_path(path_str: str) -> bool:
+    """Verifica si la ruta candidata del registro es sintácticamente segura."""
+    if not path_str or ("\\" not in path_str and "/" not in path_str): return False
+    if ".." in path_str.split(os.sep): return False
+    target: Path = Path(path_str)
+    return not any(c in str(target) for c in SUSPICIOUS_CHARS) and not is_protected_path(target)
+
+
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     """
-    Valida que una entrada del registro sea segura, comprobando longitud,
-    caracteres prohibidos, rutas UNC y evitando procesar duplicados.
-    
-    Args:
-        name: Nombre de la entrada del registro.
-        command: Ruta o comando asociada a la entrada.
-        seen: Conjunto de comandos ya procesados en la sesión.
-        
-    Returns:
-        True si la entrada es segura y válida, False en caso contrario.
+    Valida la integridad de una entrada del registro (formato, seguridad y duplicidad).
     """
     if not isinstance(name, str) or not isinstance(command, str): return False
     if len(command) > MAX_PATH_LEN or any(ord(c) < 32 for c in command) or "\0" in command: return False
@@ -384,15 +383,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen: return False
     
     try:
-        path_candidate_str = clean_cmd.strip('"')
-        if not path_candidate_str or ("\\" not in path_candidate_str and "/" not in path_candidate_str): return False
-        if ".." in path_candidate_str.split(os.sep): return False
-            
-        target_path = Path(path_candidate_str)
-        if any(c in str(target_path) for c in SUSPICIOUS_CHARS): return False
-        # Pre-filtro de seguridad antes de validaciones más costosas
-        if is_protected_path(target_path): return False
-        return True
+        return _is_valid_registry_path(clean_cmd.strip('"'))
     except (ValueError, TypeError, OSError, RuntimeError):
         return False
 
@@ -401,13 +392,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
     """
     Convierte el reporte crudo en CSV (producido por PowerShell) en una 
     lista de objetos `StartupEntry` validados.
-    
-    Args:
-        csv_text: Salida del comando PowerShell en formato CSV.
-        source: Identificador de la fuente para el objeto `StartupEntry`.
-        
-    Returns:
-        Lista de `StartupEntry` correctamente parseadas y validadas.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -426,8 +410,8 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(row, dict):
                 continue
             
-            raw_name = row.get("Name")
-            raw_cmd = row.get("Value")
+            raw_name: Optional[str] = row.get("Name")
+            raw_cmd: Optional[str] = row.get("Value")
             
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
@@ -453,8 +437,8 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     if os.name != "nt":
         return []
     
-    keys_formatted = ", ".join([f"'{k}'" for k in keys])
-    ps_script = f"""
+    keys_formatted: str = ", ".join([f"'{k}'" for k in keys])
+    ps_script: str = f"""
     $ErrorActionPreference = 'SilentlyContinue'
     foreach ($path in @({keys_formatted})) {{
         $item = Get-ItemProperty -LiteralPath $path -ErrorAction SilentlyContinue
@@ -497,7 +481,7 @@ def list_startup_entries() -> StartupEntries:
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:
     """Clasifica el impacto en el rendimiento basado en la cantidad de programas detectados."""
-    count = len(entries) if isinstance(entries, list) else sum(1 for _ in entries)
+    count: int = len(entries) if isinstance(entries, list) else sum(1 for _ in entries)
     if count <= 5: return "ok"
     if count <= 10: return "info"
     if count <= 18: return "warning"
@@ -509,7 +493,7 @@ def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
     Genera un informe final con formato legible, incluyendo sugerencias 
     basadas en el nivel de impacto calculado.
     """
-    entries_list = entries if entries is not None else list_startup_entries()
+    entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         
     lines: List[str] = [f"Programas que arrancan con el sistema: {total_count}"]

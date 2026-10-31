@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **158** (31.3% de aceptación)
+- Mejoras aceptadas: **157** (31.2% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 58
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 263
+- Rechazadas por guardia de seguridad: 59
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 262
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 80 | 3 | 30 | 8 | 91 |
-| 2026-10-31 | 78 | 4 | 28 | 10 | 172 |
+| 2026-10-30 | 78 | 3 | 29 | 8 | 90 |
+| 2026-10-31 | 79 | 4 | 30 | 11 | 172 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - seguridad defensiva: **35**
-- legibilidad y documentación: **32**
-- robustez ante casos límite: **27**
+- legibilidad y documentación: **33**
 - rendimiento: **26**
+- robustez ante casos límite: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
 - `diskreport.py`: **16**
 - `quarantine.py`: **15**
-- `healthscore.py`: **14**
 - `settings.py`: **14**
-- `memory.py`: **13**
 - `browser.py`: **13**
+- `healthscore.py`: **13**
 - `assistant.py`: **12**
 - `scanner.py`: **12**
+- `memory.py`: **12**
 - `organizer.py`: **10**
 - `branding.py`: **9**
 - `duplicates.py`: **7**
-- `startup.py`: **5**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T12:34:55` **startup.py** (legibilidad y documentación): Se introdujeron type hints en los métodos de `StartupEntry` que carecían de ellos y se refactorizó `_is_registry_entry_safe` para mejorar la legibilidad del flujo de validación, extrayendo la lógica de chequeo de rutas a un método auxiliar más claro y declarativo.
 - `2026-10-31T12:15:37` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y clases, clarificando la intención del uso de máscaras de acceso Win32 y la lógica de validación, además de añadir type hints en secciones que los requerían para mejorar la mantenibilidad.
 - `2026-10-31T11:56:05` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del módulo `assistant.py` mediante la refactorización de `SystemContext._validate_and_sanitize_data` y `_apply_updates`, reemplazando lógica procedimental compleja por un flujo más limpio, explícito y tipado, lo cual facilita la auditoría de seguridad del proceso de ingesta de datos.
 - `2026-10-31T11:55:42` **startup.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `StartupEntry._resolve_path_from_command` mediante un bloque `try-except` más específico y la validación de la integridad de los resultados de `split()`, evitando que una entrada malformada provoque una excepción inesperada durante el parseo de comandos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T09:23:06` **assistant.py** (seguridad defensiva): He endurecido la seguridad en `_call_gemini` mediante la validación explícita del host y los esquemas de la URL, asegurando que la clave API no pueda inyectar parámetros malintencionados en el query string.
 - `2026-10-31T09:20:43` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de E/S y estados inválidos mediante la implementación de un manejo más estricto de las excepciones en `_get_file_attributes` y `_safe_stat`, garantizando que el escáner no aborte ante condiciones de carrera o permisos denegados durante el acceso a atributos de archivo.
 - `2026-10-31T09:12:03` **safety.py** (robustez ante casos límite): Se ha añadido `ProtectionReason.INVALID_PATH_TYPE` y una regla de validación robusta para detectar rutas que, siendo válidas a nivel de sistema de archivos, son objetos especiales no manipulables (como *Named Pipes* o *Mailslots*), reforzando la seguridad frente a intentos de interacción con dispositivos mediante `CreateFileW`.
-- `2026-10-31T09:02:02` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` al añadir una validación de `path_buf` frente a posibles errores de codificación o buffers incompletos, y se asegura que el manejo de `h_process` sea consistente para prevenir fugas de handles ante excepciones inesperadas durante la inspección de procesos.
