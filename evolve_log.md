@@ -629,3 +629,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-31T00:22:09` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
 - `2026-10-31T00:22:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T00:22:09` Corrida terminada. Total usado hoy: 8.
+- `2026-10-31T00:30:30` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-31T00:30:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-31T00:30:38` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-31T00:30:45` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-31T00:30:58` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-31T00:32:11` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-10-31T00:32:47` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando el uso de `pathlib.Path.resolve()` —que puede disparar errores de E/S o resolución de enlaces simbólicos en sistemas de archivos restringidos— por una validación más robusta que utiliza `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta no sea un vínculo simbólico o una ruta protegida antes de intentar crear directorios o escribir el archivo.
+- `2026-10-31T00:32:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-31T00:33:01` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-31T00:33:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T00:33:01` Corrida terminada. Total usado hoy: 12.

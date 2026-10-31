@@ -347,8 +347,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: 
         return None
     try:
-        dest_path = Path(destination).resolve()
-        # La validación debe ocurrir en la ruta absoluta resuelta
+        dest_path = Path(destination)
+        
+        # Validar ruta antes de cualquier resolución de sistema de archivos
         if not is_safe_to_modify(dest_path) or is_protected_path(dest_path):
             return None
             
