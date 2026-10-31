@@ -285,7 +285,6 @@ class SystemMetrics:
         all_keys = _VALIDATION_KEYS + ("quarantined_count",)
         for field_name in all_keys:
             val = getattr(self, field_name, 0.0)
-            # Asegura que val sea procesable incluso si es None por error externo
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
             setattr(self, field_name, sanitized)
@@ -383,8 +382,6 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
         recommendations.append("Existen elementos en cuarentena.")
         
     final_score = int(_clamp(round(total_points), 0.0, 100.0))
-    
-    # Filtrado final de seguridad para recomendaciones expuestas
     safe_recommendations = [r for r in recommendations if _is_safe_string_for_report(r)]
     
     return HealthResult(
@@ -420,21 +417,19 @@ def _render_bar(points: Any, max_val: Any) -> str:
 def _render_summarize(composite_id: int, breakdown: Tuple[Tuple[str, int], ...], recommendations: Tuple[str, ...]) -> List[str]:
     """
     Genera un informe textual resumen. 
-    
-    Args:
-        composite_id: Identificador único que combina score y categoría para el cacheo.
-        breakdown: Tupla de tuplas con el desglose por área (nombre, valor).
-        recommendations: Tupla con los mensajes de recomendación activos.
     """
-    score, grade_idx = divmod(composite_id, 1000)
-    grade = "ABCDEF"[grade_idx]
-    lines = [f"Salud del sistema: {score}/100  (nota {grade})", "", "Desglose por área:"]
-    for area, val in breakdown:
-        weight = WEIGHTS.get(area, 10)
-        lines.append(f"  {area.capitalize():<12} {val:>2}/{weight:<2} [{_render_bar(val, weight)}]")
-    
-    lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recommendations]))
-    return lines
+    try:
+        score, grade_idx = divmod(composite_id, 1000)
+        grade = "ABCDEF"[min(grade_idx, 5)]
+        lines = [f"Salud del sistema: {score}/100  (nota {grade})", "", "Desglose por área:"]
+        for area, val in breakdown:
+            weight = WEIGHTS.get(area, 10)
+            lines.append(f"  {area.capitalize():<12} {val:>2}/{weight:<2} [{_render_bar(val, weight)}]")
+        
+        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recommendations]))
+        return lines
+    except Exception:
+        return ["Error al formatear resumen."]
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Serializa el resultado de salud en una lista de líneas para informe legible."""
@@ -445,8 +440,9 @@ def summarize(result: HealthResult | None) -> List[str]:
         recs = tuple(result.recommendations) if isinstance(result.recommendations, list) else ()
         if not recs: recs = ("No hay advertencias activas.",)
         
-        # ID para caché único basado en estado
-        res_id = (result.score * 1000) + ["A", "B", "C", "D", "F"].index(result.grade)
+        grades = ["A", "B", "C", "D", "F"]
+        grade_idx = grades.index(result.grade) if result.grade in grades else 4
+        res_id = (result.score * 1000) + grade_idx
         breakdown = tuple(sorted(result.breakdown.items()))
         
         return _render_summarize(res_id, breakdown, recs)

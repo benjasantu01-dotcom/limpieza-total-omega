@@ -1394,3 +1394,10 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'SystemContext' is not de
 - `2026-10-31T08:51:30` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante bloqueos de archivos y errores de acceso al usar un `_safe_stat` más defensivo y un filtrado de rutas más estricto, asegurando que los errores de sistema (como archivos de sistema en uso o permisos negados) se gestionen silenciosamente sin abortar el escaneo.
 - `2026-10-31T08:51:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T08:51:30` Corrida terminada. Total usado hoy: 208.
+- `2026-10-31T08:59:54` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-31T09:00:17` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-31T09:00:43` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del pipeline al proteger la integridad de los datos procesados en el caché y se añadieron salvaguardas contra desbordamientos numéricos o tipos inesperados durante la generación del informe, evitando que una métrica inyectada erróneamente rompa la interfaz.
+- `2026-10-31T09:01:49` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-31T09:02:02` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_is_process_executable_safe` al añadir una validación de `path_buf` frente a posibles errores de codificación o buffers incompletos, y se asegura que el manejo de `h_process` sea consistente para prevenir fugas de handles ante excepciones inesperadas durante la inspección de procesos.
+- `2026-10-31T09:02:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T09:02:02` Corrida terminada. Total usado hoy: 212.

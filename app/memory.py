@@ -348,7 +348,7 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
         ret = WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, path_buffer, char_count)
         if ret <= 0 or ret >= char_count: return False 
         
-        exe_path_str = path_buffer.value.strip()
+        exe_path_str = path_buffer.value
         if not exe_path_str: return False
         
         # Validar mediante resolución de ruta absoluta para mayor seguridad defensiva
