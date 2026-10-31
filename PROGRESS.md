@@ -5,27 +5,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **196** (39.0% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 53 | 2 | 18 | 6 | 73 |
+| 2026-10-29 | 52 | 2 | 18 | 6 | 72 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
+| 2026-10-31 | 1 | 0 | 1 | 0 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **37**
-- seguridad defensiva: **35**
+- robustez ante casos límite: **38**
 - rendimiento: **34**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,18 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **20**
 - `quarantine.py`: **19**
 - `settings.py`: **18**
+- `memory.py`: **17**
 - `assistant.py`: **16**
-- `memory.py`: **16**
 - `safety.py`: **16**
 - `healthscore.py`: **14**
 - `branding.py`: **14**
 - `scanner.py`: **14**
 - `organizer.py`: **12**
-- `startup.py`: **9**
 - `duplicates.py`: **8**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T00:11:47` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentos de limpieza sobre procesos que ya han finalizado o están en estado zombi, y se mejoró la resiliencia ante errores de acceso en entornos con alta restricción de permisos.
 - `2026-10-30T14:53:08` **healthscore.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de ejecución en el cálculo del pipeline utilizando un bloque `try-except` más granular y protegiendo el `zip` para evitar el colapso del motor si las métricas o los pesos sufren discrepancias estructurales inesperadas.
 - `2026-10-30T14:43:21` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos, asegurando que la validación de rutas sea absoluta, que la creación de directorios sea atómica en cuanto a permisos y que el manejo de excepciones sea preciso para no bloquear el hilo de UI.
 - `2026-10-30T14:42:48` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemContext.ingest` y sus métodos de validación asociados (especialmente en la detección de fuentes maliciosas o tipos inesperados) mediante la implementación de comprobaciones de "tipo estricto" y validación de `__dict__` antes de la mutación, previniendo inyecciones de datos corruptos desde fuentes externas.
@@ -59,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T14:02:49` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando la serialización repetida de métricas a strings dentro de `context_as_text` por una generación eficiente de la lista de métricas, y mejoré la lógica de búsqueda de tokens en `local_answer` utilizando un conjunto de búsqueda directa para evitar múltiples iteraciones sobre la cadena del usuario.
 - `2026-10-30T14:01:50` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructuradas en las funciones de procesamiento de datos, explicitando los contratos de entrada/salida y las excepciones esperadas, y corregí la ambigüedad en el tratamiento de rutas de registro en `_is_registry_entry_safe` mediante un nombre de variable más descriptivo (`path_candidate_str`).
 - `2026-10-30T13:53:23` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` documentando los límites de seguridad en `_read_and_parse_json` y extrayendo la lógica de validación de los datos JSON crudos a una función privada dedicada `_is_structure_valid`, lo que aclara el PORQUÉ de las restricciones de seguridad sobre el tamaño y el contenido del archivo.
-- `2026-10-30T13:53:06` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del protocolo `SuspicionCheck` y se añadieron type hints consistentes en los parámetros de las funciones heurísticas para clarificar el contrato entre el motor y las reglas de detección.

@@ -448,12 +448,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso no encontrado."
 
     try:
+        # Validación: confirmar que el proceso sigue vivo antes de intentar cualquier acción.
         exit_code = wintypes.DWORD()
         if WindowsAPI.kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0:
-            return False, "No se pudo verificar el estado del proceso."
+            return False, "Error al consultar estado del proceso."
             
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            return False, "El proceso no está activo."
+            return False, "El proceso ya ha finalizado."
         
         path_buf = ctypes.create_unicode_buffer(1024)
         if not _is_process_executable_safe(h_process, path_buf):
@@ -465,6 +466,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El sistema operativo rechazó la operación de limpieza."
             
     except (ctypes.WinError, OSError, Exception):
-        return False, "Error interno al intentar comunicarse con el proceso."
+        return False, "Error inesperado al comunicarse con el proceso."
     finally:
         WindowsAPI.kernel32.CloseHandle(h_process)

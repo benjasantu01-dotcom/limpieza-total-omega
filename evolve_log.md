@@ -615,3 +615,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-30T23:39:31` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-30T23:49:43` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-30T23:59:55` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-31T00:10:07` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-10-31T00:11:17` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-31T00:11:47` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentos de limpieza sobre procesos que ya han finalizado o están en estado zombi, y se mejoró la resiliencia ante errores de acceso en entornos con alta restricción de permisos.
+- `2026-10-31T00:12:57` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-31T00:13:46` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-10-31T00:13:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T00:13:46` Corrida terminada. Total usado hoy: 4.
