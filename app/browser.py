@@ -84,39 +84,27 @@ class DirectoryScanner:
         except (OSError, RuntimeError):
             return False
         
-        path_norm = os.path.normcase(path_str)
+        path_norm = os.path.normcase(os.path.abspath(path_str))
         return path_norm.startswith(self.ctx.sandbox_base_norm)
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
         Calcula el peso total en bytes de un directorio mediante un recorrido 
         profundidad-limitada, evitando la recursión infinita y accesos indebidos.
-        
-        El proceso sigue este orden de filtrado:
-        1. Límites: Se detiene si excede MAX_DEPTH o detecta un ciclo (dev/ino).
-        2. Seguridad: Se ignoran junctions, enlaces simbólicos y rutas prohibidas
-           por `safety.py`.
-        3. Exclusiones: Se omiten archivos en `NEVER_TOUCH` (como contraseñas o cookies).
-        4. Atributos: En Windows, se ignoran archivos marcados con bit 'Sistema'.
         """
-        if depth > self.ctx.max_depth: 
+        if depth > self.ctx.max_depth or self.ctx.is_junction(root_path):
             return ScanResult(0, True)
         
-        if self.ctx.is_junction(root_path):
+        if not self._is_path_allowed(root_path):
             return ScanResult(0, True)
 
         try:
-            path_obj = Path(root_path)
-            if path_obj.is_symlink(): return ScanResult(0, True)
             st = os.stat(root_path)
             dir_id = (st.st_dev, st.st_ino)
         except (OSError, PermissionError, FileNotFoundError):
             return ScanResult(0, False)
 
         if dir_id in self.ctx.visited_dirs:
-            return ScanResult(0, True)
-        
-        if not self._is_path_allowed(root_path):
             return ScanResult(0, True)
 
         self.ctx.visited_dirs.add(dir_id)
@@ -126,10 +114,7 @@ class DirectoryScanner:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Saltar archivos protegidos o definidos en NEVER_TOUCH
                         if entry.name.lower() in self.ctx.never_touch_lower: continue
-                        
-                        # Prevención de escalada mediante enlaces simbólicos
                         if entry.is_symlink(): continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -279,7 +264,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not p.exists() or not p.is_dir(): return 0
     
     try:
-        root_norm = os.path.normcase(str(p.resolve()))
+        root_norm = os.path.normcase(os.path.abspath(str(p)))
     except (OSError, RuntimeError):
         return 0
 
@@ -299,7 +284,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists(): continue
         try:
-            base_norm = os.path.normcase(str(base.resolve()))
+            base_norm = os.path.normcase(os.path.abspath(str(base)))
         except (OSError, RuntimeError):
             continue
             

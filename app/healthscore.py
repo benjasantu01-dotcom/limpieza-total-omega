@@ -384,11 +384,14 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
         
     final_score = int(_clamp(round(total_points), 0.0, 100.0))
     
+    # Filtrado final de seguridad para recomendaciones expuestas
+    safe_recommendations = [r for r in recommendations if _is_safe_string_for_report(r)]
+    
     return HealthResult(
         score=final_score,
         grade=grade_for_score(final_score),
         breakdown=metric_breakdown,
-        recommendations=recommendations if recommendations else ["No hay nada urgente para hacer. El sistema está en buen estado."]
+        recommendations=safe_recommendations if safe_recommendations else ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
