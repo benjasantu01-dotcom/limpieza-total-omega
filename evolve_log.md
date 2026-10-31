@@ -949,3 +949,10 @@ FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommend
 - `2026-10-31T03:46:06` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `walk_files` utilizando `Path.suffix` pre-calculado y minimizando la creación redundante de objetos `Path` mediante el uso de `os.path.join` y `os.path.splittext` en el bucle principal, evitando así múltiples llamadas a `resolve()` y `relative_to()` que son costosas en recorridos profundos de disco.
 - `2026-10-31T03:46:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T03:46:06` Corrida terminada. Total usado hoy: 88.
+- `2026-10-31T03:54:32` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-31T03:54:59` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de la recolección de archivos en `_collect_candidates` integrando el filtrado por tamaño y la exclusión de duplicados mediante `inodes` dentro de una única pasada de `os.scandir`, evitando llamadas redundantes a `stat()` y múltiples recorridos de listas.
+- `2026-10-31T03:55:26` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del motor de cálculo mediante la eliminación de una llamada innecesaria a `math.isfinite` dentro de los loops internos de scoring, utilizando en su lugar la validación centralizada de `SystemMetrics` y reduciendo el overhead de acceso a atributos.
+- `2026-10-31T03:56:36` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-31T03:56:48` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-10-31T03:56:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T03:56:48` Corrida terminada. Total usado hoy: 92.

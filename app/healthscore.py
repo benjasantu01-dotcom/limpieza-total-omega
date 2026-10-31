@@ -140,7 +140,6 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     Asegura que un valor numérico se encuentre dentro del rango [min_val, max_val].
     Maneja entradas no finitas devolviendo el valor mínimo por seguridad.
     """
-    if not isinstance(value, (int, float)) or not math.isfinite(value): return min_val
     return float(max(min_val, min(max_val, value)))
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
@@ -149,7 +148,7 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
     Si inverse es True, un valor mayor al límite resulta en una salud menor (penalización).
     """
     def scorer(val: float) -> NormalizedRatio:
-        if not math.isfinite(val) or limit <= 0.0: return 0.0
+        if limit <= 0.0: return 0.0
         ratio = val / limit
         return _clamp(1.0 - ratio if inverse else ratio)
     return scorer
@@ -218,34 +217,30 @@ _verify_pipeline_integrity(WEIGHTS, PIPELINE_DEFINITIONS)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
     """Calcula salud: [0.0, 1.0] basado en archivos temporales (inverso: >5GB es 0.0)."""
-    return _JUNK_SCORER(float(junk_mb) if isinstance(junk_mb, (int, float)) else 0.0)
+    return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
     """Calcula salud: [0.0, 1.0] penalizando conteo de archivos sospechosos y advertencias de sistema."""
-    s_count = float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0
-    w_count = float(warnings) if isinstance(warnings, (int, float)) else 0.0
-    penalization = (max(0.0, s_count) * 0.05) + (max(0.0, w_count) * 0.25)
+    penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
     return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula salud: [0.0, 1.0] basado en porcentaje de RAM libre disponible."""
-    val = float(available_percent) if isinstance(available_percent, (int, float)) else 0.0
-    if _LIMIT_RAM_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
-    return _clamp(val / _LIMIT_RAM_PERCENT)
+    if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
+    return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Calcula salud: [0.0, 1.0] basado en porcentaje de espacio libre en disco."""
-    val = float(free_percent) if isinstance(free_percent, (int, float)) else 0.0
-    if _LIMIT_DISK_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
-    return _clamp(val / _LIMIT_DISK_PERCENT)
+    if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
+    return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
     """Calcula salud: [0.0, 1.0] basado en volumen de duplicados (inverso: >2GB es 0.0)."""
-    return _DUP_SCORER(float(duplicate_mb) if isinstance(duplicate_mb, (int, float)) else 0.0)
+    return _DUP_SCORER(float(duplicate_mb))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
     """Calcula salud: [0.0, 1.0] basado en cantidad de apps en inicio (inverso: >20 es 0.0)."""
-    return _STARTUP_SCORER(float(startup_count) if isinstance(startup_count, (int, float)) else 0.0)
+    return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
     """Sanitiza métricas numéricas evitando valores fuera de rango o NaN."""
@@ -345,11 +340,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     Evalúa las reglas registradas y retorna solo las que disparan advertencias.
     """
     if not isinstance(rules, tuple): return []
-    ratio = _clamp(normalized_ratio)
     findings: List[str] = []
     for rule in rules:
         try:
-            if rule.check(metrics, ratio):
+            if rule.check(metrics, normalized_ratio):
                 clean_msg = _apply_rule_safely(metrics, rule)
                 if clean_msg: findings.append(clean_msg)
         except Exception:
@@ -375,8 +369,6 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
     for entry in PIPELINE_DEFINITIONS:
         try:
             area_ratio = entry.scorer(metrics)
-            if not math.isfinite(area_ratio):
-                continue
             recs = _evaluate_rules(metrics, entry.rules, area_ratio)
             recommendations.extend(recs)
             points = area_ratio * float(entry.weight)
@@ -413,7 +405,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 @lru_cache(maxsize=128)
 def _render_bar(points: Any, max_val: Any) -> str:
     """Generador visual de barras de progreso para reportes en texto."""
-    if not isinstance(points, (int, float)) or not isinstance(max_val, (int, float)) or not math.isfinite(points):
+    if not isinstance(points, (int, float)) or not isinstance(max_val, (int, float)):
         return "." * 10
     
     safe_max = int(max(1, int(max_val)))

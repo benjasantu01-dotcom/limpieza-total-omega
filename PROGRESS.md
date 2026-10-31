@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 19 | 1 | 6 | 5 | 35 |
+| 2026-10-29 | 16 | 1 | 5 | 5 | 35 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
-| 2026-10-31 | 24 | 1 | 9 | 4 | 50 |
+| 2026-10-31 | 26 | 1 | 10 | 4 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **40**
 - legibilidad y documentación: **40**
-- robustez ante casos límite: **34**
-- rendimiento: **29**
+- rendimiento: **31**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `safety.py`: **19**
-- `settings.py`: **17**
+- `safety.py`: **18**
 - `browser.py`: **17**
 - `quarantine.py`: **17**
-- `scanner.py`: **16**
+- `settings.py`: **16**
 - `branding.py`: **15**
 - `memory.py`: **15**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
-- `healthscore.py`: **12**
+- `healthscore.py`: **13**
 - `organizer.py`: **11**
-- `duplicates.py`: **7**
+- `duplicates.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T03:55:26` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo mediante la eliminación de una llamada innecesaria a `math.isfinite` dentro de los loops internos de scoring, utilizando en su lugar la validación centralizada de `SystemMetrics` y reduciendo el overhead de acceso a atributos.
+- `2026-10-31T03:54:59` **duplicates.py** (rendimiento): Optimizé el rendimiento de la recolección de archivos en `_collect_candidates` integrando el filtrado por tamaño y la exclusión de duplicados mediante `inodes` dentro de una única pasada de `os.scandir`, evitando llamadas redundantes a `stat()` y múltiples recorridos de listas.
 - `2026-10-31T03:46:06` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` utilizando `Path.suffix` pre-calculado y minimizando la creación redundante de objetos `Path` mediante el uso de `os.path.join` y `os.path.splittext` en el bucle principal, evitando así múltiples llamadas a `resolve()` y `relative_to()` que son costosas en recorridos profundos de disco.
 - `2026-10-31T03:35:36` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante docstrings normalizados y descriptivos (siguiendo estándares de claridad para proyectos senior), se añadieron type hints ausentes en firmas clave y se reorganizó la lógica de los chequeos para separar claramente la intención de la implementación, facilitando el mantenimiento a futuro sin alterar la funcionalidad.
 - `2026-10-31T03:35:06` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_preconditions` y `_evaluate_security_rules`, extrayendo la lógica de validación de estado en una función centralizada más clara y añadiendo docstrings descriptivos para los métodos críticos, facilitando la auditoría de seguridad exigida.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T02:54:41` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_id` para prevenir que operaciones con archivos inexistentes o bloqueados generen un `SecurityDescriptor` erróneamente permisivo al capturar fallos de `ctypes` y validando el estado del `handle` antes de intentar acceder a metadatos, siguiendo el enfoque de validación de entradas.
 - `2026-10-31T02:45:53` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez de `_get_win_attributes` envolviendo la llamada de `ctypes` en una validación previa de existencia y manejando excepciones específicas para evitar que errores inesperados de API bloqueen el flujo del escáner.
 - `2026-10-31T02:45:21` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más explícitas, previniendo errores en tiempo de ejecución al manejar objetos `None` o rutas mal formadas que podrían derivar en excepciones no capturadas.
-- `2026-10-31T02:34:43` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez de `SystemMetrics.validate` y la integridad del pipeline mediante la eliminación de dependencias de `object.__setattr__` en favor de una actualización más limpia, y asegura que la limpieza de caracteres prohibidos sea más estricta al validar antes de la construcción de mensajes.
-- `2026-10-31T02:26:33` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación de parámetros más estricta y una captura de errores más granular, asegurando que valores inesperados no propaguen estados inválidos o silencien fallos críticos.
