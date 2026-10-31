@@ -469,20 +469,11 @@ class SystemContext:
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un atributo individual según especificación."""
-        try:
-            if isinstance(source, dict):
-                val = source.get(key)
-            else:
-                val = _get_safe_attr(source, key)
-            
-            if val is None or isinstance(val, bool) or callable(val):
-                return None
-            valid_val = _is_valid_numeric_update(val, spec)
-            if valid_val is not None:
-                return spec.type_hint(valid_val)
+        val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
+        if val is None or isinstance(val, bool) or callable(val):
             return None
-        except Exception:
-            return None
+        valid_val = _is_valid_numeric_update(val, spec)
+        return spec.type_hint(valid_val) if valid_val is not None else None
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres no permitidos o peligrosos."""
@@ -499,20 +490,18 @@ class SystemContext:
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
         """Extrae y valida de forma transaccional un conjunto de métricas desde una fuente externa."""
         if not isinstance(source, (dict, object)) or callable(source): return None
-        updates: dict[str, Any] = {}
-        try:
-            for key, spec in _VALIDATORS.items():
-                val = self._apply_field(source, key, spec)
-                if val is not None: updates[key] = val
+        
+        extracted = {
+            k: self._apply_field(source, k, spec) 
+            for k, spec in _VALIDATORS.items()
+        }
+        updates = {k: v for k, v in extracted.items() if v is not None}
+        
+        g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
+        if (grade_val := self._clean_grade(g_val)):
+            updates["grade"] = grade_val
             
-            g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
-            if g_val is not None and not callable(g_val):
-                grade_val = self._clean_grade(g_val)
-                if grade_val: updates["grade"] = grade_val
-            
-            return updates if updates else None
-        except Exception:
-            return None
+        return updates if updates else None
 
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad básicas sobre el objeto/fuente de datos recibido."""
@@ -522,26 +511,23 @@ class SystemContext:
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica los cambios validados al objeto y purga cachés para forzar recálculos."""
-        try:
-            for k, v in updates.items():
-                if _is_safe_key(k) and isinstance(v, (int, float, str, bool)):
-                    setattr(self, k, v)
-            self.analyzed = True
-            for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
-                self.__dict__.pop(attr, None)
-        except Exception:
-            self.analyzed = False
+        for k, v in updates.items():
+            if _is_safe_key(k) and isinstance(v, (int, float, str, bool)):
+                setattr(self, k, v)
+        self.analyzed = True
+        # Limpieza de caché invalidando atributos derivados
+        for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
+            self.__dict__.pop(attr, None)
 
     def ingest(self, source: Any) -> bool:
         """Normaliza, valida e importa datos externos al contexto de manera segura."""
         if not self._validate_ingestion_source(source): 
             logging.warning("Intento de ingesta con fuente insegura o compleja bloqueado.")
             return False
-        updates = self._validate_and_sanitize_data(source)
-        if updates is None: 
-            return False
-        self._apply_updates(updates)
-        return True
+        if (updates := self._validate_and_sanitize_data(source)):
+            self._apply_updates(updates)
+            return True
+        return False
 
 @dataclass
 class Answer:

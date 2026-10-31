@@ -147,8 +147,8 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y valida una ruta delimitada por comillas, verificando que no sea 
-        traversal (..) ni contenga caracteres peligrosos.
+        Extracts and validates a path within quotes, ensuring it isn't a traversal
+        and does not contain dangerous characters.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -247,10 +247,9 @@ class StartupEntry:
             if command_line.startswith('"'):
                 result = self._extract_quoted_path(command_line)
             else:
-                parts: List[str] = command_line.split()
-                if parts and isinstance(parts[0], str) and parts[0]:
-                    if "\\" in parts[0] or "/" in parts[0]:
-                        result = self._resolve_and_cache_path(parts[0])
+                parts = command_line.split()
+                if parts and isinstance(parts[0], str) and ( "\\" in parts[0] or "/" in parts[0] ):
+                    result = self._resolve_and_cache_path(parts[0])
         except (AttributeError, ValueError, IndexError, OSError, TypeError):
             result = ""
         

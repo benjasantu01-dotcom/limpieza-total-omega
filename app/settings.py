@@ -350,13 +350,13 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _is_structure_valid(data: Any) -> bool:
-    """Verifica que el JSON parseado tenga una estructura de diccionario plana con tipos esperados."""
+    """Verifica que el JSON parseado sea un diccionario de tamaño controlado con tipos conformes al esquema."""
     if not isinstance(data, dict) or len(data) > 64: return False
     for k, v in data.items():
         key_enum = _KEY_TO_ENUM.get(k)
         if not key_enum: return False
-        expected_type = type(DEFAULTS[key_enum.value])
-        if v is not None and not isinstance(v, expected_type): return False
+        default_val = DEFAULTS.get(key_enum.value)
+        if v is not None and not isinstance(v, type(default_val)): return False
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:

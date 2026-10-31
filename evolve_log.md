@@ -624,3 +624,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-31T11:45:02` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones de entrada en `normalize` y `_get_path_stat_robust` mediante la captura explícita de excepciones durante el acceso a propiedades de `Path` (como `.anchor` o `.parts`), evitando cierres inesperados ante rutas mal formadas o inaccesibles a nivel de sistema de archivos.
 - `2026-10-31T11:45:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T11:45:02` Corrida terminada. Total usado hoy: 276.
+- `2026-10-31T11:53:01` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-31T11:53:37` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-31T11:54:06` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` y `_read_and_parse_json` añadiendo validaciones explícitas de tipos y claves, evitando que una entrada JSON maliciosa o corrupta cause errores de ejecución no controlados durante el parseo inicial.
+- `2026-10-31T11:55:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-31T11:55:42` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `StartupEntry._resolve_path_from_command` mediante un bloque `try-except` más específico y la validación de la integridad de los resultados de `split()`, evitando que una entrada malformada provoque una excepción inesperada durante el parseo de comandos.
+- `2026-10-31T11:56:05` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenimiento del módulo `assistant.py` mediante la refactorización de `SystemContext._validate_and_sanitize_data` y `_apply_updates`, reemplazando lógica procedimental compleja por un flujo más limpio, explícito y tipado, lo cual facilita la auditoría de seguridad del proceso de ingesta de datos.
+- `2026-10-31T11:56:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T11:56:05` Corrida terminada. Total usado hoy: 280.
