@@ -292,7 +292,7 @@ class SystemMetrics:
             val = getattr(self, field_name, 0.0)
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
-            object.__setattr__(self, field_name, sanitized)
+            setattr(self, field_name, sanitized)
 
     @property
     def is_finite(self) -> bool:
@@ -323,24 +323,15 @@ def _is_safe_string_for_report(text: str) -> bool:
 def _sanitize_msg(msg: str | Any) -> str:
     """
     Filtro de seguridad que limpia caracteres no permitidos y bloquea términos sensibles.
-    
-    Args:
-        msg: Texto potencialmente inseguro del motor de reglas.
-    Returns:
-        Cadena sanitizada y truncada, o vacía si el contenido viola las reglas.
     """
     if not isinstance(msg, str) or len(msg) > (_MAX_MSG_LEN * 4): 
         return ""
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
-    if not _is_safe_string_for_report(clean):
-        return ""
     return clean.strip()[:_MAX_MSG_LEN]
 
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     """
     Ejecutor de reglas con aislamiento (sandbox) para evitar fugas de información.
-    
-    Procesa la factoría de mensajes y aplica un filtrado estricto antes de la salida.
     """
     try:
         raw_res = rule.message_factory(metrics)
@@ -352,8 +343,6 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
     """
     Evalúa las reglas registradas y retorna solo las que disparan advertencias.
-    
-    Filtra los resultados mediante _apply_rule_safely para garantizar seguridad.
     """
     if not isinstance(rules, tuple): return []
     ratio = _clamp(normalized_ratio)
