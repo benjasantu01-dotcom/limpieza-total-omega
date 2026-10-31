@@ -394,6 +394,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     try:
         if primary_path.exists() and primary_path.is_file():
             st = primary_path.lstat()
+            if _Validators._is_reparse_point(str(primary_path)): return DEFAULTS.copy()
             cached = _MANAGER.data_cache.get(resolved_str)
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
                 return dict(cached[0])

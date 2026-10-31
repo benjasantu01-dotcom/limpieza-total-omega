@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 108 | 5 | 37 | 9 | 113 |
-| 2026-10-31 | 67 | 3 | 26 | 10 | 126 |
+| 2026-10-30 | 108 | 5 | 37 | 9 | 109 |
+| 2026-10-31 | 68 | 3 | 26 | 10 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **34**
+- seguridad defensiva: **35**
 - rendimiento: **32**
 - robustez ante casos límite: **29**
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **17**
 - `quarantine.py`: **17**
 - `healthscore.py`: **15**
+- `settings.py`: **15**
 - `assistant.py`: **14**
 - `memory.py`: **14**
-- `settings.py`: **14**
 - `scanner.py`: **13**
 - `branding.py`: **11**
 - `organizer.py`: **10**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T10:02:41` **settings.py** (seguridad defensiva): Reforcé la integridad defensiva al cargar configuraciones validando que el archivo no sea un enlace simbólico ni un punto de reparse (junction) antes de procesarlo, evitando ataques de suplantación de archivos (`symlink race`) o lectura de rutas fuera del entorno seguro.
 - `2026-10-31T09:23:06` **assistant.py** (seguridad defensiva): He endurecido la seguridad en `_call_gemini` mediante la validación explícita del host y los esquemas de la URL, asegurando que la clave API no pueda inyectar parámetros malintencionados en el query string.
 - `2026-10-31T09:20:43` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de E/S y estados inválidos mediante la implementación de un manejo más estricto de las excepciones en `_get_file_attributes` y `_safe_stat`, garantizando que el escáner no aborte ante condiciones de carrera o permisos denegados durante el acceso a atributos de archivo.
 - `2026-10-31T09:12:03` **safety.py** (robustez ante casos límite): Se ha añadido `ProtectionReason.INVALID_PATH_TYPE` y una regla de validación robusta para detectar rutas que, siendo válidas a nivel de sistema de archivos, son objetos especiales no manipulables (como *Named Pipes* o *Mailslots*), reforzando la seguridad frente a intentos de interacción con dispositivos mediante `CreateFileW`.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T08:01:35` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en `Scanner` y funciones auxiliares para clarificar el flujo de datos y el propósito de las validaciones, mejorando la mantenibilidad sin alterar la lógica.
 - `2026-10-31T08:01:01` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de validación extrayendo los predicados de seguridad a un diccionario mapeado, lo que elimina la repetición de lógica y facilita la lectura del flujo de validación.
 - `2026-10-31T07:50:35` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para delegar la lógica de reintento de E/S a una función especializada y simplificar el flujo de control, junto con la adición de docstrings técnicos que explican la lógica de seguridad (inodos y sincronización) en operaciones críticas.
-- `2026-10-31T07:50:08` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando tipos explícitos en los argumentos de las funciones del núcleo, docstrings detallados en funciones críticas como `_process_directory` y `_is_safe_for_disk_op` (explicando la lógica de seguridad y prevención de TOCTOU), y se ha reorganizado el código para mejorar la legibilidad de las constantes de seguridad.
