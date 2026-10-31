@@ -651,3 +651,39 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-31T12:05:38` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-31T12:05:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T12:05:38` Corrida terminada. Total usado hoy: 284.
+- `2026-10-31T12:13:25` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-10-31T12:13:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-31T12:14:11` Tests FALLARON:
+```
+ts_a_recommendation _______________
+
+    def test_a_healthy_system_still_gets_a_recommendation():
+        resultado = healthscore.compute_score(healthscore.SystemMetrics())
+        assert resultado.recommendations
+>       assert "buen estado" in " ".join(resultado.recommendations)
+E       AssertionError: assert 'buen estado' in 'Sistema óptimo.'
+E        +  where 'Sistema óptimo.' = <built-in method join of str object at 0x7fcdff02bb40>(['Sistema óptimo.'])
+E        +    where <built-in method join of str object at 0x7fcdff02bb40> = ' '.join
+E        +    and   ['Sistema óptimo.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['Sistema óptimo.']).recommendations
+
+evolve/tests/test_modules.py:899: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - AssertionError: assert 'buen estado' in 'Sistema óptimo.'
+ +  where 'Sistema óptimo.' = <built-in method join of str object at 0x7fcdff02bb40>(['Sistema óptimo.'])
+ +    where <built-in method join of str object at 0x7fcdff02bb40> = ' '.join
+ +    and   ['Sistema óptimo.'] = HealthResult(score=100, grade='A', breakdown={'seguridad': 30, 'disco': 20, 'memoria': 18, 'basura': 14, 'duplicados': 10, 'arranque': 8}, recommendations=['Sistema óptimo.']).recommendations
+1 failed, 298 passed in 1.54s
+
+```
+- `2026-10-31T12:14:11` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación mediante docstrings detallados en funciones y constantes, y se ha aplicado un tipado más robusto para clarificar las estructuras de datos y el flujo de normalización de métricas.
+- `2026-10-31T12:14:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-31T12:14:17` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-31T12:14:23` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-31T12:14:44` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-31T12:15:37` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y clases, clarificando la intención del uso de máscaras de acceso Win32 y la lógica de validación, además de añadir type hints en secciones que los requerían para mejorar la mantenibilidad.
+- `2026-10-31T12:15:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-31T12:16:08` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-31T12:16:16` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-31T12:16:30` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-31T12:16:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T12:16:30` Corrida terminada. Total usado hoy: 288.

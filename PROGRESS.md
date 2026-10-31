@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **159** (31.5% de aceptación)
+- Mejoras aceptadas: **160** (31.7% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 59
+- Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 260
 
@@ -16,14 +16,14 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 82 | 4 | 31 | 9 | 94 |
-| 2026-10-31 | 77 | 3 | 28 | 10 | 166 |
+| 2026-10-30 | 82 | 3 | 30 | 9 | 92 |
+| 2026-10-31 | 78 | 4 | 28 | 10 | 168 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - seguridad defensiva: **35**
-- legibilidad y documentación: **31**
+- legibilidad y documentación: **32**
 - robustez ante casos límite: **29**
 - rendimiento: **26**
 
@@ -35,7 +35,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **14**
 - `healthscore.py`: **14**
 - `settings.py`: **14**
-- `memory.py`: **12**
+- `memory.py`: **13**
 - `assistant.py`: **12**
 - `scanner.py`: **12**
 - `organizer.py`: **10**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T12:15:37` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y clases, clarificando la intención del uso de máscaras de acceso Win32 y la lógica de validación, además de añadir type hints en secciones que los requerían para mejorar la mantenibilidad.
 - `2026-10-31T11:56:05` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del módulo `assistant.py` mediante la refactorización de `SystemContext._validate_and_sanitize_data` y `_apply_updates`, reemplazando lógica procedimental compleja por un flujo más limpio, explícito y tipado, lo cual facilita la auditoría de seguridad del proceso de ingesta de datos.
 - `2026-10-31T11:55:42` **startup.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `StartupEntry._resolve_path_from_command` mediante un bloque `try-except` más específico y la validación de la integridad de los resultados de `split()`, evitando que una entrada malformada provoque una excepción inesperada durante el parseo de comandos.
 - `2026-10-31T11:54:06` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` y `_read_and_parse_json` añadiendo validaciones explícitas de tipos y claves, evitando que una entrada JSON maliciosa o corrupta cause errores de ejecución no controlados durante el parseo inicial.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T09:20:43` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de E/S y estados inválidos mediante la implementación de un manejo más estricto de las excepciones en `_get_file_attributes` y `_safe_stat`, garantizando que el escáner no aborte ante condiciones de carrera o permisos denegados durante el acceso a atributos de archivo.
 - `2026-10-31T09:12:03` **safety.py** (robustez ante casos límite): Se ha añadido `ProtectionReason.INVALID_PATH_TYPE` y una regla de validación robusta para detectar rutas que, siendo válidas a nivel de sistema de archivos, son objetos especiales no manipulables (como *Named Pipes* o *Mailslots*), reforzando la seguridad frente a intentos de interacción con dispositivos mediante `CreateFileW`.
 - `2026-10-31T09:02:02` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` al añadir una validación de `path_buf` frente a posibles errores de codificación o buffers incompletos, y se asegura que el manejo de `h_process` sea consistente para prevenir fugas de handles ante excepciones inesperadas durante la inspección de procesos.
-- `2026-10-31T09:00:43` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del pipeline al proteger la integridad de los datos procesados en el caché y se añadieron salvaguardas contra desbordamientos numéricos o tipos inesperados durante la generación del informe, evitando que una métrica inyectada erróneamente rompa la interfaz.

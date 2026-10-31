@@ -58,6 +58,7 @@ MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB
 WIN32_PROCESS_QUERY_LIMITED: Final[int] = 0x1000
 WIN32_PROCESS_SET_QUOTA: Final[int] = 0x0400
 WIN32_PROCESS_QUERY_INFO: Final[int] = 0x0400
+# TRIM_ACCESS_MASK requiere permisos para consultar info y ajustar cuotas de memoria.
 TRIM_ACCESS_MASK: Final[int] = 0x020000 | WIN32_PROCESS_SET_QUOTA | WIN32_PROCESS_QUERY_INFO
 
 INVALID_HANDLE_VALUE: Final[int] = -1
@@ -343,7 +344,7 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
     return None
 
 def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.Array) -> bool:
-    """Verifica seguridad de ruta usando el buffer de nombre de módulo para evitar acceso a rutas protegidas."""
+    """Verifica seguridad de ruta mediante nombre de módulo, bloqueando rutas protegidas por safety.py."""
     if h_process is None or WindowsAPI.psapi is None: return False
     try:
         char_count = len(path_buffer)
