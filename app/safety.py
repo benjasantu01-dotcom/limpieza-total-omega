@@ -547,8 +547,10 @@ def _validate_junction_depth(path: Path) -> None:
             break
 
 def _validate_drive_restrictions(target_path: Path) -> None:
-    anchor = target_path.anchor
-    if not anchor: return
+    try:
+        anchor = target_path.anchor
+        if not anchor: return
+    except (AttributeError, TypeError): return
     
     try:
         path_s = str(target_path)
@@ -643,8 +645,11 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     if not isinstance(path, Path):
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     
-    if not path.exists():
-        raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+    try:
+        if not path.exists():
+            raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+    except (OSError, PermissionError):
+        raise UnsafePathError("Error de acceso al verificar existencia.", SafetyValidationErrorCode.IO_ERROR)
     
     max_retries = 3
     for attempt in range(max_retries):
@@ -765,8 +770,12 @@ def normalize(path: PathLike) -> Path:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
         p = Path(path_str)
-        anchor_path = Path(p.anchor)
-        parts = p.parts
+        try:
+            anchor_path = Path(p.anchor)
+            parts = p.parts
+        except (AttributeError, ValueError, TypeError):
+            raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
+            
         current_subpath = anchor_path
         
         if len(parts) > MAX_DIRECTORY_DEPTH:
@@ -989,8 +998,12 @@ def _validate_path_components(path: Path) -> None:
     except (OSError, RuntimeError, PermissionError):
         resolved_path = path
 
-    anchor = Path(resolved_path.anchor)
-    parts = resolved_path.parts
+    try:
+        anchor = Path(resolved_path.anchor)
+        parts = resolved_path.parts
+    except (AttributeError, ValueError):
+        raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
+        
     visited: set[Path] = set()
 
     if len(parts) > MAX_DIRECTORY_DEPTH:

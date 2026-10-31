@@ -123,7 +123,7 @@ def _win_has_system_attributes(path: Path) -> bool:
         attrs = _get_win_attributes(path)
         if attrs == -1: return True
         return bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
-    except Exception:
+    except (OSError, AttributeError):
         return True
 
 def _verify_source_fs_permissions(path: Path) -> None:
@@ -495,11 +495,13 @@ def _validate_quarantine_path(path: Path, base: Path) -> Path:
 
 def _check_device_consistency(source: Path, target_directory: Path) -> None:
     """Impide transferencias entre diferentes volúmenes físicos."""
+    if not isinstance(source, Path) or not isinstance(target_directory, Path):
+        raise TypeError("Las rutas deben ser instancias de pathlib.Path.")
     try:
         if source.stat().st_dev != target_directory.stat().st_dev:
             raise UnsafePathError("Operación entre distintos volúmenes no permitida.")
-    except OSError:
-        raise UnsafePathError("No se pudo verificar la consistencia del dispositivo.")
+    except OSError as e:
+        raise UnsafePathError(f"No se pudo verificar la consistencia del dispositivo: {e}")
 
 def _verify_quarantine_preconditions(source_path: Path, target_directory: Path) -> None:
     """Validaciones de integridad previas al aislamiento."""

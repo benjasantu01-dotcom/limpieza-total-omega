@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **160** (31.7% de aceptación)
+- Mejoras aceptadas: **159** (31.5% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 60
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 258
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 89 | 4 | 33 | 9 | 97 |
-| 2026-10-31 | 71 | 3 | 27 | 10 | 161 |
+| 2026-10-30 | 85 | 4 | 33 | 9 | 97 |
+| 2026-10-31 | 74 | 3 | 28 | 10 | 161 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **36**
 - seguridad defensiva: **35**
-- manejo de errores y validación de entradas: **33**
-- rendimiento: **32**
-- legibilidad y documentación: **31**
+- legibilidad y documentación: **30**
+- rendimiento: **29**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
-- `safety.py`: **17**
-- `browser.py`: **15**
-- `quarantine.py`: **15**
+- `safety.py`: **18**
+- `quarantine.py`: **16**
+- `browser.py`: **14**
 - `healthscore.py`: **14**
 - `memory.py`: **13**
 - `settings.py`: **13**
-- `assistant.py`: **12**
 - `scanner.py`: **12**
-- `branding.py`: **10**
-- `organizer.py`: **9**
+- `assistant.py`: **11**
+- `organizer.py`: **10**
+- `branding.py`: **9**
 - `duplicates.py`: **7**
-- `startup.py`: **5**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T11:45:02` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `normalize` y `_get_path_stat_robust` mediante la captura explícita de excepciones durante el acceso a propiedades de `Path` (como `.anchor` o `.parts`), evitando cierres inesperados ante rutas mal formadas o inaccesibles a nivel de sistema de archivos.
+- `2026-10-31T11:44:10` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez en `quarantine.py` al reemplazar bloques de manejo de errores genéricos (`except Exception`) por excepciones específicas (`OSError`, `PermissionError`, etc.) y añadiendo validaciones de tipo/valor en `_check_device_consistency`, evitando silenciamiento de errores críticos.
+- `2026-10-31T11:43:28` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al reemplazar llamadas redundantes a `ensure_safe_to_modify` con verificaciones condicionales y capturas de excepciones más granulares, evitando que un error de acceso en un archivo detenga el procesamiento de toda la lista.
 - `2026-10-31T11:34:55` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_process_handle` y `trim_working_set` capturando `ctypes.WinError` y validando explícitamente el valor de retorno de los handles para evitar operaciones sobre punteros nulos o inválidos, cumpliendo con el enfoque de manejo de errores.
 - `2026-10-31T11:33:33` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos al agregar validaciones defensivas en `_render_summarize` y `_render_bar`, asegurando que tipos de datos inesperados no interrumpan la generación de reportes, y añadiendo un chequeo explícito de `is_finite` en `compute_score` para evitar propagar valores corruptos.
 - `2026-10-31T11:33:06` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `group_by_size` y `_collect_candidates` para evitar que la iteración se detenga prematuramente ante fallos de acceso o permisos, y se eliminaron los chequeos de `is_safe_to_modify` en contextos donde solo se requiere acceso de lectura seguro, evitando posibles fallos innecesarios en directorios con restricciones de escritura.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T08:51:30` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante bloqueos de archivos y errores de acceso al usar un `_safe_stat` más defensivo y un filtrado de rutas más estricto, asegurando que los errores de sistema (como archivos de sistema en uso o permisos negados) se gestionen silenciosamente sin abortar el escaneo.
 - `2026-10-31T08:51:20` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a rutas malformadas o inaccesibles mediante la normalización defensiva de rutas en `DirectoryScanner.get_size` y la adición de un chequeo de existencia previo al acceso a atributos de archivo para prevenir excepciones inesperadas en entornos con archivos bloqueados.
 - `2026-10-31T08:50:26` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas mal formadas, valores nulos inesperados o tipos de datos inusuales durante la ingesta, evitando excepciones que pudieran interrumpir el flujo de la aplicación.
-- `2026-10-31T08:41:04` **startup.py** (rendimiento): Se implementó un mecanismo de caché para `_validate_file_access` dentro de `StartupEntry` para evitar llamadas redundantes y costosas a `is_safe_to_modify` y `exists()` sobre la misma ruta física durante el proceso de escaneo.
-- `2026-10-31T08:31:09` **quarantine.py** (rendimiento): Optimizé `list_items` para reducir drásticamente el acceso a disco al aprovechar el estado del `_MANIFEST_CACHE` sin necesidad de recargar el archivo JSON completo en cada llamada, alineándome con el enfoque de rendimiento.
-- `2026-10-31T08:30:25` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `Path.absolute()` y `Path.resolve()` dentro de los bucles críticos, reemplazándolas por consultas directas sobre el `os.DirEntry` ya abierto, lo cual reduce drásticamente las syscalls al sistema de archivos.

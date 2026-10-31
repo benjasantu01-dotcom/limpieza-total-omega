@@ -384,7 +384,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 if not _is_safe_for_disk_op(junk_file, dest_base): continue
                 target_path = _can_move_file(junk_file, dest_base)
                 if target_path and junk_file.path.exists(): 
-                    ensure_safe_to_modify(junk_file.path)
                     if is_safe_to_modify(junk_file.path):
                         shutil.move(str(junk_file.path), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
@@ -418,9 +417,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not item.is_file() or item.is_symlink() or _is_junction(item): continue
                 if not is_valid_junk_extension(item.name): continue
-                ensure_safe_to_modify(item)
-                item.unlink()
-                count += 1
+                if is_safe_to_modify(item):
+                    item.unlink()
+                    count += 1
             except (OSError, PermissionError, ValueError, AttributeError) as e:
                 logger.warning(f"No se pudo eliminar {item}: {e}")
         return count
