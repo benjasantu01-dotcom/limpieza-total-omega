@@ -1114,7 +1114,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             return 0
             
         items: List[QuarantineItem] = load_manifest(base)
-        # Diccionario para acceso eficiente por nombre de archivo
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
@@ -1122,14 +1121,17 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or f.is_dir() or not is_within_directory(f.resolve(), root_path):
                 continue
             
-            # Buscamos en el mapa en lugar de iterar la lista de objetos
             item = item_map.get(f.name)
             try:
                 if item and _is_item_purgable(f, item):
                     purgado_ids.add(item.item_id)
                 elif not item and f.suffix != ".tmp":
-                    # Borrar archivos huérfanos que no están en el manifiesto
-                    _safe_unlink(f)
+                    # Borrado huérfano con chequeo de seguridad estricto
+                    ensure_safe_to_modify(f)
+                    _check_path_syntax_integrity(f)
+                    _check_for_reparse_points(f)
+                    if not _is_file_in_use_by_system(f):
+                        f.unlink()
             except (OSError, PermissionError, UnsafePathError):
                 continue
         

@@ -351,7 +351,9 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
         exe_path_str = path_buffer.value.strip()
         if not exe_path_str: return False
         
-        return not is_protected_path(Path(exe_path_str))
+        # Validar mediante resolución de ruta absoluta para mayor seguridad defensiva
+        exe_path = Path(exe_path_str).resolve()
+        return not is_protected_path(exe_path)
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 

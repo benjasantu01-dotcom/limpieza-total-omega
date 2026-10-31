@@ -389,9 +389,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 if not _is_safe_for_disk_op(junk_file, dest_base): continue
                 target_path = _can_move_file(junk_file, dest_base)
                 if target_path and junk_file.path.exists(): 
-                    # Asegurar que el origen es tratable antes del movimiento
+                    # Asegurar que el origen sigue siendo seguro y tratable antes del movimiento final (prevención TOCTOU)
                     ensure_safe_to_modify(junk_file.path)
-                    shutil.move(str(junk_file.path), str(target_path))
+                    if is_safe_to_modify(junk_file.path):
+                        shutil.move(str(junk_file.path), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
         return dest_base
