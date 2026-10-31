@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 227
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 14 | 0 | 5 | 4 | 35 |
+| 2026-10-29 | 12 | 0 | 4 | 3 | 35 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
-| 2026-10-31 | 28 | 1 | 11 | 4 | 52 |
+| 2026-10-31 | 31 | 1 | 11 | 5 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **38**
-- rendimiento: **33**
-- robustez ante casos límite: **31**
+- seguridad defensiva: **36**
+- rendimiento: **35**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
 - `safety.py`: **19**
+- `diskreport.py`: **19**
 - `quarantine.py`: **18**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `browser.py`: **16**
+- `assistant.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **15**
-- `assistant.py`: **14**
 - `branding.py`: **14**
 - `healthscore.py`: **13**
 - `organizer.py`: **11**
-- `duplicates.py`: **8**
-- `startup.py`: **6**
+- `duplicates.py`: **7**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T04:16:41` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext` ante valores inesperados en `ingest` mediante una validación de tipo más estricta durante la deserialización y la protección del acceso a atributos, evitando que valores de tipo `None` o `callable` corrompan el estado interno del contexto.
+- `2026-10-31T04:16:16` **startup.py** (rendimiento): Se implementó un filtrado preventivo mediante un `set` de rutas protegidas en `_validate_file_access` y `_is_registry_entry_safe` para evitar que la lógica de resolución (que es costosa debido al I/O y a `path.resolve()`) procese archivos que ya sabemos que son de sistema, mejorando el rendimiento y reduciendo llamadas innecesarias al disco.
+- `2026-10-31T04:15:49` **settings.py** (rendimiento): Optimizé la gestión de la caché en el singleton `_SettingsManager` reemplazando búsquedas repetitivas de `path.resolve()` por una resolución única durante la inicialización de la ruta, reduciendo el overhead de llamadas al sistema de archivos en operaciones frecuentes de lectura.
 - `2026-10-31T04:06:54` **safety.py** (rendimiento): Se implementó un mecanismo de **memoización persistente** para `_get_file_id` mediante un caché de diccionario en memoria, reduciendo drásticamente las llamadas costosas a `GetFileInformationByHandle` (API de Kernel32) al validar repetidamente la misma estructura de archivos durante escaneos profundos.
 - `2026-10-31T04:06:00` **quarantine.py** (rendimiento): Optimicé `list_items` y `total_quarantined_bytes` eliminando la recreación de listas y búsquedas redundantes, aprovechando directamente la estructura del manifiesto ya cargado en memoria (`_MANIFEST_CACHE`) para mejorar el rendimiento en operaciones de consulta frecuentes.
 - `2026-10-31T03:55:26` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo mediante la eliminación de una llamada innecesaria a `math.isfinite` dentro de los loops internos de scoring, utilizando en su lugar la validación centralizada de `SystemMetrics` y reduciendo el overhead de acceso a atributos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T03:14:17` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad mediante la adición de Type Hints detallados en las funciones de procesamiento de datos, la clarificación de docstrings en las clases internas y la simplificación de la lógica de `_collect_summary_data` para hacer más explícito el flujo de agregación de estadísticas.
 - `2026-10-31T03:05:48` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo un Docstring detallado a `DirectoryScanner.get_size` y aclarando el propósito de la lógica de filtrado en el recorrido de archivos para asegurar que otros desarrolladores comprendan por qué ciertas rutas se omiten silenciosamente.
 - `2026-10-31T03:05:30` **branding.py** (legibilidad y documentación): Se introdujeron docstrings explicativos en las funciones de manipulación de color y geometría (`blend`, `_hex_to_rgb`, `_get_scaled_poly`) y se añadieron type hints más precisos en los parámetros de entrada, mejorando la documentación técnica y la mantenibilidad del módulo sin alterar su lógica.
-- `2026-10-31T03:04:52` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de `ProblemCriterion` y normalizando los nombres de los decoradores de seguridad para cumplir con el enfoque de documentación técnica exigida.
-- `2026-10-31T02:55:47` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_safe_stat` y en el ciclo de escaneo de `scan_directory` para capturar excepciones específicas (`PermissionError`, `OSError`) de forma robusta, evitando que fallos de acceso a archivos bloqueados o denegados detengan el proceso, y se refinan las validaciones de entrada en las heurísticas mediante verificaciones de existencia (`is_file`) antes de operar.
-- `2026-10-31T02:54:41` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_id` para prevenir que operaciones con archivos inexistentes o bloqueados generen un `SecurityDescriptor` erróneamente permisivo al capturar fallos de `ctypes` y validando el estado del `handle` antes de intentar acceder a metadatos, siguiendo el enfoque de validación de entradas.

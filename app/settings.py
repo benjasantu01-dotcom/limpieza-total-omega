@@ -157,14 +157,11 @@ class _SettingsManager:
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
-        # Cache: {abs_path: (data_proxy, mtime, size)}
+        # Cache: {resolved_path_str: (data_proxy, mtime, size)}
         self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
 
-    def clear(self, path: Optional[Path] = None) -> None:
-        if path:
-            self.data_cache.pop(str(path.resolve()), None)
-        else:
-            self.data_cache.clear()
+    def clear(self, resolved_path_str: str) -> None:
+        self.data_cache.pop(resolved_path_str, None)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         serialized_bytes = serialized.encode("utf-8")
@@ -178,7 +175,8 @@ class _SettingsManager:
             if not parent_dir.exists() or not os.access(parent_dir, os.W_OK): return False
             
             resolved_path = config_path.resolve()
-            if is_protected_path(str(resolved_path)) or not is_safe_to_modify(str(resolved_path)): return False
+            resolved_str = str(resolved_path)
+            if is_protected_path(resolved_str) or not is_safe_to_modify(resolved_str): return False
             
             if resolved_path.exists():
                 st = resolved_path.lstat()
@@ -191,12 +189,11 @@ class _SettingsManager:
                 f.flush()
                 os.fsync(f.fileno())
             
-            # Verificación post-escritura de integridad
             if not os.access(temp_path, os.W_OK): return False
             
             os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
             os.replace(temp_path, resolved_path)
-            self.clear(resolved_path)
+            self.clear(resolved_str)
             return True
         except (OSError, IOError, PermissionError, ValueError, RuntimeError):
             if temp_path.exists():
@@ -344,12 +341,10 @@ def validate(raw_values: Any) -> AppSettings:
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     try:
-        # Validación defensiva contra enlaces simbólicos y permisos inadecuados
         if not is_safe_to_modify(str(file_path)): return False
         if _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
-        # Permisos restringidos: no permitir grupo o otros con acceso de escritura/ejecución
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         return True
@@ -374,7 +369,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
         
-        # Filtros de seguridad iniciales: tamaño y caracteres binarios inesperados
         if not content or len(content) > MAX_SETTINGS_SIZE or len(content) < 2: return None
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
@@ -401,18 +395,18 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     primary_path = settings_path(custom_base)
-    path_resolved_str = str(primary_path.resolve())
+    resolved_str = str(primary_path.resolve())
     try:
         if primary_path.exists() and primary_path.is_file():
             st = primary_path.lstat()
-            cached = _MANAGER.data_cache.get(path_resolved_str)
+            cached = _MANAGER.data_cache.get(resolved_str)
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
                 return dict(cached[0])
             if _is_file_secure_to_read(primary_path, st):
                 data = _read_and_parse_json(primary_path)
                 if data is not None:
                     settings = _coerce_and_verify(validate(data))
-                    _MANAGER.data_cache[path_resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
+                    _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
                     return settings
     except (OSError, PermissionError): 
         pass

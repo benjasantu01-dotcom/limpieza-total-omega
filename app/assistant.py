@@ -206,7 +206,7 @@ class ProblemCriterion(NamedTuple):
     Attributes:
         metric_key: Clave en SystemContext.
         threshold: Valor límite para comparación.
-        operator: Operador booleano ('<' o '>') para determinar el estado de riesgo.
+        operator: Opereador booleano ('<' o '>') para determinar el estado de riesgo.
         message_format: Formato del mensaje (e.g., "{:.0f}% de RAM").
     """
     metric_key: str

@@ -175,10 +175,12 @@ class StartupEntry:
         cumplimiento de las políticas de seguridad en `safety.py`.
         """
         try:
+            # Filtro rápido de seguridad antes de verificar disco
+            if is_protected_path(p):
+                return False
             if not p.is_file() or p.is_symlink():
                 return False
-            
-            if is_protected_path(p) or not is_safe_to_modify(p):
+            if not is_safe_to_modify(p):
                 return False
                 
             return p.exists()
@@ -378,6 +380,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
             
         target_path = Path(path_candidate_str)
         if any(c in str(target_path) for c in SUSPICIOUS_CHARS): return False
+        # Pre-filtro de seguridad antes de validaciones más costosas
         if is_protected_path(target_path): return False
         return True
     except (ValueError, TypeError, OSError, RuntimeError):
