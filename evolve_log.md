@@ -1387,3 +1387,10 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'SystemContext' is not de
 - `2026-10-31T08:41:04` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se implementó un mecanismo de caché para `_validate_file_access` dentro de `StartupEntry` para evitar llamadas redundantes y costosas a `is_safe_to_modify` y `exists()` sobre la misma ruta física durante el proceso de escaneo.
 - `2026-10-31T08:41:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T08:41:04` Corrida terminada. Total usado hoy: 204.
+- `2026-10-31T08:49:45` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-10-31T08:50:26` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas mal formadas, valores nulos inesperados o tipos de datos inusuales durante la ingesta, evitando excepciones que pudieran interrumpir el flujo de la aplicación.
+- `2026-10-31T08:50:55` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-31T08:51:20` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escaneo frente a rutas malformadas o inaccesibles mediante la normalización defensiva de rutas en `DirectoryScanner.get_size` y la adición de un chequeo de existencia previo al acceso a atributos de archivo para prevenir excepciones inesperadas en entornos con archivos bloqueados.
+- `2026-10-31T08:51:30` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante bloqueos de archivos y errores de acceso al usar un `_safe_stat` más defensivo y un filtrado de rutas más estricto, asegurando que los errores de sistema (como archivos de sistema en uso o permisos negados) se gestionen silenciosamente sin abortar el escaneo.
+- `2026-10-31T08:51:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T08:51:30` Corrida terminada. Total usado hoy: 208.

@@ -249,6 +249,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         p = Path(mount).expanduser().resolve()
         if not p.exists() or _is_reparse_point(p) or is_protected_path(p):
             return None
+        # Las rutas UNC son arriesgadas, solo permitimos unidades locales mapeadas
         if str(p).startswith('\\\\'): return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -280,10 +281,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if not entry: continue
-                        if _is_excluded_path(entry.name, Path(entry.path)):
+                        # Filtrado defensivo de entrada nula o rutas inválidas
+                        if not entry or _is_excluded_path(entry.name, Path(entry.path)):
                             continue
                         
+                        # Saltar symlinks y reparse points para evitar bucles infinitos
                         if entry.is_symlink() or _is_reparse_point(Path(entry.path)):
                             continue
                         

@@ -92,15 +92,16 @@ class DirectoryScanner:
         if _is_unc_path(path_str): return False
         try:
             path_obj = Path(path_str)
-            # is_safe_to_modify confirma permisos de escritura, pero aquí lo usamos para
-            # validar que la ruta no sea un sistema crítico que no debe ser tocado.
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
         except (OSError, RuntimeError):
             return False
         
-        path_norm = os.path.normcase(os.path.abspath(path_str))
-        return path_norm.startswith(self.ctx.sandbox_base_norm)
+        try:
+            path_norm = os.path.normcase(os.path.abspath(path_str))
+            return path_norm.startswith(self.ctx.sandbox_base_norm)
+        except (OSError, RuntimeError):
+            return False
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
@@ -117,6 +118,8 @@ class DirectoryScanner:
             return ScanResult(0, True)
 
         try:
+            if not os.path.exists(root_path):
+                return ScanResult(0, False)
             st = os.stat(root_path)
             dir_id = (st.st_dev, st.st_ino)
         except (OSError, PermissionError, FileNotFoundError):
@@ -270,6 +273,7 @@ def base_directories() -> List[Path]:
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """Verifica si un archivo posee atributos de sistema o hidden mediante WinAPI (Windows)."""
     if kernel32 is None: return False
+    if not os.path.exists(entry_path): return False
     attrs = kernel32.GetFileAttributesW(entry_path)
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
