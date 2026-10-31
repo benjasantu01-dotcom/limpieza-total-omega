@@ -707,9 +707,12 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
         temp_path = parent / f".tmp_{uuid.uuid4().hex}"
         try:
             fd = os.open(str(temp_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-            os.close(fd)
+            try:
+                os.fsync(fd)
+            finally:
+                os.close(fd)
             return temp_path
-        except FileExistsError:
+        except (FileExistsError, OSError):
             continue
     raise RuntimeError("No se pudo generar un archivo temporal seguro.")
 
