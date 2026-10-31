@@ -270,8 +270,10 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Valida la seguridad del movimiento de archivos. Verifica permisos, bloqueos, 
-    identidad (inodos) y restricciones de sistema.
+    Valida la seguridad completa de una operación de movimiento.
+    Realiza verificaciones de: integridad del sistema (protección), identidad
+    del archivo (prevención TOCTOU mediante inodos) y validaciones lógicas de
+    ruta para evitar bucles o sobreescritura de archivos críticos.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
     try:
@@ -321,7 +323,11 @@ def _is_candidate_for_scan(entry: os.DirEntry, stats: os.stat_result) -> bool:
     return is_safe_to_modify(Path(entry.path))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
-    """Ejecuta un recorrido recursivo del árbol de directorios con control de profundidad."""
+    """
+    Realiza un recorrido recursivo controlado del árbol de directorios.
+    Utiliza un set 'visited' para detectar ciclos simbólicos y 'protected_cache' 
+    para acelerar la omisión de rutas ya marcadas como no seguras.
+    """
     if depth > LIMITS.MAX_SCAN_DEPTH: 
         return
         

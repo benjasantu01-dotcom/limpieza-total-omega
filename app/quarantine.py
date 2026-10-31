@@ -174,7 +174,6 @@ def _is_file_exclusive(path: Path) -> bool:
         return False
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
-        # OPEN_EXISTING = 3, FILE_ATTRIBUTE_NORMAL = 0x80
         handle: int = k32.CreateFileW(str(path), 0, 0, None, 3, 0x80, None)
         if handle == -1: return False
         try:
@@ -186,7 +185,6 @@ def _is_file_exclusive(path: Path) -> bool:
     try:
         fd: int = os.open(path, os.O_RDONLY) 
         try:
-            # LOCK_EX: exclusivo, LOCK_NB: no bloqueante (retorna error si falla)
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             fcntl.flock(fd, fcntl.LOCK_UN)
             return True
@@ -330,7 +328,6 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     if path is None or not path.exists():
         raise UnsafePathError("Ruta nula o inexistente para unlink.")
     
-    # Prevenir borrado del manifiesto
     if path.name == MANIFEST_NAME:
         raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     
@@ -701,7 +698,6 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
 
 def _create_temp_file(source: Path, destination: Path) -> Path:
     """Crea un nombre temporal único con validación de existencia previa."""
-    # Uso de uuid4 para aleatoriedad y flags de exclusividad para evitar TOCTOU
     parent = destination.parent
     for _ in range(5):
         temp_path = parent / f".tmp_{uuid.uuid4().hex}"
@@ -727,28 +723,24 @@ def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_has
 
 def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> None:
     """Copia protegida con streaming, restricción de acceso y sincronización a disco."""
-    f_src = None
-    f_dst = None
     try:
         st = source.stat()
         if not (st.st_mode & 0o100000):
             raise OSError("El origen no es un archivo regular.")
         
         _check_for_reparse_points(source)
-        
         if st.st_nlink > 1:
             raise UnsafePathError("Archivo origen con enlaces múltiples.")
         
         if not is_safe_to_modify(temp_dest.parent):
             raise UnsafePathError("Directorio destino no seguro.")
         
-        f_src = open(source, "rb", buffering=CHUNK_SIZE)
-        f_dst = open(temp_dest, "wb", buffering=CHUNK_SIZE)
-        shutil.copyfileobj(f_src, f_dst, length=CHUNK_SIZE)
-        f_dst.flush()
-        os.fsync(f_dst.fileno())
+        with open(source, "rb", buffering=CHUNK_SIZE) as f_src, \
+             open(temp_dest, "wb", buffering=CHUNK_SIZE) as f_dst:
+            shutil.copyfileobj(f_src, f_dst, length=CHUNK_SIZE)
+            f_dst.flush()
+            os.fsync(f_dst.fileno())
         
-        # Restringir permisos a solo lectura/escritura del dueño (octal 0600)
         try:
             os.chmod(temp_dest, 0o600)
         except OSError:
@@ -760,13 +752,12 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
             try: _check_io_error_context(temp_dest.unlink)
             except OSError: pass
         raise OSError(f"Falla durante copia I/O: {e}")
-    finally:
-        if f_src: f_src.close()
-        if f_dst: f_dst.close()
-
 
 def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
-    """Flujo atómico: Escritura temporal seguida de reemplazo final."""
+    """
+    Flujo atómico: Escritura temporal seguida de reemplazo final.
+    Utiliza fsync en el directorio padre para asegurar la persistencia de metadatos.
+    """
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
     
@@ -812,7 +803,7 @@ class IsolationManager:
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
         """
         Verifica que el archivo origen mantenga su identidad y estado íntegro
-        durante la ventana de tiempo de aislamiento.
+        durante la ventana de tiempo de aislamiento comparando inodos actuales.
         """
         if source is None or not source.exists():
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
