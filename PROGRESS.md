@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por tests: 10
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 224
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 31 | 2 | 11 | 6 | 40 |
+| 2026-10-29 | 29 | 1 | 11 | 6 | 39 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
-| 2026-10-31 | 13 | 1 | 5 | 1 | 44 |
+| 2026-10-31 | 15 | 1 | 6 | 1 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **40**
 - seguridad defensiva: **40**
-- rendimiento: **34**
+- rendimiento: **32**
 - legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
 - `quarantine.py`: **19**
-- `browser.py`: **18**
 - `settings.py`: **18**
-- `safety.py`: **17**
+- `safety.py`: **18**
+- `diskreport.py`: **18**
+- `browser.py`: **17**
 - `memory.py`: **16**
 - `branding.py`: **15**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
-- `scanner.py`: **14**
 - `healthscore.py`: **13**
 - `organizer.py`: **11**
 - `startup.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T02:55:47` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_safe_stat` y en el ciclo de escaneo de `scan_directory` para capturar excepciones específicas (`PermissionError`, `OSError`) de forma robusta, evitando que fallos de acceso a archivos bloqueados o denegados detengan el proceso, y se refinan las validaciones de entrada en las heurísticas mediante verificaciones de existencia (`is_file`) antes de operar.
+- `2026-10-31T02:54:41` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_id` para prevenir que operaciones con archivos inexistentes o bloqueados generen un `SecurityDescriptor` erróneamente permisivo al capturar fallos de `ctypes` y validando el estado del `handle` antes de intentar acceder a metadatos, siguiendo el enfoque de validación de entradas.
 - `2026-10-31T02:45:53` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez de `_get_win_attributes` envolviendo la llamada de `ctypes` en una validación previa de existencia y manejando excepciones específicas para evitar que errores inesperados de API bloqueen el flujo del escáner.
 - `2026-10-31T02:45:21` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más explícitas, previniendo errores en tiempo de ejecución al manejar objetos `None` o rutas mal formadas que podrían derivar en excepciones no capturadas.
 - `2026-10-31T02:34:43` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez de `SystemMetrics.validate` y la integridad del pipeline mediante la eliminación de dependencias de `object.__setattr__` en favor de una actualización más limpia, y asegura que la limpieza de caracteres prohibidos sea más estricta al validar antes de la construcción de mensajes.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T00:21:55` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inválidas o inexistentes en `scan_directory` y `_safe_stat` mediante la captura explícita de `FileNotFoundError` y el uso de `path.exists()` previo a la resolución, garantizando que el escáner no aborte ante archivos que desaparecen durante la iteración (concurrencia).
 - `2026-10-31T00:21:30` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el seguimiento de archivos que actúan como "Sparse Files" o "Reparse Points" con metadatos maliciosos (st_size 0 pero que consumen espacio en disco real), mejorando la robustez frente a archivos corruptos o malintencionados en el escaneo de disco.
 - `2026-10-31T00:11:47` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentos de limpieza sobre procesos que ya han finalizado o están en estado zombi, y se mejoró la resiliencia ante errores de acceso en entornos con alta restricción de permisos.
-- `2026-10-30T14:53:08` **healthscore.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de ejecución en el cálculo del pipeline utilizando un bloque `try-except` más granular y protegiendo el `zip` para evitar el colapso del motor si las métricas o los pesos sufren discrepancias estructurales inesperadas.
-- `2026-10-30T14:43:21` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos, asegurando que la validación de rutas sea absoluta, que la creación de directorios sea atómica en cuanto a permisos y que el manejo de excepciones sea preciso para no bloquear el hilo de UI.

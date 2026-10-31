@@ -74,16 +74,20 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
 
     info = BY_HANDLE_FILE_INFORMATION()
     kernel32 = ctypes.windll.kernel32
+    path_long = _to_long_path(path_str)
+    
+    # Intentar obtener handle con acceso mínimo de lectura
+    handle = kernel32.CreateFileW(path_long, 0x80000000, 0x07, None, 3, 0x02000000, None)
+    if handle == -1: 
+        return (0, 0, 0, 0)
+        
     try:
-        handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
-        if handle == -1: return (0, 0, 0, 0)
-        try:
-            if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
-                return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, int(bool(info.dwFileAttributes & Win32Attr.DIRECTORY)))
-        finally:
-            kernel32.CloseHandle(handle)
+        if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
+            return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, int(bool(info.dwFileAttributes & Win32Attr.DIRECTORY)))
     except (ctypes.ArgumentError, OSError, ValueError, AttributeError):
         pass
+    finally:
+        kernel32.CloseHandle(handle)
     return (0, 0, 0, 0)
 
 class SafetyAction(Enum):

@@ -140,8 +140,8 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
-        if e.winerror == ERROR_SHARING_VIOLATION:
-            logger.debug(f"Archivo bloqueado, omitiendo análisis de contenido: {entry.path}")
+        if getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
+            logger.debug(f"Archivo bloqueado (sharing violation): {entry.path}")
             return None
         return None
     except (PermissionError, FileNotFoundError):
@@ -242,9 +242,12 @@ class Scanner:
         if not self._is_inside_base_root(entry.path):
             return
         norm_path = os.path.normcase(entry.path)
-        if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
-            visited_dirs.add(norm_path)
-            directory_stack.append((entry.path, current_depth + 1))
+        try:
+            if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
+                visited_dirs.add(norm_path)
+                directory_stack.append((entry.path, current_depth + 1))
+        except (OSError, PermissionError):
+            pass
 
     @lru_cache(maxsize=128)
     def _is_relevant_extension(self, name: str) -> bool:
@@ -268,8 +271,8 @@ class Scanner:
                         self._run_file_heuristics(Path(entry.path), entry)
             elif entry.is_dir():
                 self._handle_directory(entry, directory_stack, current_depth, visited_dirs)
-        except (OSError, PermissionError, AttributeError):
-            logger.debug(f"Error accediendo a entrada: {entry.path}")
+        except (OSError, PermissionError):
+            pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta la suite de heurísticas sobre un archivo tras validación de metadatos."""
@@ -293,9 +296,9 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
         return []
     findings: ScanResult = []
     try:
-        if not path.exists(): return []
+        if not path.is_file(): return []
         stats = entry.stat() if entry else path.stat()
-    except (OSError, PermissionError, FileNotFoundError):
+    except (OSError, PermissionError):
         return []
     for check_fn in ALL_CHECKS:
         try:
@@ -326,7 +329,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, directory_stack, depth, visited_dirs)
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError):
             continue
     return scanner.results
 
