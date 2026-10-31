@@ -12,7 +12,6 @@ from __future__ import annotations
 import json
 import os
 import stat
-import errno
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -354,8 +353,8 @@ def _is_structure_valid(data: Any) -> bool:
     """Verifica que el JSON parseado tenga una estructura de diccionario plana con claves conocidas."""
     if not isinstance(data, dict) or len(data) > 64: return False
     for k, v in data.items():
-        if k not in DEFAULTS or not isinstance(v, type(DEFAULTS[k])):
-            return False
+        if k not in DEFAULTS: return False
+        if not isinstance(v, (type(DEFAULTS[k]), type(None))): return False
         if k == ConfigKey.ULTIMA_CARPETA.value and isinstance(v, str) and ".." in v:
             return False
     return True
@@ -370,6 +369,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             content = f.read(MAX_SETTINGS_SIZE + 1)
         
         if not content or len(content) > MAX_SETTINGS_SIZE or len(content) < 2: return None
+        # Validar caracteres de control nocivos sin procesar byte a byte excesivamente
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
         data = json.loads(content.decode("utf-8", errors="strict"))
@@ -383,12 +383,8 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura integridad: claves faltantes se rellenan, incompatibilidades se corrigen."""
     coerced = DEFAULTS.copy()
     for k, v in settings.items():
-        if k in DEFAULTS:
-            try:
-                if isinstance(v, type(DEFAULTS[k])):
-                    coerced[k] = v # type: ignore
-            except (TypeError, AttributeError):
-                continue
+        if k in DEFAULTS and isinstance(v, type(DEFAULTS[k])):
+            coerced[k] = v # type: ignore
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
     return coerced

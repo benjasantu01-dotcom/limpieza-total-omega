@@ -35,6 +35,16 @@ _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], bool]] = {}
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
 _FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
 
+class WIN32_FILE_ATTRIBUTE_DATA(ctypes.Structure):
+    _fields_ = [
+        ("dwFileAttributes", ctypes.c_uint32),
+        ("ftCreationTime", ctypes.c_uint64),
+        ("ftLastAccessTime", ctypes.c_uint64),
+        ("ftLastWriteTime", ctypes.c_uint64),
+        ("nFileSizeHigh", ctypes.c_uint32),
+        ("nFileSizeLow", ctypes.c_uint32),
+    ]
+
 class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
     _fields_ = [
         ("dwFileAttributes", ctypes.c_uint32),
@@ -54,6 +64,18 @@ class SafetyState(NamedTuple):
     descriptor: SecurityDescriptor
     stat_result: os.stat_result
     file_id: tuple[int, int, int, int]
+
+def _is_file_busy(path_str: str) -> bool:
+    """Verifica de forma no intrusiva si el sistema de archivos reporta bloqueo."""
+    if os.name != 'nt': return False
+    data = WIN32_FILE_ATTRIBUTE_DATA()
+    try:
+        if not ctypes.windll.kernel32.GetFileAttributesExW(_to_long_path(path_str), 0, ctypes.byref(data)):
+            err = ctypes.windll.kernel32.GetLastError()
+            return err == ERROR_SHARING_VIOLATION
+    except (AttributeError, OSError, ctypes.ArgumentError):
+        pass
+    return False
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     if not isinstance(path_str, str) or not path_str or path_str.upper().startswith(("\\\\.\\", "//./")):
@@ -129,7 +151,7 @@ class SecurityDescriptor(NamedTuple):
             risk_flags = (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | 
                           Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)
             is_protected = bool(attrs & risk_flags) or _is_file_owned_by_system(path_str)
-            is_in_use = is_protected or _is_file_locked_by_other_process(path_str)
+            is_in_use = is_protected or _is_file_locked_by_other_process(path_str) or _is_file_busy(path_str)
             
             return cls(
                 attrs=attrs,
@@ -940,7 +962,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             raise UnsafePathError("Operación denegada en modo privilegiado.", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION)
 
     try:
-        if _is_file_locked_by_other_process(str(target_path)):
+        if _is_file_locked_by_other_process(str(target_path)) or _is_file_busy(str(target_path)):
             raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
 
         sd = _get_security_descriptor(str(target_path))

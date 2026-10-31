@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 9 | 0 | 3 | 3 | 15 |
+| 2026-10-29 | 9 | 0 | 3 | 3 | 11 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
-| 2026-10-31 | 39 | 1 | 13 | 5 | 66 |
+| 2026-10-31 | 42 | 1 | 14 | 5 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
+- seguridad defensiva: **42**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **39**
 - rendimiento: **35**
 - robustez ante casos límite: **34**
 
@@ -32,12 +32,12 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **20**
 - `quarantine.py`: **19**
-- `safety.py`: **18**
-- `settings.py`: **17**
+- `safety.py`: **19**
+- `settings.py`: **18**
 - `browser.py`: **17**
 - `memory.py`: **16**
+- `scanner.py`: **16**
 - `assistant.py`: **15**
-- `scanner.py`: **15**
 - `healthscore.py`: **15**
 - `branding.py`: **14**
 - `organizer.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T05:28:41` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva de `_read_and_parse_json` y `_is_structure_valid` para prevenir ataques de desbordamiento de memoria y manipulación de estructura durante el parseo de archivos JSON, utilizando límites explícitos y validación de tipo de dato estricta antes de la carga en memoria.
+- `2026-10-31T05:28:15` **scanner.py** (seguridad defensiva): Mejoré la seguridad del escaneo heurístico implementando una validación explícita mediante `is_protected_path` (que es el estándar de seguridad del proyecto) antes de realizar cualquier llamada a `stat()` o abrir un archivo, asegurando que el escáner no intente acceder a rutas sensibles ni siquiera para obtener metadatos, siguiendo estrictamente el enfoque de seguridad defensiva.
+- `2026-10-31T05:27:48` **safety.py** (seguridad defensiva): Se ha añadido `_is_file_busy` en `safety.py` para detectar estados de bloqueo a nivel de volumen mediante `GetFileAttributesExW`, lo cual complementa la detección actual de `CreateFileW` al ser una operación menos intrusiva que no requiere permisos de escritura, mejorando la robustez defensiva ante archivos en uso por el sistema.
 - `2026-10-31T05:19:58` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `purge_all` y `_safe_unlink` añadiendo verificaciones de inodo/hash más robustas antes del borrado y garantizando que el `unlink` de archivos huérfanos también pase por el chequeo de seguridad de rutas, evitando que el recolector de basura elimine archivos no gestionados que podrían ser sensibles.
 - `2026-10-31T05:19:27` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de race condition o TOCTOU (Time-of-Check to Time-of-Use) mediante la verificación explícita de `is_safe_to_modify` inmediatamente antes de la operación de movimiento `shutil.move`, asegurando que el estado del archivo no haya cambiado tras la validación inicial.
 - `2026-10-31T05:17:35` **memory.py** (seguridad defensiva): Se ha añadido una validación de seguridad adicional en `_is_process_executable_safe` para verificar que la ruta del ejecutable no sea una ruta absoluta sospechosa o mal formada mediante `Path.resolve()`, asegurando que el proceso monitoreado realmente reside en el sistema de archivos esperado antes de realizar cualquier operación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T04:16:16` **startup.py** (rendimiento): Se implementó un filtrado preventivo mediante un `set` de rutas protegidas en `_validate_file_access` y `_is_registry_entry_safe` para evitar que la lógica de resolución (que es costosa debido al I/O y a `path.resolve()`) procese archivos que ya sabemos que son de sistema, mejorando el rendimiento y reduciendo llamadas innecesarias al disco.
 - `2026-10-31T04:15:49` **settings.py** (rendimiento): Optimizé la gestión de la caché en el singleton `_SettingsManager` reemplazando búsquedas repetitivas de `path.resolve()` por una resolución única durante la inicialización de la ruta, reduciendo el overhead de llamadas al sistema de archivos en operaciones frecuentes de lectura.
 - `2026-10-31T04:06:54` **safety.py** (rendimiento): Se implementó un mecanismo de **memoización persistente** para `_get_file_id` mediante un caché de diccionario en memoria, reduciendo drásticamente las llamadas costosas a `GetFileInformationByHandle` (API de Kernel32) al validar repetidamente la misma estructura de archivos durante escaneos profundos.
-- `2026-10-31T04:06:00` **quarantine.py** (rendimiento): Optimicé `list_items` y `total_quarantined_bytes` eliminando la recreación de listas y búsquedas redundantes, aprovechando directamente la estructura del manifiesto ya cargado en memoria (`_MANIFEST_CACHE`) para mejorar el rendimiento en operaciones de consulta frecuentes.
-- `2026-10-31T03:55:26` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo mediante la eliminación de una llamada innecesaria a `math.isfinite` dentro de los loops internos de scoring, utilizando en su lugar la validación centralizada de `SystemMetrics` y reduciendo el overhead de acceso a atributos.
-- `2026-10-31T03:54:59` **duplicates.py** (rendimiento): Optimizé el rendimiento de la recolección de archivos en `_collect_candidates` integrando el filtrado por tamaño y la exclusión de duplicados mediante `inodes` dentro de una única pasada de `os.scandir`, evitando llamadas redundantes a `stat()` y múltiples recorridos de listas.

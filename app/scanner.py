@@ -111,7 +111,7 @@ def _is_readable(path: PathInput) -> bool:
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """Obtiene los atributos de archivo de nivel sistema sin seguir enlaces simbólicos."""
-    if not isinstance(entry, os.DirEntry):
+    if not isinstance(entry, os.DirEntry) or _cached_is_protected(entry.path):
         return 0
     try:
         stat_res = entry.stat(follow_symlinks=False)
@@ -121,7 +121,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Obtiene metadatos asegurando la exclusión de puntos de reanálisis y manejo de bloqueos."""
-    if not isinstance(entry, os.DirEntry):
+    if not isinstance(entry, os.DirEntry) or _cached_is_protected(entry.path):
         return None
     try:
         if entry.is_symlink():
@@ -129,7 +129,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         attrs = _get_file_attributes(entry)
         if attrs & SCAN_LIMITS.reparse_point_mask:
             return None
-        if not entry.is_file() or _cached_is_protected(entry.path):
+        if not entry.is_file():
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
@@ -142,7 +142,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida que la cadena de ruta cumpla con los límites de longitud y formato."""
-    if not isinstance(path_str, str) or not path_str.strip():
+    if not isinstance(path_str, str) or not path_str.strip() or _cached_is_protected(path_str):
         return False
     if len(path_str) > SCAN_LIMITS.path_length_limit or "\0" in path_str:
         return False
