@@ -1364,3 +1364,12 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'SystemContext' is not de
 - `2026-10-31T08:12:10` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-31T08:12:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T08:12:10` Corrida terminada. Total usado hoy: 192.
+- `2026-10-31T08:19:10` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-31T08:19:37` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-31T08:19:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-31T08:20:05` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-31T08:20:31` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 55% del original (posible pérdida de código)
+- `2026-10-31T08:21:31` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-31T08:22:24` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-31T08:22:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T08:22:25` Corrida terminada. Total usado hoy: 196.
