@@ -140,6 +140,7 @@ class SecurityDescriptor(NamedTuple):
         return bool(self.attrs & flag)
 
     @classmethod
+    @lru_cache(maxsize=1024)
     def from_path(cls, path_str: str) -> SecurityDescriptor:
         if not isinstance(path_str, str) or not path_str:
             return cls(0, True, True, True, True)
@@ -771,20 +772,19 @@ def normalize(path: PathLike) -> Path:
     try:
         p = Path(path_str)
         try:
-            anchor_path = Path(p.anchor)
+            anchor_path = p.anchor
             parts = p.parts
         except (AttributeError, ValueError, TypeError):
             raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
             
-        current_subpath = anchor_path
-        
         if len(parts) > MAX_DIRECTORY_DEPTH:
             raise UnsafePathError("Profundidad de ruta excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP)
 
+        sub_path = anchor_path
         for part in parts:
             if part in (os.sep, os.altsep): continue
-            current_subpath = current_subpath / part
-            if current_subpath.exists() and _is_system_directory_junction(str(current_subpath)):
+            sub_path = os.path.join(sub_path, part)
+            if os.path.exists(sub_path) and _is_system_directory_junction(sub_path):
                 raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
         if _is_device_file(p): raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
@@ -937,7 +937,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if _is_file_locked_by_other_process(str(target_path)) or _is_file_busy(str(target_path)):
             raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
 
-        sd = _get_security_descriptor(str(target_path))
+        sd = _get_security_descriptor(target_path)
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
             if sd.is_protected_system:
                 raise UnsafePathError("Protección defensiva: Archivo de sistema oculto/protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
