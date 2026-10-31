@@ -698,8 +698,18 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
 
 
 def _create_temp_file(source: Path, destination: Path) -> Path:
-    """Crea un nombre temporal único para la transferencia atómica."""
-    return destination.parent / f".{destination.name}.{uuid.uuid4().hex}.tmp"
+    """Crea un nombre temporal único con validación de existencia previa."""
+    # Uso de uuid4 para aleatoriedad y flags de exclusividad para evitar TOCTOU
+    parent = destination.parent
+    for _ in range(5):
+        temp_path = parent / f".tmp_{uuid.uuid4().hex}"
+        try:
+            fd = os.open(str(temp_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.close(fd)
+            return temp_path
+        except FileExistsError:
+            continue
+    raise RuntimeError("No se pudo generar un archivo temporal seguro.")
 
 
 def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_hash: str) -> None:

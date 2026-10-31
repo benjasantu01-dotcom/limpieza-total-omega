@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 52 | 2 | 18 | 6 | 60 |
+| 2026-10-29 | 52 | 2 | 18 | 6 | 56 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
-| 2026-10-31 | 5 | 1 | 3 | 0 | 7 |
+| 2026-10-31 | 7 | 1 | 4 | 0 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **36**
+- seguridad defensiva: **38**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `browser.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
+- `memory.py`: **18**
 - `settings.py`: **18**
-- `memory.py`: **17**
 - `safety.py`: **17**
 - `assistant.py`: **16**
 - `branding.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T00:52:55` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_create_temp_file` y `_write_temp_to_final` para mitigar ataques de colisión de nombres y condiciones de carrera (TOCTOU) mediante la validación estricta de la ruta destino antes de crear el archivo temporal y el uso de `os.O_EXCL` en el sistema de archivos para asegurar que el archivo temporal no exista previamente.
+- `2026-10-31T00:51:41` **memory.py** (seguridad defensiva): Se reforzó la seguridad en `trim_working_set` añadiendo una comprobación explícita mediante `is_protected_path` al validar el ejecutable, asegurando que el handle obtenido no sea manipulado si el proceso apunta a una ruta protegida tras haber sido abierto.
 - `2026-10-31T00:41:21` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando validaciones explícitas de rutas mediante `resolve()` y `is_relative_to` (simulado para compatibilidad) para prevenir ataques de *path traversal* o resolución de accesos fuera del árbol permitido, asegurando que cualquier entrada sea estrictamente interna al directorio raíz solicitado antes de ser procesada.
 - `2026-10-31T00:32:47` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando el uso de `pathlib.Path.resolve()` —que puede disparar errores de E/S o resolución de enlaces simbólicos en sistemas de archivos restringidos— por una validación más robusta que utiliza `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta no sea un vínculo simbólico o una ruta protegida antes de intentar crear directorios o escribir el archivo.
 - `2026-10-31T00:21:55` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inválidas o inexistentes en `scan_directory` y `_safe_stat` mediante la captura explícita de `FileNotFoundError` y el uso de `path.exists()` previo a la resolución, garantizando que el escáner no aborte ante archivos que desaparecen durante la iteración (concurrencia).
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T14:23:47` **quarantine.py** (rendimiento): Optimizé la función `total_quarantined_bytes` y otros accesos al manifiesto mediante la eliminación de redundancias de I/O y el uso del cache global, evitando la deserialización innecesaria de objetos `QuarantineItem` cuando la información ya reside en memoria.
 - `2026-10-30T14:23:05` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `path.exists()` y `path.is_file()` dentro del bucle crítico, reemplazándolas por el uso directo de los metadatos ya obtenidos por `os.scandir` y reduciendo las conversiones repetitivas entre `Path` y `str`.
 - `2026-10-30T14:22:39` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` para evitar la creación redundante de objetos mediante la eliminación de un `set` innecesario y se mejoró el rendimiento de `_extract_process_info` al centralizar la validación, reduciendo ciclos de CPU en el bucle principal de enumeración.
-- `2026-10-30T14:13:26` **healthscore.py** (rendimiento): Optimicé el rendimiento de `_compute_cached` eliminando la creación repetida de diccionarios dentro del bucle principal y moviendo la resolución de constantes fuera de las iteraciones, aprovechando que `PIPELINE_DEFINITIONS` es inmutable.
-- `2026-10-30T14:12:07` **diskreport.py** (rendimiento): Optimizé `walk_files` moviendo la resolución de `is_protected_path` fuera del ciclo de iteración principal y aprovechando el cache de resultados de `is_protected_path` (que ya está implementado internamente en el módulo `safety`) al reducir las llamadas repetitivas a `path.resolve()` que disparaban E/S innecesaria.

@@ -373,20 +373,24 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if pid <= 0 or _is_system_process(pid):
             continue
         
-        h_process = _get_process_handle(pid, WIN32_PROCESS_QUERY_LIMITED)
+        h_process = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf)
         if not h_process: continue
         
         try:
-            if not _is_process_executable_safe(h_process, path_buf):
-                continue
-                
             ws = _query_working_set_bytes(h_process, pmc)
             if ws is None: continue
 
             yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:
-            if h_process:
-                WindowsAPI.kernel32.CloseHandle(h_process)
+            WindowsAPI.kernel32.CloseHandle(h_process)
+
+def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array) -> Optional[wintypes.HANDLE]:
+    """Obtiene y valida la seguridad de un handle de proceso."""
+    h = _get_process_handle(pid, access)
+    if h and _is_process_executable_safe(h, path_buf):
+        return h
+    if h: WindowsAPI.kernel32.CloseHandle(h)
+    return None
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna los procesos con mayor consumo. Implementa caché interna de 60 segundos."""
@@ -443,22 +447,18 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid): 
         return False, "Operación no permitida en procesos del sistema."
     
-    h_process = _get_process_handle(target_pid, TRIM_ACCESS_MASK)
+    path_buf = ctypes.create_unicode_buffer(1024)
+    h_process = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf)
     if not h_process or h_process.value == INVALID_HANDLE_VALUE:
-        return False, "Acceso denegado o proceso no encontrado."
+        return False, "Acceso denegado o proceso en zona restringida."
 
     try:
-        # Validación: confirmar que el proceso sigue vivo antes de intentar cualquier acción.
         exit_code = wintypes.DWORD()
         if WindowsAPI.kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0:
             return False, "Error al consultar estado del proceso."
             
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso ya ha finalizado."
-        
-        path_buf = ctypes.create_unicode_buffer(1024)
-        if not _is_process_executable_safe(h_process, path_buf):
-            return False, "Proceso protegido, inaccesible o ubicado en zona restringida."
             
         if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(h_process) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
