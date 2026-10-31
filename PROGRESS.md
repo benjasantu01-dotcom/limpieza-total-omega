@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 62
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 224
+- Rechazadas por guardia de seguridad: 61
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 28 | 1 | 9 | 6 | 38 |
+| 2026-10-29 | 27 | 1 | 7 | 6 | 37 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
-| 2026-10-31 | 18 | 1 | 6 | 1 | 46 |
+| 2026-10-31 | 20 | 1 | 7 | 2 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **40**
 - seguridad defensiva: **40**
-- legibilidad y documentación: **35**
-- rendimiento: **31**
+- legibilidad y documentación: **37**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `diskreport.py`: **19**
 - `settings.py`: **18**
 - `browser.py`: **18**
+- `quarantine.py`: **18**
 - `safety.py`: **18**
-- `diskreport.py`: **18**
 - `branding.py`: **16**
 - `assistant.py`: **15**
 - `memory.py`: **15**
@@ -42,10 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **13**
 - `organizer.py`: **11**
 - `startup.py`: **7**
-- `duplicates.py`: **6**
+- `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T03:14:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en el nombre de un parámetro de configuración (`PARTIAL_READ_BYTES` frente a `read_bytes`) y la clarificación de los docstrings en las funciones críticas de hashing para alinear la documentación con el comportamiento real del motor de detección.
+- `2026-10-31T03:14:17` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad mediante la adición de Type Hints detallados en las funciones de procesamiento de datos, la clarificación de docstrings en las clases internas y la simplificación de la lógica de `_collect_summary_data` para hacer más explícito el flujo de agregación de estadísticas.
 - `2026-10-31T03:05:48` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo un Docstring detallado a `DirectoryScanner.get_size` y aclarando el propósito de la lógica de filtrado en el recorrido de archivos para asegurar que otros desarrolladores comprendan por qué ciertas rutas se omiten silenciosamente.
 - `2026-10-31T03:05:30` **branding.py** (legibilidad y documentación): Se introdujeron docstrings explicativos en las funciones de manipulación de color y geometría (`blend`, `_hex_to_rgb`, `_get_scaled_poly`) y se añadieron type hints más precisos en los parámetros de entrada, mejorando la documentación técnica y la mantenibilidad del módulo sin alterar su lógica.
 - `2026-10-31T03:04:52` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de `ProblemCriterion` y normalizando los nombres de los decoradores de seguridad para cumplir con el enfoque de documentación técnica exigida.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T01:02:16` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva implementando una validación estricta de "Owner" (Propietario) para detectar archivos propiedad de `TrustedInstaller` (SID `S-1-5-80-*`), una técnica estándar en Windows para identificar archivos críticos de SO que no siempre tienen el flag `SYSTEM` o `READONLY` activo.
 - `2026-10-31T00:52:55` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_create_temp_file` y `_write_temp_to_final` para mitigar ataques de colisión de nombres y condiciones de carrera (TOCTOU) mediante la validación estricta de la ruta destino antes de crear el archivo temporal y el uso de `os.O_EXCL` en el sistema de archivos para asegurar que el archivo temporal no exista previamente.
 - `2026-10-31T00:51:41` **memory.py** (seguridad defensiva): Se reforzó la seguridad en `trim_working_set` añadiendo una comprobación explícita mediante `is_protected_path` al validar el ejecutable, asegurando que el handle obtenido no sea manipulado si el proceso apunta a una ruta protegida tras haber sido abierto.
-- `2026-10-31T00:41:21` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando validaciones explícitas de rutas mediante `resolve()` y `is_relative_to` (simulado para compatibilidad) para prevenir ataques de *path traversal* o resolución de accesos fuera del árbol permitido, asegurando que cualquier entrada sea estrictamente interna al directorio raíz solicitado antes de ser procesada.
-- `2026-10-31T00:32:47` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando el uso de `pathlib.Path.resolve()` —que puede disparar errores de E/S o resolución de enlaces simbólicos en sistemas de archivos restringidos— por una validación más robusta que utiliza `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta no sea un vínculo simbólico o una ruta protegida antes de intentar crear directorios o escribir el archivo.

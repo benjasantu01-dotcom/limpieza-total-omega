@@ -122,7 +122,10 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo del archivo usando lectura en chunks."""
+    """
+    Calcula el hash SHA256 completo del archivo. 
+    Usa un caché local para evitar re-cálculos costosos de E/S.
+    """
     if not isinstance(path, Path) or not _safe_path_check(path): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
@@ -140,7 +143,10 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Genera un fingerprint rápido basado en los primeros K bytes del archivo."""
+    """
+    Genera un fingerprint rápido basado en los primeros bytes definidos por PARTIAL_READ_BYTES.
+    Útil para descartar candidatos sin leer archivos completos.
+    """
     if not isinstance(path, Path) or not _safe_path_check(path): 
         return None
     if path in _partial_cache: return _partial_cache[path]
