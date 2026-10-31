@@ -573,7 +573,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y cachea el manifiesto para evitar I/O redundante."""
+    """Carga y cachea el manifiesto para evitar I/O redundante con gestión robusta de errores."""
     try:
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError):

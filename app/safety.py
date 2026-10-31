@@ -376,23 +376,23 @@ def _is_volume_shadow_copy(path_str: str) -> bool:
 
 def _is_file_owned_by_system(path_str: str) -> bool:
     if os.name != 'nt' or not isinstance(path_str, str) or not os.path.exists(_to_long_path(path_str)): return False
+    advapi32 = ctypes.windll.advapi32
+    kernel32 = ctypes.windll.kernel32
+    sid_ptr = ctypes.c_void_p()
     try:
-        advapi32 = ctypes.windll.advapi32
-        kernel32 = ctypes.windll.kernel32
-        sid_ptr = ctypes.c_void_p()
         res = advapi32.GetNamedSecurityInfoW(
             _to_long_path(path_str), 1, 1, ctypes.byref(sid_ptr), None, None, None, None
         )
-        if res == 0 and sid_ptr:
-            try:
-                sid_str = ctypes.create_unicode_buffer(128)
-                if advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str)):
-                    sid_val = sid_str.value
-                    return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
-            finally:
-                kernel32.LocalFree(sid_ptr)
-    except (AttributeError, OSError, ctypes.ArgumentError):
+        if res == 0 and sid_ptr.value:
+            sid_str = ctypes.create_unicode_buffer(128)
+            if advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str)):
+                sid_val = sid_str.value
+                return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
+    except (AttributeError, OSError, ctypes.ArgumentError, TypeError):
         pass
+    finally:
+        if sid_ptr.value:
+            kernel32.LocalFree(sid_ptr)
     return False
 
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
