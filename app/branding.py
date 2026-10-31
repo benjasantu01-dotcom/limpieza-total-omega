@@ -287,10 +287,13 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """Realiza una interpolación lineal (mezcla) entre dos colores dado un ratio (0.0-1.0)."""
-    r1, g1, b1 = _hex_to_rgb(start)
-    r2, g2, b2 = _hex_to_rgb(end)
-    r = max(0.0, min(1.0, float(ratio)))
-    return _rgb_to_hex((int(r1 + (r2 - r1) * r), int(g1 + (g2 - g1) * r), int(b1 + (b2 - b1) * r)))
+    try:
+        r1, g1, b1 = _hex_to_rgb(start)
+        r2, g2, b2 = _hex_to_rgb(end)
+        r = max(0.0, min(1.0, float(ratio)))
+        return _rgb_to_hex((int(r1 + (r2 - r1) * r), int(g1 + (g2 - g1) * r), int(b1 + (b2 - b1) * r)))
+    except (TypeError, ValueError):
+        return start
 
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
     """Optimiza una secuencia de colores agrupando colores adyacentes idénticos."""
@@ -348,7 +351,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         return None
     try:
         dest_path = Path(destination)
-        
         # Validar ruta antes de cualquier resolución de sistema de archivos
         if not is_safe_to_modify(dest_path) or is_protected_path(dest_path):
             return None
@@ -363,7 +365,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         ensure_safe_to_modify(dest_path)
         dest_path.write_text(logo_svg(int(size)), encoding="utf-8")
         return dest_path
-    except (OSError, PermissionError, RuntimeError, TypeError, ValueError, AttributeError, Exception): 
+    except (OSError, PermissionError, RuntimeError, TypeError, ValueError, Exception): 
         return None
 
 def logo_ascii() -> str: 
@@ -389,21 +391,26 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja las franjas internas del escudo usando gradientes segmentados."""
-    n = max(6, int(STRIPE_COUNT_FACTOR * scale))
-    params = _get_stripe_params(scale, n)
-    if not params: 
-        return
-    by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + 64 * scale
-    for s in get_gradient_segments(n):
-        p_start, p_end = params[s.start_index], params[s.end_index - 1]
-        canvas.create_rectangle(cx - p_start[0], by + p_start[1], cx + p_start[0], by + p_end[2], fill=s.hex_color, outline="")
+    try:
+        n = max(6, int(STRIPE_COUNT_FACTOR * scale))
+        params = _get_stripe_params(scale, n)
+        if not params: return
+        by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + 64 * scale
+        for s in get_gradient_segments(n):
+            p_start, p_end = params[s.start_index], params[s.end_index - 1]
+            canvas.create_rectangle(cx - p_start[0], by + p_start[1], cx + p_start[0], by + p_end[2], fill=s.hex_color, outline="")
+    except (AttributeError, TypeError, ValueError):
+        pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja detalles decorativos (líneas, icono Omega) sobre la base del escudo."""
-    ts = max(8, int(UI_CONFIG.header_size * scale))
-    canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
-    canvas.create_polygon(x+75*scale, y+41*scale, x+89*scale, y+38*scale, x+92*scale, y+52*scale, fill=C_BACKGROUND, outline="")
-    canvas.create_text(x+64*scale, y+96*scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center")
+    try:
+        ts = max(8, int(UI_CONFIG.header_size * scale))
+        canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
+        canvas.create_polygon(x+75*scale, y+41*scale, x+89*scale, y+38*scale, x+92*scale, y+52*scale, fill=C_BACKGROUND, outline="")
+        canvas.create_text(x+64*scale, y+96*scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center")
+    except (AttributeError, TypeError, ValueError):
+        pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
@@ -429,9 +436,9 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     Dibuja una barra de progreso horizontal con degradado, optimizando las llamadas
     a la API del Canvas mediante el agrupamiento de segmentos monocromáticos.
     """
-    if not canvas: return
+    if not canvas or not isinstance(width, int): return
     try:
-        w = max(1, int(width))
+        w = max(1, width)
         for s in get_gradient_segments(w, stops):
             canvas.create_line(canvas_x + s.start_index, canvas_y, canvas_x + s.end_index, canvas_y, fill=s.hex_color, width=height)
     except (AttributeError, TypeError, ValueError):
@@ -442,10 +449,10 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     Dibuja un indicador circular de progreso (anillo) basado en un valor porcentual,
     utilizando arcos geométricos para representar métricas de estado de salud.
     """
-    if not canvas or percent is None: return
+    if not canvas or percent is None or not isinstance(size, int) or not isinstance(thickness, int): return
     try:
         val = max(0.0, min(100.0, float(percent)))
-        d, t = max(20, min(2048, int(size))), max(2, int(thickness))
+        d, t = max(20, min(2048, size)), max(2, thickness)
         pad = t / 2.0
         bb: BoundingBox = (canvas_x + pad, canvas_y + pad, canvas_x + d - pad, canvas_y + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=t)

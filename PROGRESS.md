@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 67
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 218
+- Rechazadas por guardia de seguridad: 66
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 38 | 2 | 16 | 6 | 40 |
+| 2026-10-29 | 35 | 2 | 15 | 6 | 40 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
-| 2026-10-31 | 9 | 1 | 4 | 0 | 38 |
+| 2026-10-31 | 10 | 1 | 4 | 1 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **40**
 - seguridad defensiva: **40**
-- legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **36**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
@@ -34,18 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `browser.py`: **18**
 - `settings.py`: **18**
-- `memory.py`: **17**
 - `safety.py`: **17**
+- `memory.py`: **16**
 - `scanner.py`: **15**
+- `branding.py`: **15**
 - `assistant.py`: **14**
-- `branding.py`: **14**
-- `healthscore.py`: **13**
+- `healthscore.py`: **12**
 - `organizer.py`: **11**
 - `startup.py`: **8**
-- `duplicates.py`: **7**
+- `duplicates.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T02:26:33` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación de parámetros más estricta y una captura de errores más granular, asegurando que valores inesperados no propaguen estados inválidos o silencien fallos críticos.
 - `2026-10-31T01:03:15` **settings.py** (seguridad defensiva): Se endureció la seguridad de `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y validaciones de metadatos más estrictas, evitando seguir enlaces simbólicos mediante la validación explícita con `os.lstat` antes de procesar el archivo.
 - `2026-10-31T01:02:16` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva implementando una validación estricta de "Owner" (Propietario) para detectar archivos propiedad de `TrustedInstaller` (SID `S-1-5-80-*`), una técnica estándar en Windows para identificar archivos críticos de SO que no siempre tienen el flag `SYSTEM` o `READONLY` activo.
 - `2026-10-31T00:52:55` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_create_temp_file` y `_write_temp_to_final` para mitigar ataques de colisión de nombres y condiciones de carrera (TOCTOU) mediante la validación estricta de la ruta destino antes de crear el archivo temporal y el uso de `os.O_EXCL` en el sistema de archivos para asegurar que el archivo temporal no exista previamente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T14:42:48` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemContext.ingest` y sus métodos de validación asociados (especialmente en la detección de fuentes maliciosas o tipos inesperados) mediante la implementación de comprobaciones de "tipo estricto" y validación de `__dict__` antes de la mutación, previniendo inyecciones de datos corruptos desde fuentes externas.
 - `2026-10-30T14:33:12` **scanner.py** (rendimiento): Optimicé el rendimiento del proceso de escaneo reemplazando el cálculo recursivo repetitivo de rutas resueltas (`resolve()`) por `os.path.normcase` dentro de `Scanner._is_inside_base_root`, evitando bloqueos de I/O y mejorando drásticamente la velocidad en árboles de directorios profundos.
 - `2026-10-30T14:32:44` **safety.py** (rendimiento): Se ha optimizado `_get_file_id` reemplazando llamadas redundantes a `os.stat` (que realiza E/S de sistema) por una estrategia que prioriza el acceso directo mediante la API nativa de Windows cuando es posible, reduciendo la latencia en el bucle principal de validación.
-- `2026-10-30T14:23:47` **quarantine.py** (rendimiento): Optimizé la función `total_quarantined_bytes` y otros accesos al manifiesto mediante la eliminación de redundancias de I/O y el uso del cache global, evitando la deserialización innecesaria de objetos `QuarantineItem` cuando la información ya reside en memoria.
