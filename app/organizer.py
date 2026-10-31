@@ -156,7 +156,7 @@ def _is_unc_path(path: Path) -> bool:
     """Determina si la ruta es de red (UNC), evitando procesar recursos remotos inestables."""
     if not isinstance(path, Path): return True
     try:
-        return str(path.absolute()).startswith(("\\\\", "//"))
+        return str(path).startswith(("\\\\", "//"))
     except (OSError, RuntimeError):
         return True
 
@@ -271,9 +271,6 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Valida la seguridad completa de una operación de movimiento.
-    Realiza verificaciones de: integridad del sistema (protección), identidad
-    del archivo (prevención TOCTOU mediante inodos) y validaciones lógicas de
-    ruta para evitar bucles o sobreescritura de archivos críticos.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
     try:
@@ -283,7 +280,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if is_protected_path(src_real) or is_protected_path(dest_real): return False
         if not is_safe_to_modify(dest_real): return False
         
-        # Evitar mover archivos que ya están en la carpeta de destino o sus subcarpetas
         if dest_real in src_real.parents or src_real == dest_real: return False
         if src_real.parent == dest_real: return False
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
@@ -302,12 +298,8 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     """Filtra directorios no permitidos o protegidos antes de ingresar al árbol."""
     if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
-    try:
-        p = Path(entry.path)
-        if is_protected_path(p) or not is_safe_to_modify(p):
-            protected_cache.add(entry.path)
-            return False
-    except (OSError, RuntimeError):
+    if is_protected_path(Path(entry.path)):
+        protected_cache.add(entry.path)
         return False
     return True
 
@@ -319,25 +311,23 @@ def _is_candidate_for_scan(entry: os.DirEntry, stats: os.stat_result) -> bool:
         return False
     if _is_system_hidden(entry):
         return False
-    # El chequeo de seguridad completo se realiza solo si los filtros previos pasan
     return is_safe_to_modify(Path(entry.path))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
     Realiza un recorrido recursivo controlado del árbol de directorios.
-    Utiliza un set 'visited' para detectar ciclos simbólicos y 'protected_cache' 
-    para acelerar la omisión de rutas ya marcadas como no seguras.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH: 
         return
         
     try:
-        path_str = str(current_dir.absolute())
-        if path_str in visited: 
+        real_path = current_dir.resolve()
+        path_key = str(real_path)
+        if path_key in visited: 
             return
-        visited.add(path_str)
+        visited.add(path_key)
         
-        with os.scandir(path_str) as iterator:
+        with os.scandir(path_key) as iterator:
             for entry in iterator:
                 try:
                     if entry.is_dir(follow_symlinks=False):
@@ -386,7 +376,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        # Forzar chequeo de seguridad en la carpeta destino
         ensure_safe_to_modify(dest_base)
         
         for junk_file in files:
@@ -395,7 +384,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 if not _is_safe_for_disk_op(junk_file, dest_base): continue
                 target_path = _can_move_file(junk_file, dest_base)
                 if target_path and junk_file.path.exists(): 
-                    # Asegurar que el origen sigue siendo seguro y tratable antes del movimiento final (prevención TOCTOU)
                     ensure_safe_to_modify(junk_file.path)
                     if is_safe_to_modify(junk_file.path):
                         shutil.move(str(junk_file.path), str(target_path))
@@ -430,7 +418,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not item.is_file() or item.is_symlink() or _is_junction(item): continue
                 if not is_valid_junk_extension(item.name): continue
-                # Validación estricta mediante ensure antes de unlink
                 ensure_safe_to_modify(item)
                 item.unlink()
                 count += 1

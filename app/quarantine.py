@@ -983,11 +983,16 @@ def quarantine_file(
         raise RuntimeError(f"Error durante proceso de cuarentena: {e}")
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Recupera lista de ítems en cuarentena, ordenados cronológicamente."""
-    base_dir = quarantine_dir(base)
-    items = _MANIFEST_CACHE.get(base_dir, ([], 0.0, 0))[0]
-    if not items:
-        items = load_manifest(base)
+    """Recupera lista de ítems en cuarentena, priorizando caché para rendimiento."""
+    try:
+        base_dir = quarantine_dir(base)
+    except (OSError, UnsafePathError):
+        return []
+    
+    # Intenta obtener de caché; si no existe, invoca load_manifest que gestiona el refresco
+    cached = _MANIFEST_CACHE.get(base_dir)
+    items = cached[0] if cached else load_manifest(base)
+    
     return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
 
 

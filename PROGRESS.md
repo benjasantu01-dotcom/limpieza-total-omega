@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 60
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 244
+- Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 119 | 5 | 39 | 10 | 135 |
-| 2026-10-31 | 56 | 2 | 21 | 8 | 109 |
+| 2026-10-30 | 115 | 5 | 39 | 10 | 135 |
+| 2026-10-31 | 58 | 2 | 22 | 8 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **42**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **40**
-- rendimiento: **29**
-- robustez ante casos límite: **24**
+- rendimiento: **31**
+- robustez ante casos límite: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
+- `quarantine.py`: **18**
 - `safety.py`: **18**
 - `browser.py`: **17**
-- `quarantine.py`: **17**
-- `settings.py`: **16**
 - `healthscore.py`: **15**
-- `assistant.py`: **13**
+- `settings.py`: **15**
 - `scanner.py`: **13**
 - `memory.py`: **13**
-- `branding.py`: **12**
-- `organizer.py`: **10**
+- `assistant.py`: **12**
+- `organizer.py`: **11**
+- `branding.py`: **11**
 - `duplicates.py`: **7**
-- `startup.py`: **5**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T08:31:09` **quarantine.py** (rendimiento): Optimizé `list_items` para reducir drásticamente el acceso a disco al aprovechar el estado del `_MANIFEST_CACHE` sin necesidad de recargar el archivo JSON completo en cada llamada, alineándome con el enfoque de rendimiento.
+- `2026-10-31T08:30:25` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `Path.absolute()` y `Path.resolve()` dentro de los bucles críticos, reemplazándolas por consultas directas sobre el `os.DirEntry` ya abierto, lo cual reduce drásticamente las syscalls al sistema de archivos.
 - `2026-10-31T08:01:35` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en `Scanner` y funciones auxiliares para clarificar el flujo de datos y el propósito de las validaciones, mejorando la mantenibilidad sin alterar la lógica.
 - `2026-10-31T08:01:01` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de validación extrayendo los predicados de seguridad a un diccionario mapeado, lo que elimina la repetición de lógica y facilita la lectura del flujo de validación.
 - `2026-10-31T07:50:35` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para delegar la lógica de reintento de E/S a una función especializada y simplificar el flujo de control, junto con la adición de docstrings técnicos que explican la lógica de seguridad (inodos y sincronización) en operaciones críticas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T07:18:56` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la captura explícita de `json.JSONDecodeError` y `ValueError` durante la deserialización, asegurando que un manifiesto corrompido no detenga la ejecución y restablezca el caché de forma segura.
 - `2026-10-31T06:59:11` **diskreport.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `walk_files` y `_collect_summary_data` integrando una validación robusta de tipos y estados para prevenir excepciones inesperadas durante el recorrido del disco.
 - `2026-10-31T06:58:46` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` añadiendo validaciones de tipo y estructura defensiva antes de operar sobre las rutas, evitando posibles fallos si la configuración es parcialmente inválida o si `base` no es una instancia de `Path` válida.
-- `2026-10-31T06:58:20` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` mediante una validación de parámetros más estricta (usando `is_safe_to_modify` para rutas y chequeos de rango para dimensiones), evitando errores en tiempo de ejecución ante entradas mal formadas.
-- `2026-10-31T05:28:41` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva de `_read_and_parse_json` y `_is_structure_valid` para prevenir ataques de desbordamiento de memoria y manipulación de estructura durante el parseo de archivos JSON, utilizando límites explícitos y validación de tipo de dato estricta antes de la carga en memoria.
