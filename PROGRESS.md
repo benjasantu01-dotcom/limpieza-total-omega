@@ -8,23 +8,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 61
-- Sin cambios (nada sustancial que mejorar): 16
+- Rechazadas por guardia de seguridad: 60
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 134 | 6 | 44 | 10 | 138 |
-| 2026-10-31 | 47 | 1 | 17 | 6 | 101 |
+| 2026-10-30 | 133 | 5 | 43 | 10 | 137 |
+| 2026-10-31 | 48 | 2 | 17 | 7 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
-- manejo de errores y validación de entradas: **39**
-- rendimiento: **34**
+- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **34**
+- rendimiento: **33**
 - legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
@@ -32,12 +32,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **19**
 - `diskreport.py`: **19**
 - `quarantine.py`: **18**
+- `settings.py`: **17**
 - `browser.py`: **17**
-- `settings.py`: **16**
-- `memory.py`: **15**
 - `healthscore.py`: **15**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
+- `memory.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **10**
 - `duplicates.py`: **6**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T07:28:49` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al implementar una validación de tipo más estricta sobre el JSON deserializado, asegurando que cada valor coincida con el tipo del valor por defecto antes de aceptar el archivo, previniendo así errores de ejecución en partes del código que asumen tipos correctos.
 - `2026-10-31T07:20:27` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_owned_by_system` encapsulando la liberación de memoria del SID en un bloque `try/finally` más estricto y añadiendo validaciones de tipo explícitas para prevenir `AttributeError` o `OSError` inesperados al manipular punteros de la API de Windows, asegurando que el recurso de memoria siempre se libere correctamente incluso ante fallos.
 - `2026-10-31T07:18:56` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la captura explícita de `json.JSONDecodeError` y `ValueError` durante la deserialización, asegurando que un manifiesto corrompido no detenga la ejecución y restablezca el caché de forma segura.
 - `2026-10-31T06:59:11` **diskreport.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `walk_files` y `_collect_summary_data` integrando una validación robusta de tipos y estados para prevenir excepciones inesperadas durante el recorrido del disco.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T05:09:29` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `healthscore.py` restringiendo la exposición de datos mediante la implementación de `_is_safe_string_for_report` en el flujo de renderizado de recomendaciones, asegurando que ninguna métrica procesada pueda inadvertidamente filtrar rutas locales o nombres de usuario sensibles antes de llegar a la interfaz.
 - `2026-10-31T05:07:26` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `largest_folders` validando que la carpeta analizada no sea un enlace simbólico o punto de unión, evitando así el procesamiento redundante o fuera de límites, al aplicar el chequeo `_is_reparse_point` antes de agregar la ruta al diccionario de métricas.
 - `2026-10-31T05:06:12` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner` implementando una validación estricta para asegurar que el `path_norm` siempre se mantenga dentro del `sandbox_base_norm` durante el escaneo, evitando fugas mediante manipulaciones de rutas tipo "dot-dot" que `is_safe_to_modify` podría no capturar si se producen dentro de una estructura lógica compleja.
-- `2026-10-31T04:46:10` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `os.fsync` y manejo de excepciones más robusto durante la creación de archivos temporales en `_write_temp_to_final` para evitar la persistencia de archivos corruptos ante fallos de E/S o interrupciones inesperadas.

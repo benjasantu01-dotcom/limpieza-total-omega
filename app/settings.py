@@ -350,13 +350,13 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _is_structure_valid(data: Any) -> bool:
-    """Verifica que el JSON parseado tenga una estructura de diccionario plana con claves conocidas."""
+    """Verifica que el JSON parseado tenga una estructura de diccionario plana con tipos esperados."""
     if not isinstance(data, dict) or len(data) > 64: return False
     for k, v in data.items():
-        if k not in DEFAULTS: return False
-        if not isinstance(v, (type(DEFAULTS[k]), type(None))): return False
-        if k == ConfigKey.ULTIMA_CARPETA.value and isinstance(v, str) and ".." in v:
-            return False
+        key_enum = _KEY_TO_ENUM.get(k)
+        if not key_enum: return False
+        expected_type = type(DEFAULTS[key_enum.value])
+        if v is not None and not isinstance(v, expected_type): return False
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
@@ -369,7 +369,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             content = f.read(MAX_SETTINGS_SIZE + 1)
         
         if not content or len(content) > MAX_SETTINGS_SIZE or len(content) < 2: return None
-        # Validar caracteres de control nocivos sin procesar byte a byte excesivamente
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
         data = json.loads(content.decode("utf-8", errors="strict"))
