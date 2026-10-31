@@ -1380,3 +1380,10 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'SystemContext' is not de
 - `2026-10-31T08:31:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-31T08:31:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T08:31:12` Corrida terminada. Total usado hoy: 200.
+- `2026-10-31T08:39:35` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-31T08:39:58` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 12% del original (posible pérdida de código)
+- `2026-10-31T08:40:22` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-10-31T08:40:51` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-31T08:41:04` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se implementó un mecanismo de caché para `_validate_file_access` dentro de `StartupEntry` para evitar llamadas redundantes y costosas a `is_safe_to_modify` y `exists()` sobre la misma ruta física durante el proceso de escaneo.
+- `2026-10-31T08:41:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T08:41:04` Corrida terminada. Total usado hoy: 204.

@@ -69,6 +69,7 @@ _EXISTS_CACHE: Dict[str, bool] = {}
 _COMMAND_CACHE: Dict[str, str] = {}
 _FULL_SCAN_CACHE: Optional[StartupEntries] = None
 _FOLDERS_CACHE: Optional[List[Path]] = None
+_VALIDATION_CACHE: Dict[str, bool] = {}
 
 # Mensaje orientativo para el usuario final sobre la gestión de persistencia.
 HOW_TO_DISABLE: str = (
@@ -174,17 +175,27 @@ class StartupEntry:
         Verifica la existencia física, integridad de sistema (no symlink) y 
         cumplimiento de las políticas de seguridad en `safety.py`.
         """
+        p_str = str(p)
+        if p_str in _VALIDATION_CACHE:
+            return _VALIDATION_CACHE[p_str]
+            
         try:
             # Filtro rápido de seguridad antes de verificar disco
             if is_protected_path(p):
+                _VALIDATION_CACHE[p_str] = False
                 return False
             if not p.is_file() or p.is_symlink():
+                _VALIDATION_CACHE[p_str] = False
                 return False
             if not is_safe_to_modify(p):
+                _VALIDATION_CACHE[p_str] = False
                 return False
                 
-            return p.exists()
+            exists = p.exists()
+            _VALIDATION_CACHE[p_str] = exists
+            return exists
         except (OSError, PermissionError, RuntimeError):
+            _VALIDATION_CACHE[p_str] = False
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
