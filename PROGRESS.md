@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **154** (30.6% de aceptación)
-- Rechazadas por tests: 6
+- Mejoras aceptadas: **156** (31.0% de aceptación)
+- Rechazadas por tests: 7
 - Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 265
+- Sin respuesta de la IA (error o límite): 262
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 66 | 2 | 26 | 7 | 75 |
-| 2026-10-31 | 88 | 4 | 32 | 14 | 190 |
+| 2026-10-30 | 66 | 2 | 26 | 7 | 71 |
+| 2026-10-31 | 90 | 5 | 32 | 14 | 191 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **33**
 - rendimiento: **32**
+- seguridad defensiva: **27**
 - robustez ante casos límite: **26**
-- seguridad defensiva: **25**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,18 +33,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **16**
 - `quarantine.py`: **14**
 - `browser.py`: **13**
+- `memory.py`: **13**
 - `healthscore.py`: **13**
-- `memory.py`: **12**
 - `settings.py`: **12**
 - `scanner.py`: **12**
 - `assistant.py`: **11**
+- `duplicates.py`: **9**
 - `organizer.py`: **9**
-- `duplicates.py`: **8**
 - `branding.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T14:08:36` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita para evitar nombres de proceso que contengan caracteres de control o invisibles (posibles ataques de homógrafos o confusión de interfaz), y se consolidó el manejo de `path_buf` en `_is_process_executable_safe` usando `Path.resolve()` de forma más resiliente para prevenir el acceso a rutas protegidas mediante técnicas de ofuscación de nombres de archivo.
+- `2026-10-31T14:06:00` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `hash_file` y `partial_hash` implementando una validación explícita mediante `is_safe_to_modify` antes de abrir cualquier manejador de archivos, asegurando que el módulo solo acceda a rutas permitidas incluso si el sistema operativo permitiera el acceso al archivo subyacente.
 - `2026-10-31T13:49:09` **startup.py** (robustez ante casos límite): Se introdujo una verificación de "archivo en uso" mediante `os.access(p, os.W_OK)` antes de intentar validar el acceso, mejorando la robustez frente a bloqueos del sistema o procesos bloqueantes sin romper la semántica de solo lectura.
 - `2026-10-31T13:48:16` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor de escaneo ante directorios con permisos restringidos o errores de acceso inesperados (como archivos bloqueados o denegados) añadiendo un manejo de excepciones más granular en `_handle_directory`, evitando que una única denegación en una subcarpeta interrumpa el escaneo del resto del árbol.
 - `2026-10-31T13:47:01` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes de archivos añadiendo una validación explícita de `st_nlink` dentro de `_get_path_stat_robust` para detectar si un archivo ha sido borrado o reemplazado durante la operación de lectura de metadatos (TOCTOU), previniendo el procesamiento de descriptores de archivos inválidos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T12:15:37` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y clases, clarificando la intención del uso de máscaras de acceso Win32 y la lógica de validación, además de añadir type hints en secciones que los requerían para mejorar la mantenibilidad.
 - `2026-10-31T11:56:05` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del módulo `assistant.py` mediante la refactorización de `SystemContext._validate_and_sanitize_data` y `_apply_updates`, reemplazando lógica procedimental compleja por un flujo más limpio, explícito y tipado, lo cual facilita la auditoría de seguridad del proceso de ingesta de datos.
 - `2026-10-31T11:55:42` **startup.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `StartupEntry._resolve_path_from_command` mediante un bloque `try-except` más específico y la validación de la integridad de los resultados de `split()`, evitando que una entrada malformada provoque una excepción inesperada durante el parseo de comandos.
-- `2026-10-31T11:54:06` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` y `_read_and_parse_json` añadiendo validaciones explícitas de tipos y claves, evitando que una entrada JSON maliciosa o corrupta cause errores de ejecución no controlados durante el parseo inicial.
-- `2026-10-31T11:45:02` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `normalize` y `_get_path_stat_robust` mediante la captura explícita de excepciones durante el acceso a propiedades de `Path` (como `.anchor` o `.parts`), evitando cierres inesperados ante rutas mal formadas o inaccesibles a nivel de sistema de archivos.

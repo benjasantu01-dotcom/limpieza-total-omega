@@ -118,7 +118,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo del contenido. 
     Usa caché para evitar múltiples lecturas de disco sobre el mismo archivo.
     """
-    if not isinstance(path, Path) or not _safe_path_check(path): 
+    if not isinstance(path, Path) or not is_safe_to_modify(path): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     
@@ -138,7 +138,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     """
     Genera un fingerprint rápido leyendo solo los primeros N bytes definidos en PARTIAL_READ_BYTES.
     """
-    if not isinstance(path, Path) or not _safe_path_check(path): 
+    if not isinstance(path, Path) or not is_safe_to_modify(path): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     

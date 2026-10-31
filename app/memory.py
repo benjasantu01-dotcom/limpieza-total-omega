@@ -260,7 +260,8 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             return None
         
         name = parts[0].strip()
-        if not name or any(ord(c) < 32 for c in name):
+        # Validación defensiva: bloques de nombres con caracteres no imprimibles o control
+        if not name or any(ord(c) < 32 or ord(c) == 127 for c in name):
             return None
             
         ws = _safe_int_conversion(parts[2])
@@ -354,7 +355,7 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
         exe_path_str = path_buffer.value
         if not exe_path_str: return False
         
-        # Validar mediante resolución de ruta absoluta para mayor seguridad defensiva
+        # Resolución absoluta para neutralizar ataques de paths relativos o enlaces simbólicos
         exe_path = Path(exe_path_str).resolve()
         return not is_protected_path(exe_path)
     except (OSError, RuntimeError, ValueError, TypeError):

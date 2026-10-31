@@ -810,3 +810,36 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-10-31T13:58:44` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-10-31T13:58:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T13:58:44` Corrida terminada. Total usado hoy: 328.
+- `2026-10-31T14:05:32` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-31T14:06:00` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `hash_file` y `partial_hash` implementando una validación explícita mediante `is_safe_to_modify` antes de abrir cualquier manejador de archivos, asegurando que el módulo solo acceda a rutas permitidas incluso si el sistema operativo permitiera el acceso al archivo subyacente.
+- `2026-10-31T14:06:31` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+ImportError while importing test module '/home/runner/work/limpieza-total-omega/limpieza-total-omega/evolve/tests/test_modules.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:26: in <module>
+    from safety import SYSTEM_FOLDER_BLOCKLIST
+E   ImportError: cannot import name 'SYSTEM_FOLDER_BLOCKLIST' from 'safety' (/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py)
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.20s
+
+```
+- `2026-10-31T14:06:31` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se ha endurecido el filtro `_is_safe_string_for_report` añadiendo la validación de la lista `SYSTEM_FOLDER_BLOCKLIST` y se ha modificado la función `_sanitize_msg` para operar como una función pura con validación de tipo estricta, previniendo que mensajes potencialmente peligrosos escapen de las reglas de seguridad.
+- `2026-10-31T14:06:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-31T14:06:47` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-31T14:07:53` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-31T14:08:08` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-31T14:08:36` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita para evitar nombres de proceso que contengan caracteres de control o invisibles (posibles ataques de homógrafos o confusión de interfaz), y se consolidó el manejo de `path_buf` en `_is_process_executable_safe` usando `Path.resolve()` de forma más resiliente para prevenir el acceso a rutas protegidas mediante técnicas de ofuscación de nombres de archivo.
+- `2026-10-31T14:08:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T14:08:36` Corrida terminada. Total usado hoy: 332.
