@@ -105,6 +105,8 @@ def _check_path_for_junctions(path: Path) -> None:
 def _get_win_attributes(path: Path) -> int:
     """Consulta atributos de archivo Win32 con caché para optimizar rendimiento."""
     if os.name != 'nt': return 0
+    if not path.exists(): return -1
+    
     p_str = str(path)
     if p_str in _WIN_ATTR_CACHE: return _WIN_ATTR_CACHE[p_str]
     try:
@@ -112,7 +114,7 @@ def _get_win_attributes(path: Path) -> int:
         if attrs == -1: return -1
         _WIN_ATTR_CACHE[p_str] = attrs
         return attrs
-    except (OSError, AttributeError, KeyError):
+    except (OSError, AttributeError, KeyError, WindowsError):
         return -1
 
 def _win_has_system_attributes(path: Path) -> bool:

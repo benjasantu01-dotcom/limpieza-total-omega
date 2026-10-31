@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 64
+- Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 33 | 2 | 13 | 6 | 40 |
+| 2026-10-29 | 31 | 2 | 11 | 6 | 40 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
-| 2026-10-31 | 11 | 1 | 4 | 1 | 43 |
+| 2026-10-31 | 13 | 1 | 5 | 1 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **34**
 - rendimiento: **34**
+- legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
+- `quarantine.py`: **19**
 - `browser.py`: **18**
-- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `safety.py`: **17**
 - `memory.py`: **16**
-- `scanner.py`: **15**
 - `branding.py`: **15**
 - `assistant.py`: **14**
+- `scanner.py`: **14**
 - `healthscore.py`: **13**
-- `organizer.py`: **10**
-- `startup.py`: **8**
+- `organizer.py`: **11**
+- `startup.py`: **7**
 - `duplicates.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T02:45:53` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez de `_get_win_attributes` envolviendo la llamada de `ctypes` en una validación previa de existencia y manejando excepciones específicas para evitar que errores inesperados de API bloqueen el flujo del escáner.
+- `2026-10-31T02:45:21` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más explícitas, previniendo errores en tiempo de ejecución al manejar objetos `None` o rutas mal formadas que podrían derivar en excepciones no capturadas.
 - `2026-10-31T02:34:43` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez de `SystemMetrics.validate` y la integridad del pipeline mediante la eliminación de dependencias de `object.__setattr__` en favor de una actualización más limpia, y asegura que la limpieza de caracteres prohibidos sea más estricta al validar antes de la construcción de mensajes.
 - `2026-10-31T02:26:33` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación de parámetros más estricta y una captura de errores más granular, asegurando que valores inesperados no propaguen estados inválidos o silencien fallos críticos.
 - `2026-10-31T01:03:15` **settings.py** (seguridad defensiva): Se endureció la seguridad de `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y validaciones de metadatos más estrictas, evitando seguir enlaces simbólicos mediante la validación explícita con `os.lstat` antes de procesar el archivo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T00:11:47` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentos de limpieza sobre procesos que ya han finalizado o están en estado zombi, y se mejoró la resiliencia ante errores de acceso en entornos con alta restricción de permisos.
 - `2026-10-30T14:53:08` **healthscore.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de ejecución en el cálculo del pipeline utilizando un bloque `try-except` más granular y protegiendo el `zip` para evitar el colapso del motor si las métricas o los pesos sufren discrepancias estructurales inesperadas.
 - `2026-10-30T14:43:21` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos, asegurando que la validación de rutas sea absoluta, que la creación de directorios sea atómica en cuanto a permisos y que el manejo de excepciones sea preciso para no bloquear el hilo de UI.
-- `2026-10-30T14:42:48` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemContext.ingest` y sus métodos de validación asociados (especialmente en la detección de fuentes maliciosas o tipos inesperados) mediante la implementación de comprobaciones de "tipo estricto" y validación de `__dict__` antes de la mutación, previniendo inyecciones de datos corruptos desde fuentes externas.
-- `2026-10-30T14:33:12` **scanner.py** (rendimiento): Optimicé el rendimiento del proceso de escaneo reemplazando el cálculo recursivo repetitivo de rutas resueltas (`resolve()`) por `os.path.normcase` dentro de `Scanner._is_inside_base_root`, evitando bloqueos de I/O y mejorando drásticamente la velocidad en árboles de directorios profundos.

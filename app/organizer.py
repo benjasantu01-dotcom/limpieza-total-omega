@@ -375,7 +375,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     """
     Mueve archivos candidatos a la carpeta de revisión segura, validando cada operación de escritura.
     """
-    if not isinstance(files, (list, tuple)) or not review_dir: 
+    if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
         return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
