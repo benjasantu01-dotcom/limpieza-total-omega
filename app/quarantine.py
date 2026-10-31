@@ -990,10 +990,11 @@ def quarantine_file(
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Recupera lista de ítems en cuarentena, ordenados cronológicamente."""
-    try:
-        return sorted([i for i in load_manifest(base) if i is not None], key=lambda x: x.quarantined_at, reverse=True)
-    except (TypeError, AttributeError):
-        return []
+    base_dir = quarantine_dir(base)
+    items = _MANIFEST_CACHE.get(base_dir, ([], 0.0, 0))[0]
+    if not items:
+        items = load_manifest(base)
+    return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
 
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:

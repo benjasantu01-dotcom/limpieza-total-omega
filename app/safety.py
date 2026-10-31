@@ -33,6 +33,7 @@ ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescrip
 
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], bool]] = {}
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
+_FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
 
 class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
     _fields_ = [
@@ -58,29 +59,37 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     if not isinstance(path_str, str) or not path_str or path_str.upper().startswith(("\\\\.\\", "//./")):
         return (0, 0, 0, 0)
     
+    if path_str in _FILE_ID_CACHE:
+        return _FILE_ID_CACHE[path_str]
+    
     if os.name != 'nt':
         try:
             st = os.stat(path_str)
-            return (st.st_dev, st.st_ino, 0, 0)
+            res = (st.st_dev, st.st_ino, 0, 0)
         except (OSError, PermissionError):
-            return (0, 0, 0, 0)
-
-    info = BY_HANDLE_FILE_INFORMATION()
-    kernel32 = ctypes.windll.kernel32
-    path_long = _to_long_path(path_str)
-    
-    handle = kernel32.CreateFileW(path_long, 0x80000000, 0x07, None, 3, 0x02000000, None)
-    if handle == -1: 
-        return (0, 0, 0, 0)
+            res = (0, 0, 0, 0)
+    else:
+        info = BY_HANDLE_FILE_INFORMATION()
+        kernel32 = ctypes.windll.kernel32
+        path_long = _to_long_path(path_str)
         
-    try:
-        if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
-            return (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, int(bool(info.dwFileAttributes & Win32Attr.DIRECTORY)))
-    except (ctypes.ArgumentError, OSError, ValueError, AttributeError):
-        pass
-    finally:
-        kernel32.CloseHandle(handle)
-    return (0, 0, 0, 0)
+        handle = kernel32.CreateFileW(path_long, 0x80000000, 0x07, None, 3, 0x02000000, None)
+        if handle == -1: 
+            res = (0, 0, 0, 0)
+        else:
+            try:
+                if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
+                    res = (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, int(bool(info.dwFileAttributes & Win32Attr.DIRECTORY)))
+                else:
+                    res = (0, 0, 0, 0)
+            except (ctypes.ArgumentError, OSError, ValueError, AttributeError):
+                res = (0, 0, 0, 0)
+            finally:
+                kernel32.CloseHandle(handle)
+                
+    if len(_FILE_ID_CACHE) > 4096: _FILE_ID_CACHE.clear()
+    _FILE_ID_CACHE[path_str] = res
+    return res
 
 class SafetyAction(Enum):
     READ = auto()
