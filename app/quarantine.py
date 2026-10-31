@@ -66,7 +66,8 @@ MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para streaming eficiente de archivos grandes
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
 _HASH_CACHE: Dict[Tuple[str, float, int], str] = {}
-_WIN_ATTR_CACHE: Dict[str, int] = {}
+# Caché con tiempo para atributos (path, (attrs, timestamp))
+_WIN_ATTR_CACHE: Dict[str, Tuple[int, float]] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -103,28 +104,29 @@ def _check_path_for_junctions(path: Path) -> None:
     _check_for_reparse_points(path)
 
 def _get_win_attributes(path: Path) -> int:
-    """Consulta atributos de archivo Win32 con caché para optimizar rendimiento."""
+    """Consulta atributos de archivo Win32 con caché TTL para optimizar rendimiento."""
     if os.name != 'nt': return 0
-    if not path.exists(): return -1
-    
     p_str = str(path)
-    if p_str in _WIN_ATTR_CACHE: return _WIN_ATTR_CACHE[p_str]
+    now = time.time()
+    
+    # TTL de 2 segundos para evitar llamadas repetidas a syscall en bucles
+    if p_str in _WIN_ATTR_CACHE:
+        attrs, ts = _WIN_ATTR_CACHE[p_str]
+        if now - ts < 2.0:
+            return attrs
+            
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(p_str)
-        if attrs == -1: return -1
-        _WIN_ATTR_CACHE[p_str] = attrs
+        _WIN_ATTR_CACHE[p_str] = (attrs, now)
         return attrs
-    except (OSError, AttributeError, KeyError, WindowsError):
+    except (OSError, AttributeError, WindowsError):
         return -1
 
 def _win_has_system_attributes(path: Path) -> bool:
     """Verifica si el archivo posee atributos de sistema, oculto o temporal."""
-    try:
-        attrs = _get_win_attributes(path)
-        if attrs == -1: return True
-        return bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
-    except (OSError, AttributeError):
-        return True
+    attrs = _get_win_attributes(path)
+    if attrs == -1: return True
+    return bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
 
 def _verify_source_fs_permissions(path: Path) -> None:
     """Valida la seguridad del origen prohibiendo rutas UNC y atributos críticos."""

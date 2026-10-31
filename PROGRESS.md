@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **160** (31.7% de aceptación)
+- Mejoras aceptadas: **159** (31.5% de aceptación)
 - Rechazadas por tests: 6
 - Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 261
+- Sin respuesta de la IA (error o límite): 262
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 77 | 2 | 28 | 8 | 89 |
-| 2026-10-31 | 83 | 4 | 30 | 11 | 172 |
+| 2026-10-30 | 75 | 2 | 28 | 8 | 87 |
+| 2026-10-31 | 84 | 4 | 30 | 11 | 175 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **35**
+- seguridad defensiva: **34**
 - legibilidad y documentación: **33**
-- rendimiento: **30**
-- robustez ante casos límite: **24**
+- rendimiento: **31**
+- robustez ante casos límite: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
 - `diskreport.py`: **17**
-- `settings.py`: **14**
+- `quarantine.py`: **15**
 - `browser.py`: **14**
 - `healthscore.py`: **14**
-- `quarantine.py`: **14**
-- `assistant.py`: **12**
+- `settings.py`: **13**
 - `scanner.py`: **12**
 - `memory.py`: **12**
+- `assistant.py`: **11**
 - `organizer.py`: **10**
 - `branding.py`: **9**
 - `duplicates.py`: **8**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T13:00:02` **quarantine.py** (rendimiento): Se optimizó el acceso a los atributos de archivo mediante la implementación de una caché con TTL en `_get_win_attributes` para evitar llamadas redundantes a `ctypes` en operaciones recursivas, mejorando el rendimiento en sistemas con muchos archivos.
 - `2026-10-31T12:46:40` **healthscore.py** (rendimiento): Se ha optimizado la generación de informes y el cálculo de métricas mediante la eliminación de la serialización innecesaria y el uso de un caché más eficiente, reemplazando la creación de tuplas de objetos complejos (`_render_summarize`) por un cálculo directo que evita penalizaciones de serialización en el `lru_cache`.
 - `2026-10-31T12:46:25` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos en `_collect_candidates` para evitar llamadas redundantes a `is_protected_path` (que puede ser costosa) mediante la inversión del orden de chequeos y se consolidaron los chequeos de archivos para minimizar las llamadas al sistema de archivos dentro del loop crítico.
 - `2026-10-31T12:44:50` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` evitando llamadas recurrentes a `_is_reparse_point` (que ejecuta llamadas a `ctypes` en Windows) mediante el almacenamiento en caché de rutas procesadas en el mismo nivel, reduciendo significativamente el overhead en directorios con muchos archivos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T11:43:28` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al reemplazar llamadas redundantes a `ensure_safe_to_modify` con verificaciones condicionales y capturas de excepciones más granulares, evitando que un error de acceso en un archivo detenga el procesamiento de toda la lista.
 - `2026-10-31T11:34:55` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_process_handle` y `trim_working_set` capturando `ctypes.WinError` y validando explícitamente el valor de retorno de los handles para evitar operaciones sobre punteros nulos o inválidos, cumpliendo con el enfoque de manejo de errores.
 - `2026-10-31T11:33:33` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos al agregar validaciones defensivas en `_render_summarize` y `_render_bar`, asegurando que tipos de datos inesperados no interrumpan la generación de reportes, y añadiendo un chequeo explícito de `is_finite` en `compute_score` para evitar propagar valores corruptos.
-- `2026-10-31T11:33:06` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `group_by_size` y `_collect_candidates` para evitar que la iteración se detenga prematuramente ante fallos de acceso o permisos, y se eliminaron los chequeos de `is_safe_to_modify` en contextos donde solo se requiere acceso de lectura seguro, evitando posibles fallos innecesarios en directorios con restricciones de escritura.
