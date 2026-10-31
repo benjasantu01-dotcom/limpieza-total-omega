@@ -264,12 +264,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Recorrido recursivo iterativo para evitar desbordamientos de pila al navegar archivos."""
+    """Recorrido recursivo iterativo optimizado."""
     root_path = _validate_root(directory)
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
     stack: List[str] = [str(root_path)]
+    reparse_cache: Dict[str, bool] = {}
     
     root_stat = _safe_stat(root_path)
     if root_stat:
@@ -281,25 +282,27 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtrado defensivo de entrada nula o rutas inválidas
                         if not entry or _is_excluded_path(entry.name, Path(entry.path)):
                             continue
                         
-                        # Saltar symlinks y reparse points para evitar bucles infinitos
-                        if entry.is_symlink() or _is_reparse_point(Path(entry.path)):
+                        path_str = entry.path
+                        if path_str not in reparse_cache:
+                            reparse_cache[path_str] = entry.is_symlink() or _is_reparse_point(Path(path_str))
+                        
+                        if reparse_cache[path_str]:
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
                             
                         if entry.is_dir():
-                            if skip_protected and is_protected_path(Path(entry.path)):
+                            if skip_protected and is_protected_path(Path(path_str)):
                                 continue
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry.path)
+                                stack.append(path_str)
                         elif entry.is_file():
-                            yield Path(entry.path), st.st_size
+                            yield Path(path_str), st.st_size
                     except (OSError, PermissionError, FileNotFoundError, RuntimeError, AttributeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, NotADirectoryError):
@@ -329,13 +332,18 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if root is None: return []
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
+    reparse_cache: Dict[Path, bool] = {}
     
     for path, size in walk_files(root, skip_protected):
         try:
             rel = path.relative_to(root)
             if not rel.parts: continue
             top_level = root / rel.parts[0]
-            if (skip_protected and is_protected_path(top_level)) or _is_reparse_point(top_level):
+            
+            if top_level not in reparse_cache:
+                reparse_cache[top_level] = _is_reparse_point(top_level)
+            
+            if (skip_protected and is_protected_path(top_level)) or reparse_cache[top_level]:
                 continue
             m = stats[top_level]
             m.size += size

@@ -303,8 +303,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
-        if not isinstance(base, Path): continue
-        if not base.exists(): continue
+        if not isinstance(base, Path) or not base.exists(): continue
         
         try:
             base_norm = os.path.normcase(os.path.abspath(str(base)))
@@ -319,9 +318,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             
             target = base.joinpath(*relative_path.split("\\"))
             if not target.exists() or not target.is_dir(): continue
-            
-            # Chequeos de seguridad antes de procesar el directorio
-            if not is_safe_to_modify(target) or is_protected_path(target): continue
             
             target_str = str(target)
             if not scanner._is_path_allowed(target_str): continue

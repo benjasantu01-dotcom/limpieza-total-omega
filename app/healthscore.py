@@ -405,33 +405,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 
 @lru_cache(maxsize=128)
-def _render_bar(points: Any, max_val: Any) -> str:
+def _render_bar(points: int, max_val: int) -> str:
     """Generador visual de barras de progreso para reportes en texto."""
-    if not isinstance(points, (int, float)) or not isinstance(max_val, (int, float)):
-        return "." * 10
-    
-    safe_max = int(max(1, int(max_val)))
-    safe_points = int(max(0, min(int(points), safe_max)))
+    safe_max = max(1, max_val)
+    safe_points = max(0, min(points, safe_max))
     return "#" * safe_points + "." * (safe_max - safe_points)
-
-@lru_cache(maxsize=32)
-def _render_summarize(composite_id: int, breakdown: Tuple[Tuple[str, int], ...], recommendations: Tuple[str, ...]) -> List[str]:
-    """
-    Genera un informe textual resumen. 
-    """
-    try:
-        score, grade_idx = divmod(composite_id, 1000)
-        grade = "ABCDEF"[min(grade_idx, 5)]
-        lines = [f"Salud del sistema: {score}/100  (nota {grade})", "", "Desglose por área:"]
-        for area, val in breakdown:
-            if not isinstance(area, str) or not isinstance(val, (int, float)): continue
-            weight = WEIGHTS.get(area, 10)
-            lines.append(f"  {area.capitalize():<12} {val:>2}/{weight:<2} [{_render_bar(val, weight)}]")
-        
-        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recommendations]))
-        return lines
-    except Exception:
-        return ["Error al formatear resumen."]
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Serializa el resultado de salud en una lista de líneas para informe legible."""
@@ -439,15 +417,15 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe de salud no disponible."]
     
     try:
-        recs = tuple(result.recommendations) if isinstance(result.recommendations, list) else ()
-        if not recs: recs = ("No hay advertencias activas.",)
+        lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+        for area, val in sorted(result.breakdown.items()):
+            weight = WEIGHTS.get(area, 10)
+            bar = _render_bar(val, weight)
+            lines.append(f"  {area.capitalize():<12} {val:>2}/{weight:<2} [{bar}]")
         
-        grades = ["A", "B", "C", "D", "F"]
-        grade_idx = grades.index(result.grade) if result.grade in grades else 4
-        res_id = (result.score * 1000) + grade_idx
-        breakdown = tuple(sorted(result.breakdown.items()))
-        
-        return _render_summarize(res_id, breakdown, recs)
+        recs = result.recommendations if result.recommendations else ["No hay advertencias activas."]
+        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recs]))
+        return lines
     except Exception:
         return ["Error: Fallo crítico al generar resumen de informe."]
 

@@ -110,7 +110,7 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Valida si un archivo es apto para el análisis de duplicados."""
-    return st_size > 0 and _safe_path_check(path) and not is_system_or_hidden(path)
+    return st_size > 0 and not is_system_or_hidden(path) and _safe_path_check(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
@@ -197,10 +197,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                 inode = (stat.st_dev, stat.st_ino)
                                 if inode not in visited:
                                     path = Path(entry.path)
-                                    if not (skip_protected and is_protected_path(path)) and _is_valid_candidate(path, stat.st_size):
-                                        visited.add(inode)
-                                        raw_map[stat.st_size].append(path)
-                                        size_counts[stat.st_size] += 1
+                                    # Filtro eficiente: primero atributos rápidos, luego chequeo de seguridad
+                                    if not is_system_or_hidden(path) and (not skip_protected or not is_protected_path(path)):
+                                        if _safe_path_check(path):
+                                            visited.add(inode)
+                                            raw_map[stat.st_size].append(path)
+                                            size_counts[stat.st_size] += 1
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): continue
     return {sz: paths for sz, paths in raw_map.items() if size_counts[sz] > 1}
