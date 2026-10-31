@@ -159,12 +159,11 @@ def _validate_limit(limit: Any) -> int:
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Normaliza y valida si un directorio es candidato seguro para ser escaneado.
-    Retorna la ruta absoluta o None si es inválida, protegida o inaccesible.
     """
     if not directory:
         return None
     try:
-        p = Path(directory).expanduser().absolute()
+        p = Path(directory).expanduser().resolve()
         if not p.exists() or str(p).startswith('\\\\'):
             return None
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
@@ -269,7 +268,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """Obtiene métricas de espacio disponible en un punto de montaje."""
     if mount is None: return None
     try:
-        p = Path(mount).expanduser().absolute()
+        p = Path(mount).expanduser().resolve()
         if not p.exists() or _is_reparse_point(p) or is_protected_path(p):
             return None
         if str(p).startswith('\\\\'): return None
@@ -288,13 +287,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorrido recursivo iterativo utilizando un stack para evitar desbordamiento.
-    Verifica seguridad, evita ciclos mediante inodes y omite puntos de reparse (junctions).
     """
     root_path = _validate_root(directory)
     if root_path is None: return
-    
-    if skip_protected and is_protected_path(root_path):
-        return
     
     visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]
@@ -309,7 +304,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
+                        p_entry = Path(entry.path).resolve()
+                        # Refuerzo: solo procesar si es hijo directo o contenido de root_path
+                        if not str(p_entry).startswith(str(root_path)):
+                            continue
+
                         if _is_excluded_path(entry.name, p_entry):
                             continue
                         
@@ -319,8 +318,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         st = entry.stat(follow_symlinks=False)
                             
                         if entry.is_dir():
-                            # El chequeo de seguridad principal ya se hace en _validate_root
-                            # y se mantiene consistente aquí sin llamar a resolve() innecesariamente
                             if skip_protected and is_protected_path(p_entry):
                                 continue
                             
@@ -367,7 +364,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             if not rel.parts: continue
             top_level = root / rel.parts[0]
             
-            # Verificación de seguridad adicional al procesar subcarpetas
             if skip_protected and is_protected_path(top_level):
                 continue
 
@@ -392,7 +388,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Ejecuta el escaneo completo y acumula las estadísticas y el top de archivos.
-    El límite define cuántos archivos top se guardan en el heap de memoria.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

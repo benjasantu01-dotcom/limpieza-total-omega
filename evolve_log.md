@@ -640,3 +640,33 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-31T00:33:01` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
 - `2026-10-31T00:33:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T00:33:01` Corrida terminada. Total usado hoy: 12.
+- `2026-10-31T00:40:52` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-10-31T00:41:21` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando validaciones explícitas de rutas mediante `resolve()` y `is_relative_to` (simulado para compatibilidad) para prevenir ataques de *path traversal* o resolución de accesos fuera del árbol permitido, asegurando que cualquier entrada sea estrictamente interna al directorio raíz solicitado antes de ser procesada.
+- `2026-10-31T00:41:43` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-31T00:42:15` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+..F..................................................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_low_disk_produces_a_specific_recommendation _______________
+
+    def test_low_disk_produces_a_specific_recommendation():
+        resultado = healthscore.compute_score(healthscore.SystemMetrics(disk_free_percent=3))
+>       assert any("disco" in r.lower() for r in resultado.recommendations)
+E       assert False
+E        +  where False = any(<generator object test_low_disk_produces_a_specific_recommendation.<locals>.<genexpr> at 0x7f8c342b36b0>)
+
+evolve/tests/test_modules.py:904: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommendation - assert False
+ +  where False = any(<generator object test_low_disk_produces_a_specific_recommendation.<locals>.<genexpr> at 0x7f8c342b36b0>)
+1 failed, 298 passed in 1.59s
+
+```
+- `2026-10-31T00:42:15` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad del motor de reglas agregando una validación estricta en `_is_safe_string_for_report` que impide la fuga de rutas locales al inspeccionar que el mensaje no contenga caracteres de ruta comunes (como `\`, `/` o `:`) además de los términos prohibidos, y se añadió una capa adicional de saneamiento en `_apply_rule_safely` para asegurar que incluso ante errores de ejecución de factorías, no se retorne información no validada.
+- `2026-10-31T00:43:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-10-31T00:43:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T00:43:12` Corrida terminada. Total usado hoy: 16.

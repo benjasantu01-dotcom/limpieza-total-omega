@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 67
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 52 | 2 | 18 | 6 | 64 |
+| 2026-10-29 | 52 | 2 | 18 | 6 | 60 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
-| 2026-10-31 | 4 | 0 | 2 | 0 | 6 |
+| 2026-10-31 | 5 | 1 | 3 | 0 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **35**
+- seguridad defensiva: **36**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **21**
 - `browser.py`: **20**
-- `diskreport.py`: **20**
 - `quarantine.py`: **19**
 - `settings.py`: **18**
 - `memory.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T00:41:21` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando validaciones explícitas de rutas mediante `resolve()` y `is_relative_to` (simulado para compatibilidad) para prevenir ataques de *path traversal* o resolución de accesos fuera del árbol permitido, asegurando que cualquier entrada sea estrictamente interna al directorio raíz solicitado antes de ser procesada.
 - `2026-10-31T00:32:47` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando el uso de `pathlib.Path.resolve()` —que puede disparar errores de E/S o resolución de enlaces simbólicos en sistemas de archivos restringidos— por una validación más robusta que utiliza `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que la ruta no sea un vínculo simbólico o una ruta protegida antes de intentar crear directorios o escribir el archivo.
 - `2026-10-31T00:21:55` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inválidas o inexistentes en `scan_directory` y `_safe_stat` mediante la captura explícita de `FileNotFoundError` y el uso de `path.exists()` previo a la resolución, garantizando que el escáner no aborte ante archivos que desaparecen durante la iteración (concurrencia).
 - `2026-10-31T00:21:30` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el seguimiento de archivos que actúan como "Sparse Files" o "Reparse Points" con metadatos maliciosos (st_size 0 pero que consumen espacio en disco real), mejorando la robustez frente a archivos corruptos o malintencionados en el escaneo de disco.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T14:22:39` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` para evitar la creación redundante de objetos mediante la eliminación de un `set` innecesario y se mejoró el rendimiento de `_extract_process_info` al centralizar la validación, reduciendo ciclos de CPU en el bucle principal de enumeración.
 - `2026-10-30T14:13:26` **healthscore.py** (rendimiento): Optimicé el rendimiento de `_compute_cached` eliminando la creación repetida de diccionarios dentro del bucle principal y moviendo la resolución de constantes fuera de las iteraciones, aprovechando que `PIPELINE_DEFINITIONS` es inmutable.
 - `2026-10-30T14:12:07` **diskreport.py** (rendimiento): Optimizé `walk_files` moviendo la resolución de `is_protected_path` fuera del ciclo de iteración principal y aprovechando el cache de resultados de `is_protected_path` (que ya está implementado internamente en el módulo `safety`) al reducir las llamadas repetitivas a `path.resolve()` que disparaban E/S innecesaria.
-- `2026-10-30T14:03:20` **branding.py** (rendimiento): Se ha optimizado la gestión de las constantes de la paleta eliminando la generación dinámica mediante `globals()` y reemplazándola por una estructura de datos estática y tipada, lo que mejora el rendimiento de acceso, reduce la carga sobre el *lookup* del intérprete y facilita la resolución estática de tipos para el análisis de código.
