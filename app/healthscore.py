@@ -359,6 +359,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
     try:
         data_map = dict(zip(_VALIDATION_KEYS, metric_tuple))
         metrics = SystemMetrics(**data_map, quarantined_count=float(quarantined))
+        if not metrics.is_finite: raise ValueError("Métricas no finitas")
     except Exception:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inconsistente."])
     
@@ -393,7 +394,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Punto de entrada principal para el análisis del sistema."""
-    if not isinstance(metrics, SystemMetrics):
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
     metrics.validate()
@@ -423,6 +424,7 @@ def _render_summarize(composite_id: int, breakdown: Tuple[Tuple[str, int], ...],
         grade = "ABCDEF"[min(grade_idx, 5)]
         lines = [f"Salud del sistema: {score}/100  (nota {grade})", "", "Desglose por área:"]
         for area, val in breakdown:
+            if not isinstance(area, str) or not isinstance(val, (int, float)): continue
             weight = WEIGHTS.get(area, 10)
             lines.append(f"  {area.capitalize():<12} {val:>2}/{weight:<2} [{_render_bar(val, weight)}]")
         

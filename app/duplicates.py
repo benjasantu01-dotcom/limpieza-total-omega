@@ -103,15 +103,9 @@ def _safe_path_check(path: Path) -> bool:
     if not isinstance(path, Path): return False
     try:
         real_path = Path(os.path.realpath(path))
+        return real_path.is_file() and not is_protected_path(real_path) and not is_junction(real_path)
     except (OSError, RuntimeError):
         return False
-        
-    return (
-        real_path.is_file() and 
-        is_safe_to_modify(real_path) and 
-        not is_protected_path(real_path) and 
-        not is_junction(real_path)
-    )
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
@@ -165,7 +159,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     if paths is None: return groups_by_size
     
     for p in paths:
-        if not p: continue
+        if p is None: continue
         try:
             item = Path(p)
             st = item.stat()
@@ -187,7 +181,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     while queue:
         current_dir, depth = queue.popleft()
-        if depth > MAX_RECURSION_DEPTH or not is_safe_to_modify(current_dir): continue
+        if depth > MAX_RECURSION_DEPTH or is_protected_path(current_dir): continue
             
         try:
             with os.scandir(current_dir) as it:

@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 92 | 4 | 34 | 9 | 97 |
-| 2026-10-31 | 68 | 3 | 26 | 10 | 161 |
+| 2026-10-30 | 89 | 4 | 33 | 9 | 97 |
+| 2026-10-31 | 71 | 3 | 27 | 10 | 161 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **35**
-- legibilidad y documentación: **34**
+- manejo de errores y validación de entradas: **33**
 - rendimiento: **32**
-- manejo de errores y validación de entradas: **30**
+- legibilidad y documentación: **31**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
 - `diskreport.py`: **18**
+- `safety.py`: **17**
 - `browser.py`: **15**
 - `quarantine.py`: **15**
-- `settings.py`: **14**
-- `scanner.py`: **13**
-- `healthscore.py`: **13**
+- `healthscore.py`: **14**
+- `memory.py`: **13**
+- `settings.py`: **13**
 - `assistant.py`: **12**
-- `memory.py`: **12**
+- `scanner.py`: **12**
 - `branding.py`: **10**
 - `organizer.py`: **9**
-- `duplicates.py`: **6**
+- `duplicates.py`: **7**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T11:34:55` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_process_handle` y `trim_working_set` capturando `ctypes.WinError` y validando explícitamente el valor de retorno de los handles para evitar operaciones sobre punteros nulos o inválidos, cumpliendo con el enfoque de manejo de errores.
+- `2026-10-31T11:33:33` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos al agregar validaciones defensivas en `_render_summarize` y `_render_bar`, asegurando que tipos de datos inesperados no interrumpan la generación de reportes, y añadiendo un chequeo explícito de `is_finite` en `compute_score` para evitar propagar valores corruptos.
+- `2026-10-31T11:33:06` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `group_by_size` y `_collect_candidates` para evitar que la iteración se detenga prematuramente ante fallos de acceso o permisos, y se eliminaron los chequeos de `is_safe_to_modify` en contextos donde solo se requiere acceso de lectura seguro, evitando posibles fallos innecesarios en directorios con restricciones de escritura.
 - `2026-10-31T10:02:41` **settings.py** (seguridad defensiva): Reforcé la integridad defensiva al cargar configuraciones validando que el archivo no sea un enlace simbólico ni un punto de reparse (junction) antes de procesarlo, evitando ataques de suplantación de archivos (`symlink race`) o lectura de rutas fuera del entorno seguro.
 - `2026-10-31T09:23:06` **assistant.py** (seguridad defensiva): He endurecido la seguridad en `_call_gemini` mediante la validación explícita del host y los esquemas de la URL, asegurando que la clave API no pueda inyectar parámetros malintencionados en el query string.
 - `2026-10-31T09:20:43` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de E/S y estados inválidos mediante la implementación de un manejo más estricto de las excepciones en `_get_file_attributes` y `_safe_stat`, garantizando que el escáner no aborte ante condiciones de carrera o permisos denegados durante el acceso a atributos de archivo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T08:41:04` **startup.py** (rendimiento): Se implementó un mecanismo de caché para `_validate_file_access` dentro de `StartupEntry` para evitar llamadas redundantes y costosas a `is_safe_to_modify` y `exists()` sobre la misma ruta física durante el proceso de escaneo.
 - `2026-10-31T08:31:09` **quarantine.py** (rendimiento): Optimizé `list_items` para reducir drásticamente el acceso a disco al aprovechar el estado del `_MANIFEST_CACHE` sin necesidad de recargar el archivo JSON completo en cada llamada, alineándome con el enfoque de rendimiento.
 - `2026-10-31T08:30:25` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `Path.absolute()` y `Path.resolve()` dentro de los bucles críticos, reemplazándolas por consultas directas sobre el `os.DirEntry` ya abierto, lo cual reduce drásticamente las syscalls al sistema de archivos.
-- `2026-10-31T08:01:35` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en `Scanner` y funciones auxiliares para clarificar el flujo de datos y el propósito de las validaciones, mejorando la mantenibilidad sin alterar la lógica.
-- `2026-10-31T08:01:01` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de validación extrayendo los predicados de seguridad a un diccionario mapeado, lo que elimina la repetición de lógica y facilita la lectura del flujo de validación.
-- `2026-10-31T07:50:35` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para delegar la lógica de reintento de E/S a una función especializada y simplificar el flujo de control, junto con la adición de docstrings técnicos que explican la lógica de seguridad (inodos y sincronización) en operaciones críticas.

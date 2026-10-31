@@ -325,7 +325,9 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
     if WindowsAPI.kernel32 is None: return None
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-        return wintypes.HANDLE(handle) if handle else None
+        if not handle or handle == INVALID_HANDLE_VALUE:
+            return None
+        return wintypes.HANDLE(handle)
     except (ctypes.WinError, OSError):
         return None
 
@@ -451,7 +453,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     path_buf = ctypes.create_unicode_buffer(1024)
     h_process = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf)
-    if not h_process or h_process.value == INVALID_HANDLE_VALUE:
+    if not h_process:
         return False, "Acceso denegado o proceso en zona restringida."
 
     try:
