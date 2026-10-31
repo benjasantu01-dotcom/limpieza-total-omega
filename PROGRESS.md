@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-29 | 52 | 2 | 18 | 6 | 72 |
+| 2026-10-29 | 52 | 2 | 18 | 6 | 68 |
 | 2026-10-30 | 143 | 8 | 47 | 12 | 140 |
-| 2026-10-31 | 1 | 0 | 1 | 0 | 2 |
+| 2026-10-31 | 3 | 0 | 2 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 - rendimiento: **34**
 - seguridad defensiva: **34**
 
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `settings.py`: **18**
 - `memory.py`: **17**
+- `safety.py`: **17**
 - `assistant.py`: **16**
-- `safety.py`: **16**
+- `scanner.py`: **15**
 - `healthscore.py`: **14**
 - `branding.py`: **14**
-- `scanner.py`: **14**
 - `organizer.py`: **12**
 - `duplicates.py`: **8**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-31T00:21:55` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inválidas o inexistentes en `scan_directory` y `_safe_stat` mediante la captura explícita de `FileNotFoundError` y el uso de `path.exists()` previo a la resolución, garantizando que el escáner no aborte ante archivos que desaparecen durante la iteración (concurrencia).
+- `2026-10-31T00:21:30` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el seguimiento de archivos que actúan como "Sparse Files" o "Reparse Points" con metadatos maliciosos (st_size 0 pero que consumen espacio en disco real), mejorando la robustez frente a archivos corruptos o malintencionados en el escaneo de disco.
 - `2026-10-31T00:11:47` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentos de limpieza sobre procesos que ya han finalizado o están en estado zombi, y se mejoró la resiliencia ante errores de acceso en entornos con alta restricción de permisos.
 - `2026-10-30T14:53:08` **healthscore.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de ejecución en el cálculo del pipeline utilizando un bloque `try-except` más granular y protegiendo el `zip` para evitar el colapso del motor si las métricas o los pesos sufren discrepancias estructurales inesperadas.
 - `2026-10-30T14:43:21` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos, asegurando que la validación de rutas sea absoluta, que la creación de directorios sea atómica en cuanto a permisos y que el manejo de excepciones sea preciso para no bloquear el hilo de UI.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-30T14:12:07` **diskreport.py** (rendimiento): Optimizé `walk_files` moviendo la resolución de `is_protected_path` fuera del ciclo de iteración principal y aprovechando el cache de resultados de `is_protected_path` (que ya está implementado internamente en el módulo `safety`) al reducir las llamadas repetitivas a `path.resolve()` que disparaban E/S innecesaria.
 - `2026-10-30T14:03:20` **branding.py** (rendimiento): Se ha optimizado la gestión de las constantes de la paleta eliminando la generación dinámica mediante `globals()` y reemplazándola por una estructura de datos estática y tipada, lo que mejora el rendimiento de acceso, reduce la carga sobre el *lookup* del intérprete y facilita la resolución estática de tipos para el análisis de código.
 - `2026-10-30T14:02:49` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando la serialización repetida de métricas a strings dentro de `context_as_text` por una generación eficiente de la lista de métricas, y mejoré la lógica de búsqueda de tokens en `local_answer` utilizando un conjunto de búsqueda directa para evitar múltiples iteraciones sobre la cadena del usuario.
-- `2026-10-30T14:01:50` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructuradas en las funciones de procesamiento de datos, explicitando los contratos de entrada/salida y las excepciones esperadas, y corregí la ambigüedad en el tratamiento de rutas de registro en `_is_registry_entry_safe` mediante un nombre de variable más descriptivo (`path_candidate_str`).
-- `2026-10-30T13:53:23` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` documentando los límites de seguridad en `_read_and_parse_json` y extrayendo la lógica de validación de los datos JSON crudos a una función privada dedicada `_is_structure_valid`, lo que aclara el PORQUÉ de las restricciones de seguridad sobre el tamaño y el contenido del archivo.

@@ -102,7 +102,7 @@ def _is_valid_file_path(path: PathInput) -> bool:
         return False
     try:
         target_path = Path(path)
-        return not _cached_is_protected(str(target_path)) and target_path.is_file()
+        return target_path.exists() and not _cached_is_protected(str(target_path)) and target_path.is_file()
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
@@ -293,6 +293,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
         return []
     findings: ScanResult = []
     try:
+        if not path.exists(): return []
         stats = entry.stat() if entry else path.stat()
     except (OSError, PermissionError, FileNotFoundError):
         return []
@@ -325,7 +326,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, directory_stack, depth, visited_dirs)
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, FileNotFoundError):
             continue
     return scanner.results
 

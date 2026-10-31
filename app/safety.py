@@ -582,7 +582,8 @@ def _check_hard_link(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> boo
 @lru_cache(maxsize=2048)
 def _check_ads(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return _has_alternate_data_stream(p.name)
 @lru_cache(maxsize=2048)
-def _check_empty(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return p.is_file() and st.st_size == 0
+def _check_empty(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: 
+    return p.is_file() and (st.st_size == 0 and not (sd.is_reparse or sd.has_flag(Win32Attr.SPARSE_FILE)))
 @lru_cache(maxsize=2048)
 def _check_size(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return p.is_file() and st.st_size > MAX_FILE_SIZE
 @lru_cache(maxsize=2048)

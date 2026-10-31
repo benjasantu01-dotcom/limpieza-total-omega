@@ -622,3 +622,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-31T00:13:46` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
 - `2026-10-31T00:13:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T00:13:46` Corrida terminada. Total usado hoy: 4.
+- `2026-10-31T00:20:18` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-10-31T00:20:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-31T00:21:30` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar el seguimiento de archivos que actúan como "Sparse Files" o "Reparse Points" con metadatos maliciosos (st_size 0 pero que consumen espacio en disco real), mejorando la robustez frente a archivos corruptos o malintencionados en el escaneo de disco.
+- `2026-10-31T00:21:55` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas inválidas o inexistentes en `scan_directory` y `_safe_stat` mediante la captura explícita de `FileNotFoundError` y el uso de `path.exists()` previo a la resolución, garantizando que el escáner no aborte ante archivos que desaparecen durante la iteración (concurrencia).
+- `2026-10-31T00:22:09` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
+- `2026-10-31T00:22:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T00:22:09` Corrida terminada. Total usado hoy: 8.
