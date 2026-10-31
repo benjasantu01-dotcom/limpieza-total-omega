@@ -111,7 +111,7 @@ def _is_readable(path: PathInput) -> bool:
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """Obtiene los atributos de archivo de nivel sistema sin seguir enlaces simbólicos."""
-    if not isinstance(entry, os.DirEntry) or _cached_is_protected(entry.path):
+    if not isinstance(entry, os.DirEntry):
         return 0
     try:
         stat_res = entry.stat(follow_symlinks=False)
@@ -129,12 +129,9 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         attrs = _get_file_attributes(entry)
         if attrs & SCAN_LIMITS.reparse_point_mask:
             return None
-        if not entry.is_file():
-            return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
         if getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
-            logger.debug(f"Archivo bloqueado (sharing violation): {entry.path}")
             return None
         return None
     except (PermissionError, FileNotFoundError):
@@ -277,10 +274,10 @@ class Scanner:
                     finding = check_fn(path, entry, self.now_ts, stats)
                     if finding:
                         self.results.append(finding)
-                except Exception as e:
-                    logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {type(e).__name__}")
-        except Exception as e:
-            logger.debug(f"Error fatal procesando metadatos de {path}: {type(e).__name__}")
+                except Exception:
+                    continue
+        except Exception:
+            pass
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escaneo heurístico puntual para archivos aislados fuera del flujo recursivo."""
@@ -297,8 +294,8 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
             res = check_fn(path, entry, now_ts, stats)
             if res:
                 findings.append(res)
-        except Exception as e:
-            logger.debug(f"Heurística puntual {check_fn.__name__} fallida en {path}: {type(e).__name__}")
+        except Exception:
+            continue
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

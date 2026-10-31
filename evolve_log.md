@@ -1426,3 +1426,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-31T09:12:03` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido `ProtectionReason.INVALID_PATH_TYPE` y una regla de validación robusta para detectar rutas que, siendo válidas a nivel de sistema de archivos, son objetos especiales no manipulables (como *Named Pipes* o *Mailslots*), reforzando la seguridad frente a intentos de interacción con dispositivos mediante `CreateFileW`.
 - `2026-10-31T09:12:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T09:12:03` Corrida terminada. Total usado hoy: 216.
+- `2026-10-31T09:20:15` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-10-31T09:20:43` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de E/S y estados inválidos mediante la implementación de un manejo más estricto de las excepciones en `_get_file_attributes` y `_safe_stat`, garantizando que el escáner no aborte ante condiciones de carrera o permisos denegados durante el acceso a atributos de archivo.
+- `2026-10-31T09:21:09` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `_is_structure_valid` y `_read_and_parse_json` para manejar casos de archivos corruptos o maliciosos (archivos inusualmente grandes, nulos, o con estructuras anidadas inesperadas), asegurando que la configuración siempre retorne un estado válido y seguro ante cualquier entrada de disco.
+- `2026-10-31T09:21:34` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-31T09:22:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-31T09:23:06` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). He endurecido la seguridad en `_call_gemini` mediante la validación explícita del host y los esquemas de la URL, asegurando que la clave API no pueda inyectar parámetros malintencionados en el query string.
+- `2026-10-31T09:23:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T09:23:06` Corrida terminada. Total usado hoy: 220.

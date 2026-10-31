@@ -762,14 +762,15 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not (_API_KEY_REGEX.match(api_key) and _MODEL_NAME_REGEX.match(model) and context_text): return None
     payload: Optional[bytes] = _build_payload(question, context_text)
     if not payload: return None
-    target_url: str = _ENDPOINT_BASE.format(model=model)
-    # Refuerzo de validación de host y caracteres prohibidos en la URL construida
-    if not target_url.startswith(_API_HOST_ROOT) or any(c in target_url for c in "<>\"' \t\n\r&?="): return None
-    if is_protected_path(target_url): return None
+    
+    # Construcción segura y validación estricta de la URL de destino
+    base_target = _ENDPOINT_BASE.format(model=model)
+    if not base_target.startswith(_API_HOST_ROOT) or any(c in base_target for c in "<>\"' \t\n\r"): return None
+    if is_protected_path(base_target): return None
     
     try:
-        # Uso estricto de key como parámetro en URL
-        url_with_key = f"{target_url}?key={api_key}"
+        # La clave API se envía como parte del querystring de forma controlada
+        url_with_key = f"{base_target}?key={api_key}"
         req: urllib.request.Request = urllib.request.Request(url_with_key, data=payload, headers={"Content-Type": "application/json", "Accept": "application/json"}, method="POST")
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
