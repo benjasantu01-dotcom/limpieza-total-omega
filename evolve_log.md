@@ -677,3 +677,11 @@ FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommend
 - `2026-10-31T00:53:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-31T00:53:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-31T00:53:00` Corrida terminada. Total usado hoy: 20.
+- `2026-10-31T01:01:20` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-31T01:01:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-31T01:02:16` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva implementando una validación estricta de "Owner" (Propietario) para detectar archivos propiedad de `TrustedInstaller` (SID `S-1-5-80-*`), una técnica estándar en Windows para identificar archivos críticos de SO que no siempre tienen el flag `SYSTEM` o `READONLY` activo.
+- `2026-10-31T01:02:46` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-31T01:03:15` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la seguridad de `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y validaciones de metadatos más estrictas, evitando seguir enlaces simbólicos mediante la validación explícita con `os.lstat` antes de procesar el archivo.
+- `2026-10-31T01:03:30` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-31T01:03:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-31T01:03:30` Corrida terminada. Total usado hoy: 24.

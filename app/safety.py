@@ -123,7 +123,7 @@ class SecurityDescriptor(NamedTuple):
                 
             risk_flags = (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | 
                           Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)
-            is_protected = bool(attrs & risk_flags)
+            is_protected = bool(attrs & risk_flags) or _is_file_owned_by_system(path_str)
             is_in_use = is_protected or _is_file_locked_by_other_process(path_str)
             
             return cls(
