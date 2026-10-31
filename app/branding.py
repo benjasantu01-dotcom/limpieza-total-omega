@@ -270,7 +270,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Convierte un color hexadecimal (#RRGGBB) a una tupla de valores (R, G, B)."""
+    """Decodifica un color hexadecimal en formato '#RRGGBB' a sus componentes RGB."""
     if not isinstance(value, str) or not value.startswith('#') or len(value) != 7:
         return (0, 0, 0)
     try:
@@ -286,7 +286,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
-    """Realiza una interpolación lineal (mezcla) entre dos colores dado un ratio (0.0-1.0)."""
+    """Realiza una interpolación lineal entre dos colores. Ratio 0.0 es 'start', 1.0 es 'end'."""
     try:
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)
@@ -335,7 +335,7 @@ SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 9
 
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
-    """Escala y traslada las coordenadas base del escudo de Omega usando una transformación afín."""
+    """Aplica una transformación afín simple para escalar y trasladar el polígono base."""
     if not math.isfinite(scale) or scale <= 0 or not math.isfinite(x) or not math.isfinite(y): 
         return ()
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))

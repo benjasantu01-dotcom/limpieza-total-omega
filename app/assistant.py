@@ -151,8 +151,8 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     except Exception:
         return default
 
-def _enforce_safe_query(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Valida que la consulta sea segura antes de pasarla a cualquier handler."""
+def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
+    """Decorador que valida que la consulta sea segura antes de pasarla a cualquier handler."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not _ensure_safe_text(q):
@@ -160,7 +160,7 @@ def _enforce_safe_query(func: Callable[[SystemContext, str], Answer]) -> Callabl
         return func(ctx, q)
     return wrapper
 
-def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
+def _ensure_handler_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
     Decorador para handlers de consulta que garantiza un contexto válido,
     captura excepciones imprevistas y asegura que no se devuelvan respuestas vacías.
@@ -201,13 +201,13 @@ class MetricSpec:
 
 class ProblemCriterion(NamedTuple):
     """
-    Regla lógica para evaluar la salud del sistema.
+    Regla lógica para evaluar si un valor numérico indica un problema de sistema.
     
     Attributes:
         metric_key: Clave en SystemContext.
-        threshold: Valor límite para comparar.
-        operator: Opereador lógico ('<' o '>').
-        message_format: Plantilla de string para el mensaje resultante.
+        threshold: Valor límite para comparación.
+        operator: Operador booleano ('<' o '>') para determinar el estado de riesgo.
+        message_format: Formato del mensaje (e.g., "{:.0f}% de RAM").
     """
     metric_key: str
     threshold: float
@@ -215,17 +215,17 @@ class ProblemCriterion(NamedTuple):
     message_format: str
 
     def _evaluate_metric(self, val: float) -> bool:
-        """Aplica el operador lógico configurado sobre la métrica y su umbral."""
+        """Aplica la comparación lógica (val < threshold o val > threshold)."""
         if not _check_metric_integrity(val):
             return False
         return (val < self.threshold) if self.operator == "<" else (val > self.threshold)
 
     def is_triggered_by(self, val: float) -> bool:
-        """Verifica si el valor excede el umbral de riesgo definido."""
+        """Determina si la métrica excede el umbral de riesgo definido."""
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, val: float) -> Optional[str]:
-        """Devuelve el mensaje formateado si el criterio de riesgo se cumple."""
+        """Formatea el mensaje de advertencia solo si el criterio se cumple."""
         if not self.is_triggered_by(val):
             return None
         try:
@@ -608,8 +608,8 @@ def _format_problem_message(problems: tuple[str, ...], score: int | str) -> str:
         return f"Tu sistema está en buen estado ({clean_score}/100). No hay nada urgente."
     return f"Con un puntaje de {clean_score}/100, por orden de prioridad: {', '.join(problems)}."
 
-@_enforce_safe_query
-@_safe_handler_wrapper
+@_ensure_query_is_safe
+@_ensure_handler_is_safe
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre memoria RAM usando el contexto validado."""
     snap: MetricsDict = ctx.metrics_snapshot
@@ -626,8 +626,8 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
         msg += f" Sí te conviene mirar los {startup_count} programas de inicio."
     return Answer(msg, notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
-@_enforce_safe_query
-@_safe_handler_wrapper
+@_ensure_query_is_safe
+@_ensure_handler_is_safe
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre almacenamiento y recuperación de espacio en disco."""
     snap: MetricsDict = ctx.metrics_snapshot
@@ -643,8 +643,8 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     msg += " Empezá por Limpieza: mueve los candidatos a revisión."
     return Answer(msg, notice=OFFLINE_NOTICE)
 
-@_enforce_safe_query
-@_safe_handler_wrapper
+@_ensure_query_is_safe
+@_ensure_handler_is_safe
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre archivos sospechosos encontrados mediante heurística."""
     snap: MetricsDict = ctx.metrics_snapshot
@@ -656,8 +656,8 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
         texto = f"Hay {count} archivo(s) marcados, {warn} con advertencia. Son señales, no una condena: si no reconocés alguno, usá 'Aislar hallazgos'."
     return Answer(texto, notice=OFFLINE_NOTICE)
 
-@_enforce_safe_query
-@_safe_handler_wrapper
+@_ensure_query_is_safe
+@_ensure_handler_is_safe
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre el puntaje de salud global obtenido por el sistema."""
     resumen: str = _format_problem_message(ctx.active_problems, ctx.score if ctx.score is not None else "N/A")
@@ -665,8 +665,8 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     explicacion: str = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
     return Answer(f"{resumen}{grade_str}{explicacion}", notice=OFFLINE_NOTICE)
 
-@_enforce_safe_query
-@_safe_handler_wrapper
+@_ensure_query_is_safe
+@_ensure_handler_is_safe
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre el listado de aplicaciones de inicio cargadas."""
     count: int = int(ctx.metrics_snapshot.get("startup_count", 0.0))

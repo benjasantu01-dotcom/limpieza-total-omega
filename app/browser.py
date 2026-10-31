@@ -89,10 +89,15 @@ class DirectoryScanner:
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
-        Calcula el peso en bytes de un directorio mediante un recorrido 
-        profundidad-limitada. 
-        Detecta ciclos mediante tuplas de (dev, inode) y aborta si la ruta es un 
-        punto de unión o viola las reglas de seguridad.
+        Calcula el peso total en bytes de un directorio mediante un recorrido 
+        profundidad-limitada, evitando la recursión infinita y accesos indebidos.
+        
+        El proceso sigue este orden de filtrado:
+        1. Límites: Se detiene si excede MAX_DEPTH o detecta un ciclo (dev/ino).
+        2. Seguridad: Se ignoran junctions, enlaces simbólicos y rutas prohibidas
+           por `safety.py`.
+        3. Exclusiones: Se omiten archivos en `NEVER_TOUCH` (como contraseñas o cookies).
+        4. Atributos: En Windows, se ignoran archivos marcados con bit 'Sistema'.
         """
         if depth > self.ctx.max_depth: 
             return ScanResult(0, True)
