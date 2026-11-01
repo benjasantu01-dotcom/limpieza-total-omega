@@ -189,9 +189,9 @@ def _verify_pipeline_integrity(weights: Dict[str, int], pipeline: Tuple[Pipeline
     except Exception as error:
         logging.error(f"Error crítico validando integridad del pipeline: {error}")
 
-_JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
-_DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
-_STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
+_JUNK_SCORER: Final = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
+_DUP_SCORER: Final = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
+_STARTUP_SCORER: Final = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
 def _msg_seguridad(metrics: SystemMetrics) -> str: return f"Riesgos de seguridad detectados: {metrics.suspicious_count}."
 def _msg_disco(metrics: SystemMetrics) -> str: return f"Espacio libre en disco bajo: {metrics.disk_free_percent:.1f} porciento."
