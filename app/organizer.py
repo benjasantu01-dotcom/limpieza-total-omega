@@ -142,7 +142,7 @@ def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
         return 0
 
 def _is_file_read_only(path: Path) -> bool:
-    """Helper para aislar el chequeo de atributos de solo lectura en sistemas Windows."""
+    """Verifica si el archivo tiene el atributo de solo lectura activado."""
     return bool(_get_win_attributes(path) & LIMITS.WIN_ATTR_READONLY)
 
 def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
@@ -209,9 +209,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """
-    Verifica si el destino es un ancestro del origen para prevenir bucles de movimiento.
-    """
+    """Verifica si el destino es un ancestro del origen para prevenir bucles de movimiento."""
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -271,9 +269,7 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """
-    Valida la seguridad completa de una operación de movimiento.
-    """
+    """Valida que la operación de movimiento cumpla con todos los requisitos de seguridad y permisos."""
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
         return False
     try:
@@ -298,7 +294,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> bool:
-    """Filtra directorios no permitidos o protegidos antes de ingresar al árbol."""
+    """Determina si un directorio es elegible para el escaneo, filtrando rutas protegidas."""
     if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
     if is_protected_path(Path(entry.path)):
@@ -307,7 +303,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     return True
 
 def _is_candidate_for_scan(entry: os.DirEntry, stats: os.stat_result) -> bool:
-    """Determina si un archivo cumple con los criterios de ser basura."""
+    """Filtra archivos candidatos basándose en extensión, tamaño y atributos de sistema."""
     if not is_valid_junk_extension(entry.name):
         return False
     if stats.st_size >= LIMITS.MAX_FILE_SIZE_BYTES:
@@ -318,7 +314,7 @@ def _is_candidate_for_scan(entry: os.DirEntry, stats: os.stat_result) -> bool:
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
-    Realiza un recorrido recursivo controlado del árbol de directorios.
+    Recorre recursivamente un directorio buscando basura, manteniendo un registro de visitados para evitar bucles.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH: 
         return

@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **130** (25.8% de aceptación)
+- Mejoras aceptadas: **131** (26.0% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 308
+- Sin respuesta de la IA (error o límite): 306
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 61 | 4 | 21 | 9 | 157 |
-| 2026-11-01 | 69 | 5 | 22 | 5 | 151 |
+| 2026-10-31 | 59 | 4 | 21 | 9 | 155 |
+| 2026-11-01 | 72 | 5 | 23 | 5 | 151 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **31**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **29**
 - seguridad defensiva: **27**
-- legibilidad y documentación: **22**
-- rendimiento: **20**
+- legibilidad y documentación: **25**
+- rendimiento: **19**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **16**
-- `assistant.py`: **13**
+- `safety.py`: **17**
 - `healthscore.py`: **13**
-- `quarantine.py`: **12**
+- `quarantine.py`: **13**
 - `browser.py`: **12**
+- `assistant.py`: **12**
 - `memory.py`: **10**
-- `startup.py`: **9**
 - `diskreport.py`: **9**
+- `organizer.py`: **9**
 - `scanner.py`: **9**
 - `settings.py`: **9**
-- `organizer.py`: **8**
+- `startup.py`: **8**
 - `branding.py`: **5**
 - `duplicates.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T10:49:54` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_preconditions`, extrayendo la lógica de validación de descriptores de seguridad hacia una función auxiliar privada (`_validate_security_descriptor_attributes`) para reducir el anidamiento y clarificar el flujo de control, manteniendo la integridad lógica intacta.
+- `2026-11-01T10:49:05` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints faltantes, clarificación de nombres de parámetros en funciones críticas (como `_safe_unlink` y `_write_temp_to_final`), y la documentación explícita del comportamiento de retorno y excepciones en los métodos clave, facilitando la auditoría de seguridad del código.
+- `2026-11-01T10:48:24` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de validación y recorrido recursivo, añadiendo type hints faltantes y docstrings descriptivos para clarificar la lógica de seguridad y el manejo de excepciones en E/S.
 - `2026-11-01T10:39:48` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica del módulo `memory.py` mediante docstrings detallados en las estructuras de datos y funciones de API, además de consolidar la lógica de tipos para garantizar que las operaciones de memoria sean semánticamente claras y robustas.
 - `2026-11-01T10:38:29` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más específicos y se han aplicado type hints a variables globales críticas para facilitar la legibilidad del pipeline de datos.
 - `2026-11-01T10:29:16` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con parámetros y retornos (estilo Google) en las clases clave y métodos públicos, además de añadir type hints explícitos en los métodos de `GlobalStats` y `FolderMetrics` para clarificar los datos procesados.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T09:58:06` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` y `compute_score` validando explícitamente los datos de entrada antes de cualquier operación aritmética, asegurando que `validate` sea idempotent y que `_compute_cached` no reciba tuplas malformadas si los tipos de entrada varían.
 - `2026-11-01T09:49:05` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner` agregando validaciones de entrada (`None`/vacíos) y protecciones contra condiciones de carrera (`FileNotFoundError`) al procesar iteradores de directorio, asegurando que el escaneo no falle ante cambios rápidos en el sistema de archivos durante la ejecución.
 - `2026-11-01T09:48:56` **branding.py** (manejo de errores y validación de entradas): Reforcé la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación explícita de tipos, el uso de valores por defecto seguros ante entradas nulas y la captura de excepciones específicas, evitando así comportamientos indefinidos al recibir datos inesperados.
-- `2026-11-01T09:48:24` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de métricas en `SystemContext.ingest` y `_validate_and_sanitize_data` al capturar errores de forma explícita y prevenir la corrupción del contexto ante fuentes de datos inesperadas, aplicando un enfoque más defensivo y exigente en la validación.
-- `2026-11-01T08:26:22` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` y `_is_file_secure_to_read` añadiendo chequeos de enlace simbólico (hard links/symlinks) mediante `os.lstat` y validando que el archivo no sea un punto de reparse, previniendo así ataques por sustitución de archivos o acceso no autorizado a rutas fuera del scope mediante enlaces.
-- `2026-11-01T08:19:23` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de archivos al agregar una verificación explícita contra la API de Windows para detectar si el archivo es un archivo de dispositivo o un recurso de sistema nombrado (como `CON` o `LPT1`) antes de intentar cualquier operación de I/O, evitando así el comportamiento impredecible al interactuar con nombres de archivos reservados del kernel.

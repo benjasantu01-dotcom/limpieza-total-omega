@@ -939,6 +939,15 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if len(_STRUCTURAL_CACHE) > 2048: _STRUCTURAL_CACHE.clear()
     _STRUCTURAL_CACHE[path_string] = True
 
+def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
+    """Valida los atributos críticos del descriptor de seguridad del archivo."""
+    if sd.is_protected_system:
+        raise UnsafePathError("Protección defensiva: Archivo de sistema oculto/protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+    if sd.has_flag(Win32Attr.OFFLINE):
+        raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE)
+    if sd.is_reparse:
+        raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+
 def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> None:
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
@@ -962,12 +971,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
 
         sd = _get_security_descriptor(target_path)
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
-            if sd.is_protected_system:
-                raise UnsafePathError("Protección defensiva: Archivo de sistema oculto/protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-            if sd.has_flag(Win32Attr.OFFLINE):
-                raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE)
-            if sd.is_reparse:
-                raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+            _validate_security_descriptor_attributes(sd)
         
         if _is_file_in_use_by_system(path_str):
             raise UnsafePathError("Protección defensiva: Archivo en uso por sistema.", SafetyValidationErrorCode.FILE_IN_USE)
