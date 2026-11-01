@@ -107,9 +107,10 @@ class JunkFile:
     def __post_init__(self) -> None:
         try:
             self.path = self.path.absolute()
-            stat_result = self.path.stat()
-            if self._ino is None: self._ino = stat_result.st_ino
-            if self._dev is None: self._dev = stat_result.st_dev
+            if self.path.exists():
+                stat_result = self.path.stat()
+                if self._ino is None: self._ino = stat_result.st_ino
+                if self._dev is None: self._dev = stat_result.st_dev
         except (OSError, RuntimeError, PermissionError):
             pass
 
@@ -199,7 +200,7 @@ def _is_file_locked(path: Path) -> bool:
     Verifica si un archivo está en uso mediante la apertura de un handle de acceso.
     Es un chequeo necesario antes de intentar mover o eliminar archivos.
     """
-    if not path: return True
+    if not path or not path.exists(): return True
     try:
         if os.name == 'nt':
             return not _try_open_win_file(path)
@@ -244,6 +245,7 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
 def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
     """Valida que el archivo en disco coincida con los metadatos almacenados (protección contra TOCTOU)."""
     try:
+        if not src_real.exists(): return False
         stat_result = src_real.stat()
         return (junk_file._ino is None or stat_result.st_ino == junk_file._ino) and \
                (junk_file._dev is None or stat_result.st_dev == junk_file._dev)
@@ -272,7 +274,8 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Valida la seguridad completa de una operación de movimiento.
     """
-    if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
+    if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
+        return False
     try:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)

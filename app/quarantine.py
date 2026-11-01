@@ -394,11 +394,12 @@ def _check_path_syntax_integrity(path: Path) -> None:
         raise UnsafePathError("Nombre de archivo reservado por el sistema.")
 
     _check_path_for_junctions(path)
-    try:
-        resolved: Path = path.resolve(strict=True)
-        _check_for_reparse_points(resolved)
-    except (OSError, RuntimeError):
-        pass
+    if path.exists():
+        try:
+            resolved: Path = path.resolve(strict=True)
+            _check_for_reparse_points(resolved)
+        except (OSError, RuntimeError):
+            pass
 
 
 def _sanitize_filename(filename: str) -> str:

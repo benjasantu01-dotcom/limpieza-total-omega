@@ -951,12 +951,13 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if _is_file_in_use_by_system(path_str):
             raise UnsafePathError("Protección defensiva: Archivo en uso por sistema.", SafetyValidationErrorCode.FILE_IN_USE)
             
-        if target_path.parent.exists() and not os.access(target_path.parent, os.W_OK):
-            raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+        parent = target_path.parent
+        if parent.exists():
+            if not os.access(parent, os.W_OK):
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+            if os.name == 'nt' and _is_volume_readonly(path_str):
+                raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
         
-        if os.name == 'nt' and target_path.parent.exists() and _is_volume_readonly(path_str):
-            raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
-
         if _is_kernel_managed(path_str):
             raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
         
