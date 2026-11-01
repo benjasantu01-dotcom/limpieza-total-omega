@@ -362,10 +362,13 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
     Usa caché LRU para optimizar el rendimiento al recibir métricas idénticas.
     """
     try:
+        if len(metric_tuple) != len(_VALIDATION_KEYS):
+            raise ValueError("Inconsistencia en los datos de entrada.")
+            
         data_map = dict(zip(_VALIDATION_KEYS, metric_tuple))
         metrics = SystemMetrics(**data_map, quarantined_count=float(quarantined))
         if not metrics.is_finite: raise ValueError("Métricas no finitas")
-    except Exception:
+    except (ValueError, MemoryError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inconsistente."])
     
     recommendations: List[str] = []
@@ -404,11 +407,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
     try:
-        # Forzamos validación antes de crear la tupla para el caché
         metrics.validate()
         raw_vals = tuple(float(metrics.safe_get(f)) for f in _VALIDATION_KEYS)
         return _compute_cached(raw_vals, int(metrics.safe_get("quarantined_count")))
-    except (TypeError, ValueError, AttributeError):
+    except (TypeError, ValueError, AttributeError, MemoryError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 
 @lru_cache(maxsize=128)

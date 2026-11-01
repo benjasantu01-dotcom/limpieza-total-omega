@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **127** (25.2% de aceptación)
+- Mejoras aceptadas: **126** (25.0% de aceptación)
 - Rechazadas por tests: 7
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 311
+- Sin respuesta de la IA (error o límite): 312
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 84 | 4 | 29 | 14 | 201 |
-| 2026-11-01 | 43 | 3 | 14 | 2 | 110 |
+| 2026-10-31 | 82 | 4 | 28 | 14 | 200 |
+| 2026-11-01 | 44 | 3 | 15 | 2 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **26**
+- robustez ante casos límite: **25**
 - legibilidad y documentación: **24**
-- robustez ante casos límite: **24**
-- seguridad defensiva: **23**
+- seguridad defensiva: **21**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **17**
-- `quarantine.py`: **13**
-- `healthscore.py`: **11**
+- `safety.py`: **16**
+- `healthscore.py`: **12**
+- `quarantine.py`: **12**
 - `assistant.py`: **11**
 - `scanner.py`: **10**
 - `browser.py`: **10**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T07:26:27` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación de desbordamiento de memoria (`MemoryError`) y estados inválidos en `_compute_cached` y `compute_score` para manejar escenarios donde la lógica de las métricas podría recibir tipos de datos inesperados, además de asegurar que `SystemMetrics` nunca propague valores nulos o inconsistentes tras su inicialización.
 - `2026-11-01T07:16:56` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos al añadir validación explícita de `Path` y manejo defensivo del flujo de creación de directorios, evitando que excepciones inesperadas o rutas malformadas rompan la ejecución.
 - `2026-11-01T07:16:18` **assistant.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de ingesta de datos en `SystemContext.ingest()` y `SystemContext._validate_and_sanitize_data()` para evitar que una fuente de datos malformada o parcialmente corrupta (común en casos límite de reporte de hardware/SO) interrumpa la lógica del asistente, asegurando que solo se descarten los campos inválidos individualmente.
 - `2026-11-01T07:15:02` **startup.py** (rendimiento): Optimizé `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y realizar comprobaciones de seguridad (`is_protected_path`) solo una vez por carpeta, aprovechando el procesamiento directo de `os.DirEntry` y reduciendo el E/S del sistema de archivos mediante la validación previa de los nombres de archivo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T03:32:42` **duplicates.py** (seguridad defensiva): Se ha ajustado `is_safe_to_modify` por `is_protected_path` en las funciones `hash_file` y `partial_hash` siguiendo estrictamente la regla de solo lectura para módulos de escaneo, evitando abortos innecesarios y corrigiendo el uso indebido de una función de escritura en un contexto de lectura.
 - `2026-11-01T03:32:21` **diskreport.py** (seguridad defensiva): Se reforzó `walk_files` implementando una validación de `path.is_relative_to(root)` para prevenir que el escaneo escape del directorio raíz previsto mediante enlaces simbólicos maliciosos, incluso tras las comprobaciones de `is_protected_path`.
 - `2026-11-01T03:31:49` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `DirectoryScanner._is_path_allowed` al implementar una validación de `os.path.realpath` contra el sandbox, lo que mitiga vulnerabilidades por enlaces simbólicos o puntos de reparse que podrían engañar a `os.path.abspath` y permitir la salida del ámbito permitido.
-- `2026-11-01T03:22:59` **assistant.py** (seguridad defensiva): Se reforzó la validación de seguridad en `_call_gemini` incluyendo la verificación de caracteres prohibidos y evitando la construcción de URLs mediante formateo simple, además de consolidar la lógica de validación de `base_target` para prevenir cualquier manipulación de la petición de red.
