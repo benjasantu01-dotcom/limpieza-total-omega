@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **145** (28.8% de aceptación)
+- Mejoras aceptadas: **146** (29.0% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 53
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 278
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 280
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 54 | 2 | 21 | 7 | 50 |
+| 2026-10-30 | 53 | 2 | 19 | 6 | 50 |
 | 2026-10-31 | 90 | 5 | 32 | 14 | 209 |
-| 2026-11-01 | 1 | 0 | 0 | 0 | 19 |
+| 2026-11-01 | 3 | 0 | 0 | 0 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **33**
 - rendimiento: **32**
-- manejo de errores y validación de entradas: **31**
-- legibilidad y documentación: **29**
+- legibilidad y documentación: **28**
 - seguridad defensiva: **27**
 - robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **19**
-- `diskreport.py`: **14**
+- `diskreport.py`: **15**
 - `quarantine.py`: **13**
 - `scanner.py`: **12**
+- `browser.py`: **12**
 - `healthscore.py`: **12**
 - `memory.py`: **12**
-- `browser.py`: **11**
 - `settings.py`: **11**
 - `assistant.py`: **11**
-- `organizer.py`: **8**
 - `branding.py`: **8**
+- `organizer.py`: **7**
 - `startup.py`: **7**
 - `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T00:58:45` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_collect_summary_data` y `walk_files` para evitar que fallos en la lectura de atributos de archivo o en operaciones de ruta interrumpan el escaneo, asegurando que la recolección de métricas sea robusta incluso ante archivos bloqueados o con metadatos inaccesibles.
+- `2026-11-01T00:58:19` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner.get_size` implementando validaciones de tipo y estado más estrictas sobre `root_path` y `entry` antes de realizar operaciones de disco, evitando potenciales `TypeError` o excepciones no capturadas al procesar rutas mal formadas.
 - `2026-11-01T00:50:56` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_clean_grade` y `_apply_field` agregando validaciones de tipo explícitas y capturas de excepciones más finas, evitando que valores malformados en `settings` o inyecciones intenten corromper el `SystemContext`.
 - `2026-10-31T14:08:36` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita para evitar nombres de proceso que contengan caracteres de control o invisibles (posibles ataques de homógrafos o confusión de interfaz), y se consolidó el manejo de `path_buf` en `_is_process_executable_safe` usando `Path.resolve()` de forma más resiliente para prevenir el acceso a rutas protegidas mediante técnicas de ofuscación de nombres de archivo.
 - `2026-10-31T14:06:00` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `hash_file` y `partial_hash` implementando una validación explícita mediante `is_safe_to_modify` antes de abrir cualquier manejador de archivos, asegurando que el módulo solo acceda a rutas permitidas incluso si el sistema operativo permitiera el acceso al archivo subyacente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T12:44:50` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` evitando llamadas recurrentes a `_is_reparse_point` (que ejecuta llamadas a `ctypes` en Windows) mediante el almacenamiento en caché de rutas procesadas en el mismo nivel, reduciendo significativamente el overhead en directorios con muchos archivos.
 - `2026-10-31T12:44:25` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` reemplazando la creación redundante de objetos `ScanContext` y la re-instanciación de `DirectoryScanner` dentro del bucle de navegadores, permitiendo reutilizar el estado del contexto a través de las iteraciones de búsqueda de rutas.
 - `2026-10-31T12:34:55` **startup.py** (legibilidad y documentación): Se introdujeron type hints en los métodos de `StartupEntry` que carecían de ellos y se refactorizó `_is_registry_entry_safe` para mejorar la legibilidad del flujo de validación, extrayendo la lógica de chequeo de rutas a un método auxiliar más claro y declarativo.
-- `2026-10-31T12:15:37` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y clases, clarificando la intención del uso de máscaras de acceso Win32 y la lógica de validación, además de añadir type hints en secciones que los requerían para mejorar la mantenibilidad.
-- `2026-10-31T11:56:05` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del módulo `assistant.py` mediante la refactorización de `SystemContext._validate_and_sanitize_data` y `_apply_updates`, reemplazando lógica procedimental compleja por un flujo más limpio, explícito y tipado, lo cual facilita la auditoría de seguridad del proceso de ingesta de datos.

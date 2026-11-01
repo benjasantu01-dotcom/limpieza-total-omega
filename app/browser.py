@@ -106,11 +106,10 @@ class DirectoryScanner:
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
         Realiza una suma recursiva de pesos de archivos.
-        
-        Args:
-            root_path: Directorio donde iniciar.
-            depth: Profundidad actual de recursión.
         """
+        if not isinstance(root_path, str) or not root_path:
+            return ScanResult(0, False)
+            
         if depth > self.ctx.max_depth or self.ctx.is_junction(root_path):
             return ScanResult(0, True)
         
@@ -135,7 +134,7 @@ class DirectoryScanner:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        # Saltar archivos de configuración sensibles definidos en NEVER_TOUCH
+                        if not hasattr(entry, 'name') or not entry.name: continue
                         if entry.name.lower() in self.ctx.never_touch_lower: continue
                         if entry.is_symlink(): continue
                         
