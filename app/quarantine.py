@@ -796,7 +796,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
 
         ensure_safe_to_modify(destination, allow_sensitive=True)
         return source_hash, dest_stat.st_ino
-    except Exception as e:
+    except (OSError, IOError, UnsafePathError, FileExistsError) as e:
         if temp_dest.exists():
             try: _check_io_error_context(temp_dest.unlink)
             except OSError: pass
@@ -848,12 +848,13 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         if stat_orig.st_size != original_size or stat_orig.st_nlink > 1:
             raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
         
-        IsolationManager.validate_atomicity(source, stat_orig, destination)
-        
+        # Validar colisión de inodo antes de cualquier I/O pesada
         existing_items: List[QuarantineItem] = load_manifest(destination.parent.parent)
         if any(i.file_inode == stat_orig.st_ino for i in existing_items):
             raise RuntimeError("Colisión de inodo: archivo ya registrado.")
-
+        
+        IsolationManager.validate_atomicity(source, stat_orig, destination)
+        
         if destination.exists():
             raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         
@@ -975,7 +976,7 @@ def quarantine_file(
         
         try:
             item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, reason, st_info.st_size, base)
-        except Exception as e:
+        except (OSError, IOError, ValueError, RuntimeError) as e:
             if destination.exists(): _safe_unlink(destination)
             raise e
             
@@ -986,7 +987,7 @@ def quarantine_file(
                 raise RuntimeError(f"Falla al remover original post-aislamiento: {e}")
                     
         return item
-    except (Exception, SystemExit, KeyboardInterrupt) as e:
+    except (OSError, IOError, ValueError, RuntimeError, UnsafePathError) as e:
         if destination and destination.exists():
             _safe_unlink(destination)
         raise RuntimeError(f"Error durante proceso de cuarentena: {e}")

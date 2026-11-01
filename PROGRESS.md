@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **127** (25.2% de aceptación)
+- Mejoras aceptadas: **128** (25.4% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 310
+- Sin respuesta de la IA (error o límite): 309
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 67 | 4 | 24 | 11 | 162 |
-| 2026-11-01 | 60 | 5 | 19 | 4 | 148 |
+| 2026-10-31 | 67 | 4 | 23 | 10 | 160 |
+| 2026-11-01 | 61 | 5 | 20 | 5 | 149 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **30**
-- manejo de errores y validación de entradas: **28**
+- manejo de errores y validación de entradas: **29**
 - seguridad defensiva: **27**
 - rendimiento: **26**
 - legibilidad y documentación: **16**
@@ -31,7 +31,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `safety.py`: **16**
 - `healthscore.py`: **13**
-- `quarantine.py`: **12**
+- `quarantine.py`: **13**
 - `assistant.py`: **12**
 - `browser.py`: **11**
 - `diskreport.py`: **9**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T10:08:40` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez en `_atomic_isolate_file` reemplazando la captura de excepciones genérica `Exception` por una más específica y añadiendo una validación explícita para evitar registros duplicados por inodo antes de iniciar cualquier operación de I/O, siguiendo el enfoque de validación proactiva.
 - `2026-11-01T09:58:06` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` y `compute_score` validando explícitamente los datos de entrada antes de cualquier operación aritmética, asegurando que `validate` sea idempotent y que `_compute_cached` no reciba tuplas malformadas si los tipos de entrada varían.
 - `2026-11-01T09:49:05` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner` agregando validaciones de entrada (`None`/vacíos) y protecciones contra condiciones de carrera (`FileNotFoundError`) al procesar iteradores de directorio, asegurando que el escaneo no falle ante cambios rápidos en el sistema de archivos durante la ejecución.
 - `2026-11-01T09:48:56` **branding.py** (manejo de errores y validación de entradas): Reforcé la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación explícita de tipos, el uso de valores por defecto seguros ante entradas nulas y la captura de excepciones específicas, evitando así comportamientos indefinidos al recibir datos inesperados.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T07:47:20` **startup.py** (robustez ante casos límite): Mejora la robustez ante rutas corruptas o inexistentes en `_process_folder_entry` mediante un chequeo de `is_file()` previo más seguro y la captura estricta de excepciones, evitando que errores de permisos bloqueen el escaneo de toda la carpeta.
 - `2026-11-01T07:46:39` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `_safe_stat` y `_is_readable` incorporando manejo explícito de rutas con longitud excesiva o caracteres nulos, evitando errores no capturados al interactuar con el sistema de archivos de Windows.
 - `2026-11-01T07:45:31` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_get_path_stat_robust` para detectar archivos con atributos de tipo "reparse point" o "directory" cuando se espera un archivo regular, evitando el tratamiento inadvertido de junctions o enlaces simbólicos como archivos de datos, mejorando la robustez ante casos límite del sistema de archivos en Windows.
-- `2026-11-01T07:36:30` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_safe_unlink` y `purge_all` para manejar escenarios donde los archivos pueden haber sido eliminados externamente o bloqueados transitoriamente, evitando excepciones no controladas y asegurando que la sincronización de metadatos (fsync) ocurra incluso ante fallos parciales de I/O.
