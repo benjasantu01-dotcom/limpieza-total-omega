@@ -763,11 +763,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     
     # Construcción segura y validación estricta de la URL de destino
     base_target = _ENDPOINT_BASE.format(model=model)
-    if not base_target.startswith(_API_HOST_ROOT) or any(c in base_target for c in "<>\"' \t\n\r"): return None
+    # Validar caracteres prohibidos, prefijos y asegurar que no sea un path del sistema
+    if not base_target.startswith(_API_HOST_ROOT) or any(c in base_target for c in _FORBIDDEN_CHARS): return None
     if is_protected_path(base_target): return None
     
     try:
-        # La clave API se envía como parte del querystring de forma controlada
         url_with_key = f"{base_target}?key={api_key}"
         req: urllib.request.Request = urllib.request.Request(url_with_key, data=payload, headers={"Content-Type": "application/json", "Accept": "application/json"}, method="POST")
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:

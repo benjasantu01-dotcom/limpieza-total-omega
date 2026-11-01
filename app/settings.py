@@ -365,10 +365,13 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     de contenido y validación estructural estricta antes de retornar los datos.
     """
     try:
+        st = file_path.stat()
+        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return None
+        
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
         
-        if not content or len(content) > MAX_SETTINGS_SIZE or len(content) < 2: return None
+        # Validación de integridad de bytes: evitar caracteres de control sospechosos
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
         data = json.loads(content.decode("utf-8", errors="strict"))
