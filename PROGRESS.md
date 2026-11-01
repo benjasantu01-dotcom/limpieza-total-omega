@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **125** (24.8% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 313
+- Sin respuesta de la IA (error o límite): 311
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 87 | 5 | 30 | 14 | 204 |
-| 2026-11-01 | 38 | 3 | 12 | 2 | 109 |
+| 2026-10-31 | 85 | 5 | 30 | 14 | 202 |
+| 2026-11-01 | 40 | 3 | 14 | 2 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **30**
-- seguridad defensiva: **26**
+- rendimiento: **25**
+- seguridad defensiva: **24**
 - legibilidad y documentación: **24**
-- rendimiento: **23**
 - robustez ante casos límite: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `quarantine.py`: **13**
-- `diskreport.py`: **11**
 - `healthscore.py`: **11**
 - `scanner.py`: **10**
 - `assistant.py`: **10**
 - `browser.py`: **10**
+- `diskreport.py`: **10**
 - `memory.py`: **9**
-- `settings.py`: **8**
+- `settings.py`: **9**
 - `organizer.py`: **8**
 - `duplicates.py`: **7**
 - `startup.py`: **7**
-- `branding.py`: **5**
+- `branding.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T07:06:16` **settings.py** (rendimiento): Optimicé el rendimiento eliminando llamadas redundantes a `load()` en las funciones de acceso frecuente (`assistant_api_key`, `assistant_enabled`, `describe` y `get`), reutilizando una única instancia de configuración durante el ciclo de vida de la ejecución.
+- `2026-11-01T07:05:17` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` al reemplazar el cálculo repetitivo y costoso de `Path(norm_str).parts` por una verificación de prefijo de cadena (`startswith`) más directa, reduciendo drásticamente la sobrecarga en iteraciones sobre listas largas de archivos.
 - `2026-11-01T05:53:12` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas y la gestión de archivos al envolver `path.stat()` en `scan_file` con un bloque `try-except` más específico y protector, evitando que fallos de acceso a metadatos detengan el escaneo de un archivo potencialmente peligroso, además de añadir validaciones de tipo `None` sobre `stats` antes de su uso en heurísticas.
 - `2026-11-01T05:26:16` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `DirectoryScanner.get_size` mediante la validación explícita de `root_path` y la captura de errores en la iteración, asegurando que entradas inválidas o bloqueadas no interrumpan el escaneo ni propaguen excepciones.
 - `2026-11-01T05:23:19` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` para manejar estructuras de datos incompletas o malformadas mediante el uso de `.get()` encadenado y validaciones de tipo explícitas, evitando posibles `AttributeError` o `TypeError` ante respuestas inesperadas de la API.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T03:21:04` **settings.py** (robustez ante casos límite): Se reforzó la robustez del manejo de archivos de configuración ante casos límite, añadiendo una verificación explícita de `st_size` previo a la carga y validando que el archivo no contenga caracteres de control que pudiesen indicar corrupción o manipulación malintencionada, además de asegurar que `_coerce_and_verify` actúe como una barrera final de integridad.
 - `2026-11-01T03:12:22` **safety.py** (robustez ante casos límite): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y errores de E/S inesperados al asegurar que los chequeos de integridad verifiquen explícitamente la existencia del padre y la integridad del volumen antes de cualquier operación, protegiendo la app contra caídas cuando se analiza hardware inestable o extraíble.
 - `2026-11-01T03:11:18` **quarantine.py** (robustez ante casos límite): Se ha añadido `_is_filesystem_read_only` y una verificación de `path.exists()` dentro de `_check_path_syntax_integrity` para evitar que `path.resolve(strict=True)` lance excepciones en rutas que aún no existen durante el proceso de aislamiento o limpieza.
-- `2026-11-01T03:10:11` **organizer.py** (robustez ante casos límite): Mejora la robustez ante estados inconsistentes del sistema de archivos al añadir verificaciones de existencia previas a operaciones de lectura/escritura y al gestionar correctamente posibles errores en `_is_file_locked`, asegurando que no se bloquee el flujo por archivos que desaparecen durante la ejecución (Race Conditions).
-- `2026-11-01T03:03:57` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` añadiendo un manejo de excepciones más granular y verificaciones de integridad en la ruta resuelta, evitando bloqueos ante rutas malformadas o inaccesibles que antes podían causar fallos en la iteración de procesos.

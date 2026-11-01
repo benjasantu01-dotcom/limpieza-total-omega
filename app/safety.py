@@ -326,8 +326,8 @@ SENSITIVE_EXTENSIONS: Final[set[str]] = {
 }
 
 @lru_cache(maxsize=1)
-def _get_system_root_paths() -> set[str]:
-    return {os.path.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData") if os.environ.get(v)}
+def _get_system_root_paths() -> tuple[str, ...]:
+    return tuple(os.path.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData") if os.environ.get(v))
 
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
@@ -809,14 +809,13 @@ def is_drive_root(path: PathLike) -> bool:
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
     if not isinstance(path, (str, Path)) or not path: return True
-    
     try:
         norm_str = os.path.normcase(os.path.abspath(str(path)))
-        parts = Path(norm_str).parts
-        
+        # Evitar reconstruir Path y parts repetidamente
         if any(norm_str.startswith(r) for r in _get_system_root_paths()):
             return True
             
+        parts = Path(norm_str).parts
         if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in parts):
             return True
         

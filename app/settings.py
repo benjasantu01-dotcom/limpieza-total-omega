@@ -396,7 +396,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     resolved_str = str(primary_path.resolve())
     try:
         if primary_path.exists() and primary_path.is_file():
-            # Intentar primero usar la caché antes de llamar a stat
             cached = _MANAGER.data_cache.get(resolved_str)
             st = primary_path.lstat()
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
@@ -468,7 +467,8 @@ def get(key: str, custom_base: PathLike | None = None) -> Any:
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
-    return str(load(custom_base).get("asistente_clave_api", "")).strip()
+    settings = load(custom_base)
+    return str(settings.get("asistente_clave_api", "")).strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
     if os.environ.get(API_KEY_ENV_VAR): return True
