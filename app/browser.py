@@ -91,7 +91,9 @@ class DirectoryScanner:
                 return False
             
             real_path = os.path.realpath(path_str)
-            if os.path.commonpath([real_path, self.ctx.sandbox_base_norm]) != self.ctx.sandbox_base_norm:
+            # Asegurar que la ruta real está bajo la raíz del sandbox
+            common = os.path.commonpath([real_path, self.ctx.sandbox_base_norm])
+            if common != self.ctx.sandbox_base_norm:
                 return False
             return True
         except (OSError, RuntimeError, ValueError):
@@ -112,7 +114,8 @@ class DirectoryScanner:
 
         try:
             st = os.lstat(root_path)
-            if self.ctx.is_junction(root_path):
+            # Bloqueo estricto de puntos de reparse para evitar fugas fuera del sandbox
+            if self.ctx.is_junction(root_path) or (st.st_file_attributes & 0x400 if hasattr(st, 'st_file_attributes') else False):
                 return ScanResult(0, True)
             dir_id = (st.st_dev, st.st_ino)
         except (OSError, PermissionError, FileNotFoundError):
@@ -131,13 +134,12 @@ class DirectoryScanner:
                         if not entry or not entry.name: continue
                         if entry.name.lower() in self.ctx.never_touch_lower: continue
                         
-                        # Impedir recursión en enlaces simbólicos para seguridad
-                        if entry.is_symlink(): continue
+                        # Impedir recursión en cualquier tipo de enlace simbólico o reparse
+                        if entry.is_symlink() or self.ctx.is_junction(entry.path): continue
                         
                         if entry.is_dir():
-                            if not self.ctx.is_junction(entry.path):
-                                subdir = self.get_size(entry.path, depth + 1)
-                                total_bytes += subdir.bytes_found
+                            subdir = self.get_size(entry.path, depth + 1)
+                            total_bytes += subdir.bytes_found
                         elif entry.is_file():
                             if not _is_system_hidden(entry.path, self.ctx.kernel32):
                                 try:
@@ -328,6 +330,8 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             
             target_str = str(target)
             if not scanner._is_path_allowed(target_str): continue
+            
+            # Chequeos adicionales antes de iniciar el escaneo recursivo pesado
             if _IS_JUNCTION_FN(target_str) or target.is_symlink(): continue
             if _is_system_hidden(target_str, kernel) or target.name.lower() in NEVER_TOUCH:
                 continue

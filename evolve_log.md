@@ -1147,3 +1147,28 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-01T12:11:11` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de escritura atómica en `_SettingsManager` para evitar condiciones de carrera o corrupción ante cierres inesperados mediante el uso de una verificación explícita de `os.replace` y la eliminación de bloqueos en archivos que no siguen el protocolo de seguridad.
 - `2026-11-01T12:11:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T12:11:11` Corrida terminada. Total usado hoy: 288.
+- `2026-11-01T12:19:37` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-11-01T12:20:06` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-01T12:20:43` Tests FALLARON:
+```
+).text
+
+evolve/tests/test_assistant.py:334: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner_myth - AssertionError: assert ('liberador de ram' in 'error de seguridad en la respuesta.' or 'más lenta' in 'error de seguridad en la respuesta.')
+FAILED evolve/tests/test_assistant.py::test_space_question_adds_up_what_can_be_recovered - AssertionError: assert '3730' in 'Error de seguridad en la respuesta'
+ +  where 'Error de seguridad en la respuesta' = <built-in method replace of str object at 0x7f392be97320>('.', '')
+ +    where <built-in method replace of str object at 0x7f392be97320> = 'Error de seguridad en la respuesta.'.replace
+ +      where 'Error de seguridad en la respuesta.' = Answer(text='Error de seguridad en la respuesta.', source='local', notice='', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'error de seguridad en la respuesta.'
+ +  where 'error de seguridad en la respuesta.' = <built-in method lower of str object at 0x7f392be97320>()
+ +    where <built-in method lower of str object at 0x7f392be97320> = 'Error de seguridad en la respuesta.'.lower
+ +      where 'Error de seguridad en la respuesta.' = Answer(text='Error de seguridad en la respuesta.', source='local', notice='', suggestions=[]).text
+3 failed, 296 passed in 1.00s
+
+```
+- `2026-11-01T12:20:43` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la validación de seguridad en `_ensure_safe_text` y sus helpers integrando una verificación de integridad más estricta contra inyecciones de comandos en la respuesta del motor remoto, asegurando que cualquier texto procesado esté libre de caracteres de control, secuencias de escape ANSI o patrones que pudieran ser interpretados por un shell.
+- `2026-11-01T12:21:16` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré `save_logo_svg` aplicando una validación de ruta más robusta mediante `is_safe_to_modify` antes de cualquier operación de resolución, asegurando que el directorio padre exista y sea seguro antes de intentar la creación o escritura, evitando así efectos secundarios si la ruta de destino es bloqueada por el sistema.
+- `2026-11-01T12:21:26` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha restringido el acceso del `DirectoryScanner` para asegurar que, durante la recursión, no se sigan puntos de reparse ni enlaces simbólicos, reforzando el aislamiento del escaneo dentro de la ruta base permitida.
+- `2026-11-01T12:21:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T12:21:26` Corrida terminada. Total usado hoy: 292.
