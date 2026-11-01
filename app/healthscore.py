@@ -408,6 +408,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     try:
         metrics.validate()
+        # Serialización segura: extraemos solo números para el motor cacheado
         raw_vals = tuple(float(metrics.safe_get(f)) for f in _VALIDATION_KEYS)
         return _compute_cached(raw_vals, int(metrics.safe_get("quarantined_count")))
     except (TypeError, ValueError, AttributeError, MemoryError):

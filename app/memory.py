@@ -347,8 +347,8 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
     """Verifica la seguridad del ejecutable del proceso basándose en rutas protegidas."""
     if h_process is None or WindowsAPI.psapi is None: return False
     try:
-        ret = WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, path_buffer, len(path_buffer))
-        if ret <= 0: return False 
+        if WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, path_buffer, len(path_buffer)) <= 0:
+            return False 
         
         exe_path_str = path_buffer.value
         if not exe_path_str: return False
@@ -357,6 +357,15 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
         return not is_protected_path(Path(exe_path_str).resolve(strict=False))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
+
+def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array) -> Optional[wintypes.HANDLE]:
+    """Valida la seguridad del proceso mediante su ruta antes de otorgar acceso."""
+    h = _get_process_handle(pid, access)
+    if h:
+        if _is_process_executable_safe(h, path_buf):
+            return h
+        WindowsAPI.kernel32.CloseHandle(h)
+    return None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Generador que enumera procesos activos aplicando filtros de seguridad."""
@@ -386,15 +395,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:
             WindowsAPI.kernel32.CloseHandle(h_process)
-
-def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array) -> Optional[wintypes.HANDLE]:
-    """Valida la seguridad del proceso mediante su ruta antes de otorgar acceso."""
-    h = _get_process_handle(pid, access)
-    if h:
-        if _is_process_executable_safe(h, path_buf):
-            return h
-        WindowsAPI.kernel32.CloseHandle(h)
-    return None
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna lista de procesos que más RAM consumen, cacheada 60 segundos."""

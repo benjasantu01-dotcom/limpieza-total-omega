@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **132** (26.2% de aceptación)
+- Mejoras aceptadas: **134** (26.6% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 303
+- Sin respuesta de la IA (error o límite): 300
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 81 | 4 | 28 | 14 | 189 |
-| 2026-11-01 | 51 | 3 | 16 | 4 | 114 |
+| 2026-10-31 | 81 | 4 | 28 | 14 | 185 |
+| 2026-11-01 | 53 | 3 | 17 | 4 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,18 +25,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **30**
 - rendimiento: **26**
 - legibilidad y documentación: **24**
-- seguridad defensiva: **22**
+- seguridad defensiva: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **17**
+- `healthscore.py`: **13**
 - `quarantine.py`: **13**
-- `healthscore.py`: **12**
 - `assistant.py`: **12**
 - `scanner.py`: **11**
 - `browser.py`: **11**
 - `diskreport.py`: **10**
-- `memory.py`: **9**
+- `memory.py`: **10**
 - `startup.py`: **9**
 - `organizer.py`: **8**
 - `settings.py`: **8**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T08:08:12` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `memory.py` mediante una verificación estricta de rutas mediante `is_protected_path` en `_is_process_executable_safe` y la adición de una validación de `path_buffer` previo a cualquier operación de trim o consulta, asegurando que no se interactúe con procesos cuyos ejecutables residan en áreas protegidas del sistema.
+- `2026-11-01T08:06:27` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `healthscore.py` restringiendo la exposición de datos internos al implementar un método de serialización seguro para el motor, asegurando que `_compute_cached` nunca reciba ni procese rutas o nombres de archivos, manteniendo la pureza de la arquitectura funcional.
 - `2026-11-01T07:56:46` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner._is_path_allowed` al implementar una validación estricta de la ruta contra la raíz del sandbox utilizando `os.path.commonpath`, lo cual es una técnica más robusta y menos propensa a errores que la comparación manual de strings normalizados al prevenir ataques de traversal de directorios (path traversal).
 - `2026-11-01T07:55:37` **assistant.py** (seguridad defensiva): Mejoré la seguridad de `_call_gemini` reemplazando la construcción manual de la URL mediante f-strings por el uso de `urllib.parse.urlencode`, evitando inyecciones de parámetros y asegurando que la clave API sea tratada como un dato opaco y no como parte de la estructura de la URL.
 - `2026-11-01T07:47:20` **startup.py** (robustez ante casos límite): Mejora la robustez ante rutas corruptas o inexistentes en `_process_folder_entry` mediante un chequeo de `is_file()` previo más seguro y la captura estricta de excepciones, evitando que errores de permisos bloqueen el escaneo de toda la carpeta.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T07:15:02` **startup.py** (rendimiento): Optimizé `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y realizar comprobaciones de seguridad (`is_protected_path`) solo una vez por carpeta, aprovechando el procesamiento directo de `os.DirEntry` y reduciendo el E/S del sistema de archivos mediante la validación previa de los nombres de archivo.
 - `2026-11-01T07:06:16` **settings.py** (rendimiento): Optimicé el rendimiento eliminando llamadas redundantes a `load()` en las funciones de acceso frecuente (`assistant_api_key`, `assistant_enabled`, `describe` y `get`), reutilizando una única instancia de configuración durante el ciclo de vida de la ejecución.
 - `2026-11-01T07:05:17` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` al reemplazar el cálculo repetitivo y costoso de `Path(norm_str).parts` por una verificación de prefijo de cadena (`startswith`) más directa, reduciendo drásticamente la sobrecarga en iteraciones sobre listas largas de archivos.
-- `2026-11-01T05:53:12` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas y la gestión de archivos al envolver `path.stat()` en `scan_file` con un bloque `try-except` más específico y protector, evitando que fallos de acceso a metadatos detengan el escaneo de un archivo potencialmente peligroso, además de añadir validaciones de tipo `None` sobre `stats` antes de su uso en heurísticas.
-- `2026-11-01T05:26:16` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `DirectoryScanner.get_size` mediante la validación explícita de `root_path` y la captura de errores en la iteración, asegurando que entradas inválidas o bloqueadas no interrumpan el escaneo ni propaguen excepciones.
