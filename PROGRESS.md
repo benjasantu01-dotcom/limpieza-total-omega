@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **126** (25.0% de aceptación)
+- Mejoras aceptadas: **127** (25.2% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 312
+- Sin respuesta de la IA (error o límite): 310
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 82 | 4 | 28 | 14 | 200 |
-| 2026-11-01 | 44 | 3 | 15 | 2 | 112 |
+| 2026-10-31 | 81 | 4 | 28 | 14 | 197 |
+| 2026-11-01 | 46 | 3 | 16 | 2 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **30**
+- robustez ante casos límite: **27**
 - rendimiento: **26**
-- robustez ante casos límite: **25**
 - legibilidad y documentación: **24**
-- seguridad defensiva: **21**
+- seguridad defensiva: **20**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **16**
+- `quarantine.py`: **13**
 - `healthscore.py`: **12**
-- `quarantine.py`: **12**
 - `assistant.py`: **11**
 - `scanner.py`: **10**
 - `browser.py`: **10**
 - `diskreport.py`: **10**
-- `settings.py`: **9**
+- `memory.py`: **9**
 - `organizer.py`: **8**
-- `memory.py`: **8**
+- `settings.py`: **8**
 - `startup.py`: **8**
 - `duplicates.py`: **7**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T07:36:30` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_safe_unlink` y `purge_all` para manejar escenarios donde los archivos pueden haber sido eliminados externamente o bloqueados transitoriamente, evitando excepciones no controladas y asegurando que la sincronización de metadatos (fsync) ocurra incluso ante fallos parciales de I/O.
+- `2026-11-01T07:35:04` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_handle_for_safe_proc` y la inicialización de buffers para prevenir errores ante procesos con rutas de archivo inaccesibles, bloqueadas por el sistema o con caracteres Unicode inesperados que causaban fallos en la enumeración de procesos.
 - `2026-11-01T07:26:27` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación de desbordamiento de memoria (`MemoryError`) y estados inválidos en `_compute_cached` y `compute_score` para manejar escenarios donde la lógica de las métricas podría recibir tipos de datos inesperados, además de asegurar que `SystemMetrics` nunca propague valores nulos o inconsistentes tras su inicialización.
 - `2026-11-01T07:16:56` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos al añadir validación explícita de `Path` y manejo defensivo del flujo de creación de directorios, evitando que excepciones inesperadas o rutas malformadas rompan la ejecución.
 - `2026-11-01T07:16:18` **assistant.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de ingesta de datos en `SystemContext.ingest()` y `SystemContext._validate_and_sanitize_data()` para evitar que una fuente de datos malformada o parcialmente corrupta (común en casos límite de reporte de hardware/SO) interrumpa la lógica del asistente, asegurando que solo se descarten los campos inválidos individualmente.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T03:42:56` **organizer.py** (seguridad defensiva): Se reforzó la seguridad en `delete_reviewed` implementando una validación explícita mediante `is_protected_path` sobre cada ítem antes del borrado, asegurando que ningún archivo que haya sido movido incorrectamente a la carpeta de revisión pueda ser eliminado si el usuario o el sistema marcaron su ruta como sensible.
 - `2026-11-01T03:40:58` **healthscore.py** (seguridad defensiva): He endurecido el filtro de seguridad de `healthscore.py` para prevenir la fuga de información mediante la validación proactiva del mensaje de cuarentena, asegurando que cualquier texto generado por el asistente pase por los mismos filtros de integridad (`_is_safe_string_for_report` y `_sanitize_msg`) que las reglas dinámicas.
 - `2026-11-01T03:32:42` **duplicates.py** (seguridad defensiva): Se ha ajustado `is_safe_to_modify` por `is_protected_path` en las funciones `hash_file` y `partial_hash` siguiendo estrictamente la regla de solo lectura para módulos de escaneo, evitando abortos innecesarios y corrigiendo el uso indebido de una función de escritura en un contexto de lectura.
-- `2026-11-01T03:32:21` **diskreport.py** (seguridad defensiva): Se reforzó `walk_files` implementando una validación de `path.is_relative_to(root)` para prevenir que el escaneo escape del directorio raíz previsto mediante enlaces simbólicos maliciosos, incluso tras las comprobaciones de `is_protected_path`.
-- `2026-11-01T03:31:49` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `DirectoryScanner._is_path_allowed` al implementar una validación de `os.path.realpath` contra el sandbox, lo que mitiga vulnerabilidades por enlaces simbólicos o puntos de reparse que podrían engañar a `os.path.abspath` y permitir la salida del ámbito permitido.

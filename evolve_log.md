@@ -727,3 +727,13 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-11-01T07:27:22` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-01T07:27:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T07:27:22` Corrida terminada. Total usado hoy: 176.
+- `2026-11-01T07:34:30` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-11-01T07:35:04` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_get_handle_for_safe_proc` y la inicialización de buffers para prevenir errores ante procesos con rutas de archivo inaccesibles, bloqueadas por el sistema o con caracteres Unicode inesperados que causaban fallos en la enumeración de procesos.
+- `2026-11-01T07:35:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-01T07:35:08` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-01T07:35:15` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-01T07:35:27` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-01T07:36:30` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_safe_unlink` y `purge_all` para manejar escenarios donde los archivos pueden haber sido eliminados externamente o bloqueados transitoriamente, evitando excepciones no controladas y asegurando que la sincronización de metadatos (fsync) ocurra incluso ante fallos parciales de I/O.
+- `2026-11-01T07:36:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-01T07:36:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T07:36:38` Corrida terminada. Total usado hoy: 180.

@@ -367,7 +367,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     if WindowsAPI.psapi is None or not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
         return
             
-    path_buf = ctypes.create_unicode_buffer(1024)
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     
@@ -376,6 +375,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if pid <= 0 or _is_system_process(pid):
             continue
         
+        path_buf = ctypes.create_unicode_buffer(1024)
         h_process = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf)
         if not h_process: continue
         
@@ -390,9 +390,10 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array) -> Optional[wintypes.HANDLE]:
     """Valida la seguridad del proceso mediante su ruta antes de otorgar acceso."""
     h = _get_process_handle(pid, access)
-    if h and _is_process_executable_safe(h, path_buf):
-        return h
-    if h: WindowsAPI.kernel32.CloseHandle(h)
+    if h:
+        if _is_process_executable_safe(h, path_buf):
+            return h
+        WindowsAPI.kernel32.CloseHandle(h)
     return None
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
