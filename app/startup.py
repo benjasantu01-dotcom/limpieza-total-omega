@@ -322,6 +322,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     accesibilidad de forma eficiente sin levantar objetos Path innecesarios.
     """
     try:
+        # Chequeo defensivo ante accesos negados o inconsistencias en DirEntry
         if not entry.is_file(follow_symlinks=False):
             return None
         
@@ -349,7 +350,6 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     
     for folder in scan_folders:
         try:
-            # is_protected_path ya fue verificado en startup_folders, evitamos redundancia
             with os.scandir(folder) as it:
                 for entry in it:
                     if entry.path in processed_paths:

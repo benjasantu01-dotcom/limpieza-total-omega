@@ -672,6 +672,12 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                     kernel32.CloseHandle(handle)
             
             st = path.stat()
+            # Validacion adicional: detectar si un item esperado como archivo es en realidad un directorio o punto de reparse
+            if os.name == 'nt':
+                attrs = _get_file_attrs(str(path))
+                if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.DIRECTORY | Win32Attr.REPARSE_POINT)):
+                    raise UnsafePathError(f"Estructura no válida (se esperaba archivo regular): {path.name}", SafetyValidationErrorCode.INVALID_PATH_TYPE)
+
             if st.st_atime == 0 and st.st_mtime == 0:
                  raise UnsafePathError(f"Metadatos corruptos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
             if hasattr(st, 'st_nlink') and st.st_nlink == 0:

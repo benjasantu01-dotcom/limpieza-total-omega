@@ -91,8 +91,11 @@ def _is_valid_file_path(path: PathInput) -> bool:
     if not isinstance(path, (Path, str)) or not path:
         return False
     try:
+        path_str = str(path)
+        if len(path_str) > SCAN_LIMITS.path_length_limit or "\0" in path_str:
+            return False
         target_path = Path(path)
-        return target_path.exists() and not _cached_is_protected(str(target_path)) and target_path.is_file()
+        return target_path.exists() and not _cached_is_protected(path_str) and target_path.is_file()
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
@@ -102,6 +105,8 @@ def _is_readable(path: PathInput) -> bool:
         return False
     try:
         target_str = str(path)
+        if len(target_str) > SCAN_LIMITS.path_length_limit or "\0" in target_str:
+            return False
         return not _cached_is_protected(target_str) and os.access(target_str, os.R_OK)
     except (OSError, PermissionError, ValueError, TypeError):
         return False
@@ -121,7 +126,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     Obtiene metadatos del archivo. Retorna None si el archivo es un punto de 
     reanálisis, está bloqueado (sharing violation) o es inaccesible.
     """
-    if not isinstance(entry, os.DirEntry) or _cached_is_protected(entry.path):
+    if not isinstance(entry, os.DirEntry) or len(entry.path) > SCAN_LIMITS.path_length_limit or "\0" in entry.path or _cached_is_protected(entry.path):
         return None
     try:
         if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
