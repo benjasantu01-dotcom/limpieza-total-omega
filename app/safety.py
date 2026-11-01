@@ -401,6 +401,7 @@ def _is_file_owned_by_system(path_str: str) -> bool:
 
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     if not isinstance(path_str, str) or not path_str: return True
+    # Detecta caracteres de control y secuencias RTL/LTR (BIDI) para spoofing
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
 def _is_path_empty_or_whitespace(path_str: str) -> bool:
@@ -783,6 +784,7 @@ def normalize(path: PathLike) -> Path:
              raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
 
     if _is_path_empty_or_whitespace(path_str): raise UnsafePathError("Entrada de ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC)
+    # Detecta ataques de spoofing vía Unicode (NFC vs NFKC)
     if unicodedata.normalize('NFKC', path_str) != path_str:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
@@ -830,7 +832,6 @@ def is_protected_path(path: PathLike) -> bool:
         if any(norm_str.startswith(r) for r in _get_system_root_paths()):
             return True
         
-        # Uso eficiente: partes de la ruta como tupla para el check de set
         path_obj = Path(norm_str)
         if not PROTECTED_DIR_NAMES.isdisjoint(p.lower() for p in path_obj.parts):
             return True

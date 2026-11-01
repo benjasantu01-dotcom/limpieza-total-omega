@@ -6,22 +6,22 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **138** (27.4% de aceptación)
+- Mejoras aceptadas: **140** (27.8% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 297
+- Sin respuesta de la IA (error o límite): 294
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 48 | 4 | 18 | 9 | 141 |
-| 2026-11-01 | 90 | 6 | 27 | 5 | 156 |
+| 2026-10-31 | 48 | 4 | 18 | 9 | 137 |
+| 2026-11-01 | 92 | 6 | 28 | 5 | 157 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **34**
 - manejo de errores y validación de entradas: **31**
 - rendimiento: **29**
 - legibilidad y documentación: **28**
@@ -29,12 +29,12 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **17**
+- `safety.py`: **18**
 - `assistant.py`: **14**
 - `quarantine.py`: **13**
 - `healthscore.py`: **12**
 - `browser.py`: **11**
-- `settings.py`: **10**
+- `settings.py`: **11**
 - `scanner.py`: **10**
 - `startup.py`: **10**
 - `memory.py`: **10**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T12:11:11` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `_SettingsManager` para evitar condiciones de carrera o corrupción ante cierres inesperados mediante el uso de una verificación explícita de `os.replace` y la eliminación de bloqueos en archivos que no siguen el protocolo de seguridad.
+- `2026-11-01T12:10:32` **safety.py** (robustez ante casos límite): Se implementó un chequeo robusto en `ensure_safe_to_modify` para detectar y rechazar rutas que contengan caracteres de control o secuencias de escape ocultas (Unicode RTL/LTR) mediante `unicodedata`, previniendo ataques de "spoofing" de nombres de archivos que son comunes en entornos Windows y que pueden engañar al usuario final al mostrar una ruta distinta a la real.
 - `2026-11-01T12:03:03` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_dir` al añadir una validación crítica contra la presencia de flujos de datos alternos (ADS) o nombres de dispositivos reservados en la ruta base antes de cualquier operación de I/O, previniendo errores de acceso al sistema de archivos en Windows.
 - `2026-11-01T12:00:52` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a procesos en `_iter_process_memory` y `_get_handle_for_safe_proc`, añadiendo validaciones de tipo y estructura para prevenir fallos por manejadores inválidos o punteros de ruta malformados, garantizando que los recursos del sistema (Handles) siempre se cierren ante cualquier excepción.
 - `2026-11-01T11:50:43` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo al cálculo del hash en `hash_file` y `partial_hash` para evitar excepciones innecesarias en entornos de alta concurrencia donde un archivo podría ser eliminado o bloqueado por otro proceso entre su detección y su lectura.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T11:20:51` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la validación redundante `is_safe_to_modify(Path(entry.path))` por una verificación de conjunto (`in`) en `_should_scan_directory`, reduciendo las llamadas costosas al sistema de archivos mediante el aprovechamiento del `protected_cache`.
 - `2026-11-01T11:18:58` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo eliminando la reconstrucción innecesaria de diccionarios y objetos `SystemMetrics` dentro del bucle principal, reutilizando la instancia validada existente y aplicando la computación de `points` de forma más directa para reducir el overhead en cada iteración del pipeline.
 - `2026-11-01T11:09:44` **diskreport.py** (rendimiento): Se optimizó el escaneo del directorio raíz en `largest_folders` evitando la llamada redundante a `walk_files` (que re-procesa todos los archivos) y deduplicando cálculos, aprovechando la estructura ya presente en `GlobalStats` o iterando una sola vez para extraer métricas de subcarpetas de forma más eficiente.
-- `2026-11-01T11:08:53` **branding.py** (rendimiento): Se ha optimizado la generación del logo ASCII mediante la eliminación de una llamada innecesaria a `\n` al inicio y la centralización de la constante de cadena, mejorando el rendimiento de renderizado en terminal al reducir la creación de objetos de texto intermedios en cada llamado.
-- `2026-11-01T10:59:58` **assistant.py** (rendimiento): Se optimizó el acceso a los criterios de salud mediante la eliminación de una re-evaluación innecesaria en `_cached_active_problems` y se redujo la complejidad de `_evaluate_active_problems` al reemplazar el filtrado dinámico constante por una consulta eficiente sobre el mapa de criterios ya estructurado.

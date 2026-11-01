@@ -1140,3 +1140,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-01T12:03:03` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine_dir` al añadir una validación crítica contra la presencia de flujos de datos alternos (ADS) o nombres de dispositivos reservados en la ruta base antes de cualquier operación de I/O, previniendo errores de acceso al sistema de archivos en Windows.
 - `2026-11-01T12:03:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T12:03:03` Corrida terminada. Total usado hoy: 284.
+- `2026-11-01T12:09:25` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-11-01T12:09:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-01T12:10:32` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se implementó un chequeo robusto en `ensure_safe_to_modify` para detectar y rechazar rutas que contengan caracteres de control o secuencias de escape ocultas (Unicode RTL/LTR) mediante `unicodedata`, previniendo ataques de "spoofing" de nombres de archivos que son comunes en entornos Windows y que pueden engañar al usuario final al mostrar una ruta distinta a la real.
+- `2026-11-01T12:10:57` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-01T12:11:11` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de escritura atómica en `_SettingsManager` para evitar condiciones de carrera o corrupción ante cierres inesperados mediante el uso de una verificación explícita de `os.replace` y la eliminación de bloqueos en archivos que no siguen el protocolo de seguridad.
+- `2026-11-01T12:11:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T12:11:11` Corrida terminada. Total usado hoy: 288.
