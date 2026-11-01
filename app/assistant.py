@@ -397,12 +397,15 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 
 @lru_cache(maxsize=16)
 def _evaluate_active_problems(metrics_tuple: tuple) -> tuple[str, ...]:
-    """Evalúa los problemas activos del sistema a partir de un conjunto de métricas usando caché para rendimiento."""
+    """Evalúa los problemas activos del sistema a partir de un conjunto de métricas."""
     metrics_dict = dict(metrics_tuple)
-    return tuple(
-        msg for c in _CRITERIOS_SALUD 
-        if (msg := c.format_if_triggered(metrics_dict.get(c.metric_key, -1.0))) is not None
-    )
+    results = []
+    for key, val in metrics_dict.items():
+        if val == -1.0: continue
+        for criterion in _CRITERIOS_MAP.get(key, []):
+            msg = criterion.format_if_triggered(val)
+            if msg: results.append(msg)
+    return tuple(results)
 
 @dataclass
 class SystemContext:

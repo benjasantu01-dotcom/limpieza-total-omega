@@ -247,7 +247,11 @@ class Scanner:
         return os.path.splitext(name)[1].lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
-        """Orquestador principal que delega el manejo según si la entrada es archivo o directorio."""
+        """
+        Orquestador principal que evalúa la entrada del sistema de archivos.
+        Valida la seguridad, filtra extensiones irrelevantes y delega según el tipo 
+        (archivo para análisis heurístico, directorio para continuar recursión).
+        """
         if not self._is_safe_entry(entry):
             return
         try:
@@ -263,7 +267,11 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Aplica la suite de heurísticas sobre el archivo y recolecta las sospechas encontradas."""
+        """
+        Ejecuta la suite de chequeos de seguridad sobre un archivo validado.
+        Obtiene metadatos (stat) y itera sobre 'ALL_CHECKS'. Si algún chequeo 
+        retorna un objeto Suspicion, este es almacenado en 'self.results'.
+        """
         stats = _safe_stat(entry)
         if stats is None:
             return

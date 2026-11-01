@@ -215,6 +215,15 @@ class _Validators:
     """Namespace de funciones puras para validación de datos de entrada."""
 
     @staticmethod
+    def _parse_as_type(val: Any, target_type: type[T]) -> Optional[T]:
+        """Intenta convertir un valor crudo a un tipo específico."""
+        try:
+            converted = target_type(val)
+            return converted if isinstance(converted, target_type) else None
+        except (ValueError, TypeError):
+            return None
+
+    @staticmethod
     @lru_cache(maxsize=32)
     def _is_reparse_point(path_str: str) -> bool:
         try:
@@ -269,8 +278,8 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        if val is None or not isinstance(val, (int, str)): return None
-        parsed_value = int(val)
+        parsed_value = _Validators._parse_as_type(val, int)
+        if parsed_value is None: return None
         limit = _NUMERIC_LIMITS.get(key)
         if limit: return max(limit.min, min(limit.max, parsed_value))
         return parsed_value
@@ -293,7 +302,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        if val is None or not isinstance(val, str): return None
+        if not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         return _Validators._validate_enum_str(text, key)
