@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **136** (27.0% de aceptación)
-- Rechazadas por tests: 8
+- Mejoras aceptadas: **137** (27.2% de aceptación)
+- Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 296
+- Sin respuesta de la IA (error o límite): 294
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 81 | 4 | 28 | 14 | 181 |
-| 2026-11-01 | 55 | 4 | 18 | 4 | 115 |
+| 2026-10-31 | 81 | 4 | 28 | 14 | 177 |
+| 2026-11-01 | 56 | 5 | 18 | 4 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **30**
 - robustez ante casos límite: **30**
+- seguridad defensiva: **27**
 - rendimiento: **26**
-- seguridad defensiva: **26**
 - legibilidad y documentación: **24**
 
 ## Mejoras aceptadas por archivo
@@ -38,13 +38,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **10**
 - `memory.py`: **10**
 - `organizer.py`: **9**
+- `settings.py`: **9**
 - `startup.py`: **9**
-- `settings.py`: **8**
 - `duplicates.py`: **7**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T08:26:22` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` y `_is_file_secure_to_read` añadiendo chequeos de enlace simbólico (hard links/symlinks) mediante `os.lstat` y validando que el archivo no sea un punto de reparse, previniendo así ataques por sustitución de archivos o acceso no autorizado a rutas fuera del scope mediante enlaces.
 - `2026-11-01T08:19:23` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de archivos al agregar una verificación explícita contra la API de Windows para detectar si el archivo es un archivo de dispositivo o un recurso de sistema nombrado (como `CON` o `LPT1`) antes de intentar cualquier operación de I/O, evitando así el comportamiento impredecible al interactuar con nombres de archivos reservados del kernel.
 - `2026-11-01T08:15:41` **organizer.py** (seguridad defensiva): Se ha reforzado la seguridad defensiva en `delete_reviewed` implementando una validación estricta de la identidad del archivo mediante `is_safe_to_modify` ANTES de la operación de borrado y verificando que el archivo no esté bloqueado o sea un enlace simbólico/punto de reparse, previniendo el borrado accidental de archivos de sistema que pudieran haber sido movidos erróneamente a la carpeta de revisión.
 - `2026-11-01T08:08:12` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `memory.py` mediante una verificación estricta de rutas mediante `is_protected_path` en `_is_process_executable_safe` y la adición de una validación de `path_buffer` previo a cualquier operación de trim o consulta, asegurando que no se interactúe con procesos cuyos ejecutables residan en áreas protegidas del sistema.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T07:26:27` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación de desbordamiento de memoria (`MemoryError`) y estados inválidos en `_compute_cached` y `compute_score` para manejar escenarios donde la lógica de las métricas podría recibir tipos de datos inesperados, además de asegurar que `SystemMetrics` nunca propague valores nulos o inconsistentes tras su inicialización.
 - `2026-11-01T07:16:56` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos al añadir validación explícita de `Path` y manejo defensivo del flujo de creación de directorios, evitando que excepciones inesperadas o rutas malformadas rompan la ejecución.
 - `2026-11-01T07:16:18` **assistant.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de ingesta de datos en `SystemContext.ingest()` y `SystemContext._validate_and_sanitize_data()` para evitar que una fuente de datos malformada o parcialmente corrupta (común en casos límite de reporte de hardware/SO) interrumpa la lógica del asistente, asegurando que solo se descarten los campos inválidos individualmente.
-- `2026-11-01T07:15:02` **startup.py** (rendimiento): Optimizé `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y realizar comprobaciones de seguridad (`is_protected_path`) solo una vez por carpeta, aprovechando el procesamiento directo de `os.DirEntry` y reduciendo el E/S del sistema de archivos mediante la validación previa de los nombres de archivo.

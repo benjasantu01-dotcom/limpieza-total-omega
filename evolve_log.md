@@ -777,3 +777,45 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-01T08:19:23` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de la validación de archivos al agregar una verificación explícita contra la API de Windows para detectar si el archivo es un archivo de dispositivo o un recurso de sistema nombrado (como `CON` o `LPT1`) antes de intentar cualquier operación de I/O, evitando así el comportamiento impredecible al interactuar con nombres de archivos reservados del kernel.
 - `2026-11-01T08:19:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T08:19:23` Corrida terminada. Total usado hoy: 196.
+- `2026-11-01T08:25:21` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-01T08:25:50` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-01T08:26:22` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_read_and_parse_json` y `_is_file_secure_to_read` añadiendo chequeos de enlace simbólico (hard links/symlinks) mediante `os.lstat` y validando que el archivo no sea un punto de reparse, previniendo así ataques por sustitución de archivos o acceso no autorizado a rutas fuera del scope mediante enlaces.
+- `2026-11-01T08:26:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-01T08:27:15` Tests FALLARON:
+```
+ not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: startup.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:115
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:115: SyntaxWarning: invalid escape sequence '\)'
+    normalización de stem y validación de namespaces NT (\\.\).
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: startup.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed, 8 warnings in 1.64s
+
+```
+- `2026-11-01T08:27:15` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se añadió una validación defensiva en `_is_valid_registry_path` y `_is_registry_entry_safe` para verificar que la ruta, además de no ser protegida, no contenga segmentos de directorio con puntos ("..") que puedan ser usados para ataques de path traversal, reforzando el control sobre las entradas leídas del registro.
+- `2026-11-01T08:27:15` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-01T08:27:15` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-01T08:27:35` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-01T08:27:35` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-01T08:28:06` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-01T08:28:06` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-01T08:28:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T08:28:06` Corrida terminada. Total usado hoy: 200.
