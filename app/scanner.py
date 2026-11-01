@@ -266,19 +266,16 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Aplica la suite de heurísticas sobre el archivo y recolecta las sospechas encontradas."""
-        try:
-            stats = _safe_stat(entry)
-            if stats is None:
-                return
-            for check_fn in ALL_CHECKS:
-                try:
-                    finding = check_fn(path, entry, self.now_ts, stats)
-                    if finding:
-                        self.results.append(finding)
-                except Exception:
-                    continue
-        except Exception:
-            pass
+        stats = _safe_stat(entry)
+        if stats is None:
+            return
+        for check_fn in ALL_CHECKS:
+            try:
+                finding = check_fn(path, entry, self.now_ts, stats)
+                if finding:
+                    self.results.append(finding)
+            except (ValueError, TypeError, AttributeError) as e:
+                logger.debug(f"Heurística falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escaneo heurístico puntual para archivos aislados fuera del flujo recursivo."""
@@ -295,8 +292,8 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
             res = check_fn(path, entry, now_ts, stats)
             if res:
                 findings.append(res)
-        except Exception:
-            continue
+        except (ValueError, TypeError, AttributeError) as e:
+            logger.debug(f"Error procesando heurística en {path}: {e}")
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

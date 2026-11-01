@@ -70,7 +70,8 @@ def _is_file_busy(path_str: str) -> bool:
     if os.name != 'nt': return False
     data = WIN32_FILE_ATTRIBUTE_DATA()
     try:
-        if not ctypes.windll.kernel32.GetFileAttributesExW(_to_long_path(path_str), 0, ctypes.byref(data)):
+        path_long = _to_long_path(path_str)
+        if not ctypes.windll.kernel32.GetFileAttributesExW(path_long, 0, ctypes.byref(data)):
             err = ctypes.windll.kernel32.GetLastError()
             return err == ERROR_SHARING_VIOLATION
     except (AttributeError, OSError, ctypes.ArgumentError):
@@ -84,28 +85,26 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     if path_str in _FILE_ID_CACHE:
         return _FILE_ID_CACHE[path_str]
     
+    res = (0, 0, 0, 0)
     if os.name != 'nt':
         try:
             st = os.stat(path_str)
             res = (st.st_dev, st.st_ino, 0, 0)
         except (OSError, PermissionError):
-            res = (0, 0, 0, 0)
+            pass
     else:
         info = BY_HANDLE_FILE_INFORMATION()
         kernel32 = ctypes.windll.kernel32
         path_long = _to_long_path(path_str)
         
+        # GENERIC_READ (0x80000000), FILE_SHARE_READ|WRITE|DELETE (0x07)
         handle = kernel32.CreateFileW(path_long, 0x80000000, 0x07, None, 3, 0x02000000, None)
-        if handle == -1: 
-            res = (0, 0, 0, 0)
-        else:
+        if handle != -1:
             try:
                 if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
                     res = (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, int(bool(info.dwFileAttributes & Win32Attr.DIRECTORY)))
-                else:
-                    res = (0, 0, 0, 0)
             except (ctypes.ArgumentError, OSError, ValueError, AttributeError):
-                res = (0, 0, 0, 0)
+                pass
             finally:
                 kernel32.CloseHandle(handle)
                 
@@ -437,20 +436,20 @@ def _is_system_directory_junction(path_str: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
-    if not isinstance(path_str, str) or not path_str or os.name != 'nt' or not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'): return False
+    if not isinstance(path_str, str) or not path_str or os.name != 'nt': return False
     if not os.path.exists(path_str): return False
     
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
     
     for attempt in range(3):
+        # Intentar abrir solo para consultar acceso (acceso 0)
         handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
         if handle != -1:
             kernel32.CloseHandle(handle)
             return False
         
-        err = kernel32.GetLastError()
-        if err == ERROR_SHARING_VIOLATION:
+        if kernel32.GetLastError() == ERROR_SHARING_VIOLATION:
             time.sleep(0.05 * (2 ** attempt))
             continue
         return True
