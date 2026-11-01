@@ -506,9 +506,12 @@ class SystemContext:
             except Exception:
                 continue
         
-        g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
-        if (grade_val := self._clean_grade(g_val)):
-            updates["grade"] = grade_val
+        try:
+            g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
+            if (grade_val := self._clean_grade(g_val)):
+                updates["grade"] = grade_val
+        except Exception:
+            pass
             
         return updates
 
@@ -541,7 +544,7 @@ class SystemContext:
             if updates:
                 self._apply_updates(updates)
                 return True
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError) as e:
             logging.error(f"Error procesando ingesta de contexto: {e}")
         return False
 

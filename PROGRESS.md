@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **140** (27.8% de aceptación)
+- Mejoras aceptadas: **139** (27.6% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 295
+- Rechazadas por guardia de seguridad: 44
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 298
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 40 | 3 | 15 | 7 | 107 |
-| 2026-11-01 | 100 | 8 | 30 | 6 | 188 |
+| 2026-10-31 | 38 | 3 | 14 | 6 | 107 |
+| 2026-11-01 | 101 | 8 | 30 | 6 | 191 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **34**
 - rendimiento: **29**
-- legibilidad y documentación: **26**
 - seguridad defensiva: **26**
-- manejo de errores y validación de entradas: **25**
+- manejo de errores y validación de entradas: **26**
+- legibilidad y documentación: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
-- `assistant.py`: **14**
-- `healthscore.py`: **13**
+- `assistant.py`: **15**
 - `quarantine.py`: **12**
+- `healthscore.py`: **12**
 - `scanner.py`: **11**
 - `startup.py`: **11**
 - `memory.py`: **11**
 - `browser.py`: **10**
 - `settings.py`: **10**
 - `organizer.py`: **9**
-- `duplicates.py`: **7**
 - `diskreport.py`: **7**
 - `branding.py`: **7**
+- `duplicates.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T14:14:34` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `ingest` y `_validate_and_sanitize_data` mediante la captura explícita de excepciones y una validación defensiva más estricta sobre el tipo de `source`, evitando que valores no esperados (como un objeto inesperado o None) causen fallos silenciosos o cuelgues del proceso de análisis.
 - `2026-11-01T12:52:09` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_valid_registry_path` y `_extract_quoted_path` al asegurar que cualquier ruta proveniente del registro sea validada contra `is_protected_path` antes de ser procesada, previniendo la exposición accidental de rutas del sistema que podrían haber escapado a filtros previos.
 - `2026-11-01T12:51:29` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_is_valid_path_structure` y `_is_safe_entry` al integrar una validación de rutas absolutas mediante `os.path.abspath`, evitando riesgos por rutas relativas maliciosas o ambiguas, y reforzando la detección de caracteres nulos en los nombres de archivo mediante el uso de `os.path.basename` para separar la validación del nombre de la ruta completa.
 - `2026-11-01T12:51:04` **safety.py** (seguridad defensiva): Mejoré la robustez de `_is_file_owned_by_system` implementando un chequeo directo contra el Security Identifier (SID) conocido de "SYSTEM" (S-1-5-18) y "LOCAL SERVICE" (S-1-5-19), asegurando que cualquier archivo con propiedad crítica del kernel sea bloqueado preventivamente antes de cualquier intento de manipulación.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T12:00:52` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a procesos en `_iter_process_memory` y `_get_handle_for_safe_proc`, añadiendo validaciones de tipo y estructura para prevenir fallos por manejadores inválidos o punteros de ruta malformados, garantizando que los recursos del sistema (Handles) siempre se cierren ante cualquier excepción.
 - `2026-11-01T11:50:43` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo al cálculo del hash en `hash_file` y `partial_hash` para evitar excepciones innecesarias en entornos de alta concurrencia donde un archivo podría ser eliminado o bloqueado por otro proceso entre su detección y su lectura.
 - `2026-11-01T11:40:49` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante posibles rutas de destino mal formadas o problemas de concurrencia al crear directorios, añadiendo una validación explícita mediante `is_safe_to_modify` antes de intentar operaciones de I/O y manejando adecuadamente la posibilidad de que el directorio padre sea creado por otro proceso justo antes de la ejecución.
-- `2026-11-01T11:40:34` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_validate_and_sanitize_data` para manejar entradas malformadas de forma transaccional, asegurando que si una parte de los datos de entrada es inválida o causa una excepción, el sistema no quede en un estado inconsistente y los valores parciales sigan siendo tratados con seguridad.
