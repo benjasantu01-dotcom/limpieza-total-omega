@@ -1319,3 +1319,14 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-01T03:32:42` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha ajustado `is_safe_to_modify` por `is_protected_path` en las funciones `hash_file` y `partial_hash` siguiendo estrictamente la regla de solo lectura para módulos de escaneo, evitando abortos innecesarios y corrigiendo el uso indebido de una función de escritura en un contexto de lectura.
 - `2026-11-01T03:32:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T03:32:42` Corrida terminada. Total usado hoy: 84.
+- `2026-11-01T03:40:18` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-01T03:40:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-01T03:40:58` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). He endurecido el filtro de seguridad de `healthscore.py` para prevenir la fuga de información mediante la validación proactiva del mensaje de cuarentena, asegurando que cualquier texto generado por el asistente pase por los mismos filtros de integridad (`_is_safe_string_for_report` y `_sanitize_msg`) que las reglas dinámicas.
+- `2026-11-01T03:42:05` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-01T03:42:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-01T03:42:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-01T03:42:16` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-01T03:42:30` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-01T03:42:56` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `delete_reviewed` implementando una validación explícita mediante `is_protected_path` sobre cada ítem antes del borrado, asegurando que ningún archivo que haya sido movido incorrectamente a la carpeta de revisión pueda ser eliminado si el usuario o el sistema marcaron su ruta como sensible.
+- `2026-11-01T03:42:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T03:42:56` Corrida terminada. Total usado hoy: 88.

@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **151** (30.0% de aceptación)
+- Mejoras aceptadas: **153** (30.4% de aceptación)
 - Rechazadas por tests: 5
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 279
+- Sin respuesta de la IA (error o límite): 276
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 29 | 0 | 10 | 3 | 28 |
+| 2026-10-30 | 29 | 0 | 10 | 3 | 24 |
 | 2026-10-31 | 90 | 5 | 32 | 14 | 209 |
-| 2026-11-01 | 32 | 0 | 8 | 2 | 42 |
+| 2026-11-01 | 34 | 0 | 9 | 2 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **32**
 - legibilidad y documentación: **31**
 - robustez ante casos límite: **28**
-- seguridad defensiva: **23**
+- seguridad defensiva: **25**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **14**
 - `quarantine.py`: **14**
 - `scanner.py`: **13**
+- `healthscore.py`: **13**
 - `assistant.py`: **12**
 - `memory.py`: **12**
-- `healthscore.py`: **12**
 - `browser.py`: **11**
+- `organizer.py`: **10**
 - `settings.py`: **10**
-- `organizer.py`: **9**
 - `startup.py`: **9**
 - `branding.py`: **8**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T03:42:56` **organizer.py** (seguridad defensiva): Se reforzó la seguridad en `delete_reviewed` implementando una validación explícita mediante `is_protected_path` sobre cada ítem antes del borrado, asegurando que ningún archivo que haya sido movido incorrectamente a la carpeta de revisión pueda ser eliminado si el usuario o el sistema marcaron su ruta como sensible.
+- `2026-11-01T03:40:58` **healthscore.py** (seguridad defensiva): He endurecido el filtro de seguridad de `healthscore.py` para prevenir la fuga de información mediante la validación proactiva del mensaje de cuarentena, asegurando que cualquier texto generado por el asistente pase por los mismos filtros de integridad (`_is_safe_string_for_report` y `_sanitize_msg`) que las reglas dinámicas.
 - `2026-11-01T03:32:42` **duplicates.py** (seguridad defensiva): Se ha ajustado `is_safe_to_modify` por `is_protected_path` en las funciones `hash_file` y `partial_hash` siguiendo estrictamente la regla de solo lectura para módulos de escaneo, evitando abortos innecesarios y corrigiendo el uso indebido de una función de escritura en un contexto de lectura.
 - `2026-11-01T03:32:21` **diskreport.py** (seguridad defensiva): Se reforzó `walk_files` implementando una validación de `path.is_relative_to(root)` para prevenir que el escaneo escape del directorio raíz previsto mediante enlaces simbólicos maliciosos, incluso tras las comprobaciones de `is_protected_path`.
 - `2026-11-01T03:31:49` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `DirectoryScanner._is_path_allowed` al implementar una validación de `os.path.realpath` contra el sandbox, lo que mitiga vulnerabilidades por enlaces simbólicos o puntos de reparse que podrían engañar a `os.path.abspath` y permitir la salida del ámbito permitido.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T02:51:41` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `diskreport.py` ante nombres de archivo inválidos o excesivamente largos que interrumpían el escaneo en sistemas de archivos con restricciones de longitud (MAX_PATH), garantizando que el escaneo continúe incluso si un nodo individual es inaccesible o presenta caracteres prohibidos por el sistema operativo.
 - `2026-11-01T02:51:19` **browser.py** (robustez ante casos límite): Se introdujo una validación robusta contra la recursión de enlaces simbólicos y puntos de reparse mediante el uso de `os.stat` con `follow_symlinks=False`, previniendo que el escáner siga estructuras de directorios fuera del scope permitido o genere bucles infinitos en sistemas Windows.
 - `2026-11-01T02:50:07` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `SystemContext.ingest` y `_apply_updates` al implementar una validación transaccional: ahora solo se aplican los cambios si todos los valores en la actualización pasan los filtros de tipo y rango, evitando estados parciales corruptos ante datos de entrada malformados.
-- `2026-11-01T02:41:44` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo de carpetas reemplazando el uso de `path.resolve(strict=False)` —que realiza consultas E/S adicionales de forma recursiva por cada componente de la ruta— por una normalización lógica más ligera, utilizando el caché de validación existente para evitar redundancia en las verificaciones de seguridad.
-- `2026-11-01T02:41:23` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la llamada `os.stat()` y el procesamiento de archivos innecesarios cuando la configuración ya está presente en `_MANAGER.data_cache` y el archivo no ha sido modificado, reduciendo latencia en I/O.
