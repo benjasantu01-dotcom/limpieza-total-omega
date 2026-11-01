@@ -53,6 +53,12 @@ _VALIDATION_KEYS: Final[Tuple[str, ...]] = (
     "duplicate_mb", "startup_count"
 )
 
+def _is_sensitive_input(data: Any) -> bool:
+    """Verifica si la entrada contiene rutas o términos bloqueados por seguridad."""
+    if not isinstance(data, str): return False
+    d_low = data.lower()
+    return any(term in d_low for term in _BLOCKED_TERMS)
+
 class Scorer(Protocol):
     """
     Protocolo funcional para transformar SystemMetrics en un ratio de salud [0.0, 1.0].
@@ -317,14 +323,13 @@ def grade_for_score(score: float | int) -> str:
 
 def _is_safe_string_for_report(text: str) -> bool:
     """Verifica si el mensaje contiene términos protegidos o rutas sensibles."""
-    t_low = text.lower()
-    return not any(term in t_low for term in _BLOCKED_TERMS)
+    return not _is_sensitive_input(text)
 
 def _sanitize_msg(msg: str | Any) -> str:
     """
     Filtro de seguridad que limpia caracteres no permitidos y bloquea términos sensibles.
     """
-    if not isinstance(msg, str) or len(msg) > (_MAX_MSG_LEN * 4): 
+    if not isinstance(msg, str) or len(msg) > (_MAX_MSG_LEN * 4) or _is_sensitive_input(msg): 
         return ""
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
     return clean.strip()[:_MAX_MSG_LEN]

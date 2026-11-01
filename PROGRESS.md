@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **142** (28.2% de aceptación)
+- Mejoras aceptadas: **144** (28.6% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 291
+- Sin respuesta de la IA (error o límite): 288
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 48 | 4 | 18 | 9 | 133 |
-| 2026-11-01 | 94 | 7 | 28 | 5 | 158 |
+| 2026-10-31 | 48 | 4 | 18 | 9 | 129 |
+| 2026-11-01 | 96 | 7 | 29 | 5 | 159 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,15 +25,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **31**
 - rendimiento: **29**
 - legibilidad y documentación: **28**
-- seguridad defensiva: **20**
+- seguridad defensiva: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
 - `assistant.py`: **14**
 - `quarantine.py`: **13**
+- `healthscore.py`: **13**
 - `browser.py`: **12**
-- `healthscore.py`: **12**
 - `settings.py`: **11**
 - `scanner.py`: **10**
 - `startup.py`: **10**
@@ -41,10 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **9**
 - `organizer.py`: **9**
 - `branding.py`: **8**
-- `duplicates.py`: **6**
+- `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T12:31:09` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al introducir `_is_sensitive_input` y aplicarlo en la creación de `SystemMetrics` y durante la validación de reportes, evitando que datos potencialmente maliciosos o rutas de sistema se filtren en la lógica de procesamiento o mensajes de la interfaz.
+- `2026-11-01T12:30:38` **duplicates.py** (seguridad defensiva): Se ha refactorizado `_safe_path_check` para mejorar la seguridad defensiva mediante la resolución de la ruta real antes de cualquier chequeo (`resolve()`), previniendo vulnerabilidades por *Path Traversal* o enlaces simbólicos maliciosos, y se ha estandarizado el manejo de rutas en las funciones de hashing para garantizar que siempre se verifique la seguridad antes de abrir cualquier descriptor de archivo.
 - `2026-11-01T12:21:26` **browser.py** (seguridad defensiva): Se ha restringido el acceso del `DirectoryScanner` para asegurar que, durante la recursión, no se sigan puntos de reparse ni enlaces simbólicos, reforzando el aislamiento del escaneo dentro de la ruta base permitida.
 - `2026-11-01T12:21:16` **branding.py** (seguridad defensiva): Mejoré `save_logo_svg` aplicando una validación de ruta más robusta mediante `is_safe_to_modify` antes de cualquier operación de resolución, asegurando que el directorio padre exista y sea seguro antes de intentar la creación o escritura, evitando así efectos secundarios si la ruta de destino es bloqueada por el sistema.
 - `2026-11-01T12:11:11` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `_SettingsManager` para evitar condiciones de carrera o corrupción ante cierres inesperados mediante el uso de una verificación explícita de `os.replace` y la eliminación de bloqueos en archivos que no siguen el protocolo de seguridad.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T11:39:27` **settings.py** (rendimiento): Se optimizó la validación `_is_structure_valid` para evitar iteraciones redundantes y búsquedas innecesarias en `_KEY_TO_ENUM` al validar el esquema de configuración tras el parseo del JSON.
 - `2026-11-01T11:30:37` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner reemplazando la creación repetitiva de objetos `Path` dentro del bucle crítico de `process_entry` y `scan_directory` por el uso directo de las rutas `str` proporcionadas por `os.DirEntry`, evitando además una llamada redundante a `os.path.normcase` al reutilizar el estado del `Scanner`.
 - `2026-11-01T11:30:26` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando la recreación innecesaria de objetos `Path` y normalizando rutas solo cuando es estrictamente necesario, aprovechando que `PROTECTED_DIR_NAMES` ya es un `set` para búsquedas O(1).
-- `2026-11-01T11:29:18` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la redundancia de `stat()` al realizar `load_manifest` mediante el uso inteligente del `_MANIFEST_CACHE` y el filtrado por `mtime/size` ya existente, además de evitar la serialización innecesaria de objetos en `list_items` al usar una referencia directa del cache.
-- `2026-11-01T11:20:51` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la validación redundante `is_safe_to_modify(Path(entry.path))` por una verificación de conjunto (`in`) en `_should_scan_directory`, reduciendo las llamadas costosas al sistema de archivos mediante el aprovechamiento del `protected_cache`.

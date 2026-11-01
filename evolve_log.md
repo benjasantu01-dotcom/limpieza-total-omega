@@ -1172,3 +1172,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-11-01T12:21:26` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha restringido el acceso del `DirectoryScanner` para asegurar que, durante la recursión, no se sigan puntos de reparse ni enlaces simbólicos, reforzando el aislamiento del escaneo dentro de la ruta base permitida.
 - `2026-11-01T12:21:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T12:21:26` Corrida terminada. Total usado hoy: 292.
+- `2026-11-01T12:29:49` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-01T12:30:15` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-11-01T12:30:38` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha refactorizado `_safe_path_check` para mejorar la seguridad defensiva mediante la resolución de la ruta real antes de cualquier chequeo (`resolve()`), previniendo vulnerabilidades por *Path Traversal* o enlaces simbólicos maliciosos, y se ha estandarizado el manejo de rutas en las funciones de hashing para garantizar que siempre se verifique la seguridad antes de abrir cualquier descriptor de archivo.
+- `2026-11-01T12:31:09` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al introducir `_is_sensitive_input` y aplicarlo en la creación de `SystemMetrics` y durante la validación de reportes, evitando que datos potencialmente maliciosos o rutas de sistema se filtren en la lógica de procesamiento o mensajes de la interfaz.
+- `2026-11-01T12:32:01` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-01T12:32:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T12:32:01` Corrida terminada. Total usado hoy: 296.
