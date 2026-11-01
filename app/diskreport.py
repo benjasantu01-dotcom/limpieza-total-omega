@@ -160,7 +160,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(name: str, full_path: Path) -> bool:
+def _is_excluded_path(name: str) -> bool:
     """Filtra archivos con nombres sospechosos o caracteres no válidos para el sistema."""
     if not name or '\0' in name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
@@ -282,7 +282,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if not entry or _is_excluded_path(entry.name, Path(entry.path)):
+                        if _is_excluded_path(entry.name):
                             continue
                         
                         path_str = entry.path

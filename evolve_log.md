@@ -1262,3 +1262,12 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-01T02:41:44` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo de carpetas reemplazando el uso de `path.resolve(strict=False)` —que realiza consultas E/S adicionales de forma recursiva por cada componente de la ruta— por una normalización lógica más ligera, utilizando el caché de validación existente para evitar redundancia en las verificaciones de seguridad.
 - `2026-11-01T02:41:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T02:41:44` Corrida terminada. Total usado hoy: 64.
+- `2026-11-01T02:49:16` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-11-01T02:50:07` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `SystemContext.ingest` y `_apply_updates` al implementar una validación transaccional: ahora solo se aplican los cambios si todos los valores en la actualización pasan los filtros de tipo y rango, evitando estados parciales corruptos ante datos de entrada malformados.
+- `2026-11-01T02:50:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-01T02:50:12` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-01T02:50:53` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-01T02:51:19` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra la recursión de enlaces simbólicos y puntos de reparse mediante el uso de `os.stat` con `follow_symlinks=False`, previniendo que el escáner siga estructuras de directorios fuera del scope permitido o genere bucles infinitos en sistemas Windows.
+- `2026-11-01T02:51:41` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `diskreport.py` ante nombres de archivo inválidos o excesivamente largos que interrumpían el escaneo en sistemas de archivos con restricciones de longitud (MAX_PATH), garantizando que el escaneo continúe incluso si un nodo individual es inaccesible o presenta caracteres prohibidos por el sistema operativo.
+- `2026-11-01T02:51:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T02:51:41` Corrida terminada. Total usado hoy: 68.

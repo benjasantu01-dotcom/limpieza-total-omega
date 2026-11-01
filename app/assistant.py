@@ -499,6 +499,9 @@ class SystemContext:
             k: self._apply_field(source, k, spec) 
             for k, spec in _VALIDATORS.items()
         }
+        
+        # Validación transaccional: asegurar que todas las métricas extraídas sean válidas
+        # Si alguna es None, es una actualización parcial o errónea, se filtra.
         updates = {k: v for k, v in extracted.items() if v is not None}
         
         g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")

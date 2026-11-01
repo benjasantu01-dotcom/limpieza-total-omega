@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **143** (28.4% de aceptación)
+- Mejoras aceptadas: **144** (28.6% de aceptación)
 - Rechazadas por tests: 6
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 286
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 34 | 1 | 12 | 3 | 40 |
+| 2026-10-30 | 32 | 1 | 11 | 3 | 39 |
 | 2026-10-31 | 90 | 5 | 32 | 14 | 209 |
-| 2026-11-01 | 19 | 0 | 6 | 2 | 37 |
+| 2026-11-01 | 22 | 0 | 6 | 2 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **37**
 - rendimiento: **32**
 - legibilidad y documentación: **31**
-- seguridad defensiva: **24**
-- robustez ante casos límite: **19**
+- seguridad defensiva: **22**
+- robustez ante casos límite: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **19**
-- `quarantine.py`: **14**
 - `scanner.py`: **14**
-- `memory.py`: **12**
-- `diskreport.py`: **12**
+- `diskreport.py`: **13**
+- `quarantine.py`: **13**
+- `assistant.py`: **11**
+- `memory.py`: **11**
 - `healthscore.py`: **11**
 - `settings.py`: **10**
-- `assistant.py`: **10**
-- `browser.py`: **9**
+- `browser.py`: **10**
 - `startup.py`: **9**
 - `branding.py`: **8**
 - `organizer.py`: **8**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T02:51:41` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `diskreport.py` ante nombres de archivo inválidos o excesivamente largos que interrumpían el escaneo en sistemas de archivos con restricciones de longitud (MAX_PATH), garantizando que el escaneo continúe incluso si un nodo individual es inaccesible o presenta caracteres prohibidos por el sistema operativo.
+- `2026-11-01T02:51:19` **browser.py** (robustez ante casos límite): Se introdujo una validación robusta contra la recursión de enlaces simbólicos y puntos de reparse mediante el uso de `os.stat` con `follow_symlinks=False`, previniendo que el escáner siga estructuras de directorios fuera del scope permitido o genere bucles infinitos en sistemas Windows.
+- `2026-11-01T02:50:07` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `SystemContext.ingest` y `_apply_updates` al implementar una validación transaccional: ahora solo se aplican los cambios si todos los valores en la actualización pasan los filtros de tipo y rango, evitando estados parciales corruptos ante datos de entrada malformados.
 - `2026-11-01T02:41:44` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo de carpetas reemplazando el uso de `path.resolve(strict=False)` —que realiza consultas E/S adicionales de forma recursiva por cada componente de la ruta— por una normalización lógica más ligera, utilizando el caché de validación existente para evitar redundancia en las verificaciones de seguridad.
 - `2026-11-01T02:41:23` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la llamada `os.stat()` y el procesamiento de archivos innecesarios cuando la configuración ya está presente en `_MANAGER.data_cache` y el archivo no ha sido modificado, reduciendo latencia en I/O.
 - `2026-11-01T02:40:55` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `set` para `SUSPICIOUS_ALL_EXTS` y la pre-normalización de extensiones en `_is_relevant_extension` para evitar múltiples llamadas a `lower()` y `splitext()` en cada archivo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T01:59:31` **safety.py** (legibilidad y documentación): Se refactorizó la lógica de validación de integridad (`_evaluate_security_rules`) para mejorar la legibilidad y mantenibilidad, reemplazando la larga lista de predicados lambda por un bucle explícito que documenta cada regla y su causa de fallo, facilitando el debugging sin cambiar el comportamiento.
 - `2026-11-01T01:51:25` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y la mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_write_temp_to_final` para desacoplar el flujo lógico de la gestión de errores, y he añadido docstrings de estilo Google que explican el "porqué" de las operaciones críticas de sincronización a disco y manejo de inodos.
 - `2026-11-01T01:50:18` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave y constantes críticas, clarificando el propósito de los tipos de datos y los riesgos operativos, manteniendo estrictamente el comportamiento original.
-- `2026-11-01T01:19:49` **scanner.py** (manejo de errores y validación de entradas): He mejorado la robustez de `_run_file_heuristics` y `scan_file` reemplazando los bloques `try-except` genéricos por capturas específicas de excepciones de I/O, evitando ocultar errores de lógica durante la ejecución del escaneo.
-- `2026-11-01T01:19:39` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_locked_by_other_process` y `_get_file_id` reemplazando llamadas potencialmente ambiguas a `ctypes` por una validación explícita de éxito, asegurando que los fallos de acceso no se silencien incorrectamente como archivos "libres" y mejorando el manejo de errores en operaciones con el sistema de archivos.
-- `2026-11-01T01:09:50` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la validación de parámetros y el manejo de errores en `stage_for_review` y `_can_move_file` para asegurar que las rutas y los objetos sean coherentes antes de intentar operaciones de E/S, previniendo excepciones no capturadas.

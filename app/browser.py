@@ -110,16 +110,17 @@ class DirectoryScanner:
         if not isinstance(root_path, str) or not root_path:
             return ScanResult(0, False)
             
-        if depth > self.ctx.max_depth or self.ctx.is_junction(root_path):
+        if depth > self.ctx.max_depth:
             return ScanResult(0, True)
         
         if not self._is_path_allowed(root_path):
             return ScanResult(0, True)
 
         try:
-            if not os.path.exists(root_path):
-                return ScanResult(0, False)
-            st = os.stat(root_path)
+            # Usar lstat para detectar symlinks/junctions correctamente sin seguir enlaces
+            st = os.lstat(root_path)
+            if self.ctx.is_junction(root_path):
+                return ScanResult(0, True)
             dir_id = (st.st_dev, st.st_ino)
         except (OSError, PermissionError, FileNotFoundError):
             return ScanResult(0, False)
@@ -136,13 +137,15 @@ class DirectoryScanner:
                     try:
                         if not hasattr(entry, 'name') or not entry.name: continue
                         if entry.name.lower() in self.ctx.never_touch_lower: continue
+                        
+                        # Impedir recursión en enlaces simbólicos
                         if entry.is_symlink(): continue
                         
-                        if entry.is_dir(follow_symlinks=False):
+                        if entry.is_dir():
                             if not self.ctx.is_junction(entry.path):
                                 subdir = self.get_size(entry.path, depth + 1)
                                 total_bytes += subdir.bytes_found
-                        elif entry.is_file(follow_symlinks=False):
+                        elif entry.is_file():
                             if not _is_system_hidden(entry.path, self.ctx.kernel32):
                                 try:
                                     st_file = entry.stat(follow_symlinks=False)
