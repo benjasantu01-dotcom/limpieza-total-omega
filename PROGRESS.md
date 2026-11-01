@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **130** (25.8% de aceptación)
+- Mejoras aceptadas: **132** (26.2% de aceptación)
 - Rechazadas por tests: 7
 - Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 306
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 303
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 81 | 4 | 28 | 14 | 193 |
-| 2026-11-01 | 49 | 3 | 16 | 3 | 113 |
+| 2026-10-31 | 81 | 4 | 28 | 14 | 189 |
+| 2026-11-01 | 51 | 3 | 16 | 4 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,16 +25,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **30**
 - rendimiento: **26**
 - legibilidad y documentación: **24**
-- seguridad defensiva: **20**
+- seguridad defensiva: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **17**
 - `quarantine.py`: **13**
 - `healthscore.py`: **12**
+- `assistant.py`: **12**
 - `scanner.py`: **11**
-- `assistant.py`: **11**
-- `browser.py`: **10**
+- `browser.py`: **11**
 - `diskreport.py`: **10**
 - `memory.py`: **9**
 - `startup.py`: **9**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T07:56:46` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner._is_path_allowed` al implementar una validación estricta de la ruta contra la raíz del sandbox utilizando `os.path.commonpath`, lo cual es una técnica más robusta y menos propensa a errores que la comparación manual de strings normalizados al prevenir ataques de traversal de directorios (path traversal).
+- `2026-11-01T07:55:37` **assistant.py** (seguridad defensiva): Mejoré la seguridad de `_call_gemini` reemplazando la construcción manual de la URL mediante f-strings por el uso de `urllib.parse.urlencode`, evitando inyecciones de parámetros y asegurando que la clave API sea tratada como un dato opaco y no como parte de la estructura de la URL.
 - `2026-11-01T07:47:20` **startup.py** (robustez ante casos límite): Mejora la robustez ante rutas corruptas o inexistentes en `_process_folder_entry` mediante un chequeo de `is_file()` previo más seguro y la captura estricta de excepciones, evitando que errores de permisos bloqueen el escaneo de toda la carpeta.
 - `2026-11-01T07:46:39` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `_safe_stat` y `_is_readable` incorporando manejo explícito de rutas con longitud excesiva o caracteres nulos, evitando errores no capturados al interactuar con el sistema de archivos de Windows.
 - `2026-11-01T07:45:31` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_get_path_stat_robust` para detectar archivos con atributos de tipo "reparse point" o "directory" cuando se espera un archivo regular, evitando el tratamiento inadvertido de junctions o enlaces simbólicos como archivos de datos, mejorando la robustez ante casos límite del sistema de archivos en Windows.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T07:05:17` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` al reemplazar el cálculo repetitivo y costoso de `Path(norm_str).parts` por una verificación de prefijo de cadena (`startswith`) más directa, reduciendo drásticamente la sobrecarga en iteraciones sobre listas largas de archivos.
 - `2026-11-01T05:53:12` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas y la gestión de archivos al envolver `path.stat()` en `scan_file` con un bloque `try-except` más específico y protector, evitando que fallos de acceso a metadatos detengan el escaneo de un archivo potencialmente peligroso, además de añadir validaciones de tipo `None` sobre `stats` antes de su uso en heurísticas.
 - `2026-11-01T05:26:16` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `DirectoryScanner.get_size` mediante la validación explícita de `root_path` y la captura de errores en la iteración, asegurando que entradas inválidas o bloqueadas no interrumpan el escaneo ni propaguen excepciones.
-- `2026-11-01T05:23:19` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` para manejar estructuras de datos incompletas o malformadas mediante el uso de `.get()` encadenado y validaciones de tipo explícitas, evitando posibles `AttributeError` o `TypeError` ante respuestas inesperadas de la API.
-- `2026-11-01T03:52:43` **safety.py** (seguridad defensiva): Mejoré `_validate_preconditions` añadiendo una comprobación explícita para evitar que se operen archivos que residen en la carpeta donde la aplicación está instalada (usando `sys.executable` si está disponible o el directorio de trabajo actual), evitando así riesgos de auto-manipulación destructiva.

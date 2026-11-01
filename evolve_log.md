@@ -744,3 +744,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-11-01T07:47:20` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejora la robustez ante rutas corruptas o inexistentes en `_process_folder_entry` mediante un chequeo de `is_file()` previo más seguro y la captura estricta de excepciones, evitando que errores de permisos bloqueen el escaneo de toda la carpeta.
 - `2026-11-01T07:47:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T07:47:20` Corrida terminada. Total usado hoy: 184.
+- `2026-11-01T07:54:51` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-11-01T07:55:37` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad de `_call_gemini` reemplazando la construcción manual de la URL mediante f-strings por el uso de `urllib.parse.urlencode`, evitando inyecciones de parámetros y asegurando que la clave API sea tratada como un dato opaco y no como parte de la estructura de la URL.
+- `2026-11-01T07:56:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-01T07:56:46` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `DirectoryScanner._is_path_allowed` al implementar una validación estricta de la ruta contra la raíz del sandbox utilizando `os.path.commonpath`, lo cual es una técnica más robusta y menos propensa a errores que la comparación manual de strings normalizados al prevenir ataques de traversal de directorios (path traversal).
+- `2026-11-01T07:57:02` ➖ Sin cambios en diskreport.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la robustez defensiva de `walk_files` al añadir una validación de ruta absoluta (canonical) antes de procesar cada elemento, evitando vulnerabilidades de traversal si el sistema de archivos tuviera enlaces simbólicos anómalos que intentaran evadir el `root_path`.
+- `2026-11-01T07:57:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T07:57:02` Corrida terminada. Total usado hoy: 188.

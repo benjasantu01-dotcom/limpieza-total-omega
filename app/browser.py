@@ -89,13 +89,12 @@ class DirectoryScanner:
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
             
-            # Validación robusta de escape de sandbox usando realpath para resolver symlinks/junctions
+            # Validación robusta de escape de sandbox usando commonpath
             real_path = os.path.realpath(path_str)
-            path_norm = os.path.normcase(real_path)
-            if not path_norm.startswith(self.ctx.sandbox_base_norm):
+            if os.path.commonpath([real_path, self.ctx.sandbox_base_norm]) != self.ctx.sandbox_base_norm:
                 return False
             return True
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, ValueError):
             return False
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
@@ -300,7 +299,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path) or not base.exists(): continue
         
         try:
-            base_norm = os.path.normcase(os.path.realpath(str(base)))
+            base_norm = os.path.realpath(str(base))
         except (OSError, RuntimeError):
             continue
             

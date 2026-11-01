@@ -42,6 +42,7 @@ from __future__ import annotations
 import json
 import urllib.error
 import urllib.request
+import urllib.parse
 import re
 import math
 import logging
@@ -765,14 +766,12 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload: Optional[bytes] = _build_payload(question, context_text)
     if not payload: return None
     
-    # Construcción segura y validación estricta de la URL de destino
     base_target = _ENDPOINT_BASE.format(model=model)
-    # Validar caracteres prohibidos, prefijos y asegurar que no sea un path del sistema
     if not base_target.startswith(_API_HOST_ROOT) or any(c in base_target for c in _FORBIDDEN_CHARS): return None
     if is_protected_path(base_target): return None
     
     try:
-        url_with_key = f"{base_target}?key={api_key}"
+        url_with_key = f"{base_target}?{urllib.parse.urlencode({'key': api_key})}"
         req: urllib.request.Request = urllib.request.Request(url_with_key, data=payload, headers={"Content-Type": "application/json", "Accept": "application/json"}, method="POST")
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
