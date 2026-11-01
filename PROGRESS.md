@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **153** (30.4% de aceptación)
-- Rechazadas por tests: 5
-- Rechazadas por guardia de seguridad: 51
+- Mejoras aceptadas: **154** (30.6% de aceptación)
+- Rechazadas por tests: 6
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 276
+- Sin respuesta de la IA (error o límite): 273
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 29 | 0 | 10 | 3 | 24 |
+| 2026-10-30 | 29 | 0 | 10 | 3 | 20 |
 | 2026-10-31 | 90 | 5 | 32 | 14 | 209 |
-| 2026-11-01 | 34 | 0 | 9 | 2 | 43 |
+| 2026-11-01 | 35 | 1 | 10 | 2 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,11 +26,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **32**
 - legibilidad y documentación: **31**
 - robustez ante casos límite: **28**
-- seguridad defensiva: **25**
+- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
+- `safety.py`: **20**
 - `diskreport.py`: **14**
 - `quarantine.py`: **14**
 - `scanner.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T03:52:43` **safety.py** (seguridad defensiva): Mejoré `_validate_preconditions` añadiendo una comprobación explícita para evitar que se operen archivos que residen en la carpeta donde la aplicación está instalada (usando `sys.executable` si está disponible o el directorio de trabajo actual), evitando así riesgos de auto-manipulación destructiva.
 - `2026-11-01T03:42:56` **organizer.py** (seguridad defensiva): Se reforzó la seguridad en `delete_reviewed` implementando una validación explícita mediante `is_protected_path` sobre cada ítem antes del borrado, asegurando que ningún archivo que haya sido movido incorrectamente a la carpeta de revisión pueda ser eliminado si el usuario o el sistema marcaron su ruta como sensible.
 - `2026-11-01T03:40:58` **healthscore.py** (seguridad defensiva): He endurecido el filtro de seguridad de `healthscore.py` para prevenir la fuga de información mediante la validación proactiva del mensaje de cuarentena, asegurando que cualquier texto generado por el asistente pase por los mismos filtros de integridad (`_is_safe_string_for_report` y `_sanitize_msg`) que las reglas dinámicas.
 - `2026-11-01T03:32:42` **duplicates.py** (seguridad defensiva): Se ha ajustado `is_safe_to_modify` por `is_protected_path` en las funciones `hash_file` y `partial_hash` siguiendo estrictamente la regla de solo lectura para módulos de escaneo, evitando abortos innecesarios y corrigiendo el uso indebido de una función de escritura en un contexto de lectura.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T03:00:25` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `_compute_cached` y `compute_score` frente a datos externos malformados o inconsistentes, asegurando que el motor analítico no propague excepciones inesperadas durante la instanciación de `SystemMetrics` y manteniendo la integridad del caché LRU mediante una validación estricta de los tipos de entrada.
 - `2026-11-01T02:51:41` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `diskreport.py` ante nombres de archivo inválidos o excesivamente largos que interrumpían el escaneo en sistemas de archivos con restricciones de longitud (MAX_PATH), garantizando que el escaneo continúe incluso si un nodo individual es inaccesible o presenta caracteres prohibidos por el sistema operativo.
 - `2026-11-01T02:51:19` **browser.py** (robustez ante casos límite): Se introdujo una validación robusta contra la recursión de enlaces simbólicos y puntos de reparse mediante el uso de `os.stat` con `follow_symlinks=False`, previniendo que el escáner siga estructuras de directorios fuera del scope permitido o genere bucles infinitos en sistemas Windows.
-- `2026-11-01T02:50:07` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `SystemContext.ingest` y `_apply_updates` al implementar una validación transaccional: ahora solo se aplican los cambios si todos los valores en la actualización pasan los filtros de tipo y rango, evitando estados parciales corruptos ante datos de entrada malformados.

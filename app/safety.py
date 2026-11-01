@@ -13,6 +13,7 @@ import re
 import ctypes
 import time
 import errno
+import sys
 from enum import Enum, auto, IntEnum
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional, TypedDict
@@ -264,6 +265,7 @@ class SafetyValidationErrorCode(IntEnum):
     VOLUME_SHADOW_COPY = 38
     FILENAME_TOO_LONG = 39
     INVALID_PATH_TYPE = 40
+    APP_DIRECTORY_VIOLATION = 41
 
 class UnsafePathError(Exception):
     def __init__(self, message: str, code: SafetyValidationErrorCode = SafetyValidationErrorCode.GENERIC):
@@ -926,6 +928,10 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
+    app_root = Path(getattr(sys, 'executable', os.getcwd())).parent
+    if target_path.is_relative_to(app_root):
+        raise UnsafePathError("Protección: No se puede modificar el directorio de la aplicación.", SafetyValidationErrorCode.APP_DIRECTORY_VIOLATION)
+
     if is_running_as_admin():
         if _is_file_owned_by_system(str(target_path)) or _is_kernel_managed(str(target_path)):
             raise UnsafePathError("Operación denegada en modo privilegiado.", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION)

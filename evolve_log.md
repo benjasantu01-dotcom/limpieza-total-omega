@@ -1330,3 +1330,30 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-01T03:42:56` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `delete_reviewed` implementando una validación explícita mediante `is_protected_path` sobre cada ítem antes del borrado, asegurando que ningún archivo que haya sido movido incorrectamente a la carpeta de revisión pueda ser eliminado si el usuario o el sistema marcaron su ruta como sensible.
 - `2026-11-01T03:42:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T03:42:56` Corrida terminada. Total usado hoy: 88.
+- `2026-11-01T03:50:31` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-01T03:51:16` Tests FALLARON:
+```
+.\).
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name '_check_path_junctions' is not defined
+9 failed, 290 passed, 7 warnings in 1.65s
+
+```
+- `2026-11-01T03:51:16` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha añadido una verificación de "propietario" y "enlaces" en `_perform_secure_copy` para prevenir ataques de symlink/hardlink que intenten engañar a la lógica de cuarentena al escribir en el destino, asegurando que el archivo copiado sea un archivo regular y no un puntero a otro sitio.
+- `2026-11-01T03:51:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-01T03:51:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-01T03:51:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-01T03:52:43` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré `_validate_preconditions` añadiendo una comprobación explícita para evitar que se operen archivos que residen en la carpeta donde la aplicación está instalada (usando `sys.executable` si está disponible o el directorio de trabajo actual), evitando así riesgos de auto-manipulación destructiva.
+- `2026-11-01T03:52:52` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-01T03:52:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T03:52:52` Corrida terminada. Total usado hoy: 92.
