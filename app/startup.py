@@ -183,23 +183,19 @@ class StartupEntry:
             return _VALIDATION_CACHE[p_str]
             
         try:
-            if is_protected_path(p):
-                _VALIDATION_CACHE[p_str] = False
-                return False
-            # os.access verifica disponibilidad sin intentar bloquear archivos en uso
-            if not os.access(p, os.R_OK):
+            # Primero validamos seguridad, luego atributos de archivo (evita E/S si es bloqueado)
+            if is_protected_path(p) or not is_safe_to_modify(p):
                 _VALIDATION_CACHE[p_str] = False
                 return False
             if not p.is_file() or p.is_symlink():
                 _VALIDATION_CACHE[p_str] = False
                 return False
-            if not is_safe_to_modify(p):
+            if not os.access(p, os.R_OK):
                 _VALIDATION_CACHE[p_str] = False
                 return False
                 
-            exists: bool = p.exists()
-            _VALIDATION_CACHE[p_str] = exists
-            return exists
+            _VALIDATION_CACHE[p_str] = True
+            return True
         except (OSError, PermissionError, RuntimeError):
             _VALIDATION_CACHE[p_str] = False
             return False

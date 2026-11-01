@@ -495,10 +495,8 @@ class SystemContext:
         except Exception:
             return ""
 
-    def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
-        """Extrae y valida de forma transaccional un conjunto de métricas desde una fuente externa."""
-        if not isinstance(source, (dict, object)) or callable(source): return None
-        
+    def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
+        """Extrae y valida un conjunto de métricas desde una fuente externa."""
         updates = {}
         for k, spec in _VALIDATORS.items():
             try:
@@ -512,7 +510,7 @@ class SystemContext:
         if (grade_val := self._clean_grade(g_val)):
             updates["grade"] = grade_val
             
-        return updates if updates else None
+        return updates
 
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad básicas sobre el objeto/fuente de datos recibido."""
@@ -539,7 +537,8 @@ class SystemContext:
             logging.warning("Intento de ingesta con fuente insegura o compleja bloqueado.")
             return False
         try:
-            if (updates := self._validate_and_sanitize_data(source)):
+            updates = self._validate_and_sanitize_data(source)
+            if updates:
                 self._apply_updates(updates)
                 return True
         except Exception as e:

@@ -362,9 +362,9 @@ def _is_structure_valid(data: Any) -> bool:
     """Verifica que el JSON parseado sea un diccionario de tamaño controlado con tipos conformes al esquema."""
     if not isinstance(data, dict) or len(data) > 64: return False
     for k, v in data.items():
+        if v is None: return False
         key_enum = _KEY_TO_ENUM.get(k)
-        if not key_enum: return False
-        if v is None or not _is_valid_type(v, key_enum): return False
+        if not key_enum or not _is_valid_type(v, key_enum): return False
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
