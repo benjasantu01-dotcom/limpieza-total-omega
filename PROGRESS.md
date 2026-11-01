@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **128** (25.4% de aceptación)
+- Mejoras aceptadas: **127** (25.2% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 308
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 310
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 69 | 4 | 25 | 12 | 162 |
-| 2026-11-01 | 59 | 5 | 18 | 4 | 146 |
+| 2026-10-31 | 67 | 4 | 24 | 11 | 162 |
+| 2026-11-01 | 60 | 5 | 19 | 4 | 148 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **30**
+- manejo de errores y validación de entradas: **28**
 - seguridad defensiva: **27**
-- manejo de errores y validación de entradas: **27**
 - rendimiento: **26**
-- legibilidad y documentación: **18**
+- legibilidad y documentación: **16**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **17**
-- `healthscore.py`: **12**
+- `safety.py`: **16**
+- `healthscore.py`: **13**
 - `quarantine.py`: **12**
 - `assistant.py`: **12**
 - `browser.py`: **11**
-- `scanner.py`: **10**
 - `diskreport.py`: **9**
 - `settings.py`: **9**
 - `startup.py`: **9**
 - `memory.py`: **9**
+- `scanner.py`: **9**
 - `organizer.py`: **8**
 - `duplicates.py`: **6**
 - `branding.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T09:58:06` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` y `compute_score` validando explícitamente los datos de entrada antes de cualquier operación aritmética, asegurando que `validate` sea idempotent y que `_compute_cached` no reciba tuplas malformadas si los tipos de entrada varían.
 - `2026-11-01T09:49:05` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner` agregando validaciones de entrada (`None`/vacíos) y protecciones contra condiciones de carrera (`FileNotFoundError`) al procesar iteradores de directorio, asegurando que el escaneo no falle ante cambios rápidos en el sistema de archivos durante la ejecución.
 - `2026-11-01T09:48:56` **branding.py** (manejo de errores y validación de entradas): Reforcé la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación explícita de tipos, el uso de valores por defecto seguros ante entradas nulas y la captura de excepciones específicas, evitando así comportamientos indefinidos al recibir datos inesperados.
 - `2026-11-01T09:48:24` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de métricas en `SystemContext.ingest` y `_validate_and_sanitize_data` al capturar errores de forma explícita y prevenir la corrupción del contexto ante fuentes de datos inesperadas, aplicando un enfoque más defensivo y exigente en la validación.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T07:46:39` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `_safe_stat` y `_is_readable` incorporando manejo explícito de rutas con longitud excesiva o caracteres nulos, evitando errores no capturados al interactuar con el sistema de archivos de Windows.
 - `2026-11-01T07:45:31` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_get_path_stat_robust` para detectar archivos con atributos de tipo "reparse point" o "directory" cuando se espera un archivo regular, evitando el tratamiento inadvertido de junctions o enlaces simbólicos como archivos de datos, mejorando la robustez ante casos límite del sistema de archivos en Windows.
 - `2026-11-01T07:36:30` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_safe_unlink` y `purge_all` para manejar escenarios donde los archivos pueden haber sido eliminados externamente o bloqueados transitoriamente, evitando excepciones no controladas y asegurando que la sincronización de metadatos (fsync) ocurra incluso ante fallos parciales de I/O.
-- `2026-11-01T07:35:04` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_handle_for_safe_proc` y la inicialización de buffers para prevenir errores ante procesos con rutas de archivo inaccesibles, bloqueadas por el sistema o con caracteres Unicode inesperados que causaban fallos en la enumeración de procesos.

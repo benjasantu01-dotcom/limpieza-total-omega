@@ -1020,3 +1020,10 @@ assert not {'replace'}
 - `2026-11-01T09:49:05` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `DirectoryScanner` agregando validaciones de entrada (`None`/vacíos) y protecciones contra condiciones de carrera (`FileNotFoundError`) al procesar iteradores de directorio, asegurando que el escaneo no falle ante cambios rápidos en el sistema de archivos durante la ejecución.
 - `2026-11-01T09:49:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T09:49:05` Corrida terminada. Total usado hoy: 232.
+- `2026-11-01T09:56:52` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-11-01T09:57:18` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-01T09:57:39` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-01T09:58:06` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics` y `compute_score` validando explícitamente los datos de entrada antes de cualquier operación aritmética, asegurando que `validate` sea idempotent y que `_compute_cached` no reciba tuplas malformadas si los tipos de entrada varían.
+- `2026-11-01T09:58:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-01T09:58:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T09:58:52` Corrida terminada. Total usado hoy: 236.
