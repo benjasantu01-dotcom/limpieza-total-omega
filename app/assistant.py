@@ -742,17 +742,21 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae de manera segura el contenido textual de una respuesta JSON proveniente de la API remota."""
-    if not isinstance(data, dict) or not _is_safe_payload_structure(data): return None
+    if not isinstance(data, dict): return None
     try:
         candidates = data.get("candidates")
-        if isinstance(candidates, list) and candidates and isinstance(candidates[0], dict) and candidates[0].get("finishReason") == "STOP":
-            parts = candidates[0].get("content", {}).get("parts")
-            if isinstance(parts, list) and parts and isinstance(parts[0], dict):
-                text_val = parts[0].get("text")
-                if isinstance(text_val, str):
-                    sanitized: str = _validate_response_length(text_val)
-                    return sanitized if _ensure_safe_text(sanitized) else None
-    except (KeyError, AttributeError, TypeError): return None
+        if isinstance(candidates, list) and len(candidates) > 0:
+            first_candidate = candidates[0]
+            if isinstance(first_candidate, dict) and first_candidate.get("finishReason") == "STOP":
+                content = first_candidate.get("content", {})
+                parts = content.get("parts") if isinstance(content, dict) else None
+                if isinstance(parts, list) and len(parts) > 0:
+                    text_val = parts[0].get("text") if isinstance(parts[0], dict) else None
+                    if isinstance(text_val, str):
+                        sanitized: str = _validate_response_length(text_val)
+                        return sanitized if _ensure_safe_text(sanitized) else None
+    except Exception:
+        return None
     return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:

@@ -105,10 +105,7 @@ class DirectoryScanner:
         if not isinstance(root_path, str) or not root_path:
             return ScanResult(0, False)
             
-        if depth > self.ctx.max_depth:
-            return ScanResult(0, True)
-        
-        if not self._is_path_allowed(root_path):
+        if depth > self.ctx.max_depth or not self._is_path_allowed(root_path):
             return ScanResult(0, True)
 
         try:
@@ -130,7 +127,7 @@ class DirectoryScanner:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        if not hasattr(entry, 'name') or not entry.name: continue
+                        if not entry.name: continue
                         if entry.name.lower() in self.ctx.never_touch_lower: continue
                         
                         # Impedir recursión en enlaces simbólicos
