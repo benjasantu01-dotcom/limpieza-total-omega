@@ -54,7 +54,12 @@ FileRecord: TypeAlias = Tuple[int, Path]
 def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
     """
     Intenta obtener los metadatos del sistema de archivos mediante lstat.
-    Retorna None si la ruta es inaccesible o no existe.
+    
+    Args:
+        path: La ruta del archivo o directorio a inspeccionar.
+        
+    Returns:
+        Un objeto os.stat_result si tiene éxito, None en caso contrario.
     """
     if path is None:
         return None
@@ -89,7 +94,12 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Incrementa los contadores tras validar que el tamaño sea positivo."""
+        """
+        Incrementa los contadores de peso y cantidad tras validar el tamaño.
+        
+        Args:
+            size: Tamaño del archivo en bytes.
+        """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -103,7 +113,13 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, ext: str) -> None:
-        """Acumula métricas globales y por extensión."""
+        """
+        Acumula métricas globales y específicas por extensión.
+        
+        Args:
+            size: Tamaño del archivo en bytes.
+            ext: Extensión del archivo (ej: '.txt').
+        """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1
@@ -120,6 +136,7 @@ class FolderMetrics:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el peso acumulado convertido a Megabytes."""
         return _bytes_to_mb(self.size)
 
 

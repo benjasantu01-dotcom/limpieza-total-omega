@@ -577,9 +577,12 @@ def _is_safe_text_length(text: Any) -> bool:
     return isinstance(text, str) and 0 < len(text) <= _MAX_TEXT_LENGTH
 
 def _ensure_safe_text(text: Any) -> bool:
-    """Realiza una desinfección estricta validando longitud, caracteres y ausencia de inyecciones."""
+    """
+    Realiza una desinfección estricta validando longitud, caracteres y ausencia de inyecciones.
+    Es el guardián principal de cualquier entrada de texto antes de procesar o enviar datos.
+    """
     if not _is_safe_text_length(text): return False
-    # Validaciones rápidas primero (regex/longitud) antes de la lógica de negocio (path checking)
+    # Validaciones rápidas (regex/longitud) antes de la lógica pesada de path checking
     if _has_invalid_meta_characters(text) or _contains_forbidden_patterns(text): return False
     if not _is_safe_path_input(text): return False
     return True
