@@ -167,7 +167,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Identifica ejecutables de reciente creación en carpetas de descarga volátiles."""
-    if not path or not path.parent or not stats: return None
+    if not path or not path.parent or stats is None: return None
     try:
         if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
             mtime = getattr(stats, "st_mtime", 0.0)

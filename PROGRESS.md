@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **137** (27.2% de aceptación)
+- Mejoras aceptadas: **136** (27.0% de aceptación)
 - Rechazadas por tests: 6
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 299
+- Sin respuesta de la IA (error o límite): 301
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 10 | 0 | 3 | 0 | 5 |
+| 2026-10-30 | 8 | 0 | 2 | 0 | 4 |
 | 2026-10-31 | 90 | 5 | 32 | 14 | 209 |
-| 2026-11-01 | 37 | 1 | 11 | 2 | 85 |
+| 2026-11-01 | 38 | 1 | 11 | 2 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **30**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **30**
+- rendimiento: **28**
 - robustez ante casos límite: **28**
 - seguridad defensiva: **26**
 - legibilidad y documentación: **24**
@@ -32,11 +32,11 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `safety.py`: **18**
 - `quarantine.py`: **14**
-- `healthscore.py`: **13**
-- `diskreport.py`: **12**
+- `scanner.py`: **12**
+- `healthscore.py`: **12**
 - `memory.py`: **11**
-- `scanner.py`: **11**
 - `assistant.py`: **11**
+- `diskreport.py`: **11**
 - `browser.py`: **10**
 - `organizer.py`: **9**
 - `settings.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T05:53:12` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas y la gestión de archivos al envolver `path.stat()` en `scan_file` con un bloque `try-except` más específico y protector, evitando que fallos de acceso a metadatos detengan el escaneo de un archivo potencialmente peligroso, además de añadir validaciones de tipo `None` sobre `stats` antes de su uso en heurísticas.
 - `2026-11-01T05:26:16` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `DirectoryScanner.get_size` mediante la validación explícita de `root_path` y la captura de errores en la iteración, asegurando que entradas inválidas o bloqueadas no interrumpan el escaneo ni propaguen excepciones.
 - `2026-11-01T05:23:19` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` para manejar estructuras de datos incompletas o malformadas mediante el uso de `.get()` encadenado y validaciones de tipo explícitas, evitando posibles `AttributeError` o `TypeError` ante respuestas inesperadas de la API.
 - `2026-11-01T03:52:43` **safety.py** (seguridad defensiva): Mejoré `_validate_preconditions` añadiendo una comprobación explícita para evitar que se operen archivos que residen en la carpeta donde la aplicación está instalada (usando `sys.executable` si está disponible o el directorio de trabajo actual), evitando así riesgos de auto-manipulación destructiva.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T03:11:18` **quarantine.py** (robustez ante casos límite): Se ha añadido `_is_filesystem_read_only` y una verificación de `path.exists()` dentro de `_check_path_syntax_integrity` para evitar que `path.resolve(strict=True)` lance excepciones en rutas que aún no existen durante el proceso de aislamiento o limpieza.
 - `2026-11-01T03:10:11` **organizer.py** (robustez ante casos límite): Mejora la robustez ante estados inconsistentes del sistema de archivos al añadir verificaciones de existencia previas a operaciones de lectura/escritura y al gestionar correctamente posibles errores en `_is_file_locked`, asegurando que no se bloquee el flujo por archivos que desaparecen durante la ejecución (Race Conditions).
 - `2026-11-01T03:03:57` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` añadiendo un manejo de excepciones más granular y verificaciones de integridad en la ruta resuelta, evitando bloqueos ante rutas malformadas o inaccesibles que antes podían causar fallos en la iteración de procesos.
-- `2026-11-01T03:00:25` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `_compute_cached` y `compute_score` frente a datos externos malformados o inconsistentes, asegurando que el motor analítico no propague excepciones inesperadas durante la instanciación de `SystemMetrics` y manteniendo la integridad del caché LRU mediante una validación estricta de los tipos de entrada.
