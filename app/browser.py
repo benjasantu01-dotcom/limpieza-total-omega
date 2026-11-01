@@ -82,24 +82,19 @@ class DirectoryScanner:
     def _is_path_allowed(self, path_str: str) -> bool:
         """
         Verifica si la ruta está dentro del sandbox y cumple con los estándares de safety.
-        
-        Args:
-            path_str: Ruta absoluta a evaluar.
-            
-        Returns:
-            True si la ruta es segura para lectura, False si está prohibida o fuera de alcance.
         """
         if _is_unc_path(path_str): return False
         try:
             path_obj = Path(path_str)
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
-        except (OSError, RuntimeError):
-            return False
-        
-        try:
-            path_norm = os.path.normcase(os.path.abspath(path_str))
-            return path_norm.startswith(self.ctx.sandbox_base_norm)
+            
+            # Validación robusta de escape de sandbox usando realpath para resolver symlinks/junctions
+            real_path = os.path.realpath(path_str)
+            path_norm = os.path.normcase(real_path)
+            if not path_norm.startswith(self.ctx.sandbox_base_norm):
+                return False
+            return True
         except (OSError, RuntimeError):
             return False
 
@@ -287,7 +282,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not p.exists() or not p.is_dir(): return 0
     
     try:
-        root_norm = os.path.normcase(os.path.abspath(str(p)))
+        root_norm = os.path.normcase(os.path.realpath(str(p)))
     except (OSError, RuntimeError):
         return 0
 
@@ -308,7 +303,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path) or not base.exists(): continue
         
         try:
-            base_norm = os.path.normcase(os.path.abspath(str(base)))
+            base_norm = os.path.normcase(os.path.realpath(str(base)))
         except (OSError, RuntimeError):
             continue
             
