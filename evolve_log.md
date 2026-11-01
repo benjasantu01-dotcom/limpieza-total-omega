@@ -1124,3 +1124,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-01T11:40:49` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante posibles rutas de destino mal formadas o problemas de concurrencia al crear directorios, añadiendo una validación explícita mediante `is_safe_to_modify` antes de intentar operaciones de I/O y manejando adecuadamente la posibilidad de que el directorio padre sea creado por otro proceso justo antes de la ejecución.
 - `2026-11-01T11:40:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T11:40:49` Corrida terminada. Total usado hoy: 276.
+- `2026-11-01T11:49:02` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-01T11:49:27` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-01T11:50:18` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-11-01T11:50:43` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia previo al cálculo del hash en `hash_file` y `partial_hash` para evitar excepciones innecesarias en entornos de alta concurrencia donde un archivo podría ser eliminado o bloqueado por otro proceso entre su detección y su lectura.
+- `2026-11-01T11:50:57` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-11-01T11:50:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T11:50:57` Corrida terminada. Total usado hoy: 280.

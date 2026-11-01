@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **140** (27.8% de aceptación)
+- Mejoras aceptadas: **138** (27.4% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 296
+- Sin respuesta de la IA (error o límite): 298
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 53 | 4 | 19 | 9 | 143 |
-| 2026-11-01 | 87 | 6 | 25 | 5 | 153 |
+| 2026-10-31 | 50 | 4 | 18 | 9 | 143 |
+| 2026-11-01 | 88 | 6 | 26 | 5 | 155 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **31**
+- robustez ante casos límite: **30**
 - rendimiento: **29**
-- robustez ante casos límite: **29**
 - legibilidad y documentación: **28**
-- seguridad defensiva: **23**
+- seguridad defensiva: **20**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
+- `safety.py`: **17**
 - `assistant.py`: **14**
-- `quarantine.py`: **13**
+- `quarantine.py`: **12**
 - `healthscore.py`: **12**
 - `scanner.py`: **11**
 - `settings.py`: **11**
 - `browser.py`: **11**
-- `organizer.py`: **10**
 - `startup.py`: **10**
 - `diskreport.py`: **9**
+- `organizer.py`: **9**
 - `memory.py`: **9**
 - `branding.py`: **7**
-- `duplicates.py`: **5**
+- `duplicates.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T11:50:43` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo al cálculo del hash en `hash_file` y `partial_hash` para evitar excepciones innecesarias en entornos de alta concurrencia donde un archivo podría ser eliminado o bloqueado por otro proceso entre su detección y su lectura.
 - `2026-11-01T11:40:49` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante posibles rutas de destino mal formadas o problemas de concurrencia al crear directorios, añadiendo una validación explícita mediante `is_safe_to_modify` antes de intentar operaciones de I/O y manejando adecuadamente la posibilidad de que el directorio padre sea creado por otro proceso justo antes de la ejecución.
 - `2026-11-01T11:40:34` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_validate_and_sanitize_data` para manejar entradas malformadas de forma transaccional, asegurando que si una parte de los datos de entrada es inválida o causa una excepción, el sistema no quede en un estado inconsistente y los valores parciales sigan siendo tratados con seguridad.
 - `2026-11-01T11:39:54` **startup.py** (rendimiento): Optimicé el método `_validate_file_access` de la clase `StartupEntry` reemplazando la llamada redundante a `p.exists()` (que ya es realizada implícitamente por `os.access` y `is_safe_to_modify`) y moviendo la validación de `is_safe_to_modify` antes de la llamada a `os.access` para evitar consultas innecesarias al sistema de archivos en rutas bloqueadas.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T10:59:58` **assistant.py** (rendimiento): Se optimizó el acceso a los criterios de salud mediante la eliminación de una re-evaluación innecesaria en `_cached_active_problems` y se redujo la complejidad de `_evaluate_active_problems` al reemplazar el filtrado dinámico constante por una consulta eficiente sobre el mapa de criterios ya estructurado.
 - `2026-11-01T10:59:30` **startup.py** (legibilidad y documentación): He mejorado la documentación interna y la legibilidad de `startup.py` mediante la adición de docstrings estructuradas (tipo Google Style) que clarifican las responsabilidades de cada método, especialmente en los procesos complejos de resolución de rutas y validación de seguridad.
 - `2026-11-01T10:59:02` **settings.py** (legibilidad y documentación): Mejoré la legibilidad del sistema de validación extrayendo la lógica de conversión de tipos a un método estático unificado (`_parse_as_type`) dentro de `_Validators`, facilitando el mantenimiento y eliminando la redundancia en el manejo de tipos.
-- `2026-11-01T10:58:34` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en `process_entry` y `_run_file_heuristics`, clarificando el flujo de datos y las responsabilidades en la detección heurística para facilitar auditorías futuras.
