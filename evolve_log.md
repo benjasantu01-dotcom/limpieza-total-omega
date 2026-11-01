@@ -488,3 +488,57 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-01T05:56:14` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-01T05:56:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T05:56:14` Corrida terminada. Total usado hoy: 140.
+- `2026-11-01T06:02:54` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-11-01T06:03:41` Tests FALLARON:
+```
+ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+section = 'No existe'
+
+    def icon(section: Optional[str]) -> str:
+        """Retorna el glifo Unicode asociado a una sección de la aplicación."""
+        if not isinstance(section, str) or not section:
+            return "\u2022"
+>       return ICONS[section]
+               ^^^^^^^^^^^^^^
+E       KeyError: 'No existe'
+
+app/branding.py:202: KeyError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:115: SyntaxWarning: invalid escape sequence '\)'
+    normalización de stem y validación de namespaces NT (\\.\).
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet - KeyError: 'No existe'
+1 failed, 298 passed, 7 warnings in 1.63s
+
+```
+- `2026-11-01T06:03:41` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación de las funciones de renderizado geométrico (`draw_logo`, `draw_ring`, `draw_gradient_bar`) añadiendo docstrings que explican el propósito, los parámetros y las restricciones de escalado, facilitando la comprensión del mantenimiento de la interfaz.
+- `2026-11-01T06:03:41` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+- `2026-11-01T06:03:41` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-01T06:04:01` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+- `2026-11-01T06:04:01` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-01T06:04:31` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+- `2026-11-01T06:04:31` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-01T06:04:46` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+- `2026-11-01T06:04:46` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-01T06:05:06` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+- `2026-11-01T06:05:06` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-01T06:05:37` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+- `2026-11-01T06:05:37` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-01T06:05:52` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+- `2026-11-01T06:05:52` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-01T06:06:12` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+- `2026-11-01T06:06:12` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-01T06:06:42` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+- `2026-11-01T06:06:42` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-01T06:06:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T06:06:42` Corrida terminada. Total usado hoy: 144.
