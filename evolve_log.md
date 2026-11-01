@@ -1143,3 +1143,10 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-01T00:58:51` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-01T00:58:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T00:58:51` Corrida terminada. Total usado hoy: 24.
+- `2026-11-01T01:07:30` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-11-01T01:08:00` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics.validate` y la integridad del `Pipeline` mediante la validación proactiva de tipos y valores, asegurando que los fallos en la entrada de datos no propaguen excepciones inesperadas durante el procesamiento.
+- `2026-11-01T01:09:10` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-01T01:09:37` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-01T01:09:50` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de parámetros y el manejo de errores en `stage_for_review` y `_can_move_file` para asegurar que las rutas y los objetos sean coherentes antes de intentar operaciones de E/S, previniendo excepciones no capturadas.
+- `2026-11-01T01:09:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T01:09:50` Corrida terminada. Total usado hoy: 28.

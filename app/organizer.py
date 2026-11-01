@@ -397,7 +397,9 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Calcula el destino final para el archivo, preservando timestamp para trazabilidad."""
     try:
         if not isinstance(junk_file.modified, datetime): return None
-        safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
+        # Uso de int() explícito para evitar problemas de tipos en la conversión del nombre
+        timestamp = int(junk_file.modified.timestamp())
+        safe_name = f"{junk_file.path.stem}_{timestamp}{junk_file.path.suffix}"
         return _generate_unique_target(dest_base / safe_name)
     except (OSError, AttributeError, ValueError, OverflowError): 
         return None

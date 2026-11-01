@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 53 | 2 | 19 | 6 | 50 |
+| 2026-10-30 | 51 | 2 | 18 | 6 | 49 |
 | 2026-10-31 | 90 | 5 | 32 | 14 | 209 |
-| 2026-11-01 | 3 | 0 | 0 | 0 | 21 |
+| 2026-11-01 | 5 | 0 | 1 | 0 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **35**
 - rendimiento: **32**
-- legibilidad y documentación: **28**
 - seguridad defensiva: **27**
 - robustez ante casos límite: **26**
+- legibilidad y documentación: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
+- `safety.py`: **18**
 - `diskreport.py`: **15**
+- `healthscore.py`: **13**
 - `quarantine.py`: **13**
-- `scanner.py`: **12**
 - `browser.py`: **12**
-- `healthscore.py`: **12**
 - `memory.py`: **12**
 - `settings.py`: **11**
 - `assistant.py`: **11**
+- `scanner.py`: **11**
 - `branding.py`: **8**
-- `organizer.py`: **7**
+- `organizer.py`: **8**
 - `startup.py`: **7**
 - `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T01:09:50` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la validación de parámetros y el manejo de errores en `stage_for_review` y `_can_move_file` para asegurar que las rutas y los objetos sean coherentes antes de intentar operaciones de E/S, previniendo excepciones no capturadas.
+- `2026-11-01T01:08:00` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y la integridad del `Pipeline` mediante la validación proactiva de tipos y valores, asegurando que los fallos en la entrada de datos no propaguen excepciones inesperadas durante el procesamiento.
 - `2026-11-01T00:58:45` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_collect_summary_data` y `walk_files` para evitar que fallos en la lectura de atributos de archivo o en operaciones de ruta interrumpan el escaneo, asegurando que la recolección de métricas sea robusta incluso ante archivos bloqueados o con metadatos inaccesibles.
 - `2026-11-01T00:58:19` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner.get_size` implementando validaciones de tipo y estado más estrictas sobre `root_path` y `entry` antes de realizar operaciones de disco, evitando potenciales `TypeError` o excepciones no capturadas al procesar rutas mal formadas.
 - `2026-11-01T00:50:56` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_clean_grade` y `_apply_field` agregando validaciones de tipo explícitas y capturas de excepciones más finas, evitando que valores malformados en `settings` o inyecciones intenten corromper el `SystemContext`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T12:46:40` **healthscore.py** (rendimiento): Se ha optimizado la generación de informes y el cálculo de métricas mediante la eliminación de la serialización innecesaria y el uso de un caché más eficiente, reemplazando la creación de tuplas de objetos complejos (`_render_summarize`) por un cálculo directo que evita penalizaciones de serialización en el `lru_cache`.
 - `2026-10-31T12:46:25` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos en `_collect_candidates` para evitar llamadas redundantes a `is_protected_path` (que puede ser costosa) mediante la inversión del orden de chequeos y se consolidaron los chequeos de archivos para minimizar las llamadas al sistema de archivos dentro del loop crítico.
 - `2026-10-31T12:44:50` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `largest_folders` evitando llamadas recurrentes a `_is_reparse_point` (que ejecuta llamadas a `ctypes` en Windows) mediante el almacenamiento en caché de rutas procesadas en el mismo nivel, reduciendo significativamente el overhead en directorios con muchos archivos.
-- `2026-10-31T12:44:25` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` reemplazando la creación redundante de objetos `ScanContext` y la re-instanciación de `DirectoryScanner` dentro del bucle de navegadores, permitiendo reutilizar el estado del contexto a través de las iteraciones de búsqueda de rutas.
-- `2026-10-31T12:34:55` **startup.py** (legibilidad y documentación): Se introdujeron type hints en los métodos de `StartupEntry` que carecían de ellos y se refactorizó `_is_registry_entry_safe` para mejorar la legibilidad del flujo de validación, extrayendo la lógica de chequeo de rutas a un método auxiliar más claro y declarativo.

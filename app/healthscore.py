@@ -140,7 +140,12 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     Asegura que un valor numérico se encuentre dentro del rango [min_val, max_val].
     Maneja entradas no finitas devolviendo el valor mínimo por seguridad.
     """
-    return float(max(min_val, min(max_val, value)))
+    try:
+        val = float(value)
+        if not math.isfinite(val): return min_val
+        return max(min_val, min(max_val, val))
+    except (TypeError, ValueError):
+        return min_val
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """
