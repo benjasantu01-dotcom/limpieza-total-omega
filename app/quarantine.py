@@ -983,9 +983,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     except (OSError, UnsafePathError):
         return []
     
-    cached = _MANIFEST_CACHE.get(base_dir)
-    items = cached[0] if cached else load_manifest(base)
-    
+    items = _MANIFEST_CACHE[base_dir][0] if base_dir in _MANIFEST_CACHE else load_manifest(base)
     return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
 
 

@@ -824,22 +824,22 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
-    if not isinstance(path, (str, Path)) or not path: return True
+    if not path: return True
     try:
         norm_str = os.path.normcase(os.path.abspath(str(path)))
-        # Evitar reconstruir Path y parts repetidamente
         if any(norm_str.startswith(r) for r in _get_system_root_paths()):
             return True
-            
-        parts = Path(norm_str).parts
-        if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in parts):
+        
+        # Uso eficiente: partes de la ruta como tupla para el check de set
+        path_obj = Path(norm_str)
+        if not PROTECTED_DIR_NAMES.isdisjoint(p.lower() for p in path_obj.parts):
             return True
         
         attrs = _get_file_attrs(norm_str)
         if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
             return True
             
-        return len(parts) <= 1
+        return len(path_obj.parts) <= 1
     except (OSError, AttributeError, ValueError):
         return True
 

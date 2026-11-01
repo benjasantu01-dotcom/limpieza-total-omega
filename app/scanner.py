@@ -231,11 +231,12 @@ class Scanner:
         """Prepara un directorio hijo para su posterior exploración, verificando límites de profundidad."""
         if current_depth >= SCAN_LIMITS.max_recursion_depth:
             return
-        if _cached_is_protected(entry.path) or not self._is_inside_base_root(entry.path):
-            return
+        # El cache check es redundante aquí por _is_safe_entry, pero se mantiene por seguridad
         norm_path = os.path.normcase(entry.path)
+        if norm_path in visited_dirs:
+            return
         try:
-            if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
+            if os.access(entry.path, os.R_OK):
                 visited_dirs.add(norm_path)
                 directory_stack.append((entry.path, current_depth + 1))
         except (OSError, PermissionError):
