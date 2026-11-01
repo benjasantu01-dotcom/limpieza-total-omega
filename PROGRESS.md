@@ -7,38 +7,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **142** (28.2% de aceptación)
-- Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por tests: 6
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 284
+- Sin respuesta de la IA (error o límite): 286
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 45 | 2 | 16 | 6 | 45 |
+| 2026-10-30 | 43 | 1 | 15 | 6 | 45 |
 | 2026-10-31 | 90 | 5 | 32 | 14 | 209 |
-| 2026-11-01 | 7 | 0 | 2 | 1 | 30 |
+| 2026-11-01 | 9 | 0 | 2 | 1 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **28**
 - seguridad defensiva: **27**
-- rendimiento: **26**
-- robustez ante casos límite: **26**
-- legibilidad y documentación: **26**
+- robustez ante casos límite: **25**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
 - `diskreport.py`: **14**
+- `quarantine.py`: **13**
 - `healthscore.py`: **12**
-- `quarantine.py`: **12**
+- `memory.py`: **12**
 - `scanner.py`: **12**
-- `settings.py`: **11**
-- `assistant.py`: **11**
 - `browser.py`: **11**
-- `memory.py`: **11**
+- `settings.py`: **10**
+- `assistant.py`: **10**
 - `branding.py`: **8**
 - `organizer.py`: **8**
 - `startup.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T01:51:25` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y la mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_write_temp_to_final` para desacoplar el flujo lógico de la gestión de errores, y he añadido docstrings de estilo Google que explican el "porqué" de las operaciones críticas de sincronización a disco y manejo de inodos.
+- `2026-11-01T01:50:18` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave y constantes críticas, clarificando el propósito de los tipos de datos y los riesgos operativos, manteniendo estrictamente el comportamiento original.
 - `2026-11-01T01:19:49` **scanner.py** (manejo de errores y validación de entradas): He mejorado la robustez de `_run_file_heuristics` y `scan_file` reemplazando los bloques `try-except` genéricos por capturas específicas de excepciones de I/O, evitando ocultar errores de lógica durante la ejecución del escaneo.
 - `2026-11-01T01:19:39` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_locked_by_other_process` y `_get_file_id` reemplazando llamadas potencialmente ambiguas a `ctypes` por una validación explícita de éxito, asegurando que los fallos de acceso no se silencien incorrectamente como archivos "libres" y mejorando el manejo de errores en operaciones con el sistema de archivos.
 - `2026-11-01T01:09:50` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la validación de parámetros y el manejo de errores en `stage_for_review` y `_can_move_file` para asegurar que las rutas y los objetos sean coherentes antes de intentar operaciones de E/S, previniendo excepciones no capturadas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-31T13:48:16` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor de escaneo ante directorios con permisos restringidos o errores de acceso inesperados (como archivos bloqueados o denegados) añadiendo un manejo de excepciones más granular en `_handle_directory`, evitando que una única denegación en una subcarpeta interrumpa el escaneo del resto del árbol.
 - `2026-10-31T13:47:01` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes de archivos añadiendo una validación explícita de `st_nlink` dentro de `_get_path_stat_robust` para detectar si un archivo ha sido borrado o reemplazado durante la operación de lectura de metadatos (TOCTOU), previniendo el procesamiento de descriptores de archivos inválidos.
 - `2026-10-31T13:05:25` **safety.py** (rendimiento): Se ha optimizado la validación de integridad integrando un `lru_cache` adicional en `_get_security_descriptor` y eliminando la creación de objetos `Path` redundantes dentro del bucle de validación de componentes, reduciendo la presión sobre el recolector de basura en recorridos de directorios extensos.
-- `2026-10-31T13:00:02` **quarantine.py** (rendimiento): Se optimizó el acceso a los atributos de archivo mediante la implementación de una caché con TTL en `_get_win_attributes` para evitar llamadas redundantes a `ctypes` en operaciones recursivas, mejorando el rendimiento en sistemas con muchos archivos.
-- `2026-10-31T12:46:40` **healthscore.py** (rendimiento): Se ha optimizado la generación de informes y el cálculo de métricas mediante la eliminación de la serialización innecesaria y el uso de un caché más eficiente, reemplazando la creación de tuplas de objetos complejos (`_render_summarize`) por un cálculo directo que evita penalizaciones de serialización en el `lru_cache`.

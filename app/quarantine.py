@@ -759,8 +759,11 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
 
 def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
     """
-    Flujo atómico: Escritura temporal seguida de reemplazo final.
-    Utiliza fsync en el directorio padre para asegurar la persistencia de metadatos.
+    Realiza un movimiento atómico al sandbox mediante un archivo temporal.
+    
+    El proceso utiliza `fsync` en el directorio padre para asegurar que la
+    entrada de directorio se escriba en el medio físico antes de completar,
+    minimizando el riesgo de corrupción ante fallos de energía.
     """
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
@@ -779,6 +782,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
              
         os.replace(temp_dest, destination)
         
+        # Sincronizar directorio padre para persistencia de metadatos
         try:
             with os.fdopen(os.open(str(destination.parent), os.O_RDONLY), 'r') as dir_fd:
                 os.fsync(dir_fd.fileno())
