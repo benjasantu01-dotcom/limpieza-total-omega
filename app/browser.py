@@ -83,7 +83,7 @@ class DirectoryScanner:
         """
         Verifica si la ruta está dentro del sandbox y cumple con los estándares de safety.
         """
-        if _is_unc_path(path_str): return False
+        if not path_str or _is_unc_path(path_str): return False
         try:
             path_obj = Path(path_str)
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
@@ -126,7 +126,7 @@ class DirectoryScanner:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        if not entry.name: continue
+                        if not entry or not entry.name: continue
                         if entry.name.lower() in self.ctx.never_touch_lower: continue
                         
                         # Impedir recursión en enlaces simbólicos
@@ -266,7 +266,7 @@ def base_directories() -> List[Path]:
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """Verifica si un archivo posee atributos de sistema o hidden mediante WinAPI (Windows)."""
     if kernel32 is None: return False
-    if not os.path.exists(entry_path): return False
+    if not entry_path or not os.path.exists(entry_path): return False
     attrs = kernel32.GetFileAttributesW(entry_path)
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 

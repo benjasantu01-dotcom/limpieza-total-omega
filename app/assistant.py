@@ -498,9 +498,12 @@ class SystemContext:
         
         updates = {}
         for k, spec in _VALIDATORS.items():
-            val = self._apply_field(source, k, spec)
-            if val is not None:
-                updates[k] = val
+            try:
+                val = self._apply_field(source, k, spec)
+                if val is not None:
+                    updates[k] = val
+            except Exception:
+                continue
         
         g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
         if (grade_val := self._clean_grade(g_val)):
@@ -512,7 +515,10 @@ class SystemContext:
         """Realiza comprobaciones de seguridad básicas sobre el objeto/fuente de datos recibido."""
         if source is None or callable(source) or not isinstance(source, (dict, object)): 
             return False
-        return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list, tuple)) else True
+        try:
+            return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list, tuple)) else True
+        except Exception:
+            return False
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica los cambios validados al objeto y purga cachés para forzar recálculos."""

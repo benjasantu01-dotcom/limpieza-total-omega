@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **126** (25.0% de aceptación)
+- Mejoras aceptadas: **128** (25.4% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 17
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 308
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 70 | 4 | 26 | 13 | 163 |
-| 2026-11-01 | 56 | 5 | 18 | 4 | 145 |
+| 2026-10-31 | 69 | 4 | 25 | 12 | 162 |
+| 2026-11-01 | 59 | 5 | 18 | 4 | 146 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **30**
 - seguridad defensiva: **27**
+- manejo de errores y validación de entradas: **27**
 - rendimiento: **26**
-- manejo de errores y validación de entradas: **24**
-- legibilidad y documentación: **19**
+- legibilidad y documentación: **18**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **17**
 - `healthscore.py`: **12**
 - `quarantine.py`: **12**
-- `assistant.py`: **11**
-- `memory.py`: **10**
+- `assistant.py`: **12**
+- `browser.py`: **11**
 - `scanner.py`: **10**
-- `browser.py`: **10**
 - `diskreport.py`: **9**
 - `settings.py`: **9**
 - `startup.py`: **9**
+- `memory.py`: **9**
 - `organizer.py`: **8**
 - `duplicates.py`: **6**
-- `branding.py`: **3**
+- `branding.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T09:49:05` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner` agregando validaciones de entrada (`None`/vacíos) y protecciones contra condiciones de carrera (`FileNotFoundError`) al procesar iteradores de directorio, asegurando que el escaneo no falle ante cambios rápidos en el sistema de archivos durante la ejecución.
+- `2026-11-01T09:48:56` **branding.py** (manejo de errores y validación de entradas): Reforcé la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación explícita de tipos, el uso de valores por defecto seguros ante entradas nulas y la captura de excepciones específicas, evitando así comportamientos indefinidos al recibir datos inesperados.
+- `2026-11-01T09:48:24` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de métricas en `SystemContext.ingest` y `_validate_and_sanitize_data` al capturar errores de forma explícita y prevenir la corrupción del contexto ante fuentes de datos inesperadas, aplicando un enfoque más defensivo y exigente en la validación.
 - `2026-11-01T08:26:22` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` y `_is_file_secure_to_read` añadiendo chequeos de enlace simbólico (hard links/symlinks) mediante `os.lstat` y validando que el archivo no sea un punto de reparse, previniendo así ataques por sustitución de archivos o acceso no autorizado a rutas fuera del scope mediante enlaces.
 - `2026-11-01T08:19:23` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de archivos al agregar una verificación explícita contra la API de Windows para detectar si el archivo es un archivo de dispositivo o un recurso de sistema nombrado (como `CON` o `LPT1`) antes de intentar cualquier operación de I/O, evitando así el comportamiento impredecible al interactuar con nombres de archivos reservados del kernel.
 - `2026-11-01T08:15:41` **organizer.py** (seguridad defensiva): Se ha reforzado la seguridad defensiva en `delete_reviewed` implementando una validación estricta de la identidad del archivo mediante `is_safe_to_modify` ANTES de la operación de borrado y verificando que el archivo no esté bloqueado o sea un enlace simbólico/punto de reparse, previniendo el borrado accidental de archivos de sistema que pudieran haber sido movidos erróneamente a la carpeta de revisión.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T07:45:31` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_get_path_stat_robust` para detectar archivos con atributos de tipo "reparse point" o "directory" cuando se espera un archivo regular, evitando el tratamiento inadvertido de junctions o enlaces simbólicos como archivos de datos, mejorando la robustez ante casos límite del sistema de archivos en Windows.
 - `2026-11-01T07:36:30` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_safe_unlink` y `purge_all` para manejar escenarios donde los archivos pueden haber sido eliminados externamente o bloqueados transitoriamente, evitando excepciones no controladas y asegurando que la sincronización de metadatos (fsync) ocurra incluso ante fallos parciales de I/O.
 - `2026-11-01T07:35:04` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_handle_for_safe_proc` y la inicialización de buffers para prevenir errores ante procesos con rutas de archivo inaccesibles, bloqueadas por el sistema o con caracteres Unicode inesperados que causaban fallos en la enumeración de procesos.
-- `2026-11-01T07:26:27` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación de desbordamiento de memoria (`MemoryError`) y estados inválidos en `_compute_cached` y `compute_score` para manejar escenarios donde la lógica de las métricas podría recibir tipos de datos inesperados, además de asegurar que `SystemMetrics` nunca propague valores nulos o inconsistentes tras su inicialización.
-- `2026-11-01T07:16:56` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos en el sistema de archivos al añadir validación explícita de `Path` y manejo defensivo del flujo de creación de directorios, evitando que excepciones inesperadas o rutas malformadas rompan la ejecución.
-- `2026-11-01T07:16:18` **assistant.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de ingesta de datos en `SystemContext.ingest()` y `SystemContext._validate_and_sanitize_data()` para evitar que una fuente de datos malformada o parcialmente corrupta (común en casos límite de reporte de hardware/SO) interrumpa la lógica del asistente, asegurando que solo se descarten los campos inválidos individualmente.

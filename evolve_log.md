@@ -1008,3 +1008,15 @@ assert not {'replace'}
 - `2026-11-01T09:40:40` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-01T09:40:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T09:40:40` Corrida terminada. Total usado hoy: 228.
+- `2026-11-01T09:46:41` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-11-01T09:46:42` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-01T09:46:42` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-01T09:47:02` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-01T09:47:02` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-01T09:47:33` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-01T09:47:33` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-01T09:48:24` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de métricas en `SystemContext.ingest` y `_validate_and_sanitize_data` al capturar errores de forma explícita y prevenir la corrupción del contexto ante fuentes de datos inesperadas, aplicando un enfoque más defensivo y exigente en la validación.
+- `2026-11-01T09:48:56` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación explícita de tipos, el uso de valores por defecto seguros ante entradas nulas y la captura de excepciones específicas, evitando así comportamientos indefinidos al recibir datos inesperados.
+- `2026-11-01T09:49:05` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `DirectoryScanner` agregando validaciones de entrada (`None`/vacíos) y protecciones contra condiciones de carrera (`FileNotFoundError`) al procesar iteradores de directorio, asegurando que el escaneo no falle ante cambios rápidos en el sistema de archivos durante la ejecución.
+- `2026-11-01T09:49:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T09:49:05` Corrida terminada. Total usado hoy: 232.
