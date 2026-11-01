@@ -989,8 +989,8 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
         
         _validate_volume_integrity(target_path)
-    except (OSError, PermissionError):
-        raise UnsafePathError("Error accediendo a precondiciones.", SafetyValidationErrorCode.IO_ERROR)
+    except (OSError, PermissionError) as e:
+        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     if root_directory:

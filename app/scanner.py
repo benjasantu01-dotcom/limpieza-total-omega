@@ -113,7 +113,7 @@ def _is_readable(path: PathInput) -> bool:
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """Obtiene los atributos de archivo de nivel sistema sin seguir enlaces simbólicos."""
-    if not isinstance(entry, os.DirEntry):
+    if not isinstance(entry, os.DirEntry) or not entry.path:
         return 0
     try:
         stat_res = entry.stat(follow_symlinks=False)
@@ -126,9 +126,10 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     Obtiene metadatos del archivo. Retorna None si el archivo es un punto de 
     reanálisis, está bloqueado (sharing violation) o es inaccesible.
     """
-    if not isinstance(entry, os.DirEntry) or "\0" in entry.path or _cached_is_protected(entry.path):
+    if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path or _cached_is_protected(entry.path):
         return None
     try:
+        # Verificación explícita de atributos antes de intentar estadisticas pesadas
         if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
             return None
         return entry.stat(follow_symlinks=False)
@@ -217,16 +218,19 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Realiza múltiples filtros de seguridad antes de permitir el procesamiento de una entrada."""
-        path_str: str = os.path.abspath(entry.path)
-        if path_str in self.safe_cache:
+        try:
+            path_str: str = os.path.abspath(entry.path)
+            if path_str in self.safe_cache:
+                return True
+            if self._has_invalid_name(os.path.basename(path_str)): return False
+            if entry.is_symlink() or self._is_reparse_point(entry): return False
+            if _cached_is_protected(path_str): return False
+            if not _is_valid_path_structure(path_str): return False
+            if not self._is_inside_base_root(path_str): return False
+            self.safe_cache.add(path_str)
             return True
-        if self._has_invalid_name(os.path.basename(path_str)): return False
-        if entry.is_symlink() or self._is_reparse_point(entry): return False
-        if _cached_is_protected(path_str): return False
-        if not _is_valid_path_structure(path_str): return False
-        if not self._is_inside_base_root(path_str): return False
-        self.safe_cache.add(path_str)
-        return True
+        except Exception:
+            return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
         """Prepara un directorio hijo para su posterior exploración, verificando límites de profundidad."""
