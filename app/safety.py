@@ -454,9 +454,13 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
             kernel32.CloseHandle(handle)
             return False
         
-        if kernel32.GetLastError() == ERROR_SHARING_VIOLATION:
-            time.sleep(0.05 * (2 ** attempt))
-            continue
+        try:
+            err = kernel32.GetLastError()
+            if err == ERROR_SHARING_VIOLATION:
+                time.sleep(0.05 * (2 ** attempt))
+                continue
+        except (OSError, AttributeError):
+            pass
         return True
     return True
 
@@ -666,17 +670,19 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                     _to_long_path(str(path)), 0x80000000, 0x01, None, 3, 0x00000080, None
                 )
                 if handle == -1:
-                    err = kernel32.GetLastError()
-                    if err == ERROR_SHARING_VIOLATION:
-                        time.sleep(0.05 * (2 ** attempt))
-                        continue
-                    if err == ERROR_ACCESS_DENIED:
-                        raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+                    try:
+                        err = kernel32.GetLastError()
+                        if err == ERROR_SHARING_VIOLATION:
+                            time.sleep(0.05 * (2 ** attempt))
+                            continue
+                        if err == ERROR_ACCESS_DENIED:
+                            raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+                    except (OSError, AttributeError):
+                        pass
                 else:
                     kernel32.CloseHandle(handle)
             
             st = path.stat()
-            # Validacion adicional: detectar si un item esperado como archivo es en realidad un directorio o punto de reparse
             if os.name == 'nt':
                 attrs = _get_file_attrs(str(path))
                 if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.DIRECTORY | Win32Attr.REPARSE_POINT)):

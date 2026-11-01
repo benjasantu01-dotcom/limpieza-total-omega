@@ -355,8 +355,7 @@ def _is_structure_valid(data: Any) -> bool:
     for k, v in data.items():
         key_enum = _KEY_TO_ENUM.get(k)
         if not key_enum: return False
-        default_val = DEFAULTS.get(key_enum.value)
-        if v is not None and not isinstance(v, type(default_val)): return False
+        if v is None or not _is_valid_type(v, key_enum): return False
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:

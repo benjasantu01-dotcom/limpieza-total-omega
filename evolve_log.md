@@ -1034,3 +1034,10 @@ assert not {'replace'}
 - `2026-11-01T10:08:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-11-01T10:08:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T10:08:43` Corrida terminada. Total usado hoy: 240.
+- `2026-11-01T10:17:16` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-11-01T10:18:06` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `_get_path_stat_robust` y `_is_file_locked_by_other_process` agregando un manejo de excepciones más granular para `ctypes` y `OSError`, evitando la propagación silenciosa de errores en entornos con restricciones de acceso, y se asegura que el cierre de `handle` sea más resiliente mediante bloques `finally` explícitos.
+- `2026-11-01T10:18:46` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-01T10:19:15` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` al añadir una verificación explícita de tipos basada en el esquema `DEFAULTS`, asegurando que valores `None` inesperados o tipos erróneos en el JSON no se propaguen al estado interno.
+- `2026-11-01T10:19:26` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-11-01T10:19:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T10:19:26` Corrida terminada. Total usado hoy: 244.
