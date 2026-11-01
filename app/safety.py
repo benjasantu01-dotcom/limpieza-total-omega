@@ -626,17 +626,22 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _evaluate_security_rules(state: SafetyState) -> None:
-    """Verifica que el estado del archivo cumpla con las políticas de seguridad actuales."""
+    """
+    Verifica que el estado del archivo cumpla con las políticas de seguridad.
+    Itera sobre las reglas de integridad configuradas para validar el archivo.
+    """
     if not state.path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     
     if _SECURITY_CACHE.get(state.file_id):
         return
 
-    for rule in _VALIDATORS:
-        if rule.predicate(state.path, state.stat_result, state.descriptor):
-            code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-            raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
+    # Validar contra cada regla definida en el mapa de integridad
+    for reason, predicate in _VALIDATOR_MAP.items():
+        if predicate(state.path, state.stat_result, state.descriptor):
+            # Obtener el código de error mapeado o fallback a GENERIC
+            code = _REASON_TO_CODE.get(reason, SafetyValidationErrorCode.GENERIC)
+            raise UnsafePathError(f"Integridad comprometida: {reason.name}", code)
     
     if len(_SECURITY_CACHE) > 8192: _SECURITY_CACHE.clear()
     _SECURITY_CACHE[state.file_id] = True

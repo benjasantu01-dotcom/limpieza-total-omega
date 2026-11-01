@@ -48,9 +48,6 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Protocolo de interfaz para definir una nueva heurística de seguridad.
-    
-    Toda implementación debe ser pura, procesando únicamente los datos de entrada
-    para determinar riesgos, garantizando la seguridad en el escaneo.
     """
     def __call__(
         self, 
@@ -120,14 +117,14 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Obtiene metadatos asegurando la exclusión de puntos de reanálisis y manejo de bloqueos."""
+    """
+    Obtiene metadatos del archivo. Retorna None si el archivo es un punto de 
+    reanálisis, está bloqueado (sharing violation) o es inaccesible.
+    """
     if not isinstance(entry, os.DirEntry) or _cached_is_protected(entry.path):
         return None
     try:
-        if entry.is_symlink():
-            return None
-        attrs = _get_file_attributes(entry)
-        if attrs & SCAN_LIMITS.reparse_point_mask:
+        if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
@@ -229,13 +226,10 @@ class Scanner:
         """Prepara un directorio hijo para su posterior exploración, verificando límites de profundidad."""
         if current_depth >= SCAN_LIMITS.max_recursion_depth:
             return
-        if _cached_is_protected(entry.path):
-            return
-        if not self._is_inside_base_root(entry.path):
+        if _cached_is_protected(entry.path) or not self._is_inside_base_root(entry.path):
             return
         norm_path = os.path.normcase(entry.path)
         try:
-            # Validamos acceso antes de agregar al stack para fallar temprano
             if norm_path not in visited_dirs and os.access(entry.path, os.R_OK):
                 visited_dirs.add(norm_path)
                 directory_stack.append((entry.path, current_depth + 1))
@@ -301,9 +295,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None: return []
     try:
         base_path = Path(directory).resolve()
-        if not base_path.exists() or not base_path.is_dir() or not os.access(base_path, os.R_OK):
-            return []
-        if _cached_is_protected(str(base_path)):
+        if not base_path.exists() or not base_path.is_dir() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
             return []
         scanner: Scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
