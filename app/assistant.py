@@ -473,7 +473,11 @@ class SystemContext:
         if val is None or isinstance(val, bool) or callable(val):
             return None
         valid_val = _is_valid_numeric_update(val, spec)
-        return spec.type_hint(valid_val) if valid_val is not None else None
+        if valid_val is None: return None
+        try:
+            return spec.type_hint(valid_val)
+        except (ValueError, TypeError):
+            return None
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres no permitidos o peligrosos."""
