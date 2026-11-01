@@ -351,7 +351,7 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
             return False 
         
         exe_path_str = path_buffer.value
-        if not exe_path_str: return False
+        if not isinstance(exe_path_str, str) or not exe_path_str: return False
         
         return not is_protected_path(Path(exe_path_str).resolve(strict=False))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
@@ -393,7 +393,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
 
             yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:
-            WindowsAPI.kernel32.CloseHandle(h_process)
+            if WindowsAPI.kernel32:
+                WindowsAPI.kernel32.CloseHandle(h_process)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna una lista ordenada de procesos según su consumo, con caché de 60 segundos."""

@@ -1131,3 +1131,12 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-01T11:50:57` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
 - `2026-11-01T11:50:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T11:50:57` Corrida terminada. Total usado hoy: 280.
+- `2026-11-01T11:59:12` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-11-01T12:00:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-01T12:00:52` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de acceso a procesos en `_iter_process_memory` y `_get_handle_for_safe_proc`, añadiendo validaciones de tipo y estructura para prevenir fallos por manejadores inválidos o punteros de ruta malformados, garantizando que los recursos del sistema (Handles) siempre se cierren ante cualquier excepción.
+- `2026-11-01T12:01:19` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-01T12:01:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-01T12:02:24` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-01T12:03:03` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine_dir` al añadir una validación crítica contra la presencia de flujos de datos alternos (ADS) o nombres de dispositivos reservados en la ruta base antes de cualquier operación de I/O, previniendo errores de acceso al sistema de archivos en Windows.
+- `2026-11-01T12:03:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T12:03:03` Corrida terminada. Total usado hoy: 284.

@@ -436,6 +436,10 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         path: Path = Path(str(base)).expanduser().resolve()
         
+        # Validaciones de integridad de ruta antes de tocar el disco
+        if ":" in path.name or any(part.upper() in WINDOWS_RESERVED_NAMES for part in path.parts):
+            raise UnsafePathError("Ruta de cuarentena contiene elementos reservados o ADS.")
+        
         if len(str(path)) > 240:
              raise UnsafePathError("Ruta de cuarentena excede límites de seguridad.")
         if len(path.parts) > 16:

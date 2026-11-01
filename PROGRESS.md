@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **138** (27.4% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 298
+- Sin respuesta de la IA (error o límite): 297
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 50 | 4 | 18 | 9 | 143 |
-| 2026-11-01 | 88 | 6 | 26 | 5 | 155 |
+| 2026-10-31 | 48 | 4 | 18 | 9 | 141 |
+| 2026-11-01 | 90 | 6 | 27 | 5 | 156 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **32**
 - manejo de errores y validación de entradas: **31**
-- robustez ante casos límite: **30**
 - rendimiento: **29**
 - legibilidad y documentación: **28**
-- seguridad defensiva: **20**
+- seguridad defensiva: **18**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **17**
 - `assistant.py`: **14**
-- `quarantine.py`: **12**
+- `quarantine.py`: **13**
 - `healthscore.py`: **12**
-- `scanner.py`: **11**
-- `settings.py`: **11**
 - `browser.py`: **11**
+- `settings.py`: **10**
+- `scanner.py`: **10**
 - `startup.py`: **10**
+- `memory.py`: **10**
 - `diskreport.py`: **9**
 - `organizer.py`: **9**
-- `memory.py`: **9**
 - `branding.py`: **7**
 - `duplicates.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T12:03:03` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_dir` al añadir una validación crítica contra la presencia de flujos de datos alternos (ADS) o nombres de dispositivos reservados en la ruta base antes de cualquier operación de I/O, previniendo errores de acceso al sistema de archivos en Windows.
+- `2026-11-01T12:00:52` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a procesos en `_iter_process_memory` y `_get_handle_for_safe_proc`, añadiendo validaciones de tipo y estructura para prevenir fallos por manejadores inválidos o punteros de ruta malformados, garantizando que los recursos del sistema (Handles) siempre se cierren ante cualquier excepción.
 - `2026-11-01T11:50:43` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo al cálculo del hash en `hash_file` y `partial_hash` para evitar excepciones innecesarias en entornos de alta concurrencia donde un archivo podría ser eliminado o bloqueado por otro proceso entre su detección y su lectura.
 - `2026-11-01T11:40:49` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante posibles rutas de destino mal formadas o problemas de concurrencia al crear directorios, añadiendo una validación explícita mediante `is_safe_to_modify` antes de intentar operaciones de I/O y manejando adecuadamente la posibilidad de que el directorio padre sea creado por otro proceso justo antes de la ejecución.
 - `2026-11-01T11:40:34` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_validate_and_sanitize_data` para manejar entradas malformadas de forma transaccional, asegurando que si una parte de los datos de entrada es inválida o causa una excepción, el sistema no quede en un estado inconsistente y los valores parciales sigan siendo tratados con seguridad.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T11:09:44` **diskreport.py** (rendimiento): Se optimizó el escaneo del directorio raíz en `largest_folders` evitando la llamada redundante a `walk_files` (que re-procesa todos los archivos) y deduplicando cálculos, aprovechando la estructura ya presente en `GlobalStats` o iterando una sola vez para extraer métricas de subcarpetas de forma más eficiente.
 - `2026-11-01T11:08:53` **branding.py** (rendimiento): Se ha optimizado la generación del logo ASCII mediante la eliminación de una llamada innecesaria a `\n` al inicio y la centralización de la constante de cadena, mejorando el rendimiento de renderizado en terminal al reducir la creación de objetos de texto intermedios en cada llamado.
 - `2026-11-01T10:59:58` **assistant.py** (rendimiento): Se optimizó el acceso a los criterios de salud mediante la eliminación de una re-evaluación innecesaria en `_cached_active_problems` y se redujo la complejidad de `_evaluate_active_problems` al reemplazar el filtrado dinámico constante por una consulta eficiente sobre el mapa de criterios ya estructurado.
-- `2026-11-01T10:59:30` **startup.py** (legibilidad y documentación): He mejorado la documentación interna y la legibilidad de `startup.py` mediante la adición de docstrings estructuradas (tipo Google Style) que clarifican las responsabilidades de cada método, especialmente en los procesos complejos de resolución de rutas y validación de seguridad.
-- `2026-11-01T10:59:02` **settings.py** (legibilidad y documentación): Mejoré la legibilidad del sistema de validación extrayendo la lógica de conversión de tipos a un método estático unificado (`_parse_as_type`) dentro de `_Validators`, facilitando el mantenimiento y eliminando la redundancia en el manejo de tipos.
