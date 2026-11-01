@@ -260,6 +260,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             return None
         
         name = parts[0].strip()
+        # Verificar caracteres no imprimibles o maliciosos básicos
         if not name or any(ord(c) < 32 or ord(c) == 127 for c in name):
             return None
             
@@ -268,7 +269,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             return None
             
         return ProcessMemory(name, pid_val, ws)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, IndexError):
         return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:

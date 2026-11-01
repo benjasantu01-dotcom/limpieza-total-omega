@@ -1439,3 +1439,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-11-01T14:23:45` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics.validate` y la integridad del `PipelineEntry` mediante la adición de chequeos de `None` y tipos antes de las operaciones, asegurando que el motor de scoring no procese datos corruptos en tiempo de ejecución.
 - `2026-11-01T14:23:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T14:23:45` Corrida terminada. Total usado hoy: 340.
+- `2026-11-01T14:32:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-01T14:33:19` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-01T14:33:50` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_extract_process_info` mediante una validación más estricta de parámetros y el manejo defensivo de cadenas potencialmente maliciosas o mal formadas, evitando excepciones no capturadas durante el procesamiento de listas de procesos.
+- `2026-11-01T14:34:16` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-01T14:34:47` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `load_manifest` añadiendo un manejo explícito de errores de lectura de JSON y validaciones de esquema, evitando que un manifiesto parcialmente corrupto bloquee la funcionalidad de la cuarentena.
+- `2026-11-01T14:34:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T14:34:47` Corrida terminada. Total usado hoy: 344.
