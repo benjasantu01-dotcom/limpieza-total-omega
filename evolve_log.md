@@ -1271,3 +1271,12 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-01T02:51:41` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `diskreport.py` ante nombres de archivo inválidos o excesivamente largos que interrumpían el escaneo en sistemas de archivos con restricciones de longitud (MAX_PATH), garantizando que el escaneo continúe incluso si un nodo individual es inaccesible o presenta caracteres prohibidos por el sistema operativo.
 - `2026-11-01T02:51:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T02:51:41` Corrida terminada. Total usado hoy: 68.
+- `2026-11-01T02:59:27` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-11-01T02:59:56` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-01T03:00:25` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_compute_cached` y `compute_score` frente a datos externos malformados o inconsistentes, asegurando que el motor analítico no propague excepciones inesperadas durante la instanciación de `SystemMetrics` y manteniendo la integridad del caché LRU mediante una validación estricta de los tipos de entrada.
+- `2026-11-01T03:01:25` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-01T03:02:28` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-01T03:03:42` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-01T03:03:57` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_process_executable_safe` añadiendo un manejo de excepciones más granular y verificaciones de integridad en la ruta resuelta, evitando bloqueos ante rutas malformadas o inaccesibles que antes podían causar fallos en la iteración de procesos.
+- `2026-11-01T03:03:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T03:03:57` Corrida terminada. Total usado hoy: 72.

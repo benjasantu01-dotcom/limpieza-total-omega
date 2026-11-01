@@ -347,16 +347,15 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
     """Verifica la seguridad del ejecutable del proceso basándose en rutas protegidas."""
     if h_process is None or WindowsAPI.psapi is None: return False
     try:
-        char_count = len(path_buffer)
-        ret = WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, path_buffer, char_count)
-        if ret <= 0 or ret >= char_count: return False 
+        ret = WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, path_buffer, len(path_buffer))
+        if ret <= 0: return False 
         
         exe_path_str = path_buffer.value
         if not exe_path_str: return False
         
-        exe_path = Path(exe_path_str).resolve()
-        return not is_protected_path(exe_path)
-    except (OSError, RuntimeError, ValueError, TypeError):
+        # Validamos la ruta resuelta evitando el seguimiento de enlaces simbólicos o rutas malformadas
+        return not is_protected_path(Path(exe_path_str).resolve(strict=False))
+    except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
