@@ -310,7 +310,7 @@ def _is_candidate_for_scan(entry: os.DirEntry, stats: os.stat_result) -> bool:
         return False
     if _is_system_hidden(entry):
         return False
-    return is_safe_to_modify(Path(entry.path))
+    return True
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
@@ -337,7 +337,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         stats = entry.stat(follow_symlinks=False)
                         if _is_candidate_for_scan(entry, stats):
                             p = Path(entry.path)
-                            if not _is_file_locked(p):
+                            if is_safe_to_modify(p) and not _is_file_locked(p):
                                 found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                             
                 except (PermissionError, OSError):

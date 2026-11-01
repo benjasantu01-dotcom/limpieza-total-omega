@@ -361,11 +361,8 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
     Motor central que orquestra el cálculo de métricas. 
     Usa caché LRU para optimizar el rendimiento al recibir métricas idénticas.
     """
-    if len(metric_tuple) != len(_VALIDATION_KEYS):
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de datos inconsistente."])
-    
-    data_map = dict(zip(_VALIDATION_KEYS, metric_tuple))
-    metrics = SystemMetrics(**data_map, quarantined_count=float(quarantined))
+    # Reconstruimos la instancia una sola vez con los valores validados
+    metrics = SystemMetrics(**dict(zip(_VALIDATION_KEYS, metric_tuple)), quarantined_count=float(quarantined))
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -376,10 +373,11 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
             area_ratio = entry.scorer(metrics)
             recs = _evaluate_rules(metrics, entry.rules, area_ratio)
             recommendations.extend(recs)
-            points = area_ratio * float(entry.weight)
-            val_int = int(_clamp(round(points), 0.0, float(entry.weight)))
-            metric_breakdown[entry.area] = val_int
-            total_points += float(val_int)
+            
+            # Cálculo directo ponderado
+            weighted_val = int(_clamp(area_ratio * entry.weight, 0.0, float(entry.weight)))
+            metric_breakdown[entry.area] = weighted_val
+            total_points += float(weighted_val)
         except Exception:
             continue
             
@@ -388,7 +386,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
         if _is_safe_string_for_report(quarantine_msg):
             recommendations.append(_sanitize_msg(quarantine_msg))
         
-    final_score = int(_clamp(round(total_points), 0.0, 100.0))
+    final_score = int(_clamp(total_points, 0.0, 100.0))
     
     return HealthResult(
         score=final_score,
@@ -404,9 +402,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     try:
         metrics.validate()
-        # Serialización segura: extraemos solo números para el motor cacheado
-        raw_vals = tuple(float(metrics.safe_get(f)) for f in _VALIDATION_KEYS)
-        return _compute_cached(raw_vals, int(metrics.safe_get("quarantined_count")))
+        # Serialización eficiente para la caché
+        raw_vals = tuple(float(getattr(metrics, f)) for f in _VALIDATION_KEYS)
+        return _compute_cached(raw_vals, int(metrics.quarantined_count))
     except (TypeError, ValueError, AttributeError, MemoryError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 

@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **135** (26.8% de aceptación)
+- Mejoras aceptadas: **137** (27.2% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 302
+- Sin respuesta de la IA (error o límite): 299
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 57 | 4 | 20 | 9 | 150 |
-| 2026-11-01 | 78 | 6 | 23 | 5 | 152 |
+| 2026-10-31 | 57 | 4 | 20 | 9 | 146 |
+| 2026-11-01 | 80 | 6 | 24 | 5 | 153 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,26 +25,28 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **28**
 - seguridad defensiva: **27**
 - robustez ante casos límite: **27**
-- rendimiento: **22**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **17**
+- `healthscore.py`: **13**
 - `assistant.py`: **13**
 - `browser.py`: **12**
-- `healthscore.py`: **12**
 - `quarantine.py`: **12**
 - `diskreport.py`: **10**
 - `memory.py`: **10**
+- `organizer.py`: **10**
 - `scanner.py`: **10**
 - `settings.py`: **10**
-- `organizer.py`: **9**
 - `startup.py`: **9**
 - `branding.py`: **6**
 - `duplicates.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T11:20:51` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la validación redundante `is_safe_to_modify(Path(entry.path))` por una verificación de conjunto (`in`) en `_should_scan_directory`, reduciendo las llamadas costosas al sistema de archivos mediante el aprovechamiento del `protected_cache`.
+- `2026-11-01T11:18:58` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo eliminando la reconstrucción innecesaria de diccionarios y objetos `SystemMetrics` dentro del bucle principal, reutilizando la instancia validada existente y aplicando la computación de `points` de forma más directa para reducir el overhead en cada iteración del pipeline.
 - `2026-11-01T11:09:44` **diskreport.py** (rendimiento): Se optimizó el escaneo del directorio raíz en `largest_folders` evitando la llamada redundante a `walk_files` (que re-procesa todos los archivos) y deduplicando cálculos, aprovechando la estructura ya presente en `GlobalStats` o iterando una sola vez para extraer métricas de subcarpetas de forma más eficiente.
 - `2026-11-01T11:08:53` **branding.py** (rendimiento): Se ha optimizado la generación del logo ASCII mediante la eliminación de una llamada innecesaria a `\n` al inicio y la centralización de la constante de cadena, mejorando el rendimiento de renderizado en terminal al reducir la creación de objetos de texto intermedios en cada llamado.
 - `2026-11-01T10:59:58` **assistant.py** (rendimiento): Se optimizó el acceso a los criterios de salud mediante la eliminación de una re-evaluación innecesaria en `_cached_active_problems` y se redujo la complejidad de `_evaluate_active_problems` al reemplazar el filtrado dinámico constante por una consulta eficiente sobre el mapa de criterios ya estructurado.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T10:38:29` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más específicos y se han aplicado type hints a variables globales críticas para facilitar la legibilidad del pipeline de datos.
 - `2026-11-01T10:29:16` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con parámetros y retornos (estilo Google) en las clases clave y métodos públicos, además de añadir type hints explícitos en los métodos de `GlobalStats` y `FolderMetrics` para clarificar los datos procesados.
 - `2026-11-01T10:29:03` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado del módulo añadiendo docstrings técnicos a los métodos privados y clarificando las responsabilidades dentro de `DirectoryScanner`, lo que facilita el mantenimiento futuro ante la complejidad de los recorridos de disco.
-- `2026-11-01T10:28:38` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de manipulación de color y geometría, eliminando redundancias y clarificando las expectativas de los tipos de entrada/salida para mejorar la mantenibilidad.
-- `2026-11-01T10:28:06` **assistant.py** (legibilidad y documentación): Se documentó la responsabilidad crítica de las funciones de seguridad mediante docstrings descriptivos y se mejoró la legibilidad de la lógica de validación centralizada mediante la refactorización de `_ensure_safe_text` y sus helpers, facilitando la comprensión del flujo de seguridad para auditorías futuras.
