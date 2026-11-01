@@ -1462,3 +1462,4 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-11-01T14:53:46` Corrida terminada. Total usado hoy: 350.
 - `2026-11-01T15:02:41` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-01T15:12:53` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-01T15:23:04` Presupuesto diario agotado (350 usados). Corte hasta mañana.
