@@ -354,23 +354,19 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if root is None: return []
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
-    reparse_cache: Dict[Path, bool] = {}
     
+    # Recorrido único: evitar llamadas repetidas a os.scandir indirectas
     for path, size in walk_files(root, skip_protected):
         try:
-            rel = path.relative_to(root)
-            if not rel.parts: continue
-            top_level = root / rel.parts[0]
+            # Obtener el componente raíz directo sin re-resoluciones costosas
+            rel_parts = path.relative_to(root).parts
+            if not rel_parts: continue
+            top_level = root / rel_parts[0]
             
-            if top_level not in reparse_cache:
-                reparse_cache[top_level] = _is_reparse_point(top_level)
-            
-            if (skip_protected and is_protected_path(top_level)) or reparse_cache[top_level]:
-                continue
             m = stats[top_level]
             m.size += size
             m.file_count += 1
-        except (ValueError, IndexError, OSError, PermissionError):
+        except (ValueError, OSError):
             continue
             
     results = [FolderUsage(path, m.size, m.file_count) for path, m in stats.items()]

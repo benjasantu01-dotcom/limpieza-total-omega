@@ -359,9 +359,17 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     except (OSError, PermissionError, RuntimeError, TypeError, ValueError): 
         return None
 
+_ASCII_LOGO: Final[str] = (
+    "   ___  __  __ ___ ___   _\n"
+    "  / _ \\|  \\/  | __/ __| /_\\\n"
+    " | (_) | |\\/| | _|| (_ // _ \\\n"
+    "  \\___/|_|  |_|___\\___/_/ \\_\\\n"
+    "      Limpieza Total Omega\n"
+)
+
 def logo_ascii() -> str: 
     """Retorna representación ASCII para logs de consola."""
-    return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
+    return _ASCII_LOGO
 
 STRIPE_THICKNESS_SCALE: Final[float] = 92.0
 STRIPE_COUNT_FACTOR: Final[float] = 28.0

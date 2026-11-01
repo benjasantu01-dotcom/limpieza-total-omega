@@ -1069,3 +1069,37 @@ assert not {'replace'}
 - `2026-11-01T10:59:58` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el acceso a los criterios de salud mediante la eliminación de una re-evaluación innecesaria en `_cached_active_problems` y se redujo la complejidad de `_evaluate_active_problems` al reemplazar el filtrado dinámico constante por una consulta eficiente sobre el mapa de criterios ya estructurado.
 - `2026-11-01T10:59:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T10:59:58` Corrida terminada. Total usado hoy: 260.
+- `2026-11-01T11:08:15` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-01T11:08:53` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la generación del logo ASCII mediante la eliminación de una llamada innecesaria a `\n` al inicio y la centralización de la constante de cadena, mejorando el rendimiento de renderizado en terminal al reducir la creación de objetos de texto intermedios en cada llamado.
+- `2026-11-01T11:09:17` Tests FALLARON:
+```
+ * 1024)]
+        texto = "\n".join(browser.summarize(caches))
+        assert "Chrome" in texto
+>       assert "contraseñas" in texto
+E       AssertionError: assert 'contraseñas' in 'Caché: 1.0 MB en 1 carpetas\n\n  Chrome                     1.0 MB\n      /tmp/pytest-of-runner/pytest-2/test_summarize_includes_the_sa0/Cache\n\nSolo se listan carpetas de caché, que el navegador regenera solo.'
+
+evolve/tests/test_modules.py:802: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-2/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-2/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AssertionError: assert 'contraseñas' in 'Caché: 1.0 MB en 1 carpetas\n\n  Chrome                     1.0 MB\n      /tmp/pytest-of-runner/pytest-2/test_summarize_includes_the_sa0/Cache\n\nSolo se listan carpetas de caché, que el navegador regenera solo.'
+2 failed, 297 passed in 1.46s
+
+```
+- `2026-11-01T11:09:17` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Optimicé el cálculo del tamaño de directorios integrando un caché de inodos persistente y evitando la creación redundante de objetos `Path` y llamadas a `os.path.realpath` dentro del bucle interno, reduciendo drásticamente la presión sobre el sistema de archivos durante los escaneos.
+- `2026-11-01T11:09:44` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó el escaneo del directorio raíz en `largest_folders` evitando la llamada redundante a `walk_files` (que re-procesa todos los archivos) y deduplicando cálculos, aprovechando la estructura ya presente en `GlobalStats` o iterando una sola vez para extraer métricas de subcarpetas de forma más eficiente.
+- `2026-11-01T11:09:54` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-01T11:09:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T11:09:54` Corrida terminada. Total usado hoy: 264.
