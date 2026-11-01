@@ -758,3 +758,22 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-11-01T08:08:12` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `memory.py` mediante una verificación estricta de rutas mediante `is_protected_path` en `_is_process_executable_safe` y la adición de una validación de `path_buffer` previo a cualquier operación de trim o consulta, asegurando que no se interactúe con procesos cuyos ejecutables residan en áreas protegidas del sistema.
 - `2026-11-01T08:08:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T08:08:12` Corrida terminada. Total usado hoy: 192.
+- `2026-11-01T08:15:12` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-11-01T08:15:41` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha reforzado la seguridad defensiva en `delete_reviewed` implementando una validación estricta de la identidad del archivo mediante `is_safe_to_modify` ANTES de la operación de borrado y verificando que el archivo no esté bloqueado o sea un enlace simbólico/punto de reparse, previniendo el borrado accidental de archivos de sistema que pudieran haber sido movidos erróneamente a la carpeta de revisión.
+- `2026-11-01T08:16:44` Tests FALLARON:
+```
+al preparar directorio de cuarentena: [GENERIC] Inconsistencia en sandbox: archivos huérfanos detectados.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante proceso de cuarentena: Falla al registrar ítem en manifiesto: Sandbox inaccesible para guardar manifiesto: Error al preparar directorio de cuarentena: [GENERIC] Inconsistencia en sandbox: archivos huérfanos detectados.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante proceso de cuarentena: Falla al registrar ítem en manifiesto: Sandbox inaccesible para guardar manifiesto: Error al preparar directorio de cuarentena: [GENERIC] Inconsistencia en sandbox: archivos huérfanos detectados.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante proceso de cuarentena: Falla al registrar ítem en manifiesto: Sandbox inaccesible para guardar manifiesto: Error al preparar directorio de cuarentena: [GENERIC] Inconsistencia en sandbox: archivos huérfanos detectados.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante proceso de cuarentena: Falla al registrar ítem en manifiesto: Sandbox inaccesible para guardar manifiesto: Error al preparar directorio de cuarentena: [GENERIC] Inconsistencia en sandbox: archivos huérfanos detectados.
+8 failed, 291 passed, 7 warnings in 14.02s
+
+```
+- `2026-11-01T08:16:44` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha reforzado la integridad del sistema al añadir una validación de "punto de control" (checkpoint) que verifica que la cantidad de ítems en el manifiesto coincide exactamente con la cantidad de archivos físicos encontrados en el sandbox, previniendo discrepancias que puedan comprometer la seguridad o causar la pérdida de seguimiento de archivos aislados.
+- `2026-11-01T08:17:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-01T08:17:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-01T08:18:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-01T08:19:23` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de la validación de archivos al agregar una verificación explícita contra la API de Windows para detectar si el archivo es un archivo de dispositivo o un recurso de sistema nombrado (como `CON` o `LPT1`) antes de intentar cualquier operación de I/O, evitando así el comportamiento impredecible al interactuar con nombres de archivos reservados del kernel.
+- `2026-11-01T08:19:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T08:19:23` Corrida terminada. Total usado hoy: 196.

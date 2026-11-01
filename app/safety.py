@@ -424,7 +424,11 @@ def _is_reserved_device_name(name: str) -> bool:
 def _is_device_file(path: Path) -> bool:
     if not isinstance(path, Path): return False
     path_str = str(path).upper()
-    return path_str.startswith(("\\\\.\\", "//./"))
+    if path_str.startswith(("\\\\.\\", "//./")): return True
+    try:
+        name = path.name.split('.')[0]
+        return _is_reserved_device_name(name)
+    except Exception: return False
 
 @lru_cache(maxsize=512)
 def _has_alternate_data_stream(path_name: str) -> bool:

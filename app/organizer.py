@@ -422,8 +422,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not item.is_file() or item.is_symlink() or _is_junction(item): continue
                 if not is_valid_junk_extension(item.name): continue
-                # Validación crítica: no borrar si el archivo está protegido por sistema
-                if is_protected_path(item): continue
+                if is_protected_path(item) or _is_file_locked(item): continue
+                # Validación final antes de borrar
                 if is_safe_to_modify(item):
                     item.unlink()
                     count += 1
