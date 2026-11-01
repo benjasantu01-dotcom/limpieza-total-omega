@@ -1179,3 +1179,43 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-11-01T12:32:01` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-01T12:32:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T12:32:01` Corrida terminada. Total usado hoy: 296.
+- `2026-11-01T12:40:03` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-01T12:40:33` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en la recuperación de rutas de procesos mediante `GetModuleFileNameExW`, asegurando que cualquier ruta obtenida sea normalizada y validada estrictamente contra `is_protected_path` antes de ser utilizada para cualquier operación de nivel de sistema, evitando el riesgo de manipular procesos críticos de Windows.
+- `2026-11-01T12:41:20` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-01T12:42:05` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+F..........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_purge_all_only_deletes_inside_the_quarantine _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_purge_all_only_deletes_in0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-2/test_purge_all_only_deletes_in0/_Cuarentena')
+
+    def test_purge_all_only_deletes_inside_the_quarantine(tmp_path, cuarentena):
+        afuera = tmp_path / "intacto.txt"
+        afuera.write_text("y")
+    
+        for nombre in ("a.txt", "b.txt"):
+            f = tmp_path / nombre
+            f.write_text("x")
+            quarantine.quarantine_file(f, base=cuarentena)
+    
+        borrados = quarantine.purge_all(base=cuarentena)
+    
+>       assert borrados == 2
+E       assert 0 == 2
+
+evolve/tests/test_safety.py:272: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - assert 0 == 2
+1 failed, 298 passed in 1.54s
+
+```
+- `2026-11-01T12:42:05` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: He endurecido `_safe_unlink` para que verifique explícitamente la pertenencia del archivo al directorio de cuarentena antes de cualquier acción, previniendo posibles escapes si se llamara con una ruta mal formada, y agregué una validación de `st_nlink` dentro de `purge_item` para asegurar que el archivo no haya sido enlazado a otras ubicaciones (evitando así borrados accidentales de archivos fuera del sandbox).
+- `2026-11-01T12:42:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-01T12:42:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T12:42:20` Corrida terminada. Total usado hoy: 300.

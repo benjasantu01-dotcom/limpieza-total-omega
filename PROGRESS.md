@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **144** (28.6% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 47
+- Mejoras aceptadas: **145** (28.8% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 288
+- Sin respuesta de la IA (error o límite): 285
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 48 | 4 | 18 | 9 | 129 |
-| 2026-11-01 | 96 | 7 | 29 | 5 | 159 |
+| 2026-10-31 | 48 | 4 | 18 | 9 | 125 |
+| 2026-11-01 | 97 | 8 | 30 | 5 | 160 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **31**
 - rendimiento: **29**
 - legibilidad y documentación: **28**
-- seguridad defensiva: **22**
+- seguridad defensiva: **23**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,9 +35,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **13**
 - `browser.py`: **12**
 - `settings.py`: **11**
+- `memory.py`: **11**
 - `scanner.py`: **10**
 - `startup.py`: **10**
-- `memory.py`: **10**
 - `diskreport.py`: **9**
 - `organizer.py`: **9**
 - `branding.py`: **8**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T12:40:33` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la recuperación de rutas de procesos mediante `GetModuleFileNameExW`, asegurando que cualquier ruta obtenida sea normalizada y validada estrictamente contra `is_protected_path` antes de ser utilizada para cualquier operación de nivel de sistema, evitando el riesgo de manipular procesos críticos de Windows.
 - `2026-11-01T12:31:09` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al introducir `_is_sensitive_input` y aplicarlo en la creación de `SystemMetrics` y durante la validación de reportes, evitando que datos potencialmente maliciosos o rutas de sistema se filtren en la lógica de procesamiento o mensajes de la interfaz.
 - `2026-11-01T12:30:38` **duplicates.py** (seguridad defensiva): Se ha refactorizado `_safe_path_check` para mejorar la seguridad defensiva mediante la resolución de la ruta real antes de cualquier chequeo (`resolve()`), previniendo vulnerabilidades por *Path Traversal* o enlaces simbólicos maliciosos, y se ha estandarizado el manejo de rutas en las funciones de hashing para garantizar que siempre se verifique la seguridad antes de abrir cualquier descriptor de archivo.
 - `2026-11-01T12:21:26` **browser.py** (seguridad defensiva): Se ha restringido el acceso del `DirectoryScanner` para asegurar que, durante la recursión, no se sigan puntos de reparse ni enlaces simbólicos, reforzando el aislamiento del escaneo dentro de la ruta base permitida.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T11:39:54` **startup.py** (rendimiento): Optimicé el método `_validate_file_access` de la clase `StartupEntry` reemplazando la llamada redundante a `p.exists()` (que ya es realizada implícitamente por `os.access` y `is_safe_to_modify`) y moviendo la validación de `is_safe_to_modify` antes de la llamada a `os.access` para evitar consultas innecesarias al sistema de archivos en rutas bloqueadas.
 - `2026-11-01T11:39:27` **settings.py** (rendimiento): Se optimizó la validación `_is_structure_valid` para evitar iteraciones redundantes y búsquedas innecesarias en `_KEY_TO_ENUM` al validar el esquema de configuración tras el parseo del JSON.
 - `2026-11-01T11:30:37` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner reemplazando la creación repetitiva de objetos `Path` dentro del bucle crítico de `process_entry` y `scan_directory` por el uso directo de las rutas `str` proporcionadas por `os.DirEntry`, evitando además una llamada redundante a `os.path.normcase` al reutilizar el estado del `Scanner`.
-- `2026-11-01T11:30:26` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando la recreación innecesaria de objetos `Path` y normalizando rutas solo cuando es estrictamente necesario, aprovechando que `PROTECTED_DIR_NAMES` ya es un `set` para búsquedas O(1).

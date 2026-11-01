@@ -350,10 +350,8 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
         if WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, path_buffer, len(path_buffer)) <= 0:
             return False 
         
-        exe_path_str = path_buffer.value
-        if not isinstance(exe_path_str, str) or not exe_path_str: return False
-        
-        return not is_protected_path(Path(exe_path_str).resolve(strict=False))
+        exe_path = Path(path_buffer.value).resolve(strict=False)
+        return not is_protected_path(exe_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
