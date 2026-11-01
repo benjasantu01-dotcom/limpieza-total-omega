@@ -162,6 +162,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if p is None: continue
         try:
             item = Path(p)
+            if not item.exists(): continue
             st = item.stat()
             if _is_valid_candidate(item, st.st_size):
                 groups_by_size[st.st_size].append(item)
@@ -252,6 +253,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_mtime(path: Path) -> float:
     """Timestamp de modificación; retorna infinito si el archivo es inaccesible."""
+    if not isinstance(path, Path): return float('inf')
     with suppress(OSError, PermissionError, FileNotFoundError):
         return path.stat().st_mtime
     return float('inf')
@@ -259,7 +261,7 @@ def _get_mtime(path: Path) -> float:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """Heurística: recomienda conservar el archivo con la fecha de modificación más antigua."""
-    if not group.paths: 
+    if not group or not group.paths: 
         return None
         
     candidates = [( _get_mtime(p), p) for p in group.paths]
@@ -273,6 +275,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera líneas descriptivas para la interfaz de usuario."""
+    if not group: return []
     keeper = suggest_keeper(group)
     if keeper is None: return []
 

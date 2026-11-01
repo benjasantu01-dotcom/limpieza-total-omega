@@ -296,6 +296,7 @@ class SystemMetrics:
         all_keys = _VALIDATION_KEYS + ("quarantined_count",)
         for field_name in all_keys:
             val = getattr(self, field_name, 0.0)
+            if val is None: val = 0.0
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
             setattr(self, field_name, sanitized)
@@ -339,6 +340,7 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     Ejecutor de reglas con aislamiento (sandbox) para evitar fugas de información.
     """
     try:
+        if metrics is None: return ""
         raw_res = rule.message_factory(metrics)
         if not _is_safe_string_for_report(raw_res):
             return ""
@@ -349,7 +351,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     """
     Evalúa las reglas registradas y retorna solo las que disparan advertencias.
     """
-    if not isinstance(rules, tuple): return []
+    if not isinstance(rules, tuple) or metrics is None: return []
     findings: List[str] = []
     for rule in rules:
         try:
@@ -375,6 +377,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> Health
     
     for entry in PIPELINE_DEFINITIONS:
         try:
+            if entry.scorer is None: continue
             area_ratio = entry.scorer(metrics)
             recs = _evaluate_rules(metrics, entry.rules, area_ratio)
             recommendations.extend(recs)

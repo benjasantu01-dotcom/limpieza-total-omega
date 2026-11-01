@@ -1432,3 +1432,10 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-11-01T14:14:49` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-01T14:14:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T14:14:49` Corrida terminada. Total usado hoy: 336.
+- `2026-11-01T14:21:52` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-01T14:22:41` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-01T14:23:07` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `walk_files` y `largest_folders` validando la existencia de `entry.path` y capturando excepciones de acceso al filesystem de manera más específica para evitar la interrupción silenciosa del escaneo ante permisos restringidos o rutas volátiles.
+- `2026-11-01T14:23:31` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `group_by_size` mediante la validación explícita de entradas (`None` o tipos incorrectos) y el manejo preventivo de excepciones durante el acceso a atributos de archivo, evitando fallos silenciosos al procesar rutas inaccesibles o malformadas.
+- `2026-11-01T14:23:45` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics.validate` y la integridad del `PipelineEntry` mediante la adición de chequeos de `None` y tipos antes de las operaciones, asegurando que el motor de scoring no procese datos corruptos en tiempo de ejecución.
+- `2026-11-01T14:23:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T14:23:45` Corrida terminada. Total usado hoy: 340.

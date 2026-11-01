@@ -299,11 +299,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if _is_excluded_path(entry.name):
+                        if not entry.path or _is_excluded_path(entry.name):
                             continue
                         
                         path = Path(entry.path)
-                        # Validación de seguridad: no escapar del directorio raíz original
                         if not path.resolve().is_relative_to(root_path):
                             continue
                         
@@ -355,18 +354,17 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
-    # Recorrido único: evitar llamadas repetidas a os.scandir indirectas
     for path, size in walk_files(root, skip_protected):
         try:
-            # Obtener el componente raíz directo sin re-resoluciones costosas
-            rel_parts = path.relative_to(root).parts
-            if not rel_parts: continue
-            top_level = root / rel_parts[0]
+            if not root or path == root: continue
+            rel_path = path.relative_to(root)
+            if not rel_path.parts: continue
+            top_level = root / rel_path.parts[0]
             
             m = stats[top_level]
             m.size += size
             m.file_count += 1
-        except (ValueError, OSError):
+        except (ValueError, OSError, RuntimeError):
             continue
             
     results = [FolderUsage(path, m.size, m.file_count) for path, m in stats.items()]
