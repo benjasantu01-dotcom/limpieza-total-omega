@@ -344,16 +344,20 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     """Guarda el logo SVG en el sistema de archivos tras verificar permisos."""
     if destination is None: return None
     try:
-        dest_path = Path(destination)
+        dest_path = Path(destination).resolve()
+        # Verificaciones de seguridad antes de cualquier operación de I/O
         if not is_safe_to_modify(dest_path) or is_protected_path(dest_path): return None
+        
         parent = dest_path.parent
         if not parent.exists():
             if not is_safe_to_modify(parent) or is_protected_path(parent): return None
             parent.mkdir(parents=True, exist_ok=True)
+            
         ensure_safe_to_modify(dest_path)
         dest_path.write_text(logo_svg(int(size)), encoding="utf-8")
         return dest_path
-    except (OSError, PermissionError, RuntimeError, TypeError, ValueError, Exception): return None
+    except (OSError, PermissionError, RuntimeError, TypeError, ValueError, Exception): 
+        return None
 
 def logo_ascii() -> str: 
     """Retorna una versión ASCII art del logo para logs de terminal."""

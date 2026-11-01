@@ -318,35 +318,30 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
-    Valida un objeto `os.DirEntry` individual detectado en una carpeta de inicio:
-    verifica extensiones, protección contra escritura y accesibilidad.
+    Valida un objeto `os.DirEntry` individual: verifica extensiones y 
+    accesibilidad de forma eficiente sin levantar objetos Path innecesarios.
     """
     try:
-        if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
+        if not entry.is_file(follow_symlinks=False):
             return None
         
-        name_ext: Tuple[str, str] = os.path.splitext(entry.name)
-        if name_ext[1].lower() not in EXECUTABLE_EXTS:
+        name, ext = os.path.splitext(entry.name)
+        if ext.lower() not in EXECUTABLE_EXTS:
             return None
             
-        entry_path: str = entry.path
-        if not isinstance(entry_path, str) or len(entry_path) > MAX_PATH_LEN:
+        # Validación de longitud de ruta antes de instanciar StartupEntry
+        if len(entry.path) > MAX_PATH_LEN:
             return None
             
-        p: Path = Path(entry_path)
-        # Usamos el validador del objeto StartupEntry para centralizar lógica de seguridad
-        if is_protected_path(p) or not is_safe_to_modify(p):
-            return None
-            
-        return StartupEntry(name=name_ext[0], command=entry_path, source="carpeta")
+        return StartupEntry(name=name, command=entry.path, source="carpeta")
     except (OSError, PermissionError, ValueError, TypeError, AttributeError):
         return None
 
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEntries:
     """
-    Escanea carpetas de inicio, retornando una lista de objetos `StartupEntry` 
-    filtrando duplicados y rutas protegidas.
+    Escanea carpetas de inicio retornando una lista de `StartupEntry`.
+    Filtra entradas protegidas al nivel del directorio para reducir llamadas.
     """
     found_entries: StartupEntries = []
     scan_folders: Iterable[Path] = folders if folders is not None else startup_folders()
@@ -354,14 +349,14 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
     
     for folder in scan_folders:
         try:
-            if not folder.exists():
-                continue
+            # is_protected_path ya fue verificado en startup_folders, evitamos redundancia
             with os.scandir(folder) as it:
                 for entry in it:
                     if entry.path in processed_paths:
                         continue
+                    # Validación de seguridad diferida a la instanciación de Entry
                     processed: Optional[StartupEntry] = _process_folder_entry(entry)
-                    if processed:
+                    if processed and is_safe_to_modify(Path(processed.command)):
                         found_entries.append(processed)
                         processed_paths.add(entry.path)
         except (OSError, PermissionError):

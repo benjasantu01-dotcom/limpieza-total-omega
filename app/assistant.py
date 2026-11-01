@@ -469,14 +469,14 @@ class SystemContext:
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un atributo individual según especificación."""
-        val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
-        if val is None or isinstance(val, bool) or callable(val):
-            return None
-        valid_val = _is_valid_numeric_update(val, spec)
-        if valid_val is None: return None
         try:
+            val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
+            if val is None or isinstance(val, bool) or callable(val):
+                return None
+            valid_val = _is_valid_numeric_update(val, spec)
+            if valid_val is None: return None
             return spec.type_hint(valid_val)
-        except (ValueError, TypeError):
+        except Exception:
             return None
 
     def _clean_grade(self, val: Any) -> str:
@@ -495,14 +495,11 @@ class SystemContext:
         """Extrae y valida de forma transaccional un conjunto de métricas desde una fuente externa."""
         if not isinstance(source, (dict, object)) or callable(source): return None
         
-        extracted = {
-            k: self._apply_field(source, k, spec) 
-            for k, spec in _VALIDATORS.items()
-        }
-        
-        # Validación transaccional: asegurar que todas las métricas extraídas sean válidas
-        # Si alguna es None, es una actualización parcial o errónea, se filtra.
-        updates = {k: v for k, v in extracted.items() if v is not None}
+        updates = {}
+        for k, spec in _VALIDATORS.items():
+            val = self._apply_field(source, k, spec)
+            if val is not None:
+                updates[k] = val
         
         g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
         if (grade_val := self._clean_grade(g_val)):
@@ -531,9 +528,12 @@ class SystemContext:
         if not self._validate_ingestion_source(source): 
             logging.warning("Intento de ingesta con fuente insegura o compleja bloqueado.")
             return False
-        if (updates := self._validate_and_sanitize_data(source)):
-            self._apply_updates(updates)
-            return True
+        try:
+            if (updates := self._validate_and_sanitize_data(source)):
+                self._apply_updates(updates)
+                return True
+        except Exception as e:
+            logging.error(f"Error procesando ingesta de contexto: {e}")
         return False
 
 @dataclass
