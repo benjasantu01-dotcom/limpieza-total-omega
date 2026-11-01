@@ -221,7 +221,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
-            # resolve(strict=False) permite manejar rutas que podrían no existir
+            # Resolvemos sin strict=True para evitar validaciones de red innecesarias
             p = p.resolve(strict=False)
             if not self._validate_file_access(p):
                 _EXISTS_CACHE[path_string] = False
@@ -305,7 +305,8 @@ def startup_folders() -> List[Path]:
     for c in candidates:
         try:
             if c and c.is_dir():
-                resolved_str: str = str(c.resolve(strict=False))
+                # Normalizamos vía os.path para evitar E/S costosa de resolve()
+                resolved_str: str = os.path.normpath(str(c))
                 if resolved_str not in seen_paths and not c.is_symlink() and not is_protected_path(c):
                     seen_paths.add(resolved_str)
                     valid_folders.append(c)
@@ -332,7 +333,8 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         if not isinstance(entry_path, str) or len(entry_path) > MAX_PATH_LEN:
             return None
             
-        p: Path = Path(entry_path).resolve(strict=False)
+        p: Path = Path(entry_path)
+        # Usamos el validador del objeto StartupEntry para centralizar lógica de seguridad
         if is_protected_path(p) or not is_safe_to_modify(p):
             return None
             

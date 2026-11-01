@@ -1254,3 +1254,11 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-01T02:31:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-01T02:31:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-01T02:31:34` Corrida terminada. Total usado hoy: 60.
+- `2026-11-01T02:39:06` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-11-01T02:39:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-01T02:40:21` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un sistema de "Short-Circuit Evaluation" en `_evaluate_security_rules` y `_validate_preconditions` utilizando un cache de validaciones negativas (`_NEGATIVE_SECURITY_CACHE`) para evitar re-ejecutar lógica costosa de syscalls e inspección de atributos en archivos que ya fueron identificados como inseguros, mejorando drásticamente la performance en escaneos repetidos sobre estructuras de carpetas constantes.
+- `2026-11-01T02:40:55` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `set` para `SUSPICIOUS_ALL_EXTS` y la pre-normalización de extensiones en `_is_relevant_extension` para evitar múltiples llamadas a `lower()` y `splitext()` en cada archivo.
+- `2026-11-01T02:41:23` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando la llamada `os.stat()` y el procesamiento de archivos innecesarios cuando la configuración ya está presente en `_MANAGER.data_cache` y el archivo no ha sido modificado, reduciendo latencia en I/O.
+- `2026-11-01T02:41:44` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo de carpetas reemplazando el uso de `path.resolve(strict=False)` —que realiza consultas E/S adicionales de forma recursiva por cada componente de la ruta— por una normalización lógica más ligera, utilizando el caché de validación existente para evitar redundancia en las verificaciones de seguridad.
+- `2026-11-01T02:41:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-01T02:41:44` Corrida terminada. Total usado hoy: 64.

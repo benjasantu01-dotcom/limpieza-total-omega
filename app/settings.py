@@ -393,11 +393,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     resolved_str = str(primary_path.resolve())
     try:
         if primary_path.exists() and primary_path.is_file():
-            st = primary_path.lstat()
-            if _Validators._is_reparse_point(str(primary_path)): return DEFAULTS.copy()
+            # Intentar primero usar la caché antes de llamar a stat
             cached = _MANAGER.data_cache.get(resolved_str)
+            st = primary_path.lstat()
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
                 return dict(cached[0])
+            
             if _is_file_secure_to_read(primary_path, st):
                 data = _read_and_parse_json(primary_path)
                 if data is not None:

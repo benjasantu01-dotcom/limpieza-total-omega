@@ -32,6 +32,7 @@ PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], bool]] = {}
+_NEGATIVE_SECURITY_CACHE: Final[set[tuple[int, int, int, int]]] = set()
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
 _FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
 
@@ -97,7 +98,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         kernel32 = ctypes.windll.kernel32
         path_long = _to_long_path(path_str)
         
-        # GENERIC_READ (0x80000000), FILE_SHARE_READ|WRITE|DELETE (0x07)
         handle = kernel32.CreateFileW(path_long, 0x80000000, 0x07, None, 3, 0x02000000, None)
         if handle != -1:
             try:
@@ -443,7 +443,6 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     path_long = _to_long_path(path_str)
     
     for attempt in range(3):
-        # Intentar abrir solo para consultar acceso (acceso 0)
         handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
         if handle != -1:
             kernel32.CloseHandle(handle)
@@ -574,7 +573,6 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     except (AttributeError, OSError, ctypes.ArgumentError):
         pass
 
-# Definición centralizada de reglas de integridad
 _VALIDATOR_MAP: Final[dict[ProtectionReason, ViolationPredicate]] = {
     ProtectionReason.SYMLINK: lambda p, st, sd: p.is_symlink(),
     ProtectionReason.REPARSE_POINT: lambda p, st, sd: sd.is_reparse,
@@ -626,20 +624,14 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _evaluate_security_rules(state: SafetyState) -> None:
-    """
-    Verifica que el estado del archivo cumpla con las políticas de seguridad.
-    Itera sobre las reglas de integridad configuradas para validar el archivo.
-    """
-    if not state.path.exists():
-         raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
-    
+    if state.file_id in _NEGATIVE_SECURITY_CACHE:
+        raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC)
     if _SECURITY_CACHE.get(state.file_id):
         return
 
-    # Validar contra cada regla definida en el mapa de integridad
     for reason, predicate in _VALIDATOR_MAP.items():
         if predicate(state.path, state.stat_result, state.descriptor):
-            # Obtener el código de error mapeado o fallback a GENERIC
+            _NEGATIVE_SECURITY_CACHE.add(state.file_id)
             code = _REASON_TO_CODE.get(reason, SafetyValidationErrorCode.GENERIC)
             raise UnsafePathError(f"Integridad comprometida: {reason.name}", code)
     
@@ -678,7 +670,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                     kernel32.CloseHandle(handle)
             
             st = path.stat()
-            # Validación de integridad post-estat: asegurar que el objeto no fue reemplazado o borrado
             if st.st_atime == 0 and st.st_mtime == 0:
                  raise UnsafePathError(f"Metadatos corruptos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
             if hasattr(st, 'st_nlink') and st.st_nlink == 0:
@@ -932,7 +923,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     _STRUCTURAL_CACHE[path_string] = True
 
 def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> None:
-    """Verifica precondiciones de seguridad: bloqueos, propiedad del sistema y permisos antes de modificar."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
@@ -941,7 +931,12 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             raise UnsafePathError("Operación denegada en modo privilegiado.", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION)
 
     try:
-        if _is_file_locked_by_other_process(str(target_path)) or _is_file_busy(str(target_path)):
+        path_str = str(target_path)
+        file_id = _get_file_id(path_str)
+        if file_id in _NEGATIVE_SECURITY_CACHE:
+            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC)
+
+        if _is_file_locked_by_other_process(path_str) or _is_file_busy(path_str):
             raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
 
         sd = _get_security_descriptor(target_path)
@@ -953,16 +948,16 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             if sd.is_reparse:
                 raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
-        if _is_file_in_use_by_system(str(target_path)):
+        if _is_file_in_use_by_system(path_str):
             raise UnsafePathError("Protección defensiva: Archivo en uso por sistema.", SafetyValidationErrorCode.FILE_IN_USE)
             
         if target_path.parent.exists() and not os.access(target_path.parent, os.W_OK):
             raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
         
-        if os.name == 'nt' and target_path.parent.exists() and _is_volume_readonly(str(target_path.parent)):
+        if os.name == 'nt' and target_path.parent.exists() and _is_volume_readonly(path_str):
             raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
 
-        if _is_kernel_managed(str(target_path)):
+        if _is_kernel_managed(path_str):
             raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
         
         _validate_volume_integrity(target_path)

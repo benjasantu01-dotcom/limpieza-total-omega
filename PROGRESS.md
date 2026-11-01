@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **141** (28.0% de aceptación)
+- Mejoras aceptadas: **143** (28.4% de aceptación)
 - Rechazadas por tests: 6
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 287
+- Sin respuesta de la IA (error o límite): 286
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-30 | 36 | 1 | 13 | 3 | 41 |
+| 2026-10-30 | 34 | 1 | 12 | 3 | 40 |
 | 2026-10-31 | 90 | 5 | 32 | 14 | 209 |
-| 2026-11-01 | 15 | 0 | 6 | 2 | 37 |
+| 2026-11-01 | 19 | 0 | 6 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **37**
+- rendimiento: **32**
 - legibilidad y documentación: **31**
-- rendimiento: **28**
-- seguridad defensiva: **26**
+- seguridad defensiva: **24**
 - robustez ante casos límite: **19**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `quarantine.py`: **14**
-- `diskreport.py`: **13**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `memory.py`: **12**
+- `diskreport.py`: **12**
 - `healthscore.py`: **11**
-- `browser.py`: **10**
+- `settings.py`: **10**
 - `assistant.py`: **10**
-- `settings.py`: **9**
+- `browser.py`: **9**
+- `startup.py`: **9**
 - `branding.py`: **8**
 - `organizer.py`: **8**
-- `startup.py`: **8**
 - `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-01T02:41:44` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo de carpetas reemplazando el uso de `path.resolve(strict=False)` —que realiza consultas E/S adicionales de forma recursiva por cada componente de la ruta— por una normalización lógica más ligera, utilizando el caché de validación existente para evitar redundancia en las verificaciones de seguridad.
+- `2026-11-01T02:41:23` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la llamada `os.stat()` y el procesamiento de archivos innecesarios cuando la configuración ya está presente en `_MANAGER.data_cache` y el archivo no ha sido modificado, reduciendo latencia en I/O.
+- `2026-11-01T02:40:55` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `set` para `SUSPICIOUS_ALL_EXTS` y la pre-normalización de extensiones en `_is_relevant_extension` para evitar múltiples llamadas a `lower()` y `splitext()` en cada archivo.
+- `2026-11-01T02:40:21` **safety.py** (rendimiento): Se implementó un sistema de "Short-Circuit Evaluation" en `_evaluate_security_rules` y `_validate_preconditions` utilizando un cache de validaciones negativas (`_NEGATIVE_SECURITY_CACHE`) para evitar re-ejecutar lógica costosa de syscalls e inspección de atributos en archivos que ya fueron identificados como inseguros, mejorando drásticamente la performance en escaneos repetidos sobre estructuras de carpetas constantes.
 - `2026-11-01T02:31:06` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y el cálculo del tamaño del directorio en `total_quarantined_bytes` aprovechando los datos del manifiesto ya cargado en memoria, evitando lecturas innecesarias al sistema de archivos.
 - `2026-11-01T02:11:10` **branding.py** (rendimiento): Se ha optimizado la generación de colores para gradientes mediante la sustitución de la lógica manual de cálculo de índices y posiciones (que generaba listas y recorridos innecesarios) por una estrategia de pre-cálculo basada en tuplas y acceso directo, reduciendo la carga en el hilo de UI durante el renderizado repetitivo.
 - `2026-11-01T02:10:08` **assistant.py** (rendimiento): Optimicé el rendimiento de `_ensure_safe_text` (usada en cada validación de texto) pre-compilando la lógica de protección de rutas mediante una lista de verificación simple y eliminando llamadas redundantemente costosas a `is_protected_path` cuando se puede deducir la seguridad por la estructura del string.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T01:19:49` **scanner.py** (manejo de errores y validación de entradas): He mejorado la robustez de `_run_file_heuristics` y `scan_file` reemplazando los bloques `try-except` genéricos por capturas específicas de excepciones de I/O, evitando ocultar errores de lógica durante la ejecución del escaneo.
 - `2026-11-01T01:19:39` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_locked_by_other_process` y `_get_file_id` reemplazando llamadas potencialmente ambiguas a `ctypes` por una validación explícita de éxito, asegurando que los fallos de acceso no se silencien incorrectamente como archivos "libres" y mejorando el manejo de errores en operaciones con el sistema de archivos.
 - `2026-11-01T01:09:50` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la validación de parámetros y el manejo de errores en `stage_for_review` y `_can_move_file` para asegurar que las rutas y los objetos sean coherentes antes de intentar operaciones de E/S, previniendo excepciones no capturadas.
-- `2026-11-01T01:08:00` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y la integridad del `Pipeline` mediante la validación proactiva de tipos y valores, asegurando que los fallos en la entrada de datos no propaguen excepciones inesperadas durante el procesamiento.
-- `2026-11-01T00:58:45` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_collect_summary_data` y `walk_files` para evitar que fallos en la lectura de atributos de archivo o en operaciones de ruta interrumpan el escaneo, asegurando que la recolección de métricas sea robusta incluso ante archivos bloqueados o con metadatos inaccesibles.
-- `2026-11-01T00:58:19` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner.get_size` implementando validaciones de tipo y estado más estrictas sobre `root_path` y `entry` antes de realizar operaciones de disco, evitando potenciales `TypeError` o excepciones no capturadas al procesar rutas mal formadas.
-- `2026-11-01T00:50:56` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_clean_grade` y `_apply_field` agregando validaciones de tipo explícitas y capturas de excepciones más finas, evitando que valores malformados en `settings` o inyecciones intenten corromper el `SystemContext`.

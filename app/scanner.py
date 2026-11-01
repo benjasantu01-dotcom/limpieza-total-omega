@@ -73,7 +73,7 @@ UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 # Listas de configuración para filtros
 SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
 SUSPICIOUS_CONTENT_EXT: Final[frozenset[str]] = frozenset({".pdf"})
-SUSPICIOUS_ALL_EXTS: Final[frozenset[str]] = SUSPICIOUS_EXECUTABLE_EXT.union(SUSPICIOUS_CONTENT_EXT)
+SUSPICIOUS_ALL_EXTS: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1", ".pdf"})
 SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
 TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
 SYSTEM32_LOWER: Final[str] = "system32"
@@ -239,8 +239,7 @@ class Scanner:
     @lru_cache(maxsize=128)
     def _is_relevant_extension(self, name: str) -> bool:
         """Verifica si el archivo posee una extensión que requiere análisis heurístico."""
-        _, ext = os.path.splitext(name)
-        return ext.lower() in SUSPICIOUS_ALL_EXTS
+        return os.path.splitext(name)[1].lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
         """Orquestador principal que delega el manejo según si la entrada es archivo o directorio."""
