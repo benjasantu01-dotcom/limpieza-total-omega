@@ -91,11 +91,11 @@ def _is_valid_file_path(path: PathInput) -> bool:
     if not isinstance(path, (Path, str)) or not path:
         return False
     try:
-        path_str = str(path)
-        if len(path_str) > SCAN_LIMITS.path_length_limit or "\0" in path_str:
+        abs_path = os.path.abspath(str(path))
+        if len(abs_path) > SCAN_LIMITS.path_length_limit or "\0" in abs_path:
             return False
-        target_path = Path(path)
-        return target_path.exists() and not _cached_is_protected(path_str) and target_path.is_file()
+        target_path = Path(abs_path)
+        return target_path.exists() and not _cached_is_protected(abs_path) and target_path.is_file()
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
@@ -104,10 +104,10 @@ def _is_readable(path: PathInput) -> bool:
     if not isinstance(path, (Path, str)) or not path:
         return False
     try:
-        target_str = str(path)
-        if len(target_str) > SCAN_LIMITS.path_length_limit or "\0" in target_str:
+        abs_path = os.path.abspath(str(path))
+        if len(abs_path) > SCAN_LIMITS.path_length_limit or "\0" in abs_path:
             return False
-        return not _cached_is_protected(target_str) and os.access(target_str, os.R_OK)
+        return not _cached_is_protected(abs_path) and os.access(abs_path, os.R_OK)
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
@@ -126,7 +126,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     Obtiene metadatos del archivo. Retorna None si el archivo es un punto de 
     reanálisis, está bloqueado (sharing violation) o es inaccesible.
     """
-    if not isinstance(entry, os.DirEntry) or len(entry.path) > SCAN_LIMITS.path_length_limit or "\0" in entry.path or _cached_is_protected(entry.path):
+    if not isinstance(entry, os.DirEntry) or "\0" in entry.path or _cached_is_protected(entry.path):
         return None
     try:
         if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
@@ -141,11 +141,12 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida que la cadena de ruta cumpla con los límites de longitud y formato."""
-    if not isinstance(path_str, str) or not path_str.strip() or _cached_is_protected(path_str):
+    if not isinstance(path_str, str) or not path_str.strip():
         return False
-    if len(path_str) > SCAN_LIMITS.path_length_limit or "\0" in path_str:
+    abs_path = os.path.abspath(path_str)
+    if _cached_is_protected(abs_path) or len(abs_path) > SCAN_LIMITS.path_length_limit or "\0" in abs_path:
         return False
-    if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
+    if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(abs_path):
         return False
     return True
 
@@ -197,18 +198,18 @@ class Scanner:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.base_root_norm: str = os.path.normcase(str(base_root))
+        self.base_root_norm: str = os.path.normcase(os.path.abspath(str(base_root)))
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: Optional[str]) -> bool:
         """Determina si la ruta está contenida dentro de la jerarquía del directorio raíz."""
         if not entry_path: return False
-        return os.path.normcase(entry_path).startswith(self.base_root_norm)
+        return os.path.normcase(os.path.abspath(entry_path)).startswith(self.base_root_norm)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida que el nombre del componente no contenga caracteres o patrones prohibidos."""
-        if not isinstance(name, str) or not name: return True
-        return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name) or "\0" in name)
+        if not isinstance(name, str) or not name or "\0" in name: return True
+        return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta si la entrada es un punto de reanálisis para evitar ciclos de recursión."""
@@ -216,10 +217,10 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Realiza múltiples filtros de seguridad antes de permitir el procesamiento de una entrada."""
-        path_str: str = entry.path
+        path_str: str = os.path.abspath(entry.path)
         if path_str in self.safe_cache:
             return True
-        if self._has_invalid_name(entry.name): return False
+        if self._has_invalid_name(os.path.basename(path_str)): return False
         if entry.is_symlink() or self._is_reparse_point(entry): return False
         if _cached_is_protected(path_str): return False
         if not _is_valid_path_structure(path_str): return False
@@ -231,8 +232,7 @@ class Scanner:
         """Prepara un directorio hijo para su posterior exploración, verificando límites de profundidad."""
         if current_depth >= SCAN_LIMITS.max_recursion_depth:
             return
-        # El cache check es redundante aquí por _is_safe_entry, pero se mantiene por seguridad
-        norm_path = os.path.normcase(entry.path)
+        norm_path = os.path.normcase(os.path.abspath(entry.path))
         if norm_path in visited_dirs:
             return
         try:
@@ -258,7 +258,7 @@ class Scanner:
         try:
             if entry.is_file():
                 if self._is_relevant_extension(entry.name):
-                    path_norm = os.path.normcase(entry.path)
+                    path_norm = os.path.normcase(os.path.abspath(entry.path))
                     if path_norm not in self.seen_normcase:
                         self.seen_normcase.add(path_norm)
                         self._run_file_heuristics(Path(entry.path), entry)

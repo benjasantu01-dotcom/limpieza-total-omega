@@ -391,7 +391,8 @@ def _is_file_owned_by_system(path_str: str) -> bool:
             sid_str = ctypes.create_unicode_buffer(128)
             if advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str)):
                 sid_val = sid_str.value
-                return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
+                # S-1-5-18: SYSTEM, S-1-5-19: LOCAL SERVICE, S-1-5-20: NETWORK SERVICE
+                return sid_val.startswith(("S-1-5-18", "S-1-5-19", "S-1-5-20", "S-1-5-80"))
     except (AttributeError, OSError, ctypes.ArgumentError, TypeError):
         pass
     finally:

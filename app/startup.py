@@ -366,6 +366,7 @@ def _is_valid_registry_path(path_str: str) -> bool:
     if not path_str or ("\\" not in path_str and "/" not in path_str): return False
     if ".." in path_str.split(os.sep): return False
     target: Path = Path(path_str)
+    # Refuerzo: impedir explícitamente rutas protegidas desde el registro
     return not any(c in str(target) for c in SUSPICIOUS_CHARS) and not is_protected_path(target)
 
 
@@ -378,6 +379,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen: return False
     
     try:
+        # Extraer para limpiar comillas antes de validar
         return _is_valid_registry_path(clean_cmd.strip('"'))
     except (ValueError, TypeError, OSError, RuntimeError):
         return False
