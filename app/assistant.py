@@ -549,7 +549,10 @@ class Answer:
 def _is_safe_path_input(text: str) -> bool:
     """Verifica si el texto de entrada contiene rutas o caracteres de control prohibidos."""
     if not isinstance(text, str): return False
-    return not (_REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text) or is_protected_path(text))
+    # La detección rápida de caracteres de estructura ayuda a evitar llamadas a is_protected_path
+    if _REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text):
+        return False
+    return not is_protected_path(text)
 
 def _contains_forbidden_patterns(text: str) -> bool:
     """Verifica si el texto incluye patrones prohibidos de acuerdo a la lista de seguridad."""
@@ -566,8 +569,10 @@ def _is_safe_text_length(text: Any) -> bool:
 def _ensure_safe_text(text: Any) -> bool:
     """Realiza una desinfección estricta validando longitud, caracteres y ausencia de inyecciones."""
     if not _is_safe_text_length(text): return False
-    if is_protected_path(text) or any(is_protected_path(part) for part in text.split()): return False
-    return not (_has_invalid_meta_characters(text) or _contains_forbidden_patterns(text) or not _is_safe_path_input(text))
+    # Validaciones rápidas primero (regex/longitud) antes de la lógica de negocio (path checking)
+    if _has_invalid_meta_characters(text) or _contains_forbidden_patterns(text): return False
+    if not _is_safe_path_input(text): return False
+    return True
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Crea una instancia de SystemContext poblándola desde múltiples fuentes de datos opcionales."""
