@@ -1,4 +1,0 @@
-{"timestamp": "2026-10-31T04:48:13", "day": "2026-10-31", "iteration": 33761, "file": "safety.py", "category": "robustez ante casos límite", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}
-{"timestamp": "2026-10-31T04:48:52", "day": "2026-10-31", "iteration": 33762, "file": "scanner.py", "category": "robustez ante casos límite", "result": "sin_respuesta", "rationale": "respuesta sin bloque de archivo válido"}
-{"timestamp": "2026-10-31T04:56:14", "day": "2026-10-31", "iteration": 33763, "file": "settings.py", "category": "robustez ante casos límite", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}
-{"timestamp": "2026-10-31T04:56:55", "day": "2026-10-31", "iteration": 33764, "file": "startup.py", "category": "robustez ante casos límite", "result": "sin_respuesta", "rationale": "sin respuesta utilizable de Gemini"}
