@@ -260,8 +260,8 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             return None
         
         name = parts[0].strip()
-        # Verificar caracteres no imprimibles o maliciosos básicos
-        if not name or any(ord(c) < 32 or ord(c) == 127 for c in name):
+        # Verificar caracteres no imprimibles o maliciosos y rutas de sistema potencialmente sensibles
+        if not name or any(ord(c) < 32 or ord(c) == 127 for c in name) or is_protected_path(Path(name)):
             return None
             
         ws = _safe_int_conversion(parts[2])

@@ -134,7 +134,6 @@ def is_valid_junk_extension(filename: str) -> bool:
     Valida la extensión de un archivo contra el conjunto de extensiones permitidas.
     """
     if not filename: return False
-    # Optimización: evitar crear objeto Path si no es necesario
     return any(filename.lower().endswith(ext) for ext in JUNK_EXTENSIONS)
 
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
@@ -184,7 +183,6 @@ def _is_allowed_directory(name: str) -> bool:
 def _try_open_win_file(path: Path) -> bool:
     """Intenta obtener un handle de lectura exclusiva de Windows."""
     try:
-        # dwDesiredAccess: GENERIC_READ (0x80000000), dwShareMode: FILE_SHARE_READ (0x00000001)
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0x00000001, None, 3, 0x00000080, None
         )
@@ -307,12 +305,12 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         return
         
     try:
-        real_path = current_dir.resolve()
+        real_path = current_dir.resolve(strict=False)
         path_key = str(real_path)
         if path_key in visited: return
         visited.add(path_key)
         
-        with os.scandir(path_key) as iterator:
+        with os.scandir(real_path) as iterator:
             for entry in iterator:
                 try:
                     if entry.is_dir(follow_symlinks=False):

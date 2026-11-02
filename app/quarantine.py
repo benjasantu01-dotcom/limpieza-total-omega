@@ -630,18 +630,25 @@ def _validate_input_path(source: PathLike) -> Path:
 
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
     p_source: Path = _validate_input_path(source)
+    
+    # Pre-check de pre-condición: verificar que el archivo es el mismo que validamos al inicio
+    initial_stat = p_source.stat()
+    
     if _is_filesystem_read_only(p_source.parent): raise OSError("El archivo origen reside en un volumen de solo lectura.")
     try: dest_dir: Path = quarantine_dir(base)
     except (OSError, PermissionError) as e: raise RuntimeError(f"Sandbox inaccesible: {e}")
-    try: st_info: os.stat_result = _check_io_error_context(p_source.stat)
-    except OSError as e: raise RuntimeError(f"No se pudo acceder al archivo original: {e}")
+    
     if _is_file_in_use_by_system(p_source): raise IOError("Archivo origen bloqueado por el sistema: abortado.")
     if p_source.resolve().stat().st_dev != dest_dir.resolve().stat().st_dev: raise UnsafePathError("Origen y sandbox deben estar en la misma unidad.")
+    
+    # Validar que el archivo no cambió entre el inicio del proceso y la validación
+    if p_source.stat().st_ino != initial_stat.st_ino: raise RuntimeError("Integridad comprometida: el archivo original cambió durante la validación inicial.")
+    
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     try:
-        file_hash, file_inode = _atomic_isolate_file(p_source, destination, st_info.st_size)
-        item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, reason, st_info.st_size, base)
+        file_hash, file_inode = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
+        item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, reason, initial_stat.st_size, base)
         if p_source.exists() and not os.path.samefile(p_source, destination):
             try: _check_io_error_context(p_source.unlink)
             except OSError as e: raise RuntimeError(f"Falla al remover original post-aislamiento: {e}")
