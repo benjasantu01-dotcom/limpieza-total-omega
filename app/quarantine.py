@@ -759,19 +759,14 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         for f in root_path.iterdir():
-            # Validación robusta de existencia y tipo antes de procesar
             try:
                 if f.name == MANIFEST_NAME or not f.is_file() or not is_within_directory(f.resolve(), root_path): continue
                 item = item_map.get(f.name)
                 if item and _is_item_purgable(f, item): 
                     purgado_ids.add(item.item_id)
                 elif not item and f.suffix != ".tmp":
-                    # Chequeo defensivo para archivos huérfanos no registrados
-                    if f.exists():
-                        ensure_safe_to_modify(f)
-                        _check_path_syntax_integrity(f)
-                        _check_for_reparse_points(f)
-                        if not _is_file_in_use_by_system(f): f.unlink()
+                    # Chequeo defensivo usando el flujo estándar de seguridad
+                    if _safe_unlink(f): pass
             except (OSError, PermissionError, UnsafePathError): continue
         if purgado_ids:
             new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]

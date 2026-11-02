@@ -468,3 +468,11 @@
 - `2026-11-02T13:02:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-02T13:02:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T13:02:36` Corrida terminada. Total usado hoy: 308.
+- `2026-11-02T13:09:13` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-02T13:09:57` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `purge_all` y `_safe_unlink` eliminando el uso de `f.unlink()` directo (que carecía de validaciones de seguridad exhaustivas) y unificando el borrado a través de un mecanismo centralizado, evitando así posibles excepciones silenciosas o condiciones inseguras.
+- `2026-11-02T13:10:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-11-02T13:11:43` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-02T13:12:31` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_locked_by_other_process` y `_is_file_busy` para que manejen correctamente los errores de API Win32 cuando `CreateFileW` retorna `INVALID_HANDLE_VALUE`, evitando excepciones no capturadas al validar archivos bloqueados o inexistentes.
+- `2026-11-02T13:12:42` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones de entrada en las funciones de utilidad (`_is_valid_file_path`, `_is_readable`, `_is_valid_path_structure`) capturando explícitamente valores nulos o tipos incorrectos y unificando el manejo de errores para evitar excepciones no controladas durante la navegación del sistema.
+- `2026-11-02T13:12:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T13:12:42` Corrida terminada. Total usado hoy: 312.

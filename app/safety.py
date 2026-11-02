@@ -27,6 +27,7 @@ ERROR_ACCESS_DENIED: Final[int] = 5
 ERROR_INSUFFICIENT_BUFFER: Final[int] = 122
 ERROR_INVALID_NAME: Final[int] = 123
 INVALID_FILE_ATTRIBUTES: Final[int] = 0xFFFFFFFF
+INVALID_HANDLE_VALUE: Final[int] = -1
 LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 FILE_ID_INFO_LEVEL: Final[int] = 18
 
@@ -106,11 +107,10 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         except (OSError, PermissionError):
             pass
     else:
-        # Validar existencia antes de crear el handle
         if os.path.exists(_to_long_path(path_str)):
             kernel32 = ctypes.windll.kernel32
             handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
-            if handle != -1:
+            if handle != INVALID_HANDLE_VALUE:
                 fid = FILE_ID_INFO()
                 if kernel32.GetFileInformationByHandleEx(handle, FILE_ID_INFO_LEVEL, ctypes.byref(fid), ctypes.sizeof(fid)):
                     res = (int(fid.VolumeSerialNumber), hash(bytes(fid.FileId.Identifier)), 0, 0)
@@ -459,7 +459,7 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     
     for attempt in range(3):
         handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
-        if handle != -1:
+        if handle != INVALID_HANDLE_VALUE:
             kernel32.CloseHandle(handle)
             return False
         
@@ -840,7 +840,7 @@ def _get_final_path_normalized(p: Path) -> Path:
     handle = kernel32.CreateFileW(
         _to_long_path(str(p)), 0, 0, None, 3, 0x02000000, None
     )
-    if handle == -1:
+    if handle == INVALID_HANDLE_VALUE:
         return p.resolve(strict=False)
     
     try:

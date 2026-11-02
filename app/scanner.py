@@ -94,11 +94,14 @@ def _cached_is_protected(path_str: str) -> bool:
 
 def _is_valid_file_path(path: PathInput) -> bool:
     """Valida existencia, legibilidad y exclusión de rutas protegidas."""
-    if not isinstance(path, (Path, str)) or not path:
+    if path is None:
         return False
     try:
-        abs_path = os.path.abspath(str(path))
-        if len(abs_path) > SCAN_LIMITS.path_length_limit or "\0" in abs_path:
+        path_str = str(path)
+        if not path_str or "\0" in path_str:
+            return False
+        abs_path = os.path.abspath(path_str)
+        if len(abs_path) > SCAN_LIMITS.path_length_limit:
             return False
         target_path = Path(abs_path)
         return target_path.exists() and not _cached_is_protected(abs_path) and target_path.is_file()
@@ -107,11 +110,14 @@ def _is_valid_file_path(path: PathInput) -> bool:
 
 def _is_readable(path: PathInput) -> bool:
     """Verifica si el sistema permite la lectura de la ruta dada."""
-    if not isinstance(path, (Path, str)) or not path:
+    if path is None:
         return False
     try:
-        abs_path = os.path.abspath(str(path))
-        if len(abs_path) > SCAN_LIMITS.path_length_limit or "\0" in abs_path:
+        path_str = str(path)
+        if not path_str or "\0" in path_str:
+            return False
+        abs_path = os.path.abspath(path_str)
+        if len(abs_path) > SCAN_LIMITS.path_length_limit:
             return False
         return not _cached_is_protected(abs_path) and os.access(abs_path, os.R_OK)
     except (OSError, PermissionError, ValueError, TypeError):
@@ -119,7 +125,7 @@ def _is_readable(path: PathInput) -> bool:
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """Obtiene los atributos de archivo de nivel sistema sin seguir enlaces simbólicos."""
-    if not isinstance(entry, os.DirEntry) or not entry.path:
+    if not isinstance(entry, os.DirEntry):
         return 0
     try:
         stat_res = entry.stat(follow_symlinks=False)
@@ -139,7 +145,6 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
-        # Manejo de casos límite: archivos en uso (sharing violation) o sin permisos
         if getattr(e, 'winerror', None) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             return None
         return None
@@ -148,14 +153,17 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida que la cadena de ruta cumpla con los límites de longitud y formato."""
-    if not isinstance(path_str, str) or not path_str.strip():
+    if not isinstance(path_str, str) or not path_str.strip() or "\0" in path_str:
         return False
-    abs_path = os.path.abspath(path_str)
-    if _cached_is_protected(abs_path) or len(abs_path) > SCAN_LIMITS.path_length_limit or "\0" in abs_path:
+    try:
+        abs_path = os.path.abspath(path_str)
+        if _cached_is_protected(abs_path) or len(abs_path) > SCAN_LIMITS.path_length_limit:
+            return False
+        if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(abs_path):
+            return False
+        return True
+    except (OSError, ValueError, TypeError):
         return False
-    if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(abs_path):
-        return False
-    return True
 
 # --- Suite de Heurísticas ---
 
@@ -241,7 +249,6 @@ class Scanner:
         norm_path = os.path.normcase(entry.path)
         if norm_path in visited_dirs: return
         try:
-            # Validación defensiva adicional contra rutas protegidas antes de entrar
             if os.access(entry.path, os.R_OK) and not _cached_is_protected(entry.path):
                 visited_dirs.add(norm_path)
                 directory_stack.append((entry.path, current_depth + 1))
@@ -254,9 +261,7 @@ class Scanner:
         return os.path.splitext(name)[1].lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
-        """
-        Orquestador principal que evalúa la entrada del sistema de archivos.
-        """
+        """Orquestador principal que evalúa la entrada del sistema de archivos."""
         if not self._is_safe_entry(entry):
             return
         try:
@@ -272,9 +277,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """
-        Ejecuta la suite de chequeos de seguridad sobre un archivo validado.
-        """
+        """Ejecuta la suite de chequeos de seguridad sobre un archivo validado."""
         stats = _safe_stat(entry)
         if stats is None:
             return
