@@ -826,3 +826,10 @@ FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informa
 - `2026-11-02T04:49:58` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado significativamente la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_volume_integrity` y `_validate_preconditions`, reemplazando bloques de condicionales anidados con una estrategia de validaciones atómicas que mejoran la claridad y el manejo de excepciones.
 - `2026-11-02T04:49:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T04:49:58` Corrida terminada. Total usado hoy: 116.
+- `2026-11-02T04:57:39` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-02T04:58:06` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-11-02T04:58:37` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del archivo documentando el propósito de la lógica de validación, clarificando la estructura del diccionario `DEFAULTS` mediante una alineación más limpia y sustituyendo nombres de variables internos opacos (como `k` y `v`) por descriptores funcionales (`key_enum`, `validated_val`) para facilitar el seguimiento del flujo de datos.
+- `2026-11-02T04:59:02` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-11-02T04:59:36` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso a los criterios de salud eliminando la reconstrucción de estructuras en tiempo de ejecución, reemplazando el uso de `tuple` y `list` temporales dentro del `cached_property` de `active_problems` por la lectura directa del mapa pre-calculado `_CRITERIOS_MAP`.
+- `2026-11-02T04:59:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T04:59:36` Corrida terminada. Total usado hoy: 120.

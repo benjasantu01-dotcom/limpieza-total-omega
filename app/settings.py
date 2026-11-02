@@ -118,22 +118,22 @@ VALID_MODELS: Final[frozenset[str]] = frozenset(("gemini-3.1-flash-lite", "gemin
 _KEY_TO_ENUM: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
 
 DEFAULTS: Final[AppSettings] = {
-    "tema": "oscuro",
-    "acento": "menta",
-    "mostrar_barras": True,
-    "animaciones": True,
-    "confirmar_siempre": True,
-    "abrir_en": "Salud",
-    "recordar_ultima_carpeta": True,
-    "ultima_carpeta": "",
+    "tema":                        "oscuro",
+    "acento":                      "menta",
+    "mostrar_barras":              True,
+    "animaciones":                 True,
+    "confirmar_siempre":           True,
+    "abrir_en":                    "Salud",
+    "recordar_ultima_carpeta":     True,
+    "ultima_carpeta":              "",
     "duplicados_tamano_minimo_kb": 64,
-    "top_archivos": 15,
-    "top_procesos": 15,
-    "analisis_en_paralelo": True,
-    "asistente_activado": False,
-    "asistente_clave_api": "",
-    "asistente_enviar_metricas": True,
-    "asistente_modelo": "gemini-3.1-flash-lite",
+    "top_archivos":                15,
+    "top_procesos":                15,
+    "analisis_en_paralelo":        True,
+    "asistente_activado":          False,
+    "asistente_clave_api":         "",
+    "asistente_enviar_metricas":   True,
+    "asistente_modelo":            "gemini-3.1-flash-lite",
 }
 
 _NUMERIC_LIMITS: Final[MappingProxyType[ConfigKey, _NumericRange]] = MappingProxyType({
@@ -333,7 +333,7 @@ def _get_validator_for_k(k: ConfigKey) -> _ValidatorEntry:
     return _ValidatorEntry(_VALIDATOR_STRATEGY["str"])
 
 _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingProxyType({
-    k: _get_validator_for_k(k) for k in ConfigKey
+    key_item: _get_validator_for_k(key_item) for key_item in ConfigKey
 })
 
 def validate(raw_values: Any) -> AppSettings:
@@ -345,7 +345,8 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     for key_str, raw_val in raw_values.items():
         if (key_enum := _KEY_TO_ENUM.get(key_str)) and key_enum in _VALIDATOR_MAP:
-            if (validated_val := _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)) is not None:
+            validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
+            if validated_val is not None:
                 config[key_enum.value] = validated_val # type: ignore
     return config 
 
@@ -363,10 +364,10 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
 def _is_structure_valid(data: Any) -> bool:
     """Verifica que el JSON parseado sea un diccionario de tamaño controlado con tipos conformes al esquema."""
     if not isinstance(data, dict) or len(data) > 64: return False
-    for k, v in data.items():
-        if v is None: return False
-        key_enum = _KEY_TO_ENUM.get(k)
-        if not key_enum or not _is_valid_type(v, key_enum): return False
+    for key_name, value in data.items():
+        if value is None: return False
+        key_enum = _KEY_TO_ENUM.get(key_name)
+        if not key_enum or not _is_valid_type(value, key_enum): return False
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
@@ -393,9 +394,9 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura integridad: claves faltantes se rellenan, incompatibilidades se corrigen."""
     coerced = DEFAULTS.copy()
-    for k, v in settings.items():
-        if k in DEFAULTS and v is not None and isinstance(v, type(DEFAULTS[k])):
-            coerced[k] = v # type: ignore
+    for key_name, value in settings.items():
+        if key_name in DEFAULTS and value is not None and isinstance(value, type(DEFAULTS[key_name])):
+            coerced[key_name] = value # type: ignore
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
     return coerced
@@ -455,11 +456,11 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     if not changes or not _is_dict(changes): return load(custom_base)
     current = load(custom_base)
     modified = False
-    for k, v in changes.items():
-        if (key_enum := _KEY_TO_ENUM.get(k)):
-            val = _VALIDATOR_MAP[key_enum].func(key_enum, v)
-            if val is not None and val != current.get(k):
-                current[k] = val
+    for key_str, value in changes.items():
+        if (key_enum := _KEY_TO_ENUM.get(key_str)):
+            val = _VALIDATOR_MAP[key_enum].func(key_enum, value)
+            if val is not None and val != current.get(key_str):
+                current[key_str] = val
                 modified = True
     if modified: save(current, custom_base)
     return current

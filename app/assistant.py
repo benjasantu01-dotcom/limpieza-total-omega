@@ -435,9 +435,9 @@ class SystemContext:
     @cached_property
     def _cached_active_problems(self) -> tuple[str, ...]:
         """Versión cacheada de los problemas de salud detectados basándose en datos actuales."""
-        if self.analyzed is not True: return ()
+        if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        # Pasamos tupla de tuplas al cache para evitar problemas de mutabilidad
+        # Evalúa recorriendo las claves de los criterios existentes
         key_vals = tuple((k, snap.get(k, -1.0)) for k in _CRITERIOS_MAP.keys())
         return _evaluate_active_problems(key_vals)
 
