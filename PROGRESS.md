@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 58
-- Sin cambios (nada sustancial que mejorar): 10
+- Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 93 | 8 | 27 | 7 | 157 |
-| 2026-11-02 | 85 | 5 | 31 | 3 | 88 |
+| 2026-11-01 | 90 | 8 | 26 | 7 | 157 |
+| 2026-11-02 | 87 | 5 | 32 | 4 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **34**
+- legibilidad y documentación: **34**
 - seguridad defensiva: **33**
-- legibilidad y documentación: **32**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
 - `assistant.py`: **19**
+- `safety.py`: **18**
+- `healthscore.py`: **17**
 - `browser.py`: **16**
-- `healthscore.py`: **16**
-- `quarantine.py`: **15**
+- `diskreport.py`: **15**
 - `settings.py`: **14**
-- `diskreport.py`: **14**
 - `memory.py`: **14**
+- `quarantine.py`: **14**
 - `branding.py`: **12**
-- `scanner.py`: **11**
 - `organizer.py`: **10**
+- `scanner.py`: **10**
 - `startup.py`: **9**
 - `duplicates.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T09:04:51` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `healthscore.py` mediante la adición de docstrings detallados en funciones clave, la mejora de los tipos en `SystemMetrics` y la clarificación de las responsabilidades del pipeline de evaluación, manteniendo estrictamente la integridad funcional y las reglas de seguridad.
+- `2026-11-02T09:03:20` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos a las clases `ExtStats`, `GlobalStats` y `FolderMetrics`, y clarifiqué la lógica de `_is_reparse_point` y `walk_files` mediante la eliminación de comentarios redundantes y la mejora de la semántica en el manejo de rutas.
 - `2026-11-02T08:54:37` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `DirectoryScanner`, aclarando el propósito de la recursión defensiva y el uso de estados de control para evitar ciclos.
 - `2026-11-02T08:54:26` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos para las funciones de dibujo y se normalizaron los tipos de parámetros mediante Type Hints más precisos, facilitando la comprensión de la lógica geométrica del Canvas sin alterar la funcionalidad.
 - `2026-11-02T08:53:54` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de docstrings descriptivos en funciones clave y la estandarización de type hints en los decoradores de seguridad, facilitando la comprensión del flujo de datos sin alterar la lógica.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T08:22:36` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `directory_size` y `detect_profiles` añadiendo validaciones explícitas de tipo y estado para los parámetros de entrada (`path`, `bases`, `cache_paths`), previniendo errores de ejecución ante entradas mal formadas o nulas.
 - `2026-11-02T08:14:56` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` utilizando `is_safe_to_modify` para verificar la ruta sin lanzar excepciones innecesarias antes de intentar la operación, siguiendo el patrón de diseño defensivo solicitado.
 - `2026-11-02T08:14:39` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_and_sanitize_data` en `assistant.py` mediante la captura explícita de errores durante la extracción de datos, evitando que una entrada malformada (ej. un valor de `grade` inesperado) silencie fallos y permitiendo una recuperación más segura de los campos válidos.
-- `2026-11-02T06:29:43` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `drive_usage` validando que las rutas finales, tras la resolución de enlaces, sigan perteneciendo a la jerarquía de la raíz escaneada, previniendo ataques de "escape" mediante enlaces simbólicos o junctions que podrían apuntar fuera del árbol de directorios permitido.
-- `2026-11-02T06:20:59` **branding.py** (seguridad defensiva): Se ha robustecido la función `save_logo_svg` implementando un chequeo defensivo mediante `filter_safe_paths` antes de cualquier operación de escritura, garantizando que tanto el destino final como su directorio padre sean validados contra el catálogo de rutas protegidas del sistema antes de interactuar con el disco.
