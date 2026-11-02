@@ -743,37 +743,37 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         return AssistantConfig("", "gemini-3.1-flash-lite", True)
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
-    """Prepara y serializa el payload JSON para la petición a la API de Google, validando su estructura."""
+    """Prepara y serializa el payload JSON para la petición a la API de Google."""
     if not context_text or not _ensure_safe_text(context_text): return None
-    q: str = _sanitize_query(question)
-    if not q or not _ensure_safe_text(q): return None
-    full_prompt: str = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
+    q = _sanitize_query(question)
+    if not q: return None
+    full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
     if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): return None
-    payload_data: dict[str, Any] = {"contents": [{"parts": [{"text": full_prompt}]}]}
+    
+    payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
     if not _is_safe_payload_structure(payload_data): return None
     try:
-        encoded: bytes = json.dumps(payload_data).encode("utf-8")
+        encoded = json.dumps(payload_data).encode("utf-8")
         return encoded if len(encoded) <= _MAX_RESPONSE_BYTES else None
     except (TypeError, ValueError): return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extracte de manera segura el contenido textual de una respuesta JSON proveniente de la API remota."""
+    """Extrae de manera segura el contenido textual de una respuesta JSON de la API."""
     if not isinstance(data, dict): return None
-    try:
-        candidates = data.get("candidates")
-        if isinstance(candidates, list) and len(candidates) > 0:
-            first_candidate = candidates[0]
-            if isinstance(first_candidate, dict) and first_candidate.get("finishReason") == "STOP":
-                content = first_candidate.get("content", {})
-                parts = content.get("parts") if isinstance(content, dict) else None
-                if isinstance(parts, list) and len(parts) > 0:
-                    text_val = parts[0].get("text") if isinstance(parts[0], dict) else None
-                    if isinstance(text_val, str):
-                        sanitized: str = _validate_response_length(text_val)
-                        return sanitized if _ensure_safe_text(sanitized) else None
-    except Exception:
-        return None
-    return None
+    candidates = data.get("candidates")
+    if not isinstance(candidates, list) or not candidates: return None
+    
+    first = candidates[0]
+    if not isinstance(first, dict) or first.get("finishReason") != "STOP": return None
+    
+    parts = first.get("content", {}).get("parts")
+    if not isinstance(parts, list) or not parts: return None
+    
+    text_val = parts[0].get("text")
+    if not isinstance(text_val, str): return None
+    
+    sanitized = _validate_response_length(text_val)
+    return sanitized if _ensure_safe_text(sanitized) else None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Realiza la petición POST a la API de Gemini, implementando timeouts y seguridad en URL."""

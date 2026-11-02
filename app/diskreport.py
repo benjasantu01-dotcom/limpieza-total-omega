@@ -279,6 +279,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Recorrido recursivo iterativo de archivos.
     Evita ciclos detectando Inodes ya visitados y saltea puntos de reanálisis.
+    
+    Yields:
+        Tupla (ruta_archivo, tamaño_en_bytes) por cada archivo hallado.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -374,18 +377,25 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Escaneo interno que coordina estadísticas y mantiene un heap de archivos pesados."""
-    if not isinstance(directory, Path):
-        return SummaryData(0, 0, defaultdict(ExtStats), [])
+    """
+    Escaneo interno que coordina estadísticas y mantiene un heap de archivos pesados.
+    
+    Args:
+        directory: Ruta raíz a escanear.
+        skip_protected: Si debe ignorar rutas protegidas.
+        limit: Tamaño máximo del heap para archivos pesados.
         
+    Returns:
+        Un objeto SummaryData con el estado del escaneo.
+    """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
         try:
             _, ext = os.path.splitext(path.name)
-            ext = ext.lower() if ext else "(sin extensión)"
-            stats.register_file(size, ext)
+            ext_normalized = ext.lower() if ext else "(sin extensión)"
+            stats.register_file(size, ext_normalized)
             
             if limit > 0:
                 if len(top_heap) < limit:

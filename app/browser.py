@@ -52,7 +52,9 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 @dataclass
 class ScanContext:
     """
-    Estado compartido durante el escaneo recursivo.
+    Contenedor inmutable de configuración para la operación de escaneo.
+    Contiene la base permitida (sandbox), herramientas del sistema necesarias 
+    y el registro de estado para evitar ciclos infinitos en el recorrido.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -65,18 +67,24 @@ class ScanContext:
 class DirectoryScanner:
     """
     Motor de recorrido recursivo con enfoque defensivo.
-    Implementa lógica de filtrado de rutas y cálculo de tamaño de árbol.
+    Aplica chequeos de seguridad estrictos antes de acceder a cada nodo del sistema 
+    de archivos para garantizar que el recorrido se mantenga dentro del sandbox.
     """
     def __init__(self, context: ScanContext) -> None:
         self.ctx = context
 
     def _is_path_allowed(self, path_str: str) -> bool:
+        """
+        Valida que la ruta esté dentro del sandbox y no sea un elemento protegido.
+        Garantiza que cualquier operación de lectura se mantenga en el scope definido.
+        """
         if not path_str or _is_unc_path(path_str): return False
         try:
             path_obj = Path(path_str)
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
             
+            # Verificación de confinamiento mediante normalización de rutas reales
             real_path = os.path.normcase(os.path.realpath(path_str))
             common = os.path.commonpath([real_path, self.ctx.sandbox_base_norm])
             return common == self.ctx.sandbox_base_norm
