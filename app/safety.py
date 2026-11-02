@@ -152,7 +152,7 @@ class SecurityDescriptor(NamedTuple):
                 is_readonly=bool(attrs & Win32Attr.READONLY),
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
-        except (OSError, ValueError, TypeError):
+        except (OSError, ValueError, TypeError, AttributeError, ctypes.ArgumentError):
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
@@ -214,7 +214,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 return Win32Attr.SYSTEM
             return INVALID_FILE_ATTRIBUTES
         return attrs
-    except (AttributeError, ctypes.ArgumentError, OSError):
+    except (AttributeError, ctypes.ArgumentError, OSError, ValueError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):

@@ -308,17 +308,20 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
     Procesa un objeto `DirEntry` convirtiéndolo en `StartupEntry` si es ejecutable.
     """
+    if not hasattr(entry, "path") or not hasattr(entry, "name"):
+        return None
     try:
         if not entry.is_file(follow_symlinks=False):
             return None
         
-        name, ext = os.path.splitext(entry.name)
-        if ext.lower() not in EXECUTABLE_EXTS:
+        _, ext = os.path.splitext(entry.name)
+        if not ext or ext.lower() not in EXECUTABLE_EXTS:
             return None
             
         if len(entry.path) > MAX_PATH_LEN:
             return None
             
+        name = Path(entry.name).stem
         return StartupEntry(name=name, command=entry.path, source="carpeta")
     except (OSError, PermissionError, ValueError, TypeError, AttributeError):
         return None
@@ -393,8 +396,8 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(row, dict):
                 continue
             
-            raw_name: Optional[str] = row.get("Name")
-            raw_cmd: Optional[str] = row.get("Value")
+            raw_name = row.get("Name")
+            raw_cmd = row.get("Value")
             
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue

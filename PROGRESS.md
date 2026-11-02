@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 11 | 1 | 2 | 3 | 37 |
+| 2026-10-31 | 7 | 1 | 2 | 3 | 37 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 39 | 3 | 15 | 2 | 41 |
+| 2026-11-02 | 43 | 3 | 15 | 2 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **37**
-- rendimiento: **32**
+- manejo de errores y validación de entradas: **35**
 - seguridad defensiva: **32**
-- manejo de errores y validación de entradas: **31**
+- rendimiento: **28**
 - legibilidad y documentación: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `assistant.py`: **16**
-- `healthscore.py`: **15**
-- `browser.py`: **14**
+- `healthscore.py`: **14**
 - `quarantine.py`: **13**
+- `scanner.py`: **13**
 - `memory.py`: **13**
-- `scanner.py`: **12**
-- `diskreport.py`: **11**
-- `startup.py`: **10**
-- `settings.py`: **10**
+- `browser.py`: **13**
+- `startup.py`: **11**
+- `settings.py`: **11**
+- `diskreport.py`: **10**
 - `branding.py`: **9**
-- `duplicates.py`: **8**
 - `organizer.py`: **8**
+- `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T04:18:50` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_process_folder_entry` y `parse_registry_csv` añadiendo validaciones explícitas de entrada (`None`/vacíos) y protegiendo el uso de `os.path.splitext` y `Path` frente a entradas mal formadas o rutas excesivamente largas, previniendo excepciones no capturadas.
+- `2026-11-02T04:18:38` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `_read_and_parse_json` y `_coerce_and_verify` mediante la captura explícita de `json.JSONDecodeError` y la validación de tipos ante posibles valores `None` inesperados, previniendo errores de ejecución durante la carga de configuraciones parcialmente corruptas.
+- `2026-11-02T04:18:08` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `scan_file` y `_run_file_heuristics` reemplazando los bloques `try-except` genéricos por capturas específicas, y añadiendo validaciones de integridad de metadatos para evitar que llamadas fallidas o atributos faltantes detengan el flujo del escáner.
+- `2026-11-02T04:17:42` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura más granular de excepciones en `_get_file_attrs` y `SecurityDescriptor.from_path` para prevenir que fallos de bajo nivel en llamadas a la API de Windows (como acceso denegado o recursos ocupados) deriven en estados de "seguridad desconocida" (que por defecto bloquean), garantizando que los errores sean manejados mediante el sistema de `UnsafePathError` en lugar de abortar silenciosamente.
 - `2026-11-02T04:08:16` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` mediante la validación explícita de `base_path` antes de la serialización y refiné la captura de excepciones en `_register_quarantine_item` para evitar registros corruptos en estados de error parciales.
 - `2026-11-02T03:57:59` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y la integridad del pipeline al reemplazar el acceso por `getattr` por una validación más estricta de tipos y presencia de atributos, evitando que valores inesperados (`None` o tipos incorrectos) causen errores silenciosos durante el cálculo del score.
 - `2026-11-02T03:57:25` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` añadiendo validaciones explícitas para evitar errores de lectura al procesar archivos que pudieron ser bloqueados o eliminados entre el escaneo inicial y la lectura real, asegurando que cualquier entrada nula o ruta inválida sea manejada graciosamente antes de abrir el descriptor de archivo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T02:25:42` **settings.py** (seguridad defensiva): Se endurecieron las validaciones de seguridad en `_read_and_parse_json` y `_SettingsManager` verificando explícitamente que el archivo de configuración no sea un enlace simbólico ni contenga flujos de datos alternativos (ADS) de NTFS mediante `st_nlink` y `st_file_attributes`, previniendo ataques de sustitución o manipulación de archivos ocultos.
 - `2026-11-02T02:15:06` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` para prevenir explícitamente el movimiento de archivos si el dispositivo de destino es distinto al de origen, evitando errores de permisos al cruzar límites de unidades y mejorando la consistencia transaccional al mover datos.
 - `2026-11-02T02:06:36` **memory.py** (seguridad defensiva): Se reforzó la seguridad en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable incluso después de obtener el handle, asegurando que ninguna manipulación de memoria (por inocua que sea) ocurra sobre binarios que residan en ubicaciones bloqueadas del sistema, cumpliendo con el enfoque defensivo.
-- `2026-11-02T02:05:19` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `healthscore.py` mediante una validación más estricta en el punto de entrada `summarize` y una sanitización proactiva de los textos generados en los reportes para prevenir que caracteres de control o escapes puedan comprometer la integridad de la interfaz de usuario.
-- `2026-11-02T01:55:59` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación de rutas mediante `is_protected_path` antes de cualquier operación de I/O, previniendo explícitamente el acceso a rutas UNC y dispositivos de bloque no deseados.
-- `2026-11-02T01:55:48` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner._is_path_allowed` al implementar una validación estricta de rutas mediante `os.path.commonpath` normalizado, asegurando que el escaneo no escape accidentalmente de la base de datos permitida (`LOCALAPPDATA`) incluso ante entradas maliciosas o enlaces simbólicos mal configurados.
-- `2026-11-02T01:54:51` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` mediante la validación explícita del host y el origen de los datos, asegurando que la construcción de la URL sea resistente a manipulaciones externas, y se estandarizó el uso de `_ensure_safe_text` para validar cualquier cadena que pueda contener caracteres de control o inyección antes de interactuar con servicios externos.

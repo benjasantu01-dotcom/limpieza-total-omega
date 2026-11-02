@@ -394,7 +394,7 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura integridad: claves faltantes se rellenan, incompatibilidades se corrigen."""
     coerced = DEFAULTS.copy()
     for k, v in settings.items():
-        if k in DEFAULTS and isinstance(v, type(DEFAULTS[k])):
+        if k in DEFAULTS and v is not None and isinstance(v, type(DEFAULTS[k])):
             coerced[k] = v # type: ignore
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
