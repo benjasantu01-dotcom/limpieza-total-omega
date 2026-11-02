@@ -1256,3 +1256,14 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T10:16:39` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-11-02T10:16:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T10:16:39` Corrida terminada. Total usado hoy: 244.
+- `2026-11-02T10:24:57` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-11-02T10:25:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-02T10:25:30` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-02T10:26:35` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-02T10:27:31` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-02T10:28:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-02T10:29:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-02T10:31:02` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_handle_for_safe_proc` y `_iter_process_memory` ante procesos que finalizan durante la iteración o cuyos módulos son inaccesibles, añadiendo una validación explícita mediante `GetExitCodeProcess` antes de intentar operar, evitando así llamadas a APIs con handles inválidos o recursos liberados.
+- `2026-11-02T10:31:17` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-02T10:31:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T10:31:17` Corrida terminada. Total usado hoy: 248.

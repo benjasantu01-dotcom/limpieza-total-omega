@@ -8,34 +8,34 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 59
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 251
+- Sin respuesta de la IA (error o límite): 250
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 73 | 7 | 22 | 7 | 151 |
-| 2026-11-02 | 98 | 5 | 37 | 4 | 100 |
+| 2026-11-01 | 72 | 7 | 22 | 7 | 148 |
+| 2026-11-02 | 99 | 5 | 38 | 4 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **37**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **36**
 - rendimiento: **34**
-- seguridad defensiva: **27**
+- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
 - `assistant.py`: **18**
+- `safety.py`: **17**
 - `healthscore.py`: **15**
+- `memory.py`: **15**
 - `quarantine.py`: **15**
 - `diskreport.py`: **15**
 - `browser.py`: **14**
-- `memory.py`: **14**
 - `settings.py`: **13**
 - `branding.py`: **13**
 - `scanner.py`: **11**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T10:31:02` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_handle_for_safe_proc` y `_iter_process_memory` ante procesos que finalizan durante la iteración o cuyos módulos son inaccesibles, añadiendo una validación explícita mediante `GetExitCodeProcess` antes de intentar operar, evitando así llamadas a APIs con handles inválidos o recursos liberados.
 - `2026-11-02T10:16:29` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `_collect_summary_data` y `walk_files` ante la posibilidad de que el sistema de archivos cambie durante el escaneo (Race Conditions), asegurando que los tamaños de archivo (`st_size`) sean validados antes de procesarlos para evitar excepciones de desbordamiento o valores negativos inesperados.
 - `2026-11-02T10:15:22` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` para prevenir fallos silenciosos y operaciones en rutas mal formadas, incorporando validación explícita mediante `is_safe_to_modify` y manejo estricto de tipos antes de interactuar con el sistema de archivos.
 - `2026-11-02T10:06:21` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la ingesta y validación de datos del `SystemContext`, añadiendo un chequeo explícito de tipos para evitar excepciones inesperadas cuando `source` contiene objetos malformados, y mejorando la resiliencia en `_validate_and_sanitize_data` al manejar atributos de forma más defensiva.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T09:04:51` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `healthscore.py` mediante la adición de docstrings detallados en funciones clave, la mejora de los tipos en `SystemMetrics` y la clarificación de las responsabilidades del pipeline de evaluación, manteniendo estrictamente la integridad funcional y las reglas de seguridad.
 - `2026-11-02T09:03:20` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos a las clases `ExtStats`, `GlobalStats` y `FolderMetrics`, y clarifiqué la lógica de `_is_reparse_point` y `walk_files` mediante la eliminación de comentarios redundantes y la mejora de la semántica en el manejo de rutas.
 - `2026-11-02T08:54:37` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `DirectoryScanner`, aclarando el propósito de la recursión defensiva y el uso de estados de control para evitar ciclos.
-- `2026-11-02T08:54:26` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos para las funciones de dibujo y se normalizaron los tipos de parámetros mediante Type Hints más precisos, facilitando la comprensión de la lógica geométrica del Canvas sin alterar la funcionalidad.

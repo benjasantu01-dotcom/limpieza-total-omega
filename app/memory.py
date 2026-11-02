@@ -359,6 +359,12 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
     """Valida la seguridad del proceso mediante su ruta antes de otorgar acceso al handle."""
     h = _get_process_handle(pid, access)
     if h:
+        # Verificación extra: asegurar que el proceso no ha terminado durante el chequeo
+        exit_code = wintypes.DWORD()
+        if WindowsAPI.kernel32.GetExitCodeProcess(h, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+            WindowsAPI.kernel32.CloseHandle(h)
+            return None
+            
         if _is_process_executable_safe(h, path_buf, get_mod_name):
             return h
         WindowsAPI.kernel32.CloseHandle(h)
@@ -459,6 +465,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso en zona restringida."
 
     try:
+        # La verificación de "still active" ya ocurre en _get_handle_for_safe_proc, 
+        # pero re-verificamos por consistencia en la acción.
         exit_code = wintypes.DWORD()
         if WindowsAPI.kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0:
             return False, "Error al consultar estado del proceso."
