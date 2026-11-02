@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 245
+- Sin respuesta de la IA (error o límite): 247
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 84 | 8 | 26 | 7 | 155 |
-| 2026-11-02 | 90 | 5 | 35 | 4 | 90 |
+| 2026-11-01 | 81 | 8 | 25 | 7 | 155 |
+| 2026-11-02 | 91 | 5 | 36 | 4 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **37**
 - legibilidad y documentación: **37**
+- robustez ante casos límite: **34**
 - seguridad defensiva: **33**
-- rendimiento: **29**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
 - `assistant.py`: **18**
 - `healthscore.py`: **16**
-- `memory.py`: **15**
-- `quarantine.py`: **15**
 - `browser.py`: **15**
-- `diskreport.py`: **14**
+- `diskreport.py`: **15**
+- `memory.py`: **14**
+- `quarantine.py`: **14**
 - `settings.py`: **13**
 - `branding.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **10**
 - `scanner.py`: **10**
 - `duplicates.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T09:35:42` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando llamadas redundantes a `path.resolve()` y `path.exists()` dentro del bucle principal por el uso directo de las propiedades ya disponibles en `os.DirEntry` (`entry.is_symlink()`, `entry.path`), lo cual reduce drásticamente las llamadas al sistema de archivos y acelera el recorrido.
 - `2026-11-02T09:14:54` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización y clarificación de los docstrings en las funciones internas de manipulación de archivos (`_write_temp_to_final`, `_perform_secure_copy`, `_atomic_isolate_file`), detallando el contrato de seguridad y los pre-requisitos de integridad para facilitar el mantenimiento y la auditoría técnica.
 - `2026-11-02T09:14:12` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas de validación y procesado, explicando el PORQUÉ de las comprobaciones de seguridad (mitigación de TOCTOU, protección anti-bucle) para facilitar el mantenimiento futuro.
 - `2026-11-02T09:13:43` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `memory.py` mediante la refactorización de `_extract_process_info` para reducir su complejidad ciclomática, la adición de Type Hints en la estructura `MEMORYSTATUSEX` y la inclusión de documentación en los métodos de la API de Windows que carecían de contexto claro.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T08:34:09` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` capturando fallos potenciales en `ctypes` y conversiones de tipo, asegurando que cualquier entrada malformada (como tipos inesperados o fallos en la API de Windows) se maneje con excepciones específicas sin romper el bucle.
 - `2026-11-02T08:23:39` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del método `SystemMetrics.validate` y la función `compute_score` implementando una validación exhaustiva de los tipos de entrada y rangos, asegurando que cualquier dato malicioso o corrompido sea neutralizado antes de llegar al motor de cálculo (previniendo errores de propagación).
 - `2026-11-02T08:23:25` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` añadiendo validaciones preventivas de existencia y tipo antes de realizar operaciones de E/S, además de asegurar que `_safe_path_check` maneje correctamente entradas `None` o rutas inválidas, evitando que errores de sistema se propaguen innecesariamente.
-- `2026-11-02T08:23:02` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones explícitas para capturar fallos de acceso o rutas inexistentes durante la iteración, evitando el silenciamiento excesivo de errores y asegurando que las operaciones aritméticas sobre tamaños de archivo no procesen valores corruptos.

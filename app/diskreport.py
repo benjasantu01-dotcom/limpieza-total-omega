@@ -277,33 +277,23 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        path = Path(entry.path)
-                        if not path.exists(): continue
-                        
-                        resolved_path = path.resolve()
-                        if root_path not in resolved_path.parents and resolved_path != root_path:
-                            continue
-
-                        if entry.is_symlink() or _is_reparse_point(path):
+                        if entry.is_symlink() or (os.name == 'nt' and _is_reparse_point(Path(entry.path))):
                             continue
                         
-                        st = _safe_stat(path)
-                        if not st: continue
-                            
+                        st = entry.stat(follow_symlinks=False)
                         if entry.is_dir():
-                            if skip_protected and is_protected_path(path):
+                            if skip_protected and is_protected_path(Path(entry.path)):
                                 continue
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                if os.access(path, os.R_OK):
-                                    stack.append(path)
+                                stack.append(Path(entry.path))
                         elif entry.is_file():
                             if st.st_size >= 0:
-                                yield path, st.st_size
-                    except (OSError, PermissionError, FileNotFoundError, RuntimeError, AttributeError):
+                                yield Path(entry.path), st.st_size
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
-        except (OSError, PermissionError, FileNotFoundError, NotADirectoryError):
+        except (OSError, PermissionError, NotADirectoryError):
             continue
 
 

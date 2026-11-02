@@ -1208,3 +1208,11 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T09:25:38` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_path_suspicious
 - `2026-11-02T09:25:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T09:25:38` Corrida terminada. Total usado hoy: 224.
+- `2026-11-02T09:33:40` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-02T09:34:19` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._cached_active_problems
+- `2026-11-02T09:34:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-02T09:35:12` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-02T09:35:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-02T09:35:42` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` reemplazando llamadas redundantes a `path.resolve()` y `path.exists()` dentro del bucle principal por el uso directo de las propiedades ya disponibles en `os.DirEntry` (`entry.is_symlink()`, `entry.path`), lo cual reduce drásticamente las llamadas al sistema de archivos y acelera el recorrido.
+- `2026-11-02T09:35:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T09:35:42` Corrida terminada. Total usado hoy: 228.
