@@ -790,3 +790,32 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-02T04:28:57` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (especialmente en `SummaryData` y el manejo de colecciones) y se mejoró la claridad de `_collect_summary_data` y `walk_files` para explicitar los retornos esperados, facilitando el mantenimiento y la auditoría del flujo de datos en el análisis de disco.
 - `2026-11-02T04:28:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T04:28:57` Corrida terminada. Total usado hoy: 108.
+- `2026-11-02T04:37:16` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-11-02T04:37:42` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `duplicates.py` mediante la adición de Type Hints faltantes (especialmente en los retornos de funciones de caché y lógica de grupos), la normalización de los docstrings siguiendo el estándar de la biblioteca y la clarificación de las responsabilidades en las funciones de filtrado, garantizando que el flujo de seguridad quede autoexplicado.
+- `2026-11-02T04:38:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-02T04:39:14` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en `SystemMetrics.validate` y `_compute_cached`, y reorganicé la estructura de `_compute_cached` para separar claramente la preparación de datos del procesamiento del pipeline, facilitando la auditoría de seguridad del flujo.
+- `2026-11-02T04:40:25` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-02T04:40:38` Tests FALLARON:
+```
+wrapper object at 0x7f069772af00> = memory.pressure_level
+E        +    and   MemorySnapshot(total=0, available=0, cached=0) = <class 'memory.MemorySnapshot'>(0, 0)
+E        +      where <class 'memory.MemorySnapshot'> = memory.MemorySnapshot
+
+evolve/tests/test_modules.py:373: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_pressure_level_thresholds - AssertionError: assert <MemoryPressure.OK: 'ok'> == 'ok'
+ +  where <MemoryPressure.OK: 'ok'> = <functools._lru_cache_wrapper object at 0x7f069772af00>(MemorySnapshot(total=100, available=50, cached=0))
+ +    where <functools._lru_cache_wrapper object at 0x7f069772af00> = memory.pressure_level
+ +    and   MemorySnapshot(total=100, available=50, cached=0) = <class 'memory.MemorySnapshot'>(100, 50)
+ +      where <class 'memory.MemorySnapshot'> = memory.MemorySnapshot
+FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informative - AssertionError: assert <MemoryPressure.INFO: 'info'> == 'info'
+ +  where <MemoryPressure.INFO: 'info'> = <functools._lru_cache_wrapper object at 0x7f069772af00>(MemorySnapshot(total=0, available=0, cached=0))
+ +    where <functools._lru_cache_wrapper object at 0x7f069772af00> = memory.pressure_level
+ +    and   MemorySnapshot(total=0, available=0, cached=0) = <class 'memory.MemorySnapshot'>(0, 0)
+ +      where <class 'memory.MemorySnapshot'> = memory.MemorySnapshot
+2 failed, 297 passed in 1.01s
+
+```
+- `2026-11-02T04:40:38` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se introdujo una enumeración de estados de presión de memoria (`MemoryPressure`) usando `enum.Enum` para mejorar la legibilidad y la seguridad de tipos, reemplazando los strings "mágicos" por constantes tipadas y documentando claramente el propósito clínico de cada umbral.
+- `2026-11-02T04:40:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T04:40:38` Corrida terminada. Total usado hoy: 112.

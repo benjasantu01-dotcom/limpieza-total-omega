@@ -109,14 +109,14 @@ def _safe_path_check(path: Path) -> bool:
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
-    """Valida si un archivo es apto para el análisis de duplicados."""
+    """Valida si un archivo es apto para el análisis (tamaño positivo y atributos no críticos)."""
     return st_size > 0 and not is_system_or_hidden(path) and _safe_path_check(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del contenido. 
-    Usa caché para evitar múltiples lecturas de disco sobre el mismo archivo.
+    Usa caché local para evitar múltiples lecturas de disco sobre el mismo archivo.
     """
     if not isinstance(path, Path) or not _safe_path_check(path): 
         return None
@@ -198,7 +198,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                 inode = (stat.st_dev, stat.st_ino)
                                 if inode not in visited:
                                     path = Path(entry.path)
-                                    # Filtro eficiente: primero atributos rápidos, luego chequeo de seguridad
                                     if not is_system_or_hidden(path) and (not skip_protected or not is_protected_path(path)):
                                         if _safe_path_check(path):
                                             visited.add(inode)

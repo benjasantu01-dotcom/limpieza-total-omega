@@ -293,7 +293,10 @@ class SystemMetrics:
         return default
 
     def validate(self) -> None:
-        """Normaliza todas las métricas según los rangos definidos en _METRIC_LIMITS."""
+        """
+        Aplica validación de rangos definida en _METRIC_LIMITS a cada atributo.
+        Corrije tipos de datos y fuerza valores dentro de los límites esperados.
+        """
         all_keys = _VALIDATION_KEYS + ("quarantined_count",)
         for field_name in all_keys:
             raw_val = getattr(self, field_name, 0.0)
@@ -366,10 +369,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """
-    Motor central que orquestra el cálculo de métricas. 
-    Usa caché LRU para optimizar el rendimiento al recibir métricas idénticas.
+    Motor central de orquestación del cálculo de salud.
+    
+    Procesa las métricas validadas a través del pipeline, ejecuta las reglas
+    de recomendación y calcula el puntaje final ponderado, encapsulando el
+    resultado en un objeto HealthResult inmutable.
     """
-    # Reconstruimos la instancia una sola vez con los valores validados forzando tipos
+    # 1. Preparación de datos (reconstrucción desde caché)
     safe_vals = {k: float(v) for k, v in zip(_VALIDATION_KEYS, metric_tuple)}
     metrics = SystemMetrics(**safe_vals, quarantined_count=float(quarantined))
     
@@ -377,6 +383,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
     metric_breakdown: Dict[MetricKey, int] = {}
     total_points = 0.0
     
+    # 2. Ejecución de Pipeline
     for entry in PIPELINE_DEFINITIONS:
         try:
             if entry.scorer is None: continue
@@ -391,6 +398,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
         except Exception:
             continue
             
+    # 3. Consolidación de resultados
     if metrics.quarantined_count > 0:
         quarantine_msg = "Existen elementos en cuarentena."
         if _is_safe_string_for_report(quarantine_msg):
