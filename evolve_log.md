@@ -923,3 +923,10 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T06:21:15` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
 - `2026-11-02T06:21:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T06:21:15` Corrida terminada. Total usado hoy: 152.
+- `2026-11-02T06:29:15` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-11-02T06:29:43` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `drive_usage` validando que las rutas finales, tras la resolución de enlaces, sigan perteneciendo a la jerarquía de la raíz escaneada, previniendo ataques de "escape" mediante enlaces simbólicos o junctions que podrían apuntar fuera del árbol de directorios permitido.
+- `2026-11-02T06:30:04` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-02T06:30:27` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.is_finite, SystemMetrics.safe_get
+- `2026-11-02T06:31:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-02T06:31:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T06:31:15` Corrida terminada. Total usado hoy: 156.

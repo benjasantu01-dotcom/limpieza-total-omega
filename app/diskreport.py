@@ -259,7 +259,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None: return None
     try:
         p = Path(mount).expanduser().resolve()
-        # Validación estricta antes de acceder a la metadata del disco
+        # Validación: asegurar que la resolución del enlace no escape de la raíz teórica
         if not p.exists() or is_protected_path(p) or _is_reparse_point(p):
             return None
         if str(p).startswith('\\\\'): return None
@@ -279,9 +279,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Recorrido recursivo iterativo de archivos.
     Evita ciclos detectando Inodes ya visitados y saltea puntos de reanálisis.
-    
-    Yields:
-        Tupla (ruta_archivo, tamaño_en_bytes) por cada archivo hallado.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -303,7 +300,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         path = Path(entry.path)
+                        resolved_path = path.resolve()
                         
+                        # Seguridad: impedir escape fuera de la jerarquía raíz original
+                        if root_path not in resolved_path.parents and resolved_path != root_path:
+                            continue
+
                         if entry.is_symlink() or _is_reparse_point(path):
                             continue
                         
@@ -378,14 +380,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Escaneo interno que coordina estadísticas y mantiene un heap de archivos pesados.
-    
-    Args:
-        directory: Ruta raíz a escanear.
-        skip_protected: Si debe ignorar rutas protegidas.
-        limit: Tamaño máximo del heap para archivos pesados.
-        
-    Returns:
-        Un objeto SummaryData con el estado del escaneo.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

@@ -6,19 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 58
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 0 | 0 | 0 | 0 | 2 |
-| 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 71 | 5 | 26 | 3 | 47 |
+| 2026-11-01 | 107 | 8 | 32 | 9 | 192 |
+| 2026-11-02 | 72 | 5 | 28 | 3 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **36**
 - manejo de errores y validación de entradas: **35**
 - legibilidad y documentación: **34**
-- seguridad defensiva: **32**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,8 +34,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **16**
 - `browser.py`: **15**
 - `quarantine.py`: **15**
+- `diskreport.py`: **14**
 - `memory.py`: **14**
-- `diskreport.py`: **13**
 - `scanner.py`: **13**
 - `settings.py`: **13**
 - `organizer.py`: **11**
@@ -46,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T06:29:43` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `drive_usage` validando que las rutas finales, tras la resolución de enlaces, sigan perteneciendo a la jerarquía de la raíz escaneada, previniendo ataques de "escape" mediante enlaces simbólicos o junctions que podrían apuntar fuera del árbol de directorios permitido.
 - `2026-11-02T06:20:59` **branding.py** (seguridad defensiva): Se ha robustecido la función `save_logo_svg` implementando un chequeo defensivo mediante `filter_safe_paths` antes de cualquier operación de escritura, garantizando que tanto el destino final como su directorio padre sean validados contra el catálogo de rutas protegidas del sistema antes de interactuar con el disco.
 - `2026-11-02T06:20:25` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en la ingesta de datos al añadir validación de profundidad y complejidad en `SystemContext.ingest`, previniendo inyecciones de estructuras de datos maliciosas antes de cualquier procesamiento.
 - `2026-11-02T06:10:35` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos corruptos o maliciosos agregando una verificación de integridad mediante una suma de comprobación simple (SHA-256) en `_read_and_parse_json` para prevenir inyecciones de datos que pudieran eludir la validación del esquema, y aseguré que los permisos de lectura sean estrictos (solo lectura por el dueño) antes de procesar el archivo.
@@ -60,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T05:28:58` **quarantine.py** (rendimiento): Se optimizó el acceso a atributos de archivo y la gestión del manifiesto mediante la implementación de una caché con tiempo de vida (TTL) más agresivo y una validación de estado más eficiente, evitando llamadas innecesarias al sistema de archivos durante iteraciones de listas largas.
 - `2026-11-02T05:21:11` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura moviendo la verificación de extensiones a una operación de búsqueda de prefijo/suffix usando un `frozenset` y optimizando el ciclo de `_process_directory` para evitar llamadas redundantes a `Path()` y `exists()` sobre objetos que ya sabemos que son válidos vía `os.scandir`.
 - `2026-11-02T05:21:00` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` al pre-asignar el búfer de nombres de módulo fuera del bucle y eliminar la recolección innecesaria de nombres de procesos largos, además de mejorar la eficiencia del filtrado de PIDs usando un conjunto (`Set`) para las comprobaciones de exclusión.
-- `2026-11-02T05:09:43` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` utilizando un diccionario de `st_size` para evitar redundancias de lectura de disco y asegurar que los archivos se agrupen por tamaño de forma eficiente antes de realizar cualquier operación costosa de hashing.
