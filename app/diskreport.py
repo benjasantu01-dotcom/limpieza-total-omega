@@ -300,19 +300,16 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         path = Path(entry.path)
-                        
-                        # Impedir escapes del directorio raíz inicial
                         if not path.resolve().is_relative_to(root_path):
                             continue
                         
-                        # Saltear enlaces simbólicos y puntos de unión
                         if entry.is_symlink() or _is_reparse_point(path):
                             continue
                         
-                        st = entry.stat(follow_symlinks=False)
+                        st = _safe_stat(path)
+                        if not st: continue
                             
                         if entry.is_dir():
-                            # Doble validación de seguridad contra rutas protegidas
                             if skip_protected and is_protected_path(path):
                                 continue
                             inode = (st.st_dev, st.st_ino)
@@ -395,7 +392,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heappush(top_heap, (size, path))
                 elif top_heap and size > top_heap[0][0]:
                     heapq.heapreplace(top_heap, (size, path))
-        except (OSError, AttributeError, TypeError):
+        except (AttributeError, TypeError):
             continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)

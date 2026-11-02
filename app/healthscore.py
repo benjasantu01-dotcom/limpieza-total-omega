@@ -286,7 +286,8 @@ class SystemMetrics:
 
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any:
         """Acceso restringido para el motor de scoring usando lista blanca interna."""
-        if field_name in _VALIDATION_KEYS or field_name == "quarantined_count":
+        allowed = list(_VALIDATION_KEYS) + ["quarantined_count"]
+        if field_name in allowed:
             val = getattr(self, field_name, default)
             return val if isinstance(val, (int, float)) else default
         return default
@@ -295,8 +296,8 @@ class SystemMetrics:
         """Normaliza todas las métricas según los rangos definidos en _METRIC_LIMITS."""
         all_keys = _VALIDATION_KEYS + ("quarantined_count",)
         for field_name in all_keys:
-            val = getattr(self, field_name, 0.0)
-            if val is None: val = 0.0
+            raw_val = getattr(self, field_name, 0.0)
+            val = raw_val if isinstance(raw_val, (int, float)) and not isinstance(raw_val, bool) else 0.0
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(val, 0.0, min_v, max_v)
             setattr(self, field_name, sanitized)
