@@ -728,10 +728,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             try:
                 if item and _is_item_purgable(f, item): purgado_ids.add(item.item_id)
                 elif not item and f.suffix != ".tmp":
-                    ensure_safe_to_modify(f)
-                    _check_path_syntax_integrity(f)
-                    _check_for_reparse_points(f)
-                    if not _is_file_in_use_by_system(f): f.unlink()
+                    # Chequeo defensivo extra para archivos no registrados
+                    if f.exists():
+                        ensure_safe_to_modify(f)
+                        _check_path_syntax_integrity(f)
+                        _check_for_reparse_points(f)
+                        if not _is_file_in_use_by_system(f): f.unlink()
             except (OSError, PermissionError, UnsafePathError): continue
         if purgado_ids:
             new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]

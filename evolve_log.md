@@ -477,3 +477,11 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-11-02T01:26:56` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-02T01:26:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T01:26:56` Corrida terminada. Total usado hoy: 36.
+- `2026-11-02T01:33:46` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-11-02T01:34:18` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_iter_process_memory` al añadir un manejo explícito de errores durante la enumeración de procesos, evitando que una falla parcial al obtener la ruta de un módulo o un handle bloquee la recolección completa de métricas de los procesos restantes.
+- `2026-11-02T01:34:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-02T01:34:50` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-02T01:35:29` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine.py` ante fallos de concurrencia y limpieza de estado mediante la adición de un chequeo estricto de existencia y bloqueos en `_safe_unlink`, asegurando que no se intente operar sobre archivos que pudieron ser modificados por procesos externos durante el ciclo de vida del borrado.
+- `2026-11-02T01:35:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-02T01:35:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T01:35:34` Corrida terminada. Total usado hoy: 40.

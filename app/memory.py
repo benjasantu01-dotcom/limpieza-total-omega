@@ -388,17 +388,19 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if pid <= 0 or _is_system_process(pid):
             continue
         
-        path_buf = ctypes.create_unicode_buffer(1024)
-        h_process = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
-        if not h_process: continue
-        
         try:
-            ws = _query_working_set_bytes(h_process, pmc)
-            if ws is None: continue
-
-            yield ProcessMemory(f"PID {pid}", pid, ws)
-        finally:
-            WindowsAPI.kernel32.CloseHandle(h_process)
+            path_buf = ctypes.create_unicode_buffer(1024)
+            h_process = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
+            if not h_process: continue
+            
+            try:
+                ws = _query_working_set_bytes(h_process, pmc)
+                if ws is None: continue
+                yield ProcessMemory(f"PID {pid}", pid, ws)
+            finally:
+                WindowsAPI.kernel32.CloseHandle(h_process)
+        except Exception:
+            continue
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna una lista ordenada de procesos según su consumo, con caché de 60 segundos."""
