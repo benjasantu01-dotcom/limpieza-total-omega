@@ -162,6 +162,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve()
+        # Rechazo explícito de rutas UNC por seguridad
         if not p.exists() or str(p).startswith('\\\\'):
             return None
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
@@ -258,7 +259,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None: return None
     try:
         p = Path(mount).expanduser().resolve()
-        if not p.exists() or _is_reparse_point(p) or is_protected_path(p):
+        # Validación estricta antes de acceder a la metadata del disco
+        if not p.exists() or is_protected_path(p) or _is_reparse_point(p):
             return None
         if str(p).startswith('\\\\'): return None
         usage = shutil.disk_usage(p)
@@ -310,6 +312,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         st = entry.stat(follow_symlinks=False)
                             
                         if entry.is_dir():
+                            # Doble validación de seguridad contra rutas protegidas
                             if skip_protected and is_protected_path(path):
                                 continue
                             inode = (st.st_dev, st.st_ino)

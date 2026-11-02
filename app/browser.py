@@ -77,7 +77,7 @@ class DirectoryScanner:
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
             
-            real_path = os.path.realpath(path_str)
+            real_path = os.path.normcase(os.path.realpath(path_str))
             common = os.path.commonpath([real_path, self.ctx.sandbox_base_norm])
             return common == self.ctx.sandbox_base_norm
         except (OSError, RuntimeError, ValueError):
@@ -266,7 +266,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         
         try:
             os.stat(str(base)) # Verificación de disponibilidad de dispositivo
-            base_norm = os.path.realpath(str(base))
+            base_norm = os.path.normcase(os.path.realpath(str(base)))
         except (OSError, RuntimeError):
             continue
             

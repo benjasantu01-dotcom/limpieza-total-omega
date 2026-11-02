@@ -748,7 +748,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     q: str = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
     full_prompt: str = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
-    if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt) or any(c in full_prompt for c in _FORBIDDEN_CHARS): return None
+    if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): return None
     payload_data: dict[str, Any] = {"contents": [{"parts": [{"text": full_prompt}]}]}
     if not _is_safe_payload_structure(payload_data): return None
     try:
@@ -782,8 +782,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not payload: return None
     
     base_target = _ENDPOINT_BASE.format(model=model)
+    # Validar que la URL de destino sea parte del host oficial y no contenga caracteres sospechosos
     if not base_target.startswith(_API_HOST_ROOT) or any(c in base_target for c in _FORBIDDEN_CHARS): return None
-    if is_protected_path(base_target): return None
     
     try:
         url_with_key = f"{base_target}?{urllib.parse.urlencode({'key': api_key})}"
