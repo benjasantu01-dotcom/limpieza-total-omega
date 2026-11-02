@@ -197,7 +197,7 @@ def font_size(name: Optional[str]) -> int:
 
 def icon(section: Optional[str]) -> str: 
     """Obtiene el glifo Unicode para una sección; retorna punto si no existe."""
-    if not isinstance(section, str) or section not in ICONS:
+    if not isinstance(section, str) or not section in ICONS:
         return "\u2022"
     return ICONS[section]
 
@@ -349,13 +349,13 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         dest_path = Path(destination).resolve()
-        if not is_safe_to_modify(dest_path) or is_protected_path(dest_path):
-            return None
         
+        # Validar ruta y sus padres contra el sistema de protección
+        if not filter_safe_paths([dest_path, dest_path.parent]):
+            return None
+            
         parent = dest_path.parent
         if not parent.exists():
-            if not is_safe_to_modify(parent) or is_protected_path(parent):
-                return None
             parent.mkdir(parents=True, exist_ok=True)
             
         ensure_safe_to_modify(dest_path)

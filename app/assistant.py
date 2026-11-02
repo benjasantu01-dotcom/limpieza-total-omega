@@ -520,10 +520,10 @@ class SystemContext:
         """Realiza comprobaciones de seguridad básicas sobre el objeto/fuente de datos recibido."""
         if source is None or callable(source) or not isinstance(source, (dict, object)): 
             return False
-        try:
-            return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list, tuple)) else True
-        except Exception:
-            return False
+        # Prevenir inyección de datos excesivamente complejos o anidados
+        if isinstance(source, (dict, list, tuple)):
+            return not _is_input_too_deep_or_complex(source)
+        return True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica los cambios validados al objeto y purga cachés para forzar recálculos."""

@@ -916,3 +916,10 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T06:10:35` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante archivos corruptos o maliciosos agregando una verificación de integridad mediante una suma de comprobación simple (SHA-256) en `_read_and_parse_json` para prevenir inyecciones de datos que pudieran eludir la validación del esquema, y aseguré que los permisos de lectura sean estrictos (solo lectura por el dueño) antes de procesar el archivo.
 - `2026-11-02T06:10:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T06:10:35` Corrida terminada. Total usado hoy: 148.
+- `2026-11-02T06:19:03` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-02T06:19:39` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-02T06:20:25` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en la ingesta de datos al añadir validación de profundidad y complejidad en `SystemContext.ingest`, previniendo inyecciones de estructuras de datos maliciosas antes de cualquier procesamiento.
+- `2026-11-02T06:20:59` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha robustecido la función `save_logo_svg` implementando un chequeo defensivo mediante `filter_safe_paths` antes de cualquier operación de escritura, garantizando que tanto el destino final como su directorio padre sean validados contra el catálogo de rutas protegidas del sistema antes de interactuar con el disco.
+- `2026-11-02T06:21:15` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-02T06:21:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T06:21:15` Corrida terminada. Total usado hoy: 152.
