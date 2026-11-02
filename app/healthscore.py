@@ -436,10 +436,13 @@ def summarize(result: HealthResult | None) -> List[str]:
         for area, val in sorted(result.breakdown.items()):
             weight = weights_map.get(area, 10)
             bar = _render_bar(val, weight)
-            lines.append(f"  {area.capitalize():<12} {val:>2}/{weight:<2} [{bar}]")
+            # Sanitizamos explícitamente los campos del reporte antes de incluir en la lista
+            safe_area = _sanitize_msg(area)
+            lines.append(f"  {safe_area.capitalize():<12} {val:>2}/{weight:<2} [{bar}]")
         
         recs = result.recommendations if result.recommendations else ["No hay advertencias activas."]
-        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recs]))
+        # Aseguramos que cada línea sea limpia antes de añadirla
+        lines.extend(("", "Recomendaciones:", *[f"  - {_sanitize_msg(s)}" for s in recs if _sanitize_msg(s)]))
         return lines
     except Exception:
         return ["Error: Fallo crítico al generar resumen de informe."]

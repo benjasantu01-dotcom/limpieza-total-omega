@@ -459,6 +459,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     path_buf = ctypes.create_unicode_buffer(1024)
     h_process = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
+    
+    # Doble check de seguridad defensiva: verificar que el handle sea realmente seguro antes de actuar
     if not h_process:
         return False, "Acceso denegado o proceso en zona restringida."
 

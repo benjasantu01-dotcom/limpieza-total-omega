@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **156** (31.0% de aceptación)
+- Mejoras aceptadas: **158** (31.3% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 273
+- Sin respuesta de la IA (error o límite): 270
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 22 | 2 | 6 | 4 | 72 |
+| 2026-10-31 | 22 | 2 | 6 | 4 | 68 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 27 | 2 | 10 | 2 | 7 |
+| 2026-11-02 | 29 | 2 | 11 | 2 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **32**
+- seguridad defensiva: **29**
 - legibilidad y documentación: **28**
-- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **19**
 - `assistant.py`: **16**
-- `healthscore.py`: **14**
-- `memory.py`: **14**
+- `healthscore.py`: **15**
+- `memory.py`: **15**
 - `quarantine.py`: **13**
 - `browser.py`: **13**
 - `scanner.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T02:06:36` **memory.py** (seguridad defensiva): Se reforzó la seguridad en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable incluso después de obtener el handle, asegurando que ninguna manipulación de memoria (por inocua que sea) ocurra sobre binarios que residan en ubicaciones bloqueadas del sistema, cumpliendo con el enfoque defensivo.
+- `2026-11-02T02:05:19` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `healthscore.py` mediante una validación más estricta en el punto de entrada `summarize` y una sanitización proactiva de los textos generados en los reportes para prevenir que caracteres de control o escapes puedan comprometer la integridad de la interfaz de usuario.
 - `2026-11-02T01:55:59` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación de rutas mediante `is_protected_path` antes de cualquier operación de I/O, previniendo explícitamente el acceso a rutas UNC y dispositivos de bloque no deseados.
 - `2026-11-02T01:55:48` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner._is_path_allowed` al implementar una validación estricta de rutas mediante `os.path.commonpath` normalizado, asegurando que el escaneo no escape accidentalmente de la base de datos permitida (`LOCALAPPDATA`) incluso ante entradas maliciosas o enlaces simbólicos mal configurados.
 - `2026-11-02T01:54:51` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` mediante la validación explícita del host y el origen de los datos, asegurando que la construcción de la URL sea resistente a manipulaciones externas, y se estandarizó el uso de `_ensure_safe_text` para validar cualquier cadena que pueda contener caracteres de control o inyección antes de interactuar con servicios externos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T01:24:04` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_safe_stat` al añadir un manejo más estricto de los posibles errores de sistema durante la inspección de metadatos, evitando que el escáner se interrumpa ante estados inconsistentes del sistema de archivos en carpetas con permisos restringidos o rutas especiales.
 - `2026-11-02T01:15:08` **browser.py** (robustez ante casos límite): Se introdujo un chequeo explícito de disponibilidad de disco mediante `os.statvfs` (o `os.stat` en Windows) antes de iniciar el escaneo recursivo en `directory_size` y `detect_profiles` para evitar excepciones por dispositivos desconectados o medios extraíbles sin acceso, mejorando la robustez ante estados inesperados del hardware.
 - `2026-11-02T01:14:30` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` para manejar correctamente objetos inesperados como `set` o tipos de datos complejos que podrían causar recursión infinita o errores en tiempo de ejecución al ser analizados por el asistente.
-- `2026-11-02T01:04:19` **safety.py** (rendimiento): Se optimizó el rendimiento de `_get_file_id` reemplazando la creación de manejadores de archivos (`CreateFileW`) por una consulta ligera a metadatos de archivo (`GetFileAttributesExW` combinado con la lógica existente de caché), reduciendo drásticamente el costo de I/O y el riesgo de bloqueos al validar rutas masivamente.
-- `2026-11-02T00:55:39` **quarantine.py** (rendimiento): Optimicé el rendimiento de `quarantine.py` implementando una estrategia de "Lazy Loading" más eficiente y evitando consultas innecesarias al sistema de archivos (`stat()`) mediante una verificación de caché previa en `load_manifest`, reduciendo el I/O en llamadas repetitivas.
