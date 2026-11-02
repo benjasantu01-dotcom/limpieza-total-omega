@@ -412,17 +412,29 @@ def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
     if not _is_file_exclusive(resolved_source): raise IOError("Archivo origen bloqueado por otro proceso.")
 
 def _validate_isolation_request(source_path: Path, target_directory: Path) -> None:
-    if not target_directory.is_dir(): raise UnsafePathError("Destino de cuarentena debe ser un directorio.")
+    """Valida los requisitos para aislar un archivo, utilizando guards para mayor claridad."""
+    if not target_directory.is_dir(): 
+        raise UnsafePathError("Destino de cuarentena debe ser un directorio.")
+    
     _check_path_syntax_integrity(source_path)
     _verify_source_fs_permissions(source_path)
     _check_for_reparse_points(source_path)
-    if _win_has_system_attributes(source_path): raise UnsafePathError("Aislamiento denegado: archivo con atributos de sistema.")
-    try: resolved_source: Path = source_path.resolve(strict=True)
-    except (OSError, RuntimeError) as e: raise UnsafePathError(f"Ruta origen inaccesible: {e}")
-    if len(str(target_directory)) > 240: raise UnsafePathError("Ruta de cuarentena demasiado larga.")
+    
+    if _win_has_system_attributes(source_path): 
+        raise UnsafePathError("Aislamiento denegado: archivo con atributos de sistema.")
+    
+    try: 
+        resolved_source: Path = source_path.resolve(strict=True)
+    except (OSError, RuntimeError) as e: 
+        raise UnsafePathError(f"Ruta origen inaccesible: {e}")
+        
+    if len(str(target_directory)) > 240: 
+        raise UnsafePathError("Ruta de cuarentena demasiado larga.")
+        
     resolved_target = target_directory.resolve()
     if is_within_directory(resolved_source, resolved_target) or resolved_source == resolved_target:
         raise UnsafePathError("Archivo origen ya reside dentro del sandbox.")
+        
     _ensure_disk_space(target_directory, resolved_source.stat().st_size)
     _check_isolation_safety(resolved_source, target_directory)
 

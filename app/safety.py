@@ -547,32 +547,23 @@ def _validate_junction_depth(path: Path) -> None:
             break
 
 def _validate_drive_restrictions(target_path: Path) -> None:
-    try:
-        anchor = target_path.anchor
-        if not anchor: return
-    except (AttributeError, TypeError): return
+    path_s = str(target_path)
+    anchor = target_path.anchor
+    if not anchor: return
+
+    restrictions = [
+        (_is_volume_shadow_copy(path_s), "Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
+        (_is_volume_busy_or_invalid(path_s), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
+        (_get_drive_type(anchor) == DRIVE_REMOTE, "Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR),
+        (_get_drive_type(anchor) == DRIVE_REMOVABLE, "Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED),
+        ((_get_drive_type(anchor) == DRIVE_CDROM or _is_volume_readonly(path_s)), "Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY),
+        (_is_volume_compressed_or_encrypted(path_s), "Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED),
+        (_is_virtual_drive(path_s), "Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
+    ]
     
-    try:
-        path_s = str(target_path)
-        if _is_volume_shadow_copy(path_s):
-            raise UnsafePathError("Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY)
-        if _is_volume_busy_or_invalid(path_s):
-             raise UnsafePathError("Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR)
-        drive_type = _get_drive_type(anchor)
-        if drive_type == DRIVE_NO_ROOT_DIR:
-            raise UnsafePathError("Unidad inaccesible.", SafetyValidationErrorCode.IO_ERROR)
-        if drive_type == DRIVE_REMOTE:
-            raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR)
-        if drive_type == DRIVE_REMOVABLE:
-            raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
-        if drive_type == DRIVE_CDROM or _is_volume_readonly(path_s):
-            raise UnsafePathError("Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
-        if _is_volume_compressed_or_encrypted(path_s):
-            raise UnsafePathError("Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED)
-        if _is_virtual_drive(path_s):
-            raise UnsafePathError("Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
-    except (AttributeError, OSError, ctypes.ArgumentError):
-        pass
+    for condition, msg, code in restrictions:
+        if condition:
+            raise UnsafePathError(msg, code)
 
 _VALIDATOR_MAP: Final[dict[ProtectionReason, ViolationPredicate]] = {
     ProtectionReason.SYMLINK: lambda p, st, sd: p.is_symlink(),
@@ -729,18 +720,13 @@ def _validate_access_permissions(path: Path) -> None:
 def _validate_volume_integrity(path: Path) -> None:
     if os.name != 'nt': return
     try:
-        path_s = str(path)
-        if _is_volume_shadow_copy(path_s):
-            raise UnsafePathError(f"Volumen de instantánea bloqueado: {path.anchor}", SafetyValidationErrorCode.VOLUME_SHADOW_COPY)
-        if _is_volume_readonly(path_s) or _is_volume_compressed_or_encrypted(path_s) or \
-           _is_virtual_drive(path_s) or _is_volume_busy_or_invalid(path_s):
-            raise UnsafePathError(f"Volumen restringido/inaccesible: {path.anchor}", SafetyValidationErrorCode.VOLUME_RESTRICTED)
-        
+        _validate_drive_restrictions(path)
         if os.path.ismount(path):
             if not _get_final_path_normalized(path).drive == path.drive:
                  raise UnsafePathError(f"Punto de montaje en volumen externo: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
             raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
-        _validate_drive_restrictions(path)
+    except UnsafePathError:
+        raise
     except (OSError, PermissionError, AttributeError):
         raise UnsafePathError("Error validando integridad de volumen.", SafetyValidationErrorCode.IO_ERROR)
 
@@ -967,6 +953,8 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
         
         _validate_volume_integrity(target_path)
+    except UnsafePathError:
+        raise
     except (OSError, PermissionError) as e:
         raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR)
 

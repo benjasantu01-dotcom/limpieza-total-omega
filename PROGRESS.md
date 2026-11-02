@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **160** (31.7% de aceptación)
+- Mejoras aceptadas: **163** (32.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 269
+- Sin respuesta de la IA (error o límite): 265
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 5 | 1 | 1 | 2 | 33 |
+| 2026-10-31 | 5 | 1 | 1 | 2 | 29 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 48 | 4 | 16 | 2 | 42 |
+| 2026-11-02 | 51 | 4 | 17 | 2 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **35**
+- legibilidad y documentación: **33**
 - seguridad defensiva: **32**
-- legibilidad y documentación: **30**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `assistant.py`: **17**
 - `healthscore.py`: **15**
 - `browser.py`: **14**
 - `scanner.py`: **13**
 - `memory.py`: **13**
-- `quarantine.py`: **12**
+- `quarantine.py`: **13**
 - `startup.py`: **11**
 - `diskreport.py`: **11**
 - `settings.py`: **11**
+- `organizer.py`: **9**
 - `branding.py`: **9**
 - `duplicates.py`: **8**
-- `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T04:49:58` **safety.py** (legibilidad y documentación): Se ha mejorado significativamente la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_volume_integrity` y `_validate_preconditions`, reemplazando bloques de condicionales anidados con una estrategia de validaciones atómicas que mejoran la claridad y el manejo de excepciones.
+- `2026-11-02T04:49:05` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_isolation_request` para reducir el anidamiento y la complejidad ciclomática, utilizando guards clauses claros que facilitan la auditoría del flujo de seguridad.
+- `2026-11-02T04:48:20` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de docstrings descriptivos, se ha clarificado la intención en la lógica de las funciones de validación mediante nombres de variables más precisos y se ha extraído la lógica de chequeo de atributos de Windows a una constante estructurada para mejorar la legibilidad y el mantenimiento.
 - `2026-11-02T04:39:14` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en `SystemMetrics.validate` y `_compute_cached`, y reorganicé la estructura de `_compute_cached` para separar claramente la preparación de datos del procesamiento del pipeline, facilitando la auditoría de seguridad del flujo.
 - `2026-11-02T04:37:42` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `duplicates.py` mediante la adición de Type Hints faltantes (especialmente en los retornos de funciones de caché y lógica de grupos), la normalización de los docstrings siguiendo el estándar de la biblioteca y la clarificación de las responsabilidades en las funciones de filtrado, garantizando que el flujo de seguridad quede autoexplicado.
 - `2026-11-02T04:28:57` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `SummaryData` y el manejo de colecciones) y se mejoró la claridad de `_collect_summary_data` y `walk_files` para explicitar los retornos esperados, facilitando el mantenimiento y la auditoría del flujo de datos en el análisis de disco.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T04:08:16` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` mediante la validación explícita de `base_path` antes de la serialización y refiné la captura de excepciones en `_register_quarantine_item` para evitar registros corruptos en estados de error parciales.
 - `2026-11-02T03:57:59` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y la integridad del pipeline al reemplazar el acceso por `getattr` por una validación más estricta de tipos y presencia de atributos, evitando que valores inesperados (`None` o tipos incorrectos) causen errores silenciosos durante el cálculo del score.
 - `2026-11-02T03:57:25` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` añadiendo validaciones explícitas para evitar errores de lectura al procesar archivos que pudieron ser bloqueados o eliminados entre el escaneo inicial y la lectura real, asegurando que cualquier entrada nula o ruta inválida sea manejada graciosamente antes de abrir el descriptor de archivo.
-- `2026-11-02T03:57:01` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` integrando chequeos de estado de archivos más estrictos mediante `_safe_stat`, evitando así excepciones no capturadas durante la iteración y garantizando que las métricas de disco ignoren entradas corruptas o inaccesibles sin detener el proceso.
-- `2026-11-02T03:48:47` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner.get_size` implementando una validación explícita de `is_protected_path` al iterar los subdirectorios, asegurando que el escaneo no acceda a rutas restringidas por error de configuración o permisos, cumpliendo con el enfoque de validación de entradas.
-- `2026-11-02T03:48:38` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de tipos y parámetros, eliminando posibles condiciones de carrera o excepciones no capturadas al pasar valores `None` o tipos incorrectos a funciones que esperan datos numéricos.
