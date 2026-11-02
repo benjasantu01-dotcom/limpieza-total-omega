@@ -603,3 +603,13 @@
 - `2026-11-02T14:45:50` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-02T14:45:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T14:45:50` Corrida terminada. Total usado hoy: 348.
+- `2026-11-02T14:51:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-02T14:51:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-02T14:51:58` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `hash_file` y `partial_hash` añadiendo un bloque `try-except` específico para `FileNotFoundError`, evitando así interrupciones en el flujo ante archivos eliminados o movidos por procesos externos durante el análisis de duplicados.
+- `2026-11-02T14:51:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-02T14:52:03` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-02T14:52:09` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-02T14:52:24` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-02T14:52:39` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-02T14:52:39` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T14:52:39` Corrida terminada. Total usado hoy: 350.
