@@ -364,6 +364,9 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen: return False
     
     try:
+        path_to_check = Path(clean_cmd.strip('"'))
+        if is_protected_path(path_to_check):
+            return False
         return _is_valid_registry_path(clean_cmd.strip('"'))
     except (ValueError, TypeError, OSError, RuntimeError):
         return False

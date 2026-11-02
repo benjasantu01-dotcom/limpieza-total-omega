@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **159** (31.5% de aceptación)
+- Mejoras aceptadas: **161** (31.9% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 266
+- Sin respuesta de la IA (error o límite): 264
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 22 | 2 | 6 | 4 | 64 |
+| 2026-10-31 | 22 | 2 | 6 | 4 | 60 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 30 | 3 | 13 | 2 | 8 |
+| 2026-11-02 | 32 | 3 | 13 | 2 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **32**
-- seguridad defensiva: **30**
+- seguridad defensiva: **32**
 - legibilidad y documentación: **28**
 
 ## Mejoras aceptadas por archivo
@@ -36,9 +36,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **15**
 - `quarantine.py`: **13**
 - `browser.py`: **13**
+- `startup.py`: **12**
 - `scanner.py`: **12**
-- `startup.py`: **11**
-- `settings.py`: **10**
+- `settings.py`: **11**
 - `diskreport.py`: **10**
 - `organizer.py`: **9**
 - `duplicates.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T02:26:08` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_valid_registry_path` y `_is_registry_entry_safe` para incluir un chequeo explícito mediante `is_protected_path` sobre la ruta del ejecutable antes de procesarla, evitando así que el escaneo de programas de inicio interactúe o reporte rutas críticas del sistema aunque se encuentren en las claves `Run`.
+- `2026-11-02T02:25:42` **settings.py** (seguridad defensiva): Se endurecieron las validaciones de seguridad en `_read_and_parse_json` y `_SettingsManager` verificando explícitamente que el archivo de configuración no sea un enlace simbólico ni contenga flujos de datos alternativos (ADS) de NTFS mediante `st_nlink` y `st_file_attributes`, previniendo ataques de sustitución o manipulación de archivos ocultos.
 - `2026-11-02T02:15:06` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` para prevenir explícitamente el movimiento de archivos si el dispositivo de destino es distinto al de origen, evitando errores de permisos al cruzar límites de unidades y mejorando la consistencia transaccional al mover datos.
 - `2026-11-02T02:06:36` **memory.py** (seguridad defensiva): Se reforzó la seguridad en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable incluso después de obtener el handle, asegurando que ninguna manipulación de memoria (por inocua que sea) ocurra sobre binarios que residan en ubicaciones bloqueadas del sistema, cumpliendo con el enfoque defensivo.
 - `2026-11-02T02:05:19` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `healthscore.py` mediante una validación más estricta en el punto de entrada `summarize` y una sanitización proactiva de los textos generados en los reportes para prevenir que caracteres de control o escapes puedan comprometer la integridad de la interfaz de usuario.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T01:34:18` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_iter_process_memory` al añadir un manejo explícito de errores durante la enumeración de procesos, evitando que una falla parcial al obtener la ruta de un módulo o un handle bloquee la recolección completa de métricas de los procesos restantes.
 - `2026-11-02T01:26:06` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante la posible inyección de métricas malformadas o tipos de datos inesperados en el constructor `SystemMetrics` y durante la serialización para la caché, garantizando que el sistema nunca falle catastróficamente al procesar valores no numéricos.
 - `2026-11-02T01:24:32` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo explícito `entry.is_symlink()` en el bucle de recolección de `_collect_candidates` para evitar el seguimiento de enlaces simbólicos que no son junctions, mejorando la robustez frente a ciclos infinitos o accesos fuera de la ruta raíz en sistemas con enlaces simbólicos.
-- `2026-11-02T01:24:04` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_safe_stat` al añadir un manejo más estricto de los posibles errores de sistema durante la inspección de metadatos, evitando que el escáner se interrumpa ante estados inconsistentes del sistema de archivos en carpetas con permisos restringidos o rutas especiales.
-- `2026-11-02T01:15:08` **browser.py** (robustez ante casos límite): Se introdujo un chequeo explícito de disponibilidad de disco mediante `os.statvfs` (o `os.stat` en Windows) antes de iniciar el escaneo recursivo en `directory_size` y `detect_profiles` para evitar excepciones por dispositivos desconectados o medios extraíbles sin acceso, mejorando la robustez ante estados inesperados del hardware.

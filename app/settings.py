@@ -179,6 +179,7 @@ class _SettingsManager:
             
             if resolved_path.exists():
                 st = resolved_path.lstat()
+                # Prevenir sobreescritura de enlaces, archivos con ADS o permisos laxos
                 if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
                 if (st.st_mode & 0o077) != 0: return False 
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
@@ -229,7 +230,8 @@ class _Validators:
         try:
             st = os.lstat(path_str)
             if stat.S_ISLNK(st.st_mode): return True
-            return bool(st.st_file_attributes & 0x400) if hasattr(st, 'st_file_attributes') else False
+            # Check for Windows reparse points/ADS
+            return bool(getattr(st, 'st_file_attributes', 0) & 0x400)
         except (OSError, PermissionError):
             return True
 
@@ -374,13 +376,11 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """
     try:
         st = file_path.lstat()
-        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return None
-        if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return None
+        if not _is_file_secure_to_read(file_path, st): return None
         
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
         
-        # Validación de integridad de bytes: evitar caracteres de control no permitidos
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
         data = json.loads(content.decode("utf-8", errors="strict"))
@@ -410,12 +410,11 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
                 return dict(cached[0])
             
-            if _is_file_secure_to_read(primary_path, st):
-                data = _read_and_parse_json(primary_path)
-                if data is not None:
-                    settings = _coerce_and_verify(validate(data))
-                    _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
-                    return settings
+            data = _read_and_parse_json(primary_path)
+            if data is not None:
+                settings = _coerce_and_verify(validate(data))
+                _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
+                return settings
     except (OSError, PermissionError): 
         pass
     return DEFAULTS.copy()
