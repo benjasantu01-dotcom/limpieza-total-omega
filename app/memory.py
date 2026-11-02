@@ -345,11 +345,11 @@ def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COU
         return None
     return None
 
-def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.Array) -> bool:
+def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name: Callable) -> bool:
     """Verifica que el ejecutable del proceso no se encuentre en rutas protegidas del sistema."""
-    if h_process is None or WindowsAPI.psapi is None: return False
+    if h_process is None or get_mod_name is None: return False
     try:
-        if WindowsAPI.psapi.GetModuleFileNameExW(h_process, None, path_buffer, len(path_buffer)) <= 0:
+        if get_mod_name(h_process, None, path_buffer, len(path_buffer)) <= 0:
             return False 
         
         exe_path = Path(path_buffer.value).resolve(strict=False)
@@ -357,22 +357,27 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
-def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array) -> Optional[wintypes.HANDLE]:
+def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name: Callable) -> Optional[wintypes.HANDLE]:
     """Valida la seguridad del proceso mediante su ruta antes de otorgar acceso."""
     h = _get_process_handle(pid, access)
     if h:
-        if _is_process_executable_safe(h, path_buf):
+        if _is_process_executable_safe(h, path_buf, get_mod_name):
             return h
         WindowsAPI.kernel32.CloseHandle(h)
     return None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Iterador generador de procesos activos, filtrando aquellos en zonas protegidas."""
+    if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
+    
+    enum_procs = WindowsAPI.psapi.EnumProcesses
+    get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
+    
     MAX_PIDS = 4096
     pids = (wintypes.DWORD * MAX_PIDS)()
     cb_needed = wintypes.DWORD(0)
     
-    if WindowsAPI.psapi is None or not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+    if not enum_procs(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
         return
             
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
@@ -384,7 +389,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             continue
         
         path_buf = ctypes.create_unicode_buffer(1024)
-        h_process = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf)
+        h_process = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
         if not h_process: continue
         
         try:
@@ -393,8 +398,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
 
             yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:
-            if WindowsAPI.kernel32:
-                WindowsAPI.kernel32.CloseHandle(h_process)
+            WindowsAPI.kernel32.CloseHandle(h_process)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna una lista ordenada de procesos según su consumo, con caché de 60 segundos."""
@@ -452,7 +456,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida en procesos del sistema."
     
     path_buf = ctypes.create_unicode_buffer(1024)
-    h_process = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf)
+    h_process = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     if not h_process:
         return False, "Acceso denegado o proceso en zona restringida."
 
