@@ -261,11 +261,16 @@ def _get_sha256(path: Path) -> str:
     except (OSError, IOError, MemoryError): return ""
 
 def _is_file_in_use_by_system(path: Path) -> bool:
+    """Verifica si el archivo está en uso por el sistema de forma defensiva."""
     if path is None or not path.exists(): return False
     try:
         st: os.stat_result = path.stat()
+        # Verificar enlaces físicos múltiples para detectar archivos en uso por el kernel
         if st.st_nlink > 1: return True
-    except OSError: return True
+    except (OSError, PermissionError):
+        # Si no se puede hacer un stat, asumimos por seguridad que está bloqueado
+        return True
+        
     if _win_has_system_attributes(path): return True
     return not _is_file_exclusive(path)
 

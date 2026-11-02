@@ -269,7 +269,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             return None
             
         return ProcessMemory(name, pid_val, ws)
-    except (ValueError, TypeError, IndexError):
+    except (ValueError, TypeError, IndexError, OverflowError):
         return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:

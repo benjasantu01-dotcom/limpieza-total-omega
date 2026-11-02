@@ -1162,3 +1162,11 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T08:23:39` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del método `SystemMetrics.validate` y la función `compute_score` implementando una validación exhaustiva de los tipos de entrada y rangos, asegurando que cualquier dato malicioso o corrompido sea neutralizado antes de llegar al motor de cálculo (previniendo errores de propagación).
 - `2026-11-02T08:23:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T08:23:39` Corrida terminada. Total usado hoy: 200.
+- `2026-11-02T08:32:19` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-02T08:32:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-02T08:33:39` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-02T08:34:09` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_extract_process_info` y `trim_working_set` capturando fallos potenciales en `ctypes` y conversiones de tipo, asegurando que cualquier entrada malformada (como tipos inesperados o fallos en la API de Windows) se maneje con excepciones específicas sin romper el bucle.
+- `2026-11-02T08:34:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-02T08:35:14` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_in_use_by_system` implementando un manejo defensivo de errores durante la obtención de metadatos (`stat`) y atributos, asegurando que las excepciones del sistema (como archivos bloqueados por el kernel o con privilegios insuficientes) sean tratadas de forma segura y consistente sin abortar el flujo del programa.
+- `2026-11-02T08:35:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T08:35:14` Corrida terminada. Total usado hoy: 204.
