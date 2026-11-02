@@ -1293,3 +1293,10 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T10:58:52` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la restricción estricta de las entradas al caché del motor de scoring (`_compute_cached`), validando explícitamente la presencia de términos sensibles en los mensajes de recomendación generados dinámicamente antes de su inclusión en el informe final.
 - `2026-11-02T10:58:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T10:58:52` Corrida terminada. Total usado hoy: 260.
+- `2026-11-02T11:06:22` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-02T11:07:36` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-02T11:08:07` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_get_handle_for_safe_proc` y `trim_working_set` mediante la validación explícita del ejecutable mediante `is_protected_path` sobre la ruta resuelta antes de cualquier interacción con el proceso, asegurando que no se operen procesos de rutas del sistema aunque tengan privilegios de acceso.
+- `2026-11-02T11:08:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-02T11:09:03` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta del inodo (`st_ino`) y del dispositivo (`st_dev`) en `_safe_unlink` para prevenir ataques de tipo "Time-of-Check to Time-of-Use" (TOCTOU) y evitar la eliminación accidental de archivos fuera del directorio de cuarentena tras una posible manipulación de enlaces físicos.
+- `2026-11-02T11:09:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T11:09:03` Corrida terminada. Total usado hoy: 264.

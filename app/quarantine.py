@@ -192,6 +192,7 @@ class QuarantineItem:
     quarantined_at: str
     sha256: str = ""
     file_inode: Inode = 0
+    device_id: int = 0
 
     def __post_init__(self) -> None:
         try:
@@ -223,7 +224,8 @@ class QuarantineItem:
             return cls(
                 item_id=str(data["item_id"]), original_path=str(orig_p), stored_name=str(data["stored_name"]),
                 size_bytes=int(data["size_bytes"]), reason=str(data["reason"]), quarantined_at=str(data["quarantined_at"]),
-                sha256=str(data.get("sha256", "")), file_inode=int(data.get("file_inode", 0))
+                sha256=str(data.get("sha256", "")), file_inode=int(data.get("file_inode", 0)),
+                device_id=int(data.get("device_id", 0))
             )
         except (ValueError, TypeError): return None
 
@@ -234,6 +236,7 @@ class QuarantineItem:
             file_stat = st if st is not None else stored_path.stat()
             if hasattr(os, 'getuid') and file_stat.st_uid != os.getuid(): return False
             if self.file_inode != 0 and file_stat.st_ino != self.file_inode: return False
+            if self.device_id != 0 and file_stat.st_dev != self.device_id: return False
             if file_stat.st_nlink > 1: return False
             return (stored_path.is_file() and file_stat.st_size == self.size_bytes and file_stat.st_size > 0)
         except (OSError, PermissionError): return False
@@ -278,7 +281,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     except (OSError, PermissionError):
         return True
 
-def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> None:
+def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: int = 0) -> None:
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     ensure_safe_to_modify(path)
@@ -287,14 +290,15 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     if is_protected_path(path) or ":" in path.name: raise UnsafePathError("Ruta protegida o ADS detectado.")
     st: os.stat_result = path.stat()
     if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode): raise UnsafePathError("Inconsistencia en inodo o enlaces.")
+    if expected_device != 0 and st.st_dev != expected_device: raise UnsafePathError("Falla de consistencia de dispositivo.")
     if hasattr(os, 'getuid') and st.st_uid != os.getuid(): raise UnsafePathError("Error de propiedad de archivo.")
     if expected_hash and _get_sha256(path) != expected_hash: raise UnsafePathError("Falla de integridad: hash mismatch.")
     if _is_file_in_use_by_system(path): raise UnsafePathError("Archivo en uso por el sistema.")
 
-def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
+def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: int = 0) -> bool:
     if not path or not path.exists(): return True
     try:
-        _validate_file_for_unlink(path, expected_hash, expected_inode)
+        _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)
         parent: Path = path.parent
         _check_io_error_context(path.unlink)
         if parent.exists():
@@ -551,10 +555,10 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
             except OSError: pass
         raise OSError(f"Falla durante copia I/O: {e}")
 
-def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode]:
+def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode, int]:
     """
     Ejecuta la transferencia atómica del archivo: copia, verifica e instala en destino.
-    Devuelve la tupla (hash_sha256, inodo_destino) tras la validación final.
+    Devuelve la tupla (hash_sha256, inodo_destino, dispositivo_destino) tras la validación final.
     """
     _check_path_syntax_integrity(dest_path)
     _validate_file_transfer_preconditions(source_path, dest_path)
@@ -571,7 +575,7 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
         dest_stat = dest_path.stat()
         if dest_stat.st_nlink > 1: raise UnsafePathError("Integridad comprometida: destino tiene enlaces múltiples.")
         ensure_safe_to_modify(dest_path, allow_sensitive=True)
-        return source_hash, dest_stat.st_ino
+        return source_hash, dest_stat.st_ino, dest_stat.st_dev
     except (OSError, IOError, UnsafePathError, FileExistsError) as e:
         if temp_dest.exists():
             try: _check_io_error_context(temp_dest.unlink)
@@ -591,7 +595,7 @@ class IsolationManager:
         if not is_within_directory(dest_res, base_res): raise UnsafePathError("Intento de escape del sandbox.")
         if not is_safe_to_modify(dest.parent): raise UnsafePathError("Sandbox destino inseguro.")
 
-def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
+def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, int]:
     """
     Aísla un archivo garantizando la atomicidad frente a condiciones de carrera.
     Valida el inodo y estado del origen antes de proceder con el aislamiento en el sandbox.
@@ -605,25 +609,25 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         stat_orig = os.fstat(f.fileno())
         if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
         existing_items: List[QuarantineItem] = load_manifest(destination.parent.parent)
-        if any(i.file_inode == stat_orig.st_ino for i in existing_items): raise RuntimeError("Colisión de inodo: archivo ya registrado.")
+        if any(i.file_inode == stat_orig.st_ino and i.device_id == stat_orig.st_dev for i in existing_items): raise RuntimeError("Colisión de inodo: archivo ya registrado.")
         IsolationManager.validate_atomicity(source, stat_orig, destination)
         if destination.exists(): raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         destination.parent.mkdir(parents=True, exist_ok=True)
-        h, i = _write_temp_to_final(source, destination)
-        if destination.stat().st_ino != i or _get_sha256(destination) != h or destination.stat().st_nlink > 1:
+        h, i, d = _write_temp_to_final(source, destination)
+        if destination.stat().st_ino != i or destination.stat().st_dev != d or _get_sha256(destination) != h or destination.stat().st_nlink > 1:
             raise RuntimeError("Integridad comprometida: destino inconsistente.")
-        return h, i
+        return h, i, d
 
-def _register_quarantine_item(destination: Path, source_path: Path, file_hash: str, file_inode: Inode, reason: str, original_size: int, base: PathLike) -> QuarantineItem:
+def _register_quarantine_item(destination: Path, source_path: Path, file_hash: str, file_inode: Inode, device_id: int, reason: str, original_size: int, base: PathLike) -> QuarantineItem:
     if destination is None or not destination.exists(): raise RuntimeError("Falla: intento de registrar archivo inexistente.")
     try:
         items_list: List[QuarantineItem] = load_manifest(base)
         dest_stat = destination.stat()
-        if dest_stat.st_ino != file_inode or dest_stat.st_nlink > 1: raise RuntimeError("Inconsistencia crítica: mismatch de inodo o enlace.")
+        if dest_stat.st_ino != file_inode or dest_stat.st_dev != device_id or dest_stat.st_nlink > 1: raise RuntimeError("Inconsistencia crítica: mismatch de inodo, dispositivo o enlace.")
         quarantine_item: QuarantineItem = QuarantineItem(
             item_id=uuid.uuid4().hex[:12], original_path=str(source_path), stored_name=destination.name,
             size_bytes=original_size, reason=reason if reason else "Sin motivo", quarantined_at=datetime.now().isoformat(timespec="seconds"),
-            sha256=file_hash, file_inode=file_inode
+            sha256=file_hash, file_inode=file_inode, device_id=device_id
         )
         items_list.append(quarantine_item)
         save_manifest(items_list, base)
@@ -668,8 +672,8 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     try:
-        file_hash, file_inode = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
-        item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, reason, initial_stat.st_size, base)
+        file_hash, file_inode, dev_id = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
+        item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, reason, initial_stat.st_size, base)
         if p_source.exists() and not os.path.samefile(p_source, destination):
             try: _check_io_error_context(p_source.unlink)
             except OSError as e: raise RuntimeError(f"Falla al remover original post-aislamiento: {e}")
@@ -731,7 +735,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
     if not quarantine_item.verify_integrity(stored_file): raise UnsafePathError(f"Integridad fallida: {item_id}.")
-    if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256, expected_inode=quarantine_item.file_inode):
+    if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256, expected_inode=quarantine_item.file_inode, expected_device=quarantine_item.device_id):
         items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
@@ -743,7 +747,7 @@ def _is_item_purgable(file_path: Optional[Path], item: Optional[QuarantineItem] 
         _check_for_reparse_points(file_path)
         if _is_file_in_use_by_system(file_path): return False
         if item is not None and item.verify_integrity(file_path):
-            return _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
+            return _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode, expected_device=item.device_id)
         return False
     except (OSError, PermissionError, UnsafePathError): return False
 
