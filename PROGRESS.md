@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **142** (28.2% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 42
+- Mejoras aceptadas: **143** (28.4% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 294
+- Sin respuesta de la IA (error o límite): 293
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 32 | 3 | 10 | 6 | 99 |
+| 2026-10-31 | 31 | 3 | 8 | 6 | 98 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 3 | 0 | 0 | 0 | 1 |
+| 2026-11-02 | 5 | 1 | 1 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **34**
 - manejo de errores y validación de entradas: **32**
-- rendimiento: **27**
 - seguridad defensiva: **26**
-- legibilidad y documentación: **23**
+- rendimiento: **26**
+- legibilidad y documentación: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
 - `assistant.py`: **15**
 - `healthscore.py`: **13**
-- `memory.py`: **12**
-- `startup.py`: **11**
+- `memory.py`: **13**
 - `browser.py`: **11**
 - `scanner.py`: **11**
 - `settings.py`: **10**
 - `quarantine.py`: **10**
+- `startup.py`: **10**
 - `diskreport.py`: **9**
+- `organizer.py`: **8**
 - `branding.py`: **8**
 - `duplicates.py`: **7**
-- `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T00:14:53` **organizer.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos, tipado de retornos explícito y simplificación de la lógica condicional en funciones críticas, alineando el código con el enfoque de documentación requerido.
+- `2026-11-02T00:14:38` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la documentación explícita de las constantes de la API de Windows, la clarificación del flujo de `_iter_process_memory` y la adición de Type Hints detallados en funciones que gestionan handles y estructuras nativas, facilitando auditorías de seguridad futuras.
 - `2026-11-02T00:03:51` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con sus parámetros, tipos y comportamiento, además de refactorizar el bucle de `walk_files` para clarificar la lógica de exclusión de enlaces y archivos.
 - `2026-11-02T00:03:21` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en la clase `DirectoryScanner` y la estandarización de type hints, clarificando la intención detrás de la lógica de recursión y filtrado defensivo.
 - `2026-11-02T00:02:48` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de manipulación de color y geometría, clarificando los dominios de entrada y los comportamientos ante errores (defensive programming), cumpliendo así con el enfoque de legibilidad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T12:52:09` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_valid_registry_path` y `_extract_quoted_path` al asegurar que cualquier ruta proveniente del registro sea validada contra `is_protected_path` antes de ser procesada, previniendo la exposición accidental de rutas del sistema que podrían haber escapado a filtros previos.
 - `2026-11-01T12:51:29` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_is_valid_path_structure` y `_is_safe_entry` al integrar una validación de rutas absolutas mediante `os.path.abspath`, evitando riesgos por rutas relativas maliciosas o ambiguas, y reforzando la detección de caracteres nulos en los nombres de archivo mediante el uso de `os.path.basename` para separar la validación del nombre de la ruta completa.
 - `2026-11-01T12:51:04` **safety.py** (seguridad defensiva): Mejoré la robustez de `_is_file_owned_by_system` implementando un chequeo directo contra el Security Identifier (SID) conocido de "SYSTEM" (S-1-5-18) y "LOCAL SERVICE" (S-1-5-19), asegurando que cualquier archivo con propiedad crítica del kernel sea bloqueado preventivamente antes de cualquier intento de manipulación.
-- `2026-11-01T12:40:33` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la recuperación de rutas de procesos mediante `GetModuleFileNameExW`, asegurando que cualquier ruta obtenida sea normalizada y validada estrictamente contra `is_protected_path` antes de ser utilizada para cualquier operación de nivel de sistema, evitando el riesgo de manipular procesos críticos de Windows.
-- `2026-11-01T12:31:09` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al introducir `_is_sensitive_input` y aplicarlo en la creación de `SystemMetrics` y durante la validación de reportes, evitando que datos potencialmente maliciosos o rutas de sistema se filtren en la lógica de procesamiento o mensajes de la interfaz.

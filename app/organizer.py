@@ -87,7 +87,12 @@ SYSTEM_FOLDER_BLOCKLIST: Final[frozenset[str]] = frozenset({
 })
 
 def list_available_drives() -> List[str]:
-    """Retorna una lista de letras de unidad disponibles en el sistema (Windows)."""
+    """
+    Lista las unidades de disco montadas en el sistema.
+    
+    Returns:
+        List[str]: Lista de rutas raíz de unidades (ej. 'C:\\'). Retorna lista vacía en sistemas no NT.
+    """
     if os.name != "nt":
         return []
     try:
@@ -125,7 +130,14 @@ class JunkFile:
         return self.path.suffix.lower() in JUNK_EXTENSIONS
 
 def is_valid_junk_extension(filename: str) -> bool:
-    """Valida si la extensión del nombre de archivo está en el conjunto permitido."""
+    """
+    Valida la extensión de un archivo contra el conjunto de extensiones permitidas.
+    
+    Args:
+        filename: Nombre del archivo o ruta completa.
+    Returns:
+        bool: True si la extensión es válida, False en caso contrario.
+    """
     if not filename: return False
     try:
         return Path(filename).suffix.lower() in JUNK_EXTENSIONS
@@ -163,8 +175,12 @@ def _is_unc_path(path: Path) -> bool:
 
 def _generate_unique_target(target: Path) -> Path:
     """
-    Genera un destino único añadiendo un sufijo incremental si la ruta existe, 
-    previendo colisiones de nombres durante la cuarentena.
+    Genera un destino único añadiendo un sufijo incremental ante colisiones de nombres.
+    
+    Args:
+        target: Ruta destino deseada.
+    Returns:
+        Path: Ruta única, incrementando un contador hasta 999.
     """
     if not isinstance(target, Path): return target
     base_target = target
@@ -181,7 +197,7 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _try_open_win_file(path: Path) -> bool:
     """
-    Intenta obtener un handle de solo lectura en Windows. 
+    Intenta abrir un handle de solo lectura en Windows. 
     Retorna True si el archivo está accesible, False si está bloqueado por el sistema.
     """
     try:
@@ -276,14 +292,16 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
+        # Validación de jerarquías y protección
         if is_protected_path(src_real) or is_protected_path(dest_real): return False
         if not is_safe_to_modify(dest_real): return False
+        if dest_real in src_real.parents or src_real == dest_real or src_real.parent == dest_real: return False
         
-        if dest_real in src_real.parents or src_real == dest_real: return False
-        if src_real.parent == dest_real: return False
+        # Filtros de seguridad críticos
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or _is_junction(junk_file.path): return False
         
+        # Validaciones operativas
         if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
         if src_real.drive != dest_real.drive: return False
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
@@ -314,7 +332,14 @@ def _is_candidate_for_scan(entry: os.DirEntry, stats: os.stat_result) -> bool:
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
-    Recorre recursivamente un directorio buscando basura, manteniendo un registro de visitados para evitar bucles.
+    Recorre recursivamente un directorio buscando basura.
+    
+    Args:
+        current_dir: Directorio a procesar.
+        found: Lista donde se acumulan los resultados (JunkFile).
+        depth: Profundidad actual de recursión.
+        protected_cache: Set para memoizar rutas protegidas detectadas.
+        visited: Set de rutas visitadas para evitar ciclos de enlaces simbólicos.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH: 
         return
@@ -346,7 +371,12 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         pass
 
 def scan_for_junk(directories: Optional[Sequence[Union[str, Path]]] = None) -> List[JunkFile]:
-    """Realiza un escaneo recursivo buscando archivos temporales candidatos en los directorios definidos."""
+    """
+    Ejecuta el escaneo en los directorios indicados.
+    
+    Returns:
+        List[JunkFile]: Lista de archivos temporales detectados.
+    """
     found: List[JunkFile] = []
     protected_cache: Set[str] = set()
     visited: Set[str] = set()
@@ -368,7 +398,10 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
-    Mueve archivos candidatos a la carpeta de revisión segura, validando cada operación de escritura.
+    Mueve archivos candidatos a la carpeta de revisión segura.
+    
+    Returns:
+        Optional[Path]: La ruta de revisión si la operación fue exitosa, None en caso contrario.
     """
     if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
         return None
@@ -396,7 +429,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Calcula el destino final para el archivo, preservando timestamp para trazabilidad."""
     try:
         if not isinstance(junk_file.modified, datetime): return None
-        # Uso de int() explícito para evitar problemas de tipos en la conversión del nombre
         timestamp = int(junk_file.modified.timestamp())
         safe_name = f"{junk_file.path.stem}_{timestamp}{junk_file.path.suffix}"
         return _generate_unique_target(dest_base / safe_name)
@@ -406,6 +438,9 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos desde la carpeta de revisión tras validar seguridad.
+    
+    Returns:
+        int: Cantidad de archivos eliminados correctamente.
     """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:

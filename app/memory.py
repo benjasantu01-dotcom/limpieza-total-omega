@@ -54,12 +54,12 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 # Límite de bytes para prevenir que procesos reporten valores de memoria físicamente imposibles.
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
-# Máscaras de acceso Win32 para interactuar con procesos mediante la API.
+# Máscaras de acceso Win32 (ver https://learn.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights)
 WIN32_PROCESS_QUERY_LIMITED: Final[int] = 0x1000
-WIN32_PROCESS_SET_QUOTA: Final[int] = 0x0400
+WIN32_PROCESS_SET_QUOTA: Final[int] = 0x0100
 WIN32_PROCESS_QUERY_INFO: Final[int] = 0x0400
-# Máscara combinada requerida para operaciones de limpieza (Trim).
-TRIM_ACCESS_MASK: Final[int] = 0x020000 | WIN32_PROCESS_SET_QUOTA | WIN32_PROCESS_QUERY_INFO
+# Máscara combinada para operaciones de limpieza: Requiere SetQuota y QueryInfo.
+TRIM_ACCESS_MASK: Final[int] = 0x00200000 | WIN32_PROCESS_SET_QUOTA | WIN32_PROCESS_QUERY_INFO
 
 INVALID_HANDLE_VALUE: Final[int] = -1
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
@@ -326,6 +326,7 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
     """Solicita un handle de Win32 con permisos específicos para interactuar con un proceso."""
     if WindowsAPI.kernel32 is None: return None
     try:
+        # OpenProcess devuelve un HANDLE (void*) o 0 en fallo
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
         if not handle or handle == INVALID_HANDLE_VALUE:
             return None

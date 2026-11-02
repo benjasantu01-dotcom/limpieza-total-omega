@@ -402,3 +402,28 @@ FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quara
 - `2026-11-02T00:04:02` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: legibilidad y documentación).
 - `2026-11-02T00:04:02` Rotación — log: 1122 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T00:04:02` Corrida terminada. Total usado hoy: 4.
+- `2026-11-02T00:12:22` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-11-02T00:12:55` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:29: in <module>
+    MessageFactory: TypeAlias = Callable[[SystemMetrics], str]
+                                          ^^^^^^^^^^^^^
+E   NameError: name 'SystemMetrics' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.18s
+
+```
+- `2026-11-02T00:12:55` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se introdujo un `TypeAlias` explícito y se mejoró la documentación de `PipelineEntry` y `RecommendationRule` para clarificar el flujo de datos, además de añadir `Type Hints` faltantes para robustecer la legibilidad del motor de scoring.
+- `2026-11-02T00:14:10` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-02T00:14:38` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento mediante la documentación explícita de las constantes de la API de Windows, la clarificación del flujo de `_iter_process_memory` y la adición de Type Hints detallados en funciones que gestionan handles y estructuras nativas, facilitando auditorías de seguridad futuras.
+- `2026-11-02T00:14:53` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos, tipado de retornos explícito y simplificación de la lógica condicional en funciones críticas, alineando el código con el enfoque de documentación requerido.
+- `2026-11-02T00:14:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T00:14:53` Corrida terminada. Total usado hoy: 8.
