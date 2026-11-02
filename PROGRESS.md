@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 62
+- Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 72 | 7 | 22 | 7 | 132 |
-| 2026-11-02 | 109 | 5 | 40 | 4 | 106 |
+| 2026-11-01 | 72 | 7 | 22 | 7 | 128 |
+| 2026-11-02 | 112 | 5 | 41 | 4 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **37**
+- seguridad defensiva: **35**
 - rendimiento: **34**
-- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `safety.py`: **19**
 - `assistant.py`: **18**
-- `safety.py`: **18**
 - `quarantine.py`: **17**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
 - `diskreport.py`: **16**
 - `browser.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **15**
 - `branding.py`: **14**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `organizer.py`: **9**
 - `startup.py`: **8**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T11:18:42` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` y `_is_file_secure_to_read` mediante la implementación de una verificación de enlaces simbólicos (`is_reparse_point`) y una restricción más estricta sobre permisos de archivo (`stat.S_IWOTH` y `stat.S_IWGRP`), evitando que archivos con permisos excesivamente abiertos sean leídos, lo cual previene ataques de suplantación o manipulación de configuración.
+- `2026-11-02T11:18:24` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_handle_directory` mediante la validación explícita con `is_protected_path` antes de añadir directorios al stack de recursión, garantizando que el escáner no pueda profundizar en rutas de sistema incluso si `os.access` retorna True.
+- `2026-11-02T11:17:49` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` introduciendo un chequeo explícito de "reparse points" (puntos de reparseo como *Junctions* o *Symlinks*) en el nivel superior de `ensure_safe_to_modify`, antes de cualquier otra validación, para evitar que la lógica de la aplicación se desvíe involuntariamente a través de puntos de montaje o enlaces que apunten fuera de las carpetas validadas.
 - `2026-11-02T11:09:03` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta del inodo (`st_ino`) y del dispositivo (`st_dev`) en `_safe_unlink` para prevenir ataques de tipo "Time-of-Check to Time-of-Use" (TOCTOU) y evitar la eliminación accidental de archivos fuera del directorio de cuarentena tras una posible manipulación de enlaces físicos.
 - `2026-11-02T11:08:07` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_handle_for_safe_proc` y `trim_working_set` mediante la validación explícita del ejecutable mediante `is_protected_path` sobre la ruta resuelta antes de cualquier interacción con el proceso, asegurando que no se operen procesos de rutas del sistema aunque tengan privilegios de acceso.
 - `2026-11-02T10:58:52` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción estricta de las entradas al caché del motor de scoring (`_compute_cached`), validando explícitamente la presencia de términos sensibles en los mensajes de recomendación generados dinámicamente antes de su inclusión en el informe final.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T10:35:52` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante situaciones de concurrencia y acceso denegado, añadiendo un chequeo de existencia previo al borrado (TOCTOU) y garantizando que el `unlink` ocurra solo si el archivo persiste y está bajo control del sandbox, evitando errores no controlados al iterar sobre el directorio.
 - `2026-11-02T10:31:02` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_handle_for_safe_proc` y `_iter_process_memory` ante procesos que finalizan durante la iteración o cuyos módulos son inaccesibles, añadiendo una validación explícita mediante `GetExitCodeProcess` antes de intentar operar, evitando así llamadas a APIs con handles inválidos o recursos liberados.
 - `2026-11-02T10:16:29` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `_collect_summary_data` y `walk_files` ante la posibilidad de que el sistema de archivos cambie durante el escaneo (Race Conditions), asegurando que los tamaños de archivo (`st_size`) sean validados antes de procesarlos para evitar excepciones de desbordamiento o valores negativos inesperados.
-- `2026-11-02T10:15:22` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` para prevenir fallos silenciosos y operaciones en rutas mal formadas, incorporando validación explícita mediante `is_safe_to_modify` y manejo estricto de tipos antes de interactuar con el sistema de archivos.
-- `2026-11-02T10:06:21` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la ingesta y validación de datos del `SystemContext`, añadiendo un chequeo explícito de tipos para evitar excepciones inesperadas cuando `source` contiene objetos malformados, y mejorando la resiliencia en `_validate_and_sanitize_data` al manejar atributos de forma más defensiva.
-- `2026-11-02T10:05:32` **settings.py** (rendimiento): Optimizé la gestión de caché de `_SettingsManager` eliminando el cálculo innecesario del hash SHA256 durante la lectura y escritura, ya que la combinación de `mtime` y `st_size` es suficiente y mucho más eficiente para detectar cambios en el archivo de configuración.

@@ -241,7 +241,8 @@ class Scanner:
         norm_path = os.path.normcase(entry.path)
         if norm_path in visited_dirs: return
         try:
-            if os.access(entry.path, os.R_OK):
+            # Validación defensiva adicional contra rutas protegidas antes de entrar
+            if os.access(entry.path, os.R_OK) and not _cached_is_protected(entry.path):
                 visited_dirs.add(norm_path)
                 directory_stack.append((entry.path, current_depth + 1))
         except (OSError, PermissionError):

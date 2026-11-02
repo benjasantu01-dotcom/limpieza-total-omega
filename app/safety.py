@@ -1081,6 +1081,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         
     p = normalize(str(path).strip())
     
+    # NUEVA SEGURIDAD: Bloqueo explícito de reparse points antes de procesar
+    if os.name == 'nt' and _is_system_directory_junction(str(p)):
+        raise UnsafePathError(f"Modificación denegada sobre punto de reparse: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+
     if p.exists() and not (p.is_file() or p.is_dir()):
         raise UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE)
     if p.name.lower() in _KERNEL_BLOCKED_FILES:

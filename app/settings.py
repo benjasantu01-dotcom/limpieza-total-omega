@@ -354,6 +354,8 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
         if not is_safe_to_modify(str(file_path)): return False
         if _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+        # Verificar que nadie más tenga permisos de escritura (grupo u otros)
+        if (st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0: return False
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         if (st.st_mode & 0o077) != 0: return False 
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
