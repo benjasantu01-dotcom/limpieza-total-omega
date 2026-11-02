@@ -5,27 +5,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **140** (27.9% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **142** (28.2% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 293
+- Sin respuesta de la IA (error o límite): 294
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 33 | 3 | 11 | 6 | 99 |
+| 2026-10-31 | 32 | 3 | 10 | 6 | 99 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
+| 2026-11-02 | 3 | 0 | 0 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **34**
 - manejo de errores y validación de entradas: **32**
-- rendimiento: **28**
+- rendimiento: **27**
 - seguridad defensiva: **26**
-- legibilidad y documentación: **20**
+- legibilidad y documentación: **23**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **15**
 - `healthscore.py`: **13**
 - `memory.py`: **12**
-- `quarantine.py`: **11**
 - `startup.py`: **11**
+- `browser.py`: **11**
 - `scanner.py`: **11**
-- `browser.py`: **10**
 - `settings.py`: **10**
-- `diskreport.py`: **8**
+- `quarantine.py`: **10**
+- `diskreport.py`: **9**
+- `branding.py`: **8**
 - `duplicates.py`: **7**
 - `organizer.py`: **7**
-- `branding.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T00:03:51` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con sus parámetros, tipos y comportamiento, además de refactorizar el bucle de `walk_files` para clarificar la lógica de exclusión de enlaces y archivos.
+- `2026-11-02T00:03:21` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en la clase `DirectoryScanner` y la estandarización de type hints, clarificando la intención detrás de la lógica de recursión y filtrado defensivo.
+- `2026-11-02T00:02:48` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de manipulación de color y geometría, clarificando los dominios de entrada y los comportamientos ante errores (defensive programming), cumpliendo así con el enfoque de legibilidad.
 - `2026-11-01T14:44:02` **scanner.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos y estados en `_get_file_attributes` y `_safe_stat` para prevenir errores de ejecución ante archivos inexistentes, inaccesibles o bloqueados, asegurando que el escáner no aborte ante condiciones de sistema transitorias.
 - `2026-11-01T14:43:33` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `ensure_safe_to_modify` para incluir un manejo de errores más granular mediante el uso de bloques `try-except` específicos durante las validaciones de `pathlib` y de sistema, evitando el silenciamiento de excepciones inesperadas y garantizando que las fallas de acceso se traduzcan correctamente a `UnsafePathError` con su código correspondiente.
 - `2026-11-01T14:33:50` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_extract_process_info` mediante una validación más estricta de parámetros y el manejo defensivo de cadenas potencialmente maliciosas o mal formadas, evitando excepciones no capturadas durante el procesamiento de listas de procesos.
@@ -57,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T12:51:04` **safety.py** (seguridad defensiva): Mejoré la robustez de `_is_file_owned_by_system` implementando un chequeo directo contra el Security Identifier (SID) conocido de "SYSTEM" (S-1-5-18) y "LOCAL SERVICE" (S-1-5-19), asegurando que cualquier archivo con propiedad crítica del kernel sea bloqueado preventivamente antes de cualquier intento de manipulación.
 - `2026-11-01T12:40:33` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la recuperación de rutas de procesos mediante `GetModuleFileNameExW`, asegurando que cualquier ruta obtenida sea normalizada y validada estrictamente contra `is_protected_path` antes de ser utilizada para cualquier operación de nivel de sistema, evitando el riesgo de manipular procesos críticos de Windows.
 - `2026-11-01T12:31:09` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al introducir `_is_sensitive_input` y aplicarlo en la creación de `SystemMetrics` y durante la validación de reportes, evitando que datos potencialmente maliciosos o rutas de sistema se filtren en la lógica de procesamiento o mensajes de la interfaz.
-- `2026-11-01T12:30:38` **duplicates.py** (seguridad defensiva): Se ha refactorizado `_safe_path_check` para mejorar la seguridad defensiva mediante la resolución de la ruta real antes de cualquier chequeo (`resolve()`), previniendo vulnerabilidades por *Path Traversal* o enlaces simbólicos maliciosos, y se ha estandarizado el manejo de rutas en las funciones de hashing para garantizar que siempre se verifique la seguridad antes de abrir cualquier descriptor de archivo.
-- `2026-11-01T12:21:26` **browser.py** (seguridad defensiva): Se ha restringido el acceso del `DirectoryScanner` para asegurar que, durante la recursión, no se sigan puntos de reparse ni enlaces simbólicos, reforzando el aislamiento del escaneo dentro de la ruta base permitida.
-- `2026-11-01T12:21:16` **branding.py** (seguridad defensiva): Mejoré `save_logo_svg` aplicando una validación de ruta más robusta mediante `is_safe_to_modify` antes de cualquier operación de resolución, asegurando que el directorio padre exista y sea seguro antes de intentar la creación o escritura, evitando así efectos secundarios si la ruta de destino es bloqueada por el sistema.
