@@ -545,7 +545,7 @@ class SystemContext:
             if updates:
                 self._apply_updates(updates)
                 return True
-        except (AttributeError, TypeError, ValueError) as e:
+        except (AttributeError, TypeError, ValueError, Exception) as e:
             logging.error(f"Error procesando ingesta de contexto: {e}")
         return False
 

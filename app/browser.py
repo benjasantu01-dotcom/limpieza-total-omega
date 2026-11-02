@@ -110,6 +110,7 @@ class DirectoryScanner:
                 for entry in iterator:
                     try:
                         if not entry.name or entry.name.lower() in self.ctx.never_touch_lower: continue
+                        if is_protected_path(Path(entry.path)): continue
                         
                         if entry.is_symlink(): continue
                         

@@ -345,7 +345,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         dest_path = Path(destination).resolve()
-        # Validación de seguridad defensiva: no modificar si es ruta protegida
         if not is_safe_to_modify(dest_path) or is_protected_path(dest_path):
             return None
         
@@ -355,7 +354,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
                 return None
             parent.mkdir(parents=True, exist_ok=True)
             
-        # Garantía final antes de escritura
         ensure_safe_to_modify(dest_path)
         dest_path.write_text(logo_svg(int(size)), encoding="utf-8")
         return dest_path
