@@ -259,7 +259,16 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """Orquestador de seguridad: valida el estado del archivo, permisos y espacio antes de una operación de E/S."""
+    """
+    Orquestador de seguridad: valida el estado del archivo, permisos y espacio antes de una operación de E/S.
+    
+    Args:
+        junk_file: El archivo candidato procesado.
+        dest: El destino previsto para la operación de movimiento.
+        
+    Returns:
+        bool: True si la operación cumple con todos los requisitos de seguridad.
+    """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
         return False
     try:
@@ -375,7 +384,16 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         return None
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Calcula la ruta de destino incluyendo un timestamp para trazabilidad."""
+    """
+    Calcula una ruta de destino segura y única para el archivo basura.
+    
+    Args:
+        junk_file: El objeto de archivo origen.
+        dest_base: Directorio base de cuarentena.
+        
+    Returns:
+        Path: Ruta destino completa o None si falló el cálculo.
+    """
     try:
         if not isinstance(junk_file.modified, datetime): return None
         timestamp = int(junk_file.modified.timestamp())

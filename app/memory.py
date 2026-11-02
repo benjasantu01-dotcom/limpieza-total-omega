@@ -44,27 +44,21 @@ else:
         BOOL = ctypes.c_int
         PDWORD = ctypes.POINTER(ctypes.c_ulong)
 
-# Tipos semánticos para prevenir errores de lógica al operar con diferentes unidades.
 BytesValue = NewType("BytesValue", int)
 MegabytesValue = NewType("MegabytesValue", float)
 
-# Constantes de conversión y límites de seguridad:
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
-# Límite de bytes para prevenir que procesos reporten valores de memoria físicamente imposibles.
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
-# Máscaras de acceso Win32 (ver https://learn.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights)
 WIN32_PROCESS_QUERY_LIMITED: Final[int] = 0x1000
 WIN32_PROCESS_SET_QUOTA: Final[int] = 0x0100
 WIN32_PROCESS_QUERY_INFO: Final[int] = 0x0400
-# Máscara combinada para operaciones de limpieza: Requiere SetQuota y QueryInfo.
 TRIM_ACCESS_MASK: Final[int] = 0x00200000 | WIN32_PROCESS_SET_QUOTA | WIN32_PROCESS_QUERY_INFO
 
 INVALID_HANDLE_VALUE: Final[int] = -1
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 
-# Lista blanca de PIDs para ignorar procesos del sistema que podrían bloquearse o causar errores.
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 
 class WindowsAPI:
@@ -322,7 +316,7 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
-    """Solicita un handle de Win32 con permisos de acceso específicos (ver OpenProcess)."""
+    """Solicita un handle de Win32 con permisos de acceso específicos."""
     if WindowsAPI.kernel32 is None: return None
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
@@ -332,22 +326,22 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
     except (ctypes.WinError, OSError):
         return None
 
-def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
+def _query_working_set_bytes(h_process: wintypes.HANDLE, counters: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Consulta el WorkingSet de un proceso mediante PSAPI.GetProcessMemoryInfo."""
     if h_process is None or WindowsAPI.psapi is None: return None
     try:
-        if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
-            val = pmc.WorkingSetSize
+        if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(counters), ctypes.c_uint32(counters.cb)):
+            val = counters.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
     except (ctypes.WinError, OSError):
         return None
     return None
 
-def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name: Callable) -> bool:
-    """Verifica que el ejecutable del proceso no se encuentre en rutas protegidas del sistema."""
-    if h_process is None or get_mod_name is None: return False
+def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: Callable) -> bool:
+    """Verifica que el ejecutable del proceso no se encuentre en rutas protegidas."""
+    if h_process is None or get_mod_name_func is None: return False
     try:
-        if get_mod_name(h_process, None, path_buffer, len(path_buffer)) <= 0:
+        if get_mod_name_func(h_process, None, path_buffer, len(path_buffer)) <= 0:
             return False 
         
         exe_path = Path(path_buffer.value).resolve(strict=False)
@@ -355,7 +349,7 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
-def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name: Callable) -> Optional[wintypes.HANDLE]:
+def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: Callable) -> Optional[wintypes.HANDLE]:
     """Valida la seguridad del proceso mediante su ruta antes de otorgar acceso al handle."""
     try:
         h = _get_process_handle(pid, access)
@@ -365,7 +359,7 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
                 WindowsAPI.kernel32.CloseHandle(h)
                 return None
                 
-            if _is_process_executable_safe(h, path_buf, get_mod_name):
+            if _is_process_executable_safe(h, path_buf, get_mod_name_func):
                 return h
             WindowsAPI.kernel32.CloseHandle(h)
     except (ctypes.WinError, OSError):
