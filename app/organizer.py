@@ -134,10 +134,8 @@ def is_valid_junk_extension(filename: str) -> bool:
     Valida la extensión de un archivo contra el conjunto de extensiones permitidas.
     """
     if not filename: return False
-    try:
-        return Path(filename).suffix.lower() in JUNK_EXTENSIONS
-    except (TypeError, ValueError):
-        return False
+    # Optimización: evitar crear objeto Path si no es necesario
+    return any(filename.lower().endswith(ext) for ext in JUNK_EXTENSIONS)
 
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """Extrae atributos de archivo de bajo nivel usando la API de Windows."""
@@ -295,13 +293,11 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
         return False
     return True
 
-def _is_candidate_for_scan(entry: os.DirEntry, stats: os.stat_result) -> bool:
+def _is_candidate_for_scan(name: str, stats: os.stat_result) -> bool:
     """Filtra archivos candidatos basado en extensiones y atributos."""
-    if not is_valid_junk_extension(entry.name):
+    if not any(name.lower().endswith(ext) for ext in JUNK_EXTENSIONS):
         return False
     if stats.st_size >= LIMITS.MAX_FILE_SIZE_BYTES:
-        return False
-    if _is_system_hidden(entry):
         return False
     return True
 
@@ -325,7 +321,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                     
                     elif entry.is_file(follow_symlinks=False):
                         stats = entry.stat(follow_symlinks=False)
-                        if _is_candidate_for_scan(entry, stats):
+                        if _is_candidate_for_scan(entry.name, stats) and not _is_system_hidden(entry):
                             p = Path(entry.path)
                             if is_safe_to_modify(p) and not _is_file_locked(p):
                                 found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))

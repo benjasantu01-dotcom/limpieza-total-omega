@@ -840,3 +840,11 @@ FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informa
 - `2026-11-02T05:09:43` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el método `_collect_candidates` utilizando un diccionario de `st_size` para evitar redundancias de lectura de disco y asegurar que los archivos se agrupen por tamaño de forma eficiente antes de realizar cualquier operación costosa de hashing.
 - `2026-11-02T05:09:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T05:09:43` Corrida terminada. Total usado hoy: 124.
+- `2026-11-02T05:18:01` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-02T05:18:25` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 54% del original (posible pérdida de código)
+- `2026-11-02T05:19:25` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-02T05:20:33` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._apply_ui_update_safely, LimpiezaTotalOmegaApp._update_cards, wrapper
+- `2026-11-02T05:21:00` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` al pre-asignar el búfer de nombres de módulo fuera del bucle y eliminar la recolección innecesaria de nombres de procesos largos, además de mejorar la eficiencia del filtrado de PIDs usando un conjunto (`Set`) para las comprobaciones de exclusión.
+- `2026-11-02T05:21:11` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la búsqueda de archivos basura moviendo la verificación de extensiones a una operación de búsqueda de prefijo/suffix usando un `frozenset` y optimizando el ciclo de `_process_directory` para evitar llamadas redundantes a `Path()` y `exists()` sobre objetos que ya sabemos que son válidos vía `os.scandir`.
+- `2026-11-02T05:21:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T05:21:11` Corrida terminada. Total usado hoy: 128.

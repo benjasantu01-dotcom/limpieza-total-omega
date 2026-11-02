@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **169** (33.5% de aceptación)
+- Mejoras aceptadas: **168** (33.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 12
+- Rechazadas por guardia de seguridad: 53
+- Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 259
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 5 | 1 | 0 | 1 | 23 |
+| 2026-10-31 | 2 | 1 | 0 | 0 | 23 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 57 | 4 | 19 | 2 | 42 |
+| 2026-11-02 | 59 | 4 | 21 | 2 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **35**
 - legibilidad y documentación: **34**
+- robustez ante casos límite: **34**
+- rendimiento: **33**
 - seguridad defensiva: **32**
-- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
 - `assistant.py`: **18**
+- `safety.py`: **18**
 - `browser.py`: **15**
 - `healthscore.py`: **15**
-- `scanner.py`: **13**
-- `memory.py`: **13**
+- `memory.py`: **14**
 - `quarantine.py`: **13**
 - `diskreport.py`: **12**
+- `scanner.py`: **12**
 - `settings.py`: **12**
-- `startup.py`: **11**
+- `organizer.py`: **10**
+- `startup.py`: **10**
 - `branding.py`: **10**
 - `duplicates.py`: **9**
-- `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T05:21:11` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura moviendo la verificación de extensiones a una operación de búsqueda de prefijo/suffix usando un `frozenset` y optimizando el ciclo de `_process_directory` para evitar llamadas redundantes a `Path()` y `exists()` sobre objetos que ya sabemos que son válidos vía `os.scandir`.
+- `2026-11-02T05:21:00` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` al pre-asignar el búfer de nombres de módulo fuera del bucle y eliminar la recolección innecesaria de nombres de procesos largos, además de mejorar la eficiencia del filtrado de PIDs usando un conjunto (`Set`) para las comprobaciones de exclusión.
 - `2026-11-02T05:09:43` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` utilizando un diccionario de `st_size` para evitar redundancias de lectura de disco y asegurar que los archivos se agrupen por tamaño de forma eficiente antes de realizar cualquier operación costosa de hashing.
 - `2026-11-02T05:09:35` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la llamada costosa `path.resolve()` por `path.is_relative_to(root_path)` sobre la ruta base, evitando resoluciones de I/O innecesarias en cada iteración y reduciendo la presión sobre el sistema de archivos.
 - `2026-11-02T05:09:07` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` reutilizando una única instancia de `DirectoryScanner` y su `ScanContext` para todos los navegadores bajo una misma ruta base, evitando la re-inicialización innecesaria de estructuras de datos y reduciendo el uso de memoria en escaneos masivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T04:37:42` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `duplicates.py` mediante la adición de Type Hints faltantes (especialmente en los retornos de funciones de caché y lógica de grupos), la normalización de los docstrings siguiendo el estándar de la biblioteca y la clarificación de las responsabilidades en las funciones de filtrado, garantizando que el flujo de seguridad quede autoexplicado.
 - `2026-11-02T04:28:57` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `SummaryData` y el manejo de colecciones) y se mejoró la claridad de `_collect_summary_data` y `walk_files` para explicitar los retornos esperados, facilitando el mantenimiento y la auditoría del flujo de datos en el análisis de disco.
 - `2026-11-02T04:28:42` **browser.py** (legibilidad y documentación): Documenté el propósito de `ScanContext` y `DirectoryScanner`, y extraje la lógica de validación de `_is_path_allowed` para aclarar las restricciones de seguridad que previenen el "escape" del sandbox durante el recorrido de disco.
-- `2026-11-02T04:27:46` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_build_payload` y `_extract_text_from_gemini_json` para usar guard clauses, y añade docstrings técnicos detallando las precondiciones de seguridad de las funciones críticas.
-- `2026-11-02T04:18:50` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_process_folder_entry` y `parse_registry_csv` añadiendo validaciones explícitas de entrada (`None`/vacíos) y protegiendo el uso de `os.path.splitext` y `Path` frente a entradas mal formadas o rutas excesivamente largas, previniendo excepciones no capturadas.

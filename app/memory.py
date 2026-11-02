@@ -326,7 +326,6 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
     """Solicita un handle de Win32 con permisos específicos para interactuar con un proceso."""
     if WindowsAPI.kernel32 is None: return None
     try:
-        # OpenProcess devuelve un HANDLE (void*) o 0 en fallo
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
         if not handle or handle == INVALID_HANDLE_VALUE:
             return None
@@ -373,7 +372,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     enum_procs = WindowsAPI.psapi.EnumProcesses
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     
-    MAX_PIDS = 4096
+    MAX_PIDS = 1024
     pids = (wintypes.DWORD * MAX_PIDS)()
     cb_needed = wintypes.DWORD(0)
     
@@ -382,25 +381,22 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
+    path_buf = ctypes.create_unicode_buffer(512)
     
     for i in range(count):
         pid = int(pids[i])
-        if pid <= 0 or _is_system_process(pid):
+        if pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid():
             continue
         
+        h_process = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
+        if not h_process: continue
+        
         try:
-            path_buf = ctypes.create_unicode_buffer(1024)
-            h_process = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
-            if not h_process: continue
-            
-            try:
-                ws = _query_working_set_bytes(h_process, pmc)
-                if ws is None: continue
+            ws = _query_working_set_bytes(h_process, pmc)
+            if ws:
                 yield ProcessMemory(f"PID {pid}", pid, ws)
-            finally:
-                WindowsAPI.kernel32.CloseHandle(h_process)
-        except Exception:
-            continue
+        finally:
+            WindowsAPI.kernel32.CloseHandle(h_process)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna una lista ordenada de procesos según su consumo, con caché de 60 segundos."""
@@ -460,7 +456,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     path_buf = ctypes.create_unicode_buffer(1024)
     h_process = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
-    # Doble check de seguridad defensiva: verificar que el handle sea realmente seguro antes de actuar
     if not h_process:
         return False, "Acceso denegado o proceso en zona restringida."
 
