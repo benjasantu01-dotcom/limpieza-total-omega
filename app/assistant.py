@@ -372,7 +372,7 @@ def _validate_response_length(text: Any) -> str:
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     """Verifica recursivamente que la estructura sea plana y contenga tipos permitidos para el payload JSON."""
     if depth > _MAX_NESTING_DEPTH: return False
-    if isinstance(val, (int, float, bool)) or val is None: return True
+    if val is None or isinstance(val, (int, float, bool)): return True
     if isinstance(val, str): return _ensure_safe_text(val)
     if isinstance(val, (list, tuple)):
         if len(val) > _MAX_COLLECTION_SIZE: return False
