@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 60
+- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 250
+- Sin respuesta de la IA (error o límite): 251
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 74 | 8 | 23 | 7 | 152 |
-| 2026-11-02 | 96 | 5 | 37 | 4 | 98 |
+| 2026-11-01 | 73 | 7 | 22 | 7 | 151 |
+| 2026-11-02 | 98 | 5 | 37 | 4 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **37**
+- robustez ante casos límite: **35**
 - rendimiento: **34**
-- robustez ante casos límite: **33**
-- seguridad defensiva: **28**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,18 +33,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **18**
 - `healthscore.py`: **15**
 - `quarantine.py`: **15**
+- `diskreport.py`: **15**
 - `browser.py`: **14**
 - `memory.py`: **14**
-- `diskreport.py`: **14**
 - `settings.py`: **13**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `scanner.py`: **11**
-- `organizer.py`: **10**
+- `organizer.py`: **9**
 - `startup.py`: **8**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T10:16:29` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `_collect_summary_data` y `walk_files` ante la posibilidad de que el sistema de archivos cambie durante el escaneo (Race Conditions), asegurando que los tamaños de archivo (`st_size`) sean validados antes de procesarlos para evitar excepciones de desbordamiento o valores negativos inesperados.
+- `2026-11-02T10:15:22` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` para prevenir fallos silenciosos y operaciones en rutas mal formadas, incorporando validación explícita mediante `is_safe_to_modify` y manejo estricto de tipos antes de interactuar con el sistema de archivos.
 - `2026-11-02T10:06:21` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la ingesta y validación de datos del `SystemContext`, añadiendo un chequeo explícito de tipos para evitar excepciones inesperadas cuando `source` contiene objetos malformados, y mejorando la resiliencia en `_validate_and_sanitize_data` al manejar atributos de forma más defensiva.
 - `2026-11-02T10:05:32` **settings.py** (rendimiento): Optimizé la gestión de caché de `_SettingsManager` eliminando el cálculo innecesario del hash SHA256 durante la lectura y escritura, ya que la combinación de `mtime` y `st_size` es suficiente y mucho más eficiente para detectar cambios en el archivo de configuración.
 - `2026-11-02T10:05:02` **scanner.py** (rendimiento): Se optimizó el rendimiento del motor de escaneo reemplazando las múltiples llamadas a `os.path.abspath` y `os.path.normcase` dentro del bucle crítico por el uso de `entry.path` (que ya está normalizado por el sistema operativo en `os.scandir`), reduciendo la redundancia de cálculo de rutas y mejorando la velocidad de procesamiento de directorios profundos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T09:03:20` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos a las clases `ExtStats`, `GlobalStats` y `FolderMetrics`, y clarifiqué la lógica de `_is_reparse_point` y `walk_files` mediante la eliminación de comentarios redundantes y la mejora de la semántica en el manejo de rutas.
 - `2026-11-02T08:54:37` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `DirectoryScanner`, aclarando el propósito de la recursión defensiva y el uso de estados de control para evitar ciclos.
 - `2026-11-02T08:54:26` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos para las funciones de dibujo y se normalizaron los tipos de parámetros mediante Type Hints más precisos, facilitando la comprensión de la lógica geométrica del Canvas sin alterar la funcionalidad.
-- `2026-11-02T08:53:54` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de docstrings descriptivos en funciones clave y la estandarización de type hints en los decoradores de seguridad, facilitando la comprensión del flujo de datos sin alterar la lógica.
-- `2026-11-02T08:44:23` **settings.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en la función `_is_structure_valid` para prevenir condiciones de carrera y ataques de desbordamiento mediante la comprobación estricta de tipos y valores, evitando que valores `None` o estructuras malformadas contaminen el estado de la aplicación.

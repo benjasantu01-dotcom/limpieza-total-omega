@@ -289,8 +289,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(Path(entry.path))
                         elif entry.is_file():
-                            if st.st_size >= 0:
-                                yield Path(entry.path), st.st_size
+                            size = st.st_size
+                            if isinstance(size, int) and size >= 0:
+                                yield Path(entry.path), size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, PermissionError, NotADirectoryError):
@@ -354,20 +355,18 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            if not isinstance(size, int) or size < 0: continue
-            
-            _, ext = os.path.splitext(path.name)
-            ext_normalized = ext.lower() if ext else "(sin extensión)"
-            stats.register_file(size, ext_normalized)
-            
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif top_heap and size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-        except (AttributeError, TypeError):
+        if not isinstance(size, int) or size < 0:
             continue
+            
+        _, ext = os.path.splitext(path.name)
+        ext_normalized = ext.lower() if ext else "(sin extensión)"
+        stats.register_file(size, ext_normalized)
+        
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif top_heap and size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
