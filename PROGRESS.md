@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **143** (28.4% de aceptación)
+- Mejoras aceptadas: **144** (28.6% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 292
+- Sin respuesta de la IA (error o límite): 288
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 23 | 2 | 6 | 5 | 94 |
+| 2026-10-31 | 23 | 2 | 6 | 5 | 90 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 13 | 1 | 5 | 1 | 4 |
+| 2026-11-02 | 14 | 1 | 8 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **32**
-- rendimiento: **31**
+- rendimiento: **32**
 - legibilidad y documentación: **28**
 - robustez ante casos límite: **27**
 - seguridad defensiva: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **17**
+- `safety.py`: **18**
 - `assistant.py`: **14**
 - `healthscore.py`: **13**
 - `memory.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T01:04:19` **safety.py** (rendimiento): Se optimizó el rendimiento de `_get_file_id` reemplazando la creación de manejadores de archivos (`CreateFileW`) por una consulta ligera a metadatos de archivo (`GetFileAttributesExW` combinado con la lógica existente de caché), reduciendo drásticamente el costo de I/O y el riesgo de bloqueos al validar rutas masivamente.
 - `2026-11-02T00:55:39` **quarantine.py** (rendimiento): Optimicé el rendimiento de `quarantine.py` implementando una estrategia de "Lazy Loading" más eficiente y evitando consultas innecesarias al sistema de archivos (`stat()`) mediante una verificación de caché previa en `load_manifest`, reduciendo el I/O en llamadas repetitivas.
 - `2026-11-02T00:54:49` **memory.py** (rendimiento): Se optimizó el acceso a las APIs de Windows en `_iter_process_memory` mediante la pre-obtención de los punteros a `EnumProcesses` y `GetModuleFileNameExW` (vía `kernel32` y `psapi`), reduciendo la sobrecarga de consultas repetitivas al diccionario `ctypes.windll` dentro del bucle de iteración de procesos, lo cual mejora la latencia de la recolección de métricas.
 - `2026-11-02T00:44:22` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de búsquedas innecesarias en el diccionario `WEIGHTS` y la pre-computación de las sumas de pesos, evitando el acceso a diccionarios dentro de los bucles críticos de procesamiento.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T00:03:21` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en la clase `DirectoryScanner` y la estandarización de type hints, clarificando la intención detrás de la lógica de recursión y filtrado defensivo.
 - `2026-11-02T00:02:48` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de manipulación de color y geometría, clarificando los dominios de entrada y los comportamientos ante errores (defensive programming), cumpliendo así con el enfoque de legibilidad.
 - `2026-11-01T14:44:02` **scanner.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos y estados en `_get_file_attributes` y `_safe_stat` para prevenir errores de ejecución ante archivos inexistentes, inaccesibles o bloqueados, asegurando que el escáner no aborte ante condiciones de sistema transitorias.
-- `2026-11-01T14:43:33` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `ensure_safe_to_modify` para incluir un manejo de errores más granular mediante el uso de bloques `try-except` específicos durante las validaciones de `pathlib` y de sistema, evitando el silenciamiento de excepciones inesperadas y garantizando que las fallas de acceso se traduzcan correctamente a `UnsafePathError` con su código correspondiente.

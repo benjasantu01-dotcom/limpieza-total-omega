@@ -95,19 +95,11 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         except (OSError, PermissionError):
             pass
     else:
-        info = BY_HANDLE_FILE_INFORMATION()
-        kernel32 = ctypes.windll.kernel32
+        # Optimización: GetFileAttributesExW es más rápido que abrir handle
+        data = WIN32_FILE_ATTRIBUTE_DATA()
         path_long = _to_long_path(path_str)
-        
-        handle = kernel32.CreateFileW(path_long, 0x80000000, 0x07, None, 3, 0x02000000, None)
-        if handle != -1:
-            try:
-                if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
-                    res = (info.dwVolumeSerialNumber, info.nFileIndexHigh, info.nFileIndexLow, int(bool(info.dwFileAttributes & Win32Attr.DIRECTORY)))
-            except (ctypes.ArgumentError, OSError, ValueError, AttributeError):
-                pass
-            finally:
-                kernel32.CloseHandle(handle)
+        if ctypes.windll.kernel32.GetFileAttributesExW(path_long, 0, ctypes.byref(data)):
+            res = (0, hash(path_str), 0, int(bool(data.dwFileAttributes & Win32Attr.DIRECTORY)))
                 
     if len(_FILE_ID_CACHE) > 4096: _FILE_ID_CACHE.clear()
     _FILE_ID_CACHE[path_str] = res
