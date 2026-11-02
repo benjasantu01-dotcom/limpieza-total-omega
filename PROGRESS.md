@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **143** (28.4% de aceptación)
+- Mejoras aceptadas: **142** (28.2% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 293
+- Sin respuesta de la IA (error o límite): 292
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 31 | 3 | 8 | 6 | 98 |
+| 2026-10-31 | 28 | 3 | 8 | 6 | 97 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 5 | 1 | 1 | 0 | 1 |
+| 2026-11-02 | 7 | 1 | 3 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **34**
 - manejo de errores y validación de entradas: **32**
+- robustez ante casos límite: **31**
+- legibilidad y documentación: **27**
 - seguridad defensiva: **26**
 - rendimiento: **26**
-- legibilidad y documentación: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
-- `assistant.py`: **15**
+- `assistant.py`: **14**
 - `healthscore.py`: **13**
 - `memory.py`: **13**
-- `browser.py`: **11**
-- `scanner.py`: **11**
+- `scanner.py`: **12**
+- `quarantine.py`: **11**
 - `settings.py`: **10**
-- `quarantine.py`: **10**
 - `startup.py`: **10**
-- `diskreport.py`: **9**
+- `browser.py`: **10**
 - `organizer.py`: **8**
+- `diskreport.py`: **8**
 - `branding.py`: **8**
 - `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T00:24:06` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la lógica de escaneo mediante docstrings enriquecidos, type hints más específicos para las heurísticas y la adición de una constante `FILE_ATTRIBUTE_MASK` para centralizar la lógica de filtrado de atributos de sistema, facilitando la comprensión del flujo de seguridad sin alterar el comportamiento.
+- `2026-11-02T00:23:16` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la documentación de los parámetros de `QuarantineItem` y la unificación de la lógica de reintento en las operaciones críticas de I/O, consolidando la robustez frente a fallos transitorios en el sistema de archivos.
 - `2026-11-02T00:14:53` **organizer.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos, tipado de retornos explícito y simplificación de la lógica condicional en funciones críticas, alineando el código con el enfoque de documentación requerido.
 - `2026-11-02T00:14:38` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la documentación explícita de las constantes de la API de Windows, la clarificación del flujo de `_iter_process_memory` y la adición de Type Hints detallados en funciones que gestionan handles y estructuras nativas, facilitando auditorías de seguridad futuras.
 - `2026-11-02T00:03:51` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con sus parámetros, tipos y comportamiento, además de refactorizar el bucle de `walk_files` para clarificar la lógica de exclusión de enlaces y archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T14:23:07` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `walk_files` y `largest_folders` validando la existencia de `entry.path` y capturando excepciones de acceso al filesystem de manera más específica para evitar la interrupción silenciosa del escaneo ante permisos restringidos o rutas volátiles.
 - `2026-11-01T14:14:34` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `ingest` y `_validate_and_sanitize_data` mediante la captura explícita de excepciones y una validación defensiva más estricta sobre el tipo de `source`, evitando que valores no esperados (como un objeto inesperado o None) causen fallos silenciosos o cuelgues del proceso de análisis.
 - `2026-11-01T12:52:09` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_valid_registry_path` y `_extract_quoted_path` al asegurar que cualquier ruta proveniente del registro sea validada contra `is_protected_path` antes de ser procesada, previniendo la exposición accidental de rutas del sistema que podrían haber escapado a filtros previos.
-- `2026-11-01T12:51:29` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_is_valid_path_structure` y `_is_safe_entry` al integrar una validación de rutas absolutas mediante `os.path.abspath`, evitando riesgos por rutas relativas maliciosas o ambiguas, y reforzando la detección de caracteres nulos en los nombres de archivo mediante el uso de `os.path.basename` para separar la validación del nombre de la ruta completa.
-- `2026-11-01T12:51:04` **safety.py** (seguridad defensiva): Mejoré la robustez de `_is_file_owned_by_system` implementando un chequeo directo contra el Security Identifier (SID) conocido de "SYSTEM" (S-1-5-18) y "LOCAL SERVICE" (S-1-5-19), asegurando que cualquier archivo con propiedad crítica del kernel sea bloqueado preventivamente antes de cualquier intento de manipulación.

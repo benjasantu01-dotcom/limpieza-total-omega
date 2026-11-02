@@ -150,7 +150,7 @@ def _is_filesystem_read_only(path: Path) -> bool:
         return True
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
-    """Ejecuta operaciones I/O con estrategia de reintento exponencial."""
+    """Ejecuta operaciones I/O con estrategia de reintento exponencial frente a bloqueos."""
     max_retries: int = 3
     for i in range(max_retries):
         try:
@@ -188,7 +188,19 @@ def _is_file_exclusive(path: Path) -> bool:
 
 @dataclass
 class QuarantineItem:
-    """Entidad inmutable que encapsula metadatos para la auditoría de cuarentena."""
+    """
+    Entidad inmutable que encapsula metadatos para la auditoría de cuarentena.
+    
+    Attributes:
+        item_id: Identificador único del registro.
+        original_path: Ruta original antes de la cuarentena.
+        stored_name: Nombre del archivo dentro del sandbox.
+        size_bytes: Tamaño en bytes para validación.
+        reason: Descripción del motivo del aislamiento.
+        quarantined_at: Timestamp de la operación.
+        sha256: Hash para verificación de integridad.
+        file_inode: Número de inodo para prevención de TOCTOU.
+    """
     item_id: str
     original_path: str
     stored_name: str

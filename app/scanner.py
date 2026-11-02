@@ -27,6 +27,7 @@ logger: Final = logging.getLogger(__name__)
 
 # Constantes de Win32 API para la identificación precisa de estructuras de archivos
 FILE_ATTRIBUTE_REPARSE_POINT: Final = 0x400
+FILE_ATTRIBUTE_DIRECTORY: Final = 0x10
 ERROR_SHARING_VIOLATION: Final = 32
 
 class ScannerLimits(NamedTuple):
@@ -48,6 +49,9 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Protocolo de interfaz para definir una nueva heurística de seguridad.
+    
+    Cada chequeo debe recibir el contexto del archivo y retornar un objeto 
+    Suspicion si se detecta un riesgo, o None en caso contrario.
     """
     def __call__(
         self, 
