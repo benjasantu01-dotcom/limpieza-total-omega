@@ -82,7 +82,7 @@ def _is_reparse_point(path: Path) -> bool:
             FILE_ATTRIBUTE_REPARSE_POINT = 0x0400
             # Capturar posibles fallos de acceso o rutas mal formadas antes de llamar a la API
             attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-            if attrs == -1: return False
+            if attrs == -1 or attrs == 0xFFFFFFFF: return False
             return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
         return path.is_symlink()
     except (AttributeError, OSError, TypeError, ImportError):
@@ -316,7 +316,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(path)
+                                if os.access(path, os.R_OK):
+                                    stack.append(path)
                         elif entry.is_file():
                             yield path, st.st_size
                     except (OSError, PermissionError, FileNotFoundError, RuntimeError, AttributeError):

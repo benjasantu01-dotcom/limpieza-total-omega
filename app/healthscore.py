@@ -300,9 +300,12 @@ class SystemMetrics:
         all_keys = _VALIDATION_KEYS + ("quarantined_count",)
         for field_name in all_keys:
             raw_val = getattr(self, field_name, 0.0)
-            val = raw_val if isinstance(raw_val, (int, float)) and not isinstance(raw_val, bool) else 0.0
+            # Garantizar que sea un número real no booleano
+            if not isinstance(raw_val, (int, float)) or isinstance(raw_val, bool):
+                raw_val = 0.0
+            
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
-            sanitized = _validate_numeric(val, 0.0, min_v, max_v)
+            sanitized = _validate_numeric(raw_val, 0.0, min_v, max_v)
             setattr(self, field_name, sanitized)
 
     @property
@@ -386,9 +389,9 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
     # 2. Ejecución de Pipeline
     for entry in PIPELINE_DEFINITIONS:
         try:
-            if entry.scorer is None: continue
+            if not entry or not entry.scorer: continue
             area_ratio = entry.scorer(metrics)
-            recs = _evaluate_rules(metrics, entry.rules, area_ratio)
+            recs = _evaluate_rules(metrics, entry.rules or (), area_ratio)
             recommendations.extend(recs)
             
             # Cálculo directo ponderado

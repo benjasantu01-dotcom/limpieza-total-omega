@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **169** (33.5% de aceptación)
+- Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 56
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 254
+- Sin respuesta de la IA (error o límite): 252
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 0 | 0 | 0 | 0 | 18 |
+| 2026-10-31 | 0 | 0 | 0 | 0 | 14 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 62 | 5 | 24 | 3 | 42 |
+| 2026-11-02 | 64 | 5 | 24 | 3 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **36**
+- robustez ante casos límite: **36**
 - manejo de errores y validación de entradas: **35**
 - legibilidad y documentación: **34**
-- robustez ante casos límite: **34**
 - seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **19**
 - `assistant.py`: **18**
+- `healthscore.py`: **16**
 - `browser.py`: **15**
-- `healthscore.py`: **15**
 - `quarantine.py`: **14**
+- `diskreport.py`: **13**
 - `scanner.py`: **13**
 - `memory.py`: **13**
-- `diskreport.py`: **12**
 - `settings.py`: **12**
 - `organizer.py`: **10**
 - `startup.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T05:50:01` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante una validación más estricta en `SystemMetrics.validate`, asegurando que valores como `inf` o `nan` no solo sean detectados por `math.isfinite` sino normalizados de forma segura a los mínimos definidos, además de proteger la integridad del `PipelineEntry` contra la posible falta de funciones de score (`scorer`) o reglas (`rules`).
+- `2026-11-02T05:49:25` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `walk_files` para manejar correctamente errores de acceso en rutas con caracteres especiales o permisos restringidos que podrían interrumpir el escaneo, añadiendo una comprobación adicional mediante `os.access` y una gestión de excepciones más granular en el acceso a atributos.
 - `2026-11-02T05:30:11` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo reemplazando la creación repetitiva de objetos `Path` en el bucle principal de `Scanner.process_entry` por operaciones directas sobre `entry.path` (cadena), evitando el alto costo de instanciación y resolución de rutas en cada iteración del sistema de archivos.
 - `2026-11-02T05:29:59` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_attrs` y `is_protected_path` centralizando la normalización de rutas y reduciendo llamadas redundantes al sistema de archivos, además de reemplazar búsquedas lineales por `any()` con verificaciones directas en el set precalculado `_get_system_root_paths`.
 - `2026-11-02T05:28:58` **quarantine.py** (rendimiento): Se optimizó el acceso a atributos de archivo y la gestión del manifiesto mediante la implementación de una caché con tiempo de vida (TTL) más agresivo y una validación de estado más eficiente, evitando llamadas innecesarias al sistema de archivos durante iteraciones de listas largas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T04:58:37` **settings.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo documentando el propósito de la lógica de validación, clarificando la estructura del diccionario `DEFAULTS` mediante una alineación más limpia y sustituyendo nombres de variables internos opacos (como `k` y `v`) por descriptores funcionales (`key_enum`, `validated_val`) para facilitar el seguimiento del flujo de datos.
 - `2026-11-02T04:49:58` **safety.py** (legibilidad y documentación): Se ha mejorado significativamente la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_volume_integrity` y `_validate_preconditions`, reemplazando bloques de condicionales anidados con una estrategia de validaciones atómicas que mejoran la claridad y el manejo de excepciones.
 - `2026-11-02T04:49:05` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_isolation_request` para reducir el anidamiento y la complejidad ciclomática, utilizando guards clauses claros que facilitan la auditoría del flujo de seguridad.
-- `2026-11-02T04:48:20` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de docstrings descriptivos, se ha clarificado la intención en la lógica de las funciones de validación mediante nombres de variables más precisos y se ha extraído la lógica de chequeo de atributos de Windows a una constante estructurada para mejorar la legibilidad y el mantenimiento.
-- `2026-11-02T04:39:14` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en `SystemMetrics.validate` y `_compute_cached`, y reorganicé la estructura de `_compute_cached` para separar claramente la preparación de datos del procesamiento del pipeline, facilitando la auditoría de seguridad del flujo.
