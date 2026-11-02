@@ -9,35 +9,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **142** (28.2% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 292
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 291
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 28 | 3 | 8 | 6 | 97 |
+| 2026-10-31 | 26 | 3 | 7 | 6 | 96 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 7 | 1 | 3 | 0 | 1 |
+| 2026-11-02 | 9 | 1 | 4 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **32**
-- robustez ante casos límite: **31**
-- legibilidad y documentación: **27**
+- robustez ante casos límite: **29**
+- legibilidad y documentación: **28**
+- rendimiento: **27**
 - seguridad defensiva: **26**
-- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
-- `assistant.py`: **14**
-- `healthscore.py`: **13**
-- `memory.py`: **13**
+- `assistant.py`: **15**
 - `scanner.py`: **12**
+- `healthscore.py`: **12**
+- `memory.py`: **12**
 - `quarantine.py`: **11**
+- `startup.py`: **11**
 - `settings.py`: **10**
-- `startup.py`: **10**
 - `browser.py`: **10**
 - `organizer.py`: **8**
 - `diskreport.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T00:34:24` **assistant.py** (rendimiento): Se optimizó el acceso a `SystemContext` mediante la pre-compilación y cacheo estático del mapa de criterios de salud, evitando la regeneración de listas y búsquedas por clave en cada evaluación del estado del sistema.
+- `2026-11-02T00:33:42` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante la conversión de comentarios de bloque a `docstrings` completos, además de añadir tipos de retorno explícitos en funciones donde faltaban, garantizando que el diseño del ciclo de vida de una entrada sea claro para cualquier colaborador.
 - `2026-11-02T00:24:06` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la lógica de escaneo mediante docstrings enriquecidos, type hints más específicos para las heurísticas y la adición de una constante `FILE_ATTRIBUTE_MASK` para centralizar la lógica de filtrado de atributos de sistema, facilitando la comprensión del flujo de seguridad sin alterar el comportamiento.
 - `2026-11-02T00:23:16` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la documentación de los parámetros de `QuarantineItem` y la unificación de la lógica de reintento en las operaciones críticas de I/O, consolidando la robustez frente a fallos transitorios en el sistema de archivos.
 - `2026-11-02T00:14:53` **organizer.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos, tipado de retornos explícito y simplificación de la lógica condicional en funciones críticas, alineando el código con el enfoque de documentación requerido.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-01T14:23:45` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y la integridad del `PipelineEntry` mediante la adición de chequeos de `None` y tipos antes de las operaciones, asegurando que el motor de scoring no procese datos corruptos en tiempo de ejecución.
 - `2026-11-01T14:23:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `group_by_size` mediante la validación explícita de entradas (`None` o tipos incorrectos) y el manejo preventivo de excepciones durante el acceso a atributos de archivo, evitando fallos silenciosos al procesar rutas inaccesibles o malformadas.
 - `2026-11-01T14:23:07` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `walk_files` y `largest_folders` validando la existencia de `entry.path` y capturando excepciones de acceso al filesystem de manera más específica para evitar la interrupción silenciosa del escaneo ante permisos restringidos o rutas volátiles.
-- `2026-11-01T14:14:34` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `ingest` y `_validate_and_sanitize_data` mediante la captura explícita de excepciones y una validación defensiva más estricta sobre el tipo de `source`, evitando que valores no esperados (como un objeto inesperado o None) causen fallos silenciosos o cuelgues del proceso de análisis.
-- `2026-11-01T12:52:09` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_valid_registry_path` y `_extract_quoted_path` al asegurar que cualquier ruta proveniente del registro sea validada contra `is_protected_path` antes de ser procesada, previniendo la exposición accidental de rutas del sistema que podrían haber escapado a filtros previos.

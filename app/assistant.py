@@ -245,10 +245,11 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
-# Mapa para acceso rápido por clave
-_CRITERIOS_MAP: Final[dict[str, list[ProblemCriterion]]] = {}
-for c in _CRITERIOS_SALUD:
-    _CRITERIOS_MAP.setdefault(c.metric_key, []).append(c)
+# Mapa inmutable pre-calculado para acceso eficiente en runtime
+_CRITERIOS_MAP: Final[dict[str, tuple[ProblemCriterion, ...]]] = {}
+for _c in _CRITERIOS_SALUD:
+    _CRITERIOS_MAP.setdefault(_c.metric_key, []).append(_c)
+_CRITERIOS_MAP = {k: tuple(v) for k, v in _CRITERIOS_MAP.items()}
 
 class AreaExplanation(NamedTuple):
     """Mapeo para descripciones pedagógicas de áreas de la aplicación."""
@@ -395,14 +396,13 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     """Valida que el valor numérico esté contenido estrictamente dentro de los límites definidos en su especificación."""
     return spec.min_val <= val <= spec.max_val
 
-@lru_cache(maxsize=16)
+@lru_cache(maxsize=128)
 def _evaluate_active_problems(metrics_tuple: tuple) -> tuple[str, ...]:
     """Evalúa los problemas activos del sistema a partir de un conjunto de métricas."""
-    metrics_dict = dict(metrics_tuple)
     results = []
-    for key, val in metrics_dict.items():
+    for key, val in metrics_tuple:
         if val == -1.0: continue
-        for criterion in _CRITERIOS_MAP.get(key, []):
+        for criterion in _CRITERIOS_MAP.get(key, ()):
             msg = criterion.format_if_triggered(val)
             if msg: results.append(msg)
     return tuple(results)
@@ -437,6 +437,7 @@ class SystemContext:
         """Versión cacheada de los problemas de salud detectados basándose en datos actuales."""
         if self.analyzed is not True: return ()
         snap = self.metrics_snapshot
+        # Pasamos tupla de tuplas al cache para evitar problemas de mutabilidad
         key_vals = tuple((k, snap.get(k, -1.0)) for k in _CRITERIOS_MAP.keys())
         return _evaluate_active_problems(key_vals)
 
