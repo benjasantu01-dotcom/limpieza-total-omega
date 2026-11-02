@@ -430,8 +430,10 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     try:
         lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+        # Usamos items del breakdown y recuperamos el peso desde PIPELINE_DEFINITIONS para evitar dict lookup repetitivo
+        weights_map = {entry.area: entry.weight for entry in PIPELINE_DEFINITIONS}
         for area, val in sorted(result.breakdown.items()):
-            weight = WEIGHTS.get(area, 10)
+            weight = weights_map.get(area, 10)
             bar = _render_bar(val, weight)
             lines.append(f"  {area.capitalize():<12} {val:>2}/{weight:<2} [{bar}]")
         
