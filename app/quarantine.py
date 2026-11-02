@@ -448,8 +448,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         return []
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    try: base_path: Path = quarantine_dir(base)
-    except (OSError, PermissionError) as e: raise OSError(f"Sandbox inaccesible para guardar manifiesto: {e}")
+    base_path: Path = quarantine_dir(base)
     target_path: Path = _manifest_path(base_path)
     if not isinstance(items, list): raise ValueError("El manifiesto debe ser una lista.")
     try:
@@ -590,8 +589,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         return h, i
 
 def _register_quarantine_item(destination: Path, source_path: Path, file_hash: str, file_inode: Inode, reason: str, original_size: int, base: PathLike) -> QuarantineItem:
+    if destination is None or not destination.exists(): raise RuntimeError("Falla: intento de registrar archivo inexistente.")
     try:
-        if destination is None or not destination.exists(): raise RuntimeError("Falla: intento de registrar archivo inexistente.")
         items_list: List[QuarantineItem] = load_manifest(base)
         dest_stat = destination.stat()
         if dest_stat.st_ino != file_inode or dest_stat.st_nlink > 1: raise RuntimeError("Inconsistencia crítica: mismatch de inodo o enlace.")
@@ -604,7 +603,7 @@ def _register_quarantine_item(destination: Path, source_path: Path, file_hash: s
         save_manifest(items_list, base)
         return quarantine_item
     except (OSError, IOError, ValueError, RuntimeError) as e:
-        if destination and destination.exists(): _safe_unlink(destination)
+        if destination.exists(): _safe_unlink(destination)
         raise RuntimeError(f"Falla al registrar ítem en manifiesto: {e}")
 
 def _validate_input_path(source: PathLike) -> Path:

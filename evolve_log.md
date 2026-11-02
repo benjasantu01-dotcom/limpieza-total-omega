@@ -769,3 +769,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-02T03:58:45` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-02T03:58:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T03:58:45` Corrida terminada. Total usado hoy: 96.
+- `2026-11-02T04:06:46` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-11-02T04:07:14` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-02T04:07:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-02T04:08:16` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` mediante la validación explícita de `base_path` antes de la serialización y refiné la captura de excepciones en `_register_quarantine_item` para evitar registros corruptos en estados de error parciales.
+- `2026-11-02T04:08:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-02T04:08:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T04:08:20` Corrida terminada. Total usado hoy: 100.
