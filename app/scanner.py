@@ -30,6 +30,7 @@ FILE_ATTRIBUTE_REPARSE_POINT: Final = 0x400
 FILE_ATTRIBUTE_DIRECTORY: Final = 0x10
 ERROR_SHARING_VIOLATION: Final = 32
 ERROR_ACCESS_DENIED: Final = 5
+ERROR_FILE_NOT_FOUND: Final = 2
 
 class ScannerLimits(NamedTuple):
     """Límites operativos del motor para prevenir riesgos de recursión y desbordamiento."""
@@ -138,7 +139,8 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
-        if getattr(e, 'winerror', None) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
+        # Manejo de casos límite: archivos en uso (sharing violation) o sin permisos
+        if getattr(e, 'winerror', None) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             return None
         return None
     except (PermissionError, FileNotFoundError):

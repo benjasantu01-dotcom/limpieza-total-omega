@@ -106,13 +106,15 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         except (OSError, PermissionError):
             pass
     else:
-        kernel32 = ctypes.windll.kernel32
-        handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
-        if handle != -1:
-            fid = FILE_ID_INFO()
-            if kernel32.GetFileInformationByHandleEx(handle, FILE_ID_INFO_LEVEL, ctypes.byref(fid), ctypes.sizeof(fid)):
-                res = (int(fid.VolumeSerialNumber), hash(bytes(fid.FileId.Identifier)), 0, 0)
-            kernel32.CloseHandle(handle)
+        # Validar existencia antes de crear el handle
+        if os.path.exists(_to_long_path(path_str)):
+            kernel32 = ctypes.windll.kernel32
+            handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
+            if handle != -1:
+                fid = FILE_ID_INFO()
+                if kernel32.GetFileInformationByHandleEx(handle, FILE_ID_INFO_LEVEL, ctypes.byref(fid), ctypes.sizeof(fid)):
+                    res = (int(fid.VolumeSerialNumber), hash(bytes(fid.FileId.Identifier)), 0, 0)
+                kernel32.CloseHandle(handle)
                 
     if len(_FILE_ID_CACHE) > 4096: _FILE_ID_CACHE.clear()
     _FILE_ID_CACHE[path_str] = res

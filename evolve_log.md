@@ -1267,3 +1267,10 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T10:31:17` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-11-02T10:31:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T10:31:17` Corrida terminada. Total usado hoy: 248.
+- `2026-11-02T10:35:10` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-11-02T10:35:52` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `purge_all` ante situaciones de concurrencia y acceso denegado, añadiendo un chequeo de existencia previo al borrado (TOCTOU) y garantizando que el `unlink` ocurra solo si el archivo persiste y está bajo control del sandbox, evitando errores no controlados al iterar sobre el directorio.
+- `2026-11-02T10:36:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-02T10:36:57` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante rutas inexistentes o mal formadas dentro de `_is_file_owned_by_system` y `_get_file_id`, añadiendo validaciones de existencia antes de llamar a funciones de bajo nivel que podrían lanzar excepciones críticas o fallar silenciosamente en entornos de Windows con archivos protegidos o bloqueados.
+- `2026-11-02T10:37:08` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré `_safe_stat` y `_is_valid_file_path` para manejar explícitamente archivos bloqueados por el sistema operativo o inaccesibles debido a permisos insuficientes, asegurando que el escáner no aborte y sea más resiliente ante archivos en uso durante el recorrido de disco.
+- `2026-11-02T10:37:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T10:37:08` Corrida terminada. Total usado hoy: 252.
