@@ -1170,3 +1170,10 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T08:35:14` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_in_use_by_system` implementando un manejo defensivo de errores durante la obtención de metadatos (`stat`) y atributos, asegurando que las excepciones del sistema (como archivos bloqueados por el kernel o con privilegios insuficientes) sean tratadas de forma segura y consistente sin abortar el flujo del programa.
 - `2026-11-02T08:35:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T08:35:14` Corrida terminada. Total usado hoy: 204.
+- `2026-11-02T08:42:30` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-11-02T08:42:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-02T08:43:44` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante situaciones de carrera (TOCTOU) y errores de validación, centralizando el manejo de excepciones para evitar que fallos parciales en la obtención de metadatos o estados de volumen detengan prematuramente procesos de escaneo.
+- `2026-11-02T08:44:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-02T08:44:23` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de entrada en la función `_is_structure_valid` para prevenir condiciones de carrera y ataques de desbordamiento mediante la comprobación estricta de tipos y valores, evitando que valores `None` o estructuras malformadas contaminen el estado de la aplicación.
+- `2026-11-02T08:44:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T08:44:23` Corrida terminada. Total usado hoy: 208.

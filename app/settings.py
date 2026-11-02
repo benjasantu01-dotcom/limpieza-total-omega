@@ -88,6 +88,7 @@ def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
 def _is_valid_type(val: Any, key: ConfigKey) -> bool:
     """Valida si el tipo del valor coincide con el esquema definido en DEFAULTS."""
     default_val = DEFAULTS.get(key.value)
+    if default_val is None: return False
     return isinstance(val, type(default_val))
 
 __all__ = [
@@ -364,6 +365,7 @@ def _is_structure_valid(data: Any) -> bool:
     """Verifica que el JSON parseado sea un diccionario de tamaño controlado con tipos conformes al esquema."""
     if not isinstance(data, dict) or len(data) > 64: return False
     for key_name, value in data.items():
+        # Rechazar explícitamente valores None y validar contra tipo de defecto
         if value is None: return False
         key_enum = _KEY_TO_ENUM.get(key_name)
         if not key_enum or not _is_valid_type(value, key_enum): return False
@@ -385,9 +387,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         
         data = json.loads(content.decode("utf-8", errors="strict"))
         if not _is_structure_valid(data): return None
-        
-        # Integridad básica: check hash si el archivo no ha cambiado
-        file_hash = hashlib.sha256(content).hexdigest()
         
         return data
     except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError, TypeError):
@@ -416,7 +415,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = _read_and_parse_json(primary_path)
             if data is not None:
                 settings = _coerce_and_verify(validate(data))
-                # Re-hash para caché
                 new_hash = hashlib.sha256(json.dumps(settings).encode()).hexdigest()
                 _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size, new_hash)
                 return settings

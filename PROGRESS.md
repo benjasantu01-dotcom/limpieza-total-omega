@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 58
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 248
+- Rechazadas por guardia de seguridad: 59
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 247
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 94 | 8 | 28 | 8 | 162 |
-| 2026-11-02 | 80 | 5 | 30 | 3 | 86 |
+| 2026-11-01 | 93 | 8 | 28 | 7 | 160 |
+| 2026-11-02 | 82 | 5 | 31 | 3 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **36**
-- rendimiento: **35**
+- manejo de errores y validación de entradas: **38**
+- rendimiento: **34**
 - seguridad defensiva: **33**
 - legibilidad y documentación: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `assistant.py`: **18**
 - `healthscore.py`: **16**
 - `quarantine.py`: **15**
 - `browser.py`: **15**
+- `settings.py`: **14**
 - `diskreport.py`: **14**
 - `memory.py`: **14**
-- `settings.py`: **13**
-- `branding.py`: **12**
 - `scanner.py`: **11**
+- `branding.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **9**
 - `duplicates.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T08:44:23` **settings.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en la función `_is_structure_valid` para prevenir condiciones de carrera y ataques de desbordamiento mediante la comprobación estricta de tipos y valores, evitando que valores `None` o estructuras malformadas contaminen el estado de la aplicación.
+- `2026-11-02T08:43:44` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante situaciones de carrera (TOCTOU) y errores de validación, centralizando el manejo de excepciones para evitar que fallos parciales en la obtención de metadatos o estados de volumen detengan prematuramente procesos de escaneo.
 - `2026-11-02T08:35:14` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use_by_system` implementando un manejo defensivo de errores durante la obtención de metadatos (`stat`) y atributos, asegurando que las excepciones del sistema (como archivos bloqueados por el kernel o con privilegios insuficientes) sean tratadas de forma segura y consistente sin abortar el flujo del programa.
 - `2026-11-02T08:34:09` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` capturando fallos potenciales en `ctypes` y conversiones de tipo, asegurando que cualquier entrada malformada (como tipos inesperados o fallos en la API de Windows) se maneje con excepciones específicas sin romper el bucle.
 - `2026-11-02T08:23:39` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del método `SystemMetrics.validate` y la función `compute_score` implementando una validación exhaustiva de los tipos de entrada y rangos, asegurando que cualquier dato malicioso o corrompido sea neutralizado antes de llegar al motor de cálculo (previniendo errores de propagación).
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T06:20:25` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en la ingesta de datos al añadir validación de profundidad y complejidad en `SystemContext.ingest`, previniendo inyecciones de estructuras de datos maliciosas antes de cualquier procesamiento.
 - `2026-11-02T06:10:35` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos corruptos o maliciosos agregando una verificación de integridad mediante una suma de comprobación simple (SHA-256) en `_read_and_parse_json` para prevenir inyecciones de datos que pudieran eludir la validación del esquema, y aseguré que los permisos de lectura sean estrictos (solo lectura por el dueño) antes de procesar el archivo.
 - `2026-11-02T06:09:56` **safety.py** (robustez ante casos límite): He implementado una validación de "bloqueo transaccional" mediante `GetFileInformationByHandleEx` con `FileIdInfo` para garantizar que la identidad física del archivo no ha cambiado entre la inspección inicial y la validación final, mitigando ataques de tipo TOCTOU (Time-of-Check to Time-of-Use) de forma más robusta que con `st_ino` en Windows.
-- `2026-11-02T06:01:47` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` al introducir un chequeo de pre-condición que valida el estado del sistema de archivos antes de iniciar la transferencia atómica, previniendo condiciones de carrera donde el archivo de origen pudiera ser eliminado o reemplazado durante la fase de validación inicial.
-- `2026-11-02T06:01:07` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_process_directory` implementando un manejo defensivo ante la profundidad de recursión, rutas con caracteres no decodificables y fallos de permisos específicos, asegurando que el proceso no aborte por errores en un único nodo del árbol de directorios.

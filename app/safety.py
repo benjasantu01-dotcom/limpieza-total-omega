@@ -105,7 +105,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         except (OSError, PermissionError):
             pass
     else:
-        # Mejora: Uso de GetFileInformationByHandleEx para una identidad única persistente
         kernel32 = ctypes.windll.kernel32
         handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
         if handle != -1:
@@ -1055,16 +1054,19 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
     if _is_file_in_use_by_system(str(p)):
         raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
     
-    state = SafetyState(
-        path=p,
-        descriptor=_get_security_descriptor(p),
-        stat_result=_get_path_stat_robust(p),
-        file_id=_get_file_id(str(p))
-    )
-    
-    if os.name == 'nt': 
-        _validate_ntfs_reparse_redirection(p, base)
-    _check_file_integrity(state)
+    try:
+        state = SafetyState(
+            path=p,
+            descriptor=_get_security_descriptor(p),
+            stat_result=_get_path_stat_robust(p),
+            file_id=_get_file_id(str(p))
+        )
+        
+        if os.name == 'nt': 
+            _validate_ntfs_reparse_redirection(p, base)
+        _check_file_integrity(state)
+    except (OSError, PermissionError, UnsafePathError) as e:
+        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     if path is None:
