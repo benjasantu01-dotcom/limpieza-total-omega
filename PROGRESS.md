@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 59
+- Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 247
+- Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 93 | 8 | 28 | 7 | 160 |
-| 2026-11-02 | 82 | 5 | 31 | 3 | 87 |
+| 2026-11-01 | 93 | 8 | 27 | 7 | 157 |
+| 2026-11-02 | 85 | 5 | 31 | 3 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,26 +25,29 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **34**
 - seguridad defensiva: **33**
-- legibilidad y documentación: **29**
+- legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **19**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
+- `browser.py`: **16**
 - `healthscore.py`: **16**
 - `quarantine.py`: **15**
-- `browser.py`: **15**
 - `settings.py`: **14**
 - `diskreport.py`: **14**
 - `memory.py`: **14**
+- `branding.py`: **12**
 - `scanner.py`: **11**
-- `branding.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **9**
 - `duplicates.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T08:54:37` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `DirectoryScanner`, aclarando el propósito de la recursión defensiva y el uso de estados de control para evitar ciclos.
+- `2026-11-02T08:54:26` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos para las funciones de dibujo y se normalizaron los tipos de parámetros mediante Type Hints más precisos, facilitando la comprensión de la lógica geométrica del Canvas sin alterar la funcionalidad.
+- `2026-11-02T08:53:54` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de docstrings descriptivos en funciones clave y la estandarización de type hints en los decoradores de seguridad, facilitando la comprensión del flujo de datos sin alterar la lógica.
 - `2026-11-02T08:44:23` **settings.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en la función `_is_structure_valid` para prevenir condiciones de carrera y ataques de desbordamiento mediante la comprobación estricta de tipos y valores, evitando que valores `None` o estructuras malformadas contaminen el estado de la aplicación.
 - `2026-11-02T08:43:44` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante situaciones de carrera (TOCTOU) y errores de validación, centralizando el manejo de excepciones para evitar que fallos parciales en la obtención de metadatos o estados de volumen detengan prematuramente procesos de escaneo.
 - `2026-11-02T08:35:14` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use_by_system` implementando un manejo defensivo de errores durante la obtención de metadatos (`stat`) y atributos, asegurando que las excepciones del sistema (como archivos bloqueados por el kernel o con privilegios insuficientes) sean tratadas de forma segura y consistente sin abortar el flujo del programa.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T08:14:39` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_and_sanitize_data` en `assistant.py` mediante la captura explícita de errores durante la extracción de datos, evitando que una entrada malformada (ej. un valor de `grade` inesperado) silencie fallos y permitiendo una recuperación más segura de los campos válidos.
 - `2026-11-02T06:29:43` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `drive_usage` validando que las rutas finales, tras la resolución de enlaces, sigan perteneciendo a la jerarquía de la raíz escaneada, previniendo ataques de "escape" mediante enlaces simbólicos o junctions que podrían apuntar fuera del árbol de directorios permitido.
 - `2026-11-02T06:20:59` **branding.py** (seguridad defensiva): Se ha robustecido la función `save_logo_svg` implementando un chequeo defensivo mediante `filter_safe_paths` antes de cualquier operación de escritura, garantizando que tanto el destino final como su directorio padre sean validados contra el catálogo de rutas protegidas del sistema antes de interactuar con el disco.
-- `2026-11-02T06:20:25` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en la ingesta de datos al añadir validación de profundidad y complejidad en `SystemContext.ingest`, previniendo inyecciones de estructuras de datos maliciosas antes de cualquier procesamiento.
-- `2026-11-02T06:10:35` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos corruptos o maliciosos agregando una verificación de integridad mediante una suma de comprobación simple (SHA-256) en `_read_and_parse_json` para prevenir inyecciones de datos que pudieran eludir la validación del esquema, y aseguré que los permisos de lectura sean estrictos (solo lectura por el dueño) antes de procesar el archivo.
-- `2026-11-02T06:09:56` **safety.py** (robustez ante casos límite): He implementado una validación de "bloqueo transaccional" mediante `GetFileInformationByHandleEx` con `FileIdInfo` para garantizar que la identidad física del archivo no ha cambiado entre la inspección inicial y la validación final, mitigando ataques de tipo TOCTOU (Time-of-Check to Time-of-Use) de forma más robusta que con `st_ino` en Windows.

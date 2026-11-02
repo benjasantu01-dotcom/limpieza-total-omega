@@ -153,7 +153,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
         return default
 
 def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador que valida que la consulta sea segura antes de pasarla a cualquier handler."""
+    """Decorador que garantiza que la entrada del usuario cumpla con los estándares de seguridad antes de procesarla."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not _ensure_safe_text(q):
@@ -163,8 +163,8 @@ def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Calla
 
 def _ensure_handler_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
-    Decorador para handlers de consulta que garantiza un contexto válido,
-    captura excepciones imprevistas y asegura que no se devuelvan respuestas vacías.
+    Decorador para handlers de consulta: valida que el contexto sea íntegro, 
+    captura excepciones en tiempo de ejecución y previene respuestas nulas.
     """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
@@ -207,7 +207,7 @@ class ProblemCriterion(NamedTuple):
     Attributes:
         metric_key: Clave en SystemContext.
         threshold: Valor límite para comparación.
-        operator: Opereador booleano ('<' o '>') para determinar el estado de riesgo.
+        operator: Operador booleano ('<' o '>') para determinar el estado de riesgo.
         message_format: Formato del mensaje (e.g., "{:.0f}% de RAM").
     """
     metric_key: str

@@ -76,7 +76,7 @@ class DirectoryScanner:
     def _is_path_allowed(self, path_str: str) -> bool:
         """
         Valida que la ruta esté dentro del sandbox y no sea un elemento protegido.
-        Garantiza que cualquier operación de lectura se mantenga en el scope definido.
+        Calcula la ruta real (resolved) para evitar ataques de bypass por enlaces.
         """
         if not path_str or _is_unc_path(path_str): return False
         try:
@@ -92,6 +92,11 @@ class DirectoryScanner:
             return False
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
+        """
+        Calcula el tamaño total de una carpeta de forma recursiva.
+        Implementa control de profundidad y seguimiento de inodos para prevenir
+        bucles infinitos generados por junctions o symlinks circulares.
+        """
         if not isinstance(root_path, str) or not root_path:
             return ScanResult(0, False)
             
