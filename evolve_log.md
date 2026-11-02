@@ -615,3 +615,4 @@
 - `2026-11-02T14:52:39` Corrida terminada. Total usado hoy: 350.
 - `2026-11-02T15:01:39` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-02T15:11:51` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-02T15:22:06` Presupuesto diario agotado (350 usados). Corte hasta mañana.
