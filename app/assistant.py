@@ -509,9 +509,9 @@ class SystemContext:
         
         try:
             g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
-            if (grade_val := self._clean_grade(g_val)):
+            if grade_val := self._clean_grade(g_val):
                 updates["grade"] = grade_val
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             pass
             
         return updates

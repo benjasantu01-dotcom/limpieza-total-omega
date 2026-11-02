@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 249
+- Sin respuesta de la IA (error o límite): 248
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 100 | 8 | 30 | 8 | 166 |
-| 2026-11-02 | 72 | 5 | 29 | 3 | 83 |
+| 2026-11-01 | 99 | 8 | 30 | 8 | 163 |
+| 2026-11-02 | 74 | 5 | 29 | 3 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **41**
 - rendimiento: **36**
-- legibilidad y documentación: **34**
+- legibilidad y documentación: **33**
 - seguridad defensiva: **33**
-- manejo de errores y validación de entradas: **28**
+- manejo de errores y validación de entradas: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **19**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
 - `quarantine.py`: **15**
 - `healthscore.py`: **15**
-- `memory.py`: **14**
 - `browser.py`: **14**
 - `settings.py`: **13**
 - `diskreport.py`: **13**
+- `memory.py`: **13**
 - `scanner.py`: **12**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `startup.py`: **10**
 - `organizer.py`: **10**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T08:14:56` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` utilizando `is_safe_to_modify` para verificar la ruta sin lanzar excepciones innecesarias antes de intentar la operación, siguiendo el patrón de diseño defensivo solicitado.
+- `2026-11-02T08:14:39` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_and_sanitize_data` en `assistant.py` mediante la captura explícita de errores durante la extracción de datos, evitando que una entrada malformada (ej. un valor de `grade` inesperado) silencie fallos y permitiendo una recuperación más segura de los campos válidos.
 - `2026-11-02T06:29:43` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `drive_usage` validando que las rutas finales, tras la resolución de enlaces, sigan perteneciendo a la jerarquía de la raíz escaneada, previniendo ataques de "escape" mediante enlaces simbólicos o junctions que podrían apuntar fuera del árbol de directorios permitido.
 - `2026-11-02T06:20:59` **branding.py** (seguridad defensiva): Se ha robustecido la función `save_logo_svg` implementando un chequeo defensivo mediante `filter_safe_paths` antes de cualquier operación de escritura, garantizando que tanto el destino final como su directorio padre sean validados contra el catálogo de rutas protegidas del sistema antes de interactuar con el disco.
 - `2026-11-02T06:20:25` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en la ingesta de datos al añadir validación de profundidad y complejidad en `SystemContext.ingest`, previniendo inyecciones de estructuras de datos maliciosas antes de cualquier procesamiento.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T05:30:11` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo reemplazando la creación repetitiva de objetos `Path` en el bucle principal de `Scanner.process_entry` por operaciones directas sobre `entry.path` (cadena), evitando el alto costo de instanciación y resolución de rutas en cada iteración del sistema de archivos.
 - `2026-11-02T05:29:59` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_attrs` y `is_protected_path` centralizando la normalización de rutas y reduciendo llamadas redundantes al sistema de archivos, además de reemplazar búsquedas lineales por `any()` con verificaciones directas en el set precalculado `_get_system_root_paths`.
 - `2026-11-02T05:28:58` **quarantine.py** (rendimiento): Se optimizó el acceso a atributos de archivo y la gestión del manifiesto mediante la implementación de una caché con tiempo de vida (TTL) más agresivo y una validación de estado más eficiente, evitando llamadas innecesarias al sistema de archivos durante iteraciones de listas largas.
-- `2026-11-02T05:21:11` **organizer.py** (rendimiento): Optimizé la búsqueda de archivos basura moviendo la verificación de extensiones a una operación de búsqueda de prefijo/suffix usando un `frozenset` y optimizando el ciclo de `_process_directory` para evitar llamadas redundantes a `Path()` y `exists()` sobre objetos que ya sabemos que son válidos vía `os.scandir`.
-- `2026-11-02T05:21:00` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` al pre-asignar el búfer de nombres de módulo fuera del bucle y eliminar la recolección innecesaria de nombres de procesos largos, además de mejorar la eficiencia del filtrado de PIDs usando un conjunto (`Set`) para las comprobaciones de exclusión.
