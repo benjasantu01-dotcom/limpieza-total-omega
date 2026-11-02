@@ -462,3 +462,10 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-11-02T01:04:52` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._is_safe_path, _Validators._parse_as_type, _Validators._run_safety_checks
 - `2026-11-02T01:04:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T01:04:52` Corrida terminada. Total usado hoy: 28.
+- `2026-11-02T01:13:23` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-02T01:13:51` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-02T01:14:30` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` para manejar correctamente objetos inesperados como `set` o tipos de datos complejos que podrían causar recursión infinita o errores en tiempo de ejecución al ser analizados por el asistente.
+- `2026-11-02T01:15:00` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `save_logo_svg` ante errores de entrada y estados inválidos del sistema de archivos, asegurando que la validación de `path` no falle ante valores inesperados y centralizando la gestión de excepciones para evitar cualquier interrupción no controlada durante la persistencia de activos visuales.
+- `2026-11-02T01:15:08` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo un chequeo explícito de disponibilidad de disco mediante `os.statvfs` (o `os.stat` en Windows) antes de iniciar el escaneo recursivo en `directory_size` y `detect_profiles` para evitar excepciones por dispositivos desconectados o medios extraíbles sin acceso, mejorando la robustez ante estados inesperados del hardware.
+- `2026-11-02T01:15:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T01:15:08` Corrida terminada. Total usado hoy: 32.

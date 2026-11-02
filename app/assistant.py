@@ -383,7 +383,7 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
-    """Escanea estructuras de datos para detectar anidamiento excesivo, limitando la complejidad del objeto procesado."""
+    """Escanea estructuras de datos para detectar anidamiento excesivo o tipos no planos (sets), limitando la complejidad."""
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
     if isinstance(val, (list, tuple)):
@@ -757,7 +757,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     except (TypeError, ValueError): return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae de manera segura el contenido textual de una respuesta JSON proveniente de la API remota."""
+    """Extracte de manera segura el contenido textual de una respuesta JSON proveniente de la API remota."""
     if not isinstance(data, dict): return None
     try:
         candidates = data.get("candidates")

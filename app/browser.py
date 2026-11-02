@@ -244,6 +244,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not p.is_dir(): return 0
     
     try:
+        os.stat(str(p)) # Verificación de disponibilidad de dispositivo
         root_norm = os.path.normcase(os.path.realpath(str(p)))
     except (OSError, RuntimeError):
         return 0
@@ -264,6 +265,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path): continue
         
         try:
+            os.stat(str(base)) # Verificación de disponibilidad de dispositivo
             base_norm = os.path.realpath(str(base))
         except (OSError, RuntimeError):
             continue
