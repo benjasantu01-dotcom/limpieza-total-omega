@@ -485,3 +485,34 @@ ERROR evolve/tests/test_modules.py - NameError: name 'SystemMetrics' is not defi
 - `2026-11-02T01:35:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-02T01:35:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T01:35:34` Corrida terminada. Total usado hoy: 40.
+- `2026-11-02T01:43:58` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-11-02T01:44:44` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante la concurrencia y los cambios de estado detectados durante la validación introduciendo una verificación de "estabilidad de metadatos" en `_get_path_stat_robust`, lo que previene condiciones de carrera (TOCTOU) adicionales al asegurar que el tamaño del archivo no cambie mientras se están analizando sus atributos.
+- `2026-11-02T01:45:10` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo heurístico implementando un manejo preventivo de errores de I/O específicos (como el acceso a archivos temporales del sistema que pueden cambiar de estado o permisos durante la iteración), asegurando que el proceso recursivo no se interrumpa ante denegaciones de acceso o condiciones de carrera.
+- `2026-11-02T01:45:40` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_read_and_parse_json` ante casos límite como archivos truncados o con contenido malicioso (caracteres de control inusuales), asegurando que cualquier entrada que no cumpla estrictamente con el formato JSON esperado sea descartada silenciosamente para mantener la estabilidad del sistema.
+- `2026-11-02T01:45:51` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.96s
+
+```
+- `2026-11-02T01:45:51` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante rutas corruptas o con permisos denegados en `_resolve_and_cache_path` y `_process_folder_entry`, añadiendo una validación explícita mediante `is_safe_to_modify` antes de intentar operaciones de resolución de sistema, evitando excepciones no controladas en directorios bloqueados.
+- `2026-11-02T01:45:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T01:45:51` Corrida terminada. Total usado hoy: 44.

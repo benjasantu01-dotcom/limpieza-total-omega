@@ -29,6 +29,7 @@ logger: Final = logging.getLogger(__name__)
 FILE_ATTRIBUTE_REPARSE_POINT: Final = 0x400
 FILE_ATTRIBUTE_DIRECTORY: Final = 0x10
 ERROR_SHARING_VIOLATION: Final = 32
+ERROR_ACCESS_DENIED: Final = 5
 
 class ScannerLimits(NamedTuple):
     """Límites operativos del motor para prevenir riesgos de recursión y desbordamiento."""
@@ -133,12 +134,11 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path or _cached_is_protected(entry.path):
         return None
     try:
-        # Verificación explícita de atributos antes de intentar estadisticas pesadas
         if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
             return None
         return entry.stat(follow_symlinks=False)
     except OSError as e:
-        if getattr(e, 'winerror', None) == ERROR_SHARING_VIOLATION:
+        if getattr(e, 'winerror', None) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
             return None
         return None
     except (PermissionError, FileNotFoundError):

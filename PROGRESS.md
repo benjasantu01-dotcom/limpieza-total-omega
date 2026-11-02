@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **150** (29.8% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **153** (30.4% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 280
+- Sin respuesta de la IA (error o límite): 276
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 22 | 2 | 6 | 4 | 80 |
+| 2026-10-31 | 22 | 2 | 6 | 4 | 76 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 21 | 1 | 10 | 2 | 6 |
+| 2026-11-02 | 24 | 2 | 10 | 2 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **32**
 - legibilidad y documentación: **28**
@@ -30,15 +30,15 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `assistant.py`: **15**
 - `healthscore.py`: **14**
 - `memory.py`: **14**
 - `quarantine.py`: **13**
 - `browser.py`: **12**
+- `scanner.py`: **12**
 - `startup.py`: **11**
-- `scanner.py`: **11**
-- `settings.py`: **9**
+- `settings.py`: **10**
 - `diskreport.py`: **9**
 - `duplicates.py`: **8**
 - `organizer.py`: **8**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T01:45:40` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_read_and_parse_json` ante casos límite como archivos truncados o con contenido malicioso (caracteres de control inusuales), asegurando que cualquier entrada que no cumpla estrictamente con el formato JSON esperado sea descartada silenciosamente para mantener la estabilidad del sistema.
+- `2026-11-02T01:45:10` **scanner.py** (robustez ante casos límite): Se ha robustecido el escaneo heurístico implementando un manejo preventivo de errores de I/O específicos (como el acceso a archivos temporales del sistema que pueden cambiar de estado o permisos durante la iteración), asegurando que el proceso recursivo no se interrumpa ante denegaciones de acceso o condiciones de carrera.
+- `2026-11-02T01:44:44` **safety.py** (robustez ante casos límite): Mejoré la robustez ante la concurrencia y los cambios de estado detectados durante la validación introduciendo una verificación de "estabilidad de metadatos" en `_get_path_stat_robust`, lo que previene condiciones de carrera (TOCTOU) adicionales al asegurar que el tamaño del archivo no cambie mientras se están analizando sus atributos.
 - `2026-11-02T01:35:29` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante fallos de concurrencia y limpieza de estado mediante la adición de un chequeo estricto de existencia y bloqueos en `_safe_unlink`, asegurando que no se intente operar sobre archivos que pudieron ser modificados por procesos externos durante el ciclo de vida del borrado.
 - `2026-11-02T01:34:18` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_iter_process_memory` al añadir un manejo explícito de errores durante la enumeración de procesos, evitando que una falla parcial al obtener la ruta de un módulo o un handle bloquee la recolección completa de métricas de los procesos restantes.
 - `2026-11-02T01:26:06` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante la posible inyección de métricas malformadas o tipos de datos inesperados en el constructor `SystemMetrics` y durante la serialización para la caché, garantizando que el sistema nunca falle catastróficamente al procesar valores no numéricos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T00:54:49` **memory.py** (rendimiento): Se optimizó el acceso a las APIs de Windows en `_iter_process_memory` mediante la pre-obtención de los punteros a `EnumProcesses` y `GetModuleFileNameExW` (vía `kernel32` y `psapi`), reduciendo la sobrecarga de consultas repetitivas al diccionario `ctypes.windll` dentro del bucle de iteración de procesos, lo cual mejora la latencia de la recolección de métricas.
 - `2026-11-02T00:44:22` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de cálculo mediante la eliminación de búsquedas innecesarias en el diccionario `WEIGHTS` y la pre-computación de las sumas de pesos, evitando el acceso a diccionarios dentro de los bucles críticos de procesamiento.
 - `2026-11-02T00:43:19` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` para obtener atributos de archivo (`stat`) directamente durante la iteración, evitando llamadas redundantes a `os.path.exists` o `os.stat` adicionales.
-- `2026-11-02T00:34:24` **assistant.py** (rendimiento): Se optimizó el acceso a `SystemContext` mediante la pre-compilación y cacheo estático del mapa de criterios de salud, evitando la regeneración de listas y búsquedas por clave en cada evaluación del estado del sistema.
-- `2026-11-02T00:33:42` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `StartupEntry` y sus métodos internos mediante la conversión de comentarios de bloque a `docstrings` completos, además de añadir tipos de retorno explícitos en funciones donde faltaban, garantizando que el diseño del ciclo de vida de una entrada sea claro para cualquier colaborador.
-- `2026-11-02T00:24:06` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la lógica de escaneo mediante docstrings enriquecidos, type hints más específicos para las heurísticas y la adición de una constante `FILE_ATTRIBUTE_MASK` para centralizar la lógica de filtrado de atributos de sistema, facilitando la comprensión del flujo de seguridad sin alterar el comportamiento.

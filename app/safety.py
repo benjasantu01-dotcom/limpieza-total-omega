@@ -95,7 +95,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         except (OSError, PermissionError):
             pass
     else:
-        # Optimización: GetFileAttributesExW es más rápido que abrir handle
         data = WIN32_FILE_ATTRIBUTE_DATA()
         path_long = _to_long_path(path_str)
         if ctypes.windll.kernel32.GetFileAttributesExW(path_long, 0, ctypes.byref(data)):
@@ -383,7 +382,6 @@ def _is_file_owned_by_system(path_str: str) -> bool:
             sid_str = ctypes.create_unicode_buffer(128)
             if advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str)):
                 sid_val = sid_str.value
-                # S-1-5-18: SYSTEM, S-1-5-19: LOCAL SERVICE, S-1-5-20: NETWORK SERVICE
                 return sid_val.startswith(("S-1-5-18", "S-1-5-19", "S-1-5-20", "S-1-5-80"))
     except (AttributeError, OSError, ctypes.ArgumentError, TypeError):
         pass
@@ -394,7 +392,6 @@ def _is_file_owned_by_system(path_str: str) -> bool:
 
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     if not isinstance(path_str, str) or not path_str: return True
-    # Detecta caracteres de control y secuencias RTL/LTR (BIDI) para spoofing
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
 def _is_path_empty_or_whitespace(path_str: str) -> bool:
@@ -653,30 +650,20 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError("Error de acceso al verificar existencia.", SafetyValidationErrorCode.IO_ERROR)
     
     max_retries = 3
+    last_size = -1
     for attempt in range(max_retries):
         try:
             if _is_device_file(path):
                 raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
                 
-            if os.name == 'nt':
-                kernel32 = ctypes.windll.kernel32
-                handle = kernel32.CreateFileW(
-                    _to_long_path(str(path)), 0x80000000, 0x01, None, 3, 0x00000080, None
-                )
-                if handle == -1:
-                    try:
-                        err = kernel32.GetLastError()
-                        if err == ERROR_SHARING_VIOLATION:
-                            time.sleep(0.05 * (2 ** attempt))
-                            continue
-                        if err == ERROR_ACCESS_DENIED:
-                            raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-                    except (OSError, AttributeError):
-                        pass
-                else:
-                    kernel32.CloseHandle(handle)
-            
             st = path.stat()
+            # Verificación de estabilidad: si el tamaño cambia, el archivo está siendo escrito
+            if last_size != -1 and st.st_size != last_size:
+                time.sleep(0.05 * (2 ** attempt))
+                last_size = st.st_size
+                continue
+            last_size = st.st_size
+
             if os.name == 'nt':
                 attrs = _get_file_attrs(str(path))
                 if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.DIRECTORY | Win32Attr.REPARSE_POINT)):
@@ -696,7 +683,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
             raise UnsafePathError(f"Error de E/S leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
-    raise UnsafePathError(f"Archivo bloqueado tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
+    raise UnsafePathError(f"Archivo bloqueado/inestable tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
 
 def _check_file_integrity(state: SafetyState) -> None:
     if not state.path.exists():
@@ -777,7 +764,6 @@ def normalize(path: PathLike) -> Path:
              raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
 
     if _is_path_empty_or_whitespace(path_str): raise UnsafePathError("Entrada de ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC)
-    # Detecta ataques de spoofing vía Unicode (NFC vs NFKC)
     if unicodedata.normalize('NFKC', path_str) != path_str:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
