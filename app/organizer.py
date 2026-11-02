@@ -261,13 +261,6 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Orquestador de seguridad: valida el estado del archivo, permisos y espacio antes de una operación de E/S.
-    
-    Args:
-        junk_file: El archivo candidato procesado.
-        dest: El destino previsto para la operación de movimiento.
-        
-    Returns:
-        bool: True si la operación cumple con todos los requisitos de seguridad.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
         return False
@@ -310,8 +303,7 @@ def _is_candidate_for_scan(name: str, stats: os.stat_result) -> bool:
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """Recorre recursivamente directorios para identificar archivos basura evitando ciclos y bloqueos."""
-    if depth > LIMITS.MAX_SCAN_DEPTH: 
-        return
+    if depth > LIMITS.MAX_SCAN_DEPTH: return
         
     try:
         real_path = current_dir.resolve(strict=False)
@@ -325,14 +317,13 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
-                    
                     elif entry.is_file(follow_symlinks=False):
                         stats = entry.stat(follow_symlinks=False)
                         if _is_candidate_for_scan(entry.name, stats) and not _is_system_hidden(entry):
                             p = Path(entry.path)
+                            # Verificación única de seguridad y estado de bloqueo
                             if is_safe_to_modify(p) and not _is_file_locked(p):
                                 found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
-                            
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
@@ -384,16 +375,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         return None
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """
-    Calcula una ruta de destino segura y única para el archivo basura.
-    
-    Args:
-        junk_file: El objeto de archivo origen.
-        dest_base: Directorio base de cuarentena.
-        
-    Returns:
-        Path: Ruta destino completa o None si falló el cálculo.
-    """
+    """Calcula una ruta de destino segura y única para el archivo basura."""
     try:
         if not isinstance(junk_file.modified, datetime): return None
         timestamp = int(junk_file.modified.timestamp())

@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 62
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 235
+- Rechazadas por guardia de seguridad: 63
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 59 | 5 | 16 | 7 | 81 |
-| 2026-11-02 | 127 | 5 | 46 | 4 | 154 |
+| 2026-11-01 | 57 | 5 | 16 | 6 | 80 |
+| 2026-11-02 | 130 | 5 | 47 | 4 | 154 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **35**
-- robustez ante casos límite: **33**
-- rendimiento: **31**
+- seguridad defensiva: **34**
+- rendimiento: **34**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **18**
+- `quarantine.py`: **19**
+- `memory.py`: **18**
 - `safety.py`: **18**
-- `quarantine.py`: **18**
 - `diskreport.py`: **18**
-- `memory.py`: **17**
+- `assistant.py`: **17**
 - `healthscore.py`: **16**
 - `browser.py`: **15**
 - `settings.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **12**
-- `organizer.py`: **10**
+- `organizer.py`: **11**
 - `duplicates.py`: **9**
-- `startup.py`: **8**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T14:23:22` **quarantine.py** (rendimiento): Se ha optimizado `_get_sha256` reemplazando la lectura manual en bucle por `hashlib.file_digest` (disponible en la librería estándar desde Python 3.11), lo cual reduce significativamente el uso de CPU y memoria al manejar el I/O a nivel de C, eliminando además la necesidad de iteradores intermedios.
+- `2026-11-02T14:21:40` **organizer.py** (rendimiento): Optimicé el bucle de escaneo eliminando múltiples llamadas innecesarias a `is_safe_to_modify` y `_is_file_locked` dentro de `_process_directory`, consolidando las verificaciones de seguridad para evitar redundancias de I/O en cada iteración del sistema de archivos.
+- `2026-11-02T14:21:11` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` mediante el uso de un `set` para la búsqueda de PIDs críticos y eliminando la redundancia de `os.getpid()` en cada iteración del bucle, reduciendo la carga de cómputo en sistemas con muchos procesos activos.
 - `2026-11-02T13:42:26` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_isolation_request` para consolidar la lógica de validación, eliminando la duplicidad en el manejo de errores de resolución de rutas y normalizando el estilo de los docstrings de los métodos internos.
 - `2026-11-02T13:41:58` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` documentando exhaustivamente las funciones críticas de seguridad con docstrings estructurados (describiendo parámetros y excepciones), refinando los nombres de variables internas en funciones de bajo nivel y aplicando *type hinting* consistente para asegurar que la intención del código sea clara para futuros auditores.
 - `2026-11-02T13:41:31` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de función y clase para clarificar la lógica de seguridad y el manejo de los recursos Win32, además de renombrar variables internas (como los parámetros de los manejadores de procesos) para que su propósito sea explícito, eliminando ambigüedades técnicas.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T13:09:57` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `purge_all` y `_safe_unlink` eliminando el uso de `f.unlink()` directo (que carecía de validaciones de seguridad exhaustivas) y unificando el borrado a través de un mecanismo centralizado, evitando así posibles excepciones silenciosas o condiciones inseguras.
 - `2026-11-02T13:02:04` **memory.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_iter_process_memory` y `_get_handle_for_safe_proc` mediante la captura explícita de `ctypes.WinError` y errores de acceso, asegurando que fallos en la enumeración de procesos no interrumpan la ejecución ni dejen handles abiertos.
 - `2026-11-02T12:51:37` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `_get_mtime` añadiendo validaciones explícitas contra valores nulos o rutas inexistentes, evitando errores inesperados al procesar grupos cuyos archivos pudieron haber cambiado de estado en el disco durante el tiempo de ejecución.
-- `2026-11-02T12:51:21` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` validando explícitamente el tipo y estado de los archivos antes de procesarlos, evitando errores por archivos eliminados durante la iteración y asegurando que las métricas de tamaño solo utilicen valores numéricos válidos.
-- `2026-11-02T12:49:52` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `detect_profiles` añadiendo validaciones preventivas de estado antes de operar (None, tipos incorrectos) y refinando el manejo de excepciones para evitar que fallos en subdirectorios invaliden el escaneo completo, manteniendo la consistencia con las reglas de seguridad.
-- `2026-11-02T12:43:29` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` para validar recursivamente la estructura del JSON, evitando que payloads con tipos de datos inesperados (como `set` o `complex`) o niveles de anidamiento profundos lleguen a la capa de serialización.

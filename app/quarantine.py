@@ -24,10 +24,11 @@ import tempfile
 import ctypes
 import time
 import fcntl
+import sys
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict, Any, TypeAlias, Set, Tuple, Optional, Callable, TypeVar, Iterator
+from typing import List, Union, Dict, Any, TypeAlias, Set, Tuple, Optional, Callable, TypeVar
 
 from safety import (
     UnsafePathError,
@@ -74,14 +75,6 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
     "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", 
     "LPT6", "LPT7", "LPT8", "LPT9"
 }
-
-def _get_read_chunk(file_obj: Any) -> Iterator[bytes]:
-    """Lee el archivo en bloques para mantener un uso de memoria constante."""
-    while True:
-        data = file_obj.read(CHUNK_SIZE)
-        if not data:
-            break
-        yield data
 
 def _check_for_reparse_points(path: Path) -> None:
     """Verifica si la ruta es un punto de reparse o enlace simbólico."""
@@ -253,10 +246,16 @@ def _get_sha256(path: Path) -> str:
         st = path.stat()
         cache_key = (str(path), st.st_mtime, st.st_size)
         if cache_key in _HASH_CACHE: return _HASH_CACHE[cache_key]
-        sha256_hash = hashlib.sha256()
-        with open(path, "rb", buffering=CHUNK_SIZE) as f:
-            for chunk in _get_read_chunk(f): sha256_hash.update(chunk)
-        res = sha256_hash.hexdigest()
+        
+        with open(path, "rb") as f:
+            if hasattr(hashlib, "file_digest"):
+                res = hashlib.file_digest(f, "sha256").hexdigest()
+            else:
+                sha256_hash = hashlib.sha256()
+                for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
+                    sha256_hash.update(chunk)
+                res = sha256_hash.hexdigest()
+        
         _HASH_CACHE[cache_key] = res
         return res
     except (OSError, IOError, MemoryError): return ""
@@ -554,8 +553,8 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         _check_for_reparse_points(source)
         if st.st_nlink > 1: raise UnsafePathError("Archivo origen con enlaces múltiples.")
         if not is_safe_to_modify(temp_dest.parent): raise UnsafePathError("Directorio destino no seguro.")
-        with open(source, "rb", buffering=CHUNK_SIZE) as f_src, open(temp_dest, "wb", buffering=CHUNK_SIZE) as f_dst:
-            shutil.copyfileobj(f_src, f_dst, length=CHUNK_SIZE)
+        with open(source, "rb") as f_src, open(temp_dest, "wb") as f_dst:
+            shutil.copyfileobj(f_src, f_dst)
             f_dst.flush()
             os.fsync(f_dst.fileno())
         try: os.chmod(temp_dest, 0o600)

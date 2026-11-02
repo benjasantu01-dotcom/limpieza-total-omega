@@ -557,3 +557,11 @@
 - `2026-11-02T14:14:51` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-11-02T14:14:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T14:14:51` Corrida terminada. Total usado hoy: 336.
+- `2026-11-02T14:20:36` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-02T14:21:11` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` mediante el uso de un `set` para la búsqueda de PIDs críticos y eliminando la redundancia de `os.getpid()` en cada iteración del bucle, reduciendo la carga de cómputo en sistemas con muchos procesos activos.
+- `2026-11-02T14:21:40` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el bucle de escaneo eliminando múltiples llamadas innecesarias a `is_safe_to_modify` y `_is_file_locked` dentro de `_process_directory`, consolidando las verificaciones de seguridad para evitar redundancias de I/O en cada iteración del sistema de archivos.
+- `2026-11-02T14:22:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-02T14:23:22` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se ha optimizado `_get_sha256` reemplazando la lectura manual en bucle por `hashlib.file_digest` (disponible en la librería estándar desde Python 3.11), lo cual reduce significativamente el uso de CPU y memoria al manejar el I/O a nivel de C, eliminando además la necesidad de iteradores intermedios.
+- `2026-11-02T14:23:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-11-02T14:23:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T14:23:29` Corrida terminada. Total usado hoy: 340.

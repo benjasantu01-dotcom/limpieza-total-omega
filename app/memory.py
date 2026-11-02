@@ -386,10 +386,14 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     path_buf = ctypes.create_unicode_buffer(512)
+    current_pid = os.getpid()
+    
+    # Usar un set para exclusión rápida
+    excluded_pids = SYSTEM_CRITICAL_PIDS | {current_pid}
     
     for i in range(count):
         pid = int(pids[i])
-        if pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid():
+        if pid <= 0 or pid in excluded_pids:
             continue
         
         h_process = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
