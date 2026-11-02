@@ -84,10 +84,10 @@ class DirectoryScanner:
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
             
-            # Verificación de confinamiento mediante normalización de rutas reales
+            # Verificación de confinamiento mediante normalización estricta
             real_path = os.path.normcase(os.path.realpath(path_str))
-            common = os.path.commonpath([real_path, self.ctx.sandbox_base_norm])
-            return common == self.ctx.sandbox_base_norm
+            # Asegurar que real_path sea un subdirectorio o el mismo sandbox_base
+            return real_path == self.ctx.sandbox_base_norm or real_path.startswith(self.ctx.sandbox_base_norm + os.sep)
         except (OSError, RuntimeError, ValueError):
             return False
 

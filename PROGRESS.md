@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 244
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 72 | 7 | 22 | 7 | 140 |
-| 2026-11-02 | 104 | 5 | 39 | 4 | 104 |
+| 2026-11-01 | 72 | 7 | 22 | 7 | 136 |
+| 2026-11-02 | 107 | 5 | 39 | 4 | 105 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,17 +25,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **37**
 - rendimiento: **34**
-- seguridad defensiva: **27**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **18**
 - `safety.py`: **18**
+- `healthscore.py`: **16**
 - `quarantine.py`: **16**
-- `healthscore.py`: **15**
+- `diskreport.py`: **16**
+- `browser.py`: **15**
 - `memory.py`: **15**
-- `diskreport.py`: **15**
-- `browser.py`: **14**
 - `settings.py`: **14**
 - `branding.py`: **14**
 - `scanner.py`: **12**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T10:58:52` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción estricta de las entradas al caché del motor de scoring (`_compute_cached`), validando explícitamente la presencia de términos sensibles en los mensajes de recomendación generados dinámicamente antes de su inclusión en el informe final.
+- `2026-11-02T10:56:44` **diskreport.py** (seguridad defensiva): Mejoré la robustez de `walk_files` y `drive_usage` implementando una validación explícita de rutas contra `is_protected_path` utilizando `Path.resolve()` en todos los puntos de acceso, evitando así posibles bypasses por rutas relativas o caracteres especiales que pudieran eludir los filtros previos.
+- `2026-11-02T10:56:17` **browser.py** (seguridad defensiva): Se ha implementado una validación de confinamiento más estricta en `DirectoryScanner._is_path_allowed` asegurando que la ruta normalizada comience exactamente con la ruta base permitida, previniendo así ataques de "path traversal" mediante nombres de carpetas similares (ej. `AppData\Local` vs `AppData\Local2`).
 - `2026-11-02T10:47:41` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` utilizando `ensure_safe_to_modify` antes de cualquier operación de escritura, siguiendo estrictamente el enfoque defensivo requerido para prevenir escrituras en rutas no autorizadas.
 - `2026-11-02T10:45:52` **settings.py** (robustez ante casos límite): Se mejora la robustez del manejo de archivos JSON mediante la detección y rechazo de archivos con marcas de orden de bytes (BOM) o caracteres de control inusuales, previniendo errores de parsing y asegurando que solo archivos de configuración puramente textuales y bien formados sean procesados.
 - `2026-11-02T10:37:08` **scanner.py** (robustez ante casos límite): Mejoré `_safe_stat` y `_is_valid_file_path` para manejar explícitamente archivos bloqueados por el sistema operativo o inaccesibles debido a permisos insuficientes, asegurando que el escáner no aborte y sea más resiliente ante archivos en uso durante el recorrido de disco.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T10:05:32` **settings.py** (rendimiento): Optimizé la gestión de caché de `_SettingsManager` eliminando el cálculo innecesario del hash SHA256 durante la lectura y escritura, ya que la combinación de `mtime` y `st_size` es suficiente y mucho más eficiente para detectar cambios en el archivo de configuración.
 - `2026-11-02T10:05:02` **scanner.py** (rendimiento): Se optimizó el rendimiento del motor de escaneo reemplazando las múltiples llamadas a `os.path.abspath` y `os.path.normcase` dentro del bucle crítico por el uso de `entry.path` (que ya está normalizado por el sistema operativo en `os.scandir`), reduciendo la redundancia de cálculo de rutas y mejorando la velocidad de procesamiento de directorios profundos.
 - `2026-11-02T09:56:37` **safety.py** (rendimiento): Se implementó un mecanismo de caché (dict de tamaño limitado) en `_get_file_attrs` para evitar llamadas redundantes a `GetFileAttributesW` del kernel, reduciendo drásticamente el impacto de rendimiento en escaneos profundos de disco.
-- `2026-11-02T09:55:32` **quarantine.py** (rendimiento): Implementé un caché de inodos en `_is_file_in_use_by_system` para evitar llamadas redundantes a `stat()` y `ctypes` en archivos consultados repetidamente, optimizando significativamente el rendimiento durante operaciones de escaneo masivo sobre el mismo directorio.
-- `2026-11-02T09:35:42` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando llamadas redundantes a `path.resolve()` y `path.exists()` dentro del bucle principal por el uso directo de las propiedades ya disponibles en `os.DirEntry` (`entry.is_symlink()`, `entry.path`), lo cual reduce drásticamente las llamadas al sistema de archivos y acelera el recorrido.
-- `2026-11-02T09:14:54` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización y clarificación de los docstrings en las funciones internas de manipulación de archivos (`_write_temp_to_final`, `_perform_secure_copy`, `_atomic_isolate_file`), detallando el contrato de seguridad y los pre-requisitos de integridad para facilitar el mantenimiento y la auditoría técnica.

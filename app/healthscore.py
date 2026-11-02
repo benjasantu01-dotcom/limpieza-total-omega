@@ -374,7 +374,9 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
     if metrics.quarantined_count > 0:
         quarantine_msg = "Existen elementos en cuarentena."
         if _is_safe_string_for_report(quarantine_msg):
-            recommendations.append(_sanitize_msg(quarantine_msg))
+            safe_q_msg = _sanitize_msg(quarantine_msg)
+            if safe_q_msg:
+                recommendations.append(safe_q_msg)
         
     final_score = int(_clamp(total_points, 0.0, 100.0))
     

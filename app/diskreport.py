@@ -144,8 +144,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if not directory:
         return None
     try:
-        p = Path(directory).expanduser().resolve()
-        if not p.exists() or str(p).startswith('\\\\'):
+        p = Path(directory).expanduser().resolve(strict=True)
+        if str(p).startswith('\\\\'):
             return None
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
@@ -167,7 +167,7 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         try:
-            if os.path.exists(drive) and not is_protected_path(Path(drive)):
+            if os.path.exists(drive) and not is_protected_path(Path(drive).resolve()):
                 if os.access(drive, os.R_OK):
                     drives.append(drive)
         except (OSError, PermissionError, TypeError):
@@ -240,10 +240,9 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """Calcula las estadísticas de uso de una unidad de disco."""
     if mount is None: return None
     try:
-        p = Path(mount).expanduser().resolve()
-        if not p.exists() or is_protected_path(p) or _is_reparse_point(p):
+        p = Path(mount).expanduser().resolve(strict=True)
+        if is_protected_path(p) or _is_reparse_point(p) or str(p).startswith('\\\\'):
             return None
-        if str(p).startswith('\\\\'): return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
@@ -277,21 +276,22 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        if entry.is_symlink() or (os.name == 'nt' and _is_reparse_point(Path(entry.path))):
+                        entry_path = Path(entry.path).resolve()
+                        if entry.is_symlink() or _is_reparse_point(entry_path):
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir():
-                            if skip_protected and is_protected_path(Path(entry.path)):
+                            if skip_protected and is_protected_path(entry_path):
                                 continue
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
+                                stack.append(entry_path)
                         elif entry.is_file():
                             size = st.st_size
                             if isinstance(size, int) and size >= 0:
-                                yield Path(entry.path), size
+                                yield entry_path, size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, PermissionError, NotADirectoryError):

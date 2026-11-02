@@ -1284,3 +1284,12 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T10:47:41` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de `save_logo_svg` utilizando `ensure_safe_to_modify` antes de cualquier operación de escritura, siguiendo estrictamente el enfoque defensivo requerido para prevenir escrituras en rutas no autorizadas.
 - `2026-11-02T10:47:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T10:47:41` Corrida terminada. Total usado hoy: 256.
+- `2026-11-02T10:55:41` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-02T10:56:17` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha implementado una validación de confinamiento más estricta en `DirectoryScanner._is_path_allowed` asegurando que la ruta normalizada comience exactamente con la ruta base permitida, previniendo así ataques de "path traversal" mediante nombres de carpetas similares (ej. `AppData\Local` vs `AppData\Local2`).
+- `2026-11-02T10:56:44` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la robustez de `walk_files` y `drive_usage` implementando una validación explícita de rutas contra `is_protected_path` utilizando `Path.resolve()` en todos los puntos de acceso, evitando así posibles bypasses por rutas relativas o caracteres especiales que pudieran eludir los filtros previos.
+- `2026-11-02T10:57:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-02T10:58:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-02T10:58:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-02T10:58:52` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la restricción estricta de las entradas al caché del motor de scoring (`_compute_cached`), validando explícitamente la presencia de términos sensibles en los mensajes de recomendación generados dinámicamente antes de su inclusión en el informe final.
+- `2026-11-02T10:58:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T10:58:52` Corrida terminada. Total usado hoy: 260.
