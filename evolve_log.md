@@ -452,3 +452,11 @@
 - `2026-11-02T12:43:29` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_safe_payload_structure` para validar recursivamente la estructura del JSON, evitando que payloads con tipos de datos inesperados (como `set` o `complex`) o niveles de anidamiento profundos lleguen a la capa de serialización.
 - `2026-11-02T12:43:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T12:43:29` Corrida terminada. Total usado hoy: 300.
+- `2026-11-02T12:48:49` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-02T12:49:19` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-02T12:49:52` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `detect_profiles` añadiendo validaciones preventivas de estado antes de operar (None, tipos incorrectos) y refinando el manejo de excepciones para evitar que fallos en subdirectorios invaliden el escaneo completo, manteniendo la consistencia con las reglas de seguridad.
+- `2026-11-02T12:50:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-02T12:51:21` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `_collect_summary_data` validando explícitamente el tipo y estado de los archivos antes de procesarlos, evitando errores por archivos eliminados durante la iteración y asegurando que las métricas de tamaño solo utilicen valores numéricos válidos.
+- `2026-11-02T12:51:37` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `suggest_keeper` y `_get_mtime` añadiendo validaciones explícitas contra valores nulos o rutas inexistentes, evitando errores inesperados al procesar grupos cuyos archivos pudieron haber cambiado de estado en el disco durante el tiempo de ejecución.
+- `2026-11-02T12:51:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T12:51:37` Corrida terminada. Total usado hoy: 304.

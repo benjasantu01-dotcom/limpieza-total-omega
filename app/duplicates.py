@@ -250,7 +250,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_mtime(path: Path) -> float:
     """Timestamp de modificación; retorna infinito si el archivo es inaccesible."""
-    if not isinstance(path, Path): return float('inf')
+    if not isinstance(path, Path) or not path.exists(): return float('inf')
     with suppress(OSError, PermissionError, FileNotFoundError):
         return path.stat().st_mtime
     return float('inf')

@@ -253,12 +253,11 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    if not isinstance(path, (str, Path)): return 0
+    if path is None: return 0
     p = Path(path)
     if not p.is_dir(): return 0
     
     try:
-        os.stat(str(p))
         root_norm = os.path.normcase(os.path.realpath(str(p)))
     except (OSError, RuntimeError):
         return 0
@@ -276,10 +275,9 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
-        if not isinstance(base, Path): continue
+        if not isinstance(base, Path) or not base.exists(): continue
         
         try:
-            os.stat(str(base)) 
             base_norm = os.path.normcase(os.path.realpath(str(base)))
         except (OSError, RuntimeError):
             continue
@@ -291,7 +289,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             if not _is_valid_rel_path(relative_path): continue
             
             target = base.joinpath(*relative_path.split("\\"))
-            if not target.is_dir(): continue
+            if not target.exists() or not target.is_dir(): continue
             
             target_str = str(target)
             if not scanner._is_path_allowed(target_str): continue
