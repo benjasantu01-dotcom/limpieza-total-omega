@@ -67,6 +67,7 @@ CHUNK_SIZE: int = 262144  # 256KB para streaming eficiente de archivos grandes
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
 _HASH_CACHE: Dict[Tuple[str, float, int], str] = {}
 _WIN_ATTR_CACHE: Dict[str, Tuple[int, float]] = {}
+_INODE_USE_CACHE: Dict[Tuple[int, int], bool] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -261,18 +262,21 @@ def _get_sha256(path: Path) -> str:
     except (OSError, IOError, MemoryError): return ""
 
 def _is_file_in_use_by_system(path: Path) -> bool:
-    """Verifica si el archivo está en uso por el sistema de forma defensiva."""
+    """Verifica si el archivo está en uso por el sistema con caché de inodo."""
     if path is None or not path.exists(): return False
     try:
-        st: os.stat_result = path.stat()
-        # Verificar enlaces físicos múltiples para detectar archivos en uso por el kernel
-        if st.st_nlink > 1: return True
-    except (OSError, PermissionError):
-        # Si no se puede hacer un stat, asumimos por seguridad que está bloqueado
-        return True
+        st = path.stat()
+        cache_key = (st.st_ino, st.st_dev)
+        if cache_key in _INODE_USE_CACHE: return _INODE_USE_CACHE[cache_key]
         
-    if _win_has_system_attributes(path): return True
-    return not _is_file_exclusive(path)
+        in_use = False
+        if st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path):
+            in_use = True
+            
+        _INODE_USE_CACHE[cache_key] = in_use
+        return in_use
+    except (OSError, PermissionError):
+        return True
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> None:
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
