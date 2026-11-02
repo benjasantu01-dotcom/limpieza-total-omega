@@ -204,7 +204,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Verifica si el destino es ancestro del origen (protección anti-bucle)."""
+    """Protege contra bucles de directorios validando si el destino es ancestro del origen."""
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -233,7 +233,7 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
     return bool(_get_win_attributes(entry) & LIMITS.ATTRS.MASK_PROTECTED)
 
 def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
-    """Verifica que el archivo actual en disco no haya sido reemplazado (mitigación TOCTOU)."""
+    """Mitigación de TOCTOU: valida que el inodo/dispositivo no haya cambiado desde el escaneo."""
     try:
         if not src_real.exists(): return False
         stat_result = src_real.stat()
@@ -243,7 +243,7 @@ def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
         return False
 
 def _can_write_to_destination(dest_real: Path, size: int) -> bool:
-    """Valida espacio en disco suficiente antes de mover archivos."""
+    """Verifica disponibilidad de espacio en disco usando APIs de sistema antes de mover."""
     try:
         target_dir = dest_real.parent if dest_real.exists() else dest_real
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK):
@@ -259,7 +259,7 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """Valida condiciones de seguridad previas a cualquier movimiento de archivos."""
+    """Orquestador de seguridad: valida el estado del archivo, permisos y espacio antes de una operación de E/S."""
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
         return False
     try:
@@ -283,7 +283,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> bool:
-    """Determina si un directorio es elegible para escaneo recurrente."""
+    """Filtra directorios no permitidos o protegidos por política del sistema."""
     if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
     if is_protected_path(Path(entry.path)):
@@ -300,7 +300,7 @@ def _is_candidate_for_scan(name: str, stats: os.stat_result) -> bool:
     return True
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
-    """Recorre recursivamente directorios para identificar archivos basura."""
+    """Recorre recursivamente directorios para identificar archivos basura evitando ciclos y bloqueos."""
     if depth > LIMITS.MAX_SCAN_DEPTH: 
         return
         
@@ -385,7 +385,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos desde el directorio de staging."""
+    """Elimina permanentemente archivos desde el directorio de staging tras confirmación."""
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()

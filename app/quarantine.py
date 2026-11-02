@@ -524,6 +524,10 @@ def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_has
     if not final_hash or final_hash != source_hash: raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
 
 def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> None:
+    """
+    Copia el archivo origen al archivo temporal destino de forma segura.
+    Realiza streaming, validación de integridad post-copia y aplica permisos restringidos.
+    """
     try:
         st = source.stat()
         if not (st.st_mode & 0o100000): raise OSError("El origen no es un archivo regular.")
@@ -544,6 +548,10 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         raise OSError(f"Falla durante copia I/O: {e}")
 
 def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode]:
+    """
+    Ejecuta la transferencia atómica del archivo: copia, verifica e instala en destino.
+    Devuelve la tupla (hash_sha256, inodo_destino) tras la validación final.
+    """
     _check_path_syntax_integrity(dest_path)
     _validate_file_transfer_preconditions(source_path, dest_path)
     if not source_path.exists() or not source_path.is_file(): raise FileNotFoundError("Archivo origen no encontrado.")
@@ -580,6 +588,10 @@ class IsolationManager:
         if not is_safe_to_modify(dest.parent): raise UnsafePathError("Sandbox destino inseguro.")
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
+    """
+    Aísla un archivo garantizando la atomicidad frente a condiciones de carrera.
+    Valida el inodo y estado del origen antes de proceder con el aislamiento en el sandbox.
+    """
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")

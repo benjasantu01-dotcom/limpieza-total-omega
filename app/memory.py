@@ -245,6 +245,10 @@ def _is_system_process(pid: int) -> bool:
     """Determina si un PID pertenece al núcleo del sistema o a nuestra propia app."""
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
+def _is_invalid_process_name(name: str) -> bool:
+    """Valida si el nombre del proceso contiene caracteres no permitidos o es de sistema."""
+    return not name or any(ord(c) < 32 or ord(c) == 127 for c in name) or is_protected_path(Path(name))
+
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Valida y parsea una línea CSV de procesos con verificaciones de seguridad."""
     if not isinstance(line, str) or not line.strip(): 
@@ -256,19 +260,14 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     
     try:
         pid_val = int(parts[1])
-        if _is_system_process(pid_val) or pid_val <= 0:
+        if _is_system_process(pid_val) or pid_val <= 0 or _is_invalid_process_name(parts[0].strip()):
             return None
         
-        name = parts[0].strip()
-        # Verificar caracteres no imprimibles o maliciosos y rutas de sistema potencialmente sensibles
-        if not name or any(ord(c) < 32 or ord(c) == 127 for c in name) or is_protected_path(Path(name)):
-            return None
-            
         ws = _safe_int_conversion(parts[2])
         if not (0 < ws < MAX_VALID_PROCESS_MEM_BYTES):
             return None
             
-        return ProcessMemory(name, pid_val, ws)
+        return ProcessMemory(parts[0].strip(), pid_val, ws)
     except (ValueError, TypeError, IndexError, OverflowError):
         return None
 
@@ -323,7 +322,7 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
-    """Solicita un handle de Win32 con permisos específicos para interactuar con un proceso."""
+    """Solicita un handle de Win32 con permisos de acceso específicos (ver OpenProcess)."""
     if WindowsAPI.kernel32 is None: return None
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
@@ -334,7 +333,7 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
         return None
 
 def _query_working_set_bytes(h_process: wintypes.HANDLE, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
-    """Consulta el WorkingSet de un proceso mediante la API de PSAPI."""
+    """Consulta el WorkingSet de un proceso mediante PSAPI.GetProcessMemoryInfo."""
     if h_process is None or WindowsAPI.psapi is None: return None
     try:
         if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
@@ -357,7 +356,7 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
         return False
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name: Callable) -> Optional[wintypes.HANDLE]:
-    """Valida la seguridad del proceso mediante su ruta antes de otorgar acceso."""
+    """Valida la seguridad del proceso mediante su ruta antes de otorgar acceso al handle."""
     h = _get_process_handle(pid, access)
     if h:
         if _is_process_executable_safe(h, path_buf, get_mod_name):
