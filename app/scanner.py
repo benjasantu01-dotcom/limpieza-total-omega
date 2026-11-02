@@ -206,10 +206,9 @@ class Scanner:
         self.base_root_norm: str = os.path.normcase(os.path.abspath(str(base_root)))
         self.now_ts: float = datetime.now().timestamp()
 
-    def _is_inside_base_root(self, entry_path: Optional[str]) -> bool:
+    def _is_inside_base_root(self, entry_path: str) -> bool:
         """Determina si la ruta está contenida dentro de la jerarquía del directorio raíz."""
-        if not entry_path: return False
-        return os.path.normcase(os.path.abspath(entry_path)).startswith(self.base_root_norm)
+        return os.path.normcase(entry_path).startswith(self.base_root_norm)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida que el nombre del componente no contenga caracteres o patrones prohibidos."""
@@ -224,12 +223,10 @@ class Scanner:
         """Realiza múltiples filtros de seguridad antes de permitir el procesamiento de una entrada."""
         try:
             path_str: str = entry.path
-            if path_str in self.safe_cache:
-                return True
-            if self._has_invalid_name(os.path.basename(path_str)): return False
+            if path_str in self.safe_cache: return True
+            if self._has_invalid_name(entry.name): return False
             if entry.is_symlink() or self._is_reparse_point(entry): return False
             if _cached_is_protected(path_str): return False
-            if not _is_valid_path_structure(path_str): return False
             if not self._is_inside_base_root(path_str): return False
             self.safe_cache.add(path_str)
             return True
@@ -238,11 +235,9 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
         """Prepara un directorio hijo para su posterior exploración, verificando límites de profundidad."""
-        if current_depth >= SCAN_LIMITS.max_recursion_depth:
-            return
-        norm_path = os.path.normcase(os.path.abspath(entry.path))
-        if norm_path in visited_dirs:
-            return
+        if current_depth >= SCAN_LIMITS.max_recursion_depth: return
+        norm_path = os.path.normcase(entry.path)
+        if norm_path in visited_dirs: return
         try:
             if os.access(entry.path, os.R_OK):
                 visited_dirs.add(norm_path)
@@ -258,15 +253,13 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
         """
         Orquestador principal que evalúa la entrada del sistema de archivos.
-        Valida la seguridad, filtra extensiones irrelevantes y delega según el tipo 
-        (archivo para análisis heurístico, directorio para continuar recursión).
         """
         if not self._is_safe_entry(entry):
             return
         try:
             if entry.is_file():
                 if self._is_relevant_extension(entry.name):
-                    path_norm = os.path.normcase(os.path.abspath(entry.path))
+                    path_norm = os.path.normcase(entry.path)
                     if path_norm not in self.seen_normcase:
                         self.seen_normcase.add(path_norm)
                         self._run_file_heuristics(Path(entry.path), entry)

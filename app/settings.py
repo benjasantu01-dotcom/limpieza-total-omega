@@ -12,7 +12,6 @@ from __future__ import annotations
 import json
 import os
 import stat
-import hashlib
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -158,8 +157,8 @@ class _SettingsManager:
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
-        # Cache: {resolved_path_str: (data_proxy, mtime, size, hash)}
-        self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int, str]] = {}
+        # Cache: {resolved_path_str: (data_proxy, mtime, size)}
+        self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
 
     def clear(self, resolved_path_str: str) -> None:
         self.data_cache.pop(resolved_path_str, None)
@@ -415,8 +414,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = _read_and_parse_json(primary_path)
             if data is not None:
                 settings = _coerce_and_verify(validate(data))
-                new_hash = hashlib.sha256(json.dumps(settings).encode()).hexdigest()
-                _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size, new_hash)
+                _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
                 return settings
     except (OSError, PermissionError): 
         pass
@@ -447,8 +445,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if _MANAGER.perform_atomic_write(config_path, serialized):
             try:
                 st = config_path.stat()
-                new_hash = hashlib.sha256(serialized.encode()).hexdigest()
-                _MANAGER.data_cache[str(config_path.resolve())] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size, new_hash)
+                _MANAGER.data_cache[str(config_path.resolve())] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size)
             except OSError:
                 pass
             return config_path

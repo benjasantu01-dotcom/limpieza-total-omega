@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **170** (33.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 61
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 249
+- Sin respuesta de la IA (error o límite): 250
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 77 | 8 | 24 | 7 | 152 |
-| 2026-11-02 | 93 | 5 | 37 | 4 | 97 |
+| 2026-11-01 | 74 | 8 | 23 | 7 | 152 |
+| 2026-11-02 | 96 | 5 | 37 | 4 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **37**
-- rendimiento: **32**
-- robustez ante casos límite: **32**
-- seguridad defensiva: **31**
+- rendimiento: **34**
+- robustez ante casos límite: **33**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
-- `assistant.py`: **17**
-- `healthscore.py`: **16**
-- `diskreport.py`: **15**
+- `assistant.py`: **18**
+- `healthscore.py`: **15**
 - `quarantine.py`: **15**
 - `browser.py`: **14**
 - `memory.py`: **14**
-- `settings.py`: **12**
+- `diskreport.py`: **14**
+- `settings.py`: **13**
 - `branding.py`: **12**
+- `scanner.py`: **11**
 - `organizer.py`: **10**
-- `scanner.py`: **10**
-- `duplicates.py`: **9**
 - `startup.py`: **8**
+- `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T10:06:21` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la ingesta y validación de datos del `SystemContext`, añadiendo un chequeo explícito de tipos para evitar excepciones inesperadas cuando `source` contiene objetos malformados, y mejorando la resiliencia en `_validate_and_sanitize_data` al manejar atributos de forma más defensiva.
+- `2026-11-02T10:05:32` **settings.py** (rendimiento): Optimizé la gestión de caché de `_SettingsManager` eliminando el cálculo innecesario del hash SHA256 durante la lectura y escritura, ya que la combinación de `mtime` y `st_size` es suficiente y mucho más eficiente para detectar cambios en el archivo de configuración.
+- `2026-11-02T10:05:02` **scanner.py** (rendimiento): Se optimizó el rendimiento del motor de escaneo reemplazando las múltiples llamadas a `os.path.abspath` y `os.path.normcase` dentro del bucle crítico por el uso de `entry.path` (que ya está normalizado por el sistema operativo en `os.scandir`), reduciendo la redundancia de cálculo de rutas y mejorando la velocidad de procesamiento de directorios profundos.
 - `2026-11-02T09:56:37` **safety.py** (rendimiento): Se implementó un mecanismo de caché (dict de tamaño limitado) en `_get_file_attrs` para evitar llamadas redundantes a `GetFileAttributesW` del kernel, reduciendo drásticamente el impacto de rendimiento en escaneos profundos de disco.
 - `2026-11-02T09:55:32` **quarantine.py** (rendimiento): Implementé un caché de inodos en `_is_file_in_use_by_system` para evitar llamadas redundantes a `stat()` y `ctypes` en archivos consultados repetidamente, optimizando significativamente el rendimiento durante operaciones de escaneo masivo sobre el mismo directorio.
 - `2026-11-02T09:35:42` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando llamadas redundantes a `path.resolve()` y `path.exists()` dentro del bucle principal por el uso directo de las propiedades ya disponibles en `os.DirEntry` (`entry.is_symlink()`, `entry.path`), lo cual reduce drásticamente las llamadas al sistema de archivos y acelera el recorrido.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T08:54:26` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos para las funciones de dibujo y se normalizaron los tipos de parámetros mediante Type Hints más precisos, facilitando la comprensión de la lógica geométrica del Canvas sin alterar la funcionalidad.
 - `2026-11-02T08:53:54` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de docstrings descriptivos en funciones clave y la estandarización de type hints en los decoradores de seguridad, facilitando la comprensión del flujo de datos sin alterar la lógica.
 - `2026-11-02T08:44:23` **settings.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en la función `_is_structure_valid` para prevenir condiciones de carrera y ataques de desbordamiento mediante la comprobación estricta de tipos y valores, evitando que valores `None` o estructuras malformadas contaminen el estado de la aplicación.
-- `2026-11-02T08:43:44` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante situaciones de carrera (TOCTOU) y errores de validación, centralizando el manejo de excepciones para evitar que fallos parciales en la obtención de metadatos o estados de volumen detengan prematuramente procesos de escaneo.
-- `2026-11-02T08:35:14` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use_by_system` implementando un manejo defensivo de errores durante la obtención de metadatos (`stat`) y atributos, asegurando que las excepciones del sistema (como archivos bloqueados por el kernel o con privilegios insuficientes) sean tratadas de forma segura y consistente sin abortar el flujo del programa.
-- `2026-11-02T08:34:09` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` capturando fallos potenciales en `ctypes` y conversiones de tipo, asegurando que cualquier entrada malformada (como tipos inesperados o fallos en la API de Windows) se maneje con excepciones específicas sin romper el bucle.

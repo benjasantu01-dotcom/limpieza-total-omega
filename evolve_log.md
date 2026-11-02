@@ -1242,3 +1242,10 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T09:56:37` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché (dict de tamaño limitado) en `_get_file_attrs` para evitar llamadas redundantes a `GetFileAttributesW` del kernel, reduciendo drásticamente el impacto de rendimiento en escaneos profundos de disco.
 - `2026-11-02T09:56:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T09:56:37` Corrida terminada. Total usado hoy: 236.
+- `2026-11-02T10:04:34` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-02T10:05:02` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del motor de escaneo reemplazando las múltiples llamadas a `os.path.abspath` y `os.path.normcase` dentro del bucle crítico por el uso de `entry.path` (que ya está normalizado por el sistema operativo en `os.scandir`), reduciendo la redundancia de cálculo de rutas y mejorando la velocidad de procesamiento de directorios profundos.
+- `2026-11-02T10:05:32` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la gestión de caché de `_SettingsManager` eliminando el cálculo innecesario del hash SHA256 durante la lectura y escritura, ya que la combinación de `mtime` y `st_size` es suficiente y mucho más eficiente para detectar cambios en el archivo de configuración.
+- `2026-11-02T10:05:57` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-02T10:06:21` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en la ingesta y validación de datos del `SystemContext`, añadiendo un chequeo explícito de tipos para evitar excepciones inesperadas cuando `source` contiene objetos malformados, y mejorando la resiliencia en `_validate_and_sanitize_data` al manejar atributos de forma más defensiva.
+- `2026-11-02T10:06:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T10:06:21` Corrida terminada. Total usado hoy: 240.

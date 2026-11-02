@@ -500,12 +500,9 @@ class SystemContext:
         """Extrae y valida un conjunto de métricas desde una fuente externa."""
         updates = {}
         for k, spec in _VALIDATORS.items():
-            try:
-                val = self._apply_field(source, k, spec)
-                if val is not None:
-                    updates[k] = val
-            except Exception:
-                continue
+            val = self._apply_field(source, k, spec)
+            if val is not None:
+                updates[k] = val
         
         try:
             g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
