@@ -223,7 +223,7 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Realiza múltiples filtros de seguridad antes de permitir el procesamiento de una entrada."""
         try:
-            path_str: str = os.path.abspath(entry.path)
+            path_str: str = entry.path
             if path_str in self.safe_cache:
                 return True
             if self._has_invalid_name(os.path.basename(path_str)): return False

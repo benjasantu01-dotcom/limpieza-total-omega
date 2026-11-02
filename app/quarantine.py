@@ -103,14 +103,14 @@ def _check_path_for_junctions(path: Path) -> None:
     _check_for_reparse_points(path)
 
 def _get_win_attributes(path: Path) -> int:
-    """Consulta atributos de archivo Win32 con caché TTL para optimizar rendimiento."""
+    """Consulta atributos de archivo Win32 con caché TTL reducida (1s) para consistencia."""
     if os.name != 'nt': return 0
     p_str = str(path)
-    now = time.time()
+    now = time.monotonic()
     
     if p_str in _WIN_ATTR_CACHE:
         attrs, ts = _WIN_ATTR_CACHE[p_str]
-        if now - ts < 2.0:
+        if now - ts < 1.0:
             return attrs
             
     try:
@@ -139,15 +139,7 @@ def _is_filesystem_read_only(path: Path) -> bool:
     """Confirma si el directorio permite operaciones de escritura mediante un test."""
     if path is None: return True
     if not path.exists(): return False
-    if not os.access(path, os.W_OK):
-        return True
-    try:
-        test_file: Path = path / f".test_{uuid.uuid4().hex}"
-        test_file.touch()
-        test_file.unlink()
-        return False
-    except (OSError, PermissionError):
-        return True
+    return not os.access(path, os.W_OK)
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """Ejecuta operaciones I/O con estrategia de reintento exponencial frente a bloqueos."""
@@ -158,7 +150,7 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
         except (OSError, IOError, PermissionError) as e:
             if i == max_retries - 1:
                 raise e
-            time.sleep(0.1 * (2 ** i))
+            time.sleep(0.05 * (2 ** i))
     raise RuntimeError("Fallo de E/S tras múltiples intentos.")
 
 def _is_file_exclusive(path: Path) -> bool:
@@ -447,6 +439,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         return []
     try:
         st = m_path.stat()
+        # TTL de caché de 1s para asegurar frescura ante cambios rápidos
         if not force_reload and base_dir in _MANIFEST_CACHE:
             cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
             if cached_mtime == st.st_mtime and cached_size == st.st_size: return cached_items

@@ -204,8 +204,6 @@ def _is_path_too_long(path_str: str) -> bool:
 def _get_file_attrs(path_str: Optional[str]) -> int:
     if not isinstance(path_str, str) or not path_str:
         return 0
-    if not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'):
-        return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == INVALID_FILE_ATTRIBUTES:
@@ -467,13 +465,13 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
 
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     if _is_unc_path(path_str): return False
     try:
-        drive = os.path.splitdrive(path_str)[0]
-        if not drive or not os.path.exists(drive + "\\"): return False
+        drive = os.path.splitdrive(path_str)[0] + "\\"
+        if not os.path.exists(drive): return False
         flags = ctypes.c_ulong()
-        if ctypes.windll.kernel32.GetVolumeInformationW(drive + "\\", None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
+        if ctypes.windll.kernel32.GetVolumeInformationW(drive, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & 0x80000)
     except (AttributeError, OSError, ctypes.ArgumentError): pass
     return False
@@ -496,7 +494,7 @@ def _get_drive_type(root: str) -> int:
 
 @lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         return _get_drive_type(root) == DRIVE_REMOVABLE
@@ -505,7 +503,7 @@ def _is_volume_removable_media(path_str: Optional[str]) -> bool:
 
 @lru_cache(maxsize=128)
 def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not (path_str.startswith(LONG_PATH_PREFIX) or len(path_str) > 2 and path_str[1:3] == ':\\'): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         if not os.path.exists(root): return False
@@ -648,7 +646,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
                 
             st = path.stat()
-            # Verificación de estabilidad: si el tamaño cambia, el archivo está siendo escrito
             if last_size != -1 and st.st_size != last_size:
                 time.sleep(0.05 * (2 ** attempt))
                 last_size = st.st_size
@@ -794,7 +791,8 @@ def is_protected_path(path: PathLike) -> bool:
     if not path: return True
     try:
         norm_str = os.path.normcase(os.path.abspath(str(path)))
-        if any(norm_str.startswith(r) for r in _get_system_root_paths()):
+        root_paths = _get_system_root_paths()
+        if any(norm_str.startswith(r) for r in root_paths):
             return True
         
         path_obj = Path(norm_str)
