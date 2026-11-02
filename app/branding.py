@@ -333,7 +333,11 @@ def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Escala y traslada los puntos del polígono del escudo."""
     if not math.isfinite(scale) or scale <= 0 or not math.isfinite(x) or not math.isfinite(y): 
         return ()
-    return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
+    res = [0.0] * len(SHIELD_BASE_COORDS)
+    for i in range(0, len(SHIELD_BASE_COORDS), 2):
+        res[i] = x + (SHIELD_BASE_COORDS[i] * scale)
+        res[i+1] = y + (SHIELD_BASE_COORDS[i+1] * scale)
+    return tuple(res)
 
 def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
     """Genera la estructura XML del logo SVG."""

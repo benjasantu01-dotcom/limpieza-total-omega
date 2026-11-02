@@ -274,7 +274,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path): continue
         
         try:
-            os.stat(str(base)) # Verificación de disponibilidad de dispositivo
+            os.stat(str(base)) 
             base_norm = os.path.normcase(os.path.realpath(str(base)))
         except (OSError, RuntimeError):
             continue

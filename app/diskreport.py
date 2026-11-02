@@ -287,7 +287,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[Path] = [root_path]
     
     root_stat = _safe_stat(root_path)
     if root_stat:
@@ -303,8 +303,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         path = Path(entry.path)
-                        if not path.resolve().is_relative_to(root_path):
-                            continue
                         
                         if entry.is_symlink() or _is_reparse_point(path):
                             continue
@@ -318,7 +316,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry.path)
+                                stack.append(path)
                         elif entry.is_file():
                             yield path, st.st_size
                     except (OSError, PermissionError, FileNotFoundError, RuntimeError, AttributeError):
