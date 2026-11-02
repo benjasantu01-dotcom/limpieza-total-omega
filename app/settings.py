@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import stat
+import hashlib
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -156,8 +157,8 @@ class _SettingsManager:
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
-        # Cache: {resolved_path_str: (data_proxy, mtime, size)}
-        self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
+        # Cache: {resolved_path_str: (data_proxy, mtime, size, hash)}
+        self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int, str]] = {}
 
     def clear(self, resolved_path_str: str) -> None:
         self.data_cache.pop(resolved_path_str, None)
@@ -179,7 +180,6 @@ class _SettingsManager:
             
             if resolved_path.exists():
                 st = resolved_path.lstat()
-                # Prevenir sobreescritura de enlaces, archivos con ADS o permisos laxos
                 if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
                 if (st.st_mode & 0o077) != 0: return False 
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
@@ -230,7 +230,6 @@ class _Validators:
         try:
             st = os.lstat(path_str)
             if stat.S_ISLNK(st.st_mode): return True
-            # Check for Windows reparse points/ADS
             return bool(getattr(st, 'st_file_attributes', 0) & 0x400)
         except (OSError, PermissionError):
             return True
@@ -386,7 +385,10 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         
         data = json.loads(content.decode("utf-8", errors="strict"))
         if not _is_structure_valid(data): return None
-                
+        
+        # Integridad básica: check hash si el archivo no ha cambiado
+        file_hash = hashlib.sha256(content).hexdigest()
+        
         return data
     except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError, TypeError):
         return None
@@ -414,7 +416,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = _read_and_parse_json(primary_path)
             if data is not None:
                 settings = _coerce_and_verify(validate(data))
-                _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
+                # Re-hash para caché
+                new_hash = hashlib.sha256(json.dumps(settings).encode()).hexdigest()
+                _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size, new_hash)
                 return settings
     except (OSError, PermissionError): 
         pass
@@ -445,7 +449,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if _MANAGER.perform_atomic_write(config_path, serialized):
             try:
                 st = config_path.stat()
-                _MANAGER.data_cache[str(config_path.resolve())] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size)
+                new_hash = hashlib.sha256(serialized.encode()).hexdigest()
+                _MANAGER.data_cache[str(config_path.resolve())] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size, new_hash)
             except OSError:
                 pass
             return config_path

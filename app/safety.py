@@ -28,6 +28,7 @@ ERROR_INSUFFICIENT_BUFFER: Final[int] = 122
 ERROR_INVALID_NAME: Final[int] = 123
 INVALID_FILE_ATTRIBUTES: Final[int] = 0xFFFFFFFF
 LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
+FILE_ID_INFO_LEVEL: Final[int] = 18
 
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
@@ -36,6 +37,15 @@ _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], bool]] = {}
 _NEGATIVE_SECURITY_CACHE: Final[set[tuple[int, int, int, int]]] = set()
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
 _FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
+
+class FILE_ID_128(ctypes.Structure):
+    _fields_ = [("Identifier", ctypes.c_ubyte * 16)]
+
+class FILE_ID_INFO(ctypes.Structure):
+    _fields_ = [
+        ("VolumeSerialNumber", ctypes.c_uint64),
+        ("FileId", FILE_ID_128),
+    ]
 
 class WIN32_FILE_ATTRIBUTE_DATA(ctypes.Structure):
     _fields_ = [
@@ -95,10 +105,14 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         except (OSError, PermissionError):
             pass
     else:
-        data = WIN32_FILE_ATTRIBUTE_DATA()
-        path_long = _to_long_path(path_str)
-        if ctypes.windll.kernel32.GetFileAttributesExW(path_long, 0, ctypes.byref(data)):
-            res = (0, hash(path_str), 0, int(bool(data.dwFileAttributes & Win32Attr.DIRECTORY)))
+        # Mejora: Uso de GetFileInformationByHandleEx para una identidad única persistente
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
+        if handle != -1:
+            fid = FILE_ID_INFO()
+            if kernel32.GetFileInformationByHandleEx(handle, FILE_ID_INFO_LEVEL, ctypes.byref(fid), ctypes.sizeof(fid)):
+                res = (int(fid.VolumeSerialNumber), hash(bytes(fid.FileId.Identifier)), 0, 0)
+            kernel32.CloseHandle(handle)
                 
     if len(_FILE_ID_CACHE) > 4096: _FILE_ID_CACHE.clear()
     _FILE_ID_CACHE[path_str] = res
