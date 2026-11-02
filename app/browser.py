@@ -253,7 +253,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not p.is_dir(): return 0
     
     try:
-        os.stat(str(p)) # Verificación de disponibilidad de dispositivo
+        os.stat(str(p))
         root_norm = os.path.normcase(os.path.realpath(str(p)))
     except (OSError, RuntimeError):
         return 0
@@ -262,7 +262,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     return DirectoryScanner(ctx).get_size(str(p)).bytes_found
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    raw_bases = list(bases) if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
+    raw_bases = list(bases) if (isinstance(bases, (list, tuple))) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
     if not raw_bases or not isinstance(browser_map, dict): return []

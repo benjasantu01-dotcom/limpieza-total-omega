@@ -300,6 +300,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         path = Path(entry.path)
+                        # Validar si existe antes de resolver
+                        if not path.exists(): continue
+                        
                         resolved_path = path.resolve()
                         
                         # Seguridad: impedir escape fuera de la jerarquía raíz original
@@ -321,7 +324,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 if os.access(path, os.R_OK):
                                     stack.append(path)
                         elif entry.is_file():
-                            yield path, st.st_size
+                            if st.st_size >= 0:
+                                yield path, st.st_size
                     except (OSError, PermissionError, FileNotFoundError, RuntimeError, AttributeError):
                         continue
         except (OSError, PermissionError, FileNotFoundError, NotADirectoryError):
@@ -357,11 +361,14 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             if path == root: continue
             rel_path = path.relative_to(root)
             if not rel_path.parts: continue
+            
             top_level = root / rel_path.parts[0]
             
-            m = stats[top_level]
-            m.size += size
-            m.file_count += 1
+            # Validación de entrada para asegurar que solo se sumen tamaños válidos
+            if isinstance(size, int) and size >= 0:
+                m = stats[top_level]
+                m.size += size
+                m.file_count += 1
         except (ValueError, OSError, RuntimeError):
             continue
             
@@ -386,6 +393,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size in walk_files(directory, skip_protected):
         try:
+            if not isinstance(size, int) or size < 0: continue
+            
             _, ext = os.path.splitext(path.name)
             ext_normalized = ext.lower() if ext else "(sin extensión)"
             stats.register_file(size, ext_normalized)

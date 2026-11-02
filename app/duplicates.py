@@ -100,7 +100,7 @@ def _safe_path_check(path: Path) -> bool:
     """
     Valida que el archivo sea accesible, no protegido y no sea un enlace simbólico/junction.
     """
-    if not isinstance(path, Path): return False
+    if not isinstance(path, Path) or not path.exists(): return False
     try:
         resolved_path = path.resolve(strict=True)
         return resolved_path.is_file() and not is_protected_path(resolved_path) and not is_junction(path)
@@ -118,7 +118,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo del contenido. 
     Usa caché local para evitar múltiples lecturas de disco sobre el mismo archivo.
     """
-    if not isinstance(path, Path) or not _safe_path_check(path): 
+    if not isinstance(path, Path) or not path.is_file() or not _safe_path_check(path): 
         return None
     if path in _full_hash_cache: return _full_hash_cache[path]
     
@@ -138,7 +138,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     """
     Genera un fingerprint rápido leyendo solo los primeros N bytes definidos en PARTIAL_READ_BYTES.
     """
-    if not isinstance(path, Path) or not _safe_path_check(path): 
+    if not isinstance(path, Path) or not path.is_file() or not _safe_path_check(path): 
         return None
     if path in _partial_cache: return _partial_cache[path]
     

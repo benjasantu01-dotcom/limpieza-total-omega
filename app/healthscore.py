@@ -300,10 +300,6 @@ class SystemMetrics:
         all_keys = _VALIDATION_KEYS + ("quarantined_count",)
         for field_name in all_keys:
             raw_val = getattr(self, field_name, 0.0)
-            # Garantizar que sea un número real no booleano
-            if not isinstance(raw_val, (int, float)) or isinstance(raw_val, bool):
-                raw_val = 0.0
-            
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(raw_val, 0.0, min_v, max_v)
             setattr(self, field_name, sanitized)
@@ -373,12 +369,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """
     Motor central de orquestación del cálculo de salud.
-    
-    Procesa las métricas validadas a través del pipeline, ejecuta las reglas
-    de recomendación y calcula el puntaje final ponderado, encapsulando el
-    resultado en un objeto HealthResult inmutable.
     """
-    # 1. Preparación de datos (reconstrucción desde caché)
     safe_vals = {k: float(v) for k, v in zip(_VALIDATION_KEYS, metric_tuple)}
     metrics = SystemMetrics(**safe_vals, quarantined_count=float(quarantined))
     
@@ -386,22 +377,17 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
     metric_breakdown: Dict[MetricKey, int] = {}
     total_points = 0.0
     
-    # 2. Ejecución de Pipeline
     for entry in PIPELINE_DEFINITIONS:
         try:
-            if not entry or not entry.scorer: continue
             area_ratio = entry.scorer(metrics)
             recs = _evaluate_rules(metrics, entry.rules or (), area_ratio)
             recommendations.extend(recs)
-            
-            # Cálculo directo ponderado
             weighted_val = int(_clamp(area_ratio * entry.weight, 0.0, float(entry.weight)))
             metric_breakdown[entry.area] = weighted_val
             total_points += float(weighted_val)
         except Exception:
             continue
             
-    # 3. Consolidación de resultados
     if metrics.quarantined_count > 0:
         quarantine_msg = "Existen elementos en cuarentena."
         if _is_safe_string_for_report(quarantine_msg):
@@ -417,13 +403,12 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
     )
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Punto de entrada principal para el análisis del sistema."""
+    """Punto de entrada principal para el análisis del sistema con validación defensiva."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
     try:
         metrics.validate()
-        # Serialización eficiente y segura para la caché, forzando float y saneamiento
         raw_vals = tuple(_validate_numeric(getattr(metrics, f, 0.0), 0.0, -1e9, 1e9) for f in _VALIDATION_KEYS)
         quarantine_val = _validate_numeric(metrics.quarantined_count, 0.0, 0.0, 1e9)
         return _compute_cached(raw_vals, float(quarantine_val))
@@ -448,12 +433,10 @@ def summarize(result: HealthResult | None) -> List[str]:
         for area, val in sorted(result.breakdown.items()):
             weight = weights_map.get(area, 10)
             bar = _render_bar(val, weight)
-            # Sanitizamos explícitamente los campos del reporte antes de incluir en la lista
             safe_area = _sanitize_msg(area)
             lines.append(f"  {safe_area.capitalize():<12} {val:>2}/{weight:<2} [{bar}]")
         
         recs = result.recommendations if result.recommendations else ["No hay advertencias activas."]
-        # Aseguramos que cada línea sea limpia antes de añadirla
         lines.extend(("", "Recomendaciones:", *[f"  - {_sanitize_msg(s)}" for s in recs if _sanitize_msg(s)]))
         return lines
     except Exception:
