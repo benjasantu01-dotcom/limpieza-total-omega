@@ -530,3 +530,22 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-02T02:06:36` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable incluso después de obtener el handle, asegurando que ninguna manipulación de memoria (por inocua que sea) ocurra sobre binarios que residan en ubicaciones bloqueadas del sistema, cumpliendo con el enfoque defensivo.
 - `2026-11-02T02:06:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T02:06:36` Corrida terminada. Total usado hoy: 52.
+- `2026-11-02T02:14:37` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-02T02:15:06` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó `_is_safe_for_disk_op` para prevenir explícitamente el movimiento de archivos si el dispositivo de destino es distinto al de origen, evitando errores de permisos al cruzar límites de unidades y mejorando la consistencia transaccional al mover datos.
+- `2026-11-02T02:15:23` 🛑 Propuesta bloqueada por la guardia en quarantine.py (enfoque: seguridad defensiva): el archivo se encogió al 3% del original (posible pérdida de código)
+- `2026-11-02T02:15:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-02T02:16:13` Tests FALLARON:
+```
+restore_puts_the_file_back_exactly_where_it_was - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_restore_puts_the_file_bac0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_quarantine_refuses_files_0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_restore_into_a_system_pat0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_purge_all_only_deletes_in0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_quarantine_two_files_with0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0/_Cuarentena
+24 failed, 275 passed in 1.29s
+
+```
+- `2026-11-02T02:16:13` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha añadido una validación explícita para prevenir la modificación de archivos que contengan "Hard Links" hacia el sistema de archivos principal, evitando riesgos de corrupción cruzada o comportamientos inesperados al intentar modificar un archivo que está referenciado desde múltiples ubicaciones.
+- `2026-11-02T02:16:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T02:16:13` Corrida terminada. Total usado hoy: 56.

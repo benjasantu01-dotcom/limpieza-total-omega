@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **158** (31.3% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 49
+- Mejoras aceptadas: **159** (31.5% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 270
+- Sin respuesta de la IA (error o límite): 266
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-31 | 22 | 2 | 6 | 4 | 68 |
+| 2026-10-31 | 22 | 2 | 6 | 4 | 64 |
 | 2026-11-01 | 107 | 8 | 32 | 9 | 194 |
-| 2026-11-02 | 29 | 2 | 11 | 2 | 8 |
+| 2026-11-02 | 30 | 3 | 13 | 2 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **32**
-- seguridad defensiva: **29**
+- seguridad defensiva: **30**
 - legibilidad y documentación: **28**
 
 ## Mejoras aceptadas por archivo
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `startup.py`: **11**
 - `settings.py`: **10**
 - `diskreport.py`: **10**
+- `organizer.py`: **9**
 - `duplicates.py`: **8**
-- `organizer.py`: **8**
 - `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T02:15:06` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` para prevenir explícitamente el movimiento de archivos si el dispositivo de destino es distinto al de origen, evitando errores de permisos al cruzar límites de unidades y mejorando la consistencia transaccional al mover datos.
 - `2026-11-02T02:06:36` **memory.py** (seguridad defensiva): Se reforzó la seguridad en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable incluso después de obtener el handle, asegurando que ninguna manipulación de memoria (por inocua que sea) ocurra sobre binarios que residan en ubicaciones bloqueadas del sistema, cumpliendo con el enfoque defensivo.
 - `2026-11-02T02:05:19` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `healthscore.py` mediante una validación más estricta en el punto de entrada `summarize` y una sanitización proactiva de los textos generados en los reportes para prevenir que caracteres de control o escapes puedan comprometer la integridad de la interfaz de usuario.
 - `2026-11-02T01:55:59` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación de rutas mediante `is_protected_path` antes de cualquier operación de I/O, previniendo explícitamente el acceso a rutas UNC y dispositivos de bloque no deseados.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T01:24:32` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo explícito `entry.is_symlink()` en el bucle de recolección de `_collect_candidates` para evitar el seguimiento de enlaces simbólicos que no son junctions, mejorando la robustez frente a ciclos infinitos o accesos fuera de la ruta raíz en sistemas con enlaces simbólicos.
 - `2026-11-02T01:24:04` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_safe_stat` al añadir un manejo más estricto de los posibles errores de sistema durante la inspección de metadatos, evitando que el escáner se interrumpa ante estados inconsistentes del sistema de archivos en carpetas con permisos restringidos o rutas especiales.
 - `2026-11-02T01:15:08` **browser.py** (robustez ante casos límite): Se introdujo un chequeo explícito de disponibilidad de disco mediante `os.statvfs` (o `os.stat` en Windows) antes de iniciar el escaneo recursivo en `directory_size` y `detect_profiles` para evitar excepciones por dispositivos desconectados o medios extraíbles sin acceso, mejorando la robustez ante estados inesperados del hardware.
-- `2026-11-02T01:14:30` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` para manejar correctamente objetos inesperados como `set` o tipos de datos complejos que podrían causar recursión infinita o errores en tiempo de ejecución al ser analizados por el asistente.
