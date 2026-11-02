@@ -357,16 +357,19 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name: Callable) -> Optional[wintypes.HANDLE]:
     """Valida la seguridad del proceso mediante su ruta antes de otorgar acceso al handle."""
-    h = _get_process_handle(pid, access)
-    if h:
-        exit_code = wintypes.DWORD()
-        if WindowsAPI.kernel32.GetExitCodeProcess(h, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+    try:
+        h = _get_process_handle(pid, access)
+        if h:
+            exit_code = wintypes.DWORD()
+            if WindowsAPI.kernel32.GetExitCodeProcess(h, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+                WindowsAPI.kernel32.CloseHandle(h)
+                return None
+                
+            if _is_process_executable_safe(h, path_buf, get_mod_name):
+                return h
             WindowsAPI.kernel32.CloseHandle(h)
-            return None
-            
-        if _is_process_executable_safe(h, path_buf, get_mod_name):
-            return h
-        WindowsAPI.kernel32.CloseHandle(h)
+    except (ctypes.WinError, OSError):
+        pass
     return None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
@@ -380,7 +383,10 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pids = (wintypes.DWORD * MAX_PIDS)()
     cb_needed = wintypes.DWORD(0)
     
-    if not enum_procs(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+    try:
+        if not enum_procs(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+            return
+    except (ctypes.WinError, OSError):
         return
             
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))

@@ -460,3 +460,11 @@
 - `2026-11-02T12:51:37` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `suggest_keeper` y `_get_mtime` añadiendo validaciones explícitas contra valores nulos o rutas inexistentes, evitando errores inesperados al procesar grupos cuyos archivos pudieron haber cambiado de estado en el disco durante el tiempo de ejecución.
 - `2026-11-02T12:51:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T12:51:37` Corrida terminada. Total usado hoy: 304.
+- `2026-11-02T12:59:03` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-02T12:59:33` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-02T13:00:33` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-02T13:01:36` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-02T13:02:04` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `_iter_process_memory` y `_get_handle_for_safe_proc` mediante la captura explícita de `ctypes.WinError` y errores de acceso, asegurando que fallos en la enumeración de procesos no interrumpan la ejecución ni dejen handles abiertos.
+- `2026-11-02T13:02:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-02T13:02:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T13:02:36` Corrida terminada. Total usado hoy: 308.
