@@ -1201,3 +1201,10 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T09:15:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-11-02T09:15:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T09:15:12` Corrida terminada. Total usado hoy: 220.
+- `2026-11-02T09:23:31` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-02T09:24:33` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-11-02T09:24:59` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: legibilidad y documentación).
+- `2026-11-02T09:25:27` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-11-02T09:25:38` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_path_suspicious
+- `2026-11-02T09:25:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T09:25:38` Corrida terminada. Total usado hoy: 224.
