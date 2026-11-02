@@ -930,3 +930,12 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T06:31:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-02T06:31:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T06:31:15` Corrida terminada. Total usado hoy: 156.
+- `2026-11-02T06:39:23` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-02T06:39:52` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-02T06:40:18` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-02T06:40:56` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
+- `2026-11-02T06:41:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-02T06:41:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-02T06:41:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-02T06:41:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T06:41:20` Corrida terminada. Total usado hoy: 160.
