@@ -246,10 +246,10 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
 )
 
 # Mapa inmutable pre-calculado para acceso eficiente en runtime
-_CRITERIOS_MAP: Final[dict[str, tuple[ProblemCriterion, ...]]] = {}
-for _c in _CRITERIOS_SALUD:
-    _CRITERIOS_MAP.setdefault(_c.metric_key, []).append(_c)
-_CRITERIOS_MAP = {k: tuple(v) for k, v in _CRITERIOS_MAP.items()}
+_CRITERIOS_MAP: Final[dict[str, tuple[ProblemCriterion, ...]]] = {
+    key: tuple(c for c in _CRITERIOS_SALUD if c.metric_key == key)
+    for key in {c.metric_key for c in _CRITERIOS_SALUD}
+}
 
 class AreaExplanation(NamedTuple):
     """Mapeo para descripciones pedagógicas de áreas de la aplicación."""

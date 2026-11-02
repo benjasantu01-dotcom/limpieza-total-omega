@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 69 | 5 | 21 | 7 | 90 |
-| 2026-11-02 | 120 | 5 | 43 | 4 | 140 |
+| 2026-11-01 | 69 | 5 | 20 | 7 | 87 |
+| 2026-11-02 | 122 | 5 | 44 | 4 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **38**
 - seguridad defensiva: **35**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **20**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
 - `quarantine.py`: **18**
 - `memory.py`: **17**
 - `diskreport.py`: **17**
@@ -39,12 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **15**
 - `branding.py`: **14**
 - `scanner.py`: **13**
+- `startup.py`: **9**
 - `organizer.py`: **9**
 - `duplicates.py`: **9**
-- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T13:20:57` **assistant.py** (legibilidad y documentación): Mejora la legibilidad del módulo `assistant.py` mediante la refactorización de `_CRITERIOS_SALUD` y `_CRITERIOS_MAP`, reemplazando el bucle manual de construcción por un diccionario de comprensión más claro y explícito, y añadiendo anotaciones de tipo faltantes para mejorar la robustez estática.
+- `2026-11-02T13:20:19` **startup.py** (manejo de errores y validación de entradas): Se mejora la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV tenga los campos necesarios antes de procesarla, evitando posibles excepciones `KeyError` o acceso a valores `None` que podrían interrumpir el análisis.
 - `2026-11-02T13:12:42` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de entrada en las funciones de utilidad (`_is_valid_file_path`, `_is_readable`, `_is_valid_path_structure`) capturando explícitamente valores nulos o tipos incorrectos y unificando el manejo de errores para evitar excepciones no controladas durante la navegación del sistema.
 - `2026-11-02T13:12:31` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_locked_by_other_process` y `_is_file_busy` para que manejen correctamente los errores de API Win32 cuando `CreateFileW` retorna `INVALID_HANDLE_VALUE`, evitando excepciones no capturadas al validar archivos bloqueados o inexistentes.
 - `2026-11-02T13:09:57` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `purge_all` y `_safe_unlink` eliminando el uso de `f.unlink()` directo (que carecía de validaciones de seguridad exhaustivas) y unificando el borrado a través de un mecanismo centralizado, evitando así posibles excepciones silenciosas o condiciones inseguras.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T11:17:49` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` introduciendo un chequeo explícito de "reparse points" (puntos de reparseo como *Junctions* o *Symlinks*) en el nivel superior de `ensure_safe_to_modify`, antes de cualquier otra validación, para evitar que la lógica de la aplicación se desvíe involuntariamente a través de puntos de montaje o enlaces que apunten fuera de las carpetas validadas.
 - `2026-11-02T11:09:03` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta del inodo (`st_ino`) y del dispositivo (`st_dev`) en `_safe_unlink` para prevenir ataques de tipo "Time-of-Check to Time-of-Use" (TOCTOU) y evitar la eliminación accidental de archivos fuera del directorio de cuarentena tras una posible manipulación de enlaces físicos.
 - `2026-11-02T11:08:07` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_handle_for_safe_proc` y `trim_working_set` mediante la validación explícita del ejecutable mediante `is_protected_path` sobre la ruta resuelta antes de cualquier interacción con el proceso, asegurando que no se operen procesos de rutas del sistema aunque tengan privilegios de acceso.
-- `2026-11-02T10:58:52` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción estricta de las entradas al caché del motor de scoring (`_compute_cached`), validando explícitamente la presencia de términos sensibles en los mensajes de recomendación generados dinámicamente antes de su inclusión en el informe final.
-- `2026-11-02T10:56:44` **diskreport.py** (seguridad defensiva): Mejoré la robustez de `walk_files` y `drive_usage` implementando una validación explícita de rutas contra `is_protected_path` utilizando `Path.resolve()` en todos los puntos de acceso, evitando así posibles bypasses por rutas relativas o caracteres especiales que pudieran eludir los filtros previos.

@@ -476,3 +476,11 @@
 - `2026-11-02T13:12:42` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones de entrada en las funciones de utilidad (`_is_valid_file_path`, `_is_readable`, `_is_valid_path_structure`) capturando explícitamente valores nulos o tipos incorrectos y unificando el manejo de errores para evitar excepciones no controladas durante la navegación del sistema.
 - `2026-11-02T13:12:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T13:12:42` Corrida terminada. Total usado hoy: 312.
+- `2026-11-02T13:19:23` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-02T13:19:52` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _Validators._parse_as_type, type_check
+- `2026-11-02T13:20:19` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV tenga los campos necesarios antes de procesarla, evitando posibles excepciones `KeyError` o acceso a valores `None` que podrían interrumpir el análisis.
+- `2026-11-02T13:20:57` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad del módulo `assistant.py` mediante la refactorización de `_CRITERIOS_SALUD` y `_CRITERIOS_MAP`, reemplazando el bucle manual de construcción por un diccionario de comprensión más claro y explícito, y añadiendo anotaciones de tipo faltantes para mejorar la robustez estática.
+- `2026-11-02T13:21:57` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-02T13:22:15` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-02T13:22:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T13:22:15` Corrida terminada. Total usado hoy: 316.
