@@ -1274,3 +1274,13 @@ FAILED evolve/tests/test_modules.py::test_unknown_section_gets_a_neutral_bullet 
 - `2026-11-02T10:37:08` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré `_safe_stat` y `_is_valid_file_path` para manejar explícitamente archivos bloqueados por el sistema operativo o inaccesibles debido a permisos insuficientes, asegurando que el escáner no aborte y sea más resiliente ante archivos en uso durante el recorrido de disco.
 - `2026-11-02T10:37:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-02T10:37:08` Corrida terminada. Total usado hoy: 252.
+- `2026-11-02T10:45:20` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-02T10:45:52` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejora la robustez del manejo de archivos JSON mediante la detección y rechazo de archivos con marcas de orden de bytes (BOM) o caracteres de control inusuales, previniendo errores de parsing y asegurando que solo archivos de configuración puramente textuales y bien formados sean procesados.
+- `2026-11-02T10:46:20` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-02T10:47:00` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-11-02T10:47:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-02T10:47:04` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-02T10:47:10` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-02T10:47:41` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de `save_logo_svg` utilizando `ensure_safe_to_modify` antes de cualquier operación de escritura, siguiendo estrictamente el enfoque defensivo requerido para prevenir escrituras en rutas no autorizadas.
+- `2026-11-02T10:47:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-02T10:47:41` Corrida terminada. Total usado hoy: 256.

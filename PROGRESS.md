@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 246
+- Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 72 | 7 | 22 | 7 | 144 |
-| 2026-11-02 | 102 | 5 | 39 | 4 | 102 |
+| 2026-11-01 | 72 | 7 | 22 | 7 | 140 |
+| 2026-11-02 | 104 | 5 | 39 | 4 | 104 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **38**
 - legibilidad y documentación: **37**
 - rendimiento: **34**
-- seguridad defensiva: **26**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **15**
 - `diskreport.py`: **15**
 - `browser.py`: **14**
-- `settings.py`: **13**
-- `branding.py`: **13**
+- `settings.py`: **14**
+- `branding.py`: **14**
 - `scanner.py`: **12**
 - `organizer.py`: **9**
 - `startup.py`: **8**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-02T10:47:41` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` utilizando `ensure_safe_to_modify` antes de cualquier operación de escritura, siguiendo estrictamente el enfoque defensivo requerido para prevenir escrituras en rutas no autorizadas.
+- `2026-11-02T10:45:52` **settings.py** (robustez ante casos límite): Se mejora la robustez del manejo de archivos JSON mediante la detección y rechazo de archivos con marcas de orden de bytes (BOM) o caracteres de control inusuales, previniendo errores de parsing y asegurando que solo archivos de configuración puramente textuales y bien formados sean procesados.
 - `2026-11-02T10:37:08` **scanner.py** (robustez ante casos límite): Mejoré `_safe_stat` y `_is_valid_file_path` para manejar explícitamente archivos bloqueados por el sistema operativo o inaccesibles debido a permisos insuficientes, asegurando que el escáner no aborte y sea más resiliente ante archivos en uso durante el recorrido de disco.
 - `2026-11-02T10:36:57` **safety.py** (robustez ante casos límite): Mejoré la robustez ante rutas inexistentes o mal formadas dentro de `_is_file_owned_by_system` y `_get_file_id`, añadiendo validaciones de existencia antes de llamar a funciones de bajo nivel que podrían lanzar excepciones críticas o fallar silenciosamente en entornos de Windows con archivos protegidos o bloqueados.
 - `2026-11-02T10:35:52` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante situaciones de concurrencia y acceso denegado, añadiendo un chequeo de existencia previo al borrado (TOCTOU) y garantizando que el `unlink` ocurra solo si el archivo persiste y está bajo control del sandbox, evitando errores no controlados al iterar sobre el directorio.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T09:55:32` **quarantine.py** (rendimiento): Implementé un caché de inodos en `_is_file_in_use_by_system` para evitar llamadas redundantes a `stat()` y `ctypes` en archivos consultados repetidamente, optimizando significativamente el rendimiento durante operaciones de escaneo masivo sobre el mismo directorio.
 - `2026-11-02T09:35:42` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando llamadas redundantes a `path.resolve()` y `path.exists()` dentro del bucle principal por el uso directo de las propiedades ya disponibles en `os.DirEntry` (`entry.is_symlink()`, `entry.path`), lo cual reduce drásticamente las llamadas al sistema de archivos y acelera el recorrido.
 - `2026-11-02T09:14:54` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización y clarificación de los docstrings en las funciones internas de manipulación de archivos (`_write_temp_to_final`, `_perform_secure_copy`, `_atomic_isolate_file`), detallando el contrato de seguridad y los pre-requisitos de integridad para facilitar el mantenimiento y la auditoría técnica.
-- `2026-11-02T09:14:12` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas de validación y procesado, explicando el PORQUÉ de las comprobaciones de seguridad (mitigación de TOCTOU, protección anti-bucle) para facilitar el mantenimiento futuro.
-- `2026-11-02T09:13:43` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `memory.py` mediante la refactorización de `_extract_process_info` para reducir su complejidad ciclomática, la adición de Type Hints en la estructura `MEMORYSTATUSEX` y la inclusión de documentación en los métodos de la API de Windows que carecían de contexto claro.

@@ -382,6 +382,8 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
         
+        # Rechazar BOM o bytes de control fuera de espacios en blanco standard
+        if content.startswith((b'\xef\xbb\xbf', b'\xff\xfe', b'\xfe\xff')): return None
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
         data = json.loads(content.decode("utf-8", errors="strict"))
