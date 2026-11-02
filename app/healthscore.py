@@ -99,6 +99,10 @@ class Grade(Enum):
 class RecommendationRule(NamedTuple):
     """
     Define una lógica de diagnóstico reactiva basada en métricas.
+    - area: Identificador del tipo de métrica.
+    - threshold: Valor de ratio bajo el cual la regla se vuelve relevante.
+    - message_factory: Función que genera el mensaje según las métricas actuales.
+    - check: Predicado que determina si la regla debe dispararse.
     """
     area: MetricKey
     threshold: float
@@ -108,6 +112,10 @@ class RecommendationRule(NamedTuple):
 class PipelineEntry(NamedTuple):
     """
     Estructura que vincula una métrica con su normalizador y sus reglas de advertencia.
+    - area: Nombre de la métrica.
+    - weight: Peso porcentual en el puntaje total.
+    - scorer: Función normalizadora.
+    - rules: Colección de reglas de diagnóstico asociadas.
     """
     area: MetricKey
     weight: int
@@ -151,7 +159,9 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """
     Genera funciones de normalización lineal.
-    Si inverse es True, un valor mayor al límite reduce la salud.
+    Args:
+        limit: El valor de referencia (cap).
+        inverse: Si es True, un valor mayor al límite reduce la salud hacia 0.0.
     """
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0: return 0.0
@@ -245,15 +255,15 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
     """Calcula salud según cantidad de aplicaciones en inicio."""
     return _STARTUP_SCORER(float(startup_count))
 
-def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
-    """Sanitiza entradas asegurando tipos numéricos finitos."""
+def _validate_numeric(value: Any, default: float, min_val: float, max_val: float) -> float:
+    """Sanitiza entradas asegurando tipos numéricos finitos dentro de un rango."""
     try:
         if not isinstance(value, (int, float)) or isinstance(value, bool):
             return default
         val = float(value)
         if not math.isfinite(val):
             return default
-        return float(max(min_v, min(max_v, val)))
+        return float(max(min_val, min(max_val, val)))
     except (ValueError, TypeError):
         return default
 
