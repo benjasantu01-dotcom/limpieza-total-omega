@@ -363,13 +363,14 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     return findings
 
 @lru_cache(maxsize=128)
-def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: int) -> HealthResult:
+def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """
     Motor central que orquestra el cálculo de métricas. 
     Usa caché LRU para optimizar el rendimiento al recibir métricas idénticas.
     """
-    # Reconstruimos la instancia una sola vez con los valores validados
-    metrics = SystemMetrics(**dict(zip(_VALIDATION_KEYS, metric_tuple)), quarantined_count=float(quarantined))
+    # Reconstruimos la instancia una sola vez con los valores validados forzando tipos
+    safe_vals = {k: float(v) for k, v in zip(_VALIDATION_KEYS, metric_tuple)}
+    metrics = SystemMetrics(**safe_vals, quarantined_count=float(quarantined))
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -410,9 +411,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     try:
         metrics.validate()
-        # Serialización eficiente para la caché
-        raw_vals = tuple(float(getattr(metrics, f)) for f in _VALIDATION_KEYS)
-        return _compute_cached(raw_vals, int(metrics.quarantined_count))
+        # Serialización eficiente y segura para la caché, forzando float y saneamiento
+        raw_vals = tuple(_validate_numeric(getattr(metrics, f, 0.0), 0.0, -1e9, 1e9) for f in _VALIDATION_KEYS)
+        quarantine_val = _validate_numeric(metrics.quarantined_count, 0.0, 0.0, 1e9)
+        return _compute_cached(raw_vals, float(quarantine_val))
     except (TypeError, ValueError, AttributeError, MemoryError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 
@@ -430,7 +432,6 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     try:
         lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-        # Usamos items del breakdown y recuperamos el peso desde PIPELINE_DEFINITIONS para evitar dict lookup repetitivo
         weights_map = {entry.area: entry.weight for entry in PIPELINE_DEFINITIONS}
         for area, val in sorted(result.breakdown.items()):
             weight = weights_map.get(area, 10)

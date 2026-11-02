@@ -65,7 +65,7 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
         return None
     try:
         return os.lstat(path)
-    except (OSError, PermissionError, ValueError, FileNotFoundError, AttributeError):
+    except (OSError, PermissionError, ValueError, FileNotFoundError, AttributeError, OverflowError):
         return None
 
 
@@ -80,11 +80,12 @@ def _is_reparse_point(path: Path) -> bool:
         if os.name == 'nt':
             import ctypes
             FILE_ATTRIBUTE_REPARSE_POINT = 0x0400
+            # Capturar posibles fallos de acceso o rutas mal formadas antes de llamar a la API
             attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
             if attrs == -1: return False
             return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
         return path.is_symlink()
-    except (AttributeError, OSError, TypeError):
+    except (AttributeError, OSError, TypeError, ImportError):
         return False
 
 

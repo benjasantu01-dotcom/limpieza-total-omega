@@ -190,7 +190,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             path = Path(entry.path)
-                            if not is_junction(path):
+                            if not is_junction(path) and not entry.is_symlink():
                                 queue.append((path, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat(follow_symlinks=False)
