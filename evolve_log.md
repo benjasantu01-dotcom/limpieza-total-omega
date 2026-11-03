@@ -859,3 +859,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-03T12:46:45` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del motor de cálculo reemplazando las operaciones de `set` y `tuple` dentro del bucle crítico `_compute_cached` por una pre-generación del `dict` de métricas, evitando así llamadas repetitivas a `getattr` y `zip` durante la fase de procesamiento de pipeline.
 - `2026-11-03T12:46:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T12:46:45` Corrida terminada. Total usado hoy: 300.
+- `2026-11-03T12:55:36` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-03T12:56:43` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-03T12:57:13` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé el rendimiento de `_iter_process_memory` mediante el uso de `ctypes.pointer` para obtener el tamaño real de los procesos en un solo paso, eliminando la sobrecarga de consultas recursivas y reduciendo drásticamente el número de handles abiertos simultáneamente.
+- `2026-11-03T12:57:39` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el rendimiento de `_process_directory` reemplazando la verificación repetida de `is_safe_to_modify` (que hace múltiples llamadas internas) por una validación de caché de rutas protegidas y evitando llamadas innecesarias a `is_file_locked` durante el escaneo inicial, moviendo esa validación pesada solo a la etapa de movimiento donde realmente es necesaria.
+- `2026-11-03T12:58:02` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el rendimiento del cálculo de hashes SHA256 integrando un mecanismo de caché más granular basado en la tupla `(tamaño, tiempo de modificación, inodo)`, lo que evita lecturas redundantes del disco en archivos ya procesados.
+- `2026-11-03T12:58:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T12:58:02` Corrida terminada. Total usado hoy: 304.

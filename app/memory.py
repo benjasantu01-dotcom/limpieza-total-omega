@@ -332,7 +332,7 @@ def _query_working_set_bytes(handle: wintypes.HANDLE, counters: PROCESS_MEMORY_C
     """Consulta el WorkingSet de un proceso mediante PSAPI.GetProcessMemoryInfo."""
     if handle is None or WindowsAPI.psapi is None: return None
     try:
-        if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(counters), ctypes.c_uint32(counters.cb)):
+        if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(counters), ctypes.sizeof(counters)):
             val = counters.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
     except (ctypes.WinError, OSError):
@@ -372,34 +372,29 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Generador que recorre los procesos activos, reutilizando buffers para optimizar memoria."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     
-    enum_procs = WindowsAPI.psapi.EnumProcesses
-    get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
-    
     pids = (wintypes.DWORD * 1024)()
     bytes_written = wintypes.DWORD(0)
     
-    if not enum_procs(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
+    if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
             
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 1024)
     path_buf = ctypes.create_unicode_buffer(512)
-    current_pid = os.getpid()
-    
-    excluded_pids = SYSTEM_CRITICAL_PIDS | {current_pid}
+    excluded_pids = SYSTEM_CRITICAL_PIDS | {os.getpid()}
     
     for i in range(count):
         pid = int(pids[i])
         if pid in excluded_pids or pid <= 0:
             continue
         
-        handle = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
+        handle = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
         if not handle: continue
         
         try:
             ws = _query_working_set_bytes(handle, pmc)
             if ws:
-                yield ProcessMemory(f"PID {pid}", pid, ws)
+                yield ProcessMemory(str(path_buf.value).split('\\')[-1], pid, ws)
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 

@@ -321,11 +321,12 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        stats = entry.stat(follow_symlinks=False)
-                        if _is_candidate_for_scan(entry.name, stats) and not _is_system_hidden(entry):
-                            p = Path(entry.path)
-                            if is_safe_to_modify(p) and not _is_file_locked(p):
-                                found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                        if _is_candidate_for_scan(entry.name, entry.stat(follow_symlinks=False)):
+                            if entry.path not in protected_cache and not _is_system_hidden(entry):
+                                p = Path(entry.path)
+                                if is_safe_to_modify(p):
+                                    stats = entry.stat(follow_symlinks=False)
+                                    found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
