@@ -398,6 +398,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if pid <= 0 or pid in excluded_pids:
             continue
         
+        # Validación: solo obtener handles de procesos verificables y no protegidos
         h_process = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
         if not h_process: continue
         

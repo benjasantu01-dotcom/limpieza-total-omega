@@ -293,6 +293,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     """Realiza una operación de borrado segura con verificación de integridad."""
     if not path or not path.exists(): return True
     try:
+        # Re-validación final inmediata para evitar TOCTOU
         _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)
         parent: Path = path.parent
         _check_io_error_context(path.unlink)
