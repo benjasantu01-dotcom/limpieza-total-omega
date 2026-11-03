@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 62
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 40 | 3 | 11 | 4 | 44 |
+| 2026-11-01 | 38 | 3 | 10 | 4 | 43 |
 | 2026-11-02 | 131 | 5 | 47 | 4 | 163 |
-| 2026-11-03 | 16 | 0 | 4 | 1 | 31 |
+| 2026-11-03 | 17 | 0 | 4 | 1 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **39**
 - robustez ante casos límite: **39**
 - seguridad defensiva: **38**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **37**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `memory.py`: **19**
 - `safety.py`: **18**
 - `diskreport.py`: **18**
-- `assistant.py`: **16**
-- `healthscore.py`: **15**
+- `memory.py`: **18**
+- `assistant.py`: **17**
 - `scanner.py`: **14**
+- `healthscore.py`: **14**
 - `settings.py`: **13**
 - `browser.py`: **13**
 - `branding.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T02:25:30` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para evitar errores de tipo al procesar estructuras de datos inesperadas, añadiendo una validación explícita para asegurar que los elementos dentro de listas o diccionarios sean tipos primitivos seguros antes de realizar cualquier operación de inspección profunda.
 - `2026-11-03T01:04:13` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que los ejecutables detectados en las carpetas de inicio no solo sean archivos, sino que cumplan con una verificación de seguridad estricta antes de ser instanciados, evitando posibles rutas maliciosas que evadan los filtros iniciales.
 - `2026-11-03T01:03:12` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_readable` y `_is_valid_file_path` mediante la validación explícita de puntos de reanálisis (reparse points) a nivel de metadatos antes de intentar cualquier operación de acceso, evitando seguir enlaces fuera del árbol autorizado.
 - `2026-11-03T01:02:45` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación temprana contra `_is_kernel_managed`, evitando así la ejecución de validaciones costosas de IO sobre archivos críticos del sistema que ya conocemos como inmutables para la aplicación.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T00:21:56` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en el sistema de archivos evitando race conditions durante la escritura atómica mediante la verificación explícita de existencia de `config_path` antes de la operación `os.replace` y encapsulando mejor la validación de directorios para evitar excepciones ante rutas inexistentes o inaccesibles.
 - `2026-11-03T00:21:42` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` implementando un chequeo explícito de metadatos (`st_size`) en `_safe_stat` para filtrar archivos corruptos o inaccesibles que devuelven estructuras incompletas, y agregué un manejo defensivo en `_is_valid_file_path` ante rutas que, tras ser validadas como existentes, desaparecen por cambios en el sistema durante la ejecución (Race Condition).
 - `2026-11-03T00:21:16` **safety.py** (robustez ante casos límite): Mejoré `_get_path_stat_robust` para incluir una verificación de `os.stat` que detecte errores de acceso denegado antes de intentar operaciones de lectura más profundas, asegurando que la función maneje elegantemente la inaccesibilidad sin disparar excepciones no controladas, cumpliendo con el enfoque de robustez ante permisos denegados.
-- `2026-11-03T00:13:28` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en `_is_file_exclusive` y `_safe_unlink`, asegurando que el manejo de descriptores de archivo sea más resiliente y consistente entre sistemas operativos, evitando fugas de descriptores en casos de error.
