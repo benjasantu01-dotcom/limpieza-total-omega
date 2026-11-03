@@ -103,7 +103,7 @@ def _safe_path_check(path: Path) -> bool:
     """
     Valida que el archivo sea accesible, no protegido y no sea un enlace simbólico/junction.
     """
-    if not isinstance(path, Path) or not path.exists(): return False
+    if not isinstance(path, Path): return False
     try:
         resolved_path = path.resolve(strict=True)
         return resolved_path.is_file() and not is_protected_path(resolved_path) and not is_junction(path)
@@ -121,9 +121,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo del contenido. 
     Usa caché local para evitar múltiples lecturas de disco sobre el mismo archivo.
     """
-    if not isinstance(path, Path) or not path.is_file() or not _safe_path_check(path): 
-        return None
-    if path in _full_hash_cache: return _full_hash_cache[path]
+    if not isinstance(path, Path) or path in _full_hash_cache: return _full_hash_cache.get(path)
     
     try:
         hasher = hashlib.sha256()
@@ -142,9 +140,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     Genera un fingerprint rápido leyendo solo los primeros N bytes definidos en PARTIAL_READ_BYTES.
     Útil para descartar rápidamente archivos con encabezados distintos sin leer todo el cuerpo.
     """
-    if not isinstance(path, Path) or not path.is_file() or not _safe_path_check(path): 
-        return None
-    if path in _partial_cache: return _partial_cache[path]
+    if not isinstance(path, Path) or path in _partial_cache: return _partial_cache.get(path)
     
     try:
         with open(path, "rb") as f:
@@ -163,10 +159,8 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     if paths is None: return groups_by_size
     
     for p in paths:
-        if p is None: continue
+        item = Path(p)
         try:
-            item = Path(p)
-            if not item.exists(): continue
             st = item.stat()
             if _is_valid_candidate(item, st.st_size):
                 groups_by_size[st.st_size].append(item)
@@ -195,19 +189,18 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        path = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(path) and not entry.is_symlink():
-                                queue.append((path, depth + 1))
+                            if not is_junction(Path(entry.path)) and not entry.is_symlink():
+                                queue.append((Path(entry.path), depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            if _safe_path_check(path):
-                                stat = entry.stat(follow_symlinks=False)
-                                if stat.st_size >= min_size:
-                                    inode = (stat.st_dev, stat.st_ino)
-                                    if inode not in visited:
-                                        if not is_system_or_hidden(path) and (not skip_protected or not is_protected_path(path)):
-                                            visited.add(inode)
-                                            size_map[stat.st_size].append(path)
+                            stat = entry.stat(follow_symlinks=False)
+                            if stat.st_size >= min_size:
+                                inode = (stat.st_dev, stat.st_ino)
+                                if inode not in visited:
+                                    path = Path(entry.path)
+                                    if not is_system_or_hidden(path) and (not skip_protected or not is_protected_path(path)):
+                                        visited.add(inode)
+                                        size_map[stat.st_size].append(path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): continue
     return {sz: paths for sz, paths in size_map.items() if len(paths) > 1}
@@ -217,7 +210,6 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Agrupa una lista de rutas por colisión de digest devuelto por hash_func."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if not isinstance(path, Path): continue
         if (d := hash_func(path)): groups[d].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 

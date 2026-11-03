@@ -9,43 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 58
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 242
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 17 | 2 | 5 | 4 | 38 |
+| 2026-11-01 | 15 | 2 | 4 | 4 | 37 |
 | 2026-11-02 | 131 | 5 | 47 | 4 | 163 |
-| 2026-11-03 | 36 | 2 | 6 | 3 | 41 |
+| 2026-11-03 | 38 | 2 | 7 | 4 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **41**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **34**
-- rendimiento: **27**
+- robustez ante casos límite: **32**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
-- `safety.py`: **18**
 - `memory.py`: **18**
 - `diskreport.py`: **18**
+- `safety.py`: **17**
+- `healthscore.py`: **16**
 - `assistant.py`: **16**
 - `browser.py`: **15**
-- `healthscore.py`: **15**
 - `scanner.py`: **14**
-- `settings.py`: **13**
-- `duplicates.py`: **12**
+- `duplicates.py`: **13**
+- `settings.py`: **12**
 - `branding.py`: **10**
 - `startup.py`: **8**
 - `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T03:55:29` **healthscore.py** (rendimiento): Se optimizó el acceso a atributos y la validación en `SystemMetrics` evitando la creación innecesaria de listas y llamadas repetitivas a `getattr` mediante el uso de una constante `_METRICS_LIST` y una tupla estática, mejorando el rendimiento en el bucle caliente del pipeline.
+- `2026-11-03T03:55:01` **duplicates.py** (rendimiento): Optimicé el rendimiento eliminando la llamada redundante a `path.exists()` dentro de `group_by_size` al confiar en `os.scandir` y `_safe_path_check`, y mejoré la eficiencia del procesamiento de candidatos evitando conversiones innecesarias de `str` a `Path` y verificaciones repetidas de atributos, aprovechando los datos que ya entrega el iterador de archivos.
 - `2026-11-03T03:46:12` **diskreport.py** (rendimiento): Optimicé el método `walk_files` para reducir drásticamente las llamadas redundantes a `Path.resolve()` y `path.relative_to()`, reemplazándolas por operaciones con cadenas (`entry.path`) y objetos `Path` directos, mejorando la eficiencia en recorridos de disco extensos.
 - `2026-11-03T03:45:54` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo al evitar llamadas repetitivas y costosas al sistema de archivos (`os.lstat` y validaciones de seguridad redundantes) mediante el uso de `os.scandir` de forma más eficiente y el pre-cálculo de estados, reduciendo la carga de I/O en el bucle principal.
 - `2026-11-03T03:44:53` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud sustituyendo la iteración sobre todos los criterios en cada llamada por una búsqueda O(1) en el `_CRITERIOS_MAP` pre-calculado, reduciendo significativamente la carga computacional durante el análisis frecuente de contexto.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T03:14:37` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints faltantes (especialmente en los decoradores y retornos de funciones de hash) y docstrings detallados que explican el "porqué" de las estrategias de hashing y la lógica de recolección, facilitando la comprensión del flujo de trabajo sin alterar su comportamiento.
 - `2026-11-03T03:05:14` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en los métodos principales y la centralización de los flags de atributos de sistema, facilitando la comprensión del flujo de escaneo defensivo.
 - `2026-11-03T03:05:03` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la robustez de las funciones de acceso (`color`, `font_size`, `icon`) mediante la adición de Type Hints claros y la estandarización de sus comportamientos ante entradas inválidas, asegurando que la interfaz no falle ante configuraciones inesperadas.
-- `2026-11-03T02:56:48` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_is_structure_valid` añadiendo validaciones explícitas contra ataques de desbordamiento de memoria por claves repetidas o estructuras JSON profundamente anidadas, además de asegurar que `_read_and_parse_json` no retorne diccionarios vacíos o con claves inesperadas que puedan comprometer la integridad.
-- `2026-11-03T02:56:00` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del escaneo heurístico reemplazando validaciones implícitas por chequeos explícitos de `None` y capturando excepciones de estado de archivo que podrían abortar el proceso ante accesos concurrentes o bloqueos transitorios.

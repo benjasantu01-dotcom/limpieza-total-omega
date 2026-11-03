@@ -52,6 +52,7 @@ _VALIDATION_KEYS: Final[Tuple[str, ...]] = (
     "memory_available_percent", "disk_free_percent", 
     "duplicate_mb", "startup_count"
 )
+_ALL_METRICS: Final[Tuple[str, ...]] = _VALIDATION_KEYS + ("quarantined_count",)
 
 def _is_sensitive_input(data: Any) -> bool:
     """Verifica si la entrada contiene rutas o términos bloqueados por seguridad."""
@@ -274,16 +275,14 @@ class SystemMetrics:
 
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any:
         """Acceso restringido a atributos permitidos."""
-        allowed = list(_VALIDATION_KEYS) + ["quarantined_count"]
-        if field_name in allowed:
+        if field_name in _ALL_METRICS:
             val = getattr(self, field_name, default)
             return val if isinstance(val, (int, float)) else default
         return default
 
     def validate(self) -> None:
         """Aplica límites de rango definidos en _METRIC_LIMITS a cada atributo."""
-        all_keys = _VALIDATION_KEYS + ("quarantined_count",)
-        for field_name in all_keys:
+        for field_name in _ALL_METRICS:
             raw_val = getattr(self, field_name, 0.0)
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
             sanitized = _validate_numeric(raw_val, 0.0, min_v, max_v)
@@ -292,8 +291,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica validez numérica de las métricas."""
-        all_keys = _VALIDATION_KEYS + ("quarantined_count",)
-        return all(math.isfinite(float(getattr(self, f, 0.0))) for f in all_keys)
+        return all(math.isfinite(float(getattr(self, f, 0.0))) for f in _ALL_METRICS)
 
 @dataclass
 class HealthResult:
