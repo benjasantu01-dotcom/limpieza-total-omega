@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 62
+- Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 51 | 3 | 14 | 5 | 77 |
+| 2026-11-01 | 51 | 3 | 14 | 5 | 73 |
 | 2026-11-02 | 131 | 5 | 47 | 4 | 163 |
-| 2026-11-03 | 2 | 0 | 1 | 0 | 1 |
+| 2026-11-03 | 5 | 0 | 2 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **38**
 - rendimiento: **34**
 - seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
+- `safety.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
 - `assistant.py`: **17**
-- `safety.py`: **17**
 - `healthscore.py`: **15**
 - `browser.py`: **14**
+- `settings.py`: **14**
 - `branding.py`: **13**
-- `settings.py`: **13**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `organizer.py`: **10**
 - `duplicates.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T00:21:56` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en el sistema de archivos evitando race conditions durante la escritura atómica mediante la verificación explícita de existencia de `config_path` antes de la operación `os.replace` y encapsulando mejor la validación de directorios para evitar excepciones ante rutas inexistentes o inaccesibles.
+- `2026-11-03T00:21:42` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` implementando un chequeo explícito de metadatos (`st_size`) en `_safe_stat` para filtrar archivos corruptos o inaccesibles que devuelven estructuras incompletas, y agregué un manejo defensivo en `_is_valid_file_path` ante rutas que, tras ser validadas como existentes, desaparecen por cambios en el sistema durante la ejecución (Race Condition).
+- `2026-11-03T00:21:16` **safety.py** (robustez ante casos límite): Mejoré `_get_path_stat_robust` para incluir una verificación de `os.stat` que detecte errores de acceso denegado antes de intentar operaciones de lectura más profundas, asegurando que la función maneje elegantemente la inaccesibilidad sin disparar excepciones no controladas, cumpliendo con el enfoque de robustez ante permisos denegados.
 - `2026-11-03T00:13:28` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en `_is_file_exclusive` y `_safe_unlink`, asegurando que el manejo de descriptores de archivo sea más resiliente y consistente entre sistemas operativos, evitando fugas de descriptores en casos de error.
 - `2026-11-03T00:12:37` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo defensivo contra el posible desbordamiento de memoria o errores de lectura en las estructuras Win32 (`MEMORYSTATUSEX`), validando que `dwLength` sea coherente y que los valores de memoria retornados no presenten inconsistencias extremas (ej. valores negativos o desproporcionadamente altos comparados con la arquitectura), fortaleciendo la robustez ante estados del sistema inestables.
 - `2026-11-02T14:51:58` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `hash_file` y `partial_hash` añadiendo un bloque `try-except` específico para `FileNotFoundError`, evitando así interrupciones en el flujo ante archivos eliminados o movidos por procesos externos durante el análisis de duplicados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-02T13:33:11` **healthscore.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a los tipos complejos y funciones de factoría, y normalizando los parámetros de `_validate_numeric` para prevenir confusión en el flujo de datos.
 - `2026-11-02T13:32:34` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de los métodos internos y las estructuras de datos utilizando docstrings tipo Google para clarificar las responsabilidades y tipos de entrada, facilitando el mantenimiento y la comprensión del flujo de datos en el análisis de disco.
 - `2026-11-02T13:20:57` **assistant.py** (legibilidad y documentación): Mejora la legibilidad del módulo `assistant.py` mediante la refactorización de `_CRITERIOS_SALUD` y `_CRITERIOS_MAP`, reemplazando el bucle manual de construcción por un diccionario de comprensión más claro y explícito, y añadiendo anotaciones de tipo faltantes para mejorar la robustez estática.
-- `2026-11-02T13:20:19` **startup.py** (manejo de errores y validación de entradas): Se mejora la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV tenga los campos necesarios antes de procesarla, evitando posibles excepciones `KeyError` o acceso a valores `None` que podrían interrumpir el análisis.
-- `2026-11-02T13:12:42` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de entrada en las funciones de utilidad (`_is_valid_file_path`, `_is_readable`, `_is_valid_path_structure`) capturando explícitamente valores nulos o tipos incorrectos y unificando el manejo de errores para evitar excepciones no controladas durante la navegación del sistema.
-- `2026-11-02T13:12:31` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_locked_by_other_process` y `_is_file_busy` para que manejen correctamente los errores de API Win32 cuando `CreateFileW` retorna `INVALID_HANDLE_VALUE`, evitando excepciones no capturadas al validar archivos bloqueados o inexistentes.

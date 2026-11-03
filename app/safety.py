@@ -686,6 +686,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         except PermissionError:
             raise UnsafePathError(f"Permisos insuficientes: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         except OSError as e:
+            if e.errno == errno.EACCES:
+                raise UnsafePathError(f"Permisos de acceso denegados: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
             if e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN):
                 if attempt < max_retries - 1:
                      time.sleep(0.05 * (2 ** attempt))

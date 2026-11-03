@@ -104,8 +104,9 @@ def _is_valid_file_path(path: PathInput) -> bool:
         if len(abs_path) > SCAN_LIMITS.path_length_limit:
             return False
         target_path = Path(abs_path)
+        # Verificación doble para mitigar condiciones de carrera en sistemas volátiles
         return target_path.exists() and not _cached_is_protected(abs_path) and target_path.is_file()
-    except (OSError, PermissionError, ValueError, TypeError):
+    except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
         return False
 
 def _is_readable(path: PathInput) -> bool:
@@ -136,14 +137,18 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Obtiene metadatos del archivo. Retorna None si el archivo es un punto de 
-    reanálisis, está bloqueado (sharing violation) o es inaccesible.
+    reanálisis, está bloqueado o posee datos corruptos/incompletos.
     """
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path or _cached_is_protected(entry.path):
         return None
     try:
         if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
             return None
-        return entry.stat(follow_symlinks=False)
+        stats = entry.stat(follow_symlinks=False)
+        # Validar que el stat tenga atributos mínimos para evitar objetos malformados
+        if not hasattr(stats, "st_size"):
+            return None
+        return stats
     except OSError as e:
         if getattr(e, 'winerror', None) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             return None

@@ -189,7 +189,8 @@ class _SettingsManager:
                 f.flush()
                 os.fsync(f.fileno())
             
-            if os.path.exists(temp_path):
+            # Verificar existencia antes de reemplazar para evitar race conditions
+            if temp_path.exists():
                 os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
                 os.replace(temp_path, resolved_path)
                 self.clear(resolved_str)
