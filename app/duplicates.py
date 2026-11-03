@@ -247,12 +247,12 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     return sum(g.wasted_bytes for g in groups)
 
 
-def _get_mtime(path: Path) -> float:
-    """Timestamp de modificación; retorna infinito si el archivo es inaccesible."""
-    if not isinstance(path, Path) or not path.exists(): return float('inf')
+def _get_mtime(path: Path) -> Optional[float]:
+    """Timestamp de modificación; retorna None si el archivo es inaccesible."""
+    if not isinstance(path, Path): return None
     with suppress(OSError, PermissionError, FileNotFoundError):
         return path.stat().st_mtime
-    return float('inf')
+    return None
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
@@ -261,7 +261,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         return None
         
     candidates = [( _get_mtime(p), p) for p in group.paths]
-    valid_candidates = [c for c in candidates if c[0] != float('inf')]
+    valid_candidates = [c for c in candidates if c[0] is not None]
     
     if not valid_candidates:
         return group.paths[0]

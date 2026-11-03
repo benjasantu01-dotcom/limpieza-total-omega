@@ -416,10 +416,13 @@ def summarize(result: HealthResult | None) -> List[str]:
     try:
         lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
         weights_map = {entry.area: entry.weight for entry in PIPELINE_DEFINITIONS}
-        for area, val in sorted(result.breakdown.items()):
+        
+        # Iteración segura sobre las claves existentes en el desglose
+        for area in sorted(weights_map.keys()):
+            val = result.breakdown.get(area, 0)
             weight = weights_map.get(area, 10)
             bar = _render_bar(val, weight)
-            safe_area = _sanitize_msg(area)
+            safe_area = _sanitize_msg(area) or "General"
             lines.append(f"  {safe_area.capitalize():<12} {val:>2}/{weight:<2} [{bar}]")
         
         recs = result.recommendations if result.recommendations else ["No hay advertencias activas."]

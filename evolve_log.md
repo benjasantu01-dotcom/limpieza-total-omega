@@ -918,3 +918,14 @@
 - `2026-11-03T02:25:48` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-03T02:25:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T02:25:48` Corrida terminada. Total usado hoy: 56.
+- `2026-11-03T02:32:50` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-03T02:32:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-03T02:33:22` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-03T02:34:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-03T02:34:27` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-03T02:34:34` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-03T02:34:49` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-03T02:35:28` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para manejar casos de rutas inexistentes o inaccesibles de forma explícita, reemplazando el uso de `float('inf')` por validaciones de estado más seguras que previenen excepciones no controladas.
+- `2026-11-03T02:35:42` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `summarize` y `_evaluate_rules`, eliminando el riesgo de que excepciones silenciosas interrumpan el flujo, y se ha fortalecido la integridad del pipeline garantizando que `_compute_cached` no falle ante atributos ausentes.
+- `2026-11-03T02:35:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T02:35:42` Corrida terminada. Total usado hoy: 60.
