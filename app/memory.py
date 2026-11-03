@@ -290,8 +290,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
         
         mem_status = _create_mem_status_ex()
         if WindowsAPI.kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
-            # Validación de integridad de los datos reportados
-            if 0 < mem_status.ullTotalPhys < (1024 * 1024 * 1024 * 1024 * 256): # Max 256TB
+            if 0 < mem_status.ullTotalPhys < (1024 * 1024 * 1024 * 1024 * 256): 
                 if mem_status.ullAvailPhys <= mem_status.ullTotalPhys:
                     return MemorySnapshot(
                         total=BytesValue(mem_status.ullTotalPhys), 
@@ -328,22 +327,22 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
     except (ctypes.WinError, OSError):
         return None
 
-def _query_working_set_bytes(h_process: wintypes.HANDLE, counters: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
+def _query_working_set_bytes(handle: wintypes.HANDLE, counters: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Consulta el WorkingSet de un proceso mediante PSAPI.GetProcessMemoryInfo."""
-    if h_process is None or WindowsAPI.psapi is None: return None
+    if handle is None or WindowsAPI.psapi is None: return None
     try:
-        if WindowsAPI.psapi.GetProcessMemoryInfo(h_process, ctypes.byref(counters), ctypes.c_uint32(counters.cb)):
+        if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(counters), ctypes.c_uint32(counters.cb)):
             val = counters.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM_BYTES else None
     except (ctypes.WinError, OSError):
         return None
     return None
 
-def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: Callable) -> bool:
+def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: Callable) -> bool:
     """Verifica que el ejecutable del proceso no se encuentre en rutas protegidas."""
-    if h_process is None or get_mod_name_func is None: return False
+    if handle is None or get_mod_name_func is None: return False
     try:
-        if get_mod_name_func(h_process, None, path_buffer, len(path_buffer)) <= 0:
+        if get_mod_name_func(handle, None, path_buffer, len(path_buffer)) <= 0:
             return False 
         
         exe_path = Path(path_buffer.value).resolve(strict=False)
@@ -352,24 +351,37 @@ def _is_process_executable_safe(h_process: wintypes.HANDLE, path_buffer: ctypes.
         return False
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: Callable) -> Optional[wintypes.HANDLE]:
-    """Valida la seguridad del proceso mediante su ruta antes de otorgar acceso al handle."""
+    """
+    Gestiona de forma segura la obtención de un handle a un proceso externo.
+    
+    1. Abre el proceso con los permisos solicitados.
+    2. Verifica que el proceso aún esté vivo mediante el código de salida.
+    3. Valida la integridad de la ruta del ejecutable contra 'is_protected_path'.
+    4. Retorna el handle si es seguro, o lo cierra y retorna None en caso contrario.
+    """
     try:
-        h = _get_process_handle(pid, access)
-        if h:
+        handle = _get_process_handle(pid, access)
+        if handle:
             exit_code = wintypes.DWORD()
-            if WindowsAPI.kernel32.GetExitCodeProcess(h, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-                WindowsAPI.kernel32.CloseHandle(h)
+            if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+                WindowsAPI.kernel32.CloseHandle(handle)
                 return None
                 
-            if _is_process_executable_safe(h, path_buf, get_mod_name_func):
-                return h
-            WindowsAPI.kernel32.CloseHandle(h)
+            if _is_process_executable_safe(handle, path_buf, get_mod_name_func):
+                return handle
+            WindowsAPI.kernel32.CloseHandle(handle)
     except (ctypes.WinError, OSError):
         pass
     return None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
-    """Iterador generador de procesos activos, filtrando aquellos en zonas protegidas."""
+    """
+    Generador que recorre la lista de procesos activos del sistema.
+    
+    Usa EnumProcesses para obtener todos los IDs y los filtra mediante 
+    '_get_handle_for_safe_proc', asegurando que no interactuamos con
+    procesos protegidos o de sistema antes de consultar sus métricas.
+    """
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     
     enum_procs = WindowsAPI.psapi.EnumProcesses
@@ -377,20 +389,19 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     MAX_PIDS = 1024
     pids = (wintypes.DWORD * MAX_PIDS)()
-    cb_needed = wintypes.DWORD(0)
+    bytes_written = wintypes.DWORD(0)
     
     try:
-        if not enum_procs(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+        if not enum_procs(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
             return
     except (ctypes.WinError, OSError):
         return
             
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
-    count = min(cb_needed.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
+    count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
     path_buf = ctypes.create_unicode_buffer(512)
     current_pid = os.getpid()
     
-    # Usar un set para exclusión rápida
     excluded_pids = SYSTEM_CRITICAL_PIDS | {current_pid}
     
     for i in range(count):
@@ -398,16 +409,15 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if pid <= 0 or pid in excluded_pids:
             continue
         
-        # Validación: solo obtener handles de procesos verificables y no protegidos
-        h_process = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
-        if not h_process: continue
+        handle = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
+        if not handle: continue
         
         try:
-            ws = _query_working_set_bytes(h_process, pmc)
+            ws = _query_working_set_bytes(handle, pmc)
             if ws:
                 yield ProcessMemory(f"PID {pid}", pid, ws)
         finally:
-            WindowsAPI.kernel32.CloseHandle(h_process)
+            WindowsAPI.kernel32.CloseHandle(handle)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna una lista ordenada de procesos según su consumo, con caché de 60 segundos."""
@@ -465,20 +475,20 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida en procesos del sistema."
     
     path_buf = ctypes.create_unicode_buffer(1024)
-    h_process = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
+    handle = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
-    if not h_process:
+    if not handle:
         return False, "Acceso denegado o proceso en zona restringida."
 
     try:
         exit_code = wintypes.DWORD()
-        if WindowsAPI.kernel32.GetExitCodeProcess(h_process, ctypes.byref(exit_code)) == 0:
+        if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0:
             return False, "Error al consultar estado del proceso."
             
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso ya ha finalizado."
             
-        if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(h_process) != 0:
+        if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         else:
             return False, "El sistema operativo rechazó la operación de limpieza."
@@ -486,4 +496,4 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.WinError, OSError, Exception):
         return False, "Error inesperado al comunicarse con el proceso."
     finally:
-        WindowsAPI.kernel32.CloseHandle(h_process)
+        WindowsAPI.kernel32.CloseHandle(handle)

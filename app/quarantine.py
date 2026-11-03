@@ -571,8 +571,10 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
     _check_path_syntax_integrity(dest_path)
     _validate_file_transfer_preconditions(source_path, dest_path)
     if not source_path.exists() or not source_path.is_file(): raise FileNotFoundError("Archivo origen no encontrado.")
+    
     source_hash: str = _get_sha256(source_path)
     temp_dest: Path = _create_temp_file(source_path, dest_path)
+    
     try:
         _perform_secure_copy(source_path, temp_dest, source_hash)
         if dest_path.exists(): raise FileExistsError("Colisión de ruta antes del reemplazo.")
@@ -580,6 +582,7 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
         try:
             with os.fdopen(os.open(str(dest_path.parent), os.O_RDONLY), 'r') as dir_fd: os.fsync(dir_fd.fileno())
         except OSError: pass
+        
         dest_stat = dest_path.stat()
         if dest_stat.st_nlink > 1: raise UnsafePathError("Integridad comprometida: destino tiene enlaces múltiples.")
         ensure_safe_to_modify(dest_path, allow_sensitive=True)
