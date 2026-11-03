@@ -387,6 +387,10 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
     Parsea la salida CSV cruda de PowerShell hacia objetos `StartupEntry`.
+    
+    Esta función encapsula la lógica de deserialización de la salida de 
+    PowerShell, normalizando los campos y aplicando las reglas de seguridad
+    de `_is_registry_entry_safe` antes de instanciar cada `StartupEntry`.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -427,6 +431,10 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
     """
     Invoca PowerShell para extraer entradas Run del Registro de Windows.
+    
+    Construye dinámicamente un script de PowerShell para leer las claves 
+    especificadas, filtra los metadatos internos del registro y convierte
+    el resultado a CSV para su posterior procesado seguro.
     """
     if os.name != "nt":
         return []

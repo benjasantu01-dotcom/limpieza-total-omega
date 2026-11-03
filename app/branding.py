@@ -316,13 +316,14 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
     """Optimiza el renderizado agrupando colores idénticos consecutivos."""
     colors = gradient_colors(steps, stops)
     if not colors: return ()
-    segments = []
-    curr, start = colors[0], 0
+    
+    segments: List[ColorSegment] = []
+    start = 0
     for i in range(1, len(colors)):
-        if colors[i] != curr:
-            segments.append(ColorSegment(curr, start, i))
-            curr, start = colors[i], i
-    segments.append(ColorSegment(curr, start, len(colors)))
+        if colors[i] != colors[start]:
+            segments.append(ColorSegment(colors[start], start, i))
+            start = i
+    segments.append(ColorSegment(colors[start], start, len(colors)))
     return tuple(segments)
 
 # Coordenadas relativas del escudo Omega (128x128 viewbox). 

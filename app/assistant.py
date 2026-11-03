@@ -439,7 +439,6 @@ class SystemContext:
         """Versión cacheada de los problemas de salud detectados basándose en datos actuales."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        # Evaluamos solo las claves que tenemos en el snapshot contra el mapa pre-indexado
         key_vals = tuple((k, snap[k]) for k in snap if k in _CRITERIOS_MAP)
         return _evaluate_active_problems(key_vals)
 
@@ -451,9 +450,9 @@ class SystemContext:
     @cached_property
     def _hash_tuple(self) -> tuple:
         """Tupla cacheada para representar el estado actual y facilitar comparaciones/hashing."""
-        return (self.score, self.grade, self.junk_mb, self.suspicious_count, 
-                self.memory_available_percent, self.disk_free_percent,
-                self.duplicate_mb, self.startup_count)
+        # Uso de _VALID_METRIC_KEYS para orden determinista
+        keys = sorted(_VALID_METRIC_KEYS)
+        return tuple(getattr(self, k) for k in keys) + (self.grade, self.analyzed)
 
     def get_metric(self, key: str, default: float) -> float:
         """Accede de forma segura a una métrica numérica, devolviendo un valor por defecto ante ausencia."""
@@ -501,13 +500,13 @@ class SystemContext:
     def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
         """Extrae y valida un conjunto de métricas desde una fuente externa."""
         updates = {}
-        for k, spec in _VALIDATORS.items():
+        for k in _VALID_METRIC_KEYS:
+            spec = _VALIDATORS[k]
             val = self._apply_field(source, k, spec)
             if val is not None:
                 updates[k] = val
         
         try:
-            # Validación de integridad de la fuente: prevenir rutas como claves o valores
             if isinstance(source, dict):
                 for k, v in source.items():
                     if isinstance(k, str) and is_protected_path(k): return {}
@@ -524,7 +523,6 @@ class SystemContext:
         """Realiza comprobaciones de seguridad básicas sobre el objeto/fuente de datos recibido."""
         if source is None or callable(source) or not isinstance(source, (dict, object)): 
             return False
-        # Prevenir inyección de datos excesivamente complejos o anidados
         if isinstance(source, (dict, list, tuple)):
             return not _is_input_too_deep_or_complex(source)
         return True
@@ -532,10 +530,9 @@ class SystemContext:
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica los cambios validados al objeto y purga cachés para forzar recálculos."""
         for k, v in updates.items():
-            if _is_safe_key(k) and isinstance(v, (int, float, str, bool)):
+            if k in _VALID_METRIC_KEYS or k == "grade":
                 setattr(self, k, v)
         self.analyzed = True
-        # Limpieza de caché invalidando atributos derivados
         for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
             self.__dict__.pop(attr, None)
 
@@ -569,7 +566,6 @@ class Answer:
 def _is_safe_path_input(text: str) -> bool:
     """Verifica si el texto de entrada contiene rutas o caracteres de control prohibidos."""
     if not isinstance(text, str): return False
-    # La detección rápida de caracteres de estructura ayuda a evitar llamadas a is_protected_path
     if _REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text):
         return False
     return not is_protected_path(text)
@@ -592,7 +588,6 @@ def _ensure_safe_text(text: Any) -> bool:
     Es el guardián principal de cualquier entrada de texto antes de procesar o enviar datos.
     """
     if not _is_safe_text_length(text): return False
-    # Validaciones rápidas (regex/longitud) antes de la lógica pesada de path checking
     if _has_invalid_meta_characters(text) or _contains_forbidden_patterns(text): return False
     if not _is_safe_path_input(text): return False
     return True

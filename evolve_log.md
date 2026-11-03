@@ -402,3 +402,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-03T08:03:23` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-03T08:03:23` Rotación — log: 1160 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T08:03:23` Corrida terminada. Total usado hoy: 188.
+- `2026-11-03T08:09:37` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-03T08:10:06` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y precisos en las funciones de procesamiento del registro, aclarando las responsabilidades de cada etapa (filtrado, validación y parseo) y mejorando la consistencia de los tipos documentados.
+- `2026-11-03T08:10:42` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el acceso a métricas en `SystemContext` reemplazando llamadas redundantes a `getattr` y `hasattr` por una estructura de datos pre-calculada (`_VALID_METRIC_KEYS`), reduciendo la sobrecarga de reflexión en los bucles de ingesta y serialización.
+- `2026-11-03T08:11:11` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `get_gradient_segments` mediante la eliminación de la creación innecesaria de listas intermedias y el uso de un generador o cálculo directo, reduciendo la presión sobre el recolector de basura en operaciones críticas de renderizado.
+- `2026-11-03T08:11:19` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-03T08:11:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T08:11:19` Corrida terminada. Total usado hoy: 192.
