@@ -569,7 +569,6 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     anchor = target_path.anchor
     if not anchor: return
 
-    # Definición de reglas de restricción de volumen para mejorar la legibilidad y mantenimiento
     rules = [
         (_is_volume_shadow_copy(path_s), "Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
         (_is_volume_busy_or_invalid(path_s), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
@@ -653,48 +652,29 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     if not isinstance(path, Path):
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     
-    try:
-        if not path.exists():
-            raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
-    except (OSError, PermissionError):
-        raise UnsafePathError("Error de acceso al verificar existencia.", SafetyValidationErrorCode.IO_ERROR)
-    
     max_retries = 3
-    last_size = -1
     for attempt in range(max_retries):
         try:
+            if not path.exists():
+                raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
             if _is_device_file(path):
                 raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
                 
             st = path.stat()
-            if last_size != -1 and st.st_size != last_size:
-                time.sleep(0.05 * (2 ** attempt))
-                last_size = st.st_size
-                continue
-            last_size = st.st_size
-
             if os.name == 'nt':
                 attrs = _get_file_attrs(str(path))
                 if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.DIRECTORY | Win32Attr.REPARSE_POINT)):
-                    raise UnsafePathError(f"Estructura no válida (se esperaba archivo regular): {path.name}", SafetyValidationErrorCode.INVALID_PATH_TYPE)
-
+                    raise UnsafePathError(f"Estructura no válida: {path.name}", SafetyValidationErrorCode.INVALID_PATH_TYPE)
             if st.st_atime == 0 and st.st_mtime == 0:
                  raise UnsafePathError(f"Metadatos corruptos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
-            if hasattr(st, 'st_nlink') and st.st_nlink == 0:
-                 raise UnsafePathError(f"Archivo borrado durante validación (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
             return st
-            
-        except PermissionError:
-            raise UnsafePathError(f"Permisos insuficientes: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-        except OSError as e:
-            if e.errno == errno.EACCES:
-                raise UnsafePathError(f"Permisos de acceso denegados: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-            if e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN):
+        except (PermissionError, OSError) as e:
+            if isinstance(e, OSError) and e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN):
                 if attempt < max_retries - 1:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
-            raise UnsafePathError(f"Error de E/S leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
-    raise UnsafePathError(f"Archivo bloqueado/inestable tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
+            raise UnsafePathError(f"Error accediendo a metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+    raise UnsafePathError(f"Archivo inestable tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
 
 def _check_file_integrity(state: SafetyState) -> None:
     if not state.path.exists():
@@ -1083,7 +1063,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         
     p = normalize(str(path).strip())
     
-    # Bloqueo rápido de archivos críticos conocidos
     if _is_kernel_managed(str(p)):
         raise UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
 

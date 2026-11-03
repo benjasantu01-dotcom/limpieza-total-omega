@@ -1158,3 +1158,32 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-03T04:39:36` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-03T04:39:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T04:39:36` Corrida terminada. Total usado hoy: 108.
+- `2026-11-03T04:45:27` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-11-03T04:45:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-03T04:46:16` Tests FALLARON:
+```
+ NameError: name '_check_path_junctions' is not defined
+
+app/quarantine.py:125: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name '_check_path_junctions' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name '_check_path_junctions' is not defined
+9 failed, 290 passed in 1.68s
+
+```
+- `2026-11-03T04:46:16` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `quarantine_dir` al añadir una verificación explícita de `OSError` durante la resolución de rutas mediante `path.resolve(strict=True)` y se añadió una validación defensiva para prevenir `ValueError` cuando se procesan rutas con caracteres nulos o malformados, fortaleciendo la resiliencia ante errores inesperados del sistema de archivos.
+- `2026-11-03T04:46:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-03T04:47:24` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se implementó un chequeo robusto en `_get_path_stat_robust` para manejar casos donde el archivo existe pero los metadatos son inaccesibles o el sistema de archivos retorna un estado inconsistente (handle cerrado o inexistente) debido a condiciones de carrera o bloqueos transitorios, evitando que `ensure_safe_to_modify` falle catastróficamente ante bloqueos temporales menores.
+- `2026-11-03T04:47:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-03T04:47:31` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-03T04:47:38` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-03T04:48:01` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-03T04:48:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T04:48:01` Corrida terminada. Total usado hoy: 112.

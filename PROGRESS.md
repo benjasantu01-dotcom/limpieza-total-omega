@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
-- Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 57
+- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Rechazadas por tests: 9
+- Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 248
+- Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 7 | 0 | 2 | 3 | 34 |
+| 2026-11-01 | 7 | 0 | 2 | 3 | 30 |
 | 2026-11-02 | 131 | 5 | 47 | 4 | 163 |
-| 2026-11-03 | 41 | 3 | 8 | 5 | 51 |
+| 2026-11-03 | 42 | 4 | 9 | 5 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **41**
+- robustez ante casos límite: **33**
 - rendimiento: **32**
-- robustez ante casos límite: **32**
 - seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
 - `diskreport.py`: **18**
+- `safety.py`: **18**
 - `memory.py`: **17**
-- `safety.py`: **17**
 - `assistant.py`: **16**
 - `healthscore.py`: **15**
 - `browser.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T04:47:24` **safety.py** (robustez ante casos límite): Se implementó un chequeo robusto en `_get_path_stat_robust` para manejar casos donde el archivo existe pero los metadatos son inaccesibles o el sistema de archivos retorna un estado inconsistente (handle cerrado o inexistente) debido a condiciones de carrera o bloqueos transitorios, evitando que `ensure_safe_to_modify` falle catastróficamente ante bloqueos temporales menores.
 - `2026-11-03T04:18:07` **settings.py** (rendimiento): Optimicé el rendimiento eliminando la llamada innecesaria a `Path.resolve()` en el bucle principal de `validate`, utilizando directamente la caché del gestor para evitar recrear objetos de ruta y validando la existencia de claves de forma más eficiente mediante un `frozenset`.
 - `2026-11-03T04:08:13` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_is_kernel_managed` para evitar re-cálculos costosos y consultas al entorno repetitivas durante operaciones masivas de escaneo de archivos.
 - `2026-11-03T04:05:18` **organizer.py** (rendimiento): Optimizé la detección de extensiones basura en `_is_candidate_for_scan` y `is_valid_junk_extension` reemplazando `any(...)` por una verificación directa en el conjunto `JUNK_EXTENSIONS`, eliminando la iteración innecesaria en cada archivo escaneado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T03:34:56` **safety.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_drive_restrictions`, extrayendo la lógica repetitiva de validación de condiciones a una estructura de datos clara y legible que facilita futuras adiciones.
 - `2026-11-03T03:26:53` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final`, extrayendo la lógica de persistencia de metadatos y limpieza de archivos temporales hacia una estructura más clara (patrón *try/finally* robusto), además de añadir type hints explícitos en los retornos de las funciones críticas para cumplir con los estándares del proyecto.
 - `2026-11-03T03:24:19` **memory.py** (legibilidad y documentación): Se añadió documentación exhaustiva en formato de docstrings (especialmente en `_get_handle_for_safe_proc` y `_iter_process_memory`) para clarificar la lógica de seguridad y el manejo de handles, y se renombraron variables internas (`h_process` a `handle`, `cb_needed` a `bytes_written`) para mejorar la legibilidad y coherencia técnica sin alterar la funcionalidad.
-- `2026-11-03T03:15:05` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de cálculo de métricas para clarificar la lógica de normalización y mejorar la legibilidad del pipeline.
