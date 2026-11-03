@@ -698,7 +698,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna la lista de ítems en cuarentena, ordenados por fecha."""
     try: base_dir = quarantine_dir(base)
     except (OSError, UnsafePathError): return []
-    items = _MANIFEST_CACHE[base_dir][0] if base_dir in _MANIFEST_CACHE else load_manifest(base)
+    items = load_manifest(base)
     return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -772,12 +772,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         root_path: Path = quarantine_dir(base).resolve()
         if _is_filesystem_read_only(root_path) or is_protected_path(root_path): return 0
-        items: List[QuarantineItem] = load_manifest(base)
+        items = load_manifest(base)
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         for f in root_path.iterdir():
+            if f.name == MANIFEST_NAME or not f.is_file() or not is_within_directory(f.resolve(), root_path): continue
             try:
-                if f.name == MANIFEST_NAME or not f.is_file() or not is_within_directory(f.resolve(), root_path): continue
                 item = item_map.get(f.name)
                 if item and _is_item_purgable(f, item): 
                     purgado_ids.add(item.item_id)
@@ -785,8 +785,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     if _safe_unlink(f): pass
             except (OSError, PermissionError, UnsafePathError): continue
         if purgado_ids:
-            new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]
-            _check_io_error_context(save_manifest, new_items, base)
+            new_items = [i for i in items if i.item_id not in purgado_ids]
+            save_manifest(new_items, base)
             try:
                 with os.fdopen(os.open(str(root_path), os.O_RDONLY), 'r') as dir_fd: os.fsync(dir_fd.fileno())
             except (OSError, PermissionError): pass

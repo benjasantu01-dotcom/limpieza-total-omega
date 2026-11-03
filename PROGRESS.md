@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **170** (33.7% de aceptación)
-- Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 54
+- Rechazadas por tests: 8
+- Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 9
 - Sin respuesta de la IA (error o límite): 262
 
@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 108 | 4 | 37 | 2 | 157 |
-| 2026-11-03 | 62 | 5 | 17 | 7 | 105 |
+| 2026-11-02 | 106 | 3 | 37 | 2 | 156 |
+| 2026-11-03 | 64 | 5 | 18 | 7 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
-- seguridad defensiva: **36**
+- seguridad defensiva: **35**
 - legibilidad y documentación: **34**
-- rendimiento: **30**
-- robustez ante casos límite: **25**
+- rendimiento: **32**
+- robustez ante casos límite: **24**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **18**
 - `diskreport.py`: **17**
-- `quarantine.py`: **17**
-- `assistant.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **16**
 - `healthscore.py`: **15**
-- `memory.py`: **15**
-- `settings.py`: **13**
+- `assistant.py`: **15**
 - `browser.py`: **13**
+- `settings.py`: **12**
 - `duplicates.py`: **12**
 - `scanner.py`: **10**
 - `organizer.py`: **9**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T08:31:54` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` eliminando la re-lectura redundante del manifiesto mediante el aprovechamiento efectivo de `_MANIFEST_CACHE` y el filtrado en memoria, reduciendo llamadas innecesarias al sistema de archivos y evitando múltiples serializaciones JSON.
+- `2026-11-03T08:30:37` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` eliminando la creación repetitiva de objetos `ProcessMemory` y de buffers de ruta dentro del ciclo de enumeración, reutilizando el buffer de memoria y filtrando procesos de manera más eficiente para reducir la carga de llamadas a la API.
 - `2026-11-03T08:21:10` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor analítico reemplazando la lógica de generación de cadenas y formateo dentro del bucle de `summarize` por un proceso más eficiente, y mejoré la integridad de los accesos a datos mediante el uso directo de la estructura del Pipeline, evitando recorridos innecesarios de diccionarios.
 - `2026-11-03T08:20:21` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso de `.relative_to().parts` dentro del bucle de recorrido, calculando el nivel superior mediante una comparación de cadenas o un acceso directo más eficiente, lo que reduce la carga de CPU y la asignación de memoria durante escaneos profundos.
 - `2026-11-03T08:11:11` **branding.py** (rendimiento): Optimicé el rendimiento de `get_gradient_segments` mediante la eliminación de la creación innecesaria de listas intermedias y el uso de un generador o cálculo directo, reduciendo la presión sobre el recolector de basura en operaciones críticas de renderizado.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T06:59:57` **diskreport.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y defensiva en `_collect_summary_data` para manejar valores de retorno potencialmente inválidos de `walk_files`, asegurando que `ext_normalized` sea tratado de forma segura y que el sistema no propague datos corruptos ante errores inesperados en el sistema de archivos.
 - `2026-11-03T06:59:32` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `detect_profiles` añadiendo validaciones de tipo y de estado (existencia y acceso) antes de invocar operaciones de sistema, evitando el riesgo de excepciones inesperadas al procesar rutas malformadas o inaccesibles.
 - `2026-11-03T06:51:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para garantizar que la validación de tipos y profundidad no falle ante objetos inesperados y sea más consistente con la jerarquía de validación centralizada.
-- `2026-11-03T05:18:39` **quarantine.py** (seguridad defensiva): Se introdujo una re-validación de seguridad en `quarantine_file` tras la creación del archivo destino pero antes del registro en el manifiesto, utilizando `ensure_safe_to_modify` para prevenir condiciones de carrera (TOCTOU) y asegurar que el archivo recién aislado no haya sido sustituido o manipulado por un proceso externo en el ínterin.
-- `2026-11-03T05:17:46` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita para evitar que procesos con nombres sospechosos (posibles inyecciones o rutas mal formadas) sean procesados, reforzando la integridad de los datos antes de operar sobre ellos.

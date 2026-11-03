@@ -352,14 +352,7 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         return False
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: Callable) -> Optional[wintypes.HANDLE]:
-    """
-    Gestiona de forma segura la obtención de un handle a un proceso externo.
-    
-    1. Abre el proceso con los permisos solicitados.
-    2. Verifica que el proceso aún esté vivo mediante el código de salida.
-    3. Valida la integridad de la ruta del ejecutable contra 'is_protected_path'.
-    4. Retorna el handle si es seguro, o lo cierra y retorna None en caso contrario.
-    """
+    """Gestiona de forma segura la obtención de un handle a un proceso externo."""
     try:
         handle = _get_process_handle(pid, access)
         if handle:
@@ -376,30 +369,20 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
     return None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
-    """
-    Generador que recorre la lista de procesos activos del sistema.
-    
-    Usa EnumProcesses para obtener todos los IDs y los filtra mediante 
-    '_get_handle_for_safe_proc', asegurando que no interactuamos con
-    procesos protegidos o de sistema antes de consultar sus métricas.
-    """
+    """Generador que recorre los procesos activos, reutilizando buffers para optimizar memoria."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     
     enum_procs = WindowsAPI.psapi.EnumProcesses
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     
-    MAX_PIDS = 1024
-    pids = (wintypes.DWORD * MAX_PIDS)()
+    pids = (wintypes.DWORD * 1024)()
     bytes_written = wintypes.DWORD(0)
     
-    try:
-        if not enum_procs(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
-            return
-    except (ctypes.WinError, OSError):
+    if not enum_procs(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
             
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
-    count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), MAX_PIDS)
+    count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 1024)
     path_buf = ctypes.create_unicode_buffer(512)
     current_pid = os.getpid()
     
@@ -407,7 +390,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     for i in range(count):
         pid = int(pids[i])
-        if pid <= 0 or pid in excluded_pids:
+        if pid in excluded_pids or pid <= 0:
             continue
         
         handle = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
