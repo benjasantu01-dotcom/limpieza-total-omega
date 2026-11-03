@@ -166,9 +166,11 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Escribe el JSON a un archivo temporal y realiza un reemplazo atómico para
-        prevenir corrupción en caso de fallo de escritura. Valida permisos y
-        propiedad de archivo antes de proceder.
+        Realiza una escritura atómica del archivo de configuración.
+        
+        1. Valida tamaño y longitud de ruta.
+        2. Verifica que el archivo no sea un reparse point ni tenga permisos laxos (777).
+        3. Escribe en un temporal, realiza fsync y reemplaza la ruta original.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 2: return False
@@ -187,6 +189,7 @@ class _SettingsManager:
             if resolved_path.exists():
                 try:
                     st = resolved_path.lstat()
+                    # Regla de seguridad: solo archivos regulares, sin hard links, y restringidos a usuario actual
                     if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
                     if (st.st_mode & 0o077) != 0: return False 
                     if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False

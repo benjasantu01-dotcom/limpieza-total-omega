@@ -203,12 +203,6 @@ class MetricSpec:
 class ProblemCriterion(NamedTuple):
     """
     Regla lógica para evaluar si un valor numérico indica un problema de sistema.
-    
-    Attributes:
-        metric_key: Clave en SystemContext.
-        threshold: Valor límite para comparación.
-        operator: Opereador booleano ('<' o '>') para determinar el estado de riesgo.
-        message_format: Formato del mensaje (e.g., "{:.0f}% de RAM").
     """
     metric_key: str
     threshold: float
@@ -245,11 +239,11 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
-# Mapa inmutable pre-calculado para acceso eficiente en runtime
-_CRITERIOS_MAP: Final[dict[str, tuple[ProblemCriterion, ...]]] = {
-    key: tuple(c for c in _CRITERIOS_SALUD if c.metric_key == key)
-    for key in {c.metric_key for c in _CRITERIOS_SALUD}
-}
+# Mapa indexado para acceso O(1) eficiente
+_CRITERIOS_MAP: Final[dict[str, tuple[ProblemCriterion, ...]]] = {}
+for c in _CRITERIOS_SALUD:
+    _CRITERIOS_MAP.setdefault(c.metric_key, []).append(c)
+_CRITERIOS_MAP: Final[dict[str, tuple[ProblemCriterion, ...]]] = {k: tuple(v) for k, v in _CRITERIOS_MAP.items()}
 
 class AreaExplanation(NamedTuple):
     """Mapeo para descripciones pedagógicas de áreas de la aplicación."""
@@ -439,7 +433,9 @@ class SystemContext:
         """Versión cacheada de los problemas de salud detectados basándose en datos actuales."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        key_vals = tuple((k, snap[k]) for k in snap if k in _CRITERIOS_MAP)
+        # Recorrido eficiente comparando intersección de conjuntos
+        relevant_keys = _VALID_METRIC_KEYS.intersection(_CRITERIOS_MAP.keys())
+        key_vals = tuple((k, snap[k]) for k in relevant_keys if k in snap)
         return _evaluate_active_problems(key_vals)
 
     @property
@@ -450,7 +446,6 @@ class SystemContext:
     @cached_property
     def _hash_tuple(self) -> tuple:
         """Tupla cacheada para representar el estado actual y facilitar comparaciones/hashing."""
-        # Uso de _VALID_METRIC_KEYS para orden determinista
         keys = sorted(_VALID_METRIC_KEYS)
         return tuple(getattr(self, k) for k in keys) + (self.grade, self.analyzed)
 

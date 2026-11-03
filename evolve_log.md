@@ -845,3 +845,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-03T12:28:49` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-03T12:28:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T12:28:49` Corrida terminada. Total usado hoy: 292.
+- `2026-11-03T12:35:10` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-03T12:35:40` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el método de escritura atómica y las validaciones de seguridad, clarificando el propósito de cada verificación de archivos para mejorar la auditabilidad del código.
+- `2026-11-03T12:36:09` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se introdujeron docstrings técnicos detallados en `_process_folder_entry` y `entries_from_registry`, y se refinó la documentación del módulo para explicar las restricciones de seguridad (como el uso de `-LiteralPath` en PowerShell), mejorando la legibilidad técnica sin alterar el comportamiento.
+- `2026-11-03T12:36:50` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el acceso a `_CRITERIOS_MAP` y la evaluación de problemas usando `set` y una estructura de datos pre-calculada, eliminando recorridos redundantes y filtrado iterativo en el bucle principal de diagnóstico.
+- `2026-11-03T12:37:04` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-03T12:37:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T12:37:04` Corrida terminada. Total usado hoy: 296.

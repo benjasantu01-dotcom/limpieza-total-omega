@@ -312,6 +312,10 @@ def startup_folders() -> List[Path]:
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
     Valida un archivo dentro de la carpeta de inicio y crea una instancia `StartupEntry`.
+    
+    Aplica filtros de seguridad contra rutas protegidas, enlaces simbólicos para 
+    evitar el seguimiento de puntos de reparse, y valida que el archivo posea 
+    una extensión ejecutable estándar.
     """
     if not hasattr(entry, "path") or not hasattr(entry, "name"):
         return None
@@ -432,9 +436,9 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     """
     Invoca PowerShell para extraer entradas Run del Registro de Windows.
     
-    Construye dinámicamente un script de PowerShell para leer las claves 
-    especificadas, filtra los metadatos internos del registro y convierte
-    el resultado a CSV para su posterior procesado seguro.
+    Utiliza '-LiteralPath' para prevenir el procesamiento de caracteres especiales 
+    como comodines (globbing) dentro de la ruta del registro, garantizando que el 
+    acceso a las claves de sistema sea exacto y predecible.
     """
     if os.name != "nt":
         return []
