@@ -16,20 +16,20 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 100 | 2 | 34 | 2 | 154 |
-| 2026-11-03 | 68 | 5 | 18 | 8 | 113 |
+| 2026-11-02 | 99 | 2 | 34 | 2 | 151 |
+| 2026-11-03 | 69 | 5 | 18 | 8 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **34**
 - rendimiento: **34**
-- seguridad defensiva: **29**
-- robustez ante casos límite: **26**
+- seguridad defensiva: **28**
+- robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `safety.py`: **17**
 - `assistant.py`: **16**
 - `diskreport.py`: **16**
@@ -40,11 +40,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **11**
 - `settings.py`: **11**
 - `branding.py`: **9**
-- `startup.py`: **8**
 - `organizer.py`: **8**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T09:12:33` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_exclusive` y `_safe_unlink` ante condiciones de carrera y fallos de permisos en Windows, asegurando que el cierre de descriptores de archivo sea más resiliente mediante bloques `try-finally` incluso ante errores de sistema.
 - `2026-11-03T09:01:27` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor analítico implementando un mecanismo de defensa contra el desbordamiento de memoria y errores de tipo en la función `_compute_cached` y `SystemMetrics`, asegurando que el sistema sea capaz de recuperarse incluso ante entradas malformadas o métricas extremas.
 - `2026-11-03T08:51:09` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de la ingesta de datos en `SystemContext` mediante un chequeo de tipos estricto y la validación de integridad antes de realizar `setattr`, previniendo la inyección de atributos no permitidos o estados inconsistentes cuando se pasan objetos externos como fuentes de datos.
 - `2026-11-03T08:41:31` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un filtro de exclusión de extensiones pre-evaluado, evitando llamadas innecesarias a `is_file()` y otros chequeos costosos en archivos que no son relevantes para las heurísticas de seguridad.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T07:21:44` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `safety.py` introduciendo una captura de excepciones más granular en `_validate_volume_integrity` y `_get_path_stat_robust`, asegurando que errores inesperados en las llamadas de bajo nivel a la API de Windows no se propaguen como fallos genéricos, sino que se traten con códigos de error específicos y mensajes informativos.
 - `2026-11-03T07:10:39` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez en la manipulación de rutas y metadatos en `JunkFile` y `stage_for_review`, reemplazando el manejo genérico de excepciones por validaciones explícitas de tipos y estados, evitando fallos silenciosos ante rutas mal formadas.
 - `2026-11-03T07:10:27` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` añadiendo una validación explícita para la función `EmptyWorkingSet` antes de invocarla y capturando errores específicos de la API, evitando cierres inesperados por métodos inexistentes o fallos de firma.
-- `2026-11-03T07:08:58` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo de puntajes introduciendo validación temprana de `SystemMetrics` y capturando posibles desbordamientos o divisiones por cero en el pipeline, asegurando que las funciones de normalización y reglas nunca propaguen excepciones hacia el `lru_cache` o el informe final.

@@ -151,7 +151,7 @@ def _is_file_exclusive(path: Path) -> bool:
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
         handle: int = k32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
-        if handle == -1: return False
+        if handle == -1 or handle == 0: return False
         k32.CloseHandle(handle)
         return True
     
@@ -293,15 +293,14 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     """Realiza una operación de borrado segura con verificación de integridad."""
     if not path or not path.exists(): return True
     try:
-        # Re-validación final inmediata para evitar TOCTOU
         _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)
         parent: Path = path.parent
         _check_io_error_context(path.unlink)
         if parent.exists():
             try:
-                dir_fd: int = os.open(str(parent), os.O_RDONLY)
-                try: os.fsync(dir_fd)
-                finally: os.close(dir_fd)
+                fd = os.open(str(parent), os.O_RDONLY)
+                try: os.fsync(fd)
+                finally: os.close(fd)
             except (OSError, PermissionError): pass
         return True
     except (OSError, PermissionError, UnsafePathError): return False
@@ -491,9 +490,9 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             os.fsync(tf.fileno())
         os.replace(temp_name, target_path)
         try:
-            dir_fd: int = os.open(str(base_path), os.O_RDONLY)
-            try: os.fsync(dir_fd)
-            finally: os.close(dir_fd)
+            fd = os.open(str(base_path), os.O_RDONLY)
+            try: os.fsync(fd)
+            finally: os.close(fd)
         except OSError: pass
         st = target_path.stat()
         _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size)
@@ -580,7 +579,9 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
         if dest_path.exists(): raise FileExistsError("Colisión de ruta antes del reemplazo.")
         os.replace(temp_dest, dest_path)
         try:
-            with os.fdopen(os.open(str(dest_path.parent), os.O_RDONLY), 'r') as dir_fd: os.fsync(dir_fd.fileno())
+            fd = os.open(str(dest_path.parent), os.O_RDONLY)
+            try: os.fsync(fd)
+            finally: os.close(fd)
         except OSError: pass
         
         dest_stat = dest_path.stat()
@@ -624,7 +625,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         if destination.exists(): raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         destination.parent.mkdir(parents=True, exist_ok=True)
         h, i, d = _write_temp_to_final(source, destination)
-        # Re-validación post-transferencia contra posibles manipulaciones externas
         ensure_safe_to_modify(destination, allow_sensitive=True)
         if destination.stat().st_ino != i or destination.stat().st_dev != d or _get_sha256(destination) != h or destination.stat().st_nlink > 1:
             raise RuntimeError("Integridad comprometida: destino inconsistente.")
@@ -726,9 +726,9 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         for p in [parent, base_path]:
             if p and p.exists():
                 try:
-                    dir_fd: int = os.open(str(p), os.O_RDONLY)
-                    try: os.fsync(dir_fd)
-                    finally: os.close(dir_fd)
+                    fd = os.open(str(p), os.O_RDONLY)
+                    try: os.fsync(fd)
+                    finally: os.close(fd)
                 except (OSError, PermissionError): pass
         items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)
@@ -788,7 +788,9 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             new_items = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
             try:
-                with os.fdopen(os.open(str(root_path), os.O_RDONLY), 'r') as dir_fd: os.fsync(dir_fd.fileno())
+                fd = os.open(str(root_path), os.O_RDONLY)
+                try: os.fsync(fd)
+                finally: os.close(fd)
             except (OSError, PermissionError): pass
         return len(purgado_ids)
     except (OSError, PermissionError, UnsafePathError, RuntimeError): return 0
