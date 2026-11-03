@@ -116,10 +116,14 @@ class StartupEntry:
         if not isinstance(path_str, str) or "\0" in path_str:
             return True
         try:
-            if path_str.upper().startswith(("\\\\.\\", "\\\\?\\")):
+            path_upper = path_str.upper()
+            # Detectar rutas de dispositivos estilo Windows (ej: \\.\PhysicalDrive0)
+            if path_upper.startswith(("\\\\.\\", "\\\\?\\")):
                 return True
-            return Path(path_str).stem.upper() in RESERVED_DEVICE_NAMES
-        except (ValueError, TypeError, AttributeError):
+            # Extraer nombre base para comparar contra la lista de dispositivos reservados
+            p = Path(path_str)
+            return p.stem.upper() in RESERVED_DEVICE_NAMES
+        except (ValueError, TypeError, AttributeError, OSError):
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:

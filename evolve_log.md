@@ -912,3 +912,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-03T13:38:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-11-03T13:38:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T13:38:03` Corrida terminada. Total usado hoy: 320.
+- `2026-11-03T13:46:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-03T13:46:58` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: robustez ante casos límite): el archivo se encogió al 6% del original (posible pérdida de código)
+- `2026-11-03T13:47:32` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-03T13:48:30` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_read_and_parse_json` y `_is_file_secure_to_read` para manejar archivos corruptos o bloqueados mediante la implementación de una verificación explícita de `st_size` previo al `open`, evitando intentos de lectura en archivos de tamaño 0 o extremadamente grandes, y asegurando que las excepciones de I/O sean capturadas antes de procesar el contenido.
+- `2026-11-03T13:48:42` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_is_reserved_device_name` al agregar una validación contra el formato de rutas de dispositivos de Windows (ej. `\\.\COM1`) y el manejo de excepciones al verificar el `stem` del nombre, evitando que rutas inválidas o malformadas causen errores inesperados durante el escaneo del registro.
+- `2026-11-03T13:48:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T13:48:42` Corrida terminada. Total usado hoy: 324.

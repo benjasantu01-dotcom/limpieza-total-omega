@@ -380,7 +380,7 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
         if (st.st_mode & 0o077) != 0: return False
         # Verificar propiedad si el OS lo permite
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        # Validar tamaño
+        # Validar tamaño: no vacío, dentro de límites
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         # Seguridad final mediante la whitelist del proyecto
         return is_safe_to_modify(str(file_path))
