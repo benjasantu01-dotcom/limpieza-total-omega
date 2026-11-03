@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **156** (31.0% de aceptación)
-- Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 50
+- Mejoras aceptadas: **155** (30.8% de aceptación)
+- Rechazadas por tests: 7
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 280
+- Sin respuesta de la IA (error o límite): 283
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 83 | 2 | 32 | 2 | 121 |
-| 2026-11-03 | 73 | 6 | 18 | 8 | 159 |
+| 2026-11-02 | 81 | 1 | 31 | 2 | 121 |
+| 2026-11-03 | 74 | 6 | 18 | 8 | 162 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **35**
 - rendimiento: **34**
-- manejo de errores y validación de entradas: **34**
 - seguridad defensiva: **30**
-- legibilidad y documentación: **29**
 - robustez ante casos límite: **29**
+- legibilidad y documentación: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `assistant.py`: **15**
+- `diskreport.py`: **15**
 - `memory.py`: **15**
-- `diskreport.py`: **14**
 - `healthscore.py`: **13**
 - `settings.py`: **12**
 - `scanner.py`: **11**
 - `browser.py`: **10**
 - `duplicates.py`: **10**
-- `organizer.py`: **8**
 - `branding.py`: **8**
+- `organizer.py`: **7**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T11:25:23` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de integridad en las rutas relativas y capturando excepciones de tipo `OSError` o `ValueError` que podrían ocurrir al manipular rutas malformadas o durante la resolución de `path.parts`, asegurando que el análisis no se detenga por archivos con rutas excepcionalmente largas o caracteres especiales inesperados.
 - `2026-11-03T10:02:32` **settings.py** (seguridad defensiva): Se endureció la validación en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar que el archivo de configuración no sea un enlace simbólico o un archivo con metadatos maliciosos antes de procesarlo.
 - `2026-11-03T09:23:18` **assistant.py** (seguridad defensiva): Reforcé la validación de seguridad en `_call_gemini` para asegurar que el `model` y la `api_key` no contengan caracteres peligrosos antes de formatear la URL, previniendo inyecciones de parámetros o comandos malintencionados en el endpoint.
 - `2026-11-03T09:22:31` **settings.py** (robustez ante casos límite): Mejora la robustez del manejo de archivos de configuración ante concurrencia y errores de I/O mediante la validación explícita de `stat` antes y después de la escritura atómica, y añadiendo una protección adicional contra condiciones de carrera al verificar la existencia y legibilidad del archivo después de la creación del directorio base.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T08:21:10` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor analítico reemplazando la lógica de generación de cadenas y formateo dentro del bucle de `summarize` por un proceso más eficiente, y mejoré la integridad de los accesos a datos mediante el uso directo de la estructura del Pipeline, evitando recorridos innecesarios de diccionarios.
 - `2026-11-03T08:20:21` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso de `.relative_to().parts` dentro del bucle de recorrido, calculando el nivel superior mediante una comparación de cadenas o un acceso directo más eficiente, lo que reduce la carga de CPU y la asignación de memoria durante escaneos profundos.
 - `2026-11-03T08:11:11` **branding.py** (rendimiento): Optimicé el rendimiento de `get_gradient_segments` mediante la eliminación de la creación innecesaria de listas intermedias y el uso de un generador o cálculo directo, reduciendo la presión sobre el recolector de basura en operaciones críticas de renderizado.
-- `2026-11-03T08:10:42` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando llamadas redundantes a `getattr` y `hasattr` por una estructura de datos pre-calculada (`_VALID_METRIC_KEYS`), reduciendo la sobrecarga de reflexión en los bucles de ingesta y serialización.

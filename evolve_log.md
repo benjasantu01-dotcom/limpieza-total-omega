@@ -764,3 +764,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-03T11:17:32` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-03T11:17:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T11:17:32` Corrida terminada. Total usado hoy: 264.
+- `2026-11-03T11:23:41` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-03T11:24:23` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-03T11:24:51` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-03T11:25:13` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-03T11:25:23` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de integridad en las rutas relativas y capturando excepciones de tipo `OSError` o `ValueError` que podrían ocurrir al manipular rutas malformadas o durante la resolución de `path.parts`, asegurando que el análisis no se detenga por archivos con rutas excepcionalmente largas o caracteres especiales inesperados.
+- `2026-11-03T11:25:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T11:25:23` Corrida terminada. Total usado hoy: 268.
