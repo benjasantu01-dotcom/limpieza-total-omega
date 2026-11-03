@@ -465,7 +465,8 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Intenta reducir manualmente el Working Set del proceso. Solo para casos específicos."""
-    if not _is_windows or WindowsAPI.kernel32 is None: return False, "Solo soportado en Windows."
+    if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
+        return False, "Operación no soportada o librería PSAPI no disponible."
     
     try: 
         target_pid = int(pid)
@@ -475,6 +476,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid): 
         return False, "Operación no permitida en procesos del sistema."
     
+    if not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
+        return False, "Función de sistema no disponible."
+        
     path_buf = ctypes.create_unicode_buffer(1024)
     handle = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
@@ -489,7 +493,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso ya ha finalizado."
             
-        if WindowsAPI.psapi and WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
+        if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         else:
             return False, "El sistema operativo rechazó la operación de limpieza."

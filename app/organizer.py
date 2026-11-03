@@ -110,13 +110,16 @@ class JunkFile:
     _dev: Optional[int] = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.path, Path):
+            self.path = Path(self.path)
         try:
-            self.path = self.path.absolute()
-            if self.path.exists():
-                stat_result = self.path.stat()
+            abs_path = self.path.absolute()
+            if abs_path.exists():
+                stat_result = abs_path.stat()
+                self.path = abs_path
                 if self._ino is None: self._ino = stat_result.st_ino
                 if self._dev is None: self._dev = stat_result.st_dev
-        except (OSError, RuntimeError, PermissionError):
+        except (OSError, PermissionError):
             pass
 
     @property
@@ -195,7 +198,7 @@ def _try_open_win_file(path: Path) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Verifica si el archivo está actualmente en uso por otro proceso."""
-    if not path or not path.exists(): return True
+    if not isinstance(path, Path) or not path.exists(): return True
     try:
         if os.name == 'nt':
             return not _try_open_win_file(path)
@@ -214,7 +217,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _has_forbidden_chars(path: Path) -> bool:
     """Valida ausencia de caracteres peligrosos en la ruta."""
-    if not path: return True
+    if not isinstance(path, Path): return True
     try:
         path_str = str(path).lower()
         return any(c in path_str for c in ["<", ">", "|", "\0"])
@@ -286,7 +289,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> bool:
     """Filtra directorios no permitidos o protegidos por política del sistema."""
-    if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
+    if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(Path(entry.path)): return False
     if _is_system_hidden(entry): return False
     if is_protected_path(Path(entry.path)):
         protected_cache.add(entry.path)
@@ -321,7 +324,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         stats = entry.stat(follow_symlinks=False)
                         if _is_candidate_for_scan(entry.name, stats) and not _is_system_hidden(entry):
                             p = Path(entry.path)
-                            # Verificación única de seguridad y estado de bloqueo
                             if is_safe_to_modify(p) and not _is_file_locked(p):
                                 found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):

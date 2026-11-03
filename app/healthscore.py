@@ -164,8 +164,11 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
     """
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0: return 0.0
-        ratio = val / limit
-        return _clamp(1.0 - ratio if inverse else ratio)
+        try:
+            ratio = val / limit
+            return _clamp(1.0 - ratio if inverse else ratio)
+        except ZeroDivisionError:
+            return 0.0
     return scorer
 
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
@@ -231,12 +234,18 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula salud normalizando la RAM disponible (mayor es mejor)."""
     if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
-    return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
+    try:
+        return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
+    except ZeroDivisionError:
+        return 0.0
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Calcula salud normalizando el espacio libre en disco (mayor es mejor)."""
     if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
-    return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
+    try:
+        return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
+    except ZeroDivisionError:
+        return 0.0
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
     """Calcula salud normalizando el volumen de archivos duplicados (menor es mejor)."""
