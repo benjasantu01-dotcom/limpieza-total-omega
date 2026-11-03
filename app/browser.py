@@ -155,7 +155,7 @@ class DirectoryScanner:
             return ScanResult(0, False)
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
-    """Decorador para silenciar errores de sistema en operaciones de solo lectura."""
+    """Decorador para silenciar excepciones de acceso al sistema de archivos."""
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -167,6 +167,7 @@ def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     return decorator
 
 class ScanResult(NamedTuple):
+    """Resultado estructurado de un escaneo de tamaño."""
     bytes_found: int
     success: bool
 
@@ -187,7 +188,10 @@ BROWSER_CACHE_PATHS: BrowserMap = {
 }
 
 def _is_valid_rel_path(path_candidate: Any) -> TypeGuard[str]:
-    """Valida la integridad de la ruta relativa configurada."""
+    """
+    Verifica que la ruta configurada para el caché no sea absoluta ni 
+    contenga secuencias maliciosas (traversal o caracteres prohibidos).
+    """
     if not isinstance(path_candidate, str) or not path_candidate.strip(): return False
     if os.path.isabs(path_candidate) or path_candidate.startswith(('\\', '/')): return False
     if ".." in os.path.normpath(path_candidate): return False
@@ -214,21 +218,25 @@ BYTES_TO_MB: float = 1024 * 1024
 
 @dataclass
 class BrowserCache:
+    """Representación de un hallazgo de caché en un navegador específico."""
     browser: str
     path: Path
     size_bytes: int
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño del caché convertido a Megabytes."""
         return round(self.size_bytes / BYTES_TO_MB, 2)
 
 @safe_path_operation(None)
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
+    """Carga de forma segura la API de Win32 necesaria para atributos de archivo."""
     if os.name != 'nt': return None
     dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
     return dll if hasattr(dll, 'GetFileAttributesW') else None
 
 def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
+    """Identifica rutas de red UNC para evitar accesos remotos."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def base_directories() -> List[Path]:
@@ -248,12 +256,14 @@ def base_directories() -> List[Path]:
 
 @safe_path_operation(False)
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
+    """Verifica mediante atributos Win32 si un archivo es de sistema u oculto."""
     if kernel32 is None: return False
     attrs = kernel32.GetFileAttributesW(entry_path)
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
+    """Calcula el peso en bytes de una ruta de carpeta dada."""
     if path is None: return 0
     p = Path(path)
     if not p.is_dir() or not os.access(p, os.R_OK): return 0
@@ -267,7 +277,10 @@ def directory_size(path: Optional[OSPath]) -> int:
     return DirectoryScanner(ctx).get_size(str(p)).bytes_found
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Escanea el sistema de archivos buscando directorios de caché conocidos."""
+    """
+    Escanea las ubicaciones de perfiles de navegador conocidos en busca de cachés.
+    Utiliza el escáner defensivo para evitar ciclos y accesos a rutas prohibidas.
+    """
     raw_bases = list(bases) if (isinstance(bases, (list, tuple))) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
@@ -307,9 +320,11 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     return found
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
+    """Suma total de bytes encontrados en una lista de cachés."""
     return sum(c.size_bytes for c in caches if isinstance(c, BrowserCache)) if caches else 0
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
+    """Genera una salida textual legible del reporte de cachés."""
     current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches: return ["No se detectaron cachés de navegador en este sistema."]
     

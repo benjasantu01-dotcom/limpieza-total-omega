@@ -37,7 +37,7 @@ CoordinateSequence: TypeAlias = Tuple[float, ...]
 BoundingBox: TypeAlias = Tuple[float, float, float, float]
 StopPoint: TypeAlias = Tuple[float, ColorHex]
 
-# Constantes de control para renderizado
+# Constantes de control para límites de renderizado escalable
 _MIN_SCALE: Final[float] = 0.1
 _MAX_SCALE: Final[float] = 10.0
 _DEFAULT_SVG_SIZE: Final[int] = 128
@@ -76,7 +76,7 @@ APP_SHORT_NAME: Final[str] = "Omega"
 APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
-# Paleta Maestra estática para acceso eficiente
+# Paleta Maestra estática: Estructura de colores base para toda la interfaz
 class PaletteDict(TypedDict):
     background: ColorHex; surface: ColorHex; surface_alt: ColorHex; surface_hover: ColorHex
     card: ColorHex; accent: ColorHex; accent_hover: ColorHex; accent_dim: ColorHex
@@ -96,7 +96,7 @@ _RAW_PALETTE: Final[PaletteDict] = {
 
 PALETTE: Final[Mapping[str, ColorHex]] = MappingProxyType(_RAW_PALETTE)
 
-# Constantes directas para evitar acceso a diccionario en renderizado
+# Constantes directas: Exportación de colores críticos para acceso de alto rendimiento
 C_BACKGROUND: Final[ColorHex] = _RAW_PALETTE["background"]
 C_SURFACE: Final[ColorHex] = _RAW_PALETTE["surface"]
 C_SURFACE_ALT: Final[ColorHex] = _RAW_PALETTE["surface_alt"]
@@ -111,7 +111,7 @@ C_TEXT: Final[ColorHex] = _RAW_PALETTE["text"]
 C_TEXT_MUTED: Final[ColorHex] = _RAW_PALETTE["text_muted"]
 C_GLOW: Final[ColorHex] = _RAW_PALETTE["glow"]
 
-# Plantilla SVG parametrizada con marcadores de posición para inyección segura
+# Plantilla SVG parametrizada para generación de logos vectoriales
 _SVG_TEMPLATE: Final[str] = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{{s}}" height="{{s}}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{{stops}}</linearGradient>
@@ -375,6 +375,7 @@ def logo_ascii() -> str:
     """Retorna la versión ASCII para logs."""
     return _ASCII_LOGO
 
+# Constantes para renderizado geométrico de franjas decorativas
 STRIPE_THICKNESS_SCALE: Final[float] = 92.0
 STRIPE_COUNT_FACTOR: Final[float] = 28.0
 STRIPE_BASE_Y_OFFSET: Final[float] = 18.0

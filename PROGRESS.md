@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **152** (30.2% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 288
+- Sin respuesta de la IA (error o límite): 289
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 74 | 1 | 26 | 2 | 121 |
-| 2026-11-03 | 78 | 6 | 20 | 9 | 167 |
+| 2026-11-02 | 71 | 1 | 25 | 2 | 121 |
+| 2026-11-03 | 81 | 6 | 20 | 9 | 168 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - seguridad defensiva: **30**
-- rendimiento: **29**
 - robustez ante casos límite: **29**
-- legibilidad y documentación: **25**
+- legibilidad y documentación: **28**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
-- `memory.py`: **15**
 - `diskreport.py`: **14**
 - `healthscore.py`: **14**
+- `memory.py`: **14**
 - `assistant.py`: **14**
 - `scanner.py`: **11**
 - `settings.py`: **11**
-- `duplicates.py`: **10**
-- `browser.py`: **9**
-- `organizer.py`: **7**
-- `branding.py`: **7**
+- `duplicates.py`: **11**
+- `browser.py`: **10**
+- `branding.py`: **8**
+- `organizer.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T12:06:45` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad técnica mediante la documentación de los parámetros de tipo (type hinting) y el propósito funcional de las funciones internas, además de corregir la inconsistencia en el uso de `Path` para asegurar que el contrato del módulo sea robusto frente a rutas mal formadas.
+- `2026-11-03T12:06:08` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `browser.py` añadiendo docstrings descriptivos a los métodos críticos y normalizando el estilo de los comentarios existentes para cumplir con el enfoque de claridad exigido.
+- `2026-11-03T12:05:32` **branding.py** (legibilidad y documentación): Mejora la documentación técnica de `branding.py` mediante la adición de docstrings estructuradas en las funciones que carecían de ellas y la clarificación de los propósitos de las constantes de diseño, facilitando el mantenimiento y la comprensión de la jerarquía visual.
 - `2026-11-03T11:46:23` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_validate_preconditions` y `_validate_structural_safety` mediante la captura explícita de `ValueError` y `AttributeError` al manejar objetos `Path` y rutas, previniendo excepciones no controladas durante la evaluación de rutas mal formadas que podrían romper el flujo de ejecución.
 - `2026-11-03T11:45:12` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `save_manifest` y `quarantine_dir` mediante el uso de excepciones más específicas y una validación proactiva de tipos, evitando que errores de serialización o corrupción de manifiesto detengan inesperadamente el flujo de la aplicación.
 - `2026-11-03T11:34:44` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo de salud mediante la validación explícita de `metrics` dentro de `compute_score` y `_compute_cached` para evitar fallos por datos nulos o inconsistentes antes de la ejecución del pipeline.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T09:12:33` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_exclusive` y `_safe_unlink` ante condiciones de carrera y fallos de permisos en Windows, asegurando que el cierre de descriptores de archivo sea más resiliente mediante bloques `try-finally` incluso ante errores de sistema.
 - `2026-11-03T09:01:27` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor analítico implementando un mecanismo de defensa contra el desbordamiento de memoria y errores de tipo en la función `_compute_cached` y `SystemMetrics`, asegurando que el sistema sea capaz de recuperarse incluso ante entradas malformadas o métricas extremas.
 - `2026-11-03T08:51:09` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de la ingesta de datos en `SystemContext` mediante un chequeo de tipos estricto y la validación de integridad antes de realizar `setattr`, previniendo la inyección de atributos no permitidos o estados inconsistentes cuando se pasan objetos externos como fuentes de datos.
-- `2026-11-03T08:41:31` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un filtro de exclusión de extensiones pre-evaluado, evitando llamadas innecesarias a `is_file()` y otros chequeos costosos en archivos que no son relevantes para las heurísticas de seguridad.
-- `2026-11-03T08:41:04` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_get_system_root_paths` mediante `lru_cache` y se optimizaron las búsquedas en `PROTECTED_DIR_NAMES` utilizando un `set` en lugar de una lista en la función `is_protected_path`, mejorando significativamente el rendimiento al validar múltiples rutas en iteraciones de escaneo.
-- `2026-11-03T08:31:54` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` eliminando la re-lectura redundante del manifiesto mediante el aprovechamiento efectivo de `_MANIFEST_CACHE` y el filtrado en memoria, reduciendo llamadas innecesarias al sistema de archivos y evitando múltiples serializaciones JSON.
