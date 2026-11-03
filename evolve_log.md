@@ -852,3 +852,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-03T12:37:04` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-11-03T12:37:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T12:37:04` Corrida terminada. Total usado hoy: 296.
+- `2026-11-03T12:45:24` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-03T12:45:50` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `detect_profiles` reemplazando la creación redundante de objetos `DirectoryScanner` y `ScanContext` por una única instancia reutilizada para cada base de directorio, reduciendo la carga de inicialización en cada iteración del bucle.
+- `2026-11-03T12:46:12` 🛑 Propuesta bloqueada por la guardia en diskreport.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: FolderMetrics.size_mb
+- `2026-11-03T12:46:34` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-03T12:46:45` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del motor de cálculo reemplazando las operaciones de `set` y `tuple` dentro del bucle crítico `_compute_cached` por una pre-generación del `dict` de métricas, evitando así llamadas repetitivas a `getattr` y `zip` durante la fase de procesamiento de pipeline.
+- `2026-11-03T12:46:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T12:46:45` Corrida terminada. Total usado hoy: 300.
