@@ -409,3 +409,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-03T08:11:19` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-03T08:11:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T08:11:19` Corrida terminada. Total usado hoy: 192.
+- `2026-11-03T08:19:55` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-11-03T08:20:21` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso de `.relative_to().parts` dentro del bucle de recorrido, calculando el nivel superior mediante una comparación de cadenas o un acceso directo más eficiente, lo que reduce la carga de CPU y la asignación de memoria durante escaneos profundos.
+- `2026-11-03T08:20:43` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-03T08:21:10` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del motor analítico reemplazando la lógica de generación de cadenas y formateo dentro del bucle de `summarize` por un proceso más eficiente, y mejoré la integridad de los accesos a datos mediante el uso directo de la estructura del Pipeline, evitando recorridos innecesarios de diccionarios.
+- `2026-11-03T08:21:59` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._apply_ui_update_safely, wrapper
+- `2026-11-03T08:21:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T08:21:59` Corrida terminada. Total usado hoy: 196.

@@ -391,9 +391,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:
     """Genera representación visual en texto de los puntajes."""
-    safe_max = max(1, max_val)
-    safe_points = max(0, min(points, safe_max))
-    return "#" * safe_points + "." * (safe_max - safe_points)
+    return "#" * points + "." * (max(1, max_val) - points)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte legible a partir del resultado de salud."""
@@ -402,14 +400,10 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     try:
         lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-        weights_map = {entry.area: entry.weight for entry in PIPELINE_DEFINITIONS}
-        
-        for area in sorted(weights_map.keys()):
-            val = result.breakdown.get(area, 0)
-            weight = weights_map.get(area, 10)
-            bar = _render_bar(val, weight)
-            safe_area = _sanitize_msg(area) or "General"
-            lines.append(f"  {safe_area.capitalize():<12} {val:>2}/{weight:<2} [{bar}]")
+        for entry in PIPELINE_DEFINITIONS:
+            val = result.breakdown.get(entry.area, 0)
+            bar = _render_bar(val, entry.weight)
+            lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{bar}]")
         
         recs = result.recommendations if result.recommendations else ["No hay advertencias activas."]
         lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recs]))

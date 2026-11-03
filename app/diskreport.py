@@ -357,14 +357,12 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            parts = path.relative_to(root).parts
-            if not parts: continue
-            
-            top_level = root / parts[0]
+            # Obtener el primer nivel relativo sin crear la lista completa de partes
+            top_level = root / path.parts[len(root.parts)]
             m = stats[top_level]
             m.size += size
             m.file_count += 1
-        except (ValueError, OSError, RuntimeError):
+        except (IndexError, ValueError, OSError, RuntimeError):
             continue
             
     results = [FolderUsage(path, m.size, m.file_count) for path, m in stats.items()]
