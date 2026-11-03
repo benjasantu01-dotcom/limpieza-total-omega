@@ -946,3 +946,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-03T14:11:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-03T14:11:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T14:11:56` Corrida terminada. Total usado hoy: 332.
+- `2026-11-03T14:17:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-03T14:17:59` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-03T14:18:38` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_atomic_isolate_file` y `quarantine_file` añadiendo una validación explícita de `is_safe_to_modify` sobre el directorio destino *antes* de realizar cualquier operación de I/O, garantizando que el sandbox sea validado por `safety.py` en cada paso crítico de la cadena de aislamiento.
+- `2026-11-03T14:18:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-03T14:19:26` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación de "reparse points" (puntos de reparseo) en el nivel de `_validate_preconditions` para detectar si el *padre* del archivo es una unión de directorios o punto de montaje de sistema, evitando así la modificación de archivos que, aunque no parezcan protegidos, residen bajo una estructura redirigida potencialmente sensible.
+- `2026-11-03T14:19:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T14:19:26` Corrida terminada. Total usado hoy: 336.

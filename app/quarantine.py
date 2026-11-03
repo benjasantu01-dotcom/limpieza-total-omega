@@ -616,6 +616,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
     if source.parent.resolve() == destination.parent.resolve(): raise UnsafePathError("Origen y destino colisionan en la misma carpeta.")
     if _win_has_system_attributes(source) or not source.is_file(): raise UnsafePathError("Aislamiento denegado: atributo de sistema o no regular.")
+    # Validar seguridad destino antes de operar
+    if not is_safe_to_modify(destination.parent): raise UnsafePathError("Sandbox destino marcado como inseguro.")
     with open(source, "rb") as f:
         stat_orig = os.fstat(f.fileno())
         if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
@@ -675,6 +677,9 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     if _is_filesystem_read_only(p_source.parent): raise OSError("El archivo origen reside en un volumen de solo lectura.")
     try: dest_dir: Path = quarantine_dir(base)
     except (OSError, PermissionError) as e: raise RuntimeError(f"Sandbox inaccesible: {e}")
+    
+    # Validar seguridad de sandbox explícitamente antes de operar
+    if not is_safe_to_modify(dest_dir): raise UnsafePathError("Sandbox de cuarentena inseguro.")
     
     if _is_file_in_use_by_system(p_source): raise IOError("Archivo origen bloqueado por el sistema: abortado.")
     if p_source.resolve().stat().st_dev != dest_dir.resolve().stat().st_dev: raise UnsafePathError("Origen y sandbox deben estar en la misma unidad.")

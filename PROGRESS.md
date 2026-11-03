@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **153** (30.4% de aceptación)
+- Mejoras aceptadas: **155** (30.8% de aceptación)
 - Rechazadas por tests: 6
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 287
+- Sin respuesta de la IA (error o límite): 284
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 59 | 0 | 18 | 1 | 94 |
-| 2026-11-03 | 94 | 6 | 28 | 11 | 193 |
+| 2026-11-02 | 59 | 0 | 18 | 1 | 90 |
+| 2026-11-03 | 96 | 6 | 29 | 11 | 194 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
+- seguridad defensiva: **31**
 - legibilidad y documentación: **30**
 - rendimiento: **30**
-- seguridad defensiva: **29**
 - robustez ante casos límite: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
+- `safety.py`: **16**
 - `assistant.py`: **15**
-- `safety.py`: **15**
 - `healthscore.py`: **14**
 - `memory.py`: **14**
 - `diskreport.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T14:19:26` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "reparse points" (puntos de reparseo) en el nivel de `_validate_preconditions` para detectar si el *padre* del archivo es una unión de directorios o punto de montaje de sistema, evitando así la modificación de archivos que, aunque no parezcan protegidos, residen bajo una estructura redirigida potencialmente sensible.
+- `2026-11-03T14:18:38` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` y `quarantine_file` añadiendo una validación explícita de `is_safe_to_modify` sobre el directorio destino *antes* de realizar cualquier operación de I/O, garantizando que el sandbox sea validado por `safety.py` en cada paso crítico de la cadena de aislamiento.
 - `2026-11-03T14:00:00` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación de rutas mediante `is_protected_path` antes de cualquier operación de I/O, evitando el acceso accidental a directorios sensibles o puntos de montaje críticos.
 - `2026-11-03T13:58:57` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos mediante una validación explícita del diccionario de origen contra `is_protected_path`, evitando que un objeto `source` malicioso inyecte rutas prohibidas como claves de métricas.
 - `2026-11-03T13:48:42` **startup.py** (robustez ante casos límite): Se mejora la robustez de `_is_reserved_device_name` al agregar una validación contra el formato de rutas de dispositivos de Windows (ej. `\\.\COM1`) y el manejo de excepciones al verificar el `stem` del nombre, evitando que rutas inválidas o malformadas causen errores inesperados durante el escaneo del registro.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T12:36:50` **assistant.py** (rendimiento): Se optimizó el acceso a `_CRITERIOS_MAP` y la evaluación de problemas usando `set` y una estructura de datos pre-calculada, eliminando recorridos redundantes y filtrado iterativo en el bucle principal de diagnóstico.
 - `2026-11-03T12:36:09` **startup.py** (legibilidad y documentación): Se introdujeron docstrings técnicos detallados en `_process_folder_entry` y `entries_from_registry`, y se refinó la documentación del módulo para explicar las restricciones de seguridad (como el uso de `-LiteralPath` en PowerShell), mejorando la legibilidad técnica sin alterar el comportamiento.
 - `2026-11-03T12:35:40` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el método de escritura atómica y las validaciones de seguridad, clarificando el propósito de cada verificación de archivos para mejorar la auditabilidad del código.
-- `2026-11-03T12:06:45` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad técnica mediante la documentación de los parámetros de tipo (type hinting) y el propósito funcional de las funciones internas, además de corregir la inconsistencia en el uso de `Path` para asegurar que el contrato del módulo sea robusto frente a rutas mal formadas.
-- `2026-11-03T12:06:08` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `browser.py` añadiendo docstrings descriptivos a los métodos críticos y normalizando el estilo de los comentarios existentes para cumplir con el enfoque de claridad exigido.

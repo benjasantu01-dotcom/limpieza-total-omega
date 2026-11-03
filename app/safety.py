@@ -919,6 +919,10 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
+    # Verificación de reparse point en el padre
+    if os.name == 'nt' and target_path.parent.exists() and _is_system_directory_junction(str(target_path.parent)):
+         raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+
     try:
         app_root = Path(getattr(sys, 'executable', os.getcwd())).parent
         if target_path.is_relative_to(app_root):
