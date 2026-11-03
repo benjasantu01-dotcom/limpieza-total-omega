@@ -59,6 +59,23 @@ def _is_sensitive_input(data: Any) -> bool:
     d_low = data.lower()
     return any(term in d_low for term in _BLOCKED_TERMS)
 
+def _sanitize_msg(msg: str | Any) -> str:
+    """Limpia caracteres no permitidos y bloquea términos sensibles."""
+    if not isinstance(msg, str) or len(msg) > (_MAX_MSG_LEN * 4) or _is_sensitive_input(msg): 
+        return ""
+    clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
+    return clean.strip()[:_MAX_MSG_LEN]
+
+def _safe_factory(factory: Callable[[SystemMetrics], str]) -> Callable[[SystemMetrics], str]:
+    """Envoltorio de seguridad para factorías de mensajes."""
+    def wrapper(metrics: SystemMetrics) -> str:
+        try:
+            msg = factory(metrics)
+            return _sanitize_msg(msg)
+        except Exception:
+            return ""
+    return wrapper
+
 class Scorer(Protocol):
     """
     Protocolo funcional para transformar SystemMetrics en un ratio de salud [0.0, 1.0].
@@ -201,20 +218,13 @@ _JUNK_SCORER: Final = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER: Final = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER: Final = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
-def _msg_seguridad(metrics: SystemMetrics) -> str: return f"Riesgos de seguridad detectados: {metrics.suspicious_count}."
-def _msg_disco(metrics: SystemMetrics) -> str: return f"Espacio libre en disco bajo: {metrics.disk_free_percent:.1f} porciento."
-def _msg_memoria(metrics: SystemMetrics) -> str: return "Memoria disponible baja, optimice sus procesos."
-def _msg_basura(metrics: SystemMetrics) -> str: return f"Acumulacion de archivos temporales: {metrics.junk_mb:.0f} MB."
-def _msg_duplicados(metrics: SystemMetrics) -> str: return f"Recuperacion posible: {metrics.duplicate_mb:.0f} MB en duplicados."
-def _msg_arranque(metrics: SystemMetrics) -> str: return f"Exceso de programas en arranque: {metrics.startup_count} entradas."
-
 _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
-    "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_seguridad, lambda m, r: r < WARN_THRESHOLD_HIGH),),
-    "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disco, lambda m, r: r < WARN_THRESHOLD_LOW),),
-    "memoria": (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memoria, lambda m, r: r < WARN_THRESHOLD_LOW),),
-    "basura": (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_basura, lambda m, r: r < WARN_THRESHOLD_MED),),
-    "duplicados": (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicados, lambda m, r: r < WARN_THRESHOLD_MED),),
-    "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_arranque, lambda m, r: r < WARN_THRESHOLD_LOW),),
+    "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _safe_factory(lambda m: f"Riesgos de seguridad detectados: {m.suspicious_count}."), lambda m, r: r < WARN_THRESHOLD_HIGH),),
+    "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento."), lambda m, r: r < WARN_THRESHOLD_LOW),),
+    "memoria": (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _safe_factory(lambda m: "Memoria disponible baja, optimice sus procesos."), lambda m, r: r < WARN_THRESHOLD_LOW),),
+    "basura": (RecommendationRule("basura", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Acumulacion de archivos temporales: {m.junk_mb:.0f} MB."), lambda m, r: r < WARN_THRESHOLD_MED),),
+    "duplicados": (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados."), lambda m, r: r < WARN_THRESHOLD_MED),),
+    "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Exceso de programas en arranque: {m.startup_count} entradas."), lambda m, r: r < WARN_THRESHOLD_LOW),),
 }
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
@@ -330,23 +340,6 @@ def _is_safe_string_for_report(text: str) -> bool:
     """Verifica si el mensaje es seguro para mostrar en el informe."""
     return not _is_sensitive_input(text)
 
-def _sanitize_msg(msg: str | Any) -> str:
-    """Limpia caracteres no permitidos y bloquea términos sensibles."""
-    if not isinstance(msg, str) or len(msg) > (_MAX_MSG_LEN * 4) or _is_sensitive_input(msg): 
-        return ""
-    clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
-    return clean.strip()[:_MAX_MSG_LEN]
-
-def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
-    """Ejecuta reglas de diagnóstico en un entorno seguro."""
-    try:
-        if metrics is None: return ""
-        raw_res = rule.message_factory(metrics)
-        if not _is_safe_string_for_report(raw_res):
-            return ""
-        return _sanitize_msg(raw_res)
-    except Exception: return ""
-
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
     """Evalúa reglas de advertencia según la métrica recibida."""
     if not isinstance(rules, tuple) or metrics is None: return []
@@ -354,8 +347,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):
-                clean_msg = _apply_rule_safely(metrics, rule)
-                if clean_msg: findings.append(clean_msg)
+                msg = rule.message_factory(metrics)
+                if msg: findings.append(msg)
         except Exception:
             continue
     return findings
@@ -382,11 +375,9 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
             continue
             
     if metrics.quarantined_count > 0:
-        quarantine_msg = "Existen elementos en cuarentena."
-        if _is_safe_string_for_report(quarantine_msg):
-            safe_q_msg = _sanitize_msg(quarantine_msg)
-            if safe_q_msg:
-                recommendations.append(safe_q_msg)
+        quarantine_msg = _sanitize_msg("Existen elementos en cuarentena.")
+        if quarantine_msg:
+            recommendations.append(quarantine_msg)
         
     final_score = int(_clamp(total_points, 0.0, 100.0))
     
@@ -432,7 +423,7 @@ def summarize(result: HealthResult | None) -> List[str]:
             lines.append(f"  {safe_area.capitalize():<12} {val:>2}/{weight:<2} [{bar}]")
         
         recs = result.recommendations if result.recommendations else ["No hay advertencias activas."]
-        lines.extend(("", "Recomendaciones:", *[f"  - {_sanitize_msg(s)}" for s in recs if _sanitize_msg(s)]))
+        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recs]))
         return lines
     except Exception:
         return ["Error: Fallo crítico al generar resumen de informe."]

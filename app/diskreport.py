@@ -181,7 +181,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
-        if str(p).startswith('\\\\'):
+        if str(p).startswith('\\\\') or _is_reparse_point(p):
             return None
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
@@ -322,7 +322,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         entry_path = Path(entry.path).resolve()
-                        if entry.is_symlink() or _is_reparse_point(entry_path):
+                        if _is_reparse_point(entry_path):
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
