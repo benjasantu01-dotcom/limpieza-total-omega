@@ -7,22 +7,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **178** (35.3% de aceptación)
-- Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 58
+- Rechazadas por tests: 8
+- Rechazadas por guardia de seguridad: 57
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 249
+- Sin respuesta de la IA (error o límite): 251
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 129 | 5 | 47 | 4 | 163 |
-| 2026-11-03 | 49 | 4 | 11 | 6 | 86 |
+| 2026-11-02 | 128 | 4 | 46 | 4 | 162 |
+| 2026-11-03 | 50 | 4 | 11 | 6 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **38**
 - seguridad defensiva: **36**
 - robustez ante casos límite: **34**
 - rendimiento: **32**
@@ -30,10 +30,10 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `diskreport.py`: **17**
 - `memory.py`: **17**
+- `assistant.py`: **17**
 - `safety.py`: **17**
-- `assistant.py`: **16**
+- `diskreport.py`: **16**
 - `healthscore.py`: **15**
 - `browser.py`: **14**
 - `settings.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T06:51:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para garantizar que la validación de tipos y profundidad no falle ante objetos inesperados y sea más consistente con la jerarquía de validación centralizada.
 - `2026-11-03T05:18:39` **quarantine.py** (seguridad defensiva): Se introdujo una re-validación de seguridad en `quarantine_file` tras la creación del archivo destino pero antes del registro en el manifiesto, utilizando `ensure_safe_to_modify` para prevenir condiciones de carrera (TOCTOU) y asegurar que el archivo recién aislado no haya sido sustituido o manipulado por un proceso externo en el ínterin.
 - `2026-11-03T05:17:46` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita para evitar que procesos con nombres sospechosos (posibles inyecciones o rutas mal formadas) sean procesados, reforzando la integridad de los datos antes de operar sobre ellos.
 - `2026-11-03T05:11:17` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del pipeline de puntuación al eliminar la posibilidad de que `_compute_cached` procese métricas fuera de los límites definidos, asegurando que cualquier entrada sea validada contra `_METRIC_LIMITS` antes de ingresar al caché, evitando así comportamientos inesperados o cálculos con valores espurios.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T03:55:29` **healthscore.py** (rendimiento): Se optimizó el acceso a atributos y la validación en `SystemMetrics` evitando la creación innecesaria de listas y llamadas repetitivas a `getattr` mediante el uso de una constante `_METRICS_LIST` y una tupla estática, mejorando el rendimiento en el bucle caliente del pipeline.
 - `2026-11-03T03:55:01` **duplicates.py** (rendimiento): Optimicé el rendimiento eliminando la llamada redundante a `path.exists()` dentro de `group_by_size` al confiar en `os.scandir` y `_safe_path_check`, y mejoré la eficiencia del procesamiento de candidatos evitando conversiones innecesarias de `str` a `Path` y verificaciones repetidas de atributos, aprovechando los datos que ya entrega el iterador de archivos.
 - `2026-11-03T03:46:12` **diskreport.py** (rendimiento): Optimicé el método `walk_files` para reducir drásticamente las llamadas redundantes a `Path.resolve()` y `path.relative_to()`, reemplazándolas por operaciones con cadenas (`entry.path`) y objetos `Path` directos, mejorando la eficiencia en recorridos de disco extensos.
-- `2026-11-03T03:45:54` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo al evitar llamadas repetitivas y costosas al sistema de archivos (`os.lstat` y validaciones de seguridad redundantes) mediante el uso de `os.scandir` de forma más eficiente y el pre-cálculo de estados, reduciendo la carga de I/O en el bucle principal.

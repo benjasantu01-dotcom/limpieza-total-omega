@@ -376,7 +376,7 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     if isinstance(val, str): return _ensure_safe_text(val)
     if isinstance(val, (list, tuple)):
         if len(val) > _MAX_COLLECTION_SIZE: return False
-        return all(isinstance(item, (int, float, bool, str)) and _is_safe_payload_structure(item, depth + 1) for item in val)
+        return all(isinstance(i, (int, float, bool, str)) and _is_safe_payload_structure(i, depth + 1) for i in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return False
         return all(isinstance(k, str) and _ensure_safe_text(k) and isinstance(v, (int, float, bool, str)) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
@@ -388,10 +388,10 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     if val is None or isinstance(val, (int, float, bool, str)): return False
     if isinstance(val, (list, tuple)):
         if len(val) > _MAX_COLLECTION_SIZE: return True
-        return any(not isinstance(item, (int, float, bool, str)) or _is_input_too_deep_or_complex(item, depth + 1) for item in val)
+        return any(isinstance(i, (list, tuple, dict)) and _is_input_too_deep_or_complex(i, depth + 1) for i in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return True
-        return any(not isinstance(k, str) or not isinstance(v, (int, float, bool, str)) or _is_input_too_deep_or_complex(v, depth + 1) for k, v in val.items())
+        return any(isinstance(v, (list, tuple, dict)) and _is_input_too_deep_or_complex(v, depth + 1) for v in val.values())
     return True
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
