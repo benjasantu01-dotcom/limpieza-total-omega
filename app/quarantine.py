@@ -463,8 +463,10 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         if not force_reload and base_dir in _MANIFEST_CACHE:
             cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
             if cached_mtime == st.st_mtime and cached_size == st.st_size: return cached_items
-        with open(m_path, "r", encoding="utf-8") as f: data: Any = json.load(f)
-        if not isinstance(data, list): raise ValueError("Formato de manifiesto inválido: no es una lista.")
+        with open(m_path, "r", encoding="utf-8") as f: 
+            data: Any = json.load(f)
+        if not isinstance(data, list): 
+            raise ValueError("Formato de manifiesto inválido: no es una lista.")
         items: List[QuarantineItem] = [i for i in (QuarantineItem.from_dict(d) for d in data if isinstance(d, dict)) if i]
         _MANIFEST_CACHE[base_dir] = (items, st.st_mtime, st.st_size)
         return items
