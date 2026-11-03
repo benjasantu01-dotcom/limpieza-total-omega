@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **148** (29.4% de aceptación)
+- Mejoras aceptadas: **149** (29.6% de aceptación)
 - Rechazadas por tests: 6
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 295
+- Rechazadas por guardia de seguridad: 45
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 292
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 59 | 0 | 18 | 1 | 110 |
-| 2026-11-03 | 89 | 6 | 26 | 10 | 185 |
+| 2026-11-02 | 59 | 0 | 18 | 1 | 106 |
+| 2026-11-03 | 90 | 6 | 27 | 11 | 186 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **30**
 - rendimiento: **30**
 - seguridad defensiva: **27**
-- robustez ante casos límite: **22**
+- robustez ante casos límite: **23**
 
 ## Mejoras aceptadas por archivo
 
@@ -40,11 +40,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **10**
 - `scanner.py`: **10**
 - `branding.py`: **7**
+- `organizer.py`: **7**
 - `startup.py`: **7**
-- `organizer.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T13:37:20` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `OSError` al intentar leer archivos bloqueados en `_is_file_locked` y se reforzó la robustez de `_get_win_attributes` manejando errores de acceso durante el escaneo para evitar interrupciones en el bucle de procesado de directorios ante archivos con permisos restringidos.
 - `2026-11-03T13:06:51` **safety.py** (rendimiento): Se implementó un mecanismo de caché para los resultados de `_is_kernel_managed` y se optimizó `is_protected_path` eliminando la recreación de objetos `Path` y normalizaciones redundantes dentro del bucle de validación, mejorando el rendimiento en recorridos masivos de directorios.
 - `2026-11-03T12:58:02` **quarantine.py** (rendimiento): Se optimizó el rendimiento del cálculo de hashes SHA256 integrando un mecanismo de caché más granular basado en la tupla `(tamaño, tiempo de modificación, inodo)`, lo que evita lecturas redundantes del disco en archivos ya procesados.
 - `2026-11-03T12:57:39` **organizer.py** (rendimiento): Optimizé el rendimiento de `_process_directory` reemplazando la verificación repetida de `is_safe_to_modify` (que hace múltiples llamadas internas) por una validación de caché de rutas protegidas y evitando llamadas innecesarias a `is_file_locked` durante el escaneo inicial, moviendo esa validación pesada solo a la etapa de movimiento donde realmente es necesaria.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T11:46:23` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_validate_preconditions` y `_validate_structural_safety` mediante la captura explícita de `ValueError` y `AttributeError` al manejar objetos `Path` y rutas, previniendo excepciones no controladas durante la evaluación de rutas mal formadas que podrían romper el flujo de ejecución.
 - `2026-11-03T11:45:12` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `save_manifest` y `quarantine_dir` mediante el uso de excepciones más específicas y una validación proactiva de tipos, evitando que errores de serialización o corrupción de manifiesto detengan inesperadamente el flujo de la aplicación.
 - `2026-11-03T11:34:44` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo de salud mediante la validación explícita de `metrics` dentro de `compute_score` y `_compute_cached` para evitar fallos por datos nulos o inconsistentes antes de la ejecución del pipeline.
-- `2026-11-03T11:34:16` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del módulo `duplicates.py` mediante la validación de parámetros (guard clauses) en las funciones `suggest_keeper` y `format_group`, y la centralización de chequeos de seguridad para evitar operaciones sobre rutas nulas o inválidas, previniendo excepciones innecesarias durante la ejecución.

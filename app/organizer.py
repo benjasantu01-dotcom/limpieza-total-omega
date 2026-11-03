@@ -143,6 +143,7 @@ def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """Extrae atributos de archivo de bajo nivel usando la API de Windows."""
     try:
         if isinstance(entry, os.DirEntry):
+            # Usar lstat para evitar seguir enlaces simbólicos accidentalmente
             return entry.stat(follow_symlinks=False).st_file_attributes
         return entry.lstat().st_file_attributes
     except (OSError, AttributeError, ValueError):
