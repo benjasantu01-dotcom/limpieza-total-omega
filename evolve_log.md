@@ -1187,3 +1187,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-03T04:48:01` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-11-03T04:48:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T04:48:01` Corrida terminada. Total usado hoy: 112.
+- `2026-11-03T04:55:40` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-03T04:56:15` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `settings.py` ante archivos de configuración corruptos o malintencionados al añadir una validación de `JSON` estricta que rechaza archivos que excedan el límite de claves permitidas o contengan valores inesperados (`None`), protegiendo la integridad del sistema contra desbordamientos o entradas inválidas antes de cualquier procesamiento.
+- `2026-11-03T04:56:42` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se introdujo una mejora robusta en `_resolve_and_cache_path` mediante la implementación de una validación de rutas usando `pathlib.Path.resolve(strict=False)` con un chequeo preventivo de profundidad, lo que evita desbordamientos de pila o bucles infinitos en sistemas con reparse points o enlaces simbólicos profundos.
+- `2026-11-03T04:57:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-03T04:58:27` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_build_payload` y `_extract_text_from_gemini_json` para asegurar que el contenido procesado sea texto plano puro y se añadió una validación explícita mediante `is_protected_path` en `_is_safe_text_length` para evitar que rutas del sistema se infiltren accidentalmente como métricas.
+- `2026-11-03T04:58:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-03T04:58:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T04:58:43` Corrida terminada. Total usado hoy: 116.

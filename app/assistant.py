@@ -584,7 +584,7 @@ def _has_invalid_meta_characters(text: str) -> bool:
 
 def _is_safe_text_length(text: Any) -> bool:
     """Verifica que la cadena tenga una longitud válida (no nula y dentro de límites)."""
-    return isinstance(text, str) and 0 < len(text) <= _MAX_TEXT_LENGTH
+    return isinstance(text, str) and 0 < len(text) <= _MAX_TEXT_LENGTH and not is_protected_path(text)
 
 def _ensure_safe_text(text: Any) -> bool:
     """
@@ -754,6 +754,9 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
     if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): return None
     
+    # Validar que el prompt sea estrictamente texto simple tras la concatenación
+    if _contains_forbidden_patterns(full_prompt): return None
+    
     payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
     if not _is_safe_payload_structure(payload_data): return None
     try:
@@ -775,6 +778,9 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     
     text_val = parts[0].get("text")
     if not isinstance(text_val, str): return None
+    
+    # Asegurar que la respuesta de IA no contenga inyecciones antes de truncar
+    if _contains_forbidden_patterns(text_val): return None
     
     sanitized = _validate_response_length(text_val)
     return sanitized if _ensure_safe_text(sanitized) else None

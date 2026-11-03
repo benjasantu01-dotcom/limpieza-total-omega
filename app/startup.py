@@ -196,7 +196,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza, resuelve rutas relativas y valida el acceso al archivo resultante.
+        Normaliza, resuelve rutas relativas y valida el acceso al archivo resultante,
+        limitando la profundidad de resolución para evitar ciclos en reparse points.
         """
         if not isinstance(path_string, str) or not path_string:
             return ""
@@ -214,16 +215,16 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
-            # Limitar la profundidad de resolución para evitar ciclos en junctions/symlinks
-            p = p.resolve(strict=False)
-            if len(p.parts) > 64: 
+            # Resolvemos la ruta de forma segura limitando la profundidad de recursión
+            resolved = p.resolve(strict=False)
+            if len(resolved.parts) > 64:
                 return ""
 
-            if not self._validate_file_access(p):
+            if not self._validate_file_access(resolved):
                 _EXISTS_CACHE[path_string] = False
                 return path_string
             
-            p_str: str = str(p)
+            p_str: str = str(resolved)
             _EXISTS_CACHE[p_str] = True
             return p_str
         except (OSError, PermissionError, FileNotFoundError, RuntimeError, ValueError, TypeError, AttributeError):

@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 58
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 245
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 7 | 0 | 2 | 3 | 30 |
+| 2026-11-01 | 7 | 0 | 2 | 3 | 26 |
 | 2026-11-02 | 131 | 5 | 47 | 4 | 163 |
-| 2026-11-03 | 42 | 4 | 9 | 5 | 52 |
+| 2026-11-03 | 44 | 4 | 9 | 6 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **34**
 - rendimiento: **32**
-- seguridad defensiva: **30**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
 - `diskreport.py`: **18**
 - `safety.py`: **18**
+- `assistant.py`: **17**
 - `memory.py`: **17**
-- `assistant.py`: **16**
 - `healthscore.py`: **15**
 - `browser.py`: **14**
 - `scanner.py`: **13**
@@ -42,10 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **12**
 - `branding.py`: **9**
 - `organizer.py`: **9**
-- `startup.py`: **7**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T04:58:27` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_extract_text_from_gemini_json` para asegurar que el contenido procesado sea texto plano puro y se añadió una validación explícita mediante `is_protected_path` en `_is_safe_text_length` para evitar que rutas del sistema se infiltren accidentalmente como métricas.
+- `2026-11-03T04:56:42` **startup.py** (robustez ante casos límite): Se introdujo una mejora robusta en `_resolve_and_cache_path` mediante la implementación de una validación de rutas usando `pathlib.Path.resolve(strict=False)` con un chequeo preventivo de profundidad, lo que evita desbordamientos de pila o bucles infinitos en sistemas con reparse points o enlaces simbólicos profundos.
 - `2026-11-03T04:47:24` **safety.py** (robustez ante casos límite): Se implementó un chequeo robusto en `_get_path_stat_robust` para manejar casos donde el archivo existe pero los metadatos son inaccesibles o el sistema de archivos retorna un estado inconsistente (handle cerrado o inexistente) debido a condiciones de carrera o bloqueos transitorios, evitando que `ensure_safe_to_modify` falle catastróficamente ante bloqueos temporales menores.
 - `2026-11-03T04:18:07` **settings.py** (rendimiento): Optimicé el rendimiento eliminando la llamada innecesaria a `Path.resolve()` en el bucle principal de `validate`, utilizando directamente la caché del gestor para evitar recrear objetos de ruta y validando la existencia de claves de forma más eficiente mediante un `frozenset`.
 - `2026-11-03T04:08:13` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_is_kernel_managed` para evitar re-cálculos costosos y consultas al entorno repetitivas durante operaciones masivas de escaneo de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T03:37:11` **settings.py** (legibilidad y documentación): Se han documentado las funciones de validación y gestión de archivos con docstrings específicos que explican la lógica de seguridad implementada, facilitando la comprensión del flujo de datos y asegurando que las decisiones de diseño sean transparentes para futuras auditorías.
 - `2026-11-03T03:35:28` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la suite de heurísticas introduciendo un Docstring estructurado en cada función de chequeo que detalla el riesgo específico, el impacto y la lógica de validación, facilitando su auditoría.
 - `2026-11-03T03:34:56` **safety.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_drive_restrictions`, extrayendo la lógica repetitiva de validación de condiciones a una estructura de datos clara y legible que facilita futuras adiciones.
-- `2026-11-03T03:26:53` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final`, extrayendo la lógica de persistencia de metadatos y limpieza de archivos temporales hacia una estructura más clara (patrón *try/finally* robusto), además de añadir type hints explícitos en los retornos de las funciones críticas para cumplir con los estándares del proyecto.
-- `2026-11-03T03:24:19` **memory.py** (legibilidad y documentación): Se añadió documentación exhaustiva en formato de docstrings (especialmente en `_get_handle_for_safe_proc` y `_iter_process_memory`) para clarificar la lógica de seguridad y el manejo de handles, y se renombraron variables internas (`h_process` a `handle`, `cb_needed` a `bytes_written`) para mejorar la legibilidad y coherencia técnica sin alterar la funcionalidad.
