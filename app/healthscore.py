@@ -336,16 +336,22 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """Orquestador central del cálculo de salud mediante pipeline."""
-    # Aplicar validación estricta antes de instanciar para proteger el caché
+    # Validación estricta para evitar desbordamiento del caché con datos corruptos
+    if len(metric_tuple) != len(_VALIDATION_KEYS):
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
+
     validated_metrics: List[float] = []
     for i, key in enumerate(_VALIDATION_KEYS):
         min_v, max_v = _METRIC_LIMITS.get(key, (0.0, 1e9))
         validated_metrics.append(_validate_numeric(metric_tuple[i], 0.0, min_v, max_v))
         
-    metrics = SystemMetrics(
-        **dict(zip(_VALIDATION_KEYS, validated_metrics)), 
-        quarantined_count=_validate_numeric(quarantined, 0.0, 0.0, 10000.0)
-    )
+    try:
+        metrics = SystemMetrics(
+            **dict(zip(_VALIDATION_KEYS, validated_metrics)), 
+            quarantined_count=_validate_numeric(quarantined, 0.0, 0.0, 10000.0)
+        )
+    except Exception:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al instanciar métricas."])
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
