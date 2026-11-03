@@ -325,6 +325,11 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         if len(entry.path) > MAX_PATH_LEN:
             return None
             
+        path_obj = Path(entry.path)
+        # Validación defensiva: asegurar que no se procesen rutas protegidas o no seguras
+        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+            return None
+            
         name = Path(entry.name).stem
         return StartupEntry(name=name, command=entry.path, source="carpeta")
     except (OSError, PermissionError, ValueError, TypeError, AttributeError):
@@ -346,7 +351,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
                     if entry.path in processed_paths:
                         continue
                     processed: Optional[StartupEntry] = _process_folder_entry(entry)
-                    if processed and is_safe_to_modify(Path(processed.command)):
+                    if processed:
                         found_entries.append(processed)
                         processed_paths.add(entry.path)
         except (OSError, PermissionError):

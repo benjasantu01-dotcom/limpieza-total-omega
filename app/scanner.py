@@ -92,6 +92,14 @@ def _cached_is_protected(path_str: str) -> bool:
     except (ValueError, TypeError, OSError):
         return True
 
+def _is_safe_by_attributes(path: Path) -> bool:
+    """Verifica que la ruta no sea un punto de reanálisis antes de acceder."""
+    try:
+        attrs = path.stat().st_file_attributes
+        return not (attrs & SCAN_LIMITS.reparse_point_mask)
+    except (OSError, AttributeError):
+        return True
+
 def _is_valid_file_path(path: PathInput) -> bool:
     """Valida existencia, legibilidad y exclusión de rutas protegidas."""
     if path is None:
@@ -104,8 +112,7 @@ def _is_valid_file_path(path: PathInput) -> bool:
         if len(abs_path) > SCAN_LIMITS.path_length_limit:
             return False
         target_path = Path(abs_path)
-        # Verificación doble para mitigar condiciones de carrera en sistemas volátiles
-        return target_path.exists() and not _cached_is_protected(abs_path) and target_path.is_file()
+        return target_path.exists() and not _cached_is_protected(abs_path) and target_path.is_file() and _is_safe_by_attributes(target_path)
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
         return False
 
@@ -120,7 +127,8 @@ def _is_readable(path: PathInput) -> bool:
         abs_path = os.path.abspath(path_str)
         if len(abs_path) > SCAN_LIMITS.path_length_limit:
             return False
-        return not _cached_is_protected(abs_path) and os.access(abs_path, os.R_OK)
+        path_obj = Path(abs_path)
+        return not _cached_is_protected(abs_path) and os.access(abs_path, os.R_OK) and _is_safe_by_attributes(path_obj)
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
@@ -145,7 +153,6 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
             return None
         stats = entry.stat(follow_symlinks=False)
-        # Validar que el stat tenga atributos mínimos para evitar objetos malformados
         if not hasattr(stats, "st_size"):
             return None
         return stats

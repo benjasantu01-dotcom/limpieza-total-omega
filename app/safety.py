@@ -1051,7 +1051,7 @@ def _validate_no_reparse_traversal(path: Path) -> None:
         current = current / part
         if current.is_symlink() or _is_system_directory_junction(str(current)):
             _validate_junction_depth(current)
-            target = _get_final_path_normalized(current)
+            target = _get_final_pathNormalized(current)
             if not target.is_relative_to(Path(path.anchor)):
                 raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS)
 
@@ -1083,14 +1083,15 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         
     p = normalize(str(path).strip())
     
-    # NUEVA SEGURIDAD: Bloqueo explícito de reparse points antes de procesar
+    # Bloqueo rápido de archivos críticos conocidos
+    if _is_kernel_managed(str(p)):
+        raise UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
+
     if os.name == 'nt' and _is_system_directory_junction(str(p)):
         raise UnsafePathError(f"Modificación denegada sobre punto de reparse: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
     if p.exists() and not (p.is_file() or p.is_dir()):
         raise UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE)
-    if p.name.lower() in _KERNEL_BLOCKED_FILES:
-        raise UnsafePathError(f"Modificación bloqueada de archivo crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
     
     base = None
     if base_dir:

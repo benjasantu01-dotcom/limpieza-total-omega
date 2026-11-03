@@ -703,3 +703,12 @@
 - `2026-11-03T00:53:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-03T00:53:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T00:53:26` Corrida terminada. Total usado hoy: 20.
+- `2026-11-03T01:00:52` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-11-03T01:01:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-03T01:02:45` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación temprana contra `_is_kernel_managed`, evitando así la ejecución de validaciones costosas de IO sobre archivos críticos del sistema que ya conocemos como inmutables para la aplicación.
+- `2026-11-03T01:03:12` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_readable` y `_is_valid_file_path` mediante la validación explícita de puntos de reanálisis (reparse points) a nivel de metadatos antes de intentar cualquier operación de acceso, evitando seguir enlaces fuera del árbol autorizado.
+- `2026-11-03T01:03:41` ➖ Sin cambios en settings.py (enfoque: seguridad defensiva). Motivo: Se endureció la seguridad en `perform_atomic_write` añadiendo una comprobación explícita de `st_nlink == 1` y permisos de escritura restringidos al dueño (`0o077`) antes de cualquier operación de reemplazo, evitando ataques de enlaces simbólicos o manipulación de permisos por otros usuarios.
+- `2026-11-03T01:03:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-03T01:04:13` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al validar que los ejecutables detectados en las carpetas de inicio no solo sean archivos, sino que cumplan con una verificación de seguridad estricta antes de ser instanciados, evitando posibles rutas maliciosas que evadan los filtros iniciales.
+- `2026-11-03T01:04:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T01:04:13` Corrida terminada. Total usado hoy: 24.
