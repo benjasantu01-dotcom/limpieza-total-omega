@@ -800,7 +800,6 @@ def is_protected_path(path: PathLike) -> bool:
             return True
         
         path_obj = Path(norm_str)
-        # Optimizacion: comparacion contra el set predefinido
         if not PROTECTED_DIR_NAMES.isdisjoint(p.lower() for p in path_obj.parts):
             return True
         
@@ -920,9 +919,12 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
-    app_root = Path(getattr(sys, 'executable', os.getcwd())).parent
-    if target_path.is_relative_to(app_root):
-        raise UnsafePathError("Protección: No se puede modificar el directorio de la aplicación.", SafetyValidationErrorCode.APP_DIRECTORY_VIOLATION)
+    try:
+        app_root = Path(getattr(sys, 'executable', os.getcwd())).parent
+        if target_path.is_relative_to(app_root):
+            raise UnsafePathError("Protección: No se puede modificar el directorio de la aplicación.", SafetyValidationErrorCode.APP_DIRECTORY_VIOLATION)
+    except (ValueError, TypeError, AttributeError):
+        pass
 
     if is_running_as_admin():
         if _is_file_owned_by_system(str(target_path)) or _is_kernel_managed(str(target_path)):
@@ -957,7 +959,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         _validate_volume_integrity(target_path)
     except UnsafePathError:
         raise
-    except (OSError, PermissionError) as e:
+    except (OSError, PermissionError, ValueError, AttributeError) as e:
         raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:

@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **155** (30.8% de aceptación)
+- Mejoras aceptadas: **154** (30.6% de aceptación)
 - Rechazadas por tests: 7
 - Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 10
+- Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 284
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 79 | 1 | 29 | 2 | 121 |
-| 2026-11-03 | 76 | 6 | 19 | 8 | 163 |
+| 2026-11-02 | 76 | 1 | 28 | 2 | 121 |
+| 2026-11-03 | 78 | 6 | 20 | 9 | 163 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **37**
-- rendimiento: **34**
+- manejo de errores y validación de entradas: **39**
+- rendimiento: **31**
 - seguridad defensiva: **30**
 - robustez ante casos límite: **29**
 - legibilidad y documentación: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **17**
-- `assistant.py`: **15**
+- `quarantine.py`: **18**
+- `safety.py`: **16**
 - `diskreport.py`: **15**
 - `memory.py`: **15**
-- `safety.py`: **15**
 - `healthscore.py`: **14**
+- `assistant.py`: **14**
 - `duplicates.py`: **11**
 - `scanner.py`: **11**
 - `settings.py`: **11**
-- `browser.py`: **10**
-- `branding.py`: **8**
+- `browser.py`: **9**
 - `organizer.py`: **7**
+- `branding.py`: **7**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T11:46:23` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_validate_preconditions` y `_validate_structural_safety` mediante la captura explícita de `ValueError` y `AttributeError` al manejar objetos `Path` y rutas, previniendo excepciones no controladas durante la evaluación de rutas mal formadas que podrían romper el flujo de ejecución.
+- `2026-11-03T11:45:12` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `save_manifest` y `quarantine_dir` mediante el uso de excepciones más específicas y una validación proactiva de tipos, evitando que errores de serialización o corrupción de manifiesto detengan inesperadamente el flujo de la aplicación.
 - `2026-11-03T11:34:44` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo de salud mediante la validación explícita de `metrics` dentro de `compute_score` y `_compute_cached` para evitar fallos por datos nulos o inconsistentes antes de la ejecución del pipeline.
 - `2026-11-03T11:34:16` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del módulo `duplicates.py` mediante la validación de parámetros (guard clauses) en las funciones `suggest_keeper` y `format_group`, y la centralización de chequeos de seguridad para evitar operaciones sobre rutas nulas o inválidas, previniendo excepciones innecesarias durante la ejecución.
 - `2026-11-03T11:25:23` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de integridad en las rutas relativas y capturando excepciones de tipo `OSError` o `ValueError` que podrían ocurrir al manipular rutas malformadas o durante la resolución de `path.parts`, asegurando que el análisis no se detenga por archivos con rutas excepcionalmente largas o caracteres especiales inesperados.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T08:41:31` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un filtro de exclusión de extensiones pre-evaluado, evitando llamadas innecesarias a `is_file()` y otros chequeos costosos en archivos que no son relevantes para las heurísticas de seguridad.
 - `2026-11-03T08:41:04` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_get_system_root_paths` mediante `lru_cache` y se optimizaron las búsquedas en `PROTECTED_DIR_NAMES` utilizando un `set` en lugar de una lista en la función `is_protected_path`, mejorando significativamente el rendimiento al validar múltiples rutas en iteraciones de escaneo.
 - `2026-11-03T08:31:54` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` eliminando la re-lectura redundante del manifiesto mediante el aprovechamiento efectivo de `_MANIFEST_CACHE` y el filtrado en memoria, reduciendo llamadas innecesarias al sistema de archivos y evitando múltiples serializaciones JSON.
-- `2026-11-03T08:30:37` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` eliminando la creación repetitiva de objetos `ProcessMemory` y de buffers de ruta dentro del ciclo de enumeración, reutilizando el buffer de memoria y filtrando procesos de manera más eficiente para reducir la carga de llamadas a la API.
-- `2026-11-03T08:21:10` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor analítico reemplazando la lógica de generación de cadenas y formateo dentro del bucle de `summarize` por un proceso más eficiente, y mejoré la integridad de los accesos a datos mediante el uso directo de la estructura del Pipeline, evitando recorridos innecesarios de diccionarios.

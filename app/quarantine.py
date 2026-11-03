@@ -477,10 +477,10 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     """Persiste el manifiesto usando una operación de escritura atómica."""
     base_path: Path = quarantine_dir(base)
     target_path: Path = _manifest_path(base_path)
-    if not isinstance(items, list): raise ValueError("El manifiesto debe ser una lista.")
+    if not isinstance(items, list): raise TypeError("El manifiesto debe ser una lista.")
     try:
         encoded_content: bytes = json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False).encode('utf-8')
-    except (TypeError, ValueError) as e: raise OSError(f"Error al serializar metadatos: {e}")
+    except (TypeError, ValueError) as e: raise ValueError(f"Error al serializar metadatos: {e}")
     temp_name: Optional[str] = None
     try:
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
