@@ -666,3 +666,11 @@
 - `2026-11-02T23:39:19` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-02T23:49:31` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-02T23:59:41` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-03T00:09:55` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-03T00:10:57` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-03T00:12:02` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-03T00:12:37` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo defensivo contra el posible desbordamiento de memoria o errores de lectura en las estructuras Win32 (`MEMORYSTATUSEX`), validando que `dwLength` sea coherente y que los valores de memoria retornados no presenten inconsistencias extremas (ej. valores negativos o desproporcionadamente altos comparados con la arquitectura), fortaleciendo la robustez ante estados del sistema inestables.
+- `2026-11-03T00:13:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-03T00:13:28` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en `_is_file_exclusive` y `_safe_unlink`, asegurando que el manejo de descriptores de archivo sea más resiliente y consistente entre sistemas operativos, evitando fugas de descriptores en casos de error.
+- `2026-11-03T00:13:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T00:13:28` Corrida terminada. Total usado hoy: 4.

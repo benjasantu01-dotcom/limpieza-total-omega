@@ -290,11 +290,13 @@ def _read_windows_snapshot() -> MemorySnapshot:
         
         mem_status = _create_mem_status_ex()
         if WindowsAPI.kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
-            if 0 < mem_status.ullTotalPhys and mem_status.ullAvailPhys <= mem_status.ullTotalPhys:
-                return MemorySnapshot(
-                    total=BytesValue(mem_status.ullTotalPhys), 
-                    available=BytesValue(mem_status.ullAvailPhys)
-                )
+            # Validación de integridad de los datos reportados
+            if 0 < mem_status.ullTotalPhys < (1024 * 1024 * 1024 * 1024 * 256): # Max 256TB
+                if mem_status.ullAvailPhys <= mem_status.ullTotalPhys:
+                    return MemorySnapshot(
+                        total=BytesValue(mem_status.ullTotalPhys), 
+                        available=BytesValue(mem_status.ullAvailPhys)
+                    )
     except (AttributeError, ctypes.ArgumentError, OSError, ValueError, TypeError):
         pass
     return _EMPTY_SNAPSHOT
