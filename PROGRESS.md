@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 57
-- Sin cambios (nada sustancial que mejorar): 10
+- Rechazadas por guardia de seguridad: 56
+- Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 251
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 128 | 4 | 46 | 4 | 162 |
-| 2026-11-03 | 50 | 4 | 11 | 6 | 89 |
+| 2026-11-02 | 125 | 4 | 45 | 4 | 162 |
+| 2026-11-03 | 53 | 4 | 11 | 7 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **38**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **36**
+- legibilidad y documentación: **35**
 - robustez ante casos límite: **34**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `memory.py`: **17**
+- `quarantine.py`: **19**
 - `assistant.py`: **17**
 - `safety.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `memory.py`: **16**
+- `browser.py`: **15**
 - `healthscore.py`: **15**
-- `browser.py`: **14**
+- `duplicates.py`: **13**
 - `settings.py`: **13**
 - `scanner.py`: **12**
-- `duplicates.py`: **12**
-- `organizer.py`: **9**
 - `startup.py`: **8**
+- `organizer.py`: **8**
 - `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T07:00:05` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `_get_mtime` añadiendo validaciones explícitas contra `None` y rutas inexistentes, asegurando que el motor de sugerencias no falle silenciosamente ni devuelva datos inválidos ante archivos bloqueados o inaccesibles.
+- `2026-11-03T06:59:57` **diskreport.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y defensiva en `_collect_summary_data` para manejar valores de retorno potencialmente inválidos de `walk_files`, asegurando que `ext_normalized` sea tratado de forma segura y que el sistema no propague datos corruptos ante errores inesperados en el sistema de archivos.
+- `2026-11-03T06:59:32` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `detect_profiles` añadiendo validaciones de tipo y de estado (existencia y acceso) antes de invocar operaciones de sistema, evitando el riesgo de excepciones inesperadas al procesar rutas malformadas o inaccesibles.
 - `2026-11-03T06:51:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para garantizar que la validación de tipos y profundidad no falle ante objetos inesperados y sea más consistente con la jerarquía de validación centralizada.
 - `2026-11-03T05:18:39` **quarantine.py** (seguridad defensiva): Se introdujo una re-validación de seguridad en `quarantine_file` tras la creación del archivo destino pero antes del registro en el manifiesto, utilizando `ensure_safe_to_modify` para prevenir condiciones de carrera (TOCTOU) y asegurar que el archivo recién aislado no haya sido sustituido o manipulado por un proceso externo en el ínterin.
 - `2026-11-03T05:17:46` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita para evitar que procesos con nombres sospechosos (posibles inyecciones o rutas mal formadas) sean procesados, reforzando la integridad de los datos antes de operar sobre ellos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T04:18:07` **settings.py** (rendimiento): Optimicé el rendimiento eliminando la llamada innecesaria a `Path.resolve()` en el bucle principal de `validate`, utilizando directamente la caché del gestor para evitar recrear objetos de ruta y validando la existencia de claves de forma más eficiente mediante un `frozenset`.
 - `2026-11-03T04:08:13` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_is_kernel_managed` para evitar re-cálculos costosos y consultas al entorno repetitivas durante operaciones masivas de escaneo de archivos.
 - `2026-11-03T04:05:18` **organizer.py** (rendimiento): Optimizé la detección de extensiones basura en `_is_candidate_for_scan` y `is_valid_junk_extension` reemplazando `any(...)` por una verificación directa en el conjunto `JUNK_EXTENSIONS`, eliminando la iteración innecesaria en cada archivo escaneado.
-- `2026-11-03T03:55:29` **healthscore.py** (rendimiento): Se optimizó el acceso a atributos y la validación en `SystemMetrics` evitando la creación innecesaria de listas y llamadas repetitivas a `getattr` mediante el uso de una constante `_METRICS_LIST` y una tupla estática, mejorando el rendimiento en el bucle caliente del pipeline.
-- `2026-11-03T03:55:01` **duplicates.py** (rendimiento): Optimicé el rendimiento eliminando la llamada redundante a `path.exists()` dentro de `group_by_size` al confiar en `os.scandir` y `_safe_path_check`, y mejoré la eficiencia del procesamiento de candidatos evitando conversiones innecesarias de `str` a `Path` y verificaciones repetidas de atributos, aprovechando los datos que ya entrega el iterador de archivos.
-- `2026-11-03T03:46:12` **diskreport.py** (rendimiento): Optimicé el método `walk_files` para reducir drásticamente las llamadas redundantes a `Path.resolve()` y `path.relative_to()`, reemplazándolas por operaciones con cadenas (`entry.path`) y objetos `Path` directos, mejorando la eficiencia en recorridos de disco extensos.

@@ -388,15 +388,18 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         if not isinstance(size, int) or size < 0:
             continue
             
-        _, ext = os.path.splitext(path.name)
-        ext_normalized = ext.lower() if ext else "(sin extensión)"
-        stats.register_file(size, ext_normalized)
-        
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif top_heap and size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+        try:
+            ext = path.suffix
+            ext_normalized = ext.lower() if ext else "(sin extensión)"
+            stats.register_file(size, ext_normalized)
+            
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif top_heap and size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size, path))
+        except (AttributeError, TypeError):
+            continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

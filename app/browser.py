@@ -94,7 +94,6 @@ class DirectoryScanner:
         if not path_str or _is_unc_path(path_str): return False
         try:
             path_obj = Path(path_str)
-            # Primero validamos si es protegido por estructura, antes de intentar resolve()
             if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
                 return False
             
@@ -257,7 +256,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 def directory_size(path: Optional[OSPath]) -> int:
     if path is None: return 0
     p = Path(path)
-    if not p.is_dir(): return 0
+    if not p.is_dir() or not os.access(p, os.R_OK): return 0
     
     try:
         root_norm = os.path.normcase(str(p.resolve()))
@@ -278,7 +277,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
-        if not isinstance(base, Path) or not base.exists(): continue
+        if not isinstance(base, Path) or not base.exists() or not os.access(base, os.R_OK): continue
         
         try:
             base_norm = os.path.normcase(str(base.resolve()))
@@ -292,11 +291,10 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             if not _is_valid_rel_path(relative_path): continue
             
             target = base.joinpath(*relative_path.split("\\"))
-            if not target.exists() or not target.is_dir(): continue
+            if not target.exists() or not target.is_dir() or not os.access(target, os.R_OK): continue
             
             target_str = str(target)
             
-            # Chequeos rápidos previos al escaneo pesado
             if _IS_JUNCTION_FN(target_str) or target.is_symlink(): continue
             if _is_system_hidden(target_str, kernel) or target.name.lower() in NEVER_TOUCH:
                 continue

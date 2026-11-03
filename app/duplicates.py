@@ -256,7 +256,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_mtime(path: Path) -> Optional[float]:
     """Timestamp de modificación; retorna None si el archivo es inaccesible."""
-    if not isinstance(path, Path): return None
+    if not isinstance(path, Path) or not path.exists(): return None
     with suppress(OSError, PermissionError, FileNotFoundError):
         return path.stat().st_mtime
     return None
@@ -267,7 +267,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     Heurística: recomienda conservar el archivo con la fecha de modificación más antigua.
     Se asume que la versión más vieja es la original o el punto de inicio de la copia.
     """
-    if not group or not group.paths: 
+    if group is None or not group.paths: 
         return None
         
     candidates = [( _get_mtime(p), p) for p in group.paths]
