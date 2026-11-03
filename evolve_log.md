@@ -423,3 +423,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-03T08:31:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
 - `2026-11-03T08:31:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T08:31:57` Corrida terminada. Total usado hoy: 200.
+- `2026-11-03T08:40:16` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-03T08:41:04` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché para `_get_system_root_paths` mediante `lru_cache` y se optimizaron las búsquedas en `PROTECTED_DIR_NAMES` utilizando un `set` en lugar de una lista en la función `is_protected_path`, mejorando significativamente el rendimiento al validar múltiples rutas en iteraciones de escaneo.
+- `2026-11-03T08:41:31` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el uso de un filtro de exclusión de extensiones pre-evaluado, evitando llamadas innecesarias a `is_file()` y otros chequeos costosos en archivos que no son relevantes para las heurísticas de seguridad.
+- `2026-11-03T08:41:58` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `load()` y `save()` reemplazando la serialización/deserialización costosa del diccionario mediante `copy()` y `dict()` por el uso directo de `MappingProxyType`, evitando la creación redundante de copias en memoria y reduciendo el overhead en el acceso frecuente a la configuración.
+- `2026-11-03T08:42:09` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-03T08:42:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T08:42:09` Corrida terminada. Total usado hoy: 204.

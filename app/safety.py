@@ -800,6 +800,7 @@ def is_protected_path(path: PathLike) -> bool:
             return True
         
         path_obj = Path(norm_str)
+        # Optimizacion: comparacion contra el set predefinido
         if not PROTECTED_DIR_NAMES.isdisjoint(p.lower() for p in path_obj.parts):
             return True
         

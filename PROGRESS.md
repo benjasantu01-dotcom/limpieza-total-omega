@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **169** (33.5% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 9
+- Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 262
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 106 | 3 | 37 | 2 | 156 |
-| 2026-11-03 | 64 | 5 | 18 | 7 | 106 |
+| 2026-11-02 | 103 | 3 | 37 | 2 | 155 |
+| 2026-11-03 | 66 | 5 | 18 | 8 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
-- seguridad defensiva: **35**
 - legibilidad y documentación: **34**
-- rendimiento: **32**
+- rendimiento: **34**
+- seguridad defensiva: **32**
 - robustez ante casos límite: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
-- `diskreport.py`: **17**
+- `safety.py`: **17**
 - `memory.py`: **16**
-- `safety.py`: **16**
-- `healthscore.py`: **15**
+- `diskreport.py`: **16**
 - `assistant.py`: **15**
-- `browser.py`: **13**
+- `healthscore.py`: **14**
 - `settings.py`: **12**
+- `browser.py`: **12**
 - `duplicates.py`: **12**
-- `scanner.py`: **10**
+- `scanner.py`: **11**
 - `organizer.py`: **9**
 - `branding.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T08:41:31` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un filtro de exclusión de extensiones pre-evaluado, evitando llamadas innecesarias a `is_file()` y otros chequeos costosos en archivos que no son relevantes para las heurísticas de seguridad.
+- `2026-11-03T08:41:04` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_get_system_root_paths` mediante `lru_cache` y se optimizaron las búsquedas en `PROTECTED_DIR_NAMES` utilizando un `set` en lugar de una lista en la función `is_protected_path`, mejorando significativamente el rendimiento al validar múltiples rutas en iteraciones de escaneo.
 - `2026-11-03T08:31:54` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` eliminando la re-lectura redundante del manifiesto mediante el aprovechamiento efectivo de `_MANIFEST_CACHE` y el filtrado en memoria, reduciendo llamadas innecesarias al sistema de archivos y evitando múltiples serializaciones JSON.
 - `2026-11-03T08:30:37` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` eliminando la creación repetitiva de objetos `ProcessMemory` y de buffers de ruta dentro del ciclo de enumeración, reutilizando el buffer de memoria y filtrando procesos de manera más eficiente para reducir la carga de llamadas a la API.
 - `2026-11-03T08:21:10` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor analítico reemplazando la lógica de generación de cadenas y formateo dentro del bucle de `summarize` por un proceso más eficiente, y mejoré la integridad de los accesos a datos mediante el uso directo de la estructura del Pipeline, evitando recorridos innecesarios de diccionarios.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T07:08:58` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo de puntajes introduciendo validación temprana de `SystemMetrics` y capturando posibles desbordamientos o divisiones por cero en el pipeline, asegurando que las funciones de normalización y reglas nunca propaguen excepciones hacia el `lru_cache` o el informe final.
 - `2026-11-03T07:00:05` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `_get_mtime` añadiendo validaciones explícitas contra `None` y rutas inexistentes, asegurando que el motor de sugerencias no falle silenciosamente ni devuelva datos inválidos ante archivos bloqueados o inaccesibles.
 - `2026-11-03T06:59:57` **diskreport.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y defensiva en `_collect_summary_data` para manejar valores de retorno potencialmente inválidos de `walk_files`, asegurando que `ext_normalized` sea tratado de forma segura y que el sistema no propague datos corruptos ante errores inesperados en el sistema de archivos.
-- `2026-11-03T06:59:32` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `detect_profiles` añadiendo validaciones de tipo y de estado (existencia y acceso) antes de invocar operaciones de sistema, evitando el riesgo de excepciones inesperadas al procesar rutas malformadas o inaccesibles.
-- `2026-11-03T06:51:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para garantizar que la validación de tipos y profundidad no falle ante objetos inesperados y sea más consistente con la jerarquía de validación centralizada.

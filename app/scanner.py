@@ -294,8 +294,9 @@ class Scanner:
         if not self._is_safe_entry(entry):
             return
         try:
-            if entry.is_file():
-                if self._is_relevant_extension(entry.name):
+            # Optimizacion: Chequear extension primero antes de realizar el costo de is_file()
+            if self._is_relevant_extension(entry.name):
+                if entry.is_file():
                     path_norm = os.path.normcase(entry.path)
                     if path_norm not in self.seen_normcase:
                         self.seen_normcase.add(path_norm)
