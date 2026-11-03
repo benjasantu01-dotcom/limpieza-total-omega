@@ -624,6 +624,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         if destination.exists(): raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         destination.parent.mkdir(parents=True, exist_ok=True)
         h, i, d = _write_temp_to_final(source, destination)
+        # Re-validación post-transferencia contra posibles manipulaciones externas
+        ensure_safe_to_modify(destination, allow_sensitive=True)
         if destination.stat().st_ino != i or destination.stat().st_dev != d or _get_sha256(destination) != h or destination.stat().st_nlink > 1:
             raise RuntimeError("Integridad comprometida: destino inconsistente.")
         return h, i, d

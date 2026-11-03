@@ -241,7 +241,7 @@ def _is_system_process(pid: int) -> bool:
 
 def _is_invalid_process_name(name: str) -> bool:
     """Valida si el nombre del proceso contiene caracteres no permitidos o es de sistema."""
-    return not name or any(ord(c) < 32 or ord(c) == 127 for c in name)
+    return not name or any(ord(c) < 32 or ord(c) == 127 for c in name) or len(name) > 256
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Valida y parsea una línea CSV de procesos con verificaciones de seguridad."""
@@ -253,15 +253,16 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         return None
     
     try:
+        proc_name = parts[0].strip()
         pid_val = int(parts[1])
-        if _is_system_process(pid_val) or pid_val <= 0 or _is_invalid_process_name(parts[0].strip()):
+        if _is_system_process(pid_val) or pid_val <= 0 or _is_invalid_process_name(proc_name):
             return None
         
         ws = _safe_int_conversion(parts[2])
         if not (0 < ws < MAX_VALID_PROCESS_MEM_BYTES):
             return None
             
-        return ProcessMemory(parts[0].strip(), pid_val, ws)
+        return ProcessMemory(proc_name, pid_val, ws)
     except (ValueError, TypeError, IndexError, OverflowError):
         return None
 

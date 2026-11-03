@@ -1205,3 +1205,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-03T05:11:17` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del pipeline de puntuación al eliminar la posibilidad de que `_compute_cached` procese métricas fuera de los límites definidos, asegurando que cualquier entrada sea validada contra `_METRIC_LIMITS` antes de ingresar al caché, evitando así comportamientos inesperados o cálculos con valores espurios.
 - `2026-11-03T05:11:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T05:11:17` Corrida terminada. Total usado hoy: 120.
+- `2026-11-03T05:16:13` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-03T05:17:18` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-03T05:17:46` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita para evitar que procesos con nombres sospechosos (posibles inyecciones o rutas mal formadas) sean procesados, reforzando la integridad de los datos antes de operar sobre ellos.
+- `2026-11-03T05:18:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-03T05:18:39` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una re-validación de seguridad en `quarantine_file` tras la creación del archivo destino pero antes del registro en el manifiesto, utilizando `ensure_safe_to_modify` para prevenir condiciones de carrera (TOCTOU) y asegurar que el archivo recién aislado no haya sido sustituido o manipulado por un proceso externo en el ínterin.
+- `2026-11-03T05:18:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T05:18:39` Corrida terminada. Total usado hoy: 124.
