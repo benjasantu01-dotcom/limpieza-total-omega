@@ -337,7 +337,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """Orquestador central del cálculo de salud mediante pipeline."""
     # Validación estricta para evitar desbordamiento del caché con datos corruptos
-    if len(metric_tuple) != len(_VALIDATION_KEYS):
+    if not metric_tuple or len(metric_tuple) != len(_VALIDATION_KEYS):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
 
     validated_metrics: List[float] = []

@@ -103,10 +103,10 @@ def _safe_path_check(path: Path) -> bool:
     """
     Valida que el archivo sea accesible, no protegido y no sea un enlace simbólico/junction.
     """
-    if not isinstance(path, Path): return False
+    if not isinstance(path, Path) or not path.is_file(): return False
     try:
         resolved_path = path.resolve(strict=True)
-        return resolved_path.is_file() and not is_protected_path(resolved_path) and not is_junction(path)
+        return not is_protected_path(resolved_path) and not is_junction(path)
     except (OSError, RuntimeError):
         return False
 
@@ -132,7 +132,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError, IOError, ValueError, FileNotFoundError):
+    except (OSError, PermissionError, IOError, ValueError):
         return None
 
 
@@ -151,7 +151,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             digest_val = hashlib.sha256(header).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, PermissionError, IOError, ValueError, FileNotFoundError):
+    except (OSError, PermissionError, IOError, ValueError):
         return None
 
 
@@ -166,7 +166,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
             st = item.stat()
             if _is_valid_candidate(item, st.st_size):
                 groups_by_size[st.st_size].append(item)
-        except (OSError, PermissionError, FileNotFoundError, TypeError): 
+        except (OSError, PermissionError, TypeError): 
             continue
     return groups_by_size
 
@@ -251,13 +251,13 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Calcula el espacio total recuperable de todos los grupos identificados."""
-    return sum(g.wasted_bytes for g in groups)
+    return sum(g.wasted_bytes for g in groups) if groups else 0
 
 
 def _get_mtime(path: Path) -> Optional[float]:
     """Timestamp de modificación; retorna None si el archivo es inaccesible."""
     if not isinstance(path, Path) or not path.exists(): return None
-    with suppress(OSError, PermissionError, FileNotFoundError):
+    with suppress(OSError, PermissionError):
         return path.stat().st_mtime
     return None
 
@@ -267,7 +267,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     Heurística: recomienda conservar el archivo con la fecha de modificación más antigua.
     Se asume que la versión más vieja es la original o el punto de inicio de la copia.
     """
-    if group is None or not group.paths: 
+    if not group or not group.paths: 
         return None
         
     candidates = [( _get_mtime(p), p) for p in group.paths]
@@ -281,10 +281,9 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera líneas descriptivas para la interfaz de usuario."""
-    if not group: return []
+    if not group or not group.paths: return []
     keeper = suggest_keeper(group)
-    if keeper is None: return []
-
+    
     mb = round(group.size_bytes / 1048576, 2)
     wasted = round(group.wasted_bytes / 1048576, 2)
     lines = [f"{group.count} copias de {mb} MB (recuperable: {wasted} MB)"]
