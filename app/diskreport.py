@@ -181,9 +181,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
-        if str(p).startswith('\\\\') or _is_reparse_point(p):
+        # Seguridad defensiva: Bloqueo de UNC y protegidos antes de acceder
+        if str(p).startswith('\\\\') or is_protected_path(p):
             return None
-        if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
+        if not p.is_dir() or _is_reparse_point(p) or not os.access(p, os.R_OK):
             return None
         return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -277,6 +278,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None: return None
     try:
         p = Path(mount).expanduser().resolve(strict=True)
+        # Seguridad defensiva: Validar antes de invocar shutil
         if is_protected_path(p) or _is_reparse_point(p) or str(p).startswith('\\\\'):
             return None
         usage = shutil.disk_usage(p)
@@ -314,14 +316,15 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir():
-                            if skip_protected and is_protected_path(Path(entry.path)):
+                            path_obj = Path(entry.path)
+                            if skip_protected and is_protected_path(path_obj):
                                 continue
-                            if _is_reparse_point(Path(entry.path)):
+                            if _is_reparse_point(path_obj):
                                 continue
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
+                                stack.append(path_obj)
                         elif entry.is_file():
                             if isinstance(st.st_size, int) and st.st_size >= 0:
                                 yield Path(entry.path), st.st_size

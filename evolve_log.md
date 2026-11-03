@@ -919,3 +919,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-03T13:48:42` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_is_reserved_device_name` al agregar una validación contra el formato de rutas de dispositivos de Windows (ej. `\\.\COM1`) y el manejo de excepciones al verificar el `stem` del nombre, evitando que rutas inválidas o malformadas causen errores inesperados durante el escaneo del registro.
 - `2026-11-03T13:48:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T13:48:42` Corrida terminada. Total usado hoy: 324.
+- `2026-11-03T13:56:52` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-03T13:57:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-03T13:58:57` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la ingesta de datos mediante una validación explícita del diccionario de origen contra `is_protected_path`, evitando que un objeto `source` malicioso inyecte rutas prohibidas como claves de métricas.
+- `2026-11-03T13:59:26` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-03T13:59:50` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-03T14:00:00` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación de rutas mediante `is_protected_path` antes de cualquier operación de I/O, evitando el acceso accidental a directorios sensibles o puntos de montaje críticos.
+- `2026-11-03T14:00:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T14:00:00` Corrida terminada. Total usado hoy: 328.

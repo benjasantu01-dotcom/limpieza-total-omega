@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **151** (30.0% de aceptación)
+- Mejoras aceptadas: **153** (30.4% de aceptación)
 - Rechazadas por tests: 6
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 289
+- Sin respuesta de la IA (error o límite): 287
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 59 | 0 | 18 | 1 | 102 |
-| 2026-11-03 | 92 | 6 | 28 | 11 | 187 |
+| 2026-11-02 | 59 | 0 | 18 | 1 | 98 |
+| 2026-11-03 | 94 | 6 | 28 | 11 | 189 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **30**
 - rendimiento: **30**
-- seguridad defensiva: **27**
+- seguridad defensiva: **29**
 - robustez ante casos límite: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **17**
+- `assistant.py`: **15**
 - `safety.py`: **15**
-- `assistant.py`: **14**
 - `healthscore.py`: **14**
 - `memory.py`: **14**
-- `diskreport.py`: **12**
+- `diskreport.py`: **13**
 - `settings.py`: **12**
 - `duplicates.py`: **11**
 - `browser.py`: **10**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T14:00:00` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación de rutas mediante `is_protected_path` antes de cualquier operación de I/O, evitando el acceso accidental a directorios sensibles o puntos de montaje críticos.
+- `2026-11-03T13:58:57` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos mediante una validación explícita del diccionario de origen contra `is_protected_path`, evitando que un objeto `source` malicioso inyecte rutas prohibidas como claves de métricas.
 - `2026-11-03T13:48:42` **startup.py** (robustez ante casos límite): Se mejora la robustez de `_is_reserved_device_name` al agregar una validación contra el formato de rutas de dispositivos de Windows (ej. `\\.\COM1`) y el manejo de excepciones al verificar el `stem` del nombre, evitando que rutas inválidas o malformadas causen errores inesperados durante el escaneo del registro.
 - `2026-11-03T13:48:30` **settings.py** (robustez ante casos límite): Se mejora la robustez de `_read_and_parse_json` y `_is_file_secure_to_read` para manejar archivos corruptos o bloqueados mediante la implementación de una verificación explícita de `st_size` previo al `open`, evitando intentos de lectura en archivos de tamaño 0 o extremadamente grandes, y asegurando que las excepciones de I/O sean capturadas antes de procesar el contenido.
 - `2026-11-03T13:37:20` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `OSError` al intentar leer archivos bloqueados en `_is_file_locked` y se reforzó la robustez de `_get_win_attributes` manejando errores de acceso durante el escaneo para evitar interrupciones en el bucle de procesado de directorios ante archivos con permisos restringidos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T12:35:40` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el método de escritura atómica y las validaciones de seguridad, clarificando el propósito de cada verificación de archivos para mejorar la auditabilidad del código.
 - `2026-11-03T12:06:45` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad técnica mediante la documentación de los parámetros de tipo (type hinting) y el propósito funcional de las funciones internas, además de corregir la inconsistencia en el uso de `Path` para asegurar que el contrato del módulo sea robusto frente a rutas mal formadas.
 - `2026-11-03T12:06:08` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `browser.py` añadiendo docstrings descriptivos a los métodos críticos y normalizando el estilo de los comentarios existentes para cumplir con el enfoque de claridad exigido.
-- `2026-11-03T12:05:32` **branding.py** (legibilidad y documentación): Mejora la documentación técnica de `branding.py` mediante la adición de docstrings estructuradas en las funciones que carecían de ellas y la clarificación de los propósitos de las constantes de diseño, facilitando el mantenimiento y la comprensión de la jerarquía visual.
-- `2026-11-03T11:46:23` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_validate_preconditions` y `_validate_structural_safety` mediante la captura explícita de `ValueError` y `AttributeError` al manejar objetos `Path` y rutas, previniendo excepciones no controladas durante la evaluación de rutas mal formadas que podrían romper el flujo de ejecución.

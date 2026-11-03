@@ -502,8 +502,9 @@ class SystemContext:
                 updates[k] = val
         
         try:
+            # Validar que si source es un dict, ninguna de sus claves sea una ruta prohibida
             if isinstance(source, dict):
-                for k, v in source.items():
+                for k in source.keys():
                     if isinstance(k, str) and is_protected_path(k): return {}
             
             g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
