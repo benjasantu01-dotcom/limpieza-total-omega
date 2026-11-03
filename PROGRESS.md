@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 59
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 240
+- Rechazadas por guardia de seguridad: 58
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 13 | 1 | 4 | 4 | 36 |
+| 2026-11-01 | 11 | 1 | 3 | 4 | 35 |
 | 2026-11-02 | 131 | 5 | 47 | 4 | 163 |
-| 2026-11-03 | 40 | 3 | 8 | 4 | 41 |
+| 2026-11-03 | 41 | 3 | 8 | 5 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **36**
+- seguridad defensiva: **34**
+- rendimiento: **32**
 - robustez ante casos límite: **32**
-- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **18**
 - `safety.py`: **18**
 - `diskreport.py`: **18**
-- `healthscore.py`: **16**
 - `assistant.py`: **16**
+- `healthscore.py`: **15**
 - `scanner.py`: **14**
 - `browser.py`: **14**
-- `duplicates.py`: **13**
-- `settings.py`: **12**
+- `settings.py`: **13**
+- `duplicates.py`: **12**
 - `branding.py`: **9**
 - `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T04:18:07` **settings.py** (rendimiento): Optimicé el rendimiento eliminando la llamada innecesaria a `Path.resolve()` en el bucle principal de `validate`, utilizando directamente la caché del gestor para evitar recrear objetos de ruta y validando la existencia de claves de forma más eficiente mediante un `frozenset`.
 - `2026-11-03T04:08:13` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_is_kernel_managed` para evitar re-cálculos costosos y consultas al entorno repetitivas durante operaciones masivas de escaneo de archivos.
 - `2026-11-03T04:05:18` **organizer.py** (rendimiento): Optimizé la detección de extensiones basura en `_is_candidate_for_scan` y `is_valid_junk_extension` reemplazando `any(...)` por una verificación directa en el conjunto `JUNK_EXTENSIONS`, eliminando la iteración innecesaria en cada archivo escaneado.
 - `2026-11-03T03:55:29` **healthscore.py** (rendimiento): Se optimizó el acceso a atributos y la validación en `SystemMetrics` evitando la creación innecesaria de listas y llamadas repetitivas a `getattr` mediante el uso de una constante `_METRICS_LIST` y una tupla estática, mejorando el rendimiento en el bucle caliente del pipeline.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T03:26:53` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final`, extrayendo la lógica de persistencia de metadatos y limpieza de archivos temporales hacia una estructura más clara (patrón *try/finally* robusto), además de añadir type hints explícitos en los retornos de las funciones críticas para cumplir con los estándares del proyecto.
 - `2026-11-03T03:24:19` **memory.py** (legibilidad y documentación): Se añadió documentación exhaustiva en formato de docstrings (especialmente en `_get_handle_for_safe_proc` y `_iter_process_memory`) para clarificar la lógica de seguridad y el manejo de handles, y se renombraron variables internas (`h_process` a `handle`, `cb_needed` a `bytes_written`) para mejorar la legibilidad y coherencia técnica sin alterar la funcionalidad.
 - `2026-11-03T03:15:05` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de cálculo de métricas para clarificar la lógica de normalización y mejorar la legibilidad del pipeline.
-- `2026-11-03T03:14:37` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints faltantes (especialmente en los decoradores y retornos de funciones de hash) y docstrings detallados que explican el "porqué" de las estrategias de hashing y la lógica de recolección, facilitando la comprensión del flujo de trabajo sin alterar su comportamiento.
