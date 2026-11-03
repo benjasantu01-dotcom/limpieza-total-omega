@@ -327,8 +327,16 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """Orquestador central del cálculo de salud mediante pipeline."""
-    safe_vals = {k: float(v) for k, v in zip(_VALIDATION_KEYS, metric_tuple)}
-    metrics = SystemMetrics(**safe_vals, quarantined_count=float(quarantined))
+    # Aplicar validación estricta antes de instanciar para proteger el caché
+    validated_metrics: List[float] = []
+    for i, key in enumerate(_VALIDATION_KEYS):
+        min_v, max_v = _METRIC_LIMITS.get(key, (0.0, 1e9))
+        validated_metrics.append(_validate_numeric(metric_tuple[i], 0.0, min_v, max_v))
+        
+    metrics = SystemMetrics(
+        **dict(zip(_VALIDATION_KEYS, validated_metrics)), 
+        quarantined_count=_validate_numeric(quarantined, 0.0, 0.0, 10000.0)
+    )
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -366,9 +374,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     try:
         metrics.validate()
-        raw_vals = tuple(_validate_numeric(getattr(metrics, f, 0.0), 0.0, -1e9, 1e9) for f in _VALIDATION_KEYS)
-        quarantine_val = _validate_numeric(metrics.quarantined_count, 0.0, 0.0, 1e9)
-        return _compute_cached(raw_vals, float(quarantine_val))
+        raw_vals = tuple(getattr(metrics, f) for f in _VALIDATION_KEYS)
+        return _compute_cached(raw_vals, float(metrics.quarantined_count))
     except (TypeError, ValueError, AttributeError, MemoryError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 

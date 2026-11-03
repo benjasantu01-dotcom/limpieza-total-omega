@@ -1195,3 +1195,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-03T04:58:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-11-03T04:58:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T04:58:43` Corrida terminada. Total usado hoy: 116.
+- `2026-11-03T05:06:04` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-03T05:06:32` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). He mejorado `DirectoryScanner._is_path_allowed` para incluir explícitamente `is_protected_path` como control previo al `resolve()`, evitando así intentos de resolución de rutas que el sistema operativo podría bloquear o que podrían ser puntos de reparse malintencionados antes de validar la integridad de la jerarquía.
+- `2026-11-03T05:07:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-03T05:08:07` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-03T05:09:13` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-03T05:10:25` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-11-03T05:11:04` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad en el acceso a archivos dentro de `_process_large_file_subset` y `_group_paths_by_hash` mediante la incorporación explícita de `_safe_path_check` antes de intentar leer el contenido del archivo, evitando así procesar archivos que hayan podido cambiar de estado o permiso durante la ejecución.
+- `2026-11-03T05:11:17` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del pipeline de puntuación al eliminar la posibilidad de que `_compute_cached` procese métricas fuera de los límites definidos, asegurando que cualquier entrada sea validada contra `_METRIC_LIMITS` antes de ingresar al caché, evitando así comportamientos inesperados o cálculos con valores espurios.
+- `2026-11-03T05:11:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T05:11:17` Corrida terminada. Total usado hoy: 120.

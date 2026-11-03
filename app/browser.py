@@ -94,7 +94,8 @@ class DirectoryScanner:
         if not path_str or _is_unc_path(path_str): return False
         try:
             path_obj = Path(path_str)
-            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+            # Primero validamos si es protegido por estructura, antes de intentar resolve()
+            if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
                 return False
             
             real_path = os.path.normcase(str(path_obj.resolve()))

@@ -122,6 +122,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Usa caché local para evitar múltiples lecturas de disco sobre el mismo archivo.
     """
     if not isinstance(path, Path) or path in _full_hash_cache: return _full_hash_cache.get(path)
+    if not _safe_path_check(path): return None
     
     try:
         hasher = hashlib.sha256()
@@ -141,6 +142,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     Útil para descartar rápidamente archivos con encabezados distintos sin leer todo el cuerpo.
     """
     if not isinstance(path, Path) or path in _partial_cache: return _partial_cache.get(path)
+    if not _safe_path_check(path): return None
     
     try:
         with open(path, "rb") as f:
@@ -210,7 +212,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Agrupa una lista de rutas por colisión de digest devuelto por hash_func."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if (d := hash_func(path)): groups[d].append(path)
+        if _safe_path_check(path):
+            if (d := hash_func(path)): groups[d].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
 
