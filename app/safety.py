@@ -799,15 +799,15 @@ def is_protected_path(path: PathLike) -> bool:
         if any(norm_str.startswith(r) for r in root_paths):
             return True
         
-        path_obj = Path(norm_str)
-        if not PROTECTED_DIR_NAMES.isdisjoint(p.lower() for p in path_obj.parts):
+        path_parts = Path(norm_str).parts
+        if not PROTECTED_DIR_NAMES.isdisjoint(p.lower() for p in path_parts):
             return True
         
         attrs = _get_file_attrs(norm_str)
         if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
             return True
             
-        return len(path_obj.parts) <= 1
+        return len(path_parts) <= 1
     except (OSError, AttributeError, ValueError):
         return True
 
