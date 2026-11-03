@@ -180,26 +180,42 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 # --- Suite de Heurísticas ---
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Identifica archivos de 0 bytes que pueden ser marcadores de relleno."""
+    """
+    Riesgo: Archivos de 0 bytes utilizados como marcadores de posición o punteros a scripts maliciosos.
+    Validación: Comprueba que el tamaño reportado en el stat del archivo sea 0.
+    Impacto: Advertencia sobre archivos sin contenido que podrían ser inofensivos pero sospechosos en ubicaciones críticas.
+    """
     if stats is not None and getattr(stats, "st_size", -1) == 0:
         return Suspicion(path, "Archivo vacío detectado (posible marcador de relleno)", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta ofuscación de tipo de archivo mediante extensiones múltiples."""
+    """
+    Riesgo: Ofuscación mediante doble extensión (ej: informe.pdf.exe) para engañar al usuario.
+    Validación: Utiliza Regex para detectar patrones de extensiones inofensivas seguidas de ejecutables.
+    Impacto: Detección temprana de ingeniería social mediante nombres de archivo engañosos.
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de ofuscación", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Verifica si procesos de sistema residen en ubicaciones inusuales."""
+    """
+    Riesgo: Ejecución de procesos con nombres de sistema (ej: svchost.exe) desde carpetas arbitrarias (no System32).
+    Validación: Compara el nombre del archivo contra una lista permitida y verifica que la ruta contenga 'system32'.
+    Impacto: Detecta malware que intenta ocultarse suplantando procesos legítimos fuera de su ruta estándar.
+    """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Identifica ejecutables de reciente creación en carpetas de descarga volátiles."""
+    """
+    Riesgo: Ejecutables descargados recientemente en carpetas volátiles (Downloads, Temp, Desktop).
+    Validación: Compara el timestamp de modificación (mtime) del archivo con una ventana de tiempo predefinida.
+    Impacto: Clasifica como 'info' la presencia de instaladores o ejecutables que podrían requerir atención del usuario.
+    """
     if path is None or path.parent is None or stats is None: 
         return None
     try:

@@ -64,7 +64,7 @@ RESERVED_DEVICE_NAMES: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "
 # Límite máximo estándar para rutas en el sistema de archivos de Windows.
 MAX_PATH_LEN: int = 260
 
-# Cachés globales: persistencia en memoria durante la ejecución para evitar E/S redundante.
+# Cachés globales: evitan consultas repetitivas al sistema de archivos o al registro.
 _EXISTS_CACHE: Dict[str, bool] = {}
 _COMMAND_CACHE: Dict[str, str] = {}
 _FULL_SCAN_CACHE: Optional[StartupEntries] = None
@@ -171,7 +171,7 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Verifica permisos y políticas de seguridad antes de marcar como válido.
+        Verifica permisos de lectura y políticas de seguridad (guarda en caché).
         """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
@@ -196,7 +196,7 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza, resuelve rutas relativas y cachea el estado del archivo con límite de profundidad.
+        Normaliza, resuelve rutas relativas y valida el acceso al archivo resultante.
         """
         if not isinstance(path_string, str) or not path_string:
             return ""
@@ -232,7 +232,7 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, command_line: str) -> str:
         """
-        Identifica el ejecutable en la línea de comando y delega su resolución.
+        Analiza la línea de comandos para extraer el ejecutable primario.
         """
         if not isinstance(command_line, str) or not command_line:
             return ""
@@ -274,7 +274,7 @@ class StartupEntry:
 
 def startup_folders() -> List[Path]:
     """
-    Retorna las rutas del sistema y usuario donde se alojan los ejecutables.
+    Identifica las carpetas de inicio del usuario y del sistema (persistencia en caché).
     """
     global _FOLDERS_CACHE
     if _FOLDERS_CACHE is not None:
@@ -310,7 +310,7 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
-    Procesa un objeto `DirEntry` convirtiéndolo en `StartupEntry` si es ejecutable.
+    Valida un archivo dentro de la carpeta de inicio y crea una instancia `StartupEntry`.
     """
     if not hasattr(entry, "path") or not hasattr(entry, "name"):
         return None
@@ -326,7 +326,6 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
             return None
             
         path_obj = Path(entry.path)
-        # Validación defensiva: asegurar que no se procesen rutas protegidas o no seguras
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
             
@@ -338,7 +337,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEntries:
     """
-    Escanea las carpetas de inicio y devuelve una lista de objetos `StartupEntry`.
+    Recorre las carpetas de inicio autorizadas para inventariar ejecutables encontrados.
     """
     found_entries: StartupEntries = []
     scan_folders: Iterable[Path] = folders if folders is not None else startup_folders()
@@ -368,7 +367,7 @@ def _is_valid_registry_path(path_str: str) -> bool:
 
 
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
-    """Verifica seguridad y unicidad de una entrada del registro."""
+    """Verifica seguridad, integridad y duplicidad de una entrada del registro."""
     if not isinstance(name, str) or not isinstance(command, str): return False
     if len(command) > MAX_PATH_LEN or any(ord(c) < 32 for c in command) or "\0" in command: return False
         
@@ -386,7 +385,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
-    Parsea la salida CSV de PowerShell y retorna instancias de `StartupEntry`.
+    Parsea la salida CSV cruda de PowerShell hacia objetos `StartupEntry`.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -408,7 +407,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             raw_name = row.get("Name")
             raw_cmd = row.get("Value")
             
-            # Validación de integridad de los campos antes de procesar
             if raw_name is None or raw_cmd is None:
                 continue
             
@@ -427,7 +425,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
     """
-    Consulta las claves de registro Run usando PowerShell y parsea el CSV resultante.
+    Invoca PowerShell para extraer entradas Run del Registro de Windows.
     """
     if os.name != "nt":
         return []
@@ -458,7 +456,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
 
 def list_startup_entries() -> StartupEntries:
     """
-    Consolida las entradas de inicio de todas las fuentes disponibles.
+    Consolida las entradas de inicio de todas las fuentes. El resultado se cachea.
     """
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
@@ -477,7 +475,7 @@ def list_startup_entries() -> StartupEntries:
 
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:
-    """Estima el impacto de rendimiento según la cantidad de entradas."""
+    """Estima el impacto en rendimiento según la cantidad de entradas."""
     count: int = len(entries) if isinstance(entries, list) else sum(1 for _ in entries)
     if count <= 5: return "ok"
     if count <= 10: return "info"
@@ -486,7 +484,7 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera un reporte descriptivo para el usuario final."""
+    """Genera un reporte textual descriptivo para el usuario."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

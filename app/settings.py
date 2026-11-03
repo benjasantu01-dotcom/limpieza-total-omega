@@ -164,6 +164,11 @@ class _SettingsManager:
         self.data_cache.pop(resolved_path_str, None)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
+        """
+        Escribe el JSON a un archivo temporal y realiza un reemplazo atómico para
+        prevenir corrupción en caso de fallo de escritura. Valida permisos y
+        propiedad de archivo antes de proceder.
+        """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 2: return False
         if len(str(config_path)) > 260: return False
@@ -189,7 +194,6 @@ class _SettingsManager:
                 f.flush()
                 os.fsync(f.fileno())
             
-            # Verificar existencia antes de reemplazar para evitar race conditions
             if temp_path.exists():
                 os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
                 os.replace(temp_path, resolved_path)
@@ -228,6 +232,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=32)
     def _is_reparse_point(path_str: str) -> bool:
+        """Determina si una ruta es un junction o symlink para evitar recursión peligrosa."""
         try:
             st = os.lstat(path_str)
             if stat.S_ISLNK(st.st_mode): return True
@@ -238,6 +243,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
+        """Verifica recursivamente la seguridad de las rutas ascendentes."""
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
@@ -259,6 +265,7 @@ class _Validators:
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
+        """Valida que una ruta cumpla con los estándares de seguridad de la aplicación."""
         if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         if ".." in path_str: return False
@@ -270,6 +277,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
+        """Normaliza tipos booleanos desde strings permitidos."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -280,6 +288,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
+        """Valida enteros dentro de rangos configurados para prevenir desbordamientos."""
         parsed_value = _Validators._parse_as_type(val, int)
         if parsed_value is None: return None
         limit = _NUMERIC_LIMITS.get(key)
@@ -288,6 +297,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
+        """Valida rutas de archivo contra las reglas de seguridad de sistema."""
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
@@ -296,6 +306,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
+        """Valida strings contra enumeraciones de configuración permitidas."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -304,6 +315,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
+        """Sanitiza strings de entrada eliminando caracteres de control y comprobando longitud."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -351,6 +363,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config 
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
+    """Verifica que el archivo de configuración sea legible, no alterado y propiedad del usuario."""
     try:
         if not is_safe_to_modify(str(file_path)): return False
         if _Validators._is_reparse_point(str(file_path)): return False
