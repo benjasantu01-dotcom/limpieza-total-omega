@@ -953,3 +953,48 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-03T14:19:26` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación de "reparse points" (puntos de reparseo) en el nivel de `_validate_preconditions` para detectar si el *padre* del archivo es una unión de directorios o punto de montaje de sistema, evitando así la modificación de archivos que, aunque no parezcan protegidos, residen bajo una estructura redirigida potencialmente sensible.
 - `2026-11-03T14:19:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T14:19:26` Corrida terminada. Total usado hoy: 336.
+- `2026-11-03T14:27:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-03T14:27:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-03T14:28:00` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-03T14:29:04` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-03T14:30:04` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-03T14:30:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-03T14:30:27` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-03T14:30:35` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-03T14:30:47` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-03T14:31:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-03T14:31:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-03T14:32:25` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-03T14:33:38` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.56s
+
+```
+- `2026-11-03T14:33:38` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva al validar que los comandos extraídos del registro no apunten a ubicaciones fuera de los directorios permitidos, evitando que rutas relativas o maliciosas intenten escapar del contexto de seguridad de la aplicación mediante la validación `is_protected_path` sobre la ruta resuelta antes de su procesamiento.
+- `2026-11-03T14:33:39` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-03T14:33:39` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-03T14:33:59` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-03T14:33:59` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-03T14:34:29` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-03T14:34:29` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-03T14:34:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T14:34:29` Corrida terminada. Total usado hoy: 340.
