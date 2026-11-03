@@ -531,7 +531,8 @@ class SystemContext:
         """Aplica los cambios validados al objeto y purga cachés para forzar recálculos."""
         for k, v in updates.items():
             if k in _VALID_METRIC_KEYS or k == "grade":
-                setattr(self, k, v)
+                if isinstance(v, (int, float, str)):
+                    setattr(self, k, v)
         self.analyzed = True
         for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
             self.__dict__.pop(attr, None)

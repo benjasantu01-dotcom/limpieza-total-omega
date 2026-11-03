@@ -430,3 +430,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-03T08:42:09` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-11-03T08:42:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T08:42:09` Corrida terminada. Total usado hoy: 204.
+- `2026-11-03T08:50:28` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-11-03T08:51:09` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejoró la robustez de la ingesta de datos en `SystemContext` mediante un chequeo de tipos estricto y la validación de integridad antes de realizar `setattr`, previniendo la inyección de atributos no permitidos o estados inconsistentes cuando se pasan objetos externos como fuentes de datos.
+- `2026-11-03T08:51:39` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-03T08:52:09` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-03T08:52:26` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-11-03T08:52:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T08:52:26` Corrida terminada. Total usado hoy: 208.

@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **169** (33.5% de aceptación)
+- Mejoras aceptadas: **168** (33.3% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 55
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 262
+- Sin respuesta de la IA (error o límite): 265
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 103 | 3 | 37 | 2 | 155 |
-| 2026-11-03 | 66 | 5 | 18 | 8 | 107 |
+| 2026-11-02 | 101 | 3 | 35 | 2 | 155 |
+| 2026-11-03 | 67 | 5 | 18 | 8 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **34**
 - rendimiento: **34**
-- seguridad defensiva: **32**
-- robustez ante casos límite: **24**
+- seguridad defensiva: **30**
+- robustez ante casos límite: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
 - `safety.py`: **17**
-- `memory.py`: **16**
+- `assistant.py`: **16**
 - `diskreport.py`: **16**
-- `assistant.py`: **15**
+- `memory.py`: **15**
 - `healthscore.py`: **14**
 - `settings.py`: **12**
 - `browser.py`: **12**
 - `duplicates.py`: **12**
 - `scanner.py`: **11**
-- `organizer.py`: **9**
 - `branding.py`: **9**
 - `startup.py`: **8**
+- `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T08:51:09` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de la ingesta de datos en `SystemContext` mediante un chequeo de tipos estricto y la validación de integridad antes de realizar `setattr`, previniendo la inyección de atributos no permitidos o estados inconsistentes cuando se pasan objetos externos como fuentes de datos.
 - `2026-11-03T08:41:31` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un filtro de exclusión de extensiones pre-evaluado, evitando llamadas innecesarias a `is_file()` y otros chequeos costosos en archivos que no son relevantes para las heurísticas de seguridad.
 - `2026-11-03T08:41:04` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_get_system_root_paths` mediante `lru_cache` y se optimizaron las búsquedas en `PROTECTED_DIR_NAMES` utilizando un `set` en lugar de una lista en la función `is_protected_path`, mejorando significativamente el rendimiento al validar múltiples rutas en iteraciones de escaneo.
 - `2026-11-03T08:31:54` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` eliminando la re-lectura redundante del manifiesto mediante el aprovechamiento efectivo de `_MANIFEST_CACHE` y el filtrado en memoria, reduciendo llamadas innecesarias al sistema de archivos y evitando múltiples serializaciones JSON.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T07:10:27` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` añadiendo una validación explícita para la función `EmptyWorkingSet` antes de invocarla y capturando errores específicos de la API, evitando cierres inesperados por métodos inexistentes o fallos de firma.
 - `2026-11-03T07:08:58` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo de puntajes introduciendo validación temprana de `SystemMetrics` y capturando posibles desbordamientos o divisiones por cero en el pipeline, asegurando que las funciones de normalización y reglas nunca propaguen excepciones hacia el `lru_cache` o el informe final.
 - `2026-11-03T07:00:05` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `_get_mtime` añadiendo validaciones explícitas contra `None` y rutas inexistentes, asegurando que el motor de sugerencias no falle silenciosamente ni devuelva datos inválidos ante archivos bloqueados o inaccesibles.
-- `2026-11-03T06:59:57` **diskreport.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y defensiva en `_collect_summary_data` para manejar valores de retorno potencialmente inválidos de `walk_files`, asegurando que `ext_normalized` sea tratado de forma segura y que el sistema no propague datos corruptos ante errores inesperados en el sistema de archivos.
