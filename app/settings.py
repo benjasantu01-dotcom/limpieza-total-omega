@@ -185,10 +185,12 @@ class _SettingsManager:
             if is_protected_path(resolved_str) or not is_safe_to_modify(resolved_str): return False
             
             if resolved_path.exists():
-                st = resolved_path.lstat()
-                if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-                if (st.st_mode & 0o077) != 0: return False 
-                if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+                try:
+                    st = resolved_path.lstat()
+                    if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+                    if (st.st_mode & 0o077) != 0: return False 
+                    if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+                except OSError: return False
             
             with open(temp_path, "wb") as f:
                 f.write(serialized_bytes)
@@ -451,6 +453,10 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
             if not base.exists():
                 try: base.mkdir(parents=True, exist_ok=True)
                 except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE
+            
+            # Post-check: asegurar que el directorio es seguro tras la creación
+            if not os.access(base, os.R_OK | os.W_OK): return SETTINGS_DIR / SETTINGS_FILE
+            
             full_path = base / SETTINGS_FILE
             _MANAGER.path_cache[cache_key] = full_path
             return full_path

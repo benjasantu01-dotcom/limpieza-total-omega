@@ -290,12 +290,12 @@ class Scanner:
         return os.path.splitext(name)[1].lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
-        """Orquestador principal que evalúa la entrada del sistema de archivos."""
+        """Orquestador principal que evalúa la entrada del sistema de archivos con tolerancia a fallos."""
         if not self._is_safe_entry(entry):
             return
         try:
-            # Optimizacion: Chequear extension primero antes de realizar el costo de is_file()
             if self._is_relevant_extension(entry.name):
+                # Validar is_file antes de invocar heurísticas para evitar excepciones en rutas bloqueadas
                 if entry.is_file():
                     path_norm = os.path.normcase(entry.path)
                     if path_norm not in self.seen_normcase:
@@ -303,7 +303,7 @@ class Scanner:
                         self._run_file_heuristics(Path(entry.path), entry)
             elif entry.is_dir():
                 self._handle_directory(entry, directory_stack, current_depth, visited_dirs)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, AttributeError):
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:

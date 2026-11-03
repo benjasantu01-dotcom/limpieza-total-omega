@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **168** (33.3% de aceptación)
-- Rechazadas por tests: 7
+- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 267
+- Sin respuesta de la IA (error o límite): 263
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 99 | 2 | 34 | 2 | 151 |
-| 2026-11-03 | 69 | 5 | 18 | 8 | 116 |
+| 2026-11-02 | 99 | 2 | 34 | 2 | 147 |
+| 2026-11-03 | 72 | 6 | 18 | 8 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **34**
 - rendimiento: **34**
-- seguridad defensiva: **28**
-- robustez ante casos límite: **27**
+- robustez ante casos límite: **29**
+- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
+- `assistant.py`: **17**
 - `safety.py`: **17**
-- `assistant.py`: **16**
 - `diskreport.py`: **16**
 - `healthscore.py`: **15**
 - `memory.py`: **15**
 - `browser.py`: **12**
 - `duplicates.py`: **12**
-- `scanner.py`: **11**
-- `settings.py`: **11**
+- `scanner.py`: **12**
+- `settings.py`: **12**
 - `branding.py`: **9**
 - `organizer.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T09:23:18` **assistant.py** (seguridad defensiva): Reforcé la validación de seguridad en `_call_gemini` para asegurar que el `model` y la `api_key` no contengan caracteres peligrosos antes de formatear la URL, previniendo inyecciones de parámetros o comandos malintencionados en el endpoint.
+- `2026-11-03T09:22:31` **settings.py** (robustez ante casos límite): Mejora la robustez del manejo de archivos de configuración ante concurrencia y errores de I/O mediante la validación explícita de `stat` antes y después de la escritura atómica, y añadiendo una protección adicional contra condiciones de carrera al verificar la existencia y legibilidad del archivo después de la creación del directorio base.
+- `2026-11-03T09:21:35` **scanner.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores en `process_entry` mediante un bloque `try-except` más granular y una validación explícita de `is_file()` previa al acceso a atributos, previniendo cierres inesperados ante archivos bloqueados por el sistema (acceso denegado) o dispositivos de E/S que fallan durante el escaneo.
 - `2026-11-03T09:12:33` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_exclusive` y `_safe_unlink` ante condiciones de carrera y fallos de permisos en Windows, asegurando que el cierre de descriptores de archivo sea más resiliente mediante bloques `try-finally` incluso ante errores de sistema.
 - `2026-11-03T09:01:27` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor analítico implementando un mecanismo de defensa contra el desbordamiento de memoria y errores de tipo en la función `_compute_cached` y `SystemMetrics`, asegurando que el sistema sea capaz de recuperarse incluso ante entradas malformadas o métricas extremas.
 - `2026-11-03T08:51:09` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de la ingesta de datos en `SystemContext` mediante un chequeo de tipos estricto y la validación de integridad antes de realizar `setattr`, previniendo la inyección de atributos no permitidos o estados inconsistentes cuando se pasan objetos externos como fuentes de datos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T08:11:11` **branding.py** (rendimiento): Optimicé el rendimiento de `get_gradient_segments` mediante la eliminación de la creación innecesaria de listas intermedias y el uso de un generador o cálculo directo, reduciendo la presión sobre el recolector de basura en operaciones críticas de renderizado.
 - `2026-11-03T08:10:42` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando llamadas redundantes a `getattr` y `hasattr` por una estructura de datos pre-calculada (`_VALID_METRIC_KEYS`), reduciendo la sobrecarga de reflexión en los bucles de ingesta y serialización.
 - `2026-11-03T08:10:06` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y precisos en las funciones de procesamiento del registro, aclarando las responsabilidades de cada etapa (filtrado, validación y parseo) y mejorando la consistencia de los tipos documentados.
-- `2026-11-03T07:21:44` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `safety.py` introduciendo una captura de excepciones más granular en `_validate_volume_integrity` y `_get_path_stat_robust`, asegurando que errores inesperados en las llamadas de bajo nivel a la API de Windows no se propaguen como fallos genéricos, sino que se traten con códigos de error específicos y mensajes informativos.
-- `2026-11-03T07:10:39` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez en la manipulación de rutas y metadatos en `JunkFile` y `stage_for_review`, reemplazando el manejo genérico de excepciones por validaciones explícitas de tipos y estados, evitando fallos silenciosos ante rutas mal formadas.
-- `2026-11-03T07:10:27` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` añadiendo una validación explícita para la función `EmptyWorkingSet` antes de invocarla y capturando errores específicos de la API, evitando cierres inesperados por métodos inexistentes o fallos de firma.

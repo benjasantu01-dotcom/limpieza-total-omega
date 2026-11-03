@@ -783,7 +783,9 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Realiza la petición POST a la API de Gemini, implementando timeouts y seguridad en URL."""
+    # Validación estricta de parámetros antes de construir la URL para prevenir inyecciones
     if not (_API_KEY_REGEX.match(api_key) and _MODEL_NAME_REGEX.match(model) and context_text): return None
+    
     payload: Optional[bytes] = _build_payload(question, context_text)
     if not payload: return None
     

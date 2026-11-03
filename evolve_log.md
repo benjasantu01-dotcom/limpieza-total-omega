@@ -466,3 +466,34 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-03T09:14:15` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-03T09:14:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T09:14:15` Corrida terminada. Total usado hoy: 216.
+- `2026-11-03T09:21:01` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-03T09:21:35` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de errores en `process_entry` mediante un bloque `try-except` más granular y una validación explícita de `is_file()` previa al acceso a atributos, previniendo cierres inesperados ante archivos bloqueados por el sistema (acceso denegado) o dispositivos de E/S que fallan durante el escaneo.
+- `2026-11-03T09:22:31` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de archivos de configuración ante concurrencia y errores de I/O mediante la validación explícita de `stat` antes y después de la escritura atómica, y añadiendo una protección adicional contra condiciones de carrera al verificar la existencia y legibilidad del archivo después de la creación del directorio base.
+- `2026-11-03T09:22:57` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.94s
+
+```
+- `2026-11-03T09:22:57` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de existencia física del archivo (`is_file`) al resolver la ruta desde la línea de comandos en `StartupEntry._resolve_and_cache_path`, evitando que rutas inexistentes o mal formadas pero sintácticamente correctas sean reportadas erróneamente como ejecutables válidos.
+- `2026-11-03T09:23:18` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la validación de seguridad en `_call_gemini` para asegurar que el `model` y la `api_key` no contengan caracteres peligrosos antes de formatear la URL, previniendo inyecciones de parámetros o comandos malintencionados en el endpoint.
+- `2026-11-03T09:23:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T09:23:18` Corrida terminada. Total usado hoy: 220.
