@@ -116,7 +116,7 @@ def _is_nan_or_inf(val: Any) -> bool:
 
 def _is_safe_key(key: str) -> bool:
     """Verifica si la clave solicitada está permitida en la estructura de métricas."""
-    if not isinstance(key, str): return False
+    if not isinstance(key, str) or any(c in _FORBIDDEN_CHARS for c in key): return False
     return key in _VALIDATORS or key in ("grade", "analyzed")
 
 def _check_metric_integrity(val: Any) -> bool:
@@ -207,7 +207,7 @@ class ProblemCriterion(NamedTuple):
     Attributes:
         metric_key: Clave en SystemContext.
         threshold: Valor límite para comparación.
-        operator: Operador booleano ('<' o '>') para determinar el estado de riesgo.
+        operator: Opereador booleano ('<' o '>') para determinar el estado de riesgo.
         message_format: Formato del mensaje (e.g., "{:.0f}% de RAM").
     """
     metric_key: str
@@ -379,7 +379,7 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
         return all(_is_safe_payload_structure(item, depth + 1) for item in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return False
-        return all(isinstance(k, str) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
+        return all(isinstance(k, str) and _ensure_safe_text(k) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
@@ -505,6 +505,11 @@ class SystemContext:
                 updates[k] = val
         
         try:
+            # Validación de integridad de la fuente: prevenir rutas como claves o valores
+            if isinstance(source, dict):
+                for k, v in source.items():
+                    if isinstance(k, str) and is_protected_path(k): return {}
+            
             g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
             if grade_val := self._clean_grade(g_val):
                 updates["grade"] = grade_val

@@ -84,9 +84,8 @@ class DirectoryScanner:
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
             
-            # Verificación de confinamiento mediante normalización estricta
-            real_path = os.path.normcase(os.path.realpath(path_str))
-            # Asegurar que real_path sea un subdirectorio o el mismo sandbox_base
+            # Verificación de confinamiento mediante resolución absoluta y normalización
+            real_path = os.path.normcase(str(path_obj.resolve()))
             return real_path == self.ctx.sandbox_base_norm or real_path.startswith(self.ctx.sandbox_base_norm + os.sep)
         except (OSError, RuntimeError, ValueError):
             return False
@@ -258,7 +257,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not p.is_dir(): return 0
     
     try:
-        root_norm = os.path.normcase(os.path.realpath(str(p)))
+        root_norm = os.path.normcase(str(p.resolve()))
     except (OSError, RuntimeError):
         return 0
 
@@ -278,7 +277,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path) or not base.exists(): continue
         
         try:
-            base_norm = os.path.normcase(os.path.realpath(str(base)))
+            base_norm = os.path.normcase(str(base.resolve()))
         except (OSError, RuntimeError):
             continue
             
