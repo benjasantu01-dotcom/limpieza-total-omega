@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
-- Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 251
+- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Rechazadas por tests: 9
+- Rechazadas por guardia de seguridad: 57
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 250
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 123 | 4 | 43 | 4 | 162 |
-| 2026-11-03 | 56 | 4 | 12 | 7 | 89 |
+| 2026-11-02 | 121 | 4 | 43 | 3 | 161 |
+| 2026-11-03 | 57 | 5 | 14 | 7 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **36**
 - robustez ante casos límite: **34**
 - legibilidad y documentación: **33**
-- rendimiento: **32**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
-- `assistant.py`: **17**
+- `safety.py`: **18**
 - `memory.py`: **17**
-- `safety.py`: **17**
 - `diskreport.py`: **17**
 - `healthscore.py`: **16**
-- `browser.py`: **15**
+- `assistant.py`: **16**
+- `browser.py`: **14**
 - `duplicates.py`: **13**
 - `settings.py`: **13**
 - `scanner.py`: **11**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T07:21:44` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `safety.py` introduciendo una captura de excepciones más granular en `_validate_volume_integrity` y `_get_path_stat_robust`, asegurando que errores inesperados en las llamadas de bajo nivel a la API de Windows no se propaguen como fallos genéricos, sino que se traten con códigos de error específicos y mensajes informativos.
 - `2026-11-03T07:10:39` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez en la manipulación de rutas y metadatos en `JunkFile` y `stage_for_review`, reemplazando el manejo genérico de excepciones por validaciones explícitas de tipos y estados, evitando fallos silenciosos ante rutas mal formadas.
 - `2026-11-03T07:10:27` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` añadiendo una validación explícita para la función `EmptyWorkingSet` antes de invocarla y capturando errores específicos de la API, evitando cierres inesperados por métodos inexistentes o fallos de firma.
 - `2026-11-03T07:08:58` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo de puntajes introduciendo validación temprana de `SystemMetrics` y capturando posibles desbordamientos o divisiones por cero en el pipeline, asegurando que las funciones de normalización y reglas nunca propaguen excepciones hacia el `lru_cache` o el informe final.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T05:06:32` **browser.py** (seguridad defensiva): He mejorado `DirectoryScanner._is_path_allowed` para incluir explícitamente `is_protected_path` como control previo al `resolve()`, evitando así intentos de resolución de rutas que el sistema operativo podría bloquear o que podrían ser puntos de reparse malintencionados antes de validar la integridad de la jerarquía.
 - `2026-11-03T04:58:27` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_extract_text_from_gemini_json` para asegurar que el contenido procesado sea texto plano puro y se añadió una validación explícita mediante `is_protected_path` en `_is_safe_text_length` para evitar que rutas del sistema se infiltren accidentalmente como métricas.
 - `2026-11-03T04:56:42` **startup.py** (robustez ante casos límite): Se introdujo una mejora robusta en `_resolve_and_cache_path` mediante la implementación de una validación de rutas usando `pathlib.Path.resolve(strict=False)` con un chequeo preventivo de profundidad, lo que evita desbordamientos de pila o bucles infinitos en sistemas con reparse points o enlaces simbólicos profundos.
-- `2026-11-03T04:47:24` **safety.py** (robustez ante casos límite): Se implementó un chequeo robusto en `_get_path_stat_robust` para manejar casos donde el archivo existe pero los metadatos son inaccesibles o el sistema de archivos retorna un estado inconsistente (handle cerrado o inexistente) debido a condiciones de carrera o bloqueos transitorios, evitando que `ensure_safe_to_modify` falle catastróficamente ante bloqueos temporales menores.

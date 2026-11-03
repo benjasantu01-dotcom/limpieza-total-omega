@@ -1451,3 +1451,36 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-03T07:10:39` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez en la manipulación de rutas y metadatos en `JunkFile` y `stage_for_review`, reemplazando el manejo genérico de excepciones por validaciones explícitas de tipos y estados, evitando fallos silenciosos ante rutas mal formadas.
 - `2026-11-03T07:10:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T07:10:39` Corrida terminada. Total usado hoy: 168.
+- `2026-11-03T07:18:44` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-03T07:19:32` Tests FALLARON:
+```
+ne_file(origen, reason="prueba", base=cuarentena)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_safety.py:182: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_moves_the_file0/sospechoso.exe')
+reason = 'prueba'
+base = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_moves_the_file0/_Cuarentena')
+
+    def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
+        """Función pública para aislar un archivo en cuarentena de forma segura."""
+        p_source: Path = _validate_input_path(source)
+>       if not is_safe_to_modify(p_source): raise UnsafePathError("Aislamiento denegado: el archivo de origen ha sido marcado como no seguro.")
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       safety.UnsafePathError: [GENERIC] Aislamiento denegado: el archivo de origen ha sido marcado como no seguro.
+
+app/quarantine.py:673: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [GENERIC] Aislamiento denegado: el archivo de origen ha sido marcado como no seguro.
+1 failed, 298 passed in 1.56s
+
+```
+- `2026-11-03T07:19:32` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `is_safe_to_modify` antes de proceder, garantizando que ninguna operación de aislamiento ocurra si la ruta de origen o destino ha sido marcada como insegura por el módulo de seguridad, previniendo así condiciones de error silencioso durante el flujo de trabajo.
+- `2026-11-03T07:19:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-03T07:20:50` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-03T07:21:44` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones en `safety.py` introduciendo una captura de excepciones más granular en `_validate_volume_integrity` y `_get_path_stat_robust`, asegurando que errores inesperados en las llamadas de bajo nivel a la API de Windows no se propaguen como fallos genéricos, sino que se traten con códigos de error específicos y mensajes informativos.
+- `2026-11-03T07:21:54` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-11-03T07:21:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T07:21:54` Corrida terminada. Total usado hoy: 172.

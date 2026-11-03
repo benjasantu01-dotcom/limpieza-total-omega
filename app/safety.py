@@ -722,12 +722,13 @@ def _validate_volume_integrity(path: Path) -> None:
     try:
         _validate_drive_restrictions(path)
         if os.path.ismount(path):
-            if not _get_final_path_normalized(path).drive == path.drive:
+            final = _get_final_path_normalized(path)
+            if not final.drive == path.drive:
                  raise UnsafePathError(f"Punto de montaje en volumen externo: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
             raise UnsafePathError(f"Punto de montaje bloqueado: {path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
     except UnsafePathError:
         raise
-    except (OSError, PermissionError, AttributeError):
+    except (OSError, PermissionError, AttributeError, TypeError):
         raise UnsafePathError("Error validando integridad de volumen.", SafetyValidationErrorCode.IO_ERROR)
 
 @lru_cache(maxsize=4096)
