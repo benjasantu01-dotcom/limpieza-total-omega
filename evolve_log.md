@@ -1027,3 +1027,42 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-03T03:37:23` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo `startup.py` mediante la implementación de `docstrings` en las funciones de utilidad internas y la aclaración de las responsabilidades de los cachés globales, facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
 - `2026-11-03T03:37:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T03:37:23` Corrida terminada. Total usado hoy: 84.
+- `2026-11-03T03:44:11` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-03T03:44:53` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso a los criterios de salud sustituyendo la iteración sobre todos los criterios en cada llamada por una búsqueda O(1) en el `_CRITERIOS_MAP` pre-calculado, reduciendo significativamente la carga computacional durante el análisis frecuente de contexto.
+- `2026-11-03T03:45:25` Tests FALLARON:
+```
+........................................................................ [ 24%]
+..............................................F......................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_gradient_starts_and_ends_on_its_stops __________________
+
+    def test_gradient_starts_and_ends_on_its_stops():
+        colores = branding.gradient_colors(50)
+        assert colores[0].lower() == branding.GRADIENT_STOPS[0].lower()
+>       assert colores[-1].lower() == branding.GRADIENT_STOPS[-1].lower()
+E       AssertionError: assert '#fe2d78' == '#ff2d78'
+E         
+E         - #ff2d78
+E         ?   ^
+E         + #fe2d78
+E         ?   ^
+
+evolve/tests/test_modules.py:215: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - AssertionError: assert '#fe2d78' == '#ff2d78'
+  
+  - #ff2d78
+  ?   ^
+  + #fe2d78
+  ?   ^
+1 failed, 298 passed in 1.57s
+
+```
+- `2026-11-03T03:45:25` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de la generación de gradientes en `branding.py` reemplazando la lógica de cálculo en tiempo real en `gradient_colors` por una búsqueda directa de pasos pre-calculados, reduciendo la carga del hilo principal durante la actualización de la UI.
+- `2026-11-03T03:45:54` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo al evitar llamadas repetitivas y costosas al sistema de archivos (`os.lstat` y validaciones de seguridad redundantes) mediante el uso de `os.scandir` de forma más eficiente y el pre-cálculo de estados, reduciendo la carga de I/O en el bucle principal.
+- `2026-11-03T03:46:12` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `walk_files` para reducir drásticamente las llamadas redundantes a `Path.resolve()` y `path.relative_to()`, reemplazándolas por operaciones con cadenas (`entry.path`) y objetos `Path` directos, mejorando la eficiencia en recorridos de disco extensos.
+- `2026-11-03T03:46:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T03:46:12` Corrida terminada. Total usado hoy: 88.

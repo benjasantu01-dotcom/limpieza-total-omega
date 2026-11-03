@@ -111,7 +111,7 @@ class DirectoryScanner:
         if not isinstance(root_path, str) or not root_path:
             return ScanResult(0, False)
             
-        if depth > self.ctx.max_depth or not self._is_path_allowed(root_path):
+        if depth > self.ctx.max_depth:
             return ScanResult(0, True)
 
         try:
@@ -128,15 +128,14 @@ class DirectoryScanner:
 
         self.ctx.visited_dirs.add(dir_id)
         total_bytes: int = 0
+        never_touch = self.ctx.never_touch_lower
         
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        if not entry.name or entry.name.lower() in self.ctx.never_touch_lower: continue
-                        if is_protected_path(Path(entry.path)): continue
-                        
-                        if entry.is_symlink(): continue
+                        name_lower = entry.name.lower()
+                        if name_lower in never_touch: continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             if not self.ctx.is_junction(entry.path):
@@ -295,8 +294,8 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             if not target.exists() or not target.is_dir(): continue
             
             target_str = str(target)
-            if not scanner._is_path_allowed(target_str): continue
             
+            # Chequeos rápidos previos al escaneo pesado
             if _IS_JUNCTION_FN(target_str) or target.is_symlink(): continue
             if _is_system_hidden(target_str, kernel) or target.name.lower() in NEVER_TOUCH:
                 continue

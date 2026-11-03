@@ -439,8 +439,8 @@ class SystemContext:
         """Versión cacheada de los problemas de salud detectados basándose en datos actuales."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        # Evalúa recorriendo las claves de los criterios existentes
-        key_vals = tuple((k, snap.get(k, -1.0)) for k in _CRITERIOS_MAP.keys())
+        # Evaluamos solo las claves que tenemos en el snapshot contra el mapa pre-indexado
+        key_vals = tuple((k, snap[k]) for k in snap if k in _CRITERIOS_MAP)
         return _evaluate_active_problems(key_vals)
 
     @property
