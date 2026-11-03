@@ -953,3 +953,44 @@
 - `2026-11-03T02:56:48` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` y `_is_structure_valid` añadiendo validaciones explícitas contra ataques de desbordamiento de memoria por claves repetidas o estructuras JSON profundamente anidadas, además de asegurar que `_read_and_parse_json` no retorne diccionarios vacíos o con claves inesperadas que puedan comprometer la integridad.
 - `2026-11-03T02:56:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T02:56:48` Corrida terminada. Total usado hoy: 68.
+- `2026-11-03T03:03:24` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-11-03T03:03:55` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.70s
+
+```
+- `2026-11-03T03:03:55` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry.executable` y `_resolve_and_cache_path` implementando una validación explícita de `path.exists()` y manejo de errores ante rutas mal formadas que puedan causar fallos en el sistema de archivos durante la resolución, garantizando que el caché solo almacene resultados verificables y seguros.
+- `2026-11-03T03:04:30` ➖ Sin cambios en assistant.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación y la legibilidad de `assistant.py` mediante la conversión de bloques lógicos complejos en funciones con nombres descriptivos (`_is_input_too_deep_or_complex` y `_is_safe_payload_structure`) y la adición de Type Hints en puntos de ambigüedad, facilitando la comprensión del motor de validación de datos sin alterar el comportamiento.
+- `2026-11-03T03:05:03` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la robustez de las funciones de acceso (`color`, `font_size`, `icon`) mediante la adición de Type Hints claros y la estandarización de sus comportamientos ante entradas inválidas, asegurando que la interfaz no falle ante configuraciones inesperadas.
+- `2026-11-03T03:05:14` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en los métodos principales y la centralización de los flags de atributos de sistema, facilitando la comprensión del flujo de escaneo defensivo.
+- `2026-11-03T03:05:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T03:05:14` Corrida terminada. Total usado hoy: 72.

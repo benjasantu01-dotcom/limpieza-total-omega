@@ -185,25 +185,25 @@ def app_title() -> str:
 
 def color(name: Optional[str]) -> ColorHex: 
     """Obtiene el código hexadecimal de una clave de paleta; retorna gris si no existe."""
-    if not isinstance(name, str) or name not in PALETTE:
-        return "#808080"
-    return PALETTE[name]
+    if name is not None and name in PALETTE:
+        return PALETTE[name]
+    return "#808080"
 
 def font_size(name: Optional[str]) -> int: 
     """Obtiene el tamaño de fuente configurado por tipo semántico; fallback a body."""
-    if not isinstance(name, str) or name not in FONT_SIZES:
-        return UI_CONFIG.body_size
-    return FONT_SIZES[name]
+    if name is not None and name in FONT_SIZES:
+        return FONT_SIZES[name]
+    return UI_CONFIG.body_size
 
 def icon(section: Optional[str]) -> str: 
     """Obtiene el glifo Unicode para una sección; retorna punto si no existe."""
-    if not isinstance(section, str) or not section in ICONS:
-        return "\u2022"
-    return ICONS[section]
+    if section is not None and section in ICONS:
+        return ICONS[section]
+    return "\u2022"
 
 def tab_label(section: Optional[str]) -> str: 
     """Concatena el icono de sección con su nombre para etiquetas de UI."""
-    if not isinstance(section, str) or not section:
+    if not section:
         return f"\u2022  Desconocido"
     return f"{icon(section)}  {section}"
 

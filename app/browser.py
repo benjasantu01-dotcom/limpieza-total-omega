@@ -49,6 +49,19 @@ VisitedDirs: TypeAlias = Set[tuple[int, int]]
 
 PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 
+class FileAttributes:
+    """Constantes de atributos de archivos Win32 para validación de seguridad."""
+    READONLY: int = 0x01
+    HIDDEN: int = 0x02
+    SYSTEM: int = 0x04
+    REPARSE_POINT: int = 0x400
+
+SYSTEM_HIDDEN_FLAGS: int = (
+    FileAttributes.HIDDEN | 
+    FileAttributes.SYSTEM | 
+    FileAttributes.REPARSE_POINT
+)
+
 @dataclass
 class ScanContext:
     """
@@ -84,7 +97,6 @@ class DirectoryScanner:
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
             
-            # Verificación de confinamiento mediante resolución absoluta y normalización
             real_path = os.path.normcase(str(path_obj.resolve()))
             return real_path == self.ctx.sandbox_base_norm or real_path.startswith(self.ctx.sandbox_base_norm + os.sep)
         except (OSError, RuntimeError, ValueError):
@@ -104,7 +116,7 @@ class DirectoryScanner:
 
         try:
             st = os.lstat(root_path)
-            is_reparse = (st.st_file_attributes & 0x400) if hasattr(st, 'st_file_attributes') else False
+            is_reparse = (st.st_file_attributes & FileAttributes.REPARSE_POINT) if hasattr(st, 'st_file_attributes') else False
             if self.ctx.is_junction(root_path) or is_reparse:
                 return ScanResult(0, True)
             dir_id = (st.st_dev, st.st_ino)
@@ -144,6 +156,7 @@ class DirectoryScanner:
             return ScanResult(0, False)
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
+    """Decorador para silenciar errores de sistema en operaciones de solo lectura."""
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -157,18 +170,6 @@ def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
 class ScanResult(NamedTuple):
     bytes_found: int
     success: bool
-
-class FileAttributes:
-    READONLY: int = 0x01
-    HIDDEN: int = 0x02
-    SYSTEM: int = 0x04
-    REPARSE_POINT: int = 0x400
-
-SYSTEM_HIDDEN_FLAGS: int = (
-    FileAttributes.HIDDEN | 
-    FileAttributes.SYSTEM | 
-    FileAttributes.REPARSE_POINT
-)
 
 def _is_junction_default(path: str) -> bool:
     return False
@@ -187,6 +188,7 @@ BROWSER_CACHE_PATHS: BrowserMap = {
 }
 
 def _is_valid_rel_path(path_candidate: Any) -> TypeGuard[str]:
+    """Valida la integridad de la ruta relativa configurada."""
     if not isinstance(path_candidate, str) or not path_candidate.strip(): return False
     if os.path.isabs(path_candidate) or path_candidate.startswith(('\\', '/')): return False
     if ".." in os.path.normpath(path_candidate): return False
@@ -231,6 +233,7 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def base_directories() -> List[Path]:
+    """Retorna la lista de directorios base permitidos para búsqueda de caché."""
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env.strip() or _is_unc_path(local_env):
         return []
@@ -265,6 +268,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     return DirectoryScanner(ctx).get_size(str(p)).bytes_found
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
+    """Escanea el sistema de archivos buscando directorios de caché conocidos."""
     raw_bases = list(bases) if (isinstance(bases, (list, tuple))) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
