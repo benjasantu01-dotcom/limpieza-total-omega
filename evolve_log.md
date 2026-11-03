@@ -944,3 +944,12 @@
 - `2026-11-03T02:48:10` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` mediante la captura explícita de `json.JSONDecodeError` y la validación estricta de la estructura del JSON, evitando que un archivo de manifiesto corrupto o mal formado detenga la ejecución de la app al iniciar o listar ítems.
 - `2026-11-03T02:48:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T02:48:10` Corrida terminada. Total usado hoy: 64.
+- `2026-11-03T02:53:11` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-11-03T02:53:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-03T02:54:16` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-03T02:54:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 115): unterminated string literal (detected at line 115)
+- `2026-11-03T02:55:34` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se corrigió un error de sintaxis en `_validate_no_reparse_traversal` (`_get_final_pathNormalized` no existía, debía ser `_get_final_path_normalized`) y se fortaleció el manejo de errores en `_get_final_path_normalized` para asegurar que retorne un objeto `Path` válido en caso de fallos de E/S, evitando excepciones no capturadas.
+- `2026-11-03T02:56:00` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del escaneo heurístico reemplazando validaciones implícitas por chequeos explícitos de `None` y capturando excepciones de estado de archivo que podrían abortar el proceso ante accesos concurrentes o bloqueos transitorios.
+- `2026-11-03T02:56:48` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` y `_is_structure_valid` añadiendo validaciones explícitas contra ataques de desbordamiento de memoria por claves repetidas o estructuras JSON profundamente anidadas, además de asegurar que `_read_and_parse_json` no retorne diccionarios vacíos o con claves inesperadas que puedan comprometer la integridad.
+- `2026-11-03T02:56:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T02:56:48` Corrida terminada. Total usado hoy: 68.

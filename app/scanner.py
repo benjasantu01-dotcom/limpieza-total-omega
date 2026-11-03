@@ -181,7 +181,7 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Identifica archivos de 0 bytes que pueden ser marcadores de relleno."""
-    if stats and getattr(stats, "st_size", -1) == 0:
+    if stats is not None and getattr(stats, "st_size", -1) == 0:
         return Suspicion(path, "Archivo vacío detectado (posible marcador de relleno)", "warning")
     return None
 
@@ -200,7 +200,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Identifica ejecutables de reciente creación en carpetas de descarga volátiles."""
-    if not path or not path.parent or stats is None: return None
+    if path is None or path.parent is None or stats is None: 
+        return None
     try:
         if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
             mtime = getattr(stats, "st_mtime", 0.0)

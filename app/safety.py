@@ -835,22 +835,21 @@ def _get_final_path_normalized(p: Path) -> Path:
     
     kernel32 = ctypes.windll.kernel32
     try:
-        p.lstat()
-    except (OSError, FileNotFoundError, PermissionError):
-        return p.resolve(strict=False)
-
-    handle = kernel32.CreateFileW(
-        _to_long_path(str(p)), 0, 0, None, 3, 0x02000000, None
-    )
-    if handle == INVALID_HANDLE_VALUE:
-        return p.resolve(strict=False)
-    
-    try:
-        buf = ctypes.create_unicode_buffer(1024)
-        if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
-            return Path(buf.value)
-    finally:
-        kernel32.CloseHandle(handle)
+        if not p.exists(): return p.resolve(strict=False)
+        handle = kernel32.CreateFileW(
+            _to_long_path(str(p)), 0, 0, None, 3, 0x02000000, None
+        )
+        if handle == INVALID_HANDLE_VALUE:
+            return p.resolve(strict=False)
+        
+        try:
+            buf = ctypes.create_unicode_buffer(1024)
+            if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
+                return Path(buf.value)
+        finally:
+            kernel32.CloseHandle(handle)
+    except (OSError, Exception):
+        pass
     return p.resolve(strict=False)
 
 @lru_cache(maxsize=4096)
@@ -1051,7 +1050,7 @@ def _validate_no_reparse_traversal(path: Path) -> None:
         current = current / part
         if current.is_symlink() or _is_system_directory_junction(str(current)):
             _validate_junction_depth(current)
-            target = _get_final_pathNormalized(current)
+            target = _get_final_path_normalized(current)
             if not target.is_relative_to(Path(path.anchor)):
                 raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS)
 

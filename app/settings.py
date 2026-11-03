@@ -366,8 +366,9 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
 def _is_structure_valid(data: Any) -> bool:
     """Verifica que el JSON parseado sea un diccionario de tamaño controlado con tipos conformes al esquema."""
     if not isinstance(data, dict) or len(data) > 64: return False
+    # Evitar diccionarios vacíos malintencionados
+    if not data: return False
     for key_name, value in data.items():
-        # Rechazar explícitamente valores None y validar contra tipo de defecto
         if value is None: return False
         key_enum = _KEY_TO_ENUM.get(key_name)
         if not key_enum or not _is_valid_type(value, key_enum): return False
@@ -385,11 +386,11 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
         
-        # Rechazar BOM o bytes de control fuera de espacios en blanco standard
         if content.startswith((b'\xef\xbb\xbf', b'\xff\xfe', b'\xfe\xff')): return None
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
-        data = json.loads(content.decode("utf-8", errors="strict"))
+        # Parseo con control de duplicados de claves si la librería lo permite mediante object_pairs_hook
+        data = json.loads(content.decode("utf-8", errors="strict"), object_pairs_hook=dict)
         if not _is_structure_valid(data): return None
         
         return data

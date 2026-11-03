@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
-- Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 61
+- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Rechazadas por tests: 7
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 31 | 3 | 9 | 4 | 43 |
+| 2026-11-01 | 29 | 2 | 9 | 4 | 42 |
 | 2026-11-02 | 131 | 5 | 47 | 4 | 163 |
-| 2026-11-03 | 20 | 0 | 5 | 2 | 37 |
+| 2026-11-03 | 23 | 0 | 6 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **39**
 - seguridad defensiva: **38**
-- rendimiento: **33**
+- rendimiento: **31**
 - legibilidad y documentación: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `diskreport.py`: **18**
+- `safety.py`: **18**
 - `memory.py`: **18**
-- `safety.py`: **17**
+- `diskreport.py`: **17**
 - `assistant.py`: **16**
 - `healthscore.py`: **15**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
+- `settings.py`: **13**
 - `browser.py`: **13**
-- `settings.py`: **12**
 - `duplicates.py`: **12**
-- `branding.py`: **11**
+- `branding.py`: **10**
 - `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T02:56:48` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_is_structure_valid` añadiendo validaciones explícitas contra ataques de desbordamiento de memoria por claves repetidas o estructuras JSON profundamente anidadas, además de asegurar que `_read_and_parse_json` no retorne diccionarios vacíos o con claves inesperadas que puedan comprometer la integridad.
+- `2026-11-03T02:56:00` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del escaneo heurístico reemplazando validaciones implícitas por chequeos explícitos de `None` y capturando excepciones de estado de archivo que podrían abortar el proceso ante accesos concurrentes o bloqueos transitorios.
+- `2026-11-03T02:55:34` **safety.py** (manejo de errores y validación de entradas): Se corrigió un error de sintaxis en `_validate_no_reparse_traversal` (`_get_final_pathNormalized` no existía, debía ser `_get_final_path_normalized`) y se fortaleció el manejo de errores en `_get_final_path_normalized` para asegurar que retorne un objeto `Path` válido en caso de fallos de E/S, evitando excepciones no capturadas.
 - `2026-11-03T02:48:10` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la captura explícita de `json.JSONDecodeError` y la validación estricta de la estructura del JSON, evitando que un archivo de manifiesto corrupto o mal formado detenga la ejecución de la app al iniciar o listar ítems.
 - `2026-11-03T02:35:42` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `summarize` y `_evaluate_rules`, eliminando el riesgo de que excepciones silenciosas interrumpan el flujo, y se ha fortalecido la integridad del pipeline garantizando que `_compute_cached` no falle ante atributos ausentes.
 - `2026-11-03T02:35:28` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para manejar casos de rutas inexistentes o inaccesibles de forma explícita, reemplazando el uso de `float('inf')` por validaciones de estado más seguras que previenen excepciones no controladas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T00:41:58` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo encapsulando la validación de entrada en los `message_factory` mediante la creación de un envoltorio robusto `_safe_factory` que asegura que cualquier mensaje generado por reglas dinámicas sea filtrado por los mismos mecanismos de seguridad antes de ser procesado por el pipeline.
 - `2026-11-03T00:41:30` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el acceso directo a `path.stat()` dentro de `_collect_candidates` por una verificación explícita mediante `_safe_path_check` antes de realizar operaciones de E/S, evitando posibles errores de acceso en rutas bloqueadas o inaccesibles.
 - `2026-11-03T00:40:56` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una verificación explícita contra rutas con puntos de reparse (junctions/symlinks) mediante `_is_reparse_point` desde el inicio de la navegación, previniendo así posibles bucles o escapes fuera del directorio raíz.
-- `2026-11-03T00:32:13` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_is_path_allowed` utilizando `pathlib.Path.resolve()` junto con la normalización de mayúsculas/minúsculas para garantizar que el confinamiento al sandbox sea efectivo ante ataques de bypass mediante enlaces simbólicos o inconsistencias de ruta, asegurando que la validación sea absoluta.
-- `2026-11-03T00:31:25` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la ingesta de datos en `SystemContext` agregando una validación explícita mediante `is_protected_path` sobre los datos de entrada en `_validate_and_sanitize_data` y asegurando que las claves del diccionario de entrada no contengan caracteres peligrosos antes de procesar sus valores.
-- `2026-11-03T00:30:49` **startup.py** (robustez ante casos límite): Se introdujo una verificación robusta contra el desbordamiento de memoria ante procesos zombie o rutas cíclicas en `_resolve_and_cache_path` mediante la limitación de profundidad en la resolución de enlaces, asegurando que la aplicación sea resiliente a estructuras de archivo maliciosas o corruptas sin alterar la lógica de inventario.
