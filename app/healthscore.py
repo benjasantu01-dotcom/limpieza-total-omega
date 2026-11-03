@@ -94,11 +94,6 @@ class Grade(Enum):
     def from_score(cls, score: float | int | None) -> str:
         """
         Convierte una puntuación numérica a su categoría alfabética equivalente.
-        
-        Args:
-            score: Valor numérico de 0 a 100.
-        Returns:
-            str: Categoría de 'A' (excelente) a 'F' (crítico).
         """
         if score is None:
             return cls.F.value
@@ -116,10 +111,6 @@ class Grade(Enum):
 class RecommendationRule(NamedTuple):
     """
     Define una lógica de diagnóstico reactiva basada en métricas.
-    - area: Identificador del tipo de métrica.
-    - threshold: Valor de ratio bajo el cual la regla se vuelve relevante.
-    - message_factory: Función que genera el mensaje según las métricas actuales.
-    - check: Predicado que determina si la regla debe dispararse.
     """
     area: MetricKey
     threshold: float
@@ -128,11 +119,7 @@ class RecommendationRule(NamedTuple):
 
 class PipelineEntry(NamedTuple):
     """
-    Estructura que vincula una métrica con su normalizador y sus reglas de advertencia.
-    - area: Nombre de la métrica.
-    - weight: Peso porcentual en el puntaje total.
-    - scorer: Función normalizadora.
-    - rules: Colección de reglas de diagnóstico asociadas.
+    Estructura que vincula una métrica con su normalizador y reglas de advertencia.
     """
     area: MetricKey
     weight: int
@@ -154,7 +141,6 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales críticos para la normalización de métricas
 _LIMIT_JUNK_MB: Final[float] = 5000.0        
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0   
 _LIMIT_STARTUP_COUNT: Final[int] = 20        
@@ -162,10 +148,7 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0     
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """
-    Limita un valor numérico al rango definido [min_val, max_val].
-    Maneja entradas no finitas devolviendo el valor mínimo por seguridad.
-    """
+    """Limita un valor numérico al rango definido [min_val, max_val]."""
     try:
         val = float(value)
         if not math.isfinite(val): return min_val
@@ -175,10 +158,8 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """
-    Genera funciones de normalización lineal.
-    Args:
-        limit: El valor de referencia (cap).
-        inverse: Si es True, un valor mayor al límite reduce la salud hacia 0.0.
+    Genera funciones de normalización lineal. Si inverse=True, a mayor valor 
+    de entrada, menor será el puntaje resultante.
     """
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0: return 0.0
@@ -186,7 +167,6 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
         return _clamp(1.0 - ratio if inverse else ratio)
     return scorer
 
-# Niveles de ratio de salud para disparar advertencias (0.0 a 1.0)
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -239,7 +219,7 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
 _verify_pipeline_integrity(WEIGHTS, PIPELINE_DEFINITIONS)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Calcula salud basada en archivos temporales."""
+    """Calcula salud normalizando el volumen de basura (menor es mejor)."""
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
@@ -248,21 +228,21 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
     return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula salud según disponibilidad de RAM."""
+    """Calcula salud normalizando la RAM disponible (mayor es mejor)."""
     if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Calcula salud según espacio libre en disco."""
+    """Calcula salud normalizando el espacio libre en disco (mayor es mejor)."""
     if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula salud según volumen de archivos duplicados."""
+    """Calcula salud normalizando el volumen de archivos duplicados (menor es mejor)."""
     return _DUP_SCORER(float(duplicate_mb))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula salud según cantidad de aplicaciones en inicio."""
+    """Calcula salud normalizando la cantidad de aplicaciones al inicio (menor es mejor)."""
     return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_val: float, max_val: float) -> float:
@@ -279,10 +259,7 @@ def _validate_numeric(value: Any, default: float, min_val: float, max_val: float
 
 @dataclass
 class SystemMetrics:
-    """
-    Contenedor de datos inmutable utilizado como entrada para el análisis.
-    Realiza una validación automática post-inicialización mediante `validate()`.
-    """
+    """Contenedor de datos inmutable para el análisis de salud."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -293,7 +270,6 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        """Asegura integridad de datos tras la instanciación."""
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any:
@@ -315,13 +291,13 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica si todas las métricas críticas son valores numéricos válidos."""
+        """Verifica validez numérica de las métricas."""
         all_keys = _VALIDATION_KEYS + ("quarantined_count",)
         return all(math.isfinite(float(getattr(self, f, 0.0))) for f in all_keys)
 
 @dataclass
 class HealthResult:
-    """Resultado consolidado del análisis de salud, inmutable tras creación."""
+    """Resultado consolidado del análisis de salud."""
     score: int = 0
     grade: str = "F"
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -329,15 +305,12 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool: 
-        """Retorna True si el puntaje califica como saludable."""
         return 80 <= self.score <= 100
 
 def grade_for_score(score: float | int) -> str: 
-    """Wrapper para obtener la categoría de nota según el puntaje."""
     return Grade.from_score(score)
 
 def _is_safe_string_for_report(text: str) -> bool:
-    """Verifica si el mensaje es seguro para mostrar en el informe."""
     return not _is_sensitive_input(text)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
@@ -417,7 +390,6 @@ def summarize(result: HealthResult | None) -> List[str]:
         lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
         weights_map = {entry.area: entry.weight for entry in PIPELINE_DEFINITIONS}
         
-        # Iteración segura sobre las claves existentes en el desglose
         for area in sorted(weights_map.keys()):
             val = result.breakdown.get(area, 0)
             weight = weights_map.get(area, 10)

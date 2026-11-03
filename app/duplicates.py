@@ -54,7 +54,10 @@ _partial_cache: Dict[Path, str] = {}
 _full_hash_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
-    """Verifica si el path es un punto de reanálisis (Junction o Symlink) usando Win32 API."""
+    """
+    Verifica si el path es un punto de reanálisis (Junction o Symlink) usando Win32 API.
+    Necesario para evitar seguir recursivamente carpetas que apunten fuera de la ruta base.
+    """
     if not isinstance(path, Path): return False
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -137,6 +140,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Genera un fingerprint rápido leyendo solo los primeros N bytes definidos en PARTIAL_READ_BYTES.
+    Útil para descartar rápidamente archivos con encabezados distintos sin leer todo el cuerpo.
     """
     if not isinstance(path, Path) or not path.is_file() or not _safe_path_check(path): 
         return None
@@ -172,7 +176,11 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Recolector recursivo mediante BFS. Filtra nodos protegidos y duplicados a nivel de inodo."""
+    """
+    Recolector recursivo mediante BFS. 
+    Utiliza una lista de visitados (inodo) para evitar procesar el mismo archivo físico
+    varias veces si aparece bajo diferentes enlaces simbólicos.
+    """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[Tuple[int, int]] = set()
     
@@ -215,7 +223,11 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Refina grupos mediante hashing de dos niveles (parcial seguido de completo)."""
+    """
+    Refina grupos mediante hashing de dos niveles (parcial seguido de completo).
+    Esto optimiza el rendimiento evitando el hash completo en archivos que no tienen
+    el mismo prefijo.
+    """
     if not paths: return {}
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
@@ -256,7 +268,10 @@ def _get_mtime(path: Path) -> Optional[float]:
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
-    """Heurística: recomienda conservar el archivo con la fecha de modificación más antigua."""
+    """
+    Heurística: recomienda conservar el archivo con la fecha de modificación más antigua.
+    Se asume que la versión más vieja es la original o el punto de inicio de la copia.
+    """
     if not group or not group.paths: 
         return None
         
