@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 263
+- Sin respuesta de la IA (error o límite): 262
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 99 | 2 | 34 | 2 | 135 |
-| 2026-11-03 | 72 | 6 | 18 | 8 | 128 |
+| 2026-11-02 | 99 | 2 | 34 | 2 | 131 |
+| 2026-11-03 | 73 | 6 | 18 | 8 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **34**
 - rendimiento: **34**
+- seguridad defensiva: **30**
 - robustez ante casos límite: **29**
-- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,16 +35,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **16**
 - `healthscore.py`: **15**
 - `memory.py`: **15**
+- `settings.py`: **13**
 - `browser.py`: **12**
 - `duplicates.py`: **12**
 - `scanner.py`: **12**
-- `settings.py`: **12**
 - `branding.py`: **9**
 - `organizer.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T10:02:32` **settings.py** (seguridad defensiva): Se endureció la validación en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar que el archivo de configuración no sea un enlace simbólico o un archivo con metadatos maliciosos antes de procesarlo.
 - `2026-11-03T09:23:18` **assistant.py** (seguridad defensiva): Reforcé la validación de seguridad en `_call_gemini` para asegurar que el `model` y la `api_key` no contengan caracteres peligrosos antes de formatear la URL, previniendo inyecciones de parámetros o comandos malintencionados en el endpoint.
 - `2026-11-03T09:22:31` **settings.py** (robustez ante casos límite): Mejora la robustez del manejo de archivos de configuración ante concurrencia y errores de I/O mediante la validación explícita de `stat` antes y después de la escritura atómica, y añadiendo una protección adicional contra condiciones de carrera al verificar la existencia y legibilidad del archivo después de la creación del directorio base.
 - `2026-11-03T09:21:35` **scanner.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores en `process_entry` mediante un bloque `try-except` más granular y una validación explícita de `is_file()` previa al acceso a atributos, previniendo cierres inesperados ante archivos bloqueados por el sistema (acceso denegado) o dispositivos de E/S que fallan durante el escaneo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T08:20:21` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso de `.relative_to().parts` dentro del bucle de recorrido, calculando el nivel superior mediante una comparación de cadenas o un acceso directo más eficiente, lo que reduce la carga de CPU y la asignación de memoria durante escaneos profundos.
 - `2026-11-03T08:11:11` **branding.py** (rendimiento): Optimicé el rendimiento de `get_gradient_segments` mediante la eliminación de la creación innecesaria de listas intermedias y el uso de un generador o cálculo directo, reduciendo la presión sobre el recolector de basura en operaciones críticas de renderizado.
 - `2026-11-03T08:10:42` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando llamadas redundantes a `getattr` y `hasattr` por una estructura de datos pre-calculada (`_VALID_METRIC_KEYS`), reduciendo la sobrecarga de reflexión en los bucles de ingesta y serialización.
-- `2026-11-03T08:10:06` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y precisos en las funciones de procesamiento del registro, aclarando las responsabilidades de cada etapa (filtrado, validación y parseo) y mejorando la consistencia de los tipos documentados.

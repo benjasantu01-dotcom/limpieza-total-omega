@@ -369,15 +369,18 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     """Verifica que el archivo de configuración sea legible, no alterado y propiedad del usuario."""
     try:
-        if not is_safe_to_modify(str(file_path)): return False
+        # Prevenir reparse points (Junctions/Symlinks)
         if _Validators._is_reparse_point(str(file_path)): return False
+        # Verificar que es archivo plano, sin enlaces duros adicionales
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-        # Verificar que nadie más tenga permisos de escritura (grupo u otros)
-        if (st.st_mode & (stat.S_IWGRP | stat.S_IWOTH)) != 0: return False
-        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
-        if (st.st_mode & 0o077) != 0: return False 
+        # Verificar permisos: solo lectura/escritura por el dueño, nada de grupo/otros
+        if (st.st_mode & 0o077) != 0: return False
+        # Verificar propiedad si el OS lo permite
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        return True
+        # Validar tamaño
+        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
+        # Seguridad final mediante la whitelist del proyecto
+        return is_safe_to_modify(str(file_path))
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _is_structure_valid(data: Any) -> bool:
@@ -397,6 +400,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     de contenido y validación estructural estricta antes de retornar los datos.
     """
     try:
+        # Usamos lstat para evitar seguir enlaces simbólicos
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
         
