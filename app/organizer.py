@@ -134,7 +134,7 @@ def is_valid_junk_extension(filename: str) -> bool:
     Valida la extensión de un archivo contra el conjunto de extensiones permitidas.
     """
     if not filename: return False
-    return any(filename.lower().endswith(ext) for ext in JUNK_EXTENSIONS)
+    return Path(filename).suffix.lower() in JUNK_EXTENSIONS
 
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """Extrae atributos de archivo de bajo nivel usando la API de Windows."""
@@ -295,7 +295,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 
 def _is_candidate_for_scan(name: str, stats: os.stat_result) -> bool:
     """Filtra archivos candidatos basado en extensiones y atributos."""
-    if not any(name.lower().endswith(ext) for ext in JUNK_EXTENSIONS):
+    if Path(name).suffix.lower() not in JUNK_EXTENSIONS:
         return False
     if stats.st_size >= LIMITS.MAX_FILE_SIZE_BYTES:
         return False

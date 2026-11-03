@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 58
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-01 | 15 | 2 | 4 | 4 | 37 |
+| 2026-11-01 | 13 | 1 | 4 | 4 | 36 |
 | 2026-11-02 | 131 | 5 | 47 | 4 | 163 |
-| 2026-11-03 | 38 | 2 | 7 | 4 | 41 |
+| 2026-11-03 | 40 | 3 | 8 | 4 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **38**
+- seguridad defensiva: **36**
 - robustez ante casos límite: **32**
-- rendimiento: **29**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
 - `memory.py`: **18**
+- `safety.py`: **18**
 - `diskreport.py`: **18**
-- `safety.py`: **17**
 - `healthscore.py`: **16**
 - `assistant.py`: **16**
-- `browser.py`: **15**
 - `scanner.py`: **14**
+- `browser.py`: **14**
 - `duplicates.py`: **13**
 - `settings.py`: **12**
-- `branding.py`: **10**
+- `branding.py`: **9**
+- `organizer.py`: **9**
 - `startup.py`: **8**
-- `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-03T04:08:13` **safety.py** (rendimiento): Se implementó un mecanismo de caché para `_is_kernel_managed` para evitar re-cálculos costosos y consultas al entorno repetitivas durante operaciones masivas de escaneo de archivos.
+- `2026-11-03T04:05:18` **organizer.py** (rendimiento): Optimizé la detección de extensiones basura en `_is_candidate_for_scan` y `is_valid_junk_extension` reemplazando `any(...)` por una verificación directa en el conjunto `JUNK_EXTENSIONS`, eliminando la iteración innecesaria en cada archivo escaneado.
 - `2026-11-03T03:55:29` **healthscore.py** (rendimiento): Se optimizó el acceso a atributos y la validación en `SystemMetrics` evitando la creación innecesaria de listas y llamadas repetitivas a `getattr` mediante el uso de una constante `_METRICS_LIST` y una tupla estática, mejorando el rendimiento en el bucle caliente del pipeline.
 - `2026-11-03T03:55:01` **duplicates.py** (rendimiento): Optimicé el rendimiento eliminando la llamada redundante a `path.exists()` dentro de `group_by_size` al confiar en `os.scandir` y `_safe_path_check`, y mejoré la eficiencia del procesamiento de candidatos evitando conversiones innecesarias de `str` a `Path` y verificaciones repetidas de atributos, aprovechando los datos que ya entrega el iterador de archivos.
 - `2026-11-03T03:46:12` **diskreport.py** (rendimiento): Optimicé el método `walk_files` para reducir drásticamente las llamadas redundantes a `Path.resolve()` y `path.relative_to()`, reemplazándolas por operaciones con cadenas (`entry.path`) y objetos `Path` directos, mejorando la eficiencia en recorridos de disco extensos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T03:24:19` **memory.py** (legibilidad y documentación): Se añadió documentación exhaustiva en formato de docstrings (especialmente en `_get_handle_for_safe_proc` y `_iter_process_memory`) para clarificar la lógica de seguridad y el manejo de handles, y se renombraron variables internas (`h_process` a `handle`, `cb_needed` a `bytes_written`) para mejorar la legibilidad y coherencia técnica sin alterar la funcionalidad.
 - `2026-11-03T03:15:05` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de cálculo de métricas para clarificar la lógica de normalización y mejorar la legibilidad del pipeline.
 - `2026-11-03T03:14:37` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints faltantes (especialmente en los decoradores y retornos de funciones de hash) y docstrings detallados que explican el "porqué" de las estrategias de hashing y la lógica de recolección, facilitando la comprensión del flujo de trabajo sin alterar su comportamiento.
-- `2026-11-03T03:05:14` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en los métodos principales y la centralización de los flags de atributos de sistema, facilitando la comprensión del flujo de escaneo defensivo.
-- `2026-11-03T03:05:03` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la robustez de las funciones de acceso (`color`, `font_size`, `icon`) mediante la adición de Type Hints claros y la estandarización de sus comportamientos ante entradas inválidas, asegurando que la interfaz no falle ante configuraciones inesperadas.

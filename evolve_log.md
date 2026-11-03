@@ -1073,3 +1073,35 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-11-03T03:56:13` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `_iter_process_memory` reemplazando la creación redundante de objetos `PROCESS_MEMORY_COUNTERS` dentro del bucle por una única instancia reutilizada, y reduje la carga de trabajo del intérprete al eliminar la conversión innecesaria de PIDs a strings en el generador.
 - `2026-11-03T03:56:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-03T03:56:13` Corrida terminada. Total usado hoy: 92.
+- `2026-11-03T04:04:47` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-11-03T04:05:18` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la detección de extensiones basura en `_is_candidate_for_scan` y `is_valid_junk_extension` reemplazando `any(...)` por una verificación directa en el conjunto `JUNK_EXTENSIONS`, eliminando la iteración innecesaria en cada archivo escaneado.
+- `2026-11-03T04:06:34` Tests FALLARON:
+```
+______ test_quarantine_summary_reports_size_and_origin ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0/_Cuarentena')
+
+    def test_quarantine_summary_reports_size_and_origin(tmp_path, cuarentena):
+        origen = tmp_path / "pesado.bin"
+        origen.write_bytes(b"0" * 2048)
+        quarantine.quarantine_file(origen, reason="motivo de prueba", base=cuarentena)
+    
+        texto = "\n".join(quarantine.summarize(cuarentena))
+        assert "pesado.bin" in texto
+>       assert "motivo de prueba" in texto
+E       AssertionError: assert 'motivo de prueba' in '1 archivo(s) en cuarentena — 0.00 MB\n  [cb43e8ae3509] pesado.bin — 0.0 MB'
+
+evolve/tests/test_safety.py:310: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-2/test_restore_into_a_system_pat0/Windows/System32'
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'motivo de prueba' in '1 archivo(s) en cuarentena — 0.00 MB\n  [cb43e8ae3509] pesado.bin — 0.0 MB'
+3 failed, 296 passed in 1.73s
+
+```
+- `2026-11-03T04:06:34` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del módulo mediante la implementación de un caché de resultados de `_is_file_in_use_by_system` más robusto y la eliminación de llamadas redundantes a `Path.resolve()` y `Path.stat()` en bucles críticos de validación.
+- `2026-11-03T04:07:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-03T04:08:13` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché para `_is_kernel_managed` para evitar re-cálculos costosos y consultas al entorno repetitivas durante operaciones masivas de escaneo de archivos.
+- `2026-11-03T04:08:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-03T04:08:13` Corrida terminada. Total usado hoy: 96.

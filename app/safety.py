@@ -533,7 +533,7 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
     except (AttributeError, OSError, ctypes.ArgumentError): pass
     return False
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=2048)
 def _is_kernel_managed(path_str: str) -> bool:
     if not isinstance(path_str, str) or not path_str: return False
     p_lower = path_str.lower()
