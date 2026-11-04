@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **122** (24.2% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 317
+- Sin respuesta de la IA (error o límite): 315
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 53 | 3 | 20 | 5 | 155 |
-| 2026-11-04 | 69 | 6 | 22 | 9 | 162 |
+| 2026-11-03 | 51 | 3 | 20 | 5 | 153 |
+| 2026-11-04 | 71 | 6 | 24 | 9 | 162 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **31**
 - manejo de errores y validación de entradas: **29**
-- rendimiento: **26**
-- seguridad defensiva: **22**
+- rendimiento: **28**
+- seguridad defensiva: **20**
 - robustez ante casos límite: **14**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **16**
 - `diskreport.py`: **13**
+- `quarantine.py`: **12**
 - `memory.py`: **11**
-- `quarantine.py`: **11**
-- `assistant.py`: **10**
+- `safety.py`: **11**
 - `duplicates.py`: **10**
-- `safety.py`: **10**
 - `settings.py`: **10**
-- `browser.py`: **9**
+- `assistant.py`: **9**
+- `browser.py`: **8**
 - `scanner.py`: **7**
 - `branding.py`: **6**
 - `startup.py`: **5**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T17:20:10` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_id` reemplazando la creación de manejadores (`CreateFileW`) por la función API `GetFileInformationByHandleEx` sobre manejadores existentes cuando sea posible, y mejoré la gestión de la caché de identificadores limitando su crecimiento y evitando re-cálculos costosos para rutas ya procesadas.
+- `2026-11-04T17:19:03` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de un flag `force_reload` más eficiente y minimicé el acceso a disco en `_get_sha256` y `_is_file_in_use_by_system` al consolidar las comprobaciones de estado de inodo en una sola llamada a `stat()` en los puntos de entrada, reduciendo el overhead de llamadas al sistema en operaciones de lectura repetidas.
 - `2026-11-04T17:09:35` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-asignando la estructura `PROCESS_MEMORY_COUNTERS` fuera del bucle y evitando la creación redundante de objetos `Path` al extraer el nombre del ejecutable, reduciendo significativamente la carga de CPU y la creación de objetos innecesarios durante el escaneo.
 - `2026-11-04T17:08:32` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo reemplazando la creación dinámica de listas y strings en el pipeline por una lógica de generación "lazy" y eliminando llamadas redundantes a `_sanitize_msg` dentro de los bucles de evaluación.
 - `2026-11-04T16:59:33` **duplicates.py** (rendimiento): Se implementó un filtrado preventivo en `_process_large_file_subset` y `_decide_hash_strategy_and_process` para descartar grupos de archivos de tamaño idéntico donde solo hay un archivo, evitando realizar cálculos de hash costosos (partial o full) sobre archivos que ya se sabe que son únicos por su tamaño.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T10:36:42` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de escaneo mediante la documentación técnica con docstrings de estilo Google, la adición de Type Hints en la lógica interna del heap y la clarificación de la intención de los algoritmos de acumulación.
 - `2026-11-04T10:36:30` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en `DirectoryScanner` y `detect_profiles`, y extraje la lógica de validación de rutas de `detect_profiles` a un método privado `_is_target_valid` para reducir la complejidad ciclomática y clarificar el flujo de escaneo.
 - `2026-11-04T10:35:46` **branding.py** (legibilidad y documentación): Se introdujeron constantes de tipo `Literal` y se refinaron los `docstrings` en el módulo `branding.py` para mejorar la claridad semántica y la documentación técnica de las funciones de renderizado, facilitando la comprensión de los parámetros de diseño sin alterar la funcionalidad.
-- `2026-11-04T10:35:16` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos en la clase `SystemContext` y funciones de validación, además de estandarizar los type hints y nombres de variables para clarificar el flujo de seguridad de los datos.
-- `2026-11-04T10:27:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` para garantizar que, si el archivo de configuración es truncado o corrupto, la aplicación detecte inconsistencias de esquema (claves faltantes o tipos incorrectos) de forma determinista antes de intentar cargar valores parciales, evitando propagar estados inválidos al resto del sistema.

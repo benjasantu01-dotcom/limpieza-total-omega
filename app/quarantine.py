@@ -218,18 +218,15 @@ class QuarantineItem:
             )
         except (ValueError, TypeError): return None
 
-    def _validate_integrity(self, stored_path: Path, st: Optional[os.stat_result] = None) -> bool:
+    def _validate_integrity(self, stored_path: Path, st: os.stat_result) -> bool:
         """Verifica que los metadatos físicos actuales del archivo coincidan con el registro del manifiesto."""
-        if stored_path is None or not stored_path.exists(): return False
         try:
-            _check_for_reparse_points(stored_path)
-            file_stat = st if st is not None else stored_path.stat()
-            if hasattr(os, 'getuid') and file_stat.st_uid != os.getuid(): return False
-            if self.file_inode != 0 and file_stat.st_ino != self.file_inode: return False
-            if self.device_id != 0 and file_stat.st_dev != self.device_id: return False
-            if file_stat.st_nlink > 1: return False
-            if self.mtime_snapshot != 0.0 and abs(file_stat.st_mtime - self.mtime_snapshot) > 1.0: return False
-            return (stored_path.is_file() and file_stat.st_size == self.size_bytes and file_stat.st_size > 0)
+            if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+            if self.file_inode != 0 and st.st_ino != self.file_inode: return False
+            if self.device_id != 0 and st.st_dev != self.device_id: return False
+            if st.st_nlink > 1: return False
+            if self.mtime_snapshot != 0.0 and abs(st.st_mtime - self.mtime_snapshot) > 1.0: return False
+            return (stored_path.is_file() and st.st_size == self.size_bytes and st.st_size > 0)
         except (OSError, PermissionError): return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
@@ -237,6 +234,7 @@ class QuarantineItem:
         if stored_path is None or not stored_path.exists(): return False
         try:
             st = stored_path.stat()
+            _check_for_reparse_points(stored_path)
             if not self._validate_integrity(stored_path, st): return False
             return bool(self.sha256 and _get_sha256(stored_path, st) == self.sha256)
         except (OSError, PermissionError): return False
@@ -244,7 +242,7 @@ class QuarantineItem:
 
 def _get_sha256(path: Path, st: Optional[os.stat_result] = None) -> str:
     """Calcula el hash SHA256. Utiliza un caché de resultados basado en inodo/mtime para evitar cálculos recurrentes en I/O intenso."""
-    if path is None or not path.exists(): return ""
+    if path is None: return ""
     try:
         stat_res = st if st else path.stat()
         cache_key = (stat_res.st_dev, stat_res.st_ino, stat_res.st_mtime, stat_res.st_size)
@@ -271,9 +269,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         cache_key = (st.st_dev, st.st_ino)
         if cache_key in _INODE_USE_CACHE: return _INODE_USE_CACHE[cache_key]
         
-        in_use = False
-        if st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path):
-            in_use = True
+        in_use = (st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path))
             
         _INODE_USE_CACHE[cache_key] = in_use
         return in_use
