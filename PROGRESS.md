@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **114** (22.6% de aceptación)
+- Mejoras aceptadas: **113** (22.4% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 320
+- Sin respuesta de la IA (error o límite): 321
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 62 | 5 | 23 | 8 | 166 |
-| 2026-11-04 | 52 | 6 | 20 | 8 | 154 |
+| 2026-11-03 | 58 | 5 | 23 | 8 | 166 |
+| 2026-11-04 | 55 | 6 | 20 | 8 | 155 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **29**
-- manejo de errores y validación de entradas: **26**
+- manejo de errores y validación de entradas: **29**
+- rendimiento: **25**
 - seguridad defensiva: **22**
 - legibilidad y documentación: **21**
 - robustez ante casos límite: **16**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **15**
-- `diskreport.py`: **13**
-- `safety.py`: **11**
+- `healthscore.py`: **14**
+- `safety.py`: **12**
+- `diskreport.py`: **12**
+- `settings.py`: **10**
 - `quarantine.py`: **10**
-- `browser.py`: **9**
-- `duplicates.py`: **9**
-- `settings.py`: **9**
 - `memory.py`: **9**
 - `assistant.py`: **8**
+- `browser.py`: **8**
+- `duplicates.py`: **8**
 - `startup.py`: **6**
+- `scanner.py`: **6**
 - `organizer.py`: **5**
 - `branding.py`: **5**
-- `scanner.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T10:27:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` para garantizar que, si el archivo de configuración es truncado o corrupto, la aplicación detecte inconsistencias de esquema (claves faltantes o tipos incorrectos) de forma determinista antes de intentar cargar valores parciales, evitando propagar estados inválidos al resto del sistema.
+- `2026-11-04T10:26:31` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas de seguridad mediante una validación defensiva de los metadatos `st_mtime` y la integración de un manejo de errores más específico en `_run_file_heuristics`, evitando que un fallo en una heurística individual (debido a datos corruptos o valores inesperados) detenga el análisis del resto del archivo.
+- `2026-11-04T10:25:14` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de excepciones en `_get_file_id` y `_get_file_attrs` para evitar que fallos transitorios en el sistema de archivos (como bloqueos de I/O o race conditions al acceder a metadatos) causen una validación errónea, devolviendo siempre un valor seguro (default) en lugar de permitir que la excepción no controlada propague hacia arriba.
 - `2026-11-04T10:14:44` **memory.py** (manejo de errores y validación de entradas): He robustecido la función `_extract_process_info` para evitar posibles errores de ejecución mediante la validación estricta de sus entradas, incluyendo el manejo de tipos para el PID y la sanitización de datos antes de intentar procesarlos.
 - `2026-11-04T10:07:26` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_compute_cached` implementando una validación exhaustiva de estados nulos y tipos, asegurando que cualquier fallo parcial en el procesamiento de una métrica sea contenido y devuelva un estado de error manejable en lugar de fallar silenciosamente.
 - `2026-11-04T10:04:30` **diskreport.py** (manejo de errores y validación de entradas): He mejorado la robustez de `summarize` y `walk_files` mediante la captura explícita de `PermissionError` y `OSError` al intentar acceder a directorios, asegurando que el bucle de escaneo no se interrumpa silenciosamente ante errores de acceso en subcarpetas específicas y proporcionando mensajes de error más informativos en el reporte.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T06:58:19` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando una estrategia de caché de inodos más robusta, evitando llamadas repetitivas al sistema de archivos (`stat`) que degradaban el rendimiento en escaneos masivos.
 - `2026-11-04T06:41:34` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_protected_path` al procesar archivos, reduciendo la carga de I/O en recorridos de directorios grandes.
 - `2026-11-04T06:41:09` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reduciendo el número de llamadas a `Path` y `parts` mediante el uso de `relative_to` (o lógica de subdirectorios directa) y evitando la reconstrucción de objetos `Path` en cada iteración del bucle, lo que minimiza la carga de la CPU y la creación innecesaria de objetos en recorridos de discos grandes.
-- `2026-11-04T06:40:28` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` al consolidar la creación del `ScanContext` y el `DirectoryScanner` fuera del loop interno, evitando re-instanciar objetos costosos y permitiendo el reuso del estado de escaneo para las rutas de un mismo `base` directorio.
-- `2026-11-04T06:22:42` **scanner.py** (legibilidad y documentación): Se han mejorado las docstrings de las funciones críticas y se ha estandarizado la nomenclatura interna de `directory_stack` para clarificar el flujo de control, facilitando la auditoría de seguridad del recorrido recursivo.
-- `2026-11-04T06:22:30` **safety.py** (legibilidad y documentación): Se introdujo un `Enum` dedicado `ValidationContext` para clarificar qué tipo de validación se está realizando (estructural vs. integridad), y se añadieron docstrings explicativos a las funciones de validación para separar claramente las responsabilidades de "forma de la ruta" y "estado actual del disco", facilitando la mantenibilidad futura.

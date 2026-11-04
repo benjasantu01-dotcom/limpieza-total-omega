@@ -88,7 +88,7 @@ def _is_file_busy(path_str: str) -> bool:
         if not ctypes.windll.kernel32.GetFileAttributesExW(path_long, 0, ctypes.byref(data)):
             err = ctypes.windll.kernel32.GetLastError()
             return err == ERROR_SHARING_VIOLATION
-    except (AttributeError, OSError, ctypes.ArgumentError):
+    except (AttributeError, OSError, ctypes.ArgumentError, Exception):
         pass
     return False
 
@@ -100,21 +100,22 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         return _FILE_ID_CACHE[path_str]
     
     res = (0, 0, 0, 0)
-    if os.name != 'nt':
-        try:
+    try:
+        if os.name != 'nt':
             st = os.stat(path_str)
             res = (st.st_dev, st.st_ino, 0, 0)
-        except (OSError, PermissionError):
-            pass
-    else:
-        if os.path.exists(_to_long_path(path_str)):
-            kernel32 = ctypes.windll.kernel32
-            handle = kernel32.CreateFileW(_to_long_path(path_str), 0, 0x07, None, 3, 0x00000080, None)
-            if handle != INVALID_HANDLE_VALUE:
-                fid = FILE_ID_INFO()
-                if kernel32.GetFileInformationByHandleEx(handle, FILE_ID_INFO_LEVEL, ctypes.byref(fid), ctypes.sizeof(fid)):
-                    res = (int(fid.VolumeSerialNumber), int.from_bytes(bytes(fid.FileId.Identifier), 'little'), 0, 0)
-                kernel32.CloseHandle(handle)
+        else:
+            path_long = _to_long_path(path_str)
+            if os.path.exists(path_long):
+                kernel32 = ctypes.windll.kernel32
+                handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
+                if handle != INVALID_HANDLE_VALUE:
+                    fid = FILE_ID_INFO()
+                    if kernel32.GetFileInformationByHandleEx(handle, FILE_ID_INFO_LEVEL, ctypes.byref(fid), ctypes.sizeof(fid)):
+                        res = (int(fid.VolumeSerialNumber), int.from_bytes(bytes(fid.FileId.Identifier), 'little'), 0, 0)
+                    kernel32.CloseHandle(handle)
+    except (OSError, PermissionError, Exception):
+        pass
                 
     if len(_FILE_ID_CACHE) > 4096: _FILE_ID_CACHE.clear()
     _FILE_ID_CACHE[path_str] = res
@@ -168,7 +169,7 @@ class SecurityDescriptor(NamedTuple):
                 is_readonly=bool(attrs & Win32Attr.READONLY),
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
-        except (OSError, ValueError, TypeError, AttributeError, ctypes.ArgumentError):
+        except (OSError, ValueError, TypeError, AttributeError, ctypes.ArgumentError, Exception):
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
@@ -232,7 +233,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
         if len(_ATTR_CACHE) > 4096: _ATTR_CACHE.clear()
         _ATTR_CACHE[path_str] = attrs
         return attrs
-    except (AttributeError, ctypes.ArgumentError, OSError, ValueError):
+    except (AttributeError, ctypes.ArgumentError, OSError, ValueError, Exception):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):

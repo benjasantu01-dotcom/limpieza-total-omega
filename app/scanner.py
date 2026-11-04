@@ -208,7 +208,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     try:
         if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
-            mtime = getattr(stats, "st_mtime", 0.0)
+            mtime = getattr(stats, "st_mtime", None)
             if isinstance(mtime, (int, float)) and mtime > 0:
                 if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
                     return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
@@ -307,8 +307,8 @@ class Scanner:
                 finding = check_fn(path, entry, self.now_ts, stats)
                 if finding:
                     self.results.append(finding)
-            except (ValueError, TypeError, AttributeError, OSError) as e:
-                logger.debug(f"Heurística omitida para {path.name} por fallo técnico: {e}")
+            except Exception as e:
+                logger.debug(f"Heurística {check_fn.__name__} omitida para {path.name} por fallo crítico: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escaneo puntual para un archivo específico, fuera de la recursión."""
@@ -326,8 +326,8 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
             res = check_fn(path, entry, now_ts, stats)
             if res:
                 findings.append(res)
-        except (ValueError, TypeError, AttributeError, OSError) as e:
-            logger.debug(f"Heurística omitida en archivo aislado {path}: {e}")
+        except Exception as e:
+            logger.debug(f"Heurística {check_fn.__name__} omitida en archivo {path} por fallo: {e}")
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

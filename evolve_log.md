@@ -1083,3 +1083,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T10:16:50` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-04T10:16:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T10:16:50` Corrida terminada. Total usado hoy: 240.
+- `2026-11-04T10:24:24` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-11-04T10:25:14` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una captura selectiva de excepciones en `_get_file_id` y `_get_file_attrs` para evitar que fallos transitorios en el sistema de archivos (como bloqueos de I/O o race conditions al acceder a metadatos) causen una validación errónea, devolviendo siempre un valor seguro (default) en lugar de permitir que la excepción no controlada propague hacia arriba.
+- `2026-11-04T10:26:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T10:26:31` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas de seguridad mediante una validación defensiva de los metadatos `st_mtime` y la integración de un manejo de errores más específico en `_run_file_heuristics`, evitando que un fallo en una heurística individual (debido a datos corruptos o valores inesperados) detenga el análisis del resto del archivo.
+- `2026-11-04T10:26:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T10:27:14` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` para garantizar que, si el archivo de configuración es truncado o corrupto, la aplicación detecte inconsistencias de esquema (claves faltantes o tipos incorrectos) de forma determinista antes de intentar cargar valores parciales, evitando propagar estados inválidos al resto del sistema.
+- `2026-11-04T10:27:49` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-04T10:27:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T10:27:49` Corrida terminada. Total usado hoy: 244.
