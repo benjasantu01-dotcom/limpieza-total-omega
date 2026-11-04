@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **141** (28.0% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 301
+- Sin respuesta de la IA (error o límite): 302
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 44 | 0 | 15 | 0 | 75 |
+| 2026-11-02 | 41 | 0 | 14 | 0 | 75 |
 | 2026-11-03 | 96 | 7 | 29 | 11 | 207 |
-| 2026-11-04 | 1 | 0 | 0 | 0 | 19 |
+| 2026-11-04 | 4 | 0 | 0 | 0 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **33**
 - seguridad defensiva: **31**
 - rendimiento: **30**
-- manejo de errores y validación de entradas: **30**
-- legibilidad y documentación: **25**
 - robustez ante casos límite: **25**
+- legibilidad y documentación: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **17**
+- `quarantine.py`: **16**
 - `safety.py`: **15**
 - `assistant.py`: **14**
-- `memory.py`: **13**
+- `diskreport.py`: **12**
+- `memory.py`: **12**
 - `healthscore.py`: **12**
-- `diskreport.py`: **11**
 - `settings.py`: **11**
+- `duplicates.py`: **11**
 - `scanner.py`: **10**
-- `duplicates.py`: **10**
 - `browser.py`: **8**
 - `startup.py`: **8**
-- `organizer.py`: **7**
-- `branding.py`: **5**
+- `branding.py`: **6**
+- `organizer.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T00:54:46` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para evitar fallos silenciosos cuando un archivo desaparece o es inaccesible durante el análisis, validando explícitamente los resultados antes de operar sobre ellos.
+- `2026-11-04T00:54:37` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de acceso a archivo/directorio en un manejo de excepciones más granular para evitar interrupciones por errores de sistema (`PermissionError`, `OSError`) al encontrar archivos bloqueados o con rutas malformadas durante el escaneo.
+- `2026-11-04T00:53:48` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de renderizado `draw_logo`, `draw_shield_stripes` y `draw_ring` mediante la validación estricta de parámetros y el manejo defensivo de estados nulos o inválidos, evitando excepciones inesperadas que podrían comprometer la estabilidad del hilo de la interfaz.
 - `2026-11-04T00:46:43` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_updates` en `SystemContext` mediante la validación explícita de tipos antes de aplicar cambios, evitando la inyección de atributos no permitidos o con tipos incorrectos que pudieran corromper el estado del objeto.
 - `2026-11-03T14:19:26` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "reparse points" (puntos de reparseo) en el nivel de `_validate_preconditions` para detectar si el *padre* del archivo es una unión de directorios o punto de montaje de sistema, evitando así la modificación de archivos que, aunque no parezcan protegidos, residen bajo una estructura redirigida potencialmente sensible.
 - `2026-11-03T14:18:38` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` y `quarantine_file` añadiendo una validación explícita de `is_safe_to_modify` sobre el directorio destino *antes* de realizar cualquier operación de I/O, garantizando que el sandbox sea validado por `safety.py` en cada paso crítico de la cadena de aislamiento.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T12:58:02` **quarantine.py** (rendimiento): Se optimizó el rendimiento del cálculo de hashes SHA256 integrando un mecanismo de caché más granular basado en la tupla `(tamaño, tiempo de modificación, inodo)`, lo que evita lecturas redundantes del disco en archivos ya procesados.
 - `2026-11-03T12:57:39` **organizer.py** (rendimiento): Optimizé el rendimiento de `_process_directory` reemplazando la verificación repetida de `is_safe_to_modify` (que hace múltiples llamadas internas) por una validación de caché de rutas protegidas y evitando llamadas innecesarias a `is_file_locked` durante el escaneo inicial, moviendo esa validación pesada solo a la etapa de movimiento donde realmente es necesaria.
 - `2026-11-03T12:57:13` **memory.py** (rendimiento): Optimizé el rendimiento de `_iter_process_memory` mediante el uso de `ctypes.pointer` para obtener el tamaño real de los procesos en un solo paso, eliminando la sobrecarga de consultas recursivas y reduciendo drásticamente el número de handles abiertos simultáneamente.
-- `2026-11-03T12:46:45` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo reemplazando las operaciones de `set` y `tuple` dentro del bucle crítico `_compute_cached` por una pre-generación del `dict` de métricas, evitando así llamadas repetitivas a `getattr` y `zip` durante la fase de procesamiento de pipeline.
-- `2026-11-03T12:36:50` **assistant.py** (rendimiento): Se optimizó el acceso a `_CRITERIOS_MAP` y la evaluación de problemas usando `set` y una estructura de datos pre-calculada, eliminando recorridos redundantes y filtrado iterativo en el bucle principal de diagnóstico.
-- `2026-11-03T12:36:09` **startup.py** (legibilidad y documentación): Se introdujeron docstrings técnicos detallados en `_process_folder_entry` y `entries_from_registry`, y se refinó la documentación del módulo para explicar las restricciones de seguridad (como el uso de `-LiteralPath` en PowerShell), mejorando la legibilidad técnica sin alterar el comportamiento.

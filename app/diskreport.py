@@ -388,9 +388,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if not isinstance(size, int) or size < 0:
-            continue
-            
         try:
             ext = path.suffix
             ext_normalized = ext.lower() if ext else "(sin extensión)"
@@ -401,7 +398,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heappush(top_heap, (size, path))
                 elif top_heap and size > top_heap[0][0]:
                     heapq.heapreplace(top_heap, (size, path))
-        except (AttributeError, TypeError):
+        except (AttributeError, TypeError, OSError):
             continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)

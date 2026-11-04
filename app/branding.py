@@ -347,12 +347,11 @@ def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
     """Persiste el SVG en disco tras validar permisos y seguridad."""
-    if not destination: return None
+    if destination is None: return None
     try:
         dest_path = Path(destination).resolve()
-        
-        # Validar si la ruta es segura antes de proceder a la escritura
-        ensure_safe_to_modify(dest_path)
+        if not is_safe_to_modify(dest_path):
+            return None
             
         parent = dest_path.parent
         if not parent.exists():
@@ -400,9 +399,10 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         if not params: return
         by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + 64 * scale
         for s in get_gradient_segments(n):
+            if s.start_index >= len(params) or s.end_index > len(params): continue
             p_start, p_end = params[s.start_index], params[s.end_index - 1]
             canvas.create_rectangle(cx - p_start[0], by + p_start[1], cx + p_start[0], by + p_end[2], fill=s.hex_color, outline="")
-    except (AttributeError, TypeError, ValueError): pass
+    except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Renderiza el glifo 'Omega' y líneas divisorias sobre el escudo."""
@@ -415,7 +415,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el logo completo: silueta, gradientes y decoraciones en Canvas."""
-    if not canvas or not math.isfinite(size) or not math.isfinite(canvas_x) or not math.isfinite(canvas_y): return
+    if canvas is None or not all(map(math.isfinite, (size, canvas_x, canvas_y))): return
     try:
         val_size = float(size)
         s = max(_MIN_SCALE, min(_MAX_SCALE, val_size / 128.0))
@@ -429,7 +429,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """Dibuja una línea horizontal segmentada para representar indicadores de progreso."""
-    if not canvas or not isinstance(width, int): return
+    if canvas is None or not isinstance(width, int): return
     try:
         w = max(1, width)
         for s in get_gradient_segments(w, stops):
@@ -438,7 +438,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """Renderiza un anillo circular para visualización de métricas de salud (0-100%)."""
-    if not canvas or percent is None or not isinstance(size, int) or not isinstance(thickness, int): return
+    if canvas is None or percent is None or not isinstance(size, int) or not isinstance(thickness, int): return
     try:
         val = max(0.0, min(100.0, float(percent)))
         d, t = max(20, min(2048, size)), max(2, thickness)
