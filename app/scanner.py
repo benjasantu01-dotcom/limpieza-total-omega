@@ -256,9 +256,9 @@ class Scanner:
         path_str: str = entry.path
         if path_str in self.safe_cache: return True
         
-        # Validaciones de integridad rápida antes de acceder al sistema de archivos
+        # Validaciones de integridad antes de acceder al sistema de archivos
         if self._has_invalid_name(entry.name): return False
-        if entry.is_symlink() or self._is_reparse_point(entry): return False
+        if self._is_reparse_point(entry): return False
         if _cached_is_protected(path_str): return False
         if not self._is_inside_base_root(path_str): return False
         
@@ -271,6 +271,7 @@ class Scanner:
         norm_path = os.path.normcase(entry.path)
         if norm_path in visited: return
         try:
+            # Re-verificar reparse point antes de encolar
             if os.access(entry.path, os.R_OK) and not _cached_is_protected(entry.path):
                 visited.add(norm_path)
                 stack.append((entry.path, depth + 1))

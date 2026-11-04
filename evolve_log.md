@@ -1253,3 +1253,10 @@ assert not ['memory.py']
 - `2026-11-04T23:03:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-04T23:03:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T23:03:09` Corrida terminada. Total usado hoy: 300.
+- `2026-11-04T23:11:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-04T23:12:34` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 1): invalid syntax
+- `2026-11-04T23:12:59` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` al verificar explícitamente que la ruta no sea un punto de unión (`reparse point`) mediante la validación de atributos del sistema antes de procesar cualquier entrada, garantizando que el escáner nunca escape del árbol de directorios asignado mediante enlaces simbólicos o junctions.
+- `2026-11-04T23:13:31` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la seguridad en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar que el archivo de configuración sea un archivo regular, propiedad exclusiva del usuario, evitando el seguimiento de enlaces simbólicos maliciosos.
+- `2026-11-04T23:13:42` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-11-04T23:13:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T23:13:42` Corrida terminada. Total usado hoy: 304.

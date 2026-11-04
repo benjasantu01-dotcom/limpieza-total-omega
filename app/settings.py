@@ -359,11 +359,17 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     """Verifica que el archivo de configuración sea legible, no alterado y propiedad del usuario."""
     try:
-        if _Validators._is_reparse_point(str(file_path)): return False
+        # Verifica que no es un enlace simbólico (lstat ya fue hecho afuera)
+        if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
+        # Debe ser archivo regular con exactamente 1 link duro
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+        # Permisos estrictos: solo lectura/escritura para el dueño
         if (st.st_mode & 0o077) != 0: return False
+        # Chequeo de propiedad UID
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+        # Límites de tamaño
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
+        # Seguridad lógica adicional
         return is_safe_to_modify(str(file_path))
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
@@ -381,13 +387,16 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     de contenido y validación estructural estricta antes de retornar los datos.
     """
     try:
+        # Obtenemos info del archivo de forma segura antes de abrir
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
         
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
+            # Re-verificación de tamaño tras lectura
             if len(content) > MAX_SETTINGS_SIZE: return None
         
+        # Validaciones de codificación y contenido sospechoso
         if content.startswith((b'\xef\xbb\xbf', b'\xff\xfe', b'\xfe\xff')): return None
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
@@ -415,6 +424,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     resolved_str = str(primary_path.resolve())
     try:
         if primary_path.exists() and primary_path.is_file():
+            # Verificamos estado previo al parseo
             st = primary_path.lstat()
             cached = _MANAGER.data_cache.get(resolved_str)
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
