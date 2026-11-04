@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **128** (25.4% de aceptación)
+- Mejoras aceptadas: **129** (25.6% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 303
+- Sin respuesta de la IA (error o límite): 301
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 80 | 7 | 25 | 10 | 194 |
-| 2026-11-04 | 48 | 6 | 18 | 7 | 109 |
+| 2026-11-03 | 80 | 7 | 25 | 10 | 190 |
+| 2026-11-04 | 49 | 6 | 19 | 7 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **31**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **30**
-- seguridad defensiva: **21**
+- seguridad defensiva: **22**
 - robustez ante casos límite: **16**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
 - `safety.py`: **13**
 - `quarantine.py`: **12**
 - `diskreport.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T08:02:34` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de un decorador `_guard_metric_access` que asegura que cualquier acceso a `SystemMetrics` valide estrictamente la existencia y el tipo de la clave antes de cualquier operación, previniendo inyecciones de atributos o manipulaciones inesperadas en tiempo de ejecución.
 - `2026-11-04T07:31:27` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` para manejar fallos de acceso en procesos privilegiados mediante el uso de `ctypes.WinError` y una gestión de bloques `try...finally` más estricta, evitando que un handle inválido o un proceso bloqueado detenga el escaneo completo de memoria.
 - `2026-11-04T07:23:48` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas no numéricas o tipos inesperados mediante la aplicación de `_validate_numeric`, evitando que valores no finitos o tipos incompatibles propaguen errores en el cálculo del score.
 - `2026-11-04T07:23:00` **diskreport.py** (robustez ante casos límite): Se ha añadido un bloque `try-except` robusto alrededor de `os.stat` en `_safe_stat` para manejar errores críticos de sistema (como bloqueos de acceso durante el escaneo recursivo), asegurando que el proceso de recolección de estadísticas no se interrumpa ante un archivo bloqueado o con metadatos inaccesibles.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T06:21:10` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) de funciones críticas para clarificar el flujo de seguridad, cumpliendo con el enfoque de legibilidad sin alterar la lógica de las operaciones.
 - `2026-11-04T06:10:02` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de normalización y reglas, y se han renombrado variables clave para clarificar la lógica del pipeline de salud, facilitando la comprensión del mantenimiento técnico sin alterar la funcionalidad.
 - `2026-11-04T06:00:47` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings estructurados (siguiendo el estilo Google/NumPy) en las funciones críticas y se han aclarado las responsabilidades de los tipos de datos internos para facilitar el mantenimiento del equipo de desarrollo.
-- `2026-11-04T06:00:21` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `DirectoryScanner` mediante la introducción de un método privado `_process_entry` que abstrae la lógica de decisión dentro del ciclo de escaneo, reduciendo la complejidad ciclomática y clarificando las intenciones de filtrado por seguridad.

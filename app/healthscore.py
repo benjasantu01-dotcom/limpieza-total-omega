@@ -20,7 +20,7 @@ import math
 import logging
 import string
 import sys
-from functools import lru_cache
+from functools import lru_cache, wraps
 
 # Tipos definidos para mejorar la legibilidad de la firma de funciones
 ScoreMap: TypeAlias = Dict[str, float]
@@ -54,6 +54,15 @@ _VALIDATION_KEYS: Final[Tuple[str, ...]] = (
     "duplicate_mb", "startup_count"
 )
 _ALL_METRICS: Final[Tuple[str, ...]] = _VALIDATION_KEYS + ("quarantined_count",)
+
+def _guard_metric_access(func: Callable) -> Callable:
+    """Decorador de seguridad para validar el acceso a campos del sistema."""
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        if args and isinstance(args[0], str) and args[0] not in _ALL_METRICS:
+            return 0.0
+        return func(*args, **kwargs)
+    return wrapper
 
 def _is_sensitive_input(data: Any) -> bool:
     """Verifica si la entrada contiene rutas o términos bloqueados por seguridad."""
@@ -107,14 +116,7 @@ class Grade(Enum):
         return cls.F.value
 
 class RecommendationRule(NamedTuple):
-    """Define una lógica de diagnóstico reactiva basada en métricas.
-    
-    Attributes:
-        area: La métrica que dispara esta regla.
-        threshold: Valor límite para activar la sugerencia.
-        message_factory: Función que genera el texto de la recomendación.
-        check: Predicado (SystemMetrics, Ratio) -> bool que determina si aplicar.
-    """
+    """Define una lógica de diagnóstico reactiva basada en métricas."""
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
@@ -158,12 +160,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
         return min_val
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Genera funciones de normalización lineal.
-    
-    Args:
-        limit: El valor de referencia donde el ratio es 0 (si inverse=True) o 1 (si inverse=False).
-        inverse: Si es True, valores superiores al límite degradan la salud.
-    """
+    """Genera funciones de normalización lineal."""
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0: return 0.0
         try:
@@ -228,7 +225,6 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
-    """Calcula score de seguridad penalizando ocurrencias detectadas con validación de entradas."""
     count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
     warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
     penalization = (count * 0.05) + (warn * 0.25)
@@ -281,12 +277,11 @@ class SystemMetrics:
     def __post_init__(self) -> None:
         self.validate()
 
+    @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any:
         """Acceso restringido a atributos validados del sistema."""
-        if field_name in _ALL_METRICS:
-            val = getattr(self, field_name, default)
-            return val if isinstance(val, (int, float)) else default
-        return default
+        val = getattr(self, field_name, default)
+        return val if isinstance(val, (int, float)) else default
 
     def validate(self) -> None:
         """Aplica límites de rango definidos en _METRIC_LIMITS a cada atributo."""

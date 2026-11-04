@@ -804,3 +804,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T07:55:33` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-04T07:55:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T07:55:33` Corrida terminada. Total usado hoy: 188.
+- `2026-11-04T08:01:38` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-04T08:02:02` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-04T08:02:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T08:02:34` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la implementación de un decorador `_guard_metric_access` que asegura que cualquier acceso a `SystemMetrics` valide estrictamente la existencia y el tipo de la clave antes de cualquier operación, previniendo inyecciones de atributos o manipulaciones inesperadas en tiempo de ejecución.
+- `2026-11-04T08:02:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T08:02:54` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-04T08:04:06` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-04T08:04:20` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-04T08:04:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T08:04:21` Corrida terminada. Total usado hoy: 192.
