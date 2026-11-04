@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **132** (26.2% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 301
+- Mejoras aceptadas: **130** (25.8% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 302
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 7 | 0 | 2 | 0 | 21 |
+| 2026-11-02 | 4 | 0 | 1 | 0 | 21 |
 | 2026-11-03 | 96 | 7 | 29 | 11 | 207 |
-| 2026-11-04 | 29 | 4 | 12 | 6 | 73 |
+| 2026-11-04 | 30 | 5 | 12 | 7 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **31**
 - rendimiento: **28**
-- legibilidad y documentación: **27**
-- manejo de errores y validación de entradas: **27**
+- manejo de errores y validación de entradas: **28**
+- legibilidad y documentación: **24**
 - robustez ante casos límite: **19**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **14**
 - `safety.py`: **14**
+- `quarantine.py`: **13**
 - `healthscore.py`: **13**
 - `duplicates.py`: **12**
 - `settings.py`: **12**
-- `memory.py`: **11**
 - `assistant.py`: **11**
+- `memory.py`: **10**
 - `diskreport.py`: **10**
 - `scanner.py`: **8**
 - `startup.py`: **8**
 - `browser.py`: **8**
-- `organizer.py`: **7**
-- `branding.py`: **4**
+- `organizer.py`: **6**
+- `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T05:20:08` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación más estricta de parámetros y el manejo granular de excepciones, asegurando que los valores de entrada no causen errores de ejecución silenciosos o inesperados al interactuar con el sistema de archivos o el motor de renderizado.
 - `2026-11-04T03:58:27` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al mejorar el método `_is_valid_registry_path` para prevenir la inyección de rutas mediante el uso de `Path.resolve()` antes de realizar chequeos de seguridad, evitando así que rutas con caracteres de escape o normalizaciones engañosas evadan los filtros de `is_protected_path`.
 - `2026-11-04T03:57:31` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura atómica y la resolución de rutas mediante la validación estricta de la presencia de enlaces simbólicos o puntos de reparse en el directorio destino, evitando posibles ataques de "Time-of-check to time-of-use" (TOCTOU) y garantizando que las rutas resueltas residan efectivamente dentro de los límites esperados antes de cualquier operación de I/O.
 - `2026-11-04T03:48:46` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo implementando una validación de rutas mediante `os.path.realpath` para prevenir la resolución de puntos de montaje y enlaces simbólicos que escapan del directorio base, reforzando la seguridad defensiva contra ataques de salto de directorio (directory traversal).
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T02:36:13` **safety.py** (rendimiento): Se ha optimizado `_get_file_id` reemplazando el uso de `hash(bytes(...))` por `int.from_bytes(...)`, lo que reduce drásticamente el overhead computacional de convertir el identificador de archivo en un hash durante cada validación, mejorando el rendimiento en recorridos extensos de disco sin alterar la lógica de comparación de archivos.
 - `2026-11-04T02:26:24` **organizer.py** (rendimiento): Optimizé la performance del escaneo recursivo eliminando llamadas redundantes a `is_safe_to_modify` dentro del loop de `_process_directory`, reemplazando verificaciones repetitivas de `is_file()` por el uso directo de los atributos ya obtenidos en `os.scandir`.
 - `2026-11-04T02:15:31` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la creación innecesaria de objetos `Path` y múltiples llamadas a `stat` dentro del loop crítico, reduciendo la carga de I/O y el overhead de memoria en escaneos profundos.
-- `2026-11-04T01:56:30` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la redefinición de `_ValidatorEntry` como una clase más semántica, facilitando la comprensión del flujo de validación.

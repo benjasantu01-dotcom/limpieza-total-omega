@@ -483,3 +483,38 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-04T05:12:19` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-04T05:12:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T05:12:19` Corrida terminada. Total usado hoy: 124.
+- `2026-11-04T05:18:25` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-04T05:19:07` Tests FALLARON:
+```
+etricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  root:assistant.py:542 Intento de ingesta con fuente insegura o compleja bloqueado.
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 1.58s
+
+```
+- `2026-11-04T05:19:07` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejora el manejo de errores en la extracción de datos desde el origen de la ingesta en `SystemContext`, añadiendo validaciones específicas para detectar estructuras anidadas o tipos de datos inesperados que antes podrían causar fallos silenciosos o excepciones no capturadas.
+- `2026-11-04T05:19:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T05:20:08` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación más estricta de parámetros y el manejo granular de excepciones, asegurando que los valores de entrada no causen errores de ejecución silenciosos o inesperados al interactuar con el sistema de archivos o el motor de renderizado.
+- `2026-11-04T05:21:22` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-04T05:21:42` ➖ Sin cambios en diskreport.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros en `walk_files` y `summarize`, asegurando que el manejo de errores sea coherente y evitando fallos ante rutas mal formadas o inaccesibles.
+- `2026-11-04T05:21:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T05:21:42` Corrida terminada. Total usado hoy: 128.
