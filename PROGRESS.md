@@ -9,23 +9,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **128** (25.4% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 303
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 304
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 81 | 7 | 25 | 11 | 204 |
-| 2026-11-04 | 47 | 6 | 17 | 7 | 99 |
+| 2026-11-03 | 80 | 7 | 25 | 10 | 202 |
+| 2026-11-04 | 48 | 6 | 17 | 7 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **31**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **30**
-- seguridad defensiva: **22**
-- robustez ante casos límite: **15**
+- seguridad defensiva: **21**
+- robustez ante casos límite: **16**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,14 +37,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **11**
 - `assistant.py`: **10**
 - `browser.py`: **10**
-- `startup.py`: **8**
-- `memory.py`: **8**
+- `memory.py`: **9**
 - `scanner.py`: **7**
+- `startup.py`: **7**
 - `branding.py`: **6**
 - `organizer.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T07:31:27` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` para manejar fallos de acceso en procesos privilegiados mediante el uso de `ctypes.WinError` y una gestión de bloques `try...finally` más estricta, evitando que un handle inválido o un proceso bloqueado detenga el escaneo completo de memoria.
 - `2026-11-04T07:23:48` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas no numéricas o tipos inesperados mediante la aplicación de `_validate_numeric`, evitando que valores no finitos o tipos incompatibles propaguen errores en el cálculo del score.
 - `2026-11-04T07:23:00` **diskreport.py** (robustez ante casos límite): Se ha añadido un bloque `try-except` robusto alrededor de `os.stat` en `_safe_stat` para manejar errores críticos de sistema (como bloqueos de acceso durante el escaneo recursivo), asegurando que el proceso de recolección de estadísticas no se interrumpa ante un archivo bloqueado o con metadatos inaccesibles.
 - `2026-11-04T07:14:20` **browser.py** (robustez ante casos límite): Se mejora la robustez de `detect_profiles` ante archivos bloqueados o denegados durante la construcción de la ruta de destino (`joinpath`), añadiendo una validación explícita de `is_safe_to_modify` para prevenir ataques de traversal o escape mediante rutas relativas maliciosas en `BROWSER_CACHE_PATHS`.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T06:10:02` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de normalización y reglas, y se han renombrado variables clave para clarificar la lógica del pipeline de salud, facilitando la comprensión del mantenimiento técnico sin alterar la funcionalidad.
 - `2026-11-04T06:00:47` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings estructurados (siguiendo el estilo Google/NumPy) en las funciones críticas y se han aclarado las responsabilidades de los tipos de datos internos para facilitar el mantenimiento del equipo de desarrollo.
 - `2026-11-04T06:00:21` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `DirectoryScanner` mediante la introducción de un método privado `_process_entry` que abstrae la lógica de decisión dentro del ciclo de escaneo, reduciendo la complejidad ciclomática y clarificando las intenciones de filtrado por seguridad.
-- `2026-11-04T05:59:51` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de renderizado geométrico y una explicación más clara sobre la lógica de segmentación de gradientes, facilitando el mantenimiento futuro del motor gráfico.

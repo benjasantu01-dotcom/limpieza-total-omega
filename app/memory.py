@@ -396,6 +396,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             ws = _query_working_set_bytes(handle, pmc)
             if ws:
                 yield ProcessMemory(str(path_buf.value).split('\\')[-1], pid, ws)
+        except (ctypes.WinError, OSError):
+            continue
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 
