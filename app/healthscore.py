@@ -339,6 +339,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
     if not metric_tuple or len(metric_tuple) != len(_VALIDATION_KEYS):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
 
+    # El post_init de SystemMetrics garantiza datos finitos aquí
     metrics = SystemMetrics(
         **dict(zip(_VALIDATION_KEYS, metric_tuple)),
         quarantined_count=_validate_numeric(quarantined, 0.0, 0.0, 10000.0)
@@ -380,7 +381,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     try:
         metrics.validate()
-        return _compute_cached(tuple(getattr(metrics, f) for f in _VALIDATION_KEYS), float(metrics.quarantined_count))
+        # Se asegura que el tuple enviado a la caché contenga solo números finitos validados
+        metric_tuple = tuple(float(getattr(metrics, f, 0.0)) for f in _VALIDATION_KEYS)
+        return _compute_cached(metric_tuple, float(metrics.quarantined_count))
     except (TypeError, ValueError, AttributeError, MemoryError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 
