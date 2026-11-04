@@ -160,7 +160,11 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Escaneo recursivo para recolectar archivos aptos, normalizando inodos."""
+    """
+    Realiza un escaneo recursivo en el sistema de archivos buscando candidatos.
+    Utiliza un conjunto de inodos (dev, ino) para evitar procesar enlaces físicos 
+    redundantes como duplicados.
+    """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[Tuple[int, int]] = set()
     
@@ -200,7 +204,10 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Optimiza el procesamiento de archivos grandes usando hashing de dos niveles."""
+    """
+    Optimiza el procesamiento de archivos grandes usando un enfoque de dos niveles:
+    primero agrupa por hash parcial (encabezado) y luego confirma con hash completo.
+    """
     if not paths: return {}
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
@@ -210,7 +217,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Elige estrategia de hashing: rápida para pequeños, dos niveles para grandes."""
+    """Elige estrategia de hashing: rápida para archivos pequeños, dos niveles para grandes."""
     if not paths: return []
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)

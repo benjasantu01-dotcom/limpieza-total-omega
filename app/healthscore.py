@@ -312,15 +312,19 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
-    """Evalúa reglas de advertencia según la métrica recibida."""
-    if not isinstance(rules, tuple) or metrics is None: return []
+    """Evalúa reglas de advertencia según la métrica recibida y retorna lista de mensajes."""
+    if not isinstance(rules, tuple) or metrics is None:
+        return []
+        
     findings: List[str] = []
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):
-                msg = rule.message_factory(metrics)
-                if msg: findings.append(msg)
+                message = rule.message_factory(metrics)
+                if message:
+                    findings.append(message)
         except Exception:
+            # Silenciar errores en reglas individuales para no interrumpir el pipeline
             continue
     return findings
 
@@ -342,7 +346,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
     for entry in PIPELINE_DEFINITIONS:
         try:
             area_ratio = entry.scorer(metrics)
-            recs = _evaluate_rules(metrics, entry.rules or (), area_ratio)
+            recs = _evaluate_rules(metrics, entry.rules, area_ratio)
             recommendations.extend([_sanitize_msg(r) for r in recs if _sanitize_msg(r)])
             weighted_val = int(_clamp(area_ratio * entry.weight, 0.0, float(entry.weight)))
             metric_breakdown[entry.area] = weighted_val

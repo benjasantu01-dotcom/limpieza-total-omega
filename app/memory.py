@@ -55,6 +55,7 @@ MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB
 WIN32_PROCESS_QUERY_LIMITED: Final[int] = 0x1000
 WIN32_PROCESS_SET_QUOTA: Final[int] = 0x0100
 WIN32_PROCESS_QUERY_INFO: Final[int] = 0x0400
+# Máscara combinada requerida para ejecutar la API EmptyWorkingSet
 TRIM_ACCESS_MASK: Final[int] = 0x00200000 | WIN32_PROCESS_SET_QUOTA | WIN32_PROCESS_QUERY_INFO
 
 INVALID_HANDLE_VALUE: Final[int] = -1
@@ -95,7 +96,10 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 (GlobalMemoryStatusEx) para estado de memoria global."""
+    """
+    Estructura Win32 (GlobalMemoryStatusEx) utilizada por la API kernel32 para
+    reportar información sobre el uso actual de memoria física y virtual.
+    """
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -109,7 +113,11 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 (PROCESS_MEMORY_COUNTERS) para uso de memoria por proceso."""
+    """
+    Estructura Win32 (PROCESS_MEMORY_COUNTERS) utilizada por PSAPI para
+    retornar estadísticas de memoria de un proceso específico, incluyendo
+    su Working Set actual y paginación.
+    """
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
@@ -461,6 +469,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Función de sistema no disponible."
         
     path_buf = ctypes.create_unicode_buffer(1024)
+    # Reutilizamos TRIM_ACCESS_MASK para asegurar permisos de set y query
     handle = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if not handle:
@@ -472,11 +481,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación denegada sobre archivos protegidos."
 
     try:
-        exit_code = wintypes.DWORD()
-        if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0:
+        process_exit_code = wintypes.DWORD()
+        if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(process_exit_code)) == 0:
             return False, "Error al consultar estado del proceso."
             
-        if exit_code.value != STILL_ACTIVE_EXIT_CODE:
+        if process_exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso ya ha finalizado."
             
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:

@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **116** (23.0% de aceptación)
+- Mejoras aceptadas: **117** (23.2% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 15
+- Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 321
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 57 | 4 | 22 | 7 | 166 |
-| 2026-11-04 | 59 | 6 | 20 | 8 | 155 |
+| 2026-11-03 | 55 | 4 | 21 | 6 | 166 |
+| 2026-11-04 | 62 | 6 | 21 | 8 | 155 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **29**
-- legibilidad y documentación: **25**
-- rendimiento: **24**
+- legibilidad y documentación: **28**
 - seguridad defensiva: **22**
+- rendimiento: **22**
 - robustez ante casos límite: **16**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
 - `diskreport.py`: **13**
-- `safety.py`: **12**
-- `settings.py`: **10**
+- `safety.py`: **11**
+- `memory.py`: **10**
 - `quarantine.py`: **10**
 - `assistant.py`: **9**
 - `browser.py`: **9**
-- `memory.py`: **9**
-- `duplicates.py`: **8**
+- `duplicates.py`: **9**
+- `settings.py`: **9**
 - `startup.py`: **6**
 - `branding.py`: **6**
 - `scanner.py`: **6**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T10:47:17` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en la clase `MEMORYSTATUSEX` y `PROCESS_MEMORY_COUNTERS` para clarificar su origen (Win32 API) y propósito, y se ha reemplazado la lógica de constantes mágicas en `trim_working_set` por nombres de variables descriptivos, facilitando la auditoría de seguridad del proceso de "trimming".
+- `2026-11-04T10:45:54` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad del pipeline de evaluación y la consistencia del tipo de retorno en `_evaluate_rules` mediante la adición de Type Hints explícitos y una estructura más clara en el manejo de excepciones, eliminando ambigüedades.
+- `2026-11-04T10:45:20` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los tipos mediante docstrings explicativos en las funciones críticas de orquestación y el uso consistente de type hints para facilitar el mantenimiento del flujo de datos en el análisis de duplicados.
 - `2026-11-04T10:36:42` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de escaneo mediante la documentación técnica con docstrings de estilo Google, la adición de Type Hints en la lógica interna del heap y la clarificación de la intención de los algoritmos de acumulación.
 - `2026-11-04T10:36:30` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en `DirectoryScanner` y `detect_profiles`, y extraje la lógica de validación de rutas de `detect_profiles` a un método privado `_is_target_valid` para reducir la complejidad ciclomática y clarificar el flujo de escaneo.
 - `2026-11-04T10:35:46` **branding.py** (legibilidad y documentación): Se introdujeron constantes de tipo `Literal` y se refinaron los `docstrings` en el módulo `branding.py` para mejorar la claridad semántica y la documentación técnica de las funciones de renderizado, facilitando la comprensión de los parámetros de diseño sin alterar la funcionalidad.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T10:04:30` **diskreport.py** (manejo de errores y validación de entradas): He mejorado la robustez de `summarize` y `walk_files` mediante la captura explícita de `PermissionError` y `OSError` al intentar acceder a directorios, asegurando que el bucle de escaneo no se interrumpa silenciosamente ante errores de acceso en subcarpetas específicas y proporcionando mensajes de error más informativos en el reporte.
 - `2026-11-04T08:02:34` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de un decorador `_guard_metric_access` que asegura que cualquier acceso a `SystemMetrics` valide estrictamente la existencia y el tipo de la clave antes de cualquier operación, previniendo inyecciones de atributos o manipulaciones inesperadas en tiempo de ejecución.
 - `2026-11-04T07:31:27` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` para manejar fallos de acceso en procesos privilegiados mediante el uso de `ctypes.WinError` y una gestión de bloques `try...finally` más estricta, evitando que un handle inválido o un proceso bloqueado detenga el escaneo completo de memoria.
-- `2026-11-04T07:23:48` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas no numéricas o tipos inesperados mediante la aplicación de `_validate_numeric`, evitando que valores no finitos o tipos incompatibles propaguen errores en el cálculo del score.
-- `2026-11-04T07:23:00` **diskreport.py** (robustez ante casos límite): Se ha añadido un bloque `try-except` robusto alrededor de `os.stat` en `_safe_stat` para manejar errores críticos de sistema (como bloqueos de acceso durante el escaneo recursivo), asegurando que el proceso de recolección de estadísticas no se interrumpa ante un archivo bloqueado o con metadatos inaccesibles.
-- `2026-11-04T07:14:20` **browser.py** (robustez ante casos límite): Se mejora la robustez de `detect_profiles` ante archivos bloqueados o denegados durante la construcción de la ruta de destino (`joinpath`), añadiendo una validación explícita de `is_safe_to_modify` para prevenir ataques de traversal o escape mediante rutas relativas maliciosas en `BROWSER_CACHE_PATHS`.
