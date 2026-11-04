@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **117** (23.2% de aceptación)
+- Mejoras aceptadas: **118** (23.4% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 321
+- Sin respuesta de la IA (error o límite): 320
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 55 | 4 | 21 | 6 | 166 |
-| 2026-11-04 | 62 | 6 | 21 | 8 | 155 |
+| 2026-11-03 | 55 | 4 | 21 | 6 | 162 |
+| 2026-11-04 | 63 | 6 | 21 | 8 | 158 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **29**
-- legibilidad y documentación: **28**
+- legibilidad y documentación: **29**
 - seguridad defensiva: **22**
 - rendimiento: **22**
 - robustez ante casos límite: **16**
@@ -32,8 +32,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **15**
 - `diskreport.py`: **13**
 - `safety.py`: **11**
+- `quarantine.py`: **11**
 - `memory.py`: **10**
-- `quarantine.py`: **10**
 - `assistant.py`: **9**
 - `browser.py`: **9**
 - `duplicates.py`: **9**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T16:38:28` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` para explicar el PORQUÉ de las validaciones de seguridad, clarificando las precondiciones de las operaciones de aislamiento y restauración para mayor mantenibilidad.
 - `2026-11-04T10:47:17` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en la clase `MEMORYSTATUSEX` y `PROCESS_MEMORY_COUNTERS` para clarificar su origen (Win32 API) y propósito, y se ha reemplazado la lógica de constantes mágicas en `trim_working_set` por nombres de variables descriptivos, facilitando la auditoría de seguridad del proceso de "trimming".
 - `2026-11-04T10:45:54` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad del pipeline de evaluación y la consistencia del tipo de retorno en `_evaluate_rules` mediante la adición de Type Hints explícitos y una estructura más clara en el manejo de excepciones, eliminando ambigüedades.
 - `2026-11-04T10:45:20` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los tipos mediante docstrings explicativos en las funciones críticas de orquestación y el uso consistente de type hints para facilitar el mantenimiento del flujo de datos en el análisis de duplicados.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T10:07:26` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_compute_cached` implementando una validación exhaustiva de estados nulos y tipos, asegurando que cualquier fallo parcial en el procesamiento de una métrica sea contenido y devuelva un estado de error manejable en lugar de fallar silenciosamente.
 - `2026-11-04T10:04:30` **diskreport.py** (manejo de errores y validación de entradas): He mejorado la robustez de `summarize` y `walk_files` mediante la captura explícita de `PermissionError` y `OSError` al intentar acceder a directorios, asegurando que el bucle de escaneo no se interrumpa silenciosamente ante errores de acceso en subcarpetas específicas y proporcionando mensajes de error más informativos en el reporte.
 - `2026-11-04T08:02:34` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de un decorador `_guard_metric_access` que asegura que cualquier acceso a `SystemMetrics` valide estrictamente la existencia y el tipo de la clave antes de cualquier operación, previniendo inyecciones de atributos o manipulaciones inesperadas en tiempo de ejecución.
-- `2026-11-04T07:31:27` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` para manejar fallos de acceso en procesos privilegiados mediante el uso de `ctypes.WinError` y una gestión de bloques `try...finally` más estricta, evitando que un handle inválido o un proceso bloqueado detenga el escaneo completo de memoria.
