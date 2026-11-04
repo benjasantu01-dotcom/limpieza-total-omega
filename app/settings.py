@@ -370,7 +370,6 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
 def _is_structure_valid(data: Any) -> bool:
     """Verifica que el JSON parseado sea un diccionario de tamaño controlado con tipos conformes al esquema."""
     if not isinstance(data, dict) or not data or len(data) > 64: return False
-    # Verificación estricta: las claves esperadas deben estar presentes para prevenir estados inconsistentes
     for k in ConfigKey:
         if k.value not in data: return False
         if data[k.value] is not None and not _is_valid_type(data[k.value], k): return False
@@ -415,8 +414,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     resolved_str = str(primary_path.resolve())
     try:
         if primary_path.exists() and primary_path.is_file():
-            cached = _MANAGER.data_cache.get(resolved_str)
             st = primary_path.lstat()
+            cached = _MANAGER.data_cache.get(resolved_str)
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
                 return dict(cached[0])
             

@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **122** (24.2% de aceptación)
+- Mejoras aceptadas: **120** (23.8% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 315
+- Sin respuesta de la IA (error o límite): 318
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 51 | 3 | 20 | 5 | 153 |
-| 2026-11-04 | 71 | 6 | 24 | 9 | 162 |
+| 2026-11-03 | 48 | 3 | 19 | 5 | 153 |
+| 2026-11-04 | 72 | 6 | 24 | 9 | 165 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **31**
 - manejo de errores y validación de entradas: **29**
-- rendimiento: **28**
-- seguridad defensiva: **20**
+- rendimiento: **29**
+- seguridad defensiva: **17**
 - robustez ante casos límite: **14**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **16**
+- `healthscore.py`: **15**
 - `diskreport.py`: **13**
 - `quarantine.py`: **12**
-- `memory.py`: **11**
 - `safety.py`: **11**
-- `duplicates.py`: **10**
-- `settings.py`: **10**
+- `settings.py`: **11**
+- `memory.py`: **10**
 - `assistant.py`: **9**
+- `duplicates.py`: **9**
 - `browser.py`: **8**
 - `scanner.py`: **7**
 - `branding.py`: **6**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T17:28:53` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución redundante de `lstat()` y `resolve()` mediante el uso de una caché de rutas más efectiva y la normalización temprana de `resolved_str` dentro de `settings_path`, reduciendo la carga de E/S en accesos recurrentes.
 - `2026-11-04T17:20:10` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_id` reemplazando la creación de manejadores (`CreateFileW`) por la función API `GetFileInformationByHandleEx` sobre manejadores existentes cuando sea posible, y mejoré la gestión de la caché de identificadores limitando su crecimiento y evitando re-cálculos costosos para rutas ya procesadas.
 - `2026-11-04T17:19:03` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de un flag `force_reload` más eficiente y minimicé el acceso a disco en `_get_sha256` y `_is_file_in_use_by_system` al consolidar las comprobaciones de estado de inodo en una sola llamada a `stat()` en los puntos de entrada, reduciendo el overhead de llamadas al sistema en operaciones de lectura repetidas.
 - `2026-11-04T17:09:35` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-asignando la estructura `PROCESS_MEMORY_COUNTERS` fuera del bucle y evitando la creación redundante de objetos `Path` al extraer el nombre del ejecutable, reduciendo significativamente la carga de CPU y la creación de objetos innecesarios durante el escaneo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T10:45:20` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los tipos mediante docstrings explicativos en las funciones críticas de orquestación y el uso consistente de type hints para facilitar el mantenimiento del flujo de datos en el análisis de duplicados.
 - `2026-11-04T10:36:42` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de escaneo mediante la documentación técnica con docstrings de estilo Google, la adición de Type Hints en la lógica interna del heap y la clarificación de la intención de los algoritmos de acumulación.
 - `2026-11-04T10:36:30` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en `DirectoryScanner` y `detect_profiles`, y extraje la lógica de validación de rutas de `detect_profiles` a un método privado `_is_target_valid` para reducir la complejidad ciclomática y clarificar el flujo de escaneo.
-- `2026-11-04T10:35:46` **branding.py** (legibilidad y documentación): Se introdujeron constantes de tipo `Literal` y se refinaron los `docstrings` en el módulo `branding.py` para mejorar la claridad semántica y la documentación técnica de las funciones de renderizado, facilitando la comprensión de los parámetros de diseño sin alterar la funcionalidad.
