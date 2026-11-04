@@ -94,11 +94,13 @@ class DuplicateGroup:
 def _safe_path_check(path: Path) -> bool:
     """
     Valida la integridad de una ruta: debe existir, no ser protegida,
-    no ser enlace simbólico y ser accesible.
+    no ser enlace simbólico y ser segura para modificar/leer.
     """
     if not isinstance(path, Path): return False
     try:
-        if not path.is_file(): return False
+        # Validación defensiva contra archivos bloqueados o en uso
+        if not path.is_file() or not is_safe_to_modify(path):
+            return False
         resolved_path = path.resolve(strict=True)
         return not is_protected_path(resolved_path) and not is_junction(path)
     except (OSError, RuntimeError):
@@ -160,11 +162,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """
-    Realiza un escaneo recursivo en el sistema de archivos buscando candidatos.
-    Utiliza un conjunto de inodos (dev, ino) para evitar procesar enlaces físicos 
-    redundantes como duplicados.
-    """
+    """Realiza un escaneo recursivo en el sistema de archivos buscando candidatos."""
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[Tuple[int, int]] = set()
     
@@ -173,7 +171,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     while queue:
         current_dir, depth = queue.popleft()
-        if depth > MAX_RECURSION_DEPTH or is_protected_path(current_dir): continue
+        if depth > MAX_RECURSION_DEPTH or is_protected_path(current_dir) or not is_safe_to_modify(current_dir): 
+            continue
             
         with suppress(OSError, PermissionError):
             with os.scandir(current_dir) as it:
@@ -188,7 +187,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         stat = entry.stat(follow_symlinks=False)
                         if stat.st_size >= min_size:
                             inode = (stat.st_dev, stat.st_ino)
-                            if inode not in visited and not is_system_or_hidden(entry_path):
+                            if inode not in visited and not is_system_or_hidden(entry_path) and is_safe_to_modify(entry_path):
                                 visited.add(inode)
                                 size_map[stat.st_size].append(entry_path)
     return {sz: paths for sz, paths in size_map.items() if len(paths) > 1}
@@ -204,10 +203,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """
-    Optimiza el procesamiento de archivos grandes usando un enfoque de dos niveles:
-    primero agrupa por hash parcial (encabezado) y luego confirma con hash completo.
-    """
+    """Optimiza el procesamiento de archivos grandes usando hash parcial y completo."""
     if len(paths) < 2: return {}
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}

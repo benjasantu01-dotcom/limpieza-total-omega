@@ -286,10 +286,11 @@ class SystemMetrics:
     def validate(self) -> None:
         """Aplica límites de rango definidos en _METRIC_LIMITS a cada atributo."""
         for field_name in _ALL_METRICS:
-            raw_val = getattr(self, field_name, 0.0)
-            min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
-            sanitized = _validate_numeric(raw_val, 0.0, min_v, max_v)
-            setattr(self, field_name, sanitized)
+            if hasattr(self, field_name):
+                raw_val = getattr(self, field_name, 0.0)
+                min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
+                sanitized = _validate_numeric(raw_val, 0.0, min_v, max_v)
+                setattr(self, field_name, sanitized)
 
     @property
     def is_finite(self) -> bool:
