@@ -1168,3 +1168,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T17:33:45` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-04T17:33:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T17:33:45` Corrida terminada. Total usado hoy: 276.
+- `2026-11-04T22:10:24` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-04T22:10:50` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escáner ante rutas mal formadas o inaccesibles añadiendo una validación explícita de `Path.resolve()` en el punto de entrada `directory_size` y un manejo más estricto de las excepciones durante la resolución de rutas, evitando que rutas con caracteres inválidos o bloqueos de sistema aborten el proceso.
+- `2026-11-04T22:11:13` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Mejoré `walk_files` para manejar de forma robusta los casos donde el sistema operativo bloquea la lectura de un directorio específico (ej. acceso denegado a una subcarpeta durante un escaneo profundo), evitando que una excepción en un nodo hijo detenga el recorrido completo del árbol de archivos.
+- `2026-11-04T22:11:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-04T22:12:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-04T22:13:05` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-04T22:13:12` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-04T22:14:16` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante estados inesperados del `Pipeline` agregando una comprobación de seguridad en `_compute_cached` para garantizar que la suma de `total_points` no exceda los límites permitidos, evitando resultados inconsistentes en casos de valores métricos anómalos que puedan evadir el `clamp` inicial.
+- `2026-11-04T22:14:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T22:14:16` Corrida terminada. Total usado hoy: 280.

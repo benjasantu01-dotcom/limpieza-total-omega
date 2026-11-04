@@ -96,7 +96,7 @@ class DirectoryScanner:
         """
         if not path_str or _is_unc_path(path_str): return False
         try:
-            path_obj = Path(path_str).resolve()
+            path_obj = Path(path_str).resolve(strict=True)
             if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
                 return False
             
@@ -273,10 +273,10 @@ def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el peso en bytes de una ruta de carpeta dada."""
     if path is None: return 0
     p = Path(path)
-    if not p.is_dir() or not os.access(p, os.R_OK): return 0
+    if not p.exists() or not p.is_dir() or not os.access(p, os.R_OK): return 0
     
     try:
-        root_norm = os.path.normcase(str(p.resolve()))
+        root_norm = os.path.normcase(str(p.resolve(strict=True)))
     except (OSError, RuntimeError):
         return 0
 
@@ -311,7 +311,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path) or not base.exists() or not os.access(base, os.R_OK): continue
         
         try:
-            base_norm = os.path.normcase(str(base.resolve()))
+            base_norm = os.path.normcase(str(base.resolve(strict=True)))
         except (OSError, RuntimeError):
             continue
             
