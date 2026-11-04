@@ -167,10 +167,6 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
         Realiza una escritura atómica del archivo de configuración.
-        
-        1. Valida tamaño y longitud de ruta.
-        2. Verifica que el archivo no sea un reparse point ni tenga permisos laxos (777).
-        3. Escribe en un temporal, realiza fsync y reemplaza la ruta original.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 2: return False
@@ -189,7 +185,6 @@ class _SettingsManager:
             if resolved_path.exists():
                 try:
                     st = resolved_path.lstat()
-                    # Regla de seguridad: solo archivos regulares, sin hard links, y restringidos a usuario actual
                     if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
                     if (st.st_mode & 0o077) != 0: return False 
                     if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
@@ -372,27 +367,19 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     """Verifica que el archivo de configuración sea legible, no alterado y propiedad del usuario."""
     try:
-        # Prevenir reparse points (Junctions/Symlinks)
         if _Validators._is_reparse_point(str(file_path)): return False
-        # Verificar que es archivo plano, sin enlaces duros adicionales
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-        # Verificar permisos: solo lectura/escritura por el dueño, nada de grupo/otros
         if (st.st_mode & 0o077) != 0: return False
-        # Verificar propiedad si el OS lo permite
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        # Validar tamaño: no vacío, dentro de límites
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
-        # Seguridad final mediante la whitelist del proyecto
         return is_safe_to_modify(str(file_path))
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _is_structure_valid(data: Any) -> bool:
     """Verifica que el JSON parseado sea un diccionario de tamaño controlado con tipos conformes al esquema."""
-    if not isinstance(data, dict) or len(data) > 64: return False
-    # Evitar diccionarios vacíos malintencionados
-    if not data: return False
+    if not isinstance(data, dict) or not data or len(data) > 64: return False
     for key_name, value in data.items():
-        if value is None: return False
+        if value is None: continue
         key_enum = _KEY_TO_ENUM.get(key_name)
         if not key_enum or not _is_valid_type(value, key_enum): return False
     return True
@@ -403,7 +390,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     de contenido y validación estructural estricta antes de retornar los datos.
     """
     try:
-        # Usamos lstat para evitar seguir enlaces simbólicos
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
         
@@ -413,10 +399,10 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         if content.startswith((b'\xef\xbb\xbf', b'\xff\xfe', b'\xfe\xff')): return None
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
         
-        # Parseo con control de duplicados de claves si la librería lo permite mediante object_pairs_hook
-        data = json.loads(content.decode("utf-8", errors="strict"), object_pairs_hook=dict)
-        if not _is_structure_valid(data): return None
+        decoded = content.decode("utf-8", errors="strict")
+        data = json.loads(decoded, object_pairs_hook=dict)
         
+        if not _is_structure_valid(data): return None
         return data
     except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError, TypeError):
         return None
@@ -461,7 +447,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
                 try: base.mkdir(parents=True, exist_ok=True)
                 except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE
             
-            # Post-check: asegurar que el directorio es seguro tras la creación
             if not os.access(base, os.R_OK | os.W_OK): return SETTINGS_DIR / SETTINGS_FILE
             
             full_path = base / SETTINGS_FILE

@@ -1300,3 +1300,34 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-11-04T01:15:35` ➖ Sin cambios en scanner.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `scan_file` añadiendo una validación explícita para evitar errores en `path.stat()` cuando los archivos son inaccesibles, asegurando que la función retorne un resultado vacío de forma segura en lugar de propagar excepciones.
 - `2026-11-04T01:15:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T01:15:35` Corrida terminada. Total usado hoy: 32.
+- `2026-11-04T01:23:56` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-11-04T01:24:46` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_structure_valid` para evitar errores silenciosos en la carga de configuración y se ha fortalecido el manejo de excepciones en `_read_and_parse_json` al centralizar el chequeo de integridad antes de intentar el parseo JSON.
+- `2026-11-04T01:25:17` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.60s
+
+```
+- `2026-11-04T01:25:17` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra rutas `None` o mal formadas, evitando que operaciones sobre `Path` (como `p.parts`) lancen excepciones no capturadas al recibir strings inesperados.
+- `2026-11-04T01:25:59` ➖ Sin cambios en assistant.py (enfoque: legibilidad y documentación). Motivo: Mejoré la legibilidad y mantenibilidad de `assistant.py` añadiendo type hints faltantes en funciones clave, documentando explícitamente los parámetros y retornos en funciones de procesamiento de datos, y extrayendo bloques de validación complejos en funciones auxiliares con nombres semánticos.
+- `2026-11-04T01:26:18` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-04T01:26:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T01:26:18` Corrida terminada. Total usado hoy: 36.

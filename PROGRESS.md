@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **142** (28.2% de aceptación)
-- Rechazadas por tests: 8
+- Mejoras aceptadas: **143** (28.4% de aceptación)
+- Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 300
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 297
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 40 | 0 | 11 | 0 | 71 |
+| 2026-11-02 | 40 | 0 | 11 | 0 | 67 |
 | 2026-11-03 | 96 | 7 | 29 | 11 | 207 |
-| 2026-11-04 | 6 | 1 | 2 | 1 | 22 |
+| 2026-11-04 | 7 | 2 | 2 | 2 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **36**
 - seguridad defensiva: **31**
 - rendimiento: **29**
 - robustez ante casos límite: **25**
@@ -34,8 +34,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **16**
 - `assistant.py`: **14**
 - `healthscore.py`: **13**
+- `settings.py`: **12**
 - `memory.py`: **12**
-- `settings.py`: **11**
 - `diskreport.py`: **11**
 - `duplicates.py`: **11**
 - `scanner.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T01:24:46` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_structure_valid` para evitar errores silenciosos en la carga de configuración y se ha fortalecido el manejo de excepciones en `_read_and_parse_json` al centralizar el chequeo de integridad antes de intentar el parseo JSON.
 - `2026-11-04T01:15:25` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de acceso al archivo mediante la captura explícita de `FileNotFoundError` en `_validate_access_permissions` y se ha implementado una sanitización defensiva en `_is_file_owned_by_system` para evitar errores de puntero nulo, evitando que excepciones silenciadas degraden la integridad de las decisiones de seguridad.
 - `2026-11-04T01:03:59` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de datos del sistema mediante una validación estricta de tipo en el pipeline de cálculo y se centralizó el control de errores en `SystemMetrics.validate` para evitar que valores inesperados (`NaN`, `Inf`) propaguen errores en la caché LRU.
 - `2026-11-04T00:54:46` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para evitar fallos silenciosos cuando un archivo desaparece o es inaccesible durante el análisis, validando explícitamente los resultados antes de operar sobre ellos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T13:48:30` **settings.py** (robustez ante casos límite): Se mejora la robustez de `_read_and_parse_json` y `_is_file_secure_to_read` para manejar archivos corruptos o bloqueados mediante la implementación de una verificación explícita de `st_size` previo al `open`, evitando intentos de lectura en archivos de tamaño 0 o extremadamente grandes, y asegurando que las excepciones de I/O sean capturadas antes de procesar el contenido.
 - `2026-11-03T13:37:20` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `OSError` al intentar leer archivos bloqueados en `_is_file_locked` y se reforzó la robustez de `_get_win_attributes` manejando errores de acceso durante el escaneo para evitar interrupciones en el bucle de procesado de directorios ante archivos con permisos restringidos.
 - `2026-11-03T13:06:51` **safety.py** (rendimiento): Se implementó un mecanismo de caché para los resultados de `_is_kernel_managed` y se optimizó `is_protected_path` eliminando la recreación de objetos `Path` y normalizaciones redundantes dentro del bucle de validación, mejorando el rendimiento en recorridos masivos de directorios.
-- `2026-11-03T12:58:02` **quarantine.py** (rendimiento): Se optimizó el rendimiento del cálculo de hashes SHA256 integrando un mecanismo de caché más granular basado en la tupla `(tamaño, tiempo de modificación, inodo)`, lo que evita lecturas redundantes del disco en archivos ya procesados.
