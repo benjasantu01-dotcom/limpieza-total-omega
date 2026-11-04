@@ -594,3 +594,14 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-04T06:12:04` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-04T06:12:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T06:12:04` Corrida terminada. Total usado hoy: 148.
+- `2026-11-04T06:19:33` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-04T06:19:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T06:19:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-04T06:19:49` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-04T06:21:10` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) de funciones críticas para clarificar el flujo de seguridad, cumpliendo con el enfoque de legibilidad sin alterar la lógica de las operaciones.
+- `2026-11-04T06:21:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 118): unterminated string literal (detected at line 118)
+- `2026-11-04T06:21:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T06:22:30` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujo un `Enum` dedicado `ValidationContext` para clarificar qué tipo de validación se está realizando (estructural vs. integridad), y se añadieron docstrings explicativos a las funciones de validación para separar claramente las responsabilidades de "forma de la ruta" y "estado actual del disco", facilitando la mantenibilidad futura.
+- `2026-11-04T06:22:42` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se han mejorado las docstrings de las funciones críticas y se ha estandarizado la nomenclatura interna de `directory_stack` para clarificar el flujo de control, facilitando la auditoría de seguridad del recorrido recursivo.
+- `2026-11-04T06:22:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T06:22:42` Corrida terminada. Total usado hoy: 152.
