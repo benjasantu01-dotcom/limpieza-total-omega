@@ -143,7 +143,6 @@ def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """Extrae atributos de archivo de bajo nivel usando la API de Windows."""
     try:
         if isinstance(entry, os.DirEntry):
-            # Usar lstat para evitar seguir enlaces simbólicos accidentalmente
             return entry.stat(follow_symlinks=False).st_file_attributes
         return entry.lstat().st_file_attributes
     except (OSError, AttributeError, ValueError):
@@ -322,12 +321,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        if _is_candidate_for_scan(entry.name, entry.stat(follow_symlinks=False)):
+                        stats = entry.stat(follow_symlinks=False)
+                        if _is_candidate_for_scan(entry.name, stats):
                             if entry.path not in protected_cache and not _is_system_hidden(entry):
-                                p = Path(entry.path)
-                                if is_safe_to_modify(p):
-                                    stats = entry.stat(follow_symlinks=False)
-                                    found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                                found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
