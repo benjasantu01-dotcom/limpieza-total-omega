@@ -355,7 +355,8 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         if get_mod_name_func(handle, None, path_buffer, len(path_buffer)) <= 0:
             return False 
         
-        return not is_protected_path(Path(path_buffer.value))
+        normalized_path = os.path.normpath(str(path_buffer.value))
+        return not is_protected_path(Path(normalized_path))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
@@ -475,8 +476,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not handle:
         return False, "Acceso denegado o proceso en zona restringida."
 
-    # Seguridad defensiva adicional: re-verificar ruta protegida explícitamente
-    if is_protected_path(Path(path_buf.value)):
+    # Seguridad defensiva adicional: re-verificar ruta protegida explícitamente tras normalización
+    if is_protected_path(Path(os.path.normpath(path_buf.value))):
         WindowsAPI.kernel32.CloseHandle(handle)
         return False, "Operación denegada sobre archivos protegidos."
 
