@@ -70,6 +70,7 @@ _COMMAND_CACHE: Dict[str, str] = {}
 _FULL_SCAN_CACHE: Optional[StartupEntries] = None
 _FOLDERS_CACHE: Optional[List[Path]] = None
 _VALIDATION_CACHE: Dict[str, bool] = {}
+_PROCESS_CACHE: Dict[str, bool] = {}
 
 # Mensaje orientativo para el usuario final sobre la gestión de persistencia.
 HOW_TO_DISABLE: str = (
@@ -323,24 +324,34 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
     if not hasattr(entry, "path") or not hasattr(entry, "name"):
         return None
+        
+    if entry.path in _PROCESS_CACHE:
+        return None
+        
     try:
         if not entry.is_file(follow_symlinks=False):
+            _PROCESS_CACHE[entry.path] = False
             return None
         
         _, ext = os.path.splitext(entry.name)
         if not ext or ext.lower() not in EXECUTABLE_EXTS:
+            _PROCESS_CACHE[entry.path] = False
             return None
             
         if len(entry.path) > MAX_PATH_LEN:
+            _PROCESS_CACHE[entry.path] = False
             return None
             
         path_obj = Path(entry.path)
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+            _PROCESS_CACHE[entry.path] = False
             return None
             
         name = Path(entry.name).stem
+        _PROCESS_CACHE[entry.path] = True
         return StartupEntry(name=name, command=entry.path, source="carpeta")
     except (OSError, PermissionError, ValueError, TypeError, AttributeError):
+        _PROCESS_CACHE[entry.path] = False
         return None
 
 

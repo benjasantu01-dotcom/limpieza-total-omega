@@ -300,15 +300,18 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         except (OSError, RuntimeError):
             continue
             
-        # Reutilizamos el contexto y el scanner para el base actual
         ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
         scanner = DirectoryScanner(ctx)
         
         for browser_key, relative_path in browser_map.items():
             if not _is_valid_rel_path(relative_path): continue
             
-            target = base.joinpath(*relative_path.split("\\"))
-            if not target.exists() or not target.is_dir() or not os.access(target, os.R_OK): continue
+            try:
+                target = base.joinpath(*relative_path.split("\\"))
+                if not target.exists() or not target.is_dir() or not os.access(target, os.R_OK): continue
+                if not is_safe_to_modify(target): continue
+            except (OSError, RuntimeError):
+                continue
             
             target_str = str(target)
             

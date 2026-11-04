@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **129** (25.6% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 301
+- Sin respuesta de la IA (error o límite): 302
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 86 | 7 | 27 | 11 | 205 |
-| 2026-11-04 | 43 | 6 | 16 | 7 | 96 |
+| 2026-11-03 | 84 | 7 | 26 | 11 | 204 |
+| 2026-11-04 | 45 | 6 | 16 | 7 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **31**
 - manejo de errores y validación de entradas: **30**
-- rendimiento: **29**
-- seguridad defensiva: **27**
-- robustez ante casos límite: **12**
+- rendimiento: **30**
+- seguridad defensiva: **25**
+- robustez ante casos límite: **13**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **15**
 - `safety.py`: **14**
+- `healthscore.py`: **14**
 - `quarantine.py`: **13**
 - `duplicates.py`: **11**
 - `settings.py`: **11**
 - `diskreport.py`: **11**
 - `assistant.py`: **10**
-- `memory.py`: **9**
-- `browser.py`: **9**
+- `browser.py`: **10**
 - `scanner.py`: **8**
-- `startup.py`: **7**
+- `startup.py`: **8**
+- `memory.py`: **8**
 - `branding.py`: **6**
 - `organizer.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T07:14:20` **browser.py** (robustez ante casos límite): Se mejora la robustez de `detect_profiles` ante archivos bloqueados o denegados durante la construcción de la ruta de destino (`joinpath`), añadiendo una validación explícita de `is_safe_to_modify` para prevenir ataques de traversal o escape mediante rutas relativas maliciosas en `BROWSER_CACHE_PATHS`.
+- `2026-11-04T07:11:03` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo mediante la implementación de `_PROCESS_CACHE` para evitar re-validar rutas ya procesadas en `entries_from_folders`, reduciendo drásticamente las llamadas al sistema de archivos durante la consolidación de inventario.
 - `2026-11-04T06:58:19` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando una estrategia de caché de inodos más robusta, evitando llamadas repetitivas al sistema de archivos (`stat`) que degradaban el rendimiento en escaneos masivos.
 - `2026-11-04T06:41:34` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_protected_path` al procesar archivos, reduciendo la carga de I/O en recorridos de directorios grandes.
 - `2026-11-04T06:41:09` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reduciendo el número de llamadas a `Path` y `parts` mediante el uso de `relative_to` (o lógica de subdirectorios directa) y evitando la reconstrucción de objetos `Path` en cada iteración del bucle, lo que minimiza la carga de la CPU y la creación innecesaria de objetos en recorridos de discos grandes.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T05:59:51` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de renderizado geométrico y una explicación más clara sobre la lógica de segmentación de gradientes, facilitando el mantenimiento futuro del motor gráfico.
 - `2026-11-04T05:33:04` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez y seguridad de `trim_working_set` y `_get_handle_for_safe_proc` mediante la validación estricta de punteros y la captura de errores en operaciones críticas de bajo nivel (ctypes), garantizando que cualquier fallo en la API nativa sea capturado sin afectar la estabilidad del bucle principal.
 - `2026-11-04T05:29:28` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `SystemMetrics.validate` y `_compute_cached` añadiendo validaciones explícitas contra valores `None` y estados inconsistentes, evitando posibles excepciones durante la reconstrucción del pipeline de cálculo.
-- `2026-11-04T05:20:08` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación más estricta de parámetros y el manejo granular de excepciones, asegurando que los valores de entrada no causen errores de ejecución silenciosos o inesperados al interactuar con el sistema de archivos o el motor de renderizado.
-- `2026-11-04T03:58:27` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al mejorar el método `_is_valid_registry_path` para prevenir la inyección de rutas mediante el uso de `Path.resolve()` antes de realizar chequeos de seguridad, evitando así que rutas con caracteres de escape o normalizaciones engañosas evadan los filtros de `is_protected_path`.
