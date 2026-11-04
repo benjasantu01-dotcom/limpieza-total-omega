@@ -368,11 +368,19 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 
 def _is_valid_registry_path(path_str: str) -> bool:
-    """Valida sintácticamente una ruta obtenida del registro."""
+    """Valida sintácticamente y resuelve una ruta obtenida del registro."""
     if not path_str or ("\\" not in path_str and "/" not in path_str): return False
-    if ".." in path_str.split(os.sep): return False
-    target: Path = Path(path_str)
-    return not any(c in str(target) for c in SUSPICIOUS_CHARS) and not is_protected_path(target)
+    
+    try:
+        target: Path = Path(path_str.strip('"')).resolve(strict=False)
+        if is_protected_path(target): return False
+        
+        # Validación de seguridad: evitar caracteres sospechosos en la resolución
+        if any(c in str(target) for c in SUSPICIOUS_CHARS): return False
+        
+        return True
+    except (OSError, RuntimeError, ValueError):
+        return False
 
 
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
@@ -383,13 +391,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     clean_name, clean_cmd = name.strip(), command.strip()
     if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen: return False
     
-    try:
-        path_to_check = Path(clean_cmd.strip('"'))
-        if is_protected_path(path_to_check):
-            return False
-        return _is_valid_registry_path(clean_cmd.strip('"'))
-    except (ValueError, TypeError, OSError, RuntimeError):
-        return False
+    return _is_valid_registry_path(clean_cmd)
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:

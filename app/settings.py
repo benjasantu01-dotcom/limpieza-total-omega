@@ -175,11 +175,11 @@ class _SettingsManager:
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 2: return False
         if len(str(config_path)) > 260: return False
         
-        temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
         try:
             if not is_safe_to_modify(str(config_path)): return False
             parent_dir = config_path.parent
             if not parent_dir.exists() or not os.access(parent_dir, os.W_OK): return False
+            if _Validators._is_reparse_point(str(parent_dir)): return False
             
             resolved_path = config_path.resolve()
             resolved_str = str(resolved_path)
@@ -193,21 +193,17 @@ class _SettingsManager:
                     if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
                 except OSError: return False
             
+            temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
             with open(temp_path, "wb") as f:
                 f.write(serialized_bytes)
                 f.flush()
                 os.fsync(f.fileno())
             
-            if temp_path.exists():
-                os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
-                os.replace(temp_path, resolved_path)
-                self.clear(resolved_str)
-                return True
-            return False
+            os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
+            os.replace(temp_path, resolved_path)
+            self.clear(resolved_str)
+            return True
         except (OSError, IOError, PermissionError, ValueError, RuntimeError):
-            if temp_path.exists():
-                try: os.remove(temp_path)
-                except OSError: pass
             return False
 
 _MANAGER = _SettingsManager()
@@ -454,7 +450,8 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
                 try: base.mkdir(parents=True, exist_ok=True)
                 except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE
             
-            if not os.access(base, os.R_OK | os.W_OK): return SETTINGS_DIR / SETTINGS_FILE
+            if not os.access(base, os.R_OK | os.W_OK) or _Validators._is_reparse_point(str(base)): 
+                return SETTINGS_DIR / SETTINGS_FILE
             
             full_path = base / SETTINGS_FILE
             _MANAGER.path_cache[cache_key] = full_path
