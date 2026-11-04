@@ -107,7 +107,14 @@ class Grade(Enum):
         return cls.F.value
 
 class RecommendationRule(NamedTuple):
-    """Define una lógica de diagnóstico reactiva basada en métricas."""
+    """Define una lógica de diagnóstico reactiva basada en métricas.
+    
+    Attributes:
+        area: La métrica que dispara esta regla.
+        threshold: Valor límite para activar la sugerencia.
+        message_factory: Función que genera el texto de la recomendación.
+        check: Predicado (SystemMetrics, Ratio) -> bool que determina si aplicar.
+    """
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
@@ -151,7 +158,12 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
         return min_val
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Genera funciones de normalización lineal. inverse=True para métricas donde 'menos es mejor'."""
+    """Genera funciones de normalización lineal.
+    
+    Args:
+        limit: El valor de referencia donde el ratio es 0 (si inverse=True) o 1 (si inverse=False).
+        inverse: Si es True, valores superiores al límite degradan la salud.
+    """
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0: return 0.0
         try:
@@ -216,6 +228,7 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
+    """Calcula score de seguridad penalizando ocurrencias detectadas."""
     penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
     return _clamp(1.0 - penalization)
 

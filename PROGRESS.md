@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **132** (26.2% de aceptación)
+- Mejoras aceptadas: **133** (26.4% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 301
+- Sin respuesta de la IA (error o límite): 300
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 1 | 0 | 0 | 0 | 9 |
+| 2026-11-02 | 1 | 0 | 0 | 0 | 5 |
 | 2026-11-03 | 96 | 7 | 29 | 11 | 207 |
-| 2026-11-04 | 35 | 5 | 12 | 7 | 85 |
+| 2026-11-04 | 36 | 5 | 12 | 7 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **31**
 - manejo de errores y validación de entradas: **30**
-- legibilidad y documentación: **27**
+- legibilidad y documentación: **28**
 - rendimiento: **25**
 - robustez ante casos límite: **19**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **15**
 - `safety.py`: **14**
-- `healthscore.py`: **14**
 - `duplicates.py`: **12**
 - `quarantine.py`: **12**
 - `settings.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T06:10:02` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de normalización y reglas, y se han renombrado variables clave para clarificar la lógica del pipeline de salud, facilitando la comprensión del mantenimiento técnico sin alterar la funcionalidad.
 - `2026-11-04T06:00:47` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings estructurados (siguiendo el estilo Google/NumPy) en las funciones críticas y se han aclarado las responsabilidades de los tipos de datos internos para facilitar el mantenimiento del equipo de desarrollo.
 - `2026-11-04T06:00:21` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `DirectoryScanner` mediante la introducción de un método privado `_process_entry` que abstrae la lógica de decisión dentro del ciclo de escaneo, reduciendo la complejidad ciclomática y clarificando las intenciones de filtrado por seguridad.
 - `2026-11-04T05:59:51` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de renderizado geométrico y una explicación más clara sobre la lógica de segmentación de gradientes, facilitando el mantenimiento futuro del motor gráfico.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T03:37:04` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción de los datos que entran al motor analítico, añadiendo una validación explícita para asegurar que los resultados procesados en `summarize` y `_compute_cached` no contengan inyecciones de caracteres o términos prohibidos antes de ser reportados.
 - `2026-11-04T03:30:02` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` agregando una validación explícita con `is_protected_path` al iterar el contenido del directorio, evitando procesar rutas que podrían haber sido excluidas tras el inicio del escaneo o por cambios de permisos.
 - `2026-11-04T03:29:45` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_reparse_point` y `walk_files` para evitar el seguimiento de puntos de reanálisis (reparse points) mediante una validación más robusta de los atributos de archivo, evitando dependencias innecesarias de `ctypes` en entornos no Windows y centralizando la lógica de detección.
-- `2026-11-04T03:27:53` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner._is_path_allowed` incorporando una verificación explícita de `is_protected_path` sobre la ruta real (`resolved`) para prevenir ataques de symlink traversal que podrían intentar escapar del sandbox mediante reparse points ocultos.
