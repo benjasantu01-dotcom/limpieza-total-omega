@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **143** (28.4% de aceptación)
+- Mejoras aceptadas: **141** (28.0% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 297
+- Sin respuesta de la IA (error o límite): 298
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 32 | 0 | 9 | 0 | 61 |
+| 2026-11-02 | 29 | 0 | 8 | 0 | 61 |
 | 2026-11-03 | 96 | 7 | 29 | 11 | 207 |
-| 2026-11-04 | 15 | 2 | 4 | 2 | 29 |
+| 2026-11-04 | 16 | 2 | 6 | 2 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **36**
 - seguridad defensiva: **31**
 - legibilidad y documentación: **30**
-- rendimiento: **25**
-- robustez ante casos límite: **21**
+- rendimiento: **26**
+- robustez ante casos límite: **18**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **16**
-- `quarantine.py`: **15**
+- `safety.py`: **15**
 - `healthscore.py`: **14**
+- `quarantine.py`: **14**
 - `assistant.py`: **13**
 - `settings.py`: **12**
+- `diskreport.py`: **12**
 - `memory.py`: **12**
 - `duplicates.py`: **12**
-- `diskreport.py`: **11**
-- `scanner.py`: **10**
 - `browser.py`: **9**
+- `scanner.py`: **9**
 - `startup.py`: **8**
 - `organizer.py`: **6**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T02:15:31` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la creación innecesaria de objetos `Path` y múltiples llamadas a `stat` dentro del loop crítico, reduciendo la carga de I/O y el overhead de memoria en escaneos profundos.
 - `2026-11-04T01:56:30` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la redefinición de `_ValidatorEntry` como una clase más semántica, facilitando la comprensión del flujo de validación.
 - `2026-11-04T01:56:08` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la comprensión del flujo de datos en el recorrido recursivo.
 - `2026-11-04T01:55:42` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_drive_restrictions`, extrayendo la lógica repetitiva de validación de condiciones en una estructura de datos clara y una iteración limpia, lo cual facilita agregar nuevas restricciones de volumen sin aumentar la complejidad ciclomática.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T00:54:46` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para evitar fallos silenciosos cuando un archivo desaparece o es inaccesible durante el análisis, validando explícitamente los resultados antes de operar sobre ellos.
 - `2026-11-04T00:54:37` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de acceso a archivo/directorio en un manejo de excepciones más granular para evitar interrupciones por errores de sistema (`PermissionError`, `OSError`) al encontrar archivos bloqueados o con rutas malformadas durante el escaneo.
 - `2026-11-04T00:53:48` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de renderizado `draw_logo`, `draw_shield_stripes` y `draw_ring` mediante la validación estricta de parámetros y el manejo defensivo de estados nulos o inválidos, evitando excepciones inesperadas que podrían comprometer la estabilidad del hilo de la interfaz.
-- `2026-11-04T00:46:43` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_updates` en `SystemContext` mediante la validación explícita de tipos antes de aplicar cambios, evitando la inyección de atributos no permitidos o con tipos incorrectos que pudieran corromper el estado del objeto.

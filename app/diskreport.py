@@ -296,15 +296,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre archivos evitando ciclos y rutas protegidas.
-    
-    Utiliza una pila (stack) en lugar de recursión para evitar límites de stack,
-    y registra inodos visitados para evitar bucles infinitos por enlaces simbólicos.
     """
     root_path = _validate_root(directory)
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     root_stat = _safe_stat(root_path)
     if root_stat:
@@ -321,16 +318,15 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir():
-                            path_obj = Path(entry.path)
-                            # Verificación de seguridad antes de profundizar en la rama
-                            if skip_protected and is_protected_path(path_obj):
+                            # Evitar instanciar Path innecesariamente
+                            if skip_protected and is_protected_path(Path(entry.path)):
                                 continue
-                            if _is_reparse_point(path_obj):
+                            if _is_reparse_point(Path(entry.path)):
                                 continue
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(path_obj)
+                                stack.append(entry.path)
                         elif entry.is_file():
                             if isinstance(st.st_size, int) and st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
@@ -390,26 +386,20 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Escaneo consolidado que agrupa estadísticas generales y mantiene un heap 
-    para los archivos más grandes de forma eficiente (O(N * log limit)).
+    Escaneo consolidado que agrupa estadísticas generales.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            ext = path.suffix
-            ext_normalized = ext.lower() if ext else "(sin extensión)"
-            stats.register_file(size, ext_normalized)
-            
-            # Si se requiere rastrear archivos pesados, usamos el heap
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif top_heap and size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-        except (AttributeError, TypeError, OSError):
-            continue
+        ext = path.suffix.lower() or "(sin extensión)"
+        stats.register_file(size, ext)
+        
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
