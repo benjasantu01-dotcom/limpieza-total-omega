@@ -684,7 +684,7 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     if _is_file_in_use_by_system(p_source): raise IOError("Archivo origen bloqueado por el sistema: abortado.")
     if p_source.resolve().stat().st_dev != dest_dir.resolve().stat().st_dev: raise UnsafePathError("Origen y sandbox deben estar en la misma unidad.")
     
-    if p_source.stat().st_ino != initial_stat.st_ino: raise RuntimeError("Integridad comprometida: el archivo original cambió durante la validación inicial.")
+    if not p_source.exists() or p_source.stat().st_ino != initial_stat.st_ino: raise RuntimeError("Integridad comprometida: el archivo original cambió o desapareció.")
     
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
@@ -783,6 +783,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         for f in root_path.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file() or not is_within_directory(f.resolve(), root_path): continue
             try:
+                # Doble verificación antes de purgar: el archivo debe existir y ser consistente
+                if not f.exists(): continue
                 item = item_map.get(f.name)
                 if item and _is_item_purgable(f, item): 
                     purgado_ids.add(item.item_id)
