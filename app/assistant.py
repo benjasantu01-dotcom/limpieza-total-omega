@@ -425,51 +425,48 @@ class SystemContext:
 
     @cached_property
     def metrics_snapshot(self) -> MetricsDict:
-        """Snapshot cacheado de las métricas numéricas para acceso eficiente durante las respuestas."""
+        """Retorna un diccionario filtrado de las métricas numéricas actuales."""
         return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k, -1.0)) != -1.0}
 
     @cached_property
     def _cached_active_problems(self) -> tuple[str, ...]:
-        """Versión cacheada de los problemas de salud detectados basándose en datos actuales."""
+        """Recopila los problemas de salud detectados basándose en los criterios actuales."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        # Recorrido eficiente comparando intersección de conjuntos
         relevant_keys = _VALID_METRIC_KEYS.intersection(_CRITERIOS_MAP.keys())
         key_vals = tuple((k, snap[k]) for k in relevant_keys if k in snap)
         return _evaluate_active_problems(key_vals)
 
     @property
     def active_problems(self) -> tuple[str, ...]:
-        """Evalúa los criterios de salud contra los datos actuales y retorna los problemas activos."""
+        """Interfaz pública para acceder a los problemas detectados en el sistema."""
         return self._cached_active_problems
 
     @cached_property
     def _hash_tuple(self) -> tuple:
-        """Tupla cacheada para representar el estado actual y facilitar comparaciones/hashing."""
+        """Genera una tupla inmutable del estado para propósitos de hashing."""
         keys = sorted(_VALID_METRIC_KEYS)
         return tuple(getattr(self, k) for k in keys) + (self.grade, self.analyzed)
 
     def get_metric(self, key: str, default: float) -> float:
-        """Accede de forma segura a una métrica numérica, devolviendo un valor por defecto ante ausencia."""
+        """Accede de forma segura al valor de una métrica específica."""
         return self.metrics_snapshot.get(key, default)
 
     @property
     def is_empty(self) -> bool:
-        """Verifica si el contexto contiene datos válidos tras un proceso de análisis."""
-        if self.analyzed is not True: return True
-        if not isinstance(self.score, int): return True
-        return self.score < 0
+        """Valida si el contexto ha sido inicializado mediante un análisis previo."""
+        return not self.analyzed or not isinstance(self.score, int) or self.score < 0
 
     def __hash__(self) -> int:
         return hash(self._hash_tuple)
 
     @property
     def is_valid_structure(self) -> bool:
-        """Validación de seguridad para impedir inyecciones en el campo descriptivo (grade)."""
-        return _ensure_safe_text(self.grade) if (self.grade is not None and len(self.grade) > 0) else True
+        """Verifica que la calificación (grade) no contenga caracteres de inyección."""
+        return _ensure_safe_text(self.grade) if (self.grade and len(self.grade) > 0) else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
-        """Valida, convierte y verifica límites de un atributo individual según especificación."""
+        """Valida e intenta extraer una métrica de una fuente externa arbitraria."""
         try:
             val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
             if val is None or isinstance(val, bool) or callable(val):
@@ -481,7 +478,7 @@ class SystemContext:
             return None
 
     def _clean_grade(self, val: Any) -> str:
-        """Limpia el string de calificación eliminando caracteres no permitidos o peligrosos."""
+        """Desinfecta el campo de calificación eliminando secuencias de control."""
         if not isinstance(val, (str, int, float)): return ""
         try:
             clean: str = str(val)
@@ -493,7 +490,7 @@ class SystemContext:
             return ""
 
     def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
-        """Extrae y valida un conjunto de métricas desde una fuente externa."""
+        """Extrae, valida y sanitiza todas las métricas de una fuente externa."""
         updates = {}
         for k in _VALID_METRIC_KEYS:
             spec = _VALIDATORS[k]
@@ -502,21 +499,20 @@ class SystemContext:
                 updates[k] = val
         
         try:
-            # Validar que si source es un dict, ninguna de sus claves sea una ruta prohibida
             if isinstance(source, dict):
                 for k in source.keys():
                     if isinstance(k, str) and is_protected_path(k): return {}
             
-            g_val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
-            if grade_val := self._clean_grade(g_val):
-                updates["grade"] = grade_val
+            grade_raw = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
+            if cleaned_grade := self._clean_grade(grade_raw):
+                updates["grade"] = cleaned_grade
         except (AttributeError, TypeError, ValueError):
             pass
             
         return updates
 
     def _validate_ingestion_source(self, source: Any) -> bool:
-        """Realiza comprobaciones de seguridad básicas sobre el objeto/fuente de datos recibido."""
+        """Verifica que la estructura de la fuente sea segura para el procesamiento."""
         if source is None or callable(source) or not isinstance(source, (dict, object)): 
             return False
         if isinstance(source, (dict, list, tuple)):
@@ -524,7 +520,7 @@ class SystemContext:
         return True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
-        """Aplica los cambios validados al objeto y purga cachés para forzar recálculos."""
+        """Actualiza los atributos del objeto y purga las memorias caché."""
         for k, v in updates.items():
             if k in _VALID_METRIC_KEYS:
                 spec = _VALIDATORS[k]
@@ -537,7 +533,7 @@ class SystemContext:
             self.__dict__.pop(attr, None)
 
     def ingest(self, source: Any) -> bool:
-        """Normaliza, valida e importa datos externos al contexto de manera segura."""
+        """Procesa y guarda los datos de entrada validados en la instancia actual."""
         if not self._validate_ingestion_source(source): 
             logging.warning("Intento de ingesta con fuente insegura o compleja bloqueado.")
             return False
@@ -560,7 +556,7 @@ class Answer:
 
     @property
     def is_online(self) -> bool:
-        """Verifica si la respuesta fue generada por el motor remoto (Gemini)."""
+        """Indica si la respuesta fue generada por el motor de IA externo."""
         return self.source == "gemini"
 
 def _is_safe_path_input(text: str) -> bool:
@@ -678,7 +674,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre el puntaje de salud global obtenido por el sistema."""
     resumen: str = _format_problem_message(ctx.active_problems, ctx.score if ctx.score is not None else "N/A")
-    grade_str: str = f" (nota {ctx.grade})" if (ctx.grade is not None and len(ctx.grade) > 0) else ""
+    grade_str: str = f" (nota {ctx.grade})" if (ctx.grade and len(ctx.grade) > 0) else ""
     explicacion: str = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
     return Answer(f"{resumen}{grade_str}{explicacion}", notice=OFFLINE_NOTICE)
 

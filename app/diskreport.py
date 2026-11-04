@@ -47,6 +47,7 @@ SUSPICIOUS_CHARS: Tuple[str, ...] = ('\u202E', '\u202D', '\u200E', '\u200F')
 
 # Inode representado como (id_dispositivo, numero_inode) para detectar ciclos
 Inode: TypeAlias = Tuple[int, int]
+# Tupla para el heap de archivos más grandes: (tamaño_en_bytes, ruta_completa)
 FileRecord: TypeAlias = Tuple[int, Path]
 
 
@@ -63,7 +64,6 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
     if path is None:
         return None
     try:
-        # Bloque try-except reforzado para capturar cualquier falla en la lectura de atributos de archivo
         return os.lstat(path)
     except (OSError, PermissionError, ValueError, FileNotFoundError, AttributeError, OverflowError, RuntimeError):
         return None
@@ -379,6 +379,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Realiza un escaneo consolidado del directorio y retorna métricas agregadas.
+    
+    Args:
+        directory: Ruta raíz de inicio.
+        skip_protected: Si debe ignorar rutas protegidas.
+        limit: Cantidad de archivos más grandes a mantener en el heap (0 para desactivar).
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -387,6 +392,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         ext = path.suffix.lower() or "(sin extensión)"
         stats.register_file(size, ext)
         
+        # Mantenimiento de heap de tamaño fijo: O(N log L) donde L es el límite
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))

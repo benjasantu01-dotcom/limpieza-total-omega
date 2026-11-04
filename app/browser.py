@@ -80,8 +80,11 @@ class ScanContext:
 class DirectoryScanner:
     """
     Motor de recorrido recursivo con enfoque defensivo.
-    Aplica chequeos de seguridad estrictos antes de acceder a cada nodo del sistema 
-    de archivos para garantizar que el recorrido se mantenga dentro del sandbox.
+    
+    Este escáner realiza un recorrido en profundidad (DFS) limitado para calcular 
+    el peso en bytes de directorios. Implementa validaciones en cada nodo para 
+    impedir el seguimiento de enlaces simbólicos (reparse points) o el acceso 
+    a rutas fuera del directorio base (sandbox).
     """
     def __init__(self, context: ScanContext) -> None:
         self.ctx = context
@@ -124,6 +127,7 @@ class DirectoryScanner:
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
         Calcula el tamaño total de una carpeta de forma recursiva.
+        Captura excepciones de acceso al sistema de archivos para garantizar la resiliencia.
         """
         if not isinstance(root_path, str) or not root_path or not self._is_path_allowed(root_path):
             return ScanResult(0, False)
@@ -279,10 +283,21 @@ def directory_size(path: Optional[OSPath]) -> int:
     ctx = ScanContext(root_norm, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
     return DirectoryScanner(ctx).get_size(str(p)).bytes_found
 
+def _is_target_valid(target: Path, kernel: Optional[ctypes.WinDLL]) -> bool:
+    """Valida si la carpeta objetivo es apta para ser escaneada."""
+    if not target.exists() or not target.is_dir() or not os.access(target, os.R_OK): return False
+    if not is_safe_to_modify(target): return False
+    if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): return False
+    if _is_system_hidden(str(target), kernel) or target.name.lower() in NEVER_TOUCH: return False
+    return True
+
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """
     Escanea las ubicaciones de perfiles de navegador conocidos en busca de cachés.
-    Utiliza el escáner defensivo para evitar ciclos y accesos a rutas prohibidas.
+    
+    Utiliza el motor 'DirectoryScanner' con un contexto de ejecución seguro.
+    Filtra objetivos utilizando validaciones de estado del sistema (archivos 
+    ocultos/sistema) y restricciones de seguridad globales.
     """
     raw_bases = list(bases) if (isinstance(bases, (list, tuple))) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
@@ -306,20 +321,10 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         for browser_key, relative_path in browser_map.items():
             if not _is_valid_rel_path(relative_path): continue
             
-            try:
-                target = base.joinpath(*relative_path.split("\\"))
-                if not target.exists() or not target.is_dir() or not os.access(target, os.R_OK): continue
-                if not is_safe_to_modify(target): continue
-            except (OSError, RuntimeError):
-                continue
+            target = base.joinpath(*relative_path.split("\\"))
+            if not _is_target_valid(target, kernel): continue
             
-            target_str = str(target)
-            
-            if _IS_JUNCTION_FN(target_str) or target.is_symlink(): continue
-            if _is_system_hidden(target_str, kernel) or target.name.lower() in NEVER_TOUCH:
-                continue
-
-            scan_res = scanner.get_size(target_str)
+            scan_res = scanner.get_size(str(target))
             if scan_res.success and scan_res.bytes_found > 0:
                 found.append(BrowserCache(str(browser_key), target, scan_res.bytes_found))
     

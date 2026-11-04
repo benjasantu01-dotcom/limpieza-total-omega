@@ -6,45 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **113** (22.4% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 16
+- Mejoras aceptadas: **116** (23.0% de aceptación)
+- Rechazadas por tests: 10
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 321
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 58 | 5 | 23 | 8 | 166 |
-| 2026-11-04 | 55 | 6 | 20 | 8 | 155 |
+| 2026-11-03 | 57 | 4 | 22 | 7 | 166 |
+| 2026-11-04 | 59 | 6 | 20 | 8 | 155 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **29**
-- rendimiento: **25**
+- legibilidad y documentación: **25**
+- rendimiento: **24**
 - seguridad defensiva: **22**
-- legibilidad y documentación: **21**
 - robustez ante casos límite: **16**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **14**
+- `diskreport.py`: **13**
 - `safety.py`: **12**
-- `diskreport.py`: **12**
 - `settings.py`: **10**
 - `quarantine.py`: **10**
+- `assistant.py`: **9**
+- `browser.py`: **9**
 - `memory.py`: **9**
-- `assistant.py`: **8**
-- `browser.py`: **8**
 - `duplicates.py`: **8**
 - `startup.py`: **6**
+- `branding.py`: **6**
 - `scanner.py`: **6**
-- `organizer.py`: **5**
-- `branding.py`: **5**
+- `organizer.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T10:36:42` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de escaneo mediante la documentación técnica con docstrings de estilo Google, la adición de Type Hints en la lógica interna del heap y la clarificación de la intención de los algoritmos de acumulación.
+- `2026-11-04T10:36:30` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en `DirectoryScanner` y `detect_profiles`, y extraje la lógica de validación de rutas de `detect_profiles` a un método privado `_is_target_valid` para reducir la complejidad ciclomática y clarificar el flujo de escaneo.
+- `2026-11-04T10:35:46` **branding.py** (legibilidad y documentación): Se introdujeron constantes de tipo `Literal` y se refinaron los `docstrings` en el módulo `branding.py` para mejorar la claridad semántica y la documentación técnica de las funciones de renderizado, facilitando la comprensión de los parámetros de diseño sin alterar la funcionalidad.
+- `2026-11-04T10:35:16` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos en la clase `SystemContext` y funciones de validación, además de estandarizar los type hints y nombres de variables para clarificar el flujo de seguridad de los datos.
 - `2026-11-04T10:27:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` para garantizar que, si el archivo de configuración es truncado o corrupto, la aplicación detecte inconsistencias de esquema (claves faltantes o tipos incorrectos) de forma determinista antes de intentar cargar valores parciales, evitando propagar estados inválidos al resto del sistema.
 - `2026-11-04T10:26:31` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas de seguridad mediante una validación defensiva de los metadatos `st_mtime` y la integración de un manejo de errores más específico en `_run_file_heuristics`, evitando que un fallo en una heurística individual (debido a datos corruptos o valores inesperados) detenga el análisis del resto del archivo.
 - `2026-11-04T10:25:14` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de excepciones en `_get_file_id` y `_get_file_attrs` para evitar que fallos transitorios en el sistema de archivos (como bloqueos de I/O o race conditions al acceder a metadatos) causen una validación errónea, devolviendo siempre un valor seguro (default) en lugar de permitir que la excepción no controlada propague hacia arriba.
@@ -56,7 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T07:23:48` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas no numéricas o tipos inesperados mediante la aplicación de `_validate_numeric`, evitando que valores no finitos o tipos incompatibles propaguen errores en el cálculo del score.
 - `2026-11-04T07:23:00` **diskreport.py** (robustez ante casos límite): Se ha añadido un bloque `try-except` robusto alrededor de `os.stat` en `_safe_stat` para manejar errores críticos de sistema (como bloqueos de acceso durante el escaneo recursivo), asegurando que el proceso de recolección de estadísticas no se interrumpa ante un archivo bloqueado o con metadatos inaccesibles.
 - `2026-11-04T07:14:20` **browser.py** (robustez ante casos límite): Se mejora la robustez de `detect_profiles` ante archivos bloqueados o denegados durante la construcción de la ruta de destino (`joinpath`), añadiendo una validación explícita de `is_safe_to_modify` para prevenir ataques de traversal o escape mediante rutas relativas maliciosas en `BROWSER_CACHE_PATHS`.
-- `2026-11-04T07:11:03` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo mediante la implementación de `_PROCESS_CACHE` para evitar re-validar rutas ya procesadas en `entries_from_folders`, reduciendo drásticamente las llamadas al sistema de archivos durante la consolidación de inventario.
-- `2026-11-04T06:58:19` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando una estrategia de caché de inodos más robusta, evitando llamadas repetitivas al sistema de archivos (`stat`) que degradaban el rendimiento en escaneos masivos.
-- `2026-11-04T06:41:34` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_protected_path` al procesar archivos, reduciendo la carga de I/O en recorridos de directorios grandes.
-- `2026-11-04T06:41:09` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reduciendo el número de llamadas a `Path` y `parts` mediante el uso de `relative_to` (o lógica de subdirectorios directa) y evitando la reconstrucción de objetos `Path` en cada iteración del bucle, lo que minimiza la carga de la CPU y la creación innecesaria de objetos en recorridos de discos grandes.

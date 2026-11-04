@@ -36,6 +36,7 @@ RGBTuple: TypeAlias = Tuple[int, int, int]
 CoordinateSequence: TypeAlias = Tuple[float, ...]
 BoundingBox: TypeAlias = Tuple[float, float, float, float]
 StopPoint: TypeAlias = Tuple[float, ColorHex]
+AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw", "se"]
 
 # Constantes de control para límites de renderizado escalable
 _MIN_SCALE: Final[float] = 0.1
