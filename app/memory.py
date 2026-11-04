@@ -254,7 +254,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         return None
     
     try:
-        proc_name = parts[0].strip()
+        proc_name = str(parts[0]).strip()
         pid_val = int(parts[1])
         if _is_system_process(pid_val) or pid_val <= 0 or _is_invalid_process_name(proc_name):
             return None

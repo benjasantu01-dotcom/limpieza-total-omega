@@ -1073,3 +1073,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T10:08:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-04T10:08:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T10:08:13` Corrida terminada. Total usado hoy: 236.
+- `2026-11-04T10:14:09` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-04T10:14:44` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). He robustecido la función `_extract_process_info` para evitar posibles errores de ejecución mediante la validación estricta de sus entradas, incluyendo el manejo de tipos para el PID y la sanitización de datos antes de intentar procesarlos.
+- `2026-11-04T10:15:10` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-04T10:15:53` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `load_manifest` mediante la captura explícita de `json.JSONDecodeError` y `ValueError` ante archivos corruptos, devolviendo una lista vacía de forma segura en lugar de propagar errores, cumpliendo con las directrices de validación del enfoque actual.
+- `2026-11-04T10:16:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T10:16:19` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-04T10:16:26` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-04T10:16:50` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-04T10:16:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T10:16:50` Corrida terminada. Total usado hoy: 240.
