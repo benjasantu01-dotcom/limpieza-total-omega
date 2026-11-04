@@ -1440,3 +1440,63 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T03:08:12` ➖ Sin cambios en safety.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido un chequeo de integridad en `_get_path_stat_robust` para detectar archivos que, a pesar de existir, presentan metadatos de tiempo nulos, lo cual es un indicador común de objetos en estado transitorio o manipulados por el kernel, evitando así posibles errores de desreferenciación en llamadas posteriores.
 - `2026-11-04T03:08:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T03:08:12` Corrida terminada. Total usado hoy: 76.
+- `2026-11-04T03:16:07` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-11-04T03:16:40` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-04T03:17:10` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante corrupción de archivos implementando un chequeo de integridad en `_read_and_parse_json` que verifica si el JSON parseado coincide exactamente con la estructura esperada, evitando errores de clave faltante (`KeyError`) en el resto de la aplicación si el archivo del usuario es truncado o le faltan campos esenciales.
+- `2026-11-04T03:17:56` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.19s
+
+```
+- `2026-11-04T03:17:56` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante rutas corruptas o inexistentes en `_resolve_and_cache_path` mediante la validación proactiva con `p.exists()` antes de la resolución profunda y se ha añadido manejo de excepciones para `p.resolve()`, evitando que rutas inválidas (como las que contienen caracteres prohibidos por el SO que `Path` no siempre atrapa en todas las versiones) rompan el proceso de escaneo.
+- `2026-11-04T03:18:20` Tests FALLARON:
+```
+ __________________
+
+    def test_build_context_reads_fields_one_by_one():
+        """Copia campo por campo, no el objeto entero, para no arrastrar datos."""
+        class MetricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 1.22s
+
+```
+- `2026-11-04T03:18:20` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_validate_and_sanitize_data` para prevenir explícitamente ataques de denegación de servicio (DoS) por agotamiento de recursos mediante el chequeo de límites de profundidad y tamaño antes de procesar el diccionario de métricas.
+- `2026-11-04T03:18:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T03:18:20` Corrida terminada. Total usado hoy: 80.

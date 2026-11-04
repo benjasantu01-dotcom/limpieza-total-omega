@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **134** (26.6% de aceptación)
-- Rechazadas por tests: 9
+- Mejoras aceptadas: **135** (26.8% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 300
+- Sin respuesta de la IA (error o límite): 297
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 19 | 0 | 6 | 0 | 53 |
+| 2026-11-02 | 19 | 0 | 6 | 0 | 49 |
 | 2026-11-03 | 96 | 7 | 29 | 11 | 207 |
-| 2026-11-04 | 19 | 2 | 10 | 5 | 40 |
+| 2026-11-04 | 20 | 4 | 10 | 5 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **30**
 - rendimiento: **28**
 - seguridad defensiva: **22**
-- robustez ante casos límite: **18**
+- robustez ante casos límite: **19**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,7 +37,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **12**
 - `diskreport.py`: **11**
 - `memory.py`: **11**
-- `settings.py`: **10**
+- `settings.py`: **11**
 - `browser.py`: **8**
 - `scanner.py`: **8**
 - `startup.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T03:17:10` **settings.py** (robustez ante casos límite): Mejoré la robustez ante corrupción de archivos implementando un chequeo de integridad en `_read_and_parse_json` que verifica si el JSON parseado coincide exactamente con la estructura esperada, evitando errores de clave faltante (`KeyError`) en el resto de la aplicación si el archivo del usuario es truncado o le faltan campos esenciales.
 - `2026-11-04T03:07:10` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de error en I/O y condiciones de carrera en `quarantine_file` y `purge_all`, implementando una verificación de existencia y consistencia más estricta antes de realizar operaciones destructivas (unlink), asegurando que el estado del sistema de archivos no haya cambiado inesperadamente.
 - `2026-11-04T02:36:13` **safety.py** (rendimiento): Se ha optimizado `_get_file_id` reemplazando el uso de `hash(bytes(...))` por `int.from_bytes(...)`, lo que reduce drásticamente el overhead computacional de convertir el identificador de archivo en un hash durante cada validación, mejorando el rendimiento en recorridos extensos de disco sin alterar la lógica de comparación de archivos.
 - `2026-11-04T02:26:24` **organizer.py** (rendimiento): Optimizé la performance del escaneo recursivo eliminando llamadas redundantes a `is_safe_to_modify` dentro del loop de `_process_directory`, reemplazando verificaciones repetitivas de `is_file()` por el uso directo de los atributos ya obtenidos en `os.scandir`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T01:34:30` **browser.py** (legibilidad y documentación): Mejoré la legibilidad del motor de escaneo documentando explícitamente los estados de retorno del método `get_size` y simplificando la lógica de acumulación de tamaño mediante una aclaración en los docstrings sobre cómo se manejan los errores de acceso (silenciados pero contabilizados como exitosos si son parciales).
 - `2026-11-04T01:24:46` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_structure_valid` para evitar errores silenciosos en la carga de configuración y se ha fortalecido el manejo de excepciones en `_read_and_parse_json` al centralizar el chequeo de integridad antes de intentar el parseo JSON.
 - `2026-11-04T01:15:25` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de acceso al archivo mediante la captura explícita de `FileNotFoundError` en `_validate_access_permissions` y se ha implementado una sanitización defensiva en `_is_file_owned_by_system` para evitar errores de puntero nulo, evitando que excepciones silenciadas degraden la integridad de las decisiones de seguridad.
-- `2026-11-04T01:03:59` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de datos del sistema mediante una validación estricta de tipo en el pipeline de cálculo y se centralizó el control de errores en `SystemMetrics.validate` para evitar que valores inesperados (`NaN`, `Inf`) propaguen errores en la caché LRU.
