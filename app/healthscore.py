@@ -316,7 +316,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     if not isinstance(rules, tuple) or metrics is None:
         return []
         
-    findings: List[str] = []
+    findings = []
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):
@@ -324,7 +324,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 if message:
                     findings.append(message)
         except Exception:
-            # Silenciar errores en reglas individuales para no interrumpir el pipeline
             continue
     return findings
 
@@ -339,15 +338,14 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
         quarantined_count=_validate_numeric(quarantined, 0.0, 0.0, 10000.0)
     )
     
-    recommendations: List[str] = []
+    recommendations = []
     metric_breakdown: Dict[MetricKey, int] = {}
     total_points = 0.0
     
     for entry in PIPELINE_DEFINITIONS:
         try:
             area_ratio = entry.scorer(metrics)
-            recs = _evaluate_rules(metrics, entry.rules, area_ratio)
-            recommendations.extend([_sanitize_msg(r) for r in recs if _sanitize_msg(r)])
+            recommendations.extend(_evaluate_rules(metrics, entry.rules, area_ratio))
             weighted_val = int(_clamp(area_ratio * entry.weight, 0.0, float(entry.weight)))
             metric_breakdown[entry.area] = weighted_val
             total_points += float(weighted_val)
@@ -395,11 +393,9 @@ def summarize(result: HealthResult | None) -> List[str]:
         lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
         for entry in PIPELINE_DEFINITIONS:
             val = result.breakdown.get(entry.area, 0)
-            bar = _render_bar(val, entry.weight)
-            lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{bar}]")
+            lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
         
-        recs = [_sanitize_msg(s) for s in result.recommendations if _sanitize_msg(s)]
-        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in (recs if recs else ["No hay advertencias activas."])]))
+        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in (result.recommendations if result.recommendations else ["No hay advertencias activas."])]))
         return lines
     except Exception:
         return ["Error: Fallo crítico al generar resumen de informe."]

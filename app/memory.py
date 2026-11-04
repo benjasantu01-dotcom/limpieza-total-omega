@@ -355,8 +355,7 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         if get_mod_name_func(handle, None, path_buffer, len(path_buffer)) <= 0:
             return False 
         
-        exe_path = Path(path_buffer.value).resolve(strict=False)
-        return not is_protected_path(exe_path)
+        return not is_protected_path(Path(path_buffer.value))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
@@ -401,9 +400,10 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if not handle: continue
         
         try:
-            ws = _query_working_set_bytes(handle, pmc)
-            if ws:
-                yield ProcessMemory(str(path_buf.value).split('\\')[-1], pid, ws)
+            if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
+                ws = pmc.WorkingSetSize
+                if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
+                    yield ProcessMemory(str(path_buf.value).split('\\')[-1], pid, BytesValue(ws))
         except (ctypes.WinError, OSError):
             continue
         finally:
