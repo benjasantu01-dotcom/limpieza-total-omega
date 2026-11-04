@@ -605,3 +605,51 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-04T06:22:42` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se han mejorado las docstrings de las funciones críticas y se ha estandarizado la nomenclatura interna de `directory_stack` para clarificar el flujo de control, facilitando la auditoría de seguridad del recorrido recursivo.
 - `2026-11-04T06:22:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T06:22:42` Corrida terminada. Total usado hoy: 152.
+- `2026-11-04T06:29:46` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-11-04T06:29:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T06:29:54` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-04T06:30:04` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-04T06:31:16` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-11-04T06:31:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T06:31:36` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-04T06:32:32` Tests FALLARON:
+```
+========= FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '/usr/bin/app --flag' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+E         + /usr/bin/app --flag
+E         ?             +++++++
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '/usr/bin/app --flag' == '/usr/bin/app'
+  
+  - /usr/bin/app
+  + /usr/bin/app --flag
+  ?             +++++++
+2 failed, 297 passed in 1.57s
+
+```
+- `2026-11-04T06:32:32` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en funciones clave, aclarando las responsabilidades de procesamiento de rutas, las restricciones de seguridad (reparse points, nombres reservados) y el flujo de los cachés globales, facilitando así el mantenimiento de la lógica de negocio.
+- `2026-11-04T06:33:08` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._hash_tuple
+- `2026-11-04T06:33:22` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-04T06:33:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T06:33:22` Corrida terminada. Total usado hoy: 156.
