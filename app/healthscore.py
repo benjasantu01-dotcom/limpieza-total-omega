@@ -228,8 +228,10 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
-    """Calcula score de seguridad penalizando ocurrencias detectadas."""
-    penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
+    """Calcula score de seguridad penalizando ocurrencias detectadas con validación de entradas."""
+    count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
+    warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
+    penalization = (count * 0.05) + (warn * 0.25)
     return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 

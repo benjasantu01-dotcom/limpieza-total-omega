@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **129** (25.6% de aceptación)
+- Mejoras aceptadas: **128** (25.4% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 302
+- Sin respuesta de la IA (error o límite): 303
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 84 | 7 | 26 | 11 | 204 |
-| 2026-11-04 | 45 | 6 | 16 | 7 | 98 |
+| 2026-11-03 | 81 | 7 | 25 | 11 | 204 |
+| 2026-11-04 | 47 | 6 | 17 | 7 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **31**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **30**
-- seguridad defensiva: **25**
-- robustez ante casos límite: **13**
+- seguridad defensiva: **22**
+- robustez ante casos límite: **15**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **14**
-- `healthscore.py`: **14**
-- `quarantine.py`: **13**
+- `healthscore.py`: **15**
+- `safety.py`: **13**
+- `quarantine.py`: **12**
+- `diskreport.py`: **12**
 - `duplicates.py`: **11**
 - `settings.py`: **11**
-- `diskreport.py`: **11**
 - `assistant.py`: **10**
 - `browser.py`: **10**
-- `scanner.py`: **8**
 - `startup.py`: **8**
 - `memory.py`: **8**
+- `scanner.py`: **7**
 - `branding.py`: **6**
 - `organizer.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T07:23:48` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas no numéricas o tipos inesperados mediante la aplicación de `_validate_numeric`, evitando que valores no finitos o tipos incompatibles propaguen errores en el cálculo del score.
+- `2026-11-04T07:23:00` **diskreport.py** (robustez ante casos límite): Se ha añadido un bloque `try-except` robusto alrededor de `os.stat` en `_safe_stat` para manejar errores críticos de sistema (como bloqueos de acceso durante el escaneo recursivo), asegurando que el proceso de recolección de estadísticas no se interrumpa ante un archivo bloqueado o con metadatos inaccesibles.
 - `2026-11-04T07:14:20` **browser.py** (robustez ante casos límite): Se mejora la robustez de `detect_profiles` ante archivos bloqueados o denegados durante la construcción de la ruta de destino (`joinpath`), añadiendo una validación explícita de `is_safe_to_modify` para prevenir ataques de traversal o escape mediante rutas relativas maliciosas en `BROWSER_CACHE_PATHS`.
 - `2026-11-04T07:11:03` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo mediante la implementación de `_PROCESS_CACHE` para evitar re-validar rutas ya procesadas en `entries_from_folders`, reduciendo drásticamente las llamadas al sistema de archivos durante la consolidación de inventario.
 - `2026-11-04T06:58:19` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando una estrategia de caché de inodos más robusta, evitando llamadas repetitivas al sistema de archivos (`stat`) que degradaban el rendimiento en escaneos masivos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T06:00:47` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings estructurados (siguiendo el estilo Google/NumPy) en las funciones críticas y se han aclarado las responsabilidades de los tipos de datos internos para facilitar el mantenimiento del equipo de desarrollo.
 - `2026-11-04T06:00:21` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `DirectoryScanner` mediante la introducción de un método privado `_process_entry` que abstrae la lógica de decisión dentro del ciclo de escaneo, reduciendo la complejidad ciclomática y clarificando las intenciones de filtrado por seguridad.
 - `2026-11-04T05:59:51` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de renderizado geométrico y una explicación más clara sobre la lógica de segmentación de gradientes, facilitando el mantenimiento futuro del motor gráfico.
-- `2026-11-04T05:33:04` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez y seguridad de `trim_working_set` y `_get_handle_for_safe_proc` mediante la validación estricta de punteros y la captura de errores en operaciones críticas de bajo nivel (ctypes), garantizando que cualquier fallo en la API nativa sea capturado sin afectar la estabilidad del bucle principal.
-- `2026-11-04T05:29:28` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `SystemMetrics.validate` y `_compute_cached` añadiendo validaciones explícitas contra valores `None` y estados inconsistentes, evitando posibles excepciones durante la reconstrucción del pipeline de cálculo.

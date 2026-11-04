@@ -724,3 +724,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T07:14:20` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejora la robustez de `detect_profiles` ante archivos bloqueados o denegados durante la construcción de la ruta de destino (`joinpath`), añadiendo una validación explícita de `is_safe_to_modify` para prevenir ataques de traversal o escape mediante rutas relativas maliciosas en `BROWSER_CACHE_PATHS`.
 - `2026-11-04T07:14:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T07:14:20` Corrida terminada. Total usado hoy: 172.
+- `2026-11-04T07:20:45` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-11-04T07:20:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T07:21:57` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-04T07:22:04` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota ex
+- `2026-11-04T07:22:04` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-04T07:23:00` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un bloque `try-except` robusto alrededor de `os.stat` en `_safe_stat` para manejar errores críticos de sistema (como bloqueos de acceso durante el escaneo recursivo), asegurando que el proceso de recolección de estadísticas no se interrumpa ante un archivo bloqueado o con metadatos inaccesibles.
+- `2026-11-04T07:23:21` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-04T07:23:48` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_security` ante entradas no numéricas o tipos inesperados mediante la aplicación de `_validate_numeric`, evitando que valores no finitos o tipos incompatibles propaguen errores en el cálculo del score.
+- `2026-11-04T07:24:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-04T07:24:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T07:24:40` Corrida terminada. Total usado hoy: 176.

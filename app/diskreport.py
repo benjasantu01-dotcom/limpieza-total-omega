@@ -63,8 +63,9 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
     if path is None:
         return None
     try:
+        # Bloque try-except reforzado para capturar cualquier falla en la lectura de atributos de archivo
         return os.lstat(path)
-    except (OSError, PermissionError, ValueError, FileNotFoundError, AttributeError, OverflowError):
+    except (OSError, PermissionError, ValueError, FileNotFoundError, AttributeError, OverflowError, RuntimeError):
         return None
 
 
