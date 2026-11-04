@@ -1509,3 +1509,14 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-04T03:30:02` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_collect_candidates` agregando una validación explícita con `is_protected_path` al iterar el contenido del directorio, evitando procesar rutas que podrían haber sido excluidas tras el inicio del escaneo o por cambios de permisos.
 - `2026-11-04T03:30:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T03:30:02` Corrida terminada. Total usado hoy: 84.
+- `2026-11-04T03:36:32` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-04T03:37:04` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la restricción de los datos que entran al motor analítico, añadiendo una validación explícita para asegurar que los resultados procesados en `summarize` y `_compute_cached` no contengan inyecciones de caracteres o términos prohibidos antes de ser reportados.
+- `2026-11-04T03:38:17` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-04T03:38:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T03:39:26` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `trim_working_set` añadiendo una validación explícita con `is_protected_path` sobre la ruta del ejecutable antes de intentar cualquier operación, asegurando que no se pueda modificar el working set de procesos en rutas sensibles aunque el acceso a nivel de kernel fuera concedido.
+- `2026-11-04T03:39:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T03:39:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-04T03:39:42` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-04T03:39:55` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-04T03:39:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T03:39:55` Corrida terminada. Total usado hoy: 88.

@@ -464,6 +464,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not handle:
         return False, "Acceso denegado o proceso en zona restringida."
 
+    # Seguridad defensiva adicional: re-verificar ruta protegida explícitamente
+    if is_protected_path(Path(path_buf.value)):
+        WindowsAPI.kernel32.CloseHandle(handle)
+        return False, "Operación denegada sobre archivos protegidos."
+
     try:
         exit_code = wintypes.DWORD()
         if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0:

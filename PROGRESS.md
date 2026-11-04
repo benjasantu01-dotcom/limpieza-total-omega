@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **138** (27.4% de aceptación)
+- Mejoras aceptadas: **140** (27.8% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 293
+- Sin respuesta de la IA (error o límite): 290
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 19 | 0 | 6 | 0 | 45 |
+| 2026-11-02 | 19 | 0 | 6 | 0 | 41 |
 | 2026-11-03 | 96 | 7 | 29 | 11 | 207 |
-| 2026-11-04 | 23 | 4 | 10 | 6 | 41 |
+| 2026-11-04 | 25 | 4 | 11 | 6 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **36**
 - legibilidad y documentación: **30**
 - rendimiento: **28**
-- seguridad defensiva: **25**
+- seguridad defensiva: **27**
 - robustez ante casos límite: **19**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **15**
 - `quarantine.py`: **14**
+- `healthscore.py`: **14**
 - `assistant.py`: **13**
 - `duplicates.py`: **13**
-- `healthscore.py`: **13**
 - `diskreport.py`: **12**
-- `memory.py`: **11**
+- `memory.py`: **12**
 - `settings.py`: **11**
 - `browser.py`: **9**
 - `scanner.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T03:39:26` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` añadiendo una validación explícita con `is_protected_path` sobre la ruta del ejecutable antes de intentar cualquier operación, asegurando que no se pueda modificar el working set de procesos en rutas sensibles aunque el acceso a nivel de kernel fuera concedido.
+- `2026-11-04T03:37:04` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción de los datos que entran al motor analítico, añadiendo una validación explícita para asegurar que los resultados procesados en `summarize` y `_compute_cached` no contengan inyecciones de caracteres o términos prohibidos antes de ser reportados.
 - `2026-11-04T03:30:02` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` agregando una validación explícita con `is_protected_path` al iterar el contenido del directorio, evitando procesar rutas que podrían haber sido excluidas tras el inicio del escaneo o por cambios de permisos.
 - `2026-11-04T03:29:45` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_reparse_point` y `walk_files` para evitar el seguimiento de puntos de reanálisis (reparse points) mediante una validación más robusta de los atributos de archivo, evitando dependencias innecesarias de `ctypes` en entornos no Windows y centralizando la lógica de detección.
 - `2026-11-04T03:27:53` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner._is_path_allowed` incorporando una verificación explícita de `is_protected_path` sobre la ruta real (`resolved`) para prevenir ataques de symlink traversal que podrían intentar escapar del sandbox mediante reparse points ocultos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T01:55:42` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_drive_restrictions`, extrayendo la lógica repetitiva de validación de condiciones en una estructura de datos clara y una iteración limpia, lo cual facilita agregar nuevas restricciones de volumen sin aumentar la complejidad ciclomática.
 - `2026-11-04T01:47:00` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos nativas y las funciones de bajo nivel, eliminando ambigüedades mediante la adición de Type Hints detallados y docstrings que explican el propósito del acceso a la API de Windows en `memory.py`.
 - `2026-11-04T01:35:28` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo documentando los protocolos y estructuras de datos clave, además de estandarizar la nomenclatura de las funciones internas para reflejar mejor su rol dentro del pipeline.
-- `2026-11-04T01:35:17` **duplicates.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints en retornos de funciones, normalización de documentación técnica (docstrings) para seguir un estándar de estilo consistente y clarificación del flujo de control en la lógica de agrupación.
-- `2026-11-04T01:34:55` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo en `walk_files` y `_collect_summary_data`, añadiendo type hints faltantes y docstrings detallados que explican el "porqué" de las decisiones de filtrado para mejorar la mantenibilidad.

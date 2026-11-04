@@ -333,7 +333,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
         try:
             area_ratio = entry.scorer(metrics)
             recs = _evaluate_rules(metrics, entry.rules or (), area_ratio)
-            recommendations.extend(recs)
+            recommendations.extend([_sanitize_msg(r) for r in recs if _sanitize_msg(r)])
             weighted_val = int(_clamp(area_ratio * entry.weight, 0.0, float(entry.weight)))
             metric_breakdown[entry.area] = weighted_val
             total_points += float(weighted_val)
@@ -383,8 +383,8 @@ def summarize(result: HealthResult | None) -> List[str]:
             bar = _render_bar(val, entry.weight)
             lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{bar}]")
         
-        recs = result.recommendations if result.recommendations else ["No hay advertencias activas."]
-        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recs]))
+        recs = [_sanitize_msg(s) for s in result.recommendations if _sanitize_msg(s)]
+        lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in (recs if recs else ["No hay advertencias activas."])]))
         return lines
     except Exception:
         return ["Error: Fallo crítico al generar resumen de informe."]
