@@ -714,7 +714,7 @@ def _validate_access_permissions(path: Path) -> None:
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
         if not os.access(path, os.W_OK):
             raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-    except (OSError, PermissionError) as e:
+    except (OSError, PermissionError, FileNotFoundError) as e:
         raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.ACCESS_DENIED)
 
 def _validate_volume_integrity(path: Path) -> None:

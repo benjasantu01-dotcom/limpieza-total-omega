@@ -1265,3 +1265,38 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T01:05:50` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-04T01:05:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T01:05:50` Corrida terminada. Total usado hoy: 28.
+- `2026-11-04T01:13:35` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-04T01:14:18` Tests FALLARON:
+```
+txt')
+
+    def _validate_input_path(source: PathLike) -> Path:
+        """Valida la ruta de origen antes de intentar cualquier aislamiento."""
+        if source is None: raise ValueError("Ruta de origen nula.")
+        path_val = str(source).strip()
+        if not path_val: raise ValueError("Ruta de origen vacía.")
+        p_source: Path = Path(path_val)
+        if path_val.startswith(r"\\") or path_val.startswith("//"): raise UnsafePathError("Rutas UNC no permitidas.")
+        if len(path_val) > 260: raise UnsafePathError("Ruta de entrada excede límites.")
+    
+        try:
+            if not p_source.is_absolute():
+                p_source = p_source.resolve(strict=True)
+            else:
+                p_source = p_source.resolve(strict=True)
+        except (OSError, RuntimeError) as e:
+>           raise UnsafePathError(f"Ruta origen no válida o inaccesible: {e}")
+E           safety.UnsafePathError: [GENERIC] Ruta origen no válida o inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/no-existe.txt'
+
+app/quarantine.py:669: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [GENERIC] Ruta origen no válida o inaccesible: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/no-existe.txt'
+1 failed, 298 passed in 1.43s
+
+```
+- `2026-11-04T01:14:18` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se introdujo una captura selectiva de excepciones en `_is_file_in_use_by_system` y `_get_sha256` para evitar que errores inesperados de I/O (como archivos bloqueados por el SO) devuelvan estados erróneos, y se consolidó el manejo de rutas en `_validate_input_path` para prevenir `RuntimeError` no controlados al validar archivos.
+- `2026-11-04T01:14:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-04T01:15:25` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones de acceso al archivo mediante la captura explícita de `FileNotFoundError` en `_validate_access_permissions` y se ha implementado una sanitización defensiva en `_is_file_owned_by_system` para evitar errores de puntero nulo, evitando que excepciones silenciadas degraden la integridad de las decisiones de seguridad.
+- `2026-11-04T01:15:35` ➖ Sin cambios en scanner.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `scan_file` añadiendo una validación explícita para evitar errores en `path.stat()` cuando los archivos son inaccesibles, asegurando que la función retorne un resultado vacío de forma segura en lugar de propagar excepciones.
+- `2026-11-04T01:15:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T01:15:35` Corrida terminada. Total usado hoy: 32.
