@@ -105,8 +105,10 @@ class DirectoryScanner:
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
         Calcula el tamaño total de una carpeta de forma recursiva.
-        Implementa control de profundidad y seguimiento de inodos para prevenir
-        bucles infinitos generados por junctions o symlinks circulares.
+        
+        Retorna:
+            ScanResult: (bytes, success). success=False indica error de acceso,
+            aunque el contador de bytes sea parcial.
         """
         if not isinstance(root_path, str) or not root_path:
             return ScanResult(0, False)

@@ -294,7 +294,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo que recorre archivos evitando ciclos y rutas protegidas."""
+    """
+    Generador recursivo que recorre archivos evitando ciclos y rutas protegidas.
+    
+    Utiliza una pila (stack) en lugar de recursión para evitar límites de stack,
+    y registra inodos visitados para evitar bucles infinitos por enlaces simbólicos.
+    """
     root_path = _validate_root(directory)
     if not root_path: return
     
@@ -317,6 +322,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir():
                             path_obj = Path(entry.path)
+                            # Verificación de seguridad antes de profundizar en la rama
                             if skip_protected and is_protected_path(path_obj):
                                 continue
                             if _is_reparse_point(path_obj):
@@ -383,7 +389,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Escaneo interno para consolidar estadísticas generales y archivos pesados."""
+    """
+    Escaneo consolidado que agrupa estadísticas generales y mantiene un heap 
+    para los archivos más grandes de forma eficiente (O(N * log limit)).
+    """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
@@ -393,6 +402,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             ext_normalized = ext.lower() if ext else "(sin extensión)"
             stats.register_file(size, ext_normalized)
             
+            # Si se requiere rastrear archivos pesados, usamos el heap
             if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size, path))
