@@ -93,11 +93,11 @@ class DirectoryScanner:
         """
         if not path_str or _is_unc_path(path_str): return False
         try:
-            path_obj = Path(path_str)
+            path_obj = Path(path_str).resolve()
             if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
                 return False
             
-            real_path = os.path.normcase(str(path_obj.resolve()))
+            real_path = os.path.normcase(str(path_obj))
             return real_path == self.ctx.sandbox_base_norm or real_path.startswith(self.ctx.sandbox_base_norm + os.sep)
         except (OSError, RuntimeError, ValueError):
             return False
@@ -110,7 +110,7 @@ class DirectoryScanner:
             ScanResult: (bytes, success). success=False indica error de acceso,
             aunque el contador de bytes sea parcial.
         """
-        if not isinstance(root_path, str) or not root_path:
+        if not isinstance(root_path, str) or not root_path or not self._is_path_allowed(root_path):
             return ScanResult(0, False)
             
         if depth > self.ctx.max_depth:
@@ -140,7 +140,7 @@ class DirectoryScanner:
                         if name_lower in never_touch: continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            if not self.ctx.is_junction(entry.path):
+                            if not self.ctx.is_junction(entry.path) and self._is_path_allowed(entry.path):
                                 subdir = self.get_size(entry.path, depth + 1)
                                 total_bytes += subdir.bytes_found
                         elif entry.is_file(follow_symlinks=False):

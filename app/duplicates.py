@@ -174,6 +174,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
+                    if is_protected_path(Path(entry.path)): continue
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             if not is_junction(Path(entry.path)) and not entry.is_symlink():

@@ -68,25 +68,22 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
         return None
 
 
-def _is_reparse_point(path: Path) -> bool:
+def _is_reparse_point(entry: os.DirEntry) -> bool:
     """
-    Verifica si una ruta es un punto de unión o reanálisis (Windows/Unix).
+    Verifica si una entrada de directorio es un punto de unión o reanálisis.
     
     Args:
-        path: Objeto Path de la ruta a validar.
+        entry: Objeto os.DirEntry de la ruta a validar.
         
     Returns:
         True si la ruta es un punto de reanálisis, False en caso contrario.
     """
     try:
         if os.name == 'nt':
-            import ctypes
-            FILE_ATTRIBUTE_REPARSE_POINT = 0x0400
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-            if attrs == -1 or attrs == 0xFFFFFFFF: return False
-            return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-        return path.is_symlink()
-    except (AttributeError, OSError, TypeError, ImportError):
+            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
+            return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
+        return entry.is_symlink()
+    except (AttributeError, OSError, TypeError):
         return False
 
 
@@ -184,7 +181,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         # Seguridad defensiva: Bloqueo de UNC y protegidos antes de acceder
         if str(p).startswith('\\\\') or is_protected_path(p):
             return None
-        if not p.is_dir() or _is_reparse_point(p) or not os.access(p, os.R_OK):
+        if not p.is_dir() or not os.access(p, os.R_OK):
             return None
         return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -279,7 +276,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     try:
         p = Path(mount).expanduser().resolve(strict=True)
         # Seguridad defensiva: Validar antes de invocar shutil
-        if is_protected_path(p) or _is_reparse_point(p) or str(p).startswith('\\\\'):
+        if is_protected_path(p) or str(p).startswith('\\\\'):
             return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -316,18 +313,20 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        st = entry.stat(follow_symlinks=False)
-                        if entry.is_dir():
-                            # Evitar instanciar Path innecesariamente
+                        if entry.is_dir(follow_symlinks=False):
+                            # Seguridad: No seguir puntos de reanálisis o protegidos
+                            if _is_reparse_point(entry):
+                                continue
                             if skip_protected and is_protected_path(Path(entry.path)):
                                 continue
-                            if _is_reparse_point(Path(entry.path)):
-                                continue
+                            
+                            st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
-                        elif entry.is_file():
+                        elif entry.is_file(follow_symlinks=False):
+                            st = entry.stat(follow_symlinks=False)
                             if isinstance(st.st_size, int) and st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                     except (OSError, PermissionError, FileNotFoundError):

@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **135** (26.8% de aceptación)
+- Mejoras aceptadas: **138** (27.4% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 297
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 293
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 19 | 0 | 6 | 0 | 49 |
+| 2026-11-02 | 19 | 0 | 6 | 0 | 45 |
 | 2026-11-03 | 96 | 7 | 29 | 11 | 207 |
-| 2026-11-04 | 20 | 4 | 10 | 5 | 41 |
+| 2026-11-04 | 23 | 4 | 10 | 6 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **36**
 - legibilidad y documentación: **30**
 - rendimiento: **28**
-- seguridad defensiva: **22**
+- seguridad defensiva: **25**
 - robustez ante casos límite: **19**
 
 ## Mejoras aceptadas por archivo
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **15**
 - `quarantine.py`: **14**
 - `assistant.py`: **13**
+- `duplicates.py`: **13**
 - `healthscore.py`: **13**
-- `duplicates.py`: **12**
-- `diskreport.py`: **11**
+- `diskreport.py`: **12**
 - `memory.py`: **11**
 - `settings.py`: **11**
-- `browser.py`: **8**
+- `browser.py`: **9**
 - `scanner.py`: **8**
 - `startup.py`: **8**
 - `organizer.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T03:30:02` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` agregando una validación explícita con `is_protected_path` al iterar el contenido del directorio, evitando procesar rutas que podrían haber sido excluidas tras el inicio del escaneo o por cambios de permisos.
+- `2026-11-04T03:29:45` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_reparse_point` y `walk_files` para evitar el seguimiento de puntos de reanálisis (reparse points) mediante una validación más robusta de los atributos de archivo, evitando dependencias innecesarias de `ctypes` en entornos no Windows y centralizando la lógica de detección.
+- `2026-11-04T03:27:53` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `DirectoryScanner._is_path_allowed` incorporando una verificación explícita de `is_protected_path` sobre la ruta real (`resolved`) para prevenir ataques de symlink traversal que podrían intentar escapar del sandbox mediante reparse points ocultos.
 - `2026-11-04T03:17:10` **settings.py** (robustez ante casos límite): Mejoré la robustez ante corrupción de archivos implementando un chequeo de integridad en `_read_and_parse_json` que verifica si el JSON parseado coincide exactamente con la estructura esperada, evitando errores de clave faltante (`KeyError`) en el resto de la aplicación si el archivo del usuario es truncado o le faltan campos esenciales.
 - `2026-11-04T03:07:10` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de error en I/O y condiciones de carrera en `quarantine_file` y `purge_all`, implementando una verificación de existencia y consistencia más estricta antes de realizar operaciones destructivas (unlink), asegurando que el estado del sistema de archivos no haya cambiado inesperadamente.
 - `2026-11-04T02:36:13` **safety.py** (rendimiento): Se ha optimizado `_get_file_id` reemplazando el uso de `hash(bytes(...))` por `int.from_bytes(...)`, lo que reduce drásticamente el overhead computacional de convertir el identificador de archivo en un hash durante cada validación, mejorando el rendimiento en recorridos extensos de disco sin alterar la lógica de comparación de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T01:35:28` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo documentando los protocolos y estructuras de datos clave, además de estandarizar la nomenclatura de las funciones internas para reflejar mejor su rol dentro del pipeline.
 - `2026-11-04T01:35:17` **duplicates.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints en retornos de funciones, normalización de documentación técnica (docstrings) para seguir un estándar de estilo consistente y clarificación del flujo de control en la lógica de agrupación.
 - `2026-11-04T01:34:55` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo en `walk_files` y `_collect_summary_data`, añadiendo type hints faltantes y docstrings detallados que explican el "porqué" de las decisiones de filtrado para mejorar la mantenibilidad.
-- `2026-11-04T01:34:30` **browser.py** (legibilidad y documentación): Mejoré la legibilidad del motor de escaneo documentando explícitamente los estados de retorno del método `get_size` y simplificando la lógica de acumulación de tamaño mediante una aclaración en los docstrings sobre cómo se manejan los errores de acceso (silenciados pero contabilizados como exitosos si son parciales).
-- `2026-11-04T01:24:46` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_structure_valid` para evitar errores silenciosos en la carga de configuración y se ha fortalecido el manejo de excepciones en `_read_and_parse_json` al centralizar el chequeo de integridad antes de intentar el parseo JSON.
-- `2026-11-04T01:15:25` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de acceso al archivo mediante la captura explícita de `FileNotFoundError` en `_validate_access_permissions` y se ha implementado una sanitización defensiva en `_is_file_owned_by_system` para evitar errores de puntero nulo, evitando que excepciones silenciadas degraden la integridad de las decisiones de seguridad.
