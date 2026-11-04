@@ -300,6 +300,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         except (OSError, RuntimeError):
             continue
             
+        # Reutilizamos el contexto y el scanner para el base actual
         ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
         scanner = DirectoryScanner(ctx)
         

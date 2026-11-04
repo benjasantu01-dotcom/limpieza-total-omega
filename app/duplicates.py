@@ -171,25 +171,22 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         current_dir, depth = queue.popleft()
         if depth > MAX_RECURSION_DEPTH or is_protected_path(current_dir): continue
             
-        try:
+        with suppress(OSError, PermissionError):
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if is_protected_path(Path(entry.path)): continue
-                    try:
-                        if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(Path(entry.path)) and not entry.is_symlink():
-                                queue.append((Path(entry.path), depth + 1))
-                        elif entry.is_file(follow_symlinks=False):
-                            stat = entry.stat(follow_symlinks=False)
-                            if stat.st_size >= min_size:
-                                inode = (stat.st_dev, stat.st_ino)
-                                if inode not in visited:
-                                    path = Path(entry.path)
-                                    if not is_system_or_hidden(path) and (not skip_protected or not is_protected_path(path)):
-                                        visited.add(inode)
-                                        size_map[stat.st_size].append(path)
-                    except (OSError, PermissionError): continue
-        except (OSError, PermissionError): continue
+                    entry_path = Path(entry.path)
+                    if skip_protected and is_protected_path(entry_path): continue
+                    
+                    if entry.is_dir(follow_symlinks=False):
+                        if not is_junction(entry_path) and not entry.is_symlink():
+                            queue.append((entry_path, depth + 1))
+                    elif entry.is_file(follow_symlinks=False):
+                        stat = entry.stat(follow_symlinks=False)
+                        if stat.st_size >= min_size:
+                            inode = (stat.st_dev, stat.st_ino)
+                            if inode not in visited and not is_system_or_hidden(entry_path):
+                                visited.add(inode)
+                                size_map[stat.st_size].append(entry_path)
     return {sz: paths for sz, paths in size_map.items() if len(paths) > 1}
 
 

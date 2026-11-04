@@ -653,3 +653,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T06:33:22` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-11-04T06:33:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T06:33:22` Corrida terminada. Total usado hoy: 156.
+- `2026-11-04T06:39:54` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-04T06:40:28` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `detect_profiles` al consolidar la creación del `ScanContext` y el `DirectoryScanner` fuera del loop interno, evitando re-instanciar objetos costosos y permitiendo el reuso del estado de escaneo para las rutas de un mismo `base` directorio.
+- `2026-11-04T06:41:09` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `largest_folders` reduciendo el número de llamadas a `Path` y `parts` mediante el uso de `relative_to` (o lógica de subdirectorios directa) y evitando la reconstrucción de objetos `Path` en cada iteración del bucle, lo que minimiza la carga de la CPU y la creación innecesaria de objetos en recorridos de discos grandes.
+- `2026-11-04T06:41:34` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_protected_path` al procesar archivos, reduciendo la carga de I/O en recorridos de directorios grandes.
+- `2026-11-04T06:41:46` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.__post_init__, SystemMetrics.is_finite, SystemMetrics.safe_get, SystemMetrics.validate
+- `2026-11-04T06:41:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T06:41:46` Corrida terminada. Total usado hoy: 160.
