@@ -66,7 +66,7 @@ DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para streaming eficiente de archivos grandes
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
-_HASH_CACHE: Dict[Tuple[int, float, int], str] = {}
+_HASH_CACHE: Dict[Tuple[int, int, float, int], str] = {}
 _WIN_ATTR_CACHE: Dict[str, Tuple[int, float]] = {}
 _INODE_USE_CACHE: Dict[Tuple[int, int], bool] = {}
 
@@ -238,16 +238,16 @@ class QuarantineItem:
         try:
             st = stored_path.stat()
             if not self._validate_integrity(stored_path, st): return False
-            return bool(self.sha256 and _get_sha256(stored_path) == self.sha256)
+            return bool(self.sha256 and _get_sha256(stored_path, st) == self.sha256)
         except (OSError, PermissionError): return False
 
 
-def _get_sha256(path: Path) -> str:
+def _get_sha256(path: Path, st: Optional[os.stat_result] = None) -> str:
     """Calcula el hash SHA256 del archivo; utiliza un caché basado en inodo y mtime."""
     if path is None or not path.exists(): return ""
     try:
-        st = path.stat()
-        cache_key = (st.st_ino, st.st_mtime, st.st_size)
+        stat_res = st if st else path.stat()
+        cache_key = (stat_res.st_dev, stat_res.st_ino, stat_res.st_mtime, stat_res.st_size)
         if cache_key in _HASH_CACHE: return _HASH_CACHE[cache_key]
         
         with open(path, "rb") as f:
@@ -268,7 +268,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     if path is None or not path.exists(): return False
     try:
         st = path.stat()
-        cache_key = (st.st_ino, st.st_dev)
+        cache_key = (st.st_dev, st.st_ino)
         if cache_key in _INODE_USE_CACHE: return _INODE_USE_CACHE[cache_key]
         
         in_use = False
@@ -292,7 +292,7 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode): raise UnsafePathError("Inconsistencia en inodo o enlaces.")
     if expected_device != 0 and st.st_dev != expected_device: raise UnsafePathError("Falla de consistencia de dispositivo.")
     if hasattr(os, 'getuid') and st.st_uid != os.getuid(): raise UnsafePathError("Error de propiedad de archivo.")
-    if expected_hash and _get_sha256(path) != expected_hash: raise UnsafePathError("Falla de integridad: hash mismatch.")
+    if expected_hash and _get_sha256(path, st) != expected_hash: raise UnsafePathError("Falla de integridad: hash mismatch.")
     if _is_file_in_use_by_system(path): raise UnsafePathError("Archivo en uso por el sistema.")
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: int = 0) -> bool:

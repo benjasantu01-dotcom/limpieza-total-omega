@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **135** (26.8% de aceptación)
+- Mejoras aceptadas: **132** (26.2% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 296
+- Sin respuesta de la IA (error o límite): 299
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 93 | 7 | 27 | 11 | 206 |
-| 2026-11-04 | 42 | 6 | 15 | 7 | 90 |
+| 2026-11-03 | 89 | 7 | 27 | 11 | 206 |
+| 2026-11-04 | 43 | 6 | 15 | 7 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **31**
 - legibilidad y documentación: **31**
+- seguridad defensiva: **30**
 - manejo de errores y validación de entradas: **30**
-- rendimiento: **28**
-- robustez ante casos límite: **15**
+- rendimiento: **29**
+- robustez ante casos límite: **12**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **15**
 - `safety.py`: **14**
-- `settings.py`: **12**
+- `quarantine.py`: **13**
 - `diskreport.py`: **12**
 - `duplicates.py`: **12**
-- `quarantine.py`: **12**
-- `assistant.py`: **11**
+- `settings.py`: **11**
 - `browser.py`: **10**
-- `scanner.py`: **9**
+- `assistant.py`: **10**
 - `memory.py`: **9**
-- `startup.py`: **8**
+- `scanner.py`: **8**
+- `startup.py`: **7**
 - `branding.py`: **6**
 - `organizer.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T06:58:19` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando una estrategia de caché de inodos más robusta, evitando llamadas repetitivas al sistema de archivos (`stat`) que degradaban el rendimiento en escaneos masivos.
 - `2026-11-04T06:41:34` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_protected_path` al procesar archivos, reduciendo la carga de I/O en recorridos de directorios grandes.
 - `2026-11-04T06:41:09` **diskreport.py** (rendimiento): Optimicé el rendimiento de `largest_folders` reduciendo el número de llamadas a `Path` y `parts` mediante el uso de `relative_to` (o lógica de subdirectorios directa) y evitando la reconstrucción de objetos `Path` en cada iteración del bucle, lo que minimiza la carga de la CPU y la creación innecesaria de objetos en recorridos de discos grandes.
 - `2026-11-04T06:40:28` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` al consolidar la creación del `ScanContext` y el `DirectoryScanner` fuera del loop interno, evitando re-instanciar objetos costosos y permitiendo el reuso del estado de escaneo para las rutas de un mismo `base` directorio.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T05:29:28` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `SystemMetrics.validate` y `_compute_cached` añadiendo validaciones explícitas contra valores `None` y estados inconsistentes, evitando posibles excepciones durante la reconstrucción del pipeline de cálculo.
 - `2026-11-04T05:20:08` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación más estricta de parámetros y el manejo granular de excepciones, asegurando que los valores de entrada no causen errores de ejecución silenciosos o inesperados al interactuar con el sistema de archivos o el motor de renderizado.
 - `2026-11-04T03:58:27` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al mejorar el método `_is_valid_registry_path` para prevenir la inyección de rutas mediante el uso de `Path.resolve()` antes de realizar chequeos de seguridad, evitando así que rutas con caracteres de escape o normalizaciones engañosas evadan los filtros de `is_protected_path`.
-- `2026-11-04T03:57:31` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura atómica y la resolución de rutas mediante la validación estricta de la presencia de enlaces simbólicos o puntos de reparse en el directorio destino, evitando posibles ataques de "Time-of-check to time-of-use" (TOCTOU) y garantizando que las rutas resueltas residan efectivamente dentro de los límites esperados antes de cualquier operación de I/O.
