@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **123** (24.4% de aceptación)
+- Mejoras aceptadas: **124** (24.6% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 312
+- Sin respuesta de la IA (error o límite): 311
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 47 | 3 | 18 | 5 | 143 |
-| 2026-11-04 | 76 | 6 | 26 | 11 | 169 |
+| 2026-11-03 | 47 | 3 | 18 | 5 | 139 |
+| 2026-11-04 | 77 | 6 | 26 | 11 | 172 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **29**
 - rendimiento: **29**
 - robustez ante casos límite: **18**
-- seguridad defensiva: **16**
+- seguridad defensiva: **17**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **12**
 - `memory.py`: **11**
 - `quarantine.py`: **11**
+- `browser.py`: **10**
 - `assistant.py`: **9**
-- `browser.py`: **9**
 - `duplicates.py`: **9**
 - `scanner.py`: **7**
 - `branding.py`: **6**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T22:44:14` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `DirectoryScanner` añadiendo una validación explícita mediante `is_protected_path` dentro de su bucle de procesamiento, asegurando que ningún subdirectorio o archivo escaneado pueda pertenecer a rutas críticas del sistema antes de realizar cualquier operación sobre ellos.
 - `2026-11-04T22:34:21` **settings.py** (robustez ante casos límite): Mejoré `_read_and_parse_json` para manejar explícitamente posibles errores de lectura parcial o bloqueos de archivo mediante un límite de tamaño más estricto y una verificación post-lectura, asegurando que el archivo no esté truncado o corrupto antes de procesarlo.
 - `2026-11-04T22:32:55` **safety.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de acceso en `_get_file_id` y `_is_file_locked_by_other_process` añadiendo bloques `try-except` más granulares y manejando estados de "hándle" inválido, previniendo que excepciones de I/O bloqueen el flujo de escaneo al encontrar archivos en uso exclusivo por el sistema (ej. archivos de paginación o archivos de sistema bloqueados).
 - `2026-11-04T22:22:08` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` y `trim_working_set` ante rutas malformadas o errores de lectura del buffer de memoria, añadiendo una validación estricta de la ruta obtenida mediante `os.path.normpath` para asegurar que las verificaciones de `safety` no sean eludidas por caracteres especiales o rutas relativas.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T16:48:29` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del flujo de validación en `settings.py` reemplazando la lógica compleja de `_get_validator_for_k` por un mapeo directo y explícito, y clarificando mediante docstrings la distinción entre validadores de tipos básicos y configuraciones específicas.
 - `2026-11-04T16:47:58` **scanner.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad del módulo `scanner.py` mediante la refactorización de `_safe_stat` y `_is_safe_entry`, añadiendo docstrings técnicos más precisos y clarificando el flujo de validación de rutas mediante tipos de retorno explícitos.
 - `2026-11-04T16:38:28` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` para explicar el PORQUÉ de las validaciones de seguridad, clarificando las precondiciones de las operaciones de aislamiento y restauración para mayor mantenibilidad.
-- `2026-11-04T10:47:17` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en la clase `MEMORYSTATUSEX` y `PROCESS_MEMORY_COUNTERS` para clarificar su origen (Win32 API) y propósito, y se ha reemplazado la lógica de constantes mágicas en `trim_working_set` por nombres de variables descriptivos, facilitando la auditoría de seguridad del proceso de "trimming".

@@ -97,6 +97,7 @@ class DirectoryScanner:
         if not path_str or _is_unc_path(path_str): return False
         try:
             path_obj = Path(path_str).resolve(strict=True)
+            # Refuerzo: chequeo explícito de protección global y seguridad de modificación
             if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
                 return False
             
@@ -109,6 +110,10 @@ class DirectoryScanner:
         """Determina si un nodo es apto para escaneo y acumula el tamaño si corresponde."""
         name_lower = entry.name.lower()
         if name_lower in self.ctx.never_touch_lower:
+            return total_bytes
+            
+        # Refuerzo: prevenir entrada a directorios protegidos detectados durante el escaneo
+        if is_protected_path(Path(entry.path)):
             return total_bytes
             
         if entry.is_dir(follow_symlinks=False):
@@ -286,7 +291,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_target_valid(target: Path, kernel: Optional[ctypes.WinDLL]) -> bool:
     """Valida si la carpeta objetivo es apta para ser escaneada."""
     if not target.exists() or not target.is_dir() or not os.access(target, os.R_OK): return False
-    if not is_safe_to_modify(target): return False
+    if not is_safe_to_modify(target) or is_protected_path(target): return False
     if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): return False
     if _is_system_hidden(str(target), kernel) or target.name.lower() in NEVER_TOUCH: return False
     return True
