@@ -208,17 +208,18 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     Optimiza el procesamiento de archivos grandes usando un enfoque de dos niveles:
     primero agrupa por hash parcial (encabezado) y luego confirma con hash completo.
     """
-    if not paths: return {}
+    if len(paths) < 2: return {}
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
+        if len(subset) < 2: continue
         final.update(_group_paths_by_hash(subset, hash_file))
     return final
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Elige estrategia de hashing: rápida para archivos pequeños, dos niveles para grandes."""
-    if not paths: return []
+    if len(paths) < 2: return []
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
     else:

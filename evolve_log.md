@@ -1129,3 +1129,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T16:49:22` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el acceso a las métricas del sistema utilizando `_VALID_METRIC_KEYS` como un `set` y convirtiendo `_CRITERIOS_MAP` en un diccionario que utiliza tuplas pre-filtradas, reduciendo la complejidad algorítmica de O(N) a O(1) en las consultas de salud, mejorando el rendimiento sin alterar la lógica.
 - `2026-11-04T16:49:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T16:49:22` Corrida terminada. Total usado hoy: 260.
+- `2026-11-04T16:57:41` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-04T16:58:17` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-04T16:58:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T16:58:20` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-04T16:58:56` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Optimizé el rendimiento de `detect_profiles` eliminando la recreación innecesaria del `ScanContext` y del `DirectoryScanner` dentro del bucle de navegadores, permitiendo que el escáner sea instanciado una única vez por directorio base y reutilizando sus estructuras de control de estado.
+- `2026-11-04T16:59:22` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-04T16:59:33` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se implementó un filtrado preventivo en `_process_large_file_subset` y `_decide_hash_strategy_and_process` para descartar grupos de archivos de tamaño idéntico donde solo hay un archivo, evitando realizar cálculos de hash costosos (partial o full) sobre archivos que ya se sabe que son únicos por su tamaño.
+- `2026-11-04T16:59:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T16:59:33` Corrida terminada. Total usado hoy: 264.
