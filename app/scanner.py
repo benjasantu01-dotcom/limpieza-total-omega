@@ -238,12 +238,16 @@ class Scanner:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.base_root_norm: str = os.path.normcase(os.path.abspath(str(base_root)))
+        self.base_root_real: str = os.path.normcase(os.path.realpath(str(base_root)))
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica si la ruta actual es subdirectorio del `base_root` original."""
-        return os.path.normcase(entry_path).startswith(self.base_root_norm)
+        """Verifica si la ruta real actual es subdirectorio del `base_root` original."""
+        try:
+            real_entry = os.path.normcase(os.path.realpath(entry_path))
+            return real_entry.startswith(self.base_root_real)
+        except OSError:
+            return False
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida que el componente no contenga caracteres inválidos para el sistema de archivos."""

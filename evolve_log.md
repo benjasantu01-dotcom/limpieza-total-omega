@@ -1520,3 +1520,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-04T03:39:55` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-04T03:39:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T03:39:55` Corrida terminada. Total usado hoy: 88.
+- `2026-11-04T03:46:44` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-04T03:47:28` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al añadir una validación de "tiempo de creación" (birthtime) o fecha de modificación en el manifiesto para evitar ataques de suplantación de archivos (file masquerading) entre sesiones, y se aseguró que `purge_all` no intente procesar rutas que puedan haber sido alteradas por enlaces simbólicos externos durante la iteración.
+- `2026-11-04T03:47:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-04T03:48:34` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-11-04T03:48:46` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo implementando una validación de rutas mediante `os.path.realpath` para prevenir la resolución de puntos de montaje y enlaces simbólicos que escapan del directorio base, reforzando la seguridad defensiva contra ataques de salto de directorio (directory traversal).
+- `2026-11-04T03:48:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T03:48:46` Corrida terminada. Total usado hoy: 92.

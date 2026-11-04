@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **140** (27.8% de aceptación)
+- Mejoras aceptadas: **142** (28.2% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 290
+- Sin respuesta de la IA (error o límite): 287
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 19 | 0 | 6 | 0 | 41 |
+| 2026-11-02 | 19 | 0 | 6 | 0 | 37 |
 | 2026-11-03 | 96 | 7 | 29 | 11 | 207 |
-| 2026-11-04 | 25 | 4 | 11 | 6 | 42 |
+| 2026-11-04 | 27 | 4 | 12 | 6 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **36**
 - legibilidad y documentación: **30**
+- seguridad defensiva: **29**
 - rendimiento: **28**
-- seguridad defensiva: **27**
 - robustez ante casos límite: **19**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **15**
 - `safety.py`: **15**
-- `quarantine.py`: **14**
 - `healthscore.py`: **14**
 - `assistant.py`: **13**
 - `duplicates.py`: **13**
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **12**
 - `settings.py`: **11**
 - `browser.py`: **9**
-- `scanner.py`: **8**
+- `scanner.py`: **9**
 - `startup.py`: **8**
 - `organizer.py`: **7**
 - `branding.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T03:48:46` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo implementando una validación de rutas mediante `os.path.realpath` para prevenir la resolución de puntos de montaje y enlaces simbólicos que escapan del directorio base, reforzando la seguridad defensiva contra ataques de salto de directorio (directory traversal).
+- `2026-11-04T03:47:28` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación de "tiempo de creación" (birthtime) o fecha de modificación en el manifiesto para evitar ataques de suplantación de archivos (file masquerading) entre sesiones, y se aseguró que `purge_all` no intente procesar rutas que puedan haber sido alteradas por enlaces simbólicos externos durante la iteración.
 - `2026-11-04T03:39:26` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` añadiendo una validación explícita con `is_protected_path` sobre la ruta del ejecutable antes de intentar cualquier operación, asegurando que no se pueda modificar el working set de procesos en rutas sensibles aunque el acceso a nivel de kernel fuera concedido.
 - `2026-11-04T03:37:04` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción de los datos que entran al motor analítico, añadiendo una validación explícita para asegurar que los resultados procesados en `summarize` y `_compute_cached` no contengan inyecciones de caracteres o términos prohibidos antes de ser reportados.
 - `2026-11-04T03:30:02` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` agregando una validación explícita con `is_protected_path` al iterar el contenido del directorio, evitando procesar rutas que podrían haber sido excluidas tras el inicio del escaneo o por cambios de permisos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T01:56:30` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la redefinición de `_ValidatorEntry` como una clase más semántica, facilitando la comprensión del flujo de validación.
 - `2026-11-04T01:56:08` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la comprensión del flujo de datos en el recorrido recursivo.
 - `2026-11-04T01:55:42` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_drive_restrictions`, extrayendo la lógica repetitiva de validación de condiciones en una estructura de datos clara y una iteración limpia, lo cual facilita agregar nuevas restricciones de volumen sin aumentar la complejidad ciclomática.
-- `2026-11-04T01:47:00` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos nativas y las funciones de bajo nivel, eliminando ambigüedades mediante la adición de Type Hints detallados y docstrings que explican el propósito del acceso a la API de Windows en `memory.py`.
-- `2026-11-04T01:35:28` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo documentando los protocolos y estructuras de datos clave, además de estandarizar la nomenclatura de las funciones internas para reflejar mejor su rol dentro del pipeline.

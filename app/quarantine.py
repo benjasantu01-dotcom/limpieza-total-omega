@@ -178,6 +178,7 @@ class QuarantineItem:
     sha256: str = ""
     file_inode: Inode = 0
     device_id: int = 0
+    mtime_snapshot: float = 0.0
 
     def __post_init__(self) -> None:
         try:
@@ -210,7 +211,7 @@ class QuarantineItem:
                 item_id=str(data["item_id"]), original_path=str(orig_p), stored_name=str(data["stored_name"]),
                 size_bytes=int(data["size_bytes"]), reason=str(data["reason"]), quarantined_at=str(data["quarantined_at"]),
                 sha256=str(data.get("sha256", "")), file_inode=int(data.get("file_inode", 0)),
-                device_id=int(data.get("device_id", 0))
+                device_id=int(data.get("device_id", 0)), mtime_snapshot=float(data.get("mtime_snapshot", 0.0))
             )
         except (ValueError, TypeError): return None
 
@@ -223,6 +224,7 @@ class QuarantineItem:
             if self.file_inode != 0 and file_stat.st_ino != self.file_inode: return False
             if self.device_id != 0 and file_stat.st_dev != self.device_id: return False
             if file_stat.st_nlink > 1: return False
+            if self.mtime_snapshot != 0.0 and abs(file_stat.st_mtime - self.mtime_snapshot) > 1.0: return False
             return (stored_path.is_file() and file_stat.st_size == self.size_bytes and file_stat.st_size > 0)
         except (OSError, PermissionError): return False
 
@@ -565,7 +567,7 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
             except OSError: pass
         raise OSError(f"Falla durante copia I/O: {e}")
 
-def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode, int]:
+def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode, int, float]:
     """Ejecuta transferencia atómica finalizando la instalación del archivo."""
     _check_path_syntax_integrity(dest_path)
     _validate_file_transfer_preconditions(source_path, dest_path)
@@ -587,7 +589,7 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
         dest_stat = dest_path.stat()
         if dest_stat.st_nlink > 1: raise UnsafePathError("Integridad comprometida: destino tiene enlaces múltiples.")
         ensure_safe_to_modify(dest_path, allow_sensitive=True)
-        return source_hash, dest_stat.st_ino, dest_stat.st_dev
+        return source_hash, dest_stat.st_ino, dest_stat.st_dev, dest_stat.st_mtime
     except (OSError, IOError, UnsafePathError, FileExistsError) as e:
         if temp_dest.exists():
             try: _check_io_error_context(temp_dest.unlink)
@@ -609,7 +611,7 @@ class IsolationManager:
         if not is_within_directory(dest_res, base_res): raise UnsafePathError("Intento de escape del sandbox.")
         if not is_safe_to_modify(dest.parent): raise UnsafePathError("Sandbox destino inseguro.")
 
-def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, int]:
+def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, int, float]:
     """Aísla un archivo garantizando atomicidad y validación de inodos."""
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
@@ -626,13 +628,13 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         IsolationManager.validate_atomicity(source, stat_orig, destination)
         if destination.exists(): raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         destination.parent.mkdir(parents=True, exist_ok=True)
-        h, i, d = _write_temp_to_final(source, destination)
+        h, i, d, mtime = _write_temp_to_final(source, destination)
         ensure_safe_to_modify(destination, allow_sensitive=True)
         if destination.stat().st_ino != i or destination.stat().st_dev != d or _get_sha256(destination) != h or destination.stat().st_nlink > 1:
             raise RuntimeError("Integridad comprometida: destino inconsistente.")
-        return h, i, d
+        return h, i, d, mtime
 
-def _register_quarantine_item(destination: Path, source_path: Path, file_hash: str, file_inode: Inode, device_id: int, reason: str, original_size: int, base: PathLike) -> QuarantineItem:
+def _register_quarantine_item(destination: Path, source_path: Path, file_hash: str, file_inode: Inode, device_id: int, mtime: float, reason: str, original_size: int, base: PathLike) -> QuarantineItem:
     """Registra un ítem nuevo en el manifiesto global."""
     if destination is None or not destination.exists(): raise RuntimeError("Falla: intento de registrar archivo inexistente.")
     try:
@@ -642,7 +644,7 @@ def _register_quarantine_item(destination: Path, source_path: Path, file_hash: s
         quarantine_item: QuarantineItem = QuarantineItem(
             item_id=uuid.uuid4().hex[:12], original_path=str(source_path), stored_name=destination.name,
             size_bytes=original_size, reason=reason if reason else "Sin motivo", quarantined_at=datetime.now().isoformat(timespec="seconds"),
-            sha256=file_hash, file_inode=file_inode, device_id=device_id
+            sha256=file_hash, file_inode=file_inode, device_id=device_id, mtime_snapshot=mtime
         )
         items_list.append(quarantine_item)
         save_manifest(items_list, base)
@@ -689,8 +691,8 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     try:
-        file_hash, file_inode, dev_id = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
-        item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, reason, initial_stat.st_size, base)
+        file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
+        item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
         if p_source.exists() and not os.path.samefile(p_source, destination):
             try: _check_io_error_context(p_source.unlink)
             except OSError as e: raise RuntimeError(f"Falla al remover original post-aislamiento: {e}")
@@ -783,8 +785,9 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         for f in root_path.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file() or not is_within_directory(f.resolve(), root_path): continue
             try:
-                # Doble verificación antes de purgar: el archivo debe existir y ser consistente
                 if not f.exists(): continue
+                # Validar que no sea un enlace simbólico que apunte fuera durante la iteración
+                if f.is_symlink(): continue
                 item = item_map.get(f.name)
                 if item and _is_item_purgable(f, item): 
                     purgado_ids.add(item.item_id)
