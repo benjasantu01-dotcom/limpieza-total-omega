@@ -355,7 +355,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Optimización: evitar path.parts múltiples veces, usar relpath si es necesario
             rel = path.relative_to(root)
             if not rel.parts: continue
             top_level = root / rel.parts[0]
@@ -399,11 +398,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """Genera una representación textual formateada de los resultados del escaneo."""
+    if not directory:
+        return ["Error: La ruta proporcionada está vacía."]
+        
     root = _validate_root(directory)
     if root is None: 
-        return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]
+        return ["Error: La ruta seleccionada no es válida, está protegida o no tiene permisos de lectura."]
     
-    data = _collect_summary_data(root, skip_protected, limit=20)
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+    except Exception as e:
+        return [f"Error al analizar el directorio: {str(e)}"]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

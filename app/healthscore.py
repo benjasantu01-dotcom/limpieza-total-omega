@@ -373,7 +373,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         metrics.validate()
         metric_tuple = tuple(float(getattr(metrics, f, 0.0)) for f in _VALIDATION_KEYS)
         return _compute_cached(metric_tuple, float(metrics.quarantined_count))
-    except (TypeError, ValueError, AttributeError, MemoryError):
+    except (TypeError, ValueError, AttributeError, MemoryError) as e:
+        logging.error(f"Fallo crítico al calcular score: {e}")
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 
 @lru_cache(maxsize=128)

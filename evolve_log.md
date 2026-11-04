@@ -1064,3 +1064,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T09:58:54` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-04T09:58:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T09:58:54` Corrida terminada. Total usado hoy: 232.
+- `2026-11-04T10:04:01` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-11-04T10:04:30` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez de `summarize` y `walk_files` mediante la captura explícita de `PermissionError` y `OSError` al intentar acceder a directorios, asegurando que el bucle de escaneo no se interrumpa silenciosamente ante errores de acceso en subcarpetas específicas y proporcionando mensajes de error más informativos en el reporte.
+- `2026-11-04T10:04:51` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-04T10:05:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-04T10:06:54` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-04T10:07:26` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `_compute_cached` implementando una validación exhaustiva de estados nulos y tipos, asegurando que cualquier fallo parcial en el procesamiento de una métrica sea contenido y devuelva un estado de error manejable en lugar de fallar silenciosamente.
+- `2026-11-04T10:08:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-04T10:08:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T10:08:13` Corrida terminada. Total usado hoy: 236.

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **117** (23.2% de aceptación)
+- Mejoras aceptadas: **116** (23.0% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 318
 
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 68 | 6 | 23 | 8 | 167 |
-| 2026-11-04 | 49 | 6 | 19 | 7 | 151 |
+| 2026-11-03 | 65 | 6 | 23 | 8 | 166 |
+| 2026-11-04 | 51 | 6 | 20 | 7 | 152 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **30**
-- legibilidad y documentación: **26**
-- manejo de errores y validación de entradas: **23**
+- manejo de errores y validación de entradas: **25**
+- legibilidad y documentación: **23**
 - seguridad defensiva: **22**
 - robustez ante casos límite: **16**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **14**
-- `safety.py`: **12**
-- `diskreport.py`: **12**
-- `quarantine.py`: **11**
+- `healthscore.py`: **15**
+- `diskreport.py`: **13**
+- `safety.py`: **11**
 - `settings.py`: **10**
+- `quarantine.py`: **10**
 - `assistant.py`: **9**
 - `browser.py`: **9**
 - `duplicates.py`: **9**
 - `memory.py`: **8**
 - `startup.py`: **7**
-- `scanner.py`: **6**
 - `organizer.py`: **5**
 - `branding.py`: **5**
+- `scanner.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T10:07:26` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_compute_cached` implementando una validación exhaustiva de estados nulos y tipos, asegurando que cualquier fallo parcial en el procesamiento de una métrica sea contenido y devuelva un estado de error manejable en lugar de fallar silenciosamente.
+- `2026-11-04T10:04:30` **diskreport.py** (manejo de errores y validación de entradas): He mejorado la robustez de `summarize` y `walk_files` mediante la captura explícita de `PermissionError` y `OSError` al intentar acceder a directorios, asegurando que el bucle de escaneo no se interrumpa silenciosamente ante errores de acceso en subcarpetas específicas y proporcionando mensajes de error más informativos en el reporte.
 - `2026-11-04T08:02:34` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de un decorador `_guard_metric_access` que asegura que cualquier acceso a `SystemMetrics` valide estrictamente la existencia y el tipo de la clave antes de cualquier operación, previniendo inyecciones de atributos o manipulaciones inesperadas en tiempo de ejecución.
 - `2026-11-04T07:31:27` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` para manejar fallos de acceso en procesos privilegiados mediante el uso de `ctypes.WinError` y una gestión de bloques `try...finally` más estricta, evitando que un handle inválido o un proceso bloqueado detenga el escaneo completo de memoria.
 - `2026-11-04T07:23:48` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas no numéricas o tipos inesperados mediante la aplicación de `_validate_numeric`, evitando que valores no finitos o tipos incompatibles propaguen errores en el cálculo del score.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T06:22:42` **scanner.py** (legibilidad y documentación): Se han mejorado las docstrings de las funciones críticas y se ha estandarizado la nomenclatura interna de `directory_stack` para clarificar el flujo de control, facilitando la auditoría de seguridad del recorrido recursivo.
 - `2026-11-04T06:22:30` **safety.py** (legibilidad y documentación): Se introdujo un `Enum` dedicado `ValidationContext` para clarificar qué tipo de validación se está realizando (estructural vs. integridad), y se añadieron docstrings explicativos a las funciones de validación para separar claramente las responsabilidades de "forma de la ruta" y "estado actual del disco", facilitando la mantenibilidad futura.
 - `2026-11-04T06:21:10` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) de funciones críticas para clarificar el flujo de seguridad, cumpliendo con el enfoque de legibilidad sin alterar la lógica de las operaciones.
-- `2026-11-04T06:10:02` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de normalización y reglas, y se han renombrado variables clave para clarificar la lógica del pipeline de salud, facilitando la comprensión del mantenimiento técnico sin alterar la funcionalidad.
-- `2026-11-04T06:00:47` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings estructurados (siguiendo el estilo Google/NumPy) en las funciones críticas y se han aclarado las responsabilidades de los tipos de datos internos para facilitar el mantenimiento del equipo de desarrollo.
