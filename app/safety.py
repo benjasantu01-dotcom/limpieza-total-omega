@@ -107,12 +107,15 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         else:
             path_long = _to_long_path(path_str)
             kernel32 = ctypes.windll.kernel32
+            # Acceso mínimo para no disparar violación de compartición
             handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
             if handle != INVALID_HANDLE_VALUE:
-                fid = FILE_ID_INFO()
-                if kernel32.GetFileInformationByHandleEx(handle, FILE_ID_INFO_LEVEL, ctypes.byref(fid), ctypes.sizeof(fid)):
-                    res = (int(fid.VolumeSerialNumber), int.from_bytes(bytes(fid.FileId.Identifier), 'little'), 0, 0)
-                kernel32.CloseHandle(handle)
+                try:
+                    fid = FILE_ID_INFO()
+                    if kernel32.GetFileInformationByHandleEx(handle, FILE_ID_INFO_LEVEL, ctypes.byref(fid), ctypes.sizeof(fid)):
+                        res = (int(fid.VolumeSerialNumber), int.from_bytes(bytes(fid.FileId.Identifier), 'little'), 0, 0)
+                finally:
+                    kernel32.CloseHandle(handle)
     except (OSError, PermissionError, Exception):
         pass
                 
@@ -458,21 +461,17 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
     
-    for attempt in range(3):
+    # Intento con acceso mínimo para testear lock sin requerir privilegios de escritura
+    try:
         handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
         if handle != INVALID_HANDLE_VALUE:
             kernel32.CloseHandle(handle)
             return False
         
-        try:
-            err = kernel32.GetLastError()
-            if err == ERROR_SHARING_VIOLATION:
-                time.sleep(0.05 * (2 ** attempt))
-                continue
-        except (OSError, AttributeError):
-            pass
+        err = kernel32.GetLastError()
+        return err == ERROR_SHARING_VIOLATION
+    except (OSError, AttributeError, Exception):
         return True
-    return True
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
     return SecurityDescriptor.from_path(str(path))

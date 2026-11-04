@@ -1188,3 +1188,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T22:25:20` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-04T22:25:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T22:25:20` Corrida terminada. Total usado hoy: 284.
+- `2026-11-04T22:30:52` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-11-04T22:32:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-04T22:32:55` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de acceso en `_get_file_id` y `_is_file_locked_by_other_process` añadiendo bloques `try-except` más granulares y manejando estados de "hándle" inválido, previniendo que excepciones de I/O bloqueen el flujo de escaneo al encontrar archivos en uso exclusivo por el sistema (ej. archivos de paginación o archivos de sistema bloqueados).
+- `2026-11-04T22:33:20` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-04T22:34:21` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré `_read_and_parse_json` para manejar explícitamente posibles errores de lectura parcial o bloqueos de archivo mediante un límite de tamaño más estricto y una verificación post-lectura, asegurando que el archivo no esté truncado o corrupto antes de procesarlo.
+- `2026-11-04T22:34:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T22:34:21` Corrida terminada. Total usado hoy: 288.

@@ -386,6 +386,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         
         with open(file_path, "rb") as f:
             content = f.read(MAX_SETTINGS_SIZE + 1)
+            if len(content) > MAX_SETTINGS_SIZE: return None
         
         if content.startswith((b'\xef\xbb\xbf', b'\xff\xfe', b'\xfe\xff')): return None
         if any(b < 32 and b not in (9, 10, 13) for b in content): return None
