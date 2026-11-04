@@ -1122,3 +1122,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T16:41:38` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-04T16:41:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T16:41:38` Corrida terminada. Total usado hoy: 256.
+- `2026-11-04T16:47:29` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-04T16:47:58` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se mejora la legibilidad y mantenibilidad del módulo `scanner.py` mediante la refactorización de `_safe_stat` y `_is_safe_entry`, añadiendo docstrings técnicos más precisos y clarificando el flujo de validación de rutas mediante tipos de retorno explícitos.
+- `2026-11-04T16:48:29` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del flujo de validación en `settings.py` reemplazando la lógica compleja de `_get_validator_for_k` por un mapeo directo y explícito, y clarificando mediante docstrings la distinción entre validadores de tipos básicos y configuraciones específicas.
+- `2026-11-04T16:48:58` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-11-04T16:49:22` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el acceso a las métricas del sistema utilizando `_VALID_METRIC_KEYS` como un `set` y convirtiendo `_CRITERIOS_MAP` en un diccionario que utiliza tuplas pre-filtradas, reduciendo la complejidad algorítmica de O(N) a O(1) en las consultas de salud, mejorando el rendimiento sin alterar la lógica.
+- `2026-11-04T16:49:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T16:49:22` Corrida terminada. Total usado hoy: 260.

@@ -148,23 +148,21 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
-    Obtiene metadatos de archivo de forma segura. Retorna None si la entrada es 
-    un punto de reanálisis o si el sistema deniega el acceso.
+    Obtiene metadatos de archivo. Valida que no sea un punto de reanálisis 
+    y maneja errores de sistema comunes (bloqueos, acceso denegado).
     """
-    if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path or _cached_is_protected(entry.path):
+    if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
         return None
+        
+    if _cached_is_protected(entry.path) or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
+        return None
+        
     try:
-        if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
-            return None
-        stats = entry.stat(follow_symlinks=False)
-        if not hasattr(stats, "st_size"):
-            return None
-        return stats
+        # Usamos lstat/stat sin seguir enlaces para evitar recursión inesperada fuera del árbol
+        return entry.stat(follow_symlinks=False)
     except OSError as e:
         if getattr(e, 'winerror', None) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             return None
-        return None
-    except (PermissionError, FileNotFoundError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -251,18 +249,21 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida que la entrada cumpla con todos los criterios de seguridad antes de procesarla."""
-        try:
-            path_str: str = entry.path
-            if path_str in self.safe_cache: return True
-            if self._has_invalid_name(entry.name): return False
-            if entry.is_symlink() or self._is_reparse_point(entry): return False
-            if _cached_is_protected(path_str): return False
-            if not self._is_inside_base_root(path_str): return False
-            self.safe_cache.add(path_str)
-            return True
-        except Exception:
-            return False
+        """
+        Valida que la entrada sea apta para el escaneo: no es un enlace,
+        está dentro de la raíz permitida y no está bloqueada por política de seguridad.
+        """
+        path_str: str = entry.path
+        if path_str in self.safe_cache: return True
+        
+        # Validaciones de integridad rápida antes de acceder al sistema de archivos
+        if self._has_invalid_name(entry.name): return False
+        if entry.is_symlink() or self._is_reparse_point(entry): return False
+        if _cached_is_protected(path_str): return False
+        if not self._is_inside_base_root(path_str): return False
+        
+        self.safe_cache.add(path_str)
+        return True
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
         """Gestiona la inserción de nuevos directorios en el stack de búsqueda."""

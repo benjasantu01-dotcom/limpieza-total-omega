@@ -397,8 +397,8 @@ def _evaluate_active_problems(metrics_tuple: tuple) -> tuple[str, ...]:
     """Evalúa los problemas activos del sistema a partir de un conjunto de métricas."""
     results = []
     for key, val in metrics_tuple:
-        if val == -1.0: continue
-        for criterion in _CRITERIOS_MAP.get(key, ()):
+        # El mapa ya está filtrado solo para las claves que existen en los criterios
+        for criterion in _CRITERIOS_MAP[key]:
             msg = criterion.format_if_triggered(val)
             if msg: results.append(msg)
     return tuple(results)
@@ -433,9 +433,9 @@ class SystemContext:
         """Recopila los problemas de salud detectados basándose en los criterios actuales."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        relevant_keys = _VALID_METRIC_KEYS.intersection(_CRITERIOS_MAP.keys())
-        key_vals = tuple((k, snap[k]) for k in relevant_keys if k in snap)
-        return _evaluate_active_problems(key_vals)
+        # O(1) acceso comparando claves relevantes pre-intersecadas
+        relevant = tuple((k, snap[k]) for k in _CRITERIOS_MAP if k in snap)
+        return _evaluate_active_problems(relevant)
 
     @property
     def active_problems(self) -> tuple[str, ...]:

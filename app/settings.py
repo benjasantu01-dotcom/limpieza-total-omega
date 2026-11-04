@@ -321,31 +321,24 @@ class _Validators:
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         return _Validators._validate_enum_str(text, key)
 
-BOOL_KEYS: Final[frozenset[ConfigKey]] = frozenset((
-    ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE,
-    ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO,
-    ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS
-))
-
-INT_KEYS: Final[frozenset[ConfigKey]] = frozenset((
-    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS
-))
-
-_VALIDATOR_STRATEGY: Final[MappingProxyType[str, Callable[[ConfigKey, Any], Any]]] = MappingProxyType({
-    "bool": _Validators.bool,
-    "int": _Validators.int,
-    "path": _Validators.path,
-    "str": _Validators.str
-})
-
-def _get_validator_for_k(k: ConfigKey) -> _ValidatorEntry:
-    if k in BOOL_KEYS: return _ValidatorEntry(_VALIDATOR_STRATEGY["bool"])
-    if k in INT_KEYS: return _ValidatorEntry(_VALIDATOR_STRATEGY["int"])
-    if k == ConfigKey.ULTIMA_CARPETA: return _ValidatorEntry(_VALIDATOR_STRATEGY["path"])
-    return _ValidatorEntry(_VALIDATOR_STRATEGY["str"])
-
+# Mapeo explícito entre claves de configuración y sus validadores correspondientes
 _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingProxyType({
-    key_item: _get_validator_for_k(key_item) for key_item in ConfigKey
+    ConfigKey.TEMA: _ValidatorEntry(_Validators.str),
+    ConfigKey.ACENTO: _ValidatorEntry(_Validators.str),
+    ConfigKey.MOSTRAR_BARRAS: _ValidatorEntry(_Validators.bool),
+    ConfigKey.ANIMACIONES: _ValidatorEntry(_Validators.bool),
+    ConfigKey.CONFIRMAR_SIEMPRE: _ValidatorEntry(_Validators.bool),
+    ConfigKey.ABRIR_EN: _ValidatorEntry(_Validators.str),
+    ConfigKey.RECORDAR_ULTIMA_CARPETA: _ValidatorEntry(_Validators.bool),
+    ConfigKey.ULTIMA_CARPETA: _ValidatorEntry(_Validators.path),
+    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _ValidatorEntry(_Validators.int),
+    ConfigKey.TOP_ARCHIVOS: _ValidatorEntry(_Validators.int),
+    ConfigKey.TOP_PROCESOS: _ValidatorEntry(_Validators.int),
+    ConfigKey.ANALISIS_EN_PARALELO: _ValidatorEntry(_Validators.bool),
+    ConfigKey.ASISTENTE_ACTIVADO: _ValidatorEntry(_Validators.bool),
+    ConfigKey.ASISTENTE_CLAVE_API: _ValidatorEntry(_Validators.str),
+    ConfigKey.ASISTENTE_ENVIAR_METRICAS: _ValidatorEntry(_Validators.bool),
+    ConfigKey.ASISTENTE_MODELO: _ValidatorEntry(_Validators.str),
 })
 
 def validate(raw_values: Any) -> AppSettings:
