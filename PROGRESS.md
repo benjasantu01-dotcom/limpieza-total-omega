@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **142** (28.2% de aceptación)
+- Mejoras aceptadas: **141** (28.0% de aceptación)
 - Rechazadas por tests: 7
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 298
+- Rechazadas por guardia de seguridad: 44
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 301
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 46 | 0 | 16 | 1 | 75 |
+| 2026-11-02 | 44 | 0 | 15 | 0 | 75 |
 | 2026-11-03 | 96 | 7 | 29 | 11 | 207 |
-| 2026-11-04 | 0 | 0 | 0 | 0 | 16 |
+| 2026-11-04 | 1 | 0 | 0 | 0 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **31**
 - rendimiento: **30**
-- manejo de errores y validación de entradas: **29**
-- legibilidad y documentación: **27**
+- manejo de errores y validación de entradas: **30**
+- legibilidad y documentación: **25**
 - robustez ante casos límite: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **17**
 - `safety.py`: **15**
-- `healthscore.py`: **13**
+- `assistant.py`: **14**
 - `memory.py`: **13**
-- `assistant.py`: **13**
-- `diskreport.py`: **12**
+- `healthscore.py`: **12**
+- `diskreport.py`: **11**
 - `settings.py`: **11**
 - `scanner.py`: **10**
 - `duplicates.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T00:46:43` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_updates` en `SystemContext` mediante la validación explícita de tipos antes de aplicar cambios, evitando la inyección de atributos no permitidos o con tipos incorrectos que pudieran corromper el estado del objeto.
 - `2026-11-03T14:19:26` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "reparse points" (puntos de reparseo) en el nivel de `_validate_preconditions` para detectar si el *padre* del archivo es una unión de directorios o punto de montaje de sistema, evitando así la modificación de archivos que, aunque no parezcan protegidos, residen bajo una estructura redirigida potencialmente sensible.
 - `2026-11-03T14:18:38` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` y `quarantine_file` añadiendo una validación explícita de `is_safe_to_modify` sobre el directorio destino *antes* de realizar cualquier operación de I/O, garantizando que el sandbox sea validado por `safety.py` en cada paso crítico de la cadena de aislamiento.
 - `2026-11-03T14:00:00` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación de rutas mediante `is_protected_path` antes de cualquier operación de I/O, evitando el acceso accidental a directorios sensibles o puntos de montaje críticos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-03T12:46:45` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo reemplazando las operaciones de `set` y `tuple` dentro del bucle crítico `_compute_cached` por una pre-generación del `dict` de métricas, evitando así llamadas repetitivas a `getattr` y `zip` durante la fase de procesamiento de pipeline.
 - `2026-11-03T12:36:50` **assistant.py** (rendimiento): Se optimizó el acceso a `_CRITERIOS_MAP` y la evaluación de problemas usando `set` y una estructura de datos pre-calculada, eliminando recorridos redundantes y filtrado iterativo en el bucle principal de diagnóstico.
 - `2026-11-03T12:36:09` **startup.py** (legibilidad y documentación): Se introdujeron docstrings técnicos detallados en `_process_folder_entry` y `entries_from_registry`, y se refinó la documentación del módulo para explicar las restricciones de seguridad (como el uso de `-LiteralPath` en PowerShell), mejorando la legibilidad técnica sin alterar el comportamiento.
-- `2026-11-03T12:35:40` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el método de escritura atómica y las validaciones de seguridad, clarificando el propósito de cada verificación de archivos para mejorar la auditabilidad del código.

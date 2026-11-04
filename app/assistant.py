@@ -526,9 +526,12 @@ class SystemContext:
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica los cambios validados al objeto y purga cachés para forzar recálculos."""
         for k, v in updates.items():
-            if k in _VALID_METRIC_KEYS or k == "grade":
-                if isinstance(v, (int, float, str)):
+            if k in _VALID_METRIC_KEYS:
+                spec = _VALIDATORS[k]
+                if isinstance(v, spec.type_hint):
                     setattr(self, k, v)
+            elif k == "grade" and isinstance(v, str):
+                setattr(self, k, v)
         self.analyzed = True
         for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
             self.__dict__.pop(attr, None)
