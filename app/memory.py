@@ -51,6 +51,7 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
+# Máscaras de acceso para operaciones con procesos nativos en Windows
 WIN32_PROCESS_QUERY_LIMITED: Final[int] = 0x1000
 WIN32_PROCESS_SET_QUOTA: Final[int] = 0x0100
 WIN32_PROCESS_QUERY_INFO: Final[int] = 0x0400
@@ -94,7 +95,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 que contiene información detallada del estado de memoria global."""
+    """Estructura Win32 (GlobalMemoryStatusEx) para estado de memoria global."""
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -108,7 +109,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 que almacena estadísticas de uso de memoria de un proceso."""
+    """Estructura Win32 (PROCESS_MEMORY_COUNTERS) para uso de memoria por proceso."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
