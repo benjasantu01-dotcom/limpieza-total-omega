@@ -68,12 +68,13 @@ class _NumericRange(NamedTuple):
     min: int
     max: int
 
-class _ValidatorEntry(NamedTuple):
+class _ValidatorEntry:
     """
-    Wrapper que vincula una clave de configuración con su función validadora.
-    Cada función debe normalizar el valor bruto y devolverlo, o None si el valor no es apto.
+    Define la estrategia de validación para una clave.
+    Encapsula la función que normaliza el dato crudo a su tipo esperado.
     """
-    func: Callable[[ConfigKey, Any], Any]
+    def __init__(self, func: Callable[[ConfigKey, Any], Any]) -> None:
+        self.func = func
 
 class _ValidationResult(NamedTuple):
     """Contenedor para determinar si un valor es válido y su forma normalizada."""
@@ -162,11 +163,13 @@ class _SettingsManager:
         self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
 
     def clear(self, resolved_path_str: str) -> None:
+        """Invalidar entrada de caché tras una escritura exitosa."""
         self.data_cache.pop(resolved_path_str, None)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Realiza una escritura atómica del archivo de configuración.
+        Ejecuta escritura mediante archivo temporal y reemplazo atómico.
+        Verifica permisos y seguridad del sistema de archivos antes de proceder.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 2: return False
@@ -418,6 +421,7 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     return coerced
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
+    """Retorna los settings actuales desde el caché o cargando desde disco."""
     primary_path = settings_path(custom_base)
     resolved_str = str(primary_path.resolve())
     try:
@@ -437,6 +441,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
+    """Resuelve la ruta definitiva del archivo de configuración, validando seguridad."""
     cache_key = str(custom_base) if custom_base else "DEFAULT"
     if cache_key in _MANAGER.path_cache:
         return _MANAGER.path_cache[cache_key]
@@ -456,6 +461,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
+    """Serializa y guarda la configuración tras validar su integridad."""
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
     try:
@@ -472,6 +478,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     except (OSError, PermissionError, AttributeError, TypeError, ValueError): return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
+    """Aplica cambios parciales a la configuración y los persiste."""
     if not changes or not _is_dict(changes): return load(custom_base)
     current = load(custom_base)
     modified = False
@@ -486,25 +493,30 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
+    """Restaura la configuración a valores de fábrica."""
     config_path = settings_path(custom_base)
     if is_safe_to_modify(str(config_path)):
         save(DEFAULTS, custom_base)
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
+    """Acceso rápido a una clave de configuración específica."""
     return load(custom_base).get(key)
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
+    """Extrae clave de API desde entorno (prioridad) o configuración."""
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
     settings = load(custom_base)
     return str(settings.get("asistente_clave_api", "")).strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
+    """Verifica si el asistente tiene credenciales válidas y está activado."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(str(settings.get("asistente_clave_api", "")).strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
+    """Genera un reporte legible de la configuración actual."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = str(current.get("asistente_clave_api", "")).strip()

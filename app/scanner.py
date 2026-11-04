@@ -93,7 +93,7 @@ def _cached_is_protected(path_str: str) -> bool:
         return True
 
 def _is_safe_by_attributes(path: Path) -> bool:
-    """Verifica que la ruta no sea un punto de reanálisis antes de acceder."""
+    """Valida mediante atributos de bajo nivel que la ruta no sea un punto de reanálisis (Junction/Symlink)."""
     try:
         attrs = path.stat().st_file_attributes
         return not (attrs & SCAN_LIMITS.reparse_point_mask)
@@ -101,7 +101,7 @@ def _is_safe_by_attributes(path: Path) -> bool:
         return True
 
 def _is_valid_file_path(path: PathInput) -> bool:
-    """Valida existencia, legibilidad y exclusión de rutas protegidas."""
+    """Valida existencia, legibilidad y exclusión de rutas protegidas mediante checks granulares."""
     if path is None:
         return False
     try:
@@ -117,7 +117,7 @@ def _is_valid_file_path(path: PathInput) -> bool:
         return False
 
 def _is_readable(path: PathInput) -> bool:
-    """Verifica si el sistema permite la lectura de la ruta dada."""
+    """Comprueba si el proceso tiene permisos de lectura sobre la ruta especificada."""
     if path is None:
         return False
     try:
@@ -133,7 +133,7 @@ def _is_readable(path: PathInput) -> bool:
         return False
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
-    """Obtiene los atributos de archivo de nivel sistema sin seguir enlaces simbólicos."""
+    """Extrae atributos de archivo (bits) usando `stat` sin resolución de enlaces (no follow)."""
     if not isinstance(entry, os.DirEntry):
         return 0
     try:
@@ -144,8 +144,8 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
-    Obtiene metadatos del archivo. Retorna None si el archivo es un punto de 
-    reanálisis, está bloqueado o posee datos corruptos/incompletos.
+    Recupera metadatos del archivo de forma segura. Retorna None si el archivo es un 
+    punto de reanálisis, inaccesible por compartir violación, o ruta protegida.
     """
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path or _cached_is_protected(entry.path):
         return None
@@ -164,7 +164,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
-    """Valida que la cadena de ruta cumpla con los límites de longitud y formato."""
+    """Valida que la cadena de entrada sea una ruta absoluta apta según las restricciones del motor."""
     if not isinstance(path_str, str) or not path_str.strip() or "\0" in path_str:
         return False
     try:
@@ -183,7 +183,6 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Ti
     """
     Riesgo: Archivos de 0 bytes utilizados como marcadores de posición o punteros a scripts maliciosos.
     Validación: Comprueba que el tamaño reportado en el stat del archivo sea 0.
-    Impacto: Advertencia sobre archivos sin contenido que podrían ser inofensivos pero sospechosos en ubicaciones críticas.
     """
     if stats is not None and getattr(stats, "st_size", -1) == 0:
         return Suspicion(path, "Archivo vacío detectado (posible marcador de relleno)", "warning")
@@ -193,7 +192,6 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     """
     Riesgo: Ofuscación mediante doble extensión (ej: informe.pdf.exe) para engañar al usuario.
     Validación: Utiliza Regex para detectar patrones de extensiones inofensivas seguidas de ejecutables.
-    Impacto: Detección temprana de ingeniería social mediante nombres de archivo engañosos.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de ofuscación", "warning")
@@ -201,9 +199,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """
-    Riesgo: Ejecución de procesos con nombres de sistema (ej: svchost.exe) desde carpetas arbitrarias (no System32).
-    Validación: Compara el nombre del archivo contra una lista permitida y verifica que la ruta contenga 'system32'.
-    Impacto: Detecta malware que intenta ocultarse suplantando procesos legítimos fuera de su ruta estándar.
+    Riesgo: Ejecución de procesos con nombres de sistema (ej: svchost.exe) fuera de System32.
+    Validación: Compara contra lista blanca de procesos críticos del SO.
     """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
@@ -213,8 +210,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """
     Riesgo: Ejecutables descargados recientemente en carpetas volátiles (Downloads, Temp, Desktop).
-    Validación: Compara el timestamp de modificación (mtime) del archivo con una ventana de tiempo predefinida.
-    Impacto: Clasifica como 'info' la presencia de instaladores o ejecutables que podrían requerir atención del usuario.
+    Validación: Compara mtime contra el umbral `recent_file_window_hours`.
     """
     if path is None or path.parent is None or stats is None: 
         return None
@@ -246,20 +242,23 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Determina si la ruta está contenida dentro de la jerarquía del directorio raíz."""
+        """Verifica si la ruta actual es subdirectorio del `base_root` original."""
         return os.path.normcase(entry_path).startswith(self.base_root_norm)
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida que el nombre del componente no contenga caracteres o patrones prohibidos."""
+        """Valida que el componente no contenga caracteres inválidos para el sistema de archivos."""
         if not isinstance(name, str) or not name or "\0" in name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Detecta si la entrada es un punto de reanálisis para evitar ciclos de recursión."""
+        """Determina mediante bits de atributo si la entrada es un punto de reanálisis (evita recursión infinita)."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Realiza múltiples filtros de seguridad antes de permitir el procesamiento de una entrada."""
+        """
+        Filtra recursivamente las entradas del sistema mediante validaciones de seguridad:
+        evita puntos de unión, rutas protegidas y nombres malformados.
+        """
         try:
             path_str: str = entry.path
             if path_str in self.safe_cache: return True
@@ -273,7 +272,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
-        """Prepara un directorio hijo para su posterior exploración, verificando límites de profundidad."""
+        """Encola directorios para su exploración profunda controlando la profundidad máxima."""
         if current_depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = os.path.normcase(entry.path)
         if norm_path in visited_dirs: return
@@ -286,16 +285,15 @@ class Scanner:
 
     @lru_cache(maxsize=128)
     def _is_relevant_extension(self, name: str) -> bool:
-        """Verifica si el archivo posee una extensión que requiere análisis heurístico."""
+        """Filtra archivos de interés heurístico por extensión."""
         return os.path.splitext(name)[1].lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int, visited_dirs: set[str]) -> None:
-        """Orquestador principal que evalúa la entrada del sistema de archivos con tolerancia a fallos."""
+        """Clasifica una entrada del sistema entre archivo (analizar) o directorio (encolar)."""
         if not self._is_safe_entry(entry):
             return
         try:
             if self._is_relevant_extension(entry.name):
-                # Validar is_file antes de invocar heurísticas para evitar excepciones en rutas bloqueadas
                 if entry.is_file():
                     path_norm = os.path.normcase(entry.path)
                     if path_norm not in self.seen_normcase:
@@ -307,7 +305,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta la suite de chequeos de seguridad sobre un archivo validado."""
+        """Aplica la suite de heurísticas sobre un archivo validado."""
         stats = _safe_stat(entry)
         if stats is None:
             return
@@ -320,7 +318,7 @@ class Scanner:
                 logger.debug(f"Heurística omitida para {path.name} por fallo técnico: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Escaneo heurístico puntual para archivos aislados fuera del flujo recursivo."""
+    """Escaneo heurístico puntual para archivos fuera del flujo recursivo (p.ej. selección individual)."""
     if not isinstance(path, Path) or not _is_valid_path_structure(str(path)) or _cached_is_protected(str(path)) or not _is_readable(path):
         return []
     try:
@@ -340,7 +338,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Escaneo recursivo de un directorio, devolviendo todos los hallazgos encontrados."""
+    """Orquestador de escaneo recursivo mediante stack (evita recursión de Python)."""
     if directory is None: return []
     try:
         base_path = Path(directory).resolve()

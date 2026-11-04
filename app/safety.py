@@ -569,7 +569,8 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     anchor = target_path.anchor
     if not anchor: return
 
-    rules = [
+    # Definición de restricciones de volumen: (condición, mensaje, código)
+    restrictions = [
         (_is_volume_shadow_copy(path_s), "Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
         (_is_volume_busy_or_invalid(path_s), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
         (_get_drive_type(anchor) == DRIVE_REMOTE, "Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR),
@@ -579,7 +580,7 @@ def _validate_drive_restrictions(target_path: Path) -> None:
         (_is_virtual_drive(path_s), "Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
     ]
     
-    for condition, msg, code in rules:
+    for condition, msg, code in restrictions:
         if condition:
             raise UnsafePathError(msg, code)
 
