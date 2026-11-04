@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **140** (27.8% de aceptación)
+- Mejoras aceptadas: **138** (27.4% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 296
+- Sin respuesta de la IA (error o límite): 297
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-02 | 27 | 0 | 8 | 0 | 59 |
+| 2026-11-02 | 24 | 0 | 8 | 0 | 58 |
 | 2026-11-03 | 96 | 7 | 29 | 11 | 207 |
-| 2026-11-04 | 17 | 2 | 7 | 4 | 30 |
+| 2026-11-04 | 18 | 2 | 8 | 4 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **36**
-- seguridad defensiva: **30**
 - legibilidad y documentación: **30**
-- rendimiento: **27**
+- rendimiento: **28**
+- seguridad defensiva: **27**
 - robustez ante casos límite: **17**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **15**
-- `healthscore.py`: **14**
+- `safety.py`: **16**
 - `quarantine.py`: **14**
 - `assistant.py`: **13**
-- `diskreport.py`: **12**
+- `healthscore.py`: **13**
 - `memory.py`: **12**
 - `duplicates.py`: **12**
 - `settings.py`: **11**
-- `browser.py`: **9**
+- `diskreport.py`: **11**
 - `scanner.py`: **9**
+- `browser.py`: **8**
 - `startup.py`: **8**
 - `organizer.py`: **7**
 - `branding.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-04T02:36:13` **safety.py** (rendimiento): Se ha optimizado `_get_file_id` reemplazando el uso de `hash(bytes(...))` por `int.from_bytes(...)`, lo que reduce drásticamente el overhead computacional de convertir el identificador de archivo en un hash durante cada validación, mejorando el rendimiento en recorridos extensos de disco sin alterar la lógica de comparación de archivos.
 - `2026-11-04T02:26:24` **organizer.py** (rendimiento): Optimizé la performance del escaneo recursivo eliminando llamadas redundantes a `is_safe_to_modify` dentro del loop de `_process_directory`, reemplazando verificaciones repetitivas de `is_file()` por el uso directo de los atributos ya obtenidos en `os.scandir`.
 - `2026-11-04T02:15:31` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la creación innecesaria de objetos `Path` y múltiples llamadas a `stat` dentro del loop crítico, reduciendo la carga de I/O y el overhead de memoria en escaneos profundos.
 - `2026-11-04T01:56:30` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la redefinición de `_ValidatorEntry` como una clase más semántica, facilitando la comprensión del flujo de validación.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T01:15:25` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de acceso al archivo mediante la captura explícita de `FileNotFoundError` en `_validate_access_permissions` y se ha implementado una sanitización defensiva en `_is_file_owned_by_system` para evitar errores de puntero nulo, evitando que excepciones silenciadas degraden la integridad de las decisiones de seguridad.
 - `2026-11-04T01:03:59` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de datos del sistema mediante una validación estricta de tipo en el pipeline de cálculo y se centralizó el control de errores en `SystemMetrics.validate` para evitar que valores inesperados (`NaN`, `Inf`) propaguen errores en la caché LRU.
 - `2026-11-04T00:54:46` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para evitar fallos silenciosos cuando un archivo desaparece o es inaccesible durante el análisis, validando explícitamente los resultados antes de operar sobre ellos.
-- `2026-11-04T00:54:37` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de acceso a archivo/directorio en un manejo de excepciones más granular para evitar interrupciones por errores de sistema (`PermissionError`, `OSError`) al encontrar archivos bloqueados o con rutas malformadas durante el escaneo.

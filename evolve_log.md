@@ -1389,3 +1389,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T02:27:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-11-04T02:27:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T02:27:11` Corrida terminada. Total usado hoy: 60.
+- `2026-11-04T02:35:24` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-11-04T02:36:13` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `_get_file_id` reemplazando el uso de `hash(bytes(...))` por `int.from_bytes(...)`, lo que reduce drásticamente el overhead computacional de convertir el identificador de archivo en un hash durante cada validación, mejorando el rendimiento en recorridos extensos de disco sin alterar la lógica de comparación de archivos.
+- `2026-11-04T02:36:39` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
+- `2026-11-04T02:37:06` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-11-04T02:37:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-04T02:37:13` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-04T02:37:21` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-04T02:37:38` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-04T02:37:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T02:37:38` Corrida terminada. Total usado hoy: 64.

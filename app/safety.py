@@ -113,7 +113,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
             if handle != INVALID_HANDLE_VALUE:
                 fid = FILE_ID_INFO()
                 if kernel32.GetFileInformationByHandleEx(handle, FILE_ID_INFO_LEVEL, ctypes.byref(fid), ctypes.sizeof(fid)):
-                    res = (int(fid.VolumeSerialNumber), hash(bytes(fid.FileId.Identifier)), 0, 0)
+                    res = (int(fid.VolumeSerialNumber), int.from_bytes(bytes(fid.FileId.Identifier), 'little'), 0, 0)
                 kernel32.CloseHandle(handle)
                 
     if len(_FILE_ID_CACHE) > 4096: _FILE_ID_CACHE.clear()
@@ -1166,3 +1166,4 @@ def describe_protection(path: PathLike) -> str:
     
     if is_sensitive_file(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."
+
