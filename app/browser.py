@@ -102,13 +102,28 @@ class DirectoryScanner:
         except (OSError, RuntimeError, ValueError):
             return False
 
+    def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
+        """Determina si un nodo es apto para escaneo y acumula el tamaño si corresponde."""
+        name_lower = entry.name.lower()
+        if name_lower in self.ctx.never_touch_lower:
+            return total_bytes
+            
+        if entry.is_dir(follow_symlinks=False):
+            if not self.ctx.is_junction(entry.path) and self._is_path_allowed(entry.path):
+                subdir = self.get_size(entry.path, depth + 1)
+                return total_bytes + subdir.bytes_found
+        elif entry.is_file(follow_symlinks=False):
+            if not _is_system_hidden(entry.path, self.ctx.kernel32):
+                st_file = entry.stat(follow_symlinks=False)
+                file_id = (st_file.st_dev, st_file.st_ino)
+                if file_id not in self.ctx.visited_files:
+                    self.ctx.visited_files.add(file_id)
+                    return total_bytes + st_file.st_size
+        return total_bytes
+
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
         Calcula el tamaño total de una carpeta de forma recursiva.
-        
-        Retorna:
-            ScanResult: (bytes, success). success=False indica error de acceso,
-            aunque el contador de bytes sea parcial.
         """
         if not isinstance(root_path, str) or not root_path or not self._is_path_allowed(root_path):
             return ScanResult(0, False)
@@ -130,26 +145,12 @@ class DirectoryScanner:
 
         self.ctx.visited_dirs.add(dir_id)
         total_bytes: int = 0
-        never_touch = self.ctx.never_touch_lower
         
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
                     try:
-                        name_lower = entry.name.lower()
-                        if name_lower in never_touch: continue
-                        
-                        if entry.is_dir(follow_symlinks=False):
-                            if not self.ctx.is_junction(entry.path) and self._is_path_allowed(entry.path):
-                                subdir = self.get_size(entry.path, depth + 1)
-                                total_bytes += subdir.bytes_found
-                        elif entry.is_file(follow_symlinks=False):
-                            if not _is_system_hidden(entry.path, self.ctx.kernel32):
-                                st_file = entry.stat(follow_symlinks=False)
-                                file_id = (st_file.st_dev, st_file.st_ino)
-                                if file_id not in self.ctx.visited_files:
-                                    self.ctx.visited_files.add(file_id)
-                                    total_bytes += st_file.st_size
+                        total_bytes = self._process_entry(entry, depth, total_bytes)
                     except (OSError, PermissionError):
                         continue
             return ScanResult(total_bytes, True)
