@@ -1216,3 +1216,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-04T22:53:24` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-04T22:53:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-04T22:53:24` Corrida terminada. Total usado hoy: 296.
+- `2026-11-04T23:01:28` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-04T23:01:59` Tests FALLARON:
+```
+astroso para leer: el escáner
+        heurístico abortaba al encontrar el primer ejecutable (justo lo que tiene
+        que revisar), y la pestaña de Inicio no funcionaba nunca en Windows,
+        porque la carpeta de arranque vive debajo de un directorio "Windows".
+        """
+        culpables = []
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            if "ensure_safe_to_modify" in calls_and_imports(parse(archivo)):
+                culpables.append(nombre)
+    
+>       assert not culpables, (
+            f"Estos módulos son de solo lectura y usan el chequeo de escritura: "
+            f"{', '.join(culpables)}. Para saber si algo es de sistema sin "
+            "bloquear la lectura, usá `is_protected_path`."
+        )
+E       AssertionError: Estos módulos son de solo lectura y usan el chequeo de escritura: memory.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+E       assert not ['memory.py']
+
+evolve/tests/test_integrity.py:279: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check - AssertionError: Estos módulos son de solo lectura y usan el chequeo de escritura: memory.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+assert not ['memory.py']
+1 failed, 298 passed in 1.29s
+
+```
+- `2026-11-04T23:01:59` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `ensure_safe_to_modify` antes de intentar la operación, garantizando que el proceso objetivo no solo resida fuera de rutas protegidas, sino que cumpla con los estándares de seguridad exigidos para acciones de escritura/modificación.
+- `2026-11-04T23:02:24` ➖ Sin cambios en organizer.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la robustez de las operaciones de E/S en `organizer.py` implementando un chequeo preventivo de `is_safe_to_modify` antes de llamar a `shutil.move`, asegurando que no se muevan archivos desde rutas que hayan sido bloqueadas o modificadas tras el escaneo inicial, fortaleciendo la integridad del proceso de cuarentena.
+- `2026-11-04T23:03:06` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las validaciones de seguridad en `quarantine.py` mediante la implementación de `ensure_safe_to_modify` antes de operaciones de escritura en archivos, reemplazando chequeos condicionales débiles por validaciones que levantan excepciones ante cualquier irregularidad en el entorno de destino.
+- `2026-11-04T23:03:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-04T23:03:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-04T23:03:09` Corrida terminada. Total usado hoy: 300.

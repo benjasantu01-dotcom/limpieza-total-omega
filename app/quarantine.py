@@ -518,7 +518,7 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 def _validate_file_transfer_preconditions(source: Path, destination: Path) -> None:
     """Verifica precondiciones para transferencias entre origen y destino."""
     if is_protected_path(destination): raise UnsafePathError("Destino en ruta protegida.")
-    if not is_safe_to_modify(destination.parent): raise UnsafePathError("Directorio destino no seguro.")
+    ensure_safe_to_modify(destination.parent)
     _check_device_consistency(source, destination.parent.resolve())
     _verify_source_fs_permissions(destination)
     if not source.exists() or not source.is_file(): raise OSError("Archivo origen inaccesible.")
@@ -530,6 +530,7 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
 def _create_temp_file(source: Path, destination: Path) -> Path:
     """Genera archivo temporal único garantizando atomicidad en la creación."""
     parent = destination.parent
+    ensure_safe_to_modify(parent)
     for _ in range(5):
         temp_path = parent / f".tmp_{uuid.uuid4().hex}"
         try:
@@ -553,7 +554,7 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         if not (st.st_mode & 0o100000): raise OSError("El origen no es un archivo regular.")
         _check_for_reparse_points(source)
         if st.st_nlink > 1: raise UnsafePathError("Archivo origen con enlaces múltiples.")
-        if not is_safe_to_modify(temp_dest.parent): raise UnsafePathError("Directorio destino no seguro.")
+        ensure_safe_to_modify(temp_dest.parent)
         with open(source, "rb") as f_src, open(temp_dest, "wb") as f_dst:
             shutil.copyfileobj(f_src, f_dst)
             f_dst.flush()
@@ -609,7 +610,7 @@ class IsolationManager:
         dest_res: Path = dest.resolve()
         base_res: Path = dest.parent.resolve()
         if not is_within_directory(dest_res, base_res): raise UnsafePathError("Intento de escape del sandbox.")
-        if not is_safe_to_modify(dest.parent): raise UnsafePathError("Sandbox destino inseguro.")
+        ensure_safe_to_modify(dest.parent)
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, int, float]:
     """Ejecuta aislamiento con validación de inodos y comprobaciones contra TOCTOU."""
@@ -618,7 +619,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
     if source.parent.resolve() == destination.parent.resolve(): raise UnsafePathError("Origen y destino colisionan en la misma carpeta.")
     if _win_has_system_attributes(source) or not source.is_file(): raise UnsafePathError("Aislamiento denegado: atributo de sistema o no regular.")
-    if not is_safe_to_modify(destination.parent): raise UnsafePathError("Sandbox destino marcado como inseguro.")
+    ensure_safe_to_modify(destination.parent)
     with open(source, "rb") as f:
         stat_orig = os.fstat(f.fileno())
         if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
@@ -679,7 +680,7 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     try: dest_dir: Path = quarantine_dir(base)
     except (OSError, PermissionError) as e: raise RuntimeError(f"Sandbox inaccesible: {e}")
     
-    if not is_safe_to_modify(dest_dir): raise UnsafePathError("Sandbox de cuarentena inseguro.")
+    ensure_safe_to_modify(dest_dir)
     
     if _is_file_in_use_by_system(p_source): raise IOError("Archivo origen bloqueado por el sistema: abortado.")
     if p_source.resolve().stat().st_dev != dest_dir.resolve().stat().st_dev: raise UnsafePathError("Origen y sandbox deben estar en la misma unidad.")
@@ -724,7 +725,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if destination.exists(): raise FileExistsError(f"El destino ya existe: {destination}")
         if is_protected_path(destination): raise UnsafePathError("Restauración denegada: destino protegido.")
         parent: Path = destination.parent.resolve()
-        if not is_safe_to_modify(parent): raise UnsafePathError("Directorio padre no seguro.")
+        ensure_safe_to_modify(parent)
         _ensure_disk_space(parent, quarantine_item.size_bytes)
         if not parent.exists(): _check_io_error_context(parent.mkdir, parents=True, exist_ok=True)
         _check_io_error_context(os.replace, str(stored_file), str(destination))
