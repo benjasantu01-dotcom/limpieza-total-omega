@@ -242,7 +242,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 def _validate_numeric(value: Any, default: float, min_val: float, max_val: float) -> float:
     """Sanitiza entradas asegurando que sean numéricas, finitas y dentro de un rango dado."""
     try:
-        if not isinstance(value, (int, float)) or isinstance(value, bool):
+        if value is None or not isinstance(value, (int, float)) or isinstance(value, bool):
             return default
         val = float(value)
         if not math.isfinite(val):
@@ -317,7 +317,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """Orquestador central del cálculo de salud mediante pipeline (cacheado)."""
-    if not metric_tuple or len(metric_tuple) != len(_VALIDATION_KEYS):
+    if metric_tuple is None or len(metric_tuple) != len(_VALIDATION_KEYS):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
 
     metrics = SystemMetrics(

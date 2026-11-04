@@ -365,7 +365,7 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
             if _is_process_executable_safe(handle, path_buf, get_mod_name_func):
                 return handle
             WindowsAPI.kernel32.CloseHandle(handle)
-    except (ctypes.WinError, OSError):
+    except (ctypes.WinError, OSError, Exception):
         pass
     return None
 
