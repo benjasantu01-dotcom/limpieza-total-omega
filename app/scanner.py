@@ -250,8 +250,9 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que la entrada sea apta para el escaneo: no es un enlace,
-        está dentro de la raíz permitida y no está bloqueada por política de seguridad.
+        Realiza filtros de seguridad iniciales sobre la entrada del sistema de archivos.
+        Verifica que no sea un reparse point, no esté en rutas protegidas y
+        permanezca dentro de los límites de la raíz de escaneo definida.
         """
         path_str: str = entry.path
         if path_str in self.safe_cache: return True
@@ -266,7 +267,10 @@ class Scanner:
         return True
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
-        """Gestiona la inserción de nuevos directorios en el stack de búsqueda."""
+        """
+        Gestiona la inserción de subdirectorios en el stack de búsqueda (DFS).
+        Controla la profundidad máxima permitida para evitar ataques de recursión infinita.
+        """
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = os.path.normcase(entry.path)
         if norm_path in visited: return
@@ -284,7 +288,10 @@ class Scanner:
         return os.path.splitext(name)[1].lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
-        """Lógica de enrutamiento: clasifica entradas como archivos para analizar o directorios para encolar."""
+        """
+        Clasifica la entrada actual: si es un archivo de interés, ejecuta la
+        suite heurística; si es un directorio, lo encola para continuar el recorrido.
+        """
         if not self._is_safe_entry(entry):
             return
         try:
@@ -300,7 +307,10 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta la suite de heurísticas sobre una entrada de archivo validada."""
+        """
+        Ejecuta todas las funciones de detección (heurísticas) configuradas sobre
+        un archivo específico y guarda los resultados si se detectan anomalías.
+        """
         stats = _safe_stat(entry)
         if stats is None:
             return

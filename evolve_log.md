@@ -1523,3 +1523,13 @@ assert not ['memory.py']
 - `2026-11-05T01:37:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 117): unterminated string literal (detected at line 117)
 - `2026-11-05T01:37:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T01:37:24` Corrida terminada. Total usado hoy: 40.
+- `2026-11-05T01:44:43` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-11-05T01:45:25` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 7% del original (posible pérdida de código)
+- `2026-11-05T01:46:03` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de la clase `Scanner` para clarificar las responsabilidades de cada etapa del recorrido, utilizando docstrings más descriptivos que explican el "porqué" de las validaciones de seguridad, además de estandarizar la nomenclatura interna de las variables de control en el bucle de recorrido para facilitar la lectura.
+- `2026-11-05T01:46:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-05T01:46:07` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-05T01:46:13` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-05T01:46:25` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-05T01:46:53` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-11-05T01:46:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T01:46:53` Corrida terminada. Total usado hoy: 44.
