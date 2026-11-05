@@ -107,7 +107,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         else:
             path_long = _to_long_path(path_str)
             kernel32 = ctypes.windll.kernel32
-            # Acceso mínimo para no disparar violación de compartición
             handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
             if handle != INVALID_HANDLE_VALUE:
                 try:
@@ -426,6 +425,7 @@ def _is_unc_path(path_str: str) -> bool:
 def _is_unc_path_accessible(path_str: str) -> bool:
     if not _is_unc_path(path_str) or os.name != 'nt': return False
     try:
+        # Verifica conexión básica usando GetDiskFreeSpace para rutas de red
         return ctypes.windll.kernel32.GetDiskFreeSpaceW(path_str, None, None, None, None) != 0
     except (OSError, ctypes.ArgumentError): return False
 
@@ -461,7 +461,6 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
     
-    # Intento con acceso mínimo para testear lock sin requerir privilegios de escritura
     try:
         handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
         if handle != INVALID_HANDLE_VALUE:
@@ -499,6 +498,7 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
+    if _is_unc_path(path_str): return not _is_unc_path_accessible(path_str)
     try:
         drive = os.path.splitdrive(path_str)[0] + "\\"
         kernel32 = ctypes.windll.kernel32
@@ -515,6 +515,7 @@ def _get_drive_type(root: str) -> int:
 @lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
+    if _is_unc_path(path_str): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         return _get_drive_type(root) == DRIVE_REMOVABLE
@@ -524,6 +525,7 @@ def _is_volume_removable_media(path_str: Optional[str]) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
+    if _is_unc_path(path_str): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         if not os.path.exists(root): return False
@@ -569,15 +571,17 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     anchor = target_path.anchor
     if not anchor: return
 
+    is_unc = _is_unc_path(path_s)
+    
     # Definición de restricciones de volumen: (condición, mensaje, código)
     restrictions = [
         (_is_volume_shadow_copy(path_s), "Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
         (_is_volume_busy_or_invalid(path_s), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
-        (_get_drive_type(anchor) == DRIVE_REMOTE, "Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR),
-        (_get_drive_type(anchor) == DRIVE_REMOVABLE, "Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED),
-        ((_get_drive_type(anchor) == DRIVE_CDROM or _is_volume_readonly(path_s)), "Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY),
-        (_is_volume_compressed_or_encrypted(path_s), "Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED),
-        (_is_virtual_drive(path_s), "Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
+        (not is_unc and _get_drive_type(anchor) == DRIVE_REMOTE, "Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR),
+        (not is_unc and _get_drive_type(anchor) == DRIVE_REMOVABLE, "Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED),
+        (not is_unc and (_get_drive_type(anchor) == DRIVE_CDROM or _is_volume_readonly(path_s)), "Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY),
+        (not is_unc and _is_volume_compressed_or_encrypted(path_s), "Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED),
+        (not is_unc and _is_virtual_drive(path_s), "Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
     ]
     
     for condition, msg, code in restrictions:
@@ -924,7 +928,6 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
-    # Verificación de reparse point en el padre
     if os.name == 'nt' and target_path.parent.exists() and _is_system_directory_junction(str(target_path.parent)):
          raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 

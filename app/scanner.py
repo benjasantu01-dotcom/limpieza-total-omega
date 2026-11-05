@@ -126,13 +126,11 @@ def _is_readable(path: PathInput) -> bool:
         return False
     try:
         path_str = str(path)
-        if not path_str or "\0" in path_str:
+        if not path_str or "\0" in path_str or len(path_str) > SCAN_LIMITS.path_length_limit:
             return False
-        abs_path = os.path.abspath(path_str)
-        if len(abs_path) > SCAN_LIMITS.path_length_limit:
+        if _cached_is_protected(path_str):
             return False
-        path_obj = Path(abs_path)
-        return not _cached_is_protected(abs_path) and os.access(abs_path, os.R_OK) and _is_safe_by_attributes(path_obj)
+        return os.access(path_str, os.R_OK) and _is_safe_by_attributes(Path(path_str))
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
@@ -322,7 +320,7 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escaneo puntual para un archivo específico, fuera de la recursión."""
-    if not isinstance(path, Path) or not _is_valid_path_structure(str(path)) or _cached_is_protected(str(path)) or not _is_readable(path):
+    if not isinstance(path, Path) or not _is_valid_path_structure(str(path)) or not _is_readable(path):
         return []
     try:
         if not path.is_file(): return []
@@ -348,7 +346,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None: return []
     try:
         base_path = Path(directory).resolve()
-        if not base_path.exists() or not base_path.is_dir() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
+        if not base_path.exists() or not base_path.is_dir() or not _is_readable(str(base_path)):
             return []
         scanner: Scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
