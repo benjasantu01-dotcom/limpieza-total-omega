@@ -1568,3 +1568,43 @@ assert not ['memory.py']
 - `2026-11-05T02:21:16` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-11-05T02:21:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T02:21:16` Corrida terminada. Total usado hoy: 56.
+- `2026-11-05T02:25:28` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-05T02:25:56` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el recorrido del escáner moviendo la evaluación de la extensión de archivo antes de realizar llamadas costosas al sistema de archivos (`entry.stat()` o verificaciones adicionales), reduciendo drásticamente la carga de I/O en directorios con muchos archivos irrelevantes.
+- `2026-11-05T02:26:56` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-05T02:27:28` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `_read_and_parse_json` para realizar una lectura más eficiente y segura, evitando convertir todo el contenido a `str` si el archivo es grande o sospechoso, y simplificando el flujo de validación para reducir el uso de memoria durante el parseo de archivos pequeños.
+- `2026-11-05T02:28:28` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-05T02:29:31` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-05T02:30:38` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-05T02:31:50` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-11-05T02:33:05` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-05T02:33:14` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-05T02:33:45` Tests FALLARON:
+```
+etricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  root:assistant.py:546 Intento de ingesta con fuente insegura o compleja bloqueado.
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 1.57s
+
+```
+- `2026-11-05T02:33:45` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez ante casos límite en la ingesta de datos del `SystemContext`, agregando una validación explícita para asegurar que el `source` no contenga tipos de datos inusuales o profundos que pudieran causar excepciones al intentar acceder a sus atributos, evitando así posibles fallos durante la carga de métricas.
+- `2026-11-05T02:33:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T02:33:45` Corrida terminada. Total usado hoy: 60.

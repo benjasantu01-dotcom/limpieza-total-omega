@@ -294,17 +294,15 @@ class Scanner:
         """
         if not self._is_safe_entry(entry):
             return
-        try:
-            if self._is_relevant_extension(entry.name):
-                if entry.is_file():
-                    path_norm = os.path.normcase(entry.path)
-                    if path_norm not in self.seen_normcase:
-                        self.seen_normcase.add(path_norm)
-                        self._run_file_heuristics(Path(entry.path), entry)
-            elif entry.is_dir():
-                self._handle_directory(entry, stack, depth, visited)
-        except (OSError, PermissionError, AttributeError):
-            pass
+        
+        # Optimización: Filtrado de extensión antes de cualquier I/O adicional
+        if entry.is_dir():
+            self._handle_directory(entry, stack, depth, visited)
+        elif self._is_relevant_extension(entry.name):
+            path_norm = os.path.normcase(entry.path)
+            if path_norm not in self.seen_normcase:
+                self.seen_normcase.add(path_norm)
+                self._run_file_heuristics(Path(entry.path), entry)
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """

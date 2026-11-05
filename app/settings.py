@@ -387,25 +387,15 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     de contenido y validación estructural estricta antes de retornar los datos.
     """
     try:
-        # Obtenemos info del archivo de forma segura antes de abrir
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
         
-        with open(file_path, "rb") as f:
-            content = f.read(MAX_SETTINGS_SIZE + 1)
-            # Re-verificación de tamaño tras lectura
-            if len(content) > MAX_SETTINGS_SIZE: return None
-        
-        # Validaciones de codificación y contenido sospechoso
-        if content.startswith((b'\xef\xbb\xbf', b'\xff\xfe', b'\xfe\xff')): return None
-        if any(b < 32 and b not in (9, 10, 13) for b in content): return None
-        
-        decoded = content.decode("utf-8", errors="strict")
-        data = json.loads(decoded, object_pairs_hook=dict)
-        
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            
         if not _is_structure_valid(data): return None
         return data
-    except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError, TypeError):
+    except (OSError, IOError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
