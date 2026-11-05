@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **127** (25.2% de aceptación)
+- Mejoras aceptadas: **128** (25.4% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 307
+- Sin respuesta de la IA (error o límite): 306
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 28 | 2 | 11 | 3 | 96 |
+| 2026-11-03 | 27 | 2 | 11 | 3 | 93 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 16 | 0 | 5 | 1 | 22 |
+| 2026-11-05 | 18 | 0 | 5 | 1 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **27**
 - seguridad defensiva: **23**
-- rendimiento: **21**
-- robustez ante casos límite: **16**
+- rendimiento: **23**
+- robustez ante casos límite: **15**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **14**
 - `healthscore.py`: **14**
 - `settings.py`: **13**
-- `diskreport.py`: **13**
-- `quarantine.py`: **12**
+- `quarantine.py`: **11**
 - `browser.py`: **11**
 - `memory.py`: **11**
 - `duplicates.py`: **10**
 - `safety.py`: **10**
+- `assistant.py`: **9**
 - `scanner.py`: **8**
-- `assistant.py`: **8**
 - `branding.py`: **7**
 - `startup.py`: **5**
 - `organizer.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T01:57:13` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la creación innecesaria de objetos `Path` y múltiples llamadas a `is_protected_path` por operaciones directas sobre cadenas (`entry.path`), reduciendo drásticamente la sobrecarga de instanciación de objetos en directorios con muchos archivos.
+- `2026-11-05T01:55:38` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud eliminando la reconstrucción de tuplas dentro del bucle de `active_problems` y mejorando la eficiencia del mapa de criterios mediante una estructura de acceso O(1) basada en el tipo de métrica, evitando recálculos innecesarios en `SystemContext`.
 - `2026-11-05T01:46:03` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de la clase `Scanner` para clarificar las responsabilidades de cada etapa del recorrido, utilizando docstrings más descriptivos que explican el "porqué" de las validaciones de seguridad, además de estandarizar la nomenclatura interna de las variables de control en el bucle de recorrido para facilitar la lectura.
 - `2026-11-05T01:37:21` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la intención de las funciones auxiliares de bajo nivel y aplicando *type hinting* consistente para reducir la ambigüedad en operaciones críticas de sistema.
 - `2026-11-05T01:36:37` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos explícitos a funciones auxiliares de seguridad (`_try_open_win_file`, `_is_recursive_violation`, etc.), clarificando el propósito de las comprobaciones de bajo nivel y manteniendo la integridad del código.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T01:16:27` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez del parseo del registro integrando validación de tipos estricta y manejo de excepciones en `_is_valid_registry_path` para evitar que rutas malformadas o inesperadas interrumpan la recolección.
 - `2026-11-05T00:55:48` **organizer.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `stage_for_review` y `delete_reviewed` al validar explícitamente la existencia de las rutas antes de proceder y envolver la lógica en bloques de control de excepciones más específicos, evitando fallos silenciosos ante rutas inexistentes o inaccesibles.
 - `2026-11-05T00:55:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo validaciones preventivas sobre el handle y el estado del proceso, asegurando que la operación de trim solo ocurra si el handle es válido, activo y tiene permisos confirmados, evitando excepciones descontroladas en el acceso a APIs de bajo nivel.
-- `2026-11-05T00:44:08` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `DirectoryScanner._process_entry` agregando una validación explícita para evitar errores al intentar acceder a rutas con nombres inválidos o caracteres de control, asegurando que el proceso de escaneo sea resiliente ante estructuras de archivos inesperadas dentro de las carpetas de caché.
-- `2026-11-05T00:36:45` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación de parámetros más estricta (`isinstance` y chequeo de `None`) antes de procesar valores, evitando posibles excepciones durante la ejecución en la UI.

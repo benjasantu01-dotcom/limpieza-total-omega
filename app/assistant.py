@@ -398,12 +398,12 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     return spec.min_val <= val <= spec.max_val
 
 @lru_cache(maxsize=128)
-def _evaluate_active_problems(metrics_tuple: tuple) -> tuple[str, ...]:
-    """Evalúa los problemas activos del sistema a partir de un conjunto de métricas."""
+def _evaluate_active_problems(metrics_items: tuple[tuple[str, float], ...]) -> tuple[str, ...]:
+    """Evalúa los problemas activos del sistema a partir de las métricas presentes."""
     results = []
-    for key, val in metrics_tuple:
+    for key, val in metrics_items:
         # El mapa ya está filtrado solo para las claves que existen en los criterios
-        for criterion in _CRITERIOS_MAP[key]:
+        for criterion in _CRITERIOS_MAP.get(key, ()):
             msg = criterion.format_if_triggered(val)
             if msg: results.append(msg)
     return tuple(results)
@@ -438,8 +438,8 @@ class SystemContext:
         """Recopila los problemas de salud detectados basándose en los criterios actuales."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        # O(1) acceso comparando claves relevantes pre-intersecadas
-        relevant = tuple((k, snap[k]) for k in _CRITERIOS_MAP if k in snap)
+        # Pasamos los elementos presentes en el snapshot que tienen criterios asociados
+        relevant = tuple((k, snap[k]) for k in snap if k in _CRITERIOS_MAP)
         return _evaluate_active_problems(relevant)
 
     @property

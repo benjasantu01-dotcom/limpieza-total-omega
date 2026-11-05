@@ -1533,3 +1533,11 @@ assert not ['memory.py']
 - `2026-11-05T01:46:53` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-11-05T01:46:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T01:46:53` Corrida terminada. Total usado hoy: 44.
+- `2026-11-05T01:54:57` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-05T01:55:38` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso a los criterios de salud eliminando la reconstrucción de tuplas dentro del bucle de `active_problems` y mejorando la eficiencia del mapa de criterios mediante una estructura de acceso O(1) basada en el tipo de métrica, evitando recálculos innecesarios en `SystemContext`.
+- `2026-11-05T01:56:05` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-05T01:56:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-05T01:57:03` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-05T01:57:13` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la creación innecesaria de objetos `Path` y múltiples llamadas a `is_protected_path` por operaciones directas sobre cadenas (`entry.path`), reduciendo drásticamente la sobrecarga de instanciación de objetos en directorios con muchos archivos.
+- `2026-11-05T01:57:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T01:57:13` Corrida terminada. Total usado hoy: 48.
