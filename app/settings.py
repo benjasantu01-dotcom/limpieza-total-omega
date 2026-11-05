@@ -388,7 +388,7 @@ def _is_structure_valid(data: Any) -> bool:
         if val is not None and not _is_valid_type(val, _KEY_TO_ENUM[key_name]): return False
     return True
 
-def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
+def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """
     Ejecuta el ciclo de carga: verifica permisos de archivo, abre de forma segura 
     (evitando race conditions), parsea el contenido y valida su estructura interna.
@@ -403,7 +403,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
                 data = json.load(f)
         except Exception:
             os.close(fd)
-            raise
+            return None
             
         if not _is_structure_valid(data): return None
         return data, st

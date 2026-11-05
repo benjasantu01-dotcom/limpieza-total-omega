@@ -826,3 +826,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-05T07:24:11` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad en `_validate_ntfs_reparse_redirection` para asegurar que, al validar la profundidad y el destino de enlaces simbólicos o junctions, se manejen correctamente los errores de permiso, evitando que una excepción no controlada detenga el escaneo completo cuando el acceso a un enlace sea restringido por el sistema.
 - `2026-11-05T07:24:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T07:24:11` Corrida terminada. Total usado hoy: 176.
+- `2026-11-05T07:31:36` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-11-05T07:32:03` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-05T07:32:33` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia en la carga de archivos al manejar específicamente casos de archivos bloqueados, corruptos o con errores de permisos mediante un bloque `try-except` más robusto que garantiza un retorno seguro a `DEFAULTS` en lugar de una falla total o silenciosa, y se ha añadido una validación de `path` más estricta para evitar el uso de rutas con enlaces simbólicos intermedios que pudieran ser manipulados fuera de la app.
+- `2026-11-05T07:32:58` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-05T07:33:24` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva del asistente restringiendo el acceso a atributos y métodos mediante `getattr` en `_get_safe_attr` y `SystemContext._apply_field`, asegurando que no se puedan invocar métodos críticos (como `__subclasses__` o `__init__`) mediante una lista blanca estricta de claves permitidas en `_VALIDATORS`.
+- `2026-11-05T07:33:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T07:33:24` Corrida terminada. Total usado hoy: 180.

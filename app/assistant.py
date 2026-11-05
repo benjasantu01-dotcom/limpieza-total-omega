@@ -470,9 +470,13 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if (self.grade and len(self.grade) > 0) else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
-        """Valida e intenta extraer una métrica de una fuente externa arbitraria."""
+        """Valida e intenta extraer una métrica de una fuente externa arbitraria usando acceso seguro."""
         try:
-            val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
+            if isinstance(source, dict):
+                val = source.get(key)
+            else:
+                val = _get_safe_attr(source, key)
+            
             if val is None or isinstance(val, (bool, dict, list, tuple)) or callable(val):
                 return None
             valid_val = _is_valid_numeric_update(val, spec)

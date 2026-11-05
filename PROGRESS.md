@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **155** (30.8% de aceptación)
+- Mejoras aceptadas: **157** (31.2% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 277
+- Sin respuesta de la IA (error o límite): 275
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 0 | 0 | 0 | 0 | 8 |
+| 2026-11-03 | 0 | 0 | 0 | 0 | 4 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 72 | 3 | 19 | 2 | 80 |
+| 2026-11-05 | 74 | 3 | 19 | 2 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **30**
-- robustez ante casos límite: **25**
-- seguridad defensiva: **24**
+- robustez ante casos límite: **26**
+- seguridad defensiva: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
-- `settings.py`: **15**
+- `settings.py`: **16**
 - `browser.py`: **15**
 - `memory.py`: **15**
 - `quarantine.py`: **13**
+- `assistant.py`: **11**
 - `duplicates.py`: **11**
 - `scanner.py`: **11**
-- `assistant.py`: **10**
 - `branding.py`: **10**
 - `safety.py`: **10**
 - `organizer.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T07:33:24` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva del asistente restringiendo el acceso a atributos y métodos mediante `getattr` en `_get_safe_attr` y `SystemContext._apply_field`, asegurando que no se puedan invocar métodos críticos (como `__subclasses__` o `__init__`) mediante una lista blanca estricta de claves permitidas en `_VALIDATORS`.
+- `2026-11-05T07:32:33` **settings.py** (robustez ante casos límite): Se ha mejorado la resiliencia en la carga de archivos al manejar específicamente casos de archivos bloqueados, corruptos o con errores de permisos mediante un bloque `try-except` más robusto que garantiza un retorno seguro a `DEFAULTS` en lugar de una falla total o silenciosa, y se ha añadido una validación de `path` más estricta para evitar el uso de rutas con enlaces simbólicos intermedios que pudieran ser manipulados fuera de la app.
 - `2026-11-05T07:24:11` **safety.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `_validate_ntfs_reparse_redirection` para asegurar que, al validar la profundidad y el destino de enlaces simbólicos o junctions, se manejen correctamente los errores de permiso, evitando que una excepción no controlada detenga el escaneo completo cuando el acceso a un enlace sea restringido por el sistema.
 - `2026-11-05T07:14:33` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que no existen o son inaccesibles en `_iter_process_memory` y `trim_working_set`, asegurando que `GetModuleFileNameExW` no reciba ni procese búferes corruptos o inválidos, reforzando la estabilidad ante procesos que terminan durante el escaneo.
 - `2026-11-05T07:13:12` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante estados incoherentes del pipeline asegurando que `_compute_cached` maneje situaciones donde `PIPELINE_DEFINITIONS` o los pesos no coincidan, evitando divisiones por cero o claves faltantes durante la agregación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T06:42:00` **quarantine.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento mediante la implementación de un mecanismo de validación diferida y reutilización de objetos `Path` resueltos en `purge_all`, evitando el uso de llamadas costosas a `resolve()` y `iterdir()` dentro de loops críticos, lo que reduce la carga de I/O en directorios con muchos ítems.
 - `2026-11-05T06:41:20` **organizer.py** (rendimiento): Optimizé `_process_directory` y `scan_for_junk` mediante la consolidación del filtrado de rutas: ahora se utiliza un único chequeo de `is_protected_path` al inicio de la recursión y un `set` de `JUNK_EXTENSIONS` para evitar el acceso repetitivo a `Path.suffix` y múltiples llamadas a `is_protected_path` innecesarias, reduciendo el overhead de I/O y procesamiento en recorridos profundos.
 - `2026-11-05T06:40:51` **memory.py** (rendimiento): Se ha optimizado `_iter_process_memory` mediante la pre-asignación y reutilización de buffers (haciendo el recorrido menos intensivo en memoria) y aplicando un filtro lógico temprano para evitar llamadas innecesarias a la API de `psapi` cuando el PID ya ha sido procesado o es inválido.
-- `2026-11-05T06:30:37` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para reducir drásticamente las llamadas a `os.path.abspath` y `Path.resolve()` innecesarias mediante el uso de la propiedad `path` de `os.DirEntry` y optimización de la validación de jerarquía, evitando la sobrecarga de crear múltiples objetos `Path` en cada iteración del loop principal.
-- `2026-11-05T06:23:09` **browser.py** (rendimiento): Optimicé el rendimiento del escáner de directorios eliminando la llamada redundante `is_safe_to_modify(Path(entry.path))` dentro del bucle de `_process_entry`, ya que la seguridad de la ruta base ya está garantizada por el contexto del escáner y la validación previa de la carpeta, ahorrando miles de instanciaciones de objetos `Path` y llamadas a funciones de validación costosas durante recorridos profundos.
