@@ -181,26 +181,22 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
-    """Convierte entrada variable a BytesValue entero."""
+    """Convierte entrada variable a BytesValue entero con validaciones estrictas."""
     if value is None: return BytesValue(0)
     
-    if isinstance(value, (int, float)):
-        try:
-            val = int(value * multiplier)
-            return BytesValue(max(0, val))
-        except (ValueError, OverflowError):
-            return BytesValue(0)
-            
-    if not isinstance(value, str): return BytesValue(0)
-    
-    digits = "".join(filter(str.isdigit, value))
-    if not digits: return BytesValue(0)
-    
     try:
-        val = int(digits) * multiplier
-        return BytesValue(val) if 0 <= val < (2**63 - 1) else BytesValue(0)
+        if isinstance(value, (int, float)):
+            val = int(value * multiplier)
+            return BytesValue(max(0, val)) if val < (2**63 - 1) else BytesValue(0)
+            
+        if isinstance(value, str):
+            digits = "".join(filter(str.isdigit, value.split()[0]))
+            if not digits: return BytesValue(0)
+            val = int(digits) * multiplier
+            return BytesValue(val) if 0 <= val < (2**63 - 1) else BytesValue(0)
     except (ValueError, OverflowError, TypeError):
-        return BytesValue(0)
+        pass
+    return BytesValue(0)
 
 _is_windows: bool = os.name == "nt"
 _linux_mem_path: Path = Path("/proc/meminfo")
@@ -248,21 +244,20 @@ def _is_valid_process(name: str, pid: int, ws: int) -> bool:
     return 0 < ws < MAX_VALID_PROCESS_MEM_BYTES
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Parseo de línea CSV de procesos con validación."""
-    if not isinstance(line, str) or not line.strip(): 
-        return None
-        
+    """Parseo de línea CSV de procesos con validación robusta."""
+    if not isinstance(line, str): return None
     parts = [p.strip().strip("'\"") for p in line.split(",")]
-    if len(parts) < 3: 
-        return None
+    if len(parts) < 3: return None
     
     try:
-        proc_name, pid_val, ws_val = str(parts[0]).strip(), int(parts[1]), _safe_int_conversion(parts[2])
+        proc_name = str(parts[0]).strip()
+        pid_val = int(parts[1])
+        ws_val = _safe_int_conversion(parts[2])
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
-        return None
-    except (ValueError, TypeError, IndexError, OverflowError):
-        return None
+    except (ValueError, TypeError):
+        pass
+    return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Extrae procesos desde volcado CSV y retorna los N principales."""

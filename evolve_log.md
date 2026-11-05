@@ -1130,3 +1130,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-05T09:35:58` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `_collect_summary_data` envolviendo el recorrido del generador en un bloque try-except para capturar excepciones inesperadas durante la iteración, asegurando que el informe sea parcial en lugar de fallar completamente ante un error de acceso a disco.
 - `2026-11-05T09:35:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T09:35:58` Corrida terminada. Total usado hoy: 228.
+- `2026-11-05T09:44:27` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-11-05T09:44:56` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para evitar fallos silenciosos ante archivos inexistentes o inaccesibles, asegurando que la lógica de recomendación no se detenga ante errores de entrada.
+- `2026-11-05T09:45:22` ➖ Sin cambios en healthscore.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez del cálculo en `score_security` capturando posibles errores de entrada mediante `_validate_numeric`, evitando que valores inesperados propaguen un cálculo erróneo.
+- `2026-11-05T09:46:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-05T09:46:45` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` para prevenir excepciones silenciosas o valores inesperados mediante validaciones de tipo explícitas y manejo defensivo de desbordamientos.
+- `2026-11-05T09:46:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T09:46:45` Corrida terminada. Total usado hoy: 232.

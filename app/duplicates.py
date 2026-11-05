@@ -259,7 +259,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     valid_candidates = [c for c in candidates if c[0] is not None]
     
     if not valid_candidates:
-        return group.paths[0]
+        return group.paths[0] if group.paths else None
         
     return min(valid_candidates, key=lambda x: x[0])[1]
 
