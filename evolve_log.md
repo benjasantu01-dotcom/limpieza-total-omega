@@ -1231,3 +1231,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-05T10:48:01` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la generación de colores degradados reemplazando la lógica de cálculo en tiempo real dentro del loop de dibujo por una aproximación basada en segmentos pre-calculados, mejorando significativamente la eficiencia al evitar llamadas repetitivas a `_rgb_to_hex` y aritmética de flotantes en cada frame de UI.
 - `2026-11-05T10:48:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T10:48:01` Corrida terminada. Total usado hoy: 256.
+- `2026-11-05T10:56:22` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-05T10:56:48` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `detect_profiles` reutilizando la instancia del escáner (`DirectoryScanner`) y compartiendo los conjuntos de visited_files y visited_dirs entre iteraciones de navegadores para evitar el recálculo y la redundancia de E/S en carpetas compartidas.
+- `2026-11-05T10:57:14` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` evitando llamadas redundantes a `entry.stat()` mediante el uso de `entry.stat(follow_symlinks=False)` una única vez por iteración y reutilizando la información obtenida para verificar el tamaño y el inode simultáneamente, reduciendo drásticamente las syscalls en sistemas con muchos archivos.
+- `2026-11-05T10:57:36` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-05T10:58:10` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score evitando la serialización completa a diccionario (`asdict`) en `compute_score` y la recreación redundante de objetos `SystemMetrics` dentro de la función cacheada, mejorando el rendimiento y reduciendo la presión sobre el recolector de basura.
+- `2026-11-05T10:58:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T10:58:10` Corrida terminada. Total usado hoy: 260.

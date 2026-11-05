@@ -297,22 +297,21 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        if entry.is_dir(follow_symlinks=False):
+                        st = entry.stat(follow_symlinks=False)
+                        
+                        if entry.is_dir():
                             if _is_reparse_point(entry):
                                 continue
                             
-                            entry_path = Path(entry.path)
-                            if skip_protected and is_protected_path(entry_path):
+                            if skip_protected and is_protected_path(Path(entry.path)):
                                 continue
                             
-                            st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
-                        elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            if st and st.st_size >= 0:
+                        elif entry.is_file():
+                            if st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                     except (OSError, PermissionError, FileNotFoundError, ValueError, AttributeError):
                         continue
