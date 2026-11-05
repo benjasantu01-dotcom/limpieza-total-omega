@@ -146,11 +146,11 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
 
 def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     """Accede a atributos mediante inspección controlada evitando ejecución de métodos."""
-    if not _is_safe_key(name): return default
+    if obj is None or not _is_safe_key(name): return default
     try:
         val: Any = getattr(obj, name, default)
         return val if not callable(val) else default
-    except Exception:
+    except (AttributeError, Exception):
         return default
 
 def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:

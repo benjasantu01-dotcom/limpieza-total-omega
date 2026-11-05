@@ -1123,3 +1123,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-05T09:28:16` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-05T09:28:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T09:28:16` Corrida terminada. Total usado hoy: 224.
+- `2026-11-05T09:34:18` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-05T09:34:56` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_safe_attr` y `SystemContext.ingest` para manejar correctamente atributos que podrían ser `None` o disparar excepciones inesperadas durante la inspección de objetos, asegurando que el asistente nunca falle ante fuentes de datos inusuales o malformadas.
+- `2026-11-05T09:35:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-05T09:35:47` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `DirectoryScanner._is_path_allowed` reemplazando el uso de `path_obj.resolve()` (que puede disparar `OSError` en rutas muy largas o con caracteres especiales) por una validación lógica más segura, y añadí manejo de excepciones específicas para evitar que el escaneo se interrumpa por errores de acceso al sistema de archivos.
+- `2026-11-05T09:35:58` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `_collect_summary_data` envolviendo el recorrido del generador en un bloque try-except para capturar excepciones inesperadas durante la iteración, asegurando que el informe sea parcial en lugar de fallar completamente ante un error de acceso a disco.
+- `2026-11-05T09:35:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T09:35:58` Corrida terminada. Total usado hoy: 228.

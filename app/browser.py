@@ -95,15 +95,12 @@ class DirectoryScanner:
         """Verifica si una ruta está dentro del sandbox permitido y es segura."""
         if not path_str or _is_unc_path(path_str): return False
         try:
-            path_obj = Path(path_str).resolve(strict=True)
-            if path_obj.is_symlink(): return False
-            if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+            path_obj = Path(path_str)
+            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
             
-            real_path = os.path.normcase(str(path_obj))
-            if real_path == self.ctx.sandbox_base_norm:
-                return True
-            return real_path.startswith(self.ctx.sandbox_base_norm + os.sep)
+            real_path = os.path.normcase(os.path.abspath(path_str))
+            return real_path.startswith(self.ctx.sandbox_base_norm)
         except (OSError, RuntimeError, ValueError):
             return False
 
@@ -112,20 +109,20 @@ class DirectoryScanner:
         if self._should_stop_traversal(entry, depth):
             return total_bytes
             
-        if entry.is_dir(follow_symlinks=False):
-            if not self.ctx.is_junction(entry.path) and self._is_path_allowed(entry.path):
-                subdir = self.get_size(entry.path, depth + 1)
-                return total_bytes + subdir.bytes_found
-        elif entry.is_file(follow_symlinks=False):
-            if not _is_system_hidden(entry.path, self.ctx.kernel32):
-                try:
+        try:
+            if entry.is_dir(follow_symlinks=False):
+                if not self.ctx.is_junction(entry.path) and self._is_path_allowed(entry.path):
+                    subdir = self.get_size(entry.path, depth + 1)
+                    return total_bytes + subdir.bytes_found
+            elif entry.is_file(follow_symlinks=False):
+                if not _is_system_hidden(entry.path, self.ctx.kernel32):
                     st_file = entry.stat(follow_symlinks=False)
                     file_id = (st_file.st_dev, st_file.st_ino)
                     if file_id not in self.ctx.visited_files:
                         self.ctx.visited_files.add(file_id)
                         return total_bytes + st_file.st_size
-                except (OSError, PermissionError):
-                    pass
+        except (OSError, PermissionError):
+            pass
         return total_bytes
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
@@ -134,8 +131,7 @@ class DirectoryScanner:
             return ScanResult(0, False)
         
         try:
-            p_root = Path(root_path)
-            if not p_root.exists() or p_root.is_symlink() or not self._is_path_allowed(root_path):
+            if not self._is_path_allowed(root_path):
                 return ScanResult(0, False)
         except (OSError, PermissionError):
             return ScanResult(0, False)
@@ -161,10 +157,7 @@ class DirectoryScanner:
         try:
             with os.scandir(root_path) as iterator:
                 for entry in iterator:
-                    try:
-                        total_bytes = self._process_entry(entry, depth, total_bytes)
-                    except (OSError, PermissionError):
-                        continue
+                    total_bytes = self._process_entry(entry, depth, total_bytes)
             return ScanResult(total_bytes, True)
         except (OSError, PermissionError): 
             return ScanResult(0, False)
@@ -271,7 +264,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not p.exists() or not p.is_dir() or not os.access(p, os.R_OK): return 0
     
     try:
-        root_norm = os.path.normcase(str(p.resolve(strict=True)))
+        root_norm = os.path.normcase(os.path.abspath(str(p)))
     except (OSError, RuntimeError):
         return 0
 
@@ -301,7 +294,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path) or not base.exists(): continue
         
         try:
-            base_norm = os.path.normcase(str(base.resolve(strict=True)))
+            base_norm = os.path.normcase(os.path.abspath(str(base)))
         except (OSError, RuntimeError):
             continue
             
