@@ -402,3 +402,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-05T02:39:19` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-11-05T02:39:19` Rotación — log: 1221 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T02:39:19` Corrida terminada. Total usado hoy: 64.
+- `2026-11-05T02:45:51` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-11-05T02:46:23` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` y `_compute_cached` ante valores no numéricos, casos de corrupción y errores inesperados, asegurando que el pipeline siempre retorne un resultado válido y nunca se bloquee ante entradas malformadas.
+- `2026-11-05T02:47:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-05T02:48:27` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_get_handle_for_safe_proc` y `_iter_process_memory` ante condiciones de carrera, garantizando que el `handle` sea cerrado de forma garantizada y añadiendo un chequeo explícito de nulidad para evitar errores de segmentación o llamadas a métodos en punteros inválidos.
+- `2026-11-05T02:48:40` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite en `_is_safe_for_disk_op` y `_process_directory`, añadiendo validaciones explícitas de integridad (archivos inexistentes o inaccesibles) y verificando correctamente los permisos de escritura antes de intentar cualquier operación de E/S.
+- `2026-11-05T02:48:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T02:48:40` Corrida terminada. Total usado hoy: 68.

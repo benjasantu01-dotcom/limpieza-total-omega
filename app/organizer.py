@@ -262,6 +262,10 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
+        # Validación de integridad de rutas
+        if not dest_real.exists() or not dest_real.is_dir(): return False
+        if not os.access(dest_real, os.W_OK): return False
+        
         if is_protected_path(src_real) or is_protected_path(dest_real): return False
         if not is_safe_to_modify(dest_real): return False
         if dest_real in src_real.parents or src_real == dest_real or src_real.parent == dest_real: return False
@@ -301,6 +305,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         
     try:
         real_path = current_dir.resolve(strict=False)
+        if not real_path.exists() or not real_path.is_dir(): return
+        
         path_key = str(real_path)
         if path_key in visited: return
         visited.add(path_key)

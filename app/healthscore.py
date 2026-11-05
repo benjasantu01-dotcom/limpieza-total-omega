@@ -334,35 +334,39 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
     if metric_tuple is None or len(metric_tuple) != len(_VALIDATION_KEYS):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
 
-    metrics = SystemMetrics(
-        **dict(zip(_VALIDATION_KEYS, metric_tuple)),
-        quarantined_count=_validate_numeric(quarantined, 0.0, 0.0, 10000.0)
-    )
-    
-    # Procesamiento del pipeline mediante transformaciones funcionales declarativas
-    scores = [(entry, entry.scorer(metrics)) for entry in PIPELINE_DEFINITIONS]
-    
-    recommendations = [
-        msg for entry, ratio in scores for msg in _evaluate_rules(metrics, entry.rules, ratio)
-    ]
-    
-    metric_breakdown = {
-        e.area: int(_clamp(r * e.weight, 0.0, float(e.weight))) 
-        for e, r in scores
-    }
-            
-    if metrics.quarantined_count > 0:
-        if q_msg := _sanitize_msg("Existen elementos en cuarentena."):
-            recommendations.append(q_msg)
+    try:
+        metrics = SystemMetrics(
+            **dict(zip(_VALIDATION_KEYS, metric_tuple)),
+            quarantined_count=_validate_numeric(quarantined, 0.0, 0.0, 10000.0)
+        )
         
-    final_score = int(_clamp(sum(metric_breakdown.values()), 0.0, 100.0))
-    
-    return HealthResult(
-        score=final_score,
-        grade=grade_for_score(final_score),
-        breakdown=metric_breakdown,
-        recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
-    )
+        # Procesamiento del pipeline mediante transformaciones funcionales declarativas
+        scores = [(entry, entry.scorer(metrics)) for entry in PIPELINE_DEFINITIONS]
+        
+        recommendations = [
+            msg for entry, ratio in scores for msg in _evaluate_rules(metrics, entry.rules, ratio)
+        ]
+        
+        metric_breakdown = {
+            e.area: int(_clamp(r * e.weight, 0.0, float(e.weight))) 
+            for e, r in scores
+        }
+                
+        if metrics.quarantined_count > 0:
+            if q_msg := _sanitize_msg("Existen elementos en cuarentena."):
+                recommendations.append(q_msg)
+            
+        final_score = int(_clamp(sum(metric_breakdown.values()), 0.0, 100.0))
+        
+        return HealthResult(
+            score=final_score,
+            grade=grade_for_score(final_score),
+            breakdown=metric_breakdown,
+            recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+        )
+    except Exception as e:
+        logging.error(f"Error interno en _compute_cached: {e}")
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo crítico durante el cómputo."])
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Punto de entrada principal para el cálculo del score de salud."""
