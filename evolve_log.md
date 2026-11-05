@@ -833,3 +833,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-05T07:33:24` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva del asistente restringiendo el acceso a atributos y métodos mediante `getattr` en `_get_safe_attr` y `SystemContext._apply_field`, asegurando que no se puedan invocar métodos críticos (como `__subclasses__` o `__init__`) mediante una lista blanca estricta de claves permitidas en `_VALIDATORS`.
 - `2026-11-05T07:33:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T07:33:24` Corrida terminada. Total usado hoy: 180.
+- `2026-11-05T07:41:46` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-05T07:42:17` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-05T07:42:41` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_path_allowed` asegurando que la validación de la ruta incluya la verificación de que la ruta resuelta reside físicamente dentro de `LOCALAPPDATA` mediante una comparación estricta de nombres normalizados, previniendo posibles escapes de sandbox ante enlaces simbólicos o rutas maliciosas.
+- `2026-11-05T07:43:04` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-11-05T07:43:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-05T07:43:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T07:43:11` Corrida terminada. Total usado hoy: 184.

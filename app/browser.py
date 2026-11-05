@@ -101,7 +101,9 @@ class DirectoryScanner:
                 return False
             
             real_path = os.path.normcase(str(path_obj))
-            return real_path == self.ctx.sandbox_base_norm or real_path.startswith(self.ctx.sandbox_base_norm + os.sep)
+            if real_path == self.ctx.sandbox_base_norm:
+                return True
+            return real_path.startswith(self.ctx.sandbox_base_norm + os.sep)
         except (OSError, RuntimeError, ValueError):
             return False
 
