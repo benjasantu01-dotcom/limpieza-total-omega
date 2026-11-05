@@ -781,3 +781,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-05T06:23:09` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento del escáner de directorios eliminando la llamada redundante `is_safe_to_modify(Path(entry.path))` dentro del bucle de `_process_entry`, ya que la seguridad de la ruta base ya está garantizada por el contexto del escáner y la validación previa de la carpeta, ahorrando miles de instanciaciones de objetos `Path` y llamadas a funciones de validación costosas durante recorridos profundos.
 - `2026-11-05T06:23:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T06:23:09` Corrida terminada. Total usado hoy: 152.
+- `2026-11-05T06:30:10` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-11-05T06:30:37` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` para reducir drásticamente las llamadas a `os.path.abspath` y `Path.resolve()` innecesarias mediante el uso de la propiedad `path` de `os.DirEntry` y optimización de la validación de jerarquía, evitando la sobrecarga de crear múltiples objetos `Path` en cada iteración del loop principal.
+- `2026-11-05T06:31:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-05T06:32:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-05T06:32:45` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-11-05T06:33:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-05T06:33:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T06:33:40` Corrida terminada. Total usado hoy: 156.
