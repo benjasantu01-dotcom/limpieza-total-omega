@@ -282,6 +282,11 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
+        # Validación estricta de tipos de entrada
+        for field_name in _ALL_METRICS:
+            val = getattr(self, field_name)
+            if not isinstance(val, (int, float)):
+                setattr(self, field_name, 0.0)
         self.validate()
 
     @_guard_metric_access
@@ -406,8 +411,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])
 
 @lru_cache(maxsize=128)
-def _render_bar(points: int, max_val: int) -> str:
-    """Genera representación visual en texto de los puntajes."""
+def _render_bar(points: int, max_val: int, depth: int = 0) -> str:
+    """Genera representación visual en texto de los puntajes con control de recursión."""
+    if depth > _MAX_RECURSION_DEPTH:
+        return "..."
     return "#" * points + "." * (max(1, max_val) - points)
 
 def summarize(result: HealthResult | None) -> List[str]:

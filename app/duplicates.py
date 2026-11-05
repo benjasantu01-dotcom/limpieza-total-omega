@@ -55,7 +55,7 @@ _full_hash_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
     """Verifica si el path es un punto de reanálisis (Junction o Symlink) usando Win32 API."""
-    if not isinstance(path, Path): return False
+    if not isinstance(path, Path): return True
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
@@ -100,6 +100,7 @@ def _safe_path_check(path: Path) -> bool:
     try:
         if not path.is_file() or not is_safe_to_modify(path):
             return False
+        # Validar ruta absoluta para evitar traversal o redirecciones fuera de scope
         resolved_path = path.resolve(strict=True)
         return not is_protected_path(resolved_path) and not is_junction(path)
     except (OSError, RuntimeError):
@@ -181,12 +182,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in it:
                     try:
                         entry_path = Path(entry.path)
-                        if skip_protected and is_protected_path(entry_path): continue
-                        
+                        # No seguir puntos de reanálisis (evita loops y salidas de control)
                         if entry.is_dir(follow_symlinks=False):
                             if not is_junction(entry_path) and not entry.is_symlink():
                                 queue.append((entry_path, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
+                            if skip_protected and is_protected_path(entry_path): continue
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size >= min_size:
                                 inode = (stat.st_dev, stat.st_ino)

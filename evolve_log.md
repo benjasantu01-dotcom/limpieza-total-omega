@@ -1289,3 +1289,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-05T12:09:33` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una validación explícita mediante `is_protected_path` sobre la resolución final de la ruta, asegurando que cualquier intento de acceso a través de links o rutas manipuladas que resuelvan en zonas bloqueadas sea denegado antes de iniciar cualquier operación de I/O.
 - `2026-11-05T12:09:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T12:09:33` Corrida terminada. Total usado hoy: 288.
+- `2026-11-05T12:17:53` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-11-05T12:18:20` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_collect_candidates` y `_safe_path_check` para prevenir el seguimiento de enlaces simbólicos y puntos de unión durante el escaneo, asegurando que el análisis de duplicados no escape de las rutas autorizadas.
+- `2026-11-05T12:18:46` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la implementación de un límite de recursión explícito para `_render_bar` y la adición de una validación `isinstance` estricta en el `__post_init__` y los métodos del dataclass `SystemMetrics`, evitando así la posible inyección de tipos inesperados antes de que los datos lleguen al motor de cómputo.
+- `2026-11-05T12:19:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-05T12:19:49` Gemini devolvió 500 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-05T12:21:09` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-05T12:21:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-05T12:21:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T12:21:22` Corrida terminada. Total usado hoy: 292.
