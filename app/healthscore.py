@@ -152,7 +152,7 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0     
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """Limita un valor numérico al rango definido [min_val, max_val]."""
+    """Asegura que un valor se mantenga estrictamente dentro de los límites [min_val, max_val]."""
     try:
         val = float(value)
         if not math.isfinite(val): return min_val
@@ -161,7 +161,11 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
         return min_val
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Genera funciones de normalización lineal para métricas simples."""
+    """Genera una función de normalización lineal que mapea valores de entrada a [0.0, 1.0].
+    
+    Si 'inverse' es True, un valor de 0 mapea a 1.0 (óptimo), útil para métricas de 'desecho'.
+    Si 'inverse' es False, un valor de 0 mapea a 0.0, útil para métricas de 'disponibilidad'.
+    """
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0: return 0.0
         try:
@@ -227,14 +231,14 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
-    """Calcula el ratio de seguridad ponderando detecciones directas y advertencias."""
+    """Calcula el ratio de seguridad penalizando detecciones directas y advertencias acumuladas."""
     count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
     warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
     penalization = (count * 0.05) + (warn * 0.25)
     return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula el ratio de salud de memoria RAM."""
+    """Calcula el ratio de salud de memoria RAM basado en porcentaje disponible."""
     if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
     try:
         return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
@@ -242,7 +246,7 @@ def score_memory(available_percent: float | int) -> NormalizedRatio:
         return 0.0
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Calcula el ratio de salud de almacenamiento libre en disco."""
+    """Calcula el ratio de salud de almacenamiento libre basado en porcentaje total."""
     if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
     try:
         return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
@@ -341,7 +345,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
-    """Orquestador central del cálculo de salud mediante pipeline (cacheado)."""
+    """Orquestador central del cálculo de salud mediante pipeline (cacheado).
+    
+    Toma métricas crudas, ejecuta el pipeline de scorers, combina los ratios 
+    según pesos ponderados y recolecta las advertencias generadas por el sistema.
+    """
     try:
         metrics = SystemMetrics(
             junk_mb=metric_tuple[0],

@@ -113,7 +113,10 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo. Utiliza caché interna para evitar re-lecturas."""
+    """
+    Calcula el hash SHA256 completo de un archivo. 
+    Retorna el hash hexadecimal si es accesible, o None en caso de error.
+    """
     if not isinstance(path, Path) or path in _full_hash_cache: return _full_hash_cache.get(path)
     if not _safe_path_check(path): return None
     
@@ -130,7 +133,10 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Genera un fingerprint rápido de 64KB para descartar falsos positivos."""
+    """
+    Genera un fingerprint rápido (SHA256 del encabezado) para descartar falsos positivos.
+    Retorna el hash hexadecimal de los primeros N bytes, o None si el archivo es muy pequeño.
+    """
     if not isinstance(path, Path) or path in _partial_cache: return _partial_cache.get(path)
     if not _safe_path_check(path): return None
     
@@ -212,8 +218,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
     Refina grupos de colisiones mediante un proceso de dos niveles:
-    1. Hash Parcial (rápido, 64KB).
-    2. Hash Completo (SHA256) solo si las colisiones persisten.
+    1. Hash Parcial (rápido, 64KB) para descartar archivos distintos rápidamente.
+    2. Hash Completo (SHA256) solo si las colisiones del hash parcial persisten.
     """
     if len(paths) < 2: return {}
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
@@ -225,7 +231,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing: hash completo directo para archivos pequeños, o optimizado para grandes."""
+    """Selecciona la estrategia de hashing según tamaño: hash completo para archivos pequeños, o optimizado para grandes."""
     if len(paths) < 2: return []
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)

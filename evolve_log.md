@@ -447,3 +447,9 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-05T14:43:03` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Documenté con docstrings detallados las clases internas (`ExtStats`, `GlobalStats`, `FolderMetrics`) y simplifiqué la legibilidad de `_collect_summary_data` para clarificar la lógica de acumulación, facilitando el mantenimiento a futuro sin alterar la funcionalidad.
 - `2026-11-05T14:43:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T14:43:03` Corrida terminada. Total usado hoy: 348.
+- `2026-11-05T14:51:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-05T14:51:56` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y la tipificación en `duplicates.py` añadiendo docstrings descriptivos a funciones clave y explicitando los retornos de las operaciones de hash, facilitando la comprensión del flujo de "falsos positivos" y la estrategia de filtrado en cascada.
+- `2026-11-05T14:52:32` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo `healthscore.py` mediante docstrings detallados en las funciones de procesamiento del pipeline, explicando el propósito de la normalización lineal, la clausura de valores y la integración de reglas de advertencia, facilitando la comprensión del flujo de datos para futuras auditorías o expansiones.
+- `2026-11-05T14:52:32` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-05T14:52:32` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T14:52:32` Corrida terminada. Total usado hoy: 350.
