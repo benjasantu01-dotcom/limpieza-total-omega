@@ -50,10 +50,11 @@ class Suspicion:
 
 class SuspicionCheck(Protocol):
     """
-    Protocolo de interfaz para definir una nueva heurística de seguridad.
-    
-    Cada chequeo debe recibir el contexto del archivo y retornar un objeto 
-    Suspicion si se detecta un riesgo, o None en caso contrario.
+    Define el contrato para funciones de inspección heurística.
+
+    Protocolo utilizado para inyectar nuevas reglas de análisis. Las funciones que
+    implementan este protocolo deben ser puras (o seguras frente a efectos secundarios)
+    y procesar metadatos en lugar de leer el contenido del archivo.
     """
     def __call__(
         self, 
@@ -215,7 +216,13 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 )
 
 class Scanner:
-    """Controlador central para la ejecución del escaneo recursivo mediante stack."""
+    """
+    Controlador central para la ejecución del escaneo recursivo mediante stack.
+
+    Gestiona el estado de la sesión de escaneo, incluyendo caché de rutas procesadas
+    para evitar ciclos y redundancia, y orquesta la aplicación de todas las heurísticas
+    registradas en `ALL_CHECKS`.
+    """
     
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
@@ -271,7 +278,12 @@ class Scanner:
         return os.path.splitext(name)[1].lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
-        """Clasifica una entrada para realizar escaneo de archivos o profundizar en directorios."""
+        """
+        Clasifica una entrada para realizar escaneo de archivos o profundizar en directorios.
+
+        Si es un directorio, delega a `_handle_directory`; si es un archivo relevante,
+        ejecuta las heurísticas de seguridad sobre él.
+        """
         if not self._is_safe_entry(entry):
             return
         
