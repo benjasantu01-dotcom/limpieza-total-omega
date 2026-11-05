@@ -341,10 +341,11 @@ def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
     """Escribe el archivo del logo en disco validando permisos de seguridad."""
-    if not destination: return None
     try:
+        if destination is None: return None
         dest_path = Path(destination).resolve()
-        # Verificar seguridad antes de cualquier operación de escritura
+        
+        # Validaciones de seguridad y estado
         if not is_safe_to_modify(dest_path):
             return None
             
@@ -354,7 +355,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
             
         dest_path.write_text(logo_svg(int(size)), encoding="utf-8")
         return dest_path
-    except (OSError, PermissionError, RuntimeError, TypeError, ValueError, AttributeError): 
+    except (OSError, PermissionError, TypeError, ValueError, AttributeError): 
         return None
 
 _ASCII_LOGO: Final[str] = (
@@ -412,17 +413,16 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Función de alto nivel para dibujar el logo completo en un Canvas."""
-    if canvas is None or not all(map(math.isfinite, (size, canvas_x, canvas_y))): return
+    if canvas is None: return
     try:
-        val_size = float(size)
-        s = max(_MIN_SCALE, min(_MAX_SCALE, val_size / SHIELD_WIDTH))
-        poly = _get_scaled_poly(s, canvas_x, canvas_y)
+        s = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
+        poly = _get_scaled_poly(s, float(canvas_x), float(canvas_y))
         if not poly: return
         canvas.create_oval(canvas_x+(SHIELD_CENTER_X-75)*s, canvas_y+(58-75)*s, canvas_x+(SHIELD_CENTER_X+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, s)
-    except (AttributeError, TypeError, ValueError): pass
+    except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """Dibuja barras decorativas graduadas como indicadores de progreso."""

@@ -133,10 +133,9 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     Intenta convertir y validar un valor crudo contra una especificación de métrica.
     Retorna el valor validado o None si la entrada no cumple los criterios de seguridad o rango.
     """
-    if val is None or isinstance(val, bool):
+    if val is None or isinstance(val, (bool, dict, list, tuple)):
         return None
     try:
-        if isinstance(val, (dict, list, tuple)): return None
         f: float = float(val)
         if _is_safe_numeric_context(f) and spec.is_valid_type(f) and _is_metric_within_bounds(f, spec):
             return f

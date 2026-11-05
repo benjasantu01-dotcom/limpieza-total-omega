@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 262
+- Sin respuesta de la IA (error o límite): 261
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 48 | 2 | 17 | 5 | 104 |
-| 2026-11-05 | 126 | 7 | 33 | 4 | 158 |
+| 2026-11-04 | 47 | 2 | 17 | 5 | 101 |
+| 2026-11-05 | 128 | 7 | 33 | 4 | 160 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **43**
 - rendimiento: **36**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **32**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **18**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
+- `healthscore.py`: **17**
 - `settings.py`: **17**
 - `quarantine.py`: **16**
 - `scanner.py`: **14**
 - `memory.py`: **14**
+- `assistant.py`: **13**
 - `safety.py`: **12**
 - `duplicates.py`: **12**
-- `assistant.py`: **12**
-- `branding.py`: **10**
+- `branding.py`: **11**
 - `organizer.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T14:02:40` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de tipos y estados, previniendo excepciones en tiempo de ejecución al manipular rutas, escalas o valores geométricos inesperados.
+- `2026-11-05T14:02:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_numeric_update` reemplazando la comparación booleana con una comprobación explícita de `float`, asegurando que `NaN` o `Inf` se manejen correctamente mediante la integración de `_check_metric_integrity` dentro de la lógica de validación, evitando excepciones silenciosas al tratar tipos inesperados.
 - `2026-11-05T12:39:46` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `startup.py` al implementar la verificación de puntos de reparse (junctions) y enlaces simbólicos mediante `os.path.islink` durante la lectura del registro y carpetas, evitando que el escáner sea inducido a recorrer árboles de directorios fuera de las rutas de inicio estándar.
 - `2026-11-05T12:39:17` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` para prevenir ataques de sustitución de archivos (TOCTOU) mediante el uso de `os.open` con `os.O_NOFOLLOW` y validaciones estrictas de estado (`fstat`) tras la apertura, asegurando que el archivo de configuración no sea un enlace simbólico o un reparse point.
 - `2026-11-05T12:38:47` **scanner.py** (seguridad defensiva): Se ha añadido una validación de `st_nlink` en `_safe_stat` para detectar de forma más robusta archivos sospechosos o inconsistentes (como puntos de reanálisis mal formados) a nivel de metadatos, fortaleciendo el escaneo defensivo.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T12:08:55` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` utilizando `is_safe_to_modify` para verificar la ruta sin lanzar excepciones innecesarias en el flujo, garantizando que la operación de escritura sea segura incluso si la ruta proporcionada es inválida o sensible, manteniendo la integridad del sistema.
 - `2026-11-05T12:08:24` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la ingesta de datos en `SystemContext` añadiendo una validación explícita para rechazar cualquier fuente que contenga claves de diccionario que sean rutas protegidas, previniendo que un JSON de configuración malintencionado intente inyectar o manipular rutas críticas mediante el método `ingest`.
 - `2026-11-05T12:00:33` **startup.py** (robustez ante casos límite): Mejora la robustez del parseo del registro ante rutas con espacios y comillas múltiples añadiendo una normalización más estricta en `_is_valid_registry_path`, asegurando que no se pierdan entradas válidas que contengan rutas legítimas con espacios.
-- `2026-11-05T12:00:18` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante archivos corruptos o malintencionados al añadir una validación de `st_nlink` (evitando enlaces duros/hardlinks sospechosos) y una comprobación de tamaño mínimo en `_is_file_secure_to_read` y `perform_atomic_write`, además de asegurar que la carpeta de configuración tenga los permisos correctos antes de proceder a la escritura, evitando así ataques de desbordamiento o reemplazo de archivos.
-- `2026-11-05T11:59:15` **scanner.py** (robustez ante casos límite): Se reforzó la robustez del escáner ante rutas malformadas o inaccesibles mediante la normalización y validación estricta de `entry.path` antes de cualquier procesamiento, previniendo errores de `TypeError` o `ValueError` al manejar entradas devueltas por `os.scandir` en entornos con permisos restrictivos o sistemas de archivos inestables.
