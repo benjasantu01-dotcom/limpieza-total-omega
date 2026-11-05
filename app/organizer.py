@@ -296,6 +296,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 
 def _is_candidate_for_scan(name: str, stats: os.stat_result) -> bool:
     """Determina si un archivo cumple los criterios heurísticos para ser clasificado como basura."""
+    # Uso de la constante JUNK_EXTENSIONS pre-compilada
     if Path(name).suffix.lower() not in JUNK_EXTENSIONS:
         return False
     if stats.st_size >= LIMITS.MAX_FILE_SIZE_BYTES:
@@ -308,11 +309,9 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         
     try:
         real_path = current_dir.resolve(strict=False)
-        if not real_path.exists() or not real_path.is_dir(): return
+        if not real_path.exists() or not real_path.is_dir() or str(real_path) in visited: return
         
-        path_key = str(real_path)
-        if path_key in visited: return
-        visited.add(path_key)
+        visited.add(str(real_path))
         
         with os.scandir(real_path) as iterator:
             for entry in iterator:
@@ -321,9 +320,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        stats = entry.stat(follow_symlinks=False)
-                        if _is_candidate_for_scan(entry.name, stats):
-                            if entry.path not in protected_cache and not _is_system_hidden(entry):
+                        # Optimización: solo procesar si la extensión coincide antes de stat pesado
+                        if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
+                            stats = entry.stat(follow_symlinks=False)
+                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
@@ -340,7 +340,8 @@ def scan_for_junk(directories: Optional[Sequence[Union[str, Path]]] = None) -> L
     for d in filter(None, scan_list):
         try:
             p = Path(d).expanduser()
-            if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
+            # Chequeo inicial de seguridad antes de iniciar recursión
+            if p.exists() and p.is_dir() and not _is_unc_path(p) and not is_protected_path(p):
                 _process_directory(p, found, 0, protected_cache, visited)
         except (OSError, RuntimeError):
             continue

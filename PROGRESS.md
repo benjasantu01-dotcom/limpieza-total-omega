@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **148** (29.4% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 286
+- Sin respuesta de la IA (error o límite): 285
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 6 | 1 | 1 | 0 | 20 |
+| 2026-11-03 | 3 | 1 | 1 | 0 | 19 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 59 | 3 | 16 | 1 | 77 |
+| 2026-11-05 | 62 | 3 | 17 | 1 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **30**
-- seguridad defensiva: **28**
-- rendimiento: **25**
-- robustez ante casos límite: **19**
+- rendimiento: **28**
+- seguridad defensiva: **27**
+- robustez ante casos límite: **17**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **17**
 - `healthscore.py`: **16**
-- `settings.py`: **15**
+- `quarantine.py`: **14**
+- `settings.py`: **14**
 - `browser.py`: **14**
-- `quarantine.py`: **13**
-- `memory.py`: **13**
-- `assistant.py`: **10**
+- `memory.py`: **14**
 - `safety.py`: **10**
 - `duplicates.py`: **10**
 - `scanner.py`: **10**
+- `assistant.py`: **9**
 - `branding.py`: **9**
-- `organizer.py`: **6**
-- `startup.py`: **5**
+- `organizer.py`: **7**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T06:42:00` **quarantine.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento mediante la implementación de un mecanismo de validación diferida y reutilización de objetos `Path` resueltos en `purge_all`, evitando el uso de llamadas costosas a `resolve()` y `iterdir()` dentro de loops críticos, lo que reduce la carga de I/O en directorios con muchos ítems.
+- `2026-11-05T06:41:20` **organizer.py** (rendimiento): Optimizé `_process_directory` y `scan_for_junk` mediante la consolidación del filtrado de rutas: ahora se utiliza un único chequeo de `is_protected_path` al inicio de la recursión y un `set` de `JUNK_EXTENSIONS` para evitar el acceso repetitivo a `Path.suffix` y múltiples llamadas a `is_protected_path` innecesarias, reduciendo el overhead de I/O y procesamiento en recorridos profundos.
+- `2026-11-05T06:40:51` **memory.py** (rendimiento): Se ha optimizado `_iter_process_memory` mediante la pre-asignación y reutilización de buffers (haciendo el recorrido menos intensivo en memoria) y aplicando un filtro lógico temprano para evitar llamadas innecesarias a la API de `psapi` cuando el PID ya ha sido procesado o es inválido.
 - `2026-11-05T06:30:37` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para reducir drásticamente las llamadas a `os.path.abspath` y `Path.resolve()` innecesarias mediante el uso de la propiedad `path` de `os.DirEntry` y optimización de la validación de jerarquía, evitando la sobrecarga de crear múltiples objetos `Path` en cada iteración del loop principal.
 - `2026-11-05T06:23:09` **browser.py** (rendimiento): Optimicé el rendimiento del escáner de directorios eliminando la llamada redundante `is_safe_to_modify(Path(entry.path))` dentro del bucle de `_process_entry`, ya que la seguridad de la ruta base ya está garantizada por el contexto del escáner y la validación previa de la carpeta, ahorrando miles de instanciaciones de objetos `Path` y llamadas a funciones de validación costosas durante recorridos profundos.
 - `2026-11-05T06:22:59` **branding.py** (rendimiento): Optimicé el cálculo de `_draw_shield_stripes` eliminando el uso de `get_gradient_segments` (que implica múltiples llamados a funciones y generación de tuplas intermedias en cada frame) reemplazándolo por un cálculo de color lineal directo en el loop, reduciendo drásticamente el overhead durante el redibujado de la interfaz.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T06:01:46` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `organizer.py` mediante la adición de Type Hints detallados en las funciones de escaneo, la corrección de una inconsistencia semántica en `_is_safe_for_disk_op` (donde se validaba `is_safe_to_modify` sobre el origen), y la aclaración de las constantes de seguridad mediante comentarios explícitos sobre el propósito de las máscaras de bits.
 - `2026-11-05T06:01:20` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo los estándares de PEP 257) y se ha extraído la lógica de comparación de procesos en `_extract_process_info` a una función de validación más explícita para mejorar la legibilidad y mantenibilidad del flujo de datos.
 - `2026-11-05T05:50:49` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo reemplazando los parámetros numéricos individuales de `score_security` por una lógica de validación unificada, y renombré variables internas de `_compute_cached` para clarificar el flujo de datos del pipeline.
-- `2026-11-05T05:50:37` **duplicates.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints refinados en los métodos internos de procesamiento de hashes y recolección de candidatos para clarificar la lógica de las estrategias de comparación y el manejo de recursos, mejorando la mantenibilidad del módulo sin alterar su funcionalidad.
-- `2026-11-05T05:49:49` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del motor de escaneo mediante la adición de docstrings detallados en métodos clave, tipado explícito en `DirectoryScanner` y la clarificación de la lógica de recursión mediante la extracción de la condición de parada a un método dedicado `_should_stop_traversal`.
-- `2026-11-05T05:41:05` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos específicos a las estructuras de datos y funciones de soporte de color, además de organizar visualmente el código mediante secciones comentadas más claras, facilitando la auditoría de seguridad y el desarrollo futuro.

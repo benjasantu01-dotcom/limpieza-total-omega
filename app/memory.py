@@ -356,18 +356,22 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     """Generador eficiente para recorrer procesos activos."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     
-    pids = (wintypes.DWORD * 1024)()
+    pids = (wintypes.DWORD * 2048)()
     bytes_written = wintypes.DWORD(0)
     
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
             
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
-    count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 1024)
+    count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     path_buf = ctypes.create_unicode_buffer(512)
+    processed_pids: Set[int] = set()
     
     for i in range(count):
         pid = int(pids[i])
+        if pid in processed_pids or _is_system_process(pid): continue
+        processed_pids.add(pid)
+        
         handle = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
         if handle is None: continue
         

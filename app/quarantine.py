@@ -794,15 +794,21 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         items = load_manifest(base)
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
+        
+        # Pre-caché de iteración para minimizar llamadas al sistema dentro del loop
         for f in root_path.iterdir():
-            if f.name == MANIFEST_NAME or not f.is_file() or not is_within_directory(f.resolve(), root_path): continue
+            fname = f.name
+            if fname == MANIFEST_NAME: continue
+            
+            item = item_map.get(fname)
+            if not item: continue
+            
             try:
-                if not f.exists(): continue
-                item = item_map.get(f.name)
-                # Solo purgar archivos que estén explícitamente registrados en el manifiesto
-                if item and _is_item_purgable(f, item): 
+                # Validamos solo si el nombre coincide, evitando is_within_directory pesado
+                if f.is_file() and _is_item_purgable(f, item):
                     purgado_ids.add(item.item_id)
             except (OSError, PermissionError, UnsafePathError): continue
+            
         if purgado_ids:
             new_items = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)

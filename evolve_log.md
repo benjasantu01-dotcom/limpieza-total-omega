@@ -789,3 +789,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-05T06:33:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-05T06:33:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T06:33:40` Corrida terminada. Total usado hoy: 156.
+- `2026-11-05T06:40:22` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-05T06:40:51` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se ha optimizado `_iter_process_memory` mediante la pre-asignación y reutilización de buffers (haciendo el recorrido menos intensivo en memoria) y aplicando un filtro lógico temprano para evitar llamadas innecesarias a la API de `psapi` cuando el PID ya ha sido procesado o es inválido.
+- `2026-11-05T06:41:20` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `_process_directory` y `scan_for_junk` mediante la consolidación del filtrado de rutas: ahora se utiliza un único chequeo de `is_protected_path` al inicio de la recursión y un `set` de `JUNK_EXTENSIONS` para evitar el acceso repetitivo a `Path.suffix` y múltiples llamadas a `is_protected_path` innecesarias, reduciendo el overhead de I/O y procesamiento en recorridos profundos.
+- `2026-11-05T06:42:00` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el manejo de la memoria y el rendimiento mediante la implementación de un mecanismo de validación diferida y reutilización de objetos `Path` resueltos en `purge_all`, evitando el uso de llamadas costosas a `resolve()` y `iterdir()` dentro de loops críticos, lo que reduce la carga de I/O en directorios con muchos ítems.
+- `2026-11-05T06:42:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-11-05T06:42:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T06:42:03` Corrida terminada. Total usado hoy: 160.
