@@ -92,10 +92,16 @@ class DirectoryScanner:
         return False
 
     def _is_path_allowed(self, path_str: str) -> bool:
-        """Verifica si una ruta está dentro del sandbox permitido y es segura."""
-        if not path_str or _is_unc_path(path_str): return False
+        """
+        Verifica que la ruta resida dentro del sandbox configurado y pase 
+        los controles de seguridad del módulo safety.py.
+        """
+        if not path_str or _is_unc_path(path_str): 
+            return False
+        
         try:
             path_obj = Path(path_str)
+            # Validamos seguridad antes de resolución para evitar accesos indebidos
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
             
@@ -105,7 +111,10 @@ class DirectoryScanner:
             return False
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
-        """Procesa una entrada individual (archivo o directorio)."""
+        """
+        Analiza un nodo del sistema de archivos, delegando la recursión
+        a get_size si se encuentra un subdirectorio válido.
+        """
         if self._should_stop_traversal(entry, depth):
             return total_bytes
             
@@ -126,14 +135,14 @@ class DirectoryScanner:
         return total_bytes
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
-        """Calcula el tamaño acumulado de archivos en una ruta de forma segura."""
+        """
+        Calcula el tamaño total en bytes de un directorio, aplicando 
+        verificaciones de seguridad en cada nivel para evitar puntos de reparse.
+        """
         if not isinstance(root_path, str) or not root_path:
             return ScanResult(0, False)
         
-        try:
-            if not self._is_path_allowed(root_path):
-                return ScanResult(0, False)
-        except (OSError, PermissionError):
+        if not self._is_path_allowed(root_path):
             return ScanResult(0, False)
             
         if depth > self.ctx.max_depth:

@@ -161,7 +161,10 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Recorrido BFS recursivo para hallar archivos que excedan min_size."""
+    """
+    Realiza un recorrido BFS para recolectar archivos aptos para ser analizados.
+    Evita recursión infinita y respeta las restricciones de seguridad del sistema.
+    """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[Tuple[int, int]] = set()
     
@@ -196,7 +199,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa rutas que colisionan ante una función de hash determinada."""
+    """Aplica una función de hashing a una lista y agrupa rutas con colisiones detectadas."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if _safe_path_check(path):
@@ -205,7 +208,11 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Refina grupos de archivos grandes usando hash parcial y luego completo si persiste la colisión."""
+    """
+    Refina grupos de colisiones mediante un proceso de dos niveles:
+    1. Hash Parcial (rápido, 64KB).
+    2. Hash Completo (SHA256) solo si las colisiones persisten.
+    """
     if len(paths) < 2: return {}
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
@@ -216,7 +223,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing según si el tamaño del archivo requiere optimización por lectura parcial."""
+    """Selecciona la estrategia de hashing: hash completo directo para archivos pequeños, o optimizado para grandes."""
     if len(paths) < 2: return []
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
@@ -251,7 +258,7 @@ def _get_mtime(path: Path) -> Optional[float]:
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
-    """Sugiere conservar el archivo cuya fecha de modificación sea más remota."""
+    """Sugiere conservar el archivo cuya fecha de modificación sea más remota (el más antiguo)."""
     if not group or not group.paths: 
         return None
         

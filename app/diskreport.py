@@ -54,6 +54,7 @@ FileRecord: TypeAlias = Tuple[int, Path]
 def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
     """
     Intenta obtener metadatos mediante lstat sin seguir enlaces simbólicos.
+    Devuelve None si el acceso es denegado o la ruta no existe.
     """
     if path is None:
         return None
@@ -66,6 +67,7 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
 def _is_reparse_point(entry: os.DirEntry) -> bool:
     """
     Verifica si una entrada de directorio es un punto de unión o reanálisis en Windows.
+    Utiliza atributos de archivo de bajo nivel para evitar traversals infinitos.
     """
     try:
         if os.name == 'nt':
@@ -79,6 +81,7 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
 class ExtStats:
     """
     Contenedor de métricas para una extensión de archivo específica.
+    Usa __slots__ para optimizar el uso de memoria durante escaneos masivos.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -150,6 +153,7 @@ def _validate_limit(limit: Any) -> int:
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Valida la ruta de inicio para un escaneo.
+    Verifica permisos de lectura, evita rutas UNC y bloqueos de seguridad.
     """
     if not directory:
         return None
@@ -165,7 +169,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(name: str) -> bool:
-    """Detecta nombres de archivo sospechosos."""
+    """Detecta nombres de archivo sospechosos o con caracteres inválidos para el sistema de archivos."""
     if not name or '\0' in name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
     return any(c in name for c in SUSPICIOUS_CHARS) or any(char in name for char in ('<', '>', ':', '"', '|', '?', '*'))
@@ -268,7 +272,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo que recorre archivos evitando ciclos y rutas protegidas.
+    Generador recursivo iterativo (stack-based) que recorre el árbol de archivos.
+    - Implementa detección de ciclos mediante Inodes para evitar bucles infinitos.
+    - Ignora puntos de reanálisis (Junctions/Symlinks) según `is_reparse_point`.
+    - Filtra rutas protegidas mediante `is_protected_path`.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -314,7 +321,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Retorna una lista ordenada de los archivos más pesados usando un heap para eficiencia."""
+    """Retorna una lista ordenada de los archivos más pesados usando un heap para eficiencia O(n log limit)."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
@@ -331,7 +338,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Calcula el peso acumulado de subcarpetas de primer nivel."""
+    """Calcula el peso acumulado de subcarpetas de primer nivel relativo a la raíz indicada."""
     root = _validate_root(directory)
     if root is None: return []
     
@@ -363,7 +370,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Realiza un escaneo consolidado del directorio y retorna métricas agregadas.
+    Realiza un escaneo consolidado del directorio:
+    - Agrega estadísticas globales (bytes totales y conteo).
+    - Agrupa métricas por extensión.
+    - Mantiene un heap de tamaño `limit` para trackear los archivos más grandes de forma eficiente.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
