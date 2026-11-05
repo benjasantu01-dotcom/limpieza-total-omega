@@ -389,11 +389,14 @@ def _is_valid_registry_path(path_str: str) -> bool:
         return False
     
     try:
-        clean_path = path_str.strip('"')
+        # Limpieza más robusta para casos con comillas embebidas o rutas largas
+        clean_path = path_str.strip(' "')
+        if not clean_path: return False
+        
         target: Path = Path(clean_path).resolve(strict=False)
         if is_protected_path(target): return False
         
-        # Validación de seguridad: evitar caracteres sospechosos en la resolución
+        # Validación de seguridad: evitar caracteres sospechosos
         if any(c in str(target) for c in SUSPICIOUS_CHARS): return False
         
         return True

@@ -88,16 +88,16 @@ class SafetyState(NamedTuple):
     file_id: tuple[int, int, int, int]
 
 def _is_file_busy(path_str: str) -> bool:
-    """Verifica de forma no intrusiva si el sistema de archivos reporta bloqueo (sharing violation)."""
+    """Verifica si el archivo está bloqueado por otro proceso usando consulta de metadatos."""
     if os.name != 'nt': return False
-    data = WIN32_FILE_ATTRIBUTE_DATA()
-    try:
-        path_long = _to_long_path(path_str)
-        if not ctypes.windll.kernel32.GetFileAttributesExW(path_long, 0, ctypes.byref(data)):
-            err = ctypes.windll.kernel32.GetLastError()
-            return err == ERROR_SHARING_VIOLATION
-    except (AttributeError, OSError, ctypes.ArgumentError, Exception):
-        pass
+    kernel32 = ctypes.windll.kernel32
+    path_long = _to_long_path(path_str)
+    
+    # 0x00000000 permite abrir el archivo solo para consultar metadatos sin pedir acceso de lectura/escritura
+    handle = kernel32.CreateFileW(path_long, 0, 0, None, 3, 0x00000080, None)
+    if handle == INVALID_HANDLE_VALUE:
+        return kernel32.GetLastError() == ERROR_SHARING_VIOLATION
+    kernel32.CloseHandle(handle)
     return False
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
@@ -172,7 +172,7 @@ class SecurityDescriptor(NamedTuple):
             risk_flags = (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | 
                           Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)
             is_protected = bool(attrs & risk_flags) or _is_file_owned_by_system(path_str)
-            is_in_use = is_protected or _is_file_locked_by_other_process(path_str) or _is_file_busy(path_str)
+            is_in_use = is_protected or _is_file_busy(path_str)
             
             return cls(
                 attrs=attrs,
@@ -480,26 +480,6 @@ def _is_system_directory_junction(path_str: str) -> bool:
     attrs = _get_file_attrs(path_str)
     if attrs == INVALID_FILE_ATTRIBUTES: return False
     return bool(attrs & Win32Attr.REPARSE_POINT)
-
-@lru_cache(maxsize=1024)
-def _is_file_locked_by_other_process(path_str: str) -> bool:
-    """Determina si el acceso exclusivo al archivo es denegado por otra instancia."""
-    if not isinstance(path_str, str) or not path_str or os.name != 'nt': return False
-    if not os.path.exists(path_str): return False
-    
-    kernel32 = ctypes.windll.kernel32
-    path_long = _to_long_path(path_str)
-    
-    try:
-        handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
-        if handle != INVALID_HANDLE_VALUE:
-            kernel32.CloseHandle(handle)
-            return False
-        
-        err = kernel32.GetLastError()
-        return err == ERROR_SHARING_VIOLATION
-    except (OSError, AttributeError, Exception):
-        return True
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
     """Retorna un objeto descriptor de seguridad para un Path dado."""
@@ -1007,7 +987,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if file_id in _NEGATIVE_SECURITY_CACHE:
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
 
-        if _is_file_locked_by_other_process(path_str) or _is_file_busy(path_str):
+        if _is_file_busy(path_str):
             raise UnsafePathError("Archivo bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
 
         sd = _get_security_descriptor(target_path)

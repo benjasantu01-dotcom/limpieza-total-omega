@@ -175,7 +175,7 @@ class _SettingsManager:
         Verifica permisos y seguridad del sistema de archivos antes de proceder.
         """
         serialized_bytes = serialized.encode("utf-8")
-        if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 2: return False
+        if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 16: return False
         if len(str(config_path)) > 260: return False
         
         try:
@@ -368,7 +368,7 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if (st.st_mode & 0o077) != 0: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
+        if st.st_size < 16 or st.st_size > MAX_SETTINGS_SIZE: return False
         return is_safe_to_modify(str(file_path))
     except (OSError, PermissionError, AttributeError, ValueError): return False
 

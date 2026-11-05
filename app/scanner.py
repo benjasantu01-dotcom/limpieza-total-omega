@@ -132,7 +132,7 @@ def _is_readable(path: PathInput) -> bool:
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """Obtiene atributos de bajo nivel de una entrada de directorio sin seguir enlaces."""
-    if not isinstance(entry, os.DirEntry):
+    if not isinstance(entry, os.DirEntry) or not entry.path:
         return 0
     try:
         stat_res = entry.stat(follow_symlinks=False)
@@ -249,7 +249,9 @@ class Scanner:
         Aplica filtros de seguridad pre-acceso sobre una entrada del sistema.
         Valida integridad de nombre, reparse points y límites de raíz.
         """
-        path_str: str = entry.path
+        path_str = getattr(entry, 'path', None)
+        if not path_str or not isinstance(path_str, str): return False
+        
         if path_str in self.safe_cache: return True
         
         if self._has_invalid_name(entry.name): return False
