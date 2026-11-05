@@ -85,8 +85,8 @@ class StartupEntry:
     """
     Representa una entrada de inicio detectada. 
 
-    Gestiona el ciclo de vida de una entrada de inicio, desde la recepción de la 
-    línea de comando cruda hasta la resolución y validación de la ruta real.
+    Gestiona el ciclo de vida de una entrada, desde la recepción de la 
+    línea de comando cruda hasta la validación y resolución absoluta de la ruta.
     """
     name: str
     command: str
@@ -99,7 +99,7 @@ class StartupEntry:
     def is_valid(self) -> bool:
         """
         Valida que la estructura del comando cumpla con las restricciones de 
-        seguridad iniciales (longitud, caracteres prohibidos, dispositivos).
+        seguridad: longitud, ausencia de caracteres prohibidos y dispositivos.
         """
         if not isinstance(self.command, str) or not self.command.strip():
             return False
@@ -109,35 +109,35 @@ class StartupEntry:
             return False
         return True
 
-    def _is_reserved_device_name(self, path_str: str) -> bool:
+    def _is_reserved_device_name(self, path_raw: str) -> bool:
         """
-        Verifica si la cadena contiene nombres de dispositivos de hardware reservados
-        por Windows que bloquean el acceso a archivos estándar.
+        Detecta nombres de dispositivos (ej. LPT1) que Windows reserva a nivel de kernel
+        y que, si se usan como rutas, pueden causar bloqueos o errores de I/O.
         """
-        if not isinstance(path_str, str) or "\0" in path_str:
+        if not isinstance(path_raw, str) or "\0" in path_raw:
             return True
         try:
-            path_upper = path_str.upper()
-            # Detectar rutas de dispositivos estilo Windows (ej: \\.\PhysicalDrive0)
+            path_upper = path_raw.upper()
             if path_upper.startswith(("\\\\.\\", "\\\\?\\")):
                 return True
-            # Extraer nombre base para comparar contra la lista de dispositivos reservados
-            p = Path(path_str)
+            p = Path(path_raw)
             return p.stem.upper() in RESERVED_DEVICE_NAMES
         except (ValueError, TypeError, AttributeError, OSError):
             return True
 
-    def _is_path_suspicious(self, path_string: str) -> bool:
+    def _is_path_suspicious(self, path_raw: str) -> bool:
         """
-        Analiza si la cadena contiene caracteres ilegales o sintaxis de inyección.
+        Analiza si la cadena de ruta contiene caracteres ilegales (inyección shell)
+        o sintaxis de red UNC potencialmente peligrosa para el análisis.
         """
-        if not isinstance(path_string, str):
+        if not isinstance(path_raw, str):
             return True
-        return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
+        return any(c in path_raw for c in SUSPICIOUS_CHARS) or path_raw.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
         """
-        Valida la extensión y confirma que el archivo no sea un enlace simbólico.
+        Confirma que el objeto Path apunta a un archivo ejecutable permitido,
+        descartando enlaces simbólicos para evitar seguir punteros fuera del árbol.
         """
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
@@ -150,18 +150,19 @@ class StartupEntry:
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
-    def _extract_quoted_path(self, raw_command: str) -> str:
+    def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae la ruta contenida entre comillas y valida su integridad.
+        Extrae la ruta contenida entre comillas (ej: "C:\app.exe" /arg) y
+        valida que no contenga rutas relativas o caracteres sospechosos.
         """
-        if not isinstance(raw_command, str) or len(raw_command) < 3:
+        if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
         
-        end_quote: int = raw_command.find('"', 1)
+        end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
             return ""
             
-        path_str: str = raw_command[1:end_quote].strip()
+        path_str: str = raw_cmd[1:end_quote].strip()
         
         if not path_str or ".." in path_str or self._is_path_suspicious(path_str) or self._is_reserved_device_name(path_str) or len(path_str) > MAX_PATH_LEN:
             return ""
@@ -176,7 +177,8 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Verifica permisos de lectura y políticas de seguridad (guarda en caché).
+        Verifica permisos de lectura mediante el subsistema de seguridad (safety.py)
+        y asegura que el archivo sea un archivo físico real, no un enlace.
         """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
@@ -199,71 +201,72 @@ class StartupEntry:
             _VALIDATION_CACHE[p_str] = False
             return False
 
-    def _resolve_and_cache_path(self, path_string: str) -> str:
+    def _resolve_and_cache_path(self, path_raw: str) -> str:
         """
-        Normaliza, resuelve rutas relativas y valida el acceso al archivo resultante,
-        limitando la profundidad de resolución para evitar ciclos en reparse points.
+        Normaliza y resuelve una ruta candidateada a formato absoluto, validando 
+        la existencia y accesibilidad del archivo físico en disco.
         """
-        if not isinstance(path_string, str) or not path_string:
+        if not isinstance(path_raw, str) or not path_raw:
             return ""
         
-        if len(path_string) > MAX_PATH_LEN or "\0" in path_string or any(ord(c) < 32 for c in path_string):
+        if len(path_raw) > MAX_PATH_LEN or "\0" in path_raw or any(ord(c) < 32 for c in path_raw):
             return ""
             
         try:
-            norm: str = os.path.normpath(path_string)
-            if path_string in _EXISTS_CACHE:
-                return path_string if _EXISTS_CACHE[path_string] else path_string
+            norm: str = os.path.normpath(path_raw)
+            if path_raw in _EXISTS_CACHE:
+                return path_raw if _EXISTS_CACHE[path_raw] else path_raw
             
             p: Path = Path(norm)
             if not p.is_absolute() or ".." in p.parts:
-                _EXISTS_CACHE[path_string] = False
+                _EXISTS_CACHE[path_raw] = False
                 return ""
             
-            # Resolvemos la ruta de forma segura limitando la profundidad de recursión
             resolved = p.resolve(strict=False)
             if len(resolved.parts) > 64:
                 return ""
 
             if not self._validate_file_access(resolved):
-                _EXISTS_CACHE[path_string] = False
-                return path_string
+                _EXISTS_CACHE[path_raw] = False
+                return path_raw
             
             p_str: str = str(resolved)
             _EXISTS_CACHE[p_str] = True
             return p_str
         except (OSError, PermissionError, FileNotFoundError, RuntimeError, ValueError, TypeError, AttributeError):
-            _EXISTS_CACHE[path_string] = False
+            _EXISTS_CACHE[path_raw] = False
             return ""
 
-    def _resolve_path_from_command(self, command_line: str) -> str:
+    def _resolve_path_from_command(self, cmd_line: str) -> str:
         """
-        Analiza la línea de comandos para extraer el ejecutable primario.
+        Analiza la línea de comandos completa para aislar la ruta del ejecutable
+        principal, consultando la caché de comandos ya procesados.
         """
-        if not isinstance(command_line, str) or not command_line:
+        if not isinstance(cmd_line, str) or not cmd_line:
             return ""
         
-        if command_line in _COMMAND_CACHE:
-            return _COMMAND_CACHE[command_line]
+        if cmd_line in _COMMAND_CACHE:
+            return _COMMAND_CACHE[cmd_line]
         
         result: str = ""
         try:
-            if command_line.startswith('"'):
-                result = self._extract_quoted_path(command_line)
+            if cmd_line.startswith('"'):
+                result = self._extract_quoted_path(cmd_line)
             else:
-                parts: List[str] = command_line.split()
+                parts: List[str] = cmd_line.split()
                 if parts and isinstance(parts[0], str) and ( "\\" in parts[0] or "/" in parts[0] ):
                     result = self._resolve_and_cache_path(parts[0])
         except (AttributeError, ValueError, IndexError, OSError, TypeError):
             result = ""
         
-        _COMMAND_CACHE[command_line] = result
+        _COMMAND_CACHE[cmd_line] = result
         return result
         
     @property
     def executable(self) -> str:
         """
-        Retorna la ruta absoluta del ejecutable tras resolución diferida.
+        Retorna la ruta absoluta del ejecutable tras realizar una resolución 
+        diferida segura.
         """
         if self._checked_exists:
             return self._exec_cache or ""

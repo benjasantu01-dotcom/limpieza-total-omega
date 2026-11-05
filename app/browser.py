@@ -109,9 +109,6 @@ class DirectoryScanner:
         if self._should_stop_traversal(entry, depth):
             return total_bytes
             
-        if not is_safe_to_modify(Path(entry.path)):
-            return total_bytes
-
         if entry.is_dir(follow_symlinks=False):
             if not self.ctx.is_junction(entry.path) and self._is_path_allowed(entry.path):
                 subdir = self.get_size(entry.path, depth + 1)

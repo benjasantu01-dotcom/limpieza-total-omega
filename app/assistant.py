@@ -430,7 +430,7 @@ class SystemContext:
 
     @cached_property
     def metrics_snapshot(self) -> MetricsDict:
-        """Retorna un diccionario filtrado de las métricas numéricas actuales."""
+        """Retorna un diccionario de las métricas numéricas presentes."""
         return {k: float(v) for k in _VALID_METRIC_KEYS if (v := getattr(self, k, -1.0)) != -1.0}
 
     @cached_property
@@ -438,7 +438,6 @@ class SystemContext:
         """Recopila los problemas de salud detectados basándose en los criterios actuales."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        # Pasamos los elementos presentes en el snapshot que tienen criterios asociados
         relevant = tuple((k, snap[k]) for k in snap if k in _CRITERIOS_MAP)
         return _evaluate_active_problems(relevant)
 
@@ -450,8 +449,7 @@ class SystemContext:
     @cached_property
     def _hash_tuple(self) -> tuple:
         """Genera una tupla inmutable del estado para propósitos de hashing."""
-        keys = sorted(_VALID_METRIC_KEYS)
-        return tuple(getattr(self, k) for k in keys) + (self.grade, self.analyzed)
+        return tuple(getattr(self, k) for k in sorted(_VALID_METRIC_KEYS)) + (self.grade, self.analyzed)
 
     def get_metric(self, key: str, default: float) -> float:
         """Accede de forma segura al valor de una métrica específica."""
@@ -528,9 +526,7 @@ class SystemContext:
         """Actualiza los atributos del objeto y purga las memorias caché."""
         for k, v in updates.items():
             if k in _VALID_METRIC_KEYS:
-                spec = _VALIDATORS[k]
-                if isinstance(v, spec.type_hint):
-                    setattr(self, k, v)
+                setattr(self, k, v)
             elif k == "grade" and isinstance(v, str):
                 setattr(self, k, v)
         self.analyzed = True
