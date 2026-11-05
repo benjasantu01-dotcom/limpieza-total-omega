@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **161** (31.9% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **162** (32.1% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 274
+- Sin respuesta de la IA (error o límite): 272
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 65 | 5 | 21 | 8 | 153 |
-| 2026-11-05 | 96 | 6 | 26 | 3 | 121 |
+| 2026-11-04 | 65 | 5 | 20 | 8 | 150 |
+| 2026-11-05 | 97 | 7 | 27 | 3 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **32**
 - seguridad defensiva: **29**
-- rendimiento: **27**
+- rendimiento: **28**
 - robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
@@ -38,13 +38,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **12**
 - `duplicates.py`: **11**
 - `assistant.py`: **11**
-- `branding.py`: **9**
+- `branding.py`: **10**
 - `safety.py`: **9**
 - `organizer.py`: **7**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T10:48:01` **branding.py** (rendimiento): Se ha optimizado la generación de colores degradados reemplazando la lógica de cálculo en tiempo real dentro del loop de dibujo por una aproximación basada en segmentos pre-calculados, mejorando significativamente la eficiencia al evitar llamadas repetitivas a `_rgb_to_hex` y aritmética de flotantes en cada frame de UI.
 - `2026-11-05T10:38:09` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en el protocolo `SuspicionCheck` y la clase `Scanner`, aclarando los contratos de interfaz y el propósito de cada método para facilitar el mantenimiento y la extensibilidad futura del motor heurístico.
 - `2026-11-05T10:37:57` **safety.py** (legibilidad y documentación): Se introdujo un `Enum` llamado `SafetyValidationCategory` y se refactorizó `UnsafePathError` para incluir esta categoría, mejorando la legibilidad y permitiendo una clasificación más clara de los errores según el enfoque de "legibilidad y documentación" (separando problemas de estructura, permisos o integridad).
 - `2026-11-05T10:36:49` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante docstrings más precisos los mecanismos críticos de seguridad (TOCTOU, integridad de inodos y validación de atributos), además de unificar la nomenclatura de variables internas para hacer explícita la diferencia entre rutas de sistema y rutas de cuarentena.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T10:05:25` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas incorporando una validación explícita para archivos de tamaño cero en `_safe_stat` y robusteciendo `_is_readable` contra rutas malformadas antes de realizar el acceso a disco, reduciendo excepciones innecesarias.
 - `2026-11-05T09:56:40` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de las validaciones en `ensure_safe_to_modify` capturando excepciones específicas (`PermissionError`, `OSError`) al evaluar `p.parent` y `p.exists()`, evitando que fallos inesperados de E/S interrumpan la lógica de seguridad con errores genéricos.
 - `2026-11-05T09:46:45` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` para prevenir excepciones silenciosas o valores inesperados mediante validaciones de tipo explícitas y manejo defensivo de desbordamientos.
-- `2026-11-05T09:44:56` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para evitar fallos silenciosos ante archivos inexistentes o inaccesibles, asegurando que la lógica de recomendación no se detenga ante errores de entrada.

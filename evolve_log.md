@@ -1200,3 +1200,34 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-11-05T10:38:09` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en el protocolo `SuspicionCheck` y la clase `Scanner`, aclarando los contratos de interfaz y el propósito de cada método para facilitar el mantenimiento y la extensibilidad futura del motor heurístico.
 - `2026-11-05T10:38:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T10:38:09` Corrida terminada. Total usado hoy: 252.
+- `2026-11-05T10:46:10` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-05T10:46:40` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _ValidatorEntry.__init__
+- `2026-11-05T10:47:06` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.48s
+
+```
+- `2026-11-05T10:47:06` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y la robustez documental de `StartupEntry` reemplazando los métodos de validación dispersos por una propiedad privada `_is_critically_malformed` y docstrings más descriptivos, clarificando la distinción entre seguridad estructural (formato) y seguridad de acceso (permisos).
+- `2026-11-05T10:47:45` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-11-05T10:48:01` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la generación de colores degradados reemplazando la lógica de cálculo en tiempo real dentro del loop de dibujo por una aproximación basada en segmentos pre-calculados, mejorando significativamente la eficiencia al evitar llamadas repetitivas a `_rgb_to_hex` y aritmética de flotantes en cada frame de UI.
+- `2026-11-05T10:48:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T10:48:01` Corrida terminada. Total usado hoy: 256.

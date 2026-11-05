@@ -386,22 +386,18 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas internas en el Canvas."""
+    """Renderiza las franjas degradadas internas en el Canvas usando segmentos optimizados."""
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
         if not params: return
         by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + SHIELD_CENTER_X * scale
-        rgb_stops = [_hex_to_rgb(s) for s in GRADIENT_STOPS]
-        n_stops = len(rgb_stops)
-        for i in range(n):
-            pos = (i * (n_stops - 1)) / (n - 1) if n > 1 else 0
-            idx = min(int(pos), n_stops - 2)
-            r = pos - idx
-            s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
-            color_hex = _rgb_to_hex((int(s1[0] + (s2[0] - s1[0]) * r), int(s1[1] + (s2[1] - s1[1]) * r), int(s1[2] + (s2[2] - s1[2]) * r)))
-            p = params[i]
-            canvas.create_rectangle(cx - p[0], by + p[1], cx + p[0], by + p[2], fill=color_hex, outline="")
+        
+        # Uso de segmentos pre-calculados para evitar re-cálculo en el loop
+        for seg in get_gradient_segments(n):
+            for i in range(seg.start_index, seg.end_index):
+                p = params[i]
+                canvas.create_rectangle(cx - p[0], by + p[1], cx + p[0], by + p[2], fill=seg.hex_color, outline="")
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
