@@ -239,12 +239,12 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def _get_mtime(path: Path) -> Optional[float]:
-    """Obtiene el tiempo de última modificación para determinar el archivo más antiguo."""
+    """Obtiene el tiempo de última modificación validando la existencia del archivo."""
     if not isinstance(path, Path): return None
-    with suppress(OSError, PermissionError):
-        if path.exists():
-            return path.stat().st_mtime
-    return None
+    try:
+        return path.stat().st_mtime
+    except (OSError, PermissionError, FileNotFoundError):
+        return None
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:

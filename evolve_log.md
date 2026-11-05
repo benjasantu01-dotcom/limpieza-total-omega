@@ -710,3 +710,11 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-05T05:02:10` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `ingest` para que el uso de `getattr` en `_validate_and_sanitize_data` sea más robusto ante objetos maliciosos o malformados, asegurando que `is_protected_path` siempre reciba una cadena y no un objeto inesperado.
 - `2026-11-05T05:02:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T05:02:10` Corrida terminada. Total usado hoy: 120.
+- `2026-11-05T05:08:41` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-05T05:09:43` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-05T05:10:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-05T05:10:45` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `detect_profiles` y `DirectoryScanner` validando que las entradas del diccionario `BROWSER_CACHE_PATHS` sean procesadas con un manejo de excepciones explícito y chequeos de integridad de ruta, evitando que rutas mal formadas interrumpan el ciclo de detección.
+- `2026-11-05T05:11:11` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `walk_files` y `largest_folders` capturando `ValueError` ante rutas mal formadas y `PermissionError` durante la resolución de rutas, evitando que el escaneo se detenga inesperadamente.
+- `2026-11-05T05:11:29` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para evitar errores en tiempo de ejecución al encontrar rutas inexistentes o inaccesibles, asegurando que la aplicación no aborte procesos de análisis por condiciones de carrera o archivos bloqueados.
+- `2026-11-05T05:11:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T05:11:29` Corrida terminada. Total usado hoy: 124.

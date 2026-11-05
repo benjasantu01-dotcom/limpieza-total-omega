@@ -334,9 +334,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             st = entry.stat(follow_symlinks=False)
                             if isinstance(st.st_size, int) and st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
-                    except (OSError, PermissionError, FileNotFoundError):
+                    except (OSError, PermissionError, FileNotFoundError, ValueError):
                         continue
-        except (OSError, PermissionError, NotADirectoryError, FileNotFoundError):
+        except (OSError, PermissionError, NotADirectoryError, FileNotFoundError, ValueError):
             continue
 
 
@@ -367,9 +367,9 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            parts = Path(path).relative_to(root).parts
-            if not parts: continue
-            top_level = Path(root_str) / parts[0]
+            rel_path = Path(path).relative_to(root)
+            if not rel_path.parts: continue
+            top_level = Path(root_str) / rel_path.parts[0]
             m = stats[str(top_level)]
             m.size += size
             m.file_count += 1
