@@ -159,6 +159,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
+        # Validación defensiva extra: verificar protección tras resolución completa
         if str(p).startswith('\\\\') or is_protected_path(p):
             return None
         if not p.is_dir() or not os.access(p, os.R_OK):
@@ -303,7 +304,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if _is_reparse_point(entry):
                                 continue
                             
-                            if skip_protected and is_protected_path(Path(entry.path)):
+                            p = Path(entry.path)
+                            if skip_protected and is_protected_path(p):
                                 continue
                             
                             inode = (st.st_dev, st.st_ino)

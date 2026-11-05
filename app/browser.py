@@ -280,14 +280,17 @@ def directory_size(path: Optional[OSPath]) -> int:
     ctx = ScanContext(root_norm, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
     return DirectoryScanner(ctx).get_size(str(p)).bytes_found
 
-def _is_target_valid(target: Path, kernel: Optional[ctypes.WinDLL]) -> bool:
+def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     try:
         if not target.exists() or not target.is_dir() or not os.access(target, os.R_OK): return False
         if not is_safe_to_modify(target) or is_protected_path(target): return False
         if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): return False
         if _is_system_hidden(str(target), kernel) or target.name.lower() in NEVER_TOUCH: return False
-        return True
-    except (OSError, PermissionError):
+        
+        # Validación de confinamiento: resolvemos la ruta real para asegurar que no escape al sandbox
+        target_norm = os.path.normcase(os.path.abspath(str(target.resolve())))
+        return target_norm.startswith(base_norm)
+    except (OSError, PermissionError, RuntimeError):
         return False
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
@@ -307,7 +310,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         except (OSError, RuntimeError):
             continue
             
-        # Reutilizamos el contexto entre navegadores de la misma base para evitar re-escaneo innecesario
         ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
         scanner = DirectoryScanner(ctx)
         
@@ -316,7 +318,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             
             try:
                 target = base.joinpath(*relative_path.split("\\"))
-                if not _is_target_valid(target, kernel): continue
+                if not _is_target_valid(target, base_norm, kernel): continue
                 
                 scan_res = scanner.get_size(str(target))
                 if scan_res.success and scan_res.bytes_found > 0:

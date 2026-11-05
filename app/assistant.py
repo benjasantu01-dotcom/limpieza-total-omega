@@ -524,6 +524,10 @@ class SystemContext:
         if source is None or callable(source) or not isinstance(source, (dict, object)): 
             return False
         if isinstance(source, (dict, list, tuple)):
+            # Validación adicional: rechazar si hay claves de diccionario que parezcan rutas protegidas
+            if isinstance(source, dict):
+                for k in source.keys():
+                    if isinstance(k, str) and is_protected_path(k): return False
             return not _is_input_too_deep_or_complex(source)
         return True
 
