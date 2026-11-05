@@ -432,3 +432,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-05T14:22:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-11-05T14:22:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T14:22:14` Corrida terminada. Total usado hoy: 340.
+- `2026-11-05T14:30:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-05T14:31:43` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `_get_path_stat_robust` para incluir un manejo más preciso de excepciones, diferenciando entre errores de acceso transitorios (reintentables) y fallos estructurales definitivos, evitando que `UnsafePathError` se propague innecesariamente durante validaciones de rutina.
+- `2026-11-05T14:32:08` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-05T14:32:39` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `validate` y `_is_structure_valid` para evitar posibles errores de `KeyError` o `AttributeError` ante configuraciones que contengan claves inesperadas o valores nulos, asegurando que siempre se respete la integridad del esquema `AppSettings` incluso con archivos manipulados externamente.
+- `2026-11-05T14:33:05` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_valid_registry_path` y `_is_registry_entry_safe` mediante la validación explícita de tipos `Path` y el manejo preventivo de excepciones `OSError` al operar sobre rutas malformadas, evitando que entradas inválidas o rutas con caracteres prohibidos inyecten fallos silenciosos en el inventario.
+- `2026-11-05T14:33:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T14:33:05` Corrida terminada. Total usado hoy: 344.

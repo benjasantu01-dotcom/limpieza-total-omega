@@ -678,7 +678,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     for attempt in range(max_retries):
         try:
             if not path.exists():
-                raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE)
+                raise FileNotFoundError(f"Archivo inexistente: {path}")
             if _is_device_file(path):
                 raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
                 
@@ -688,7 +688,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.DIRECTORY | Win32Attr.REPARSE_POINT)):
                     raise UnsafePathError(f"Estructura no válida: {path.name}", SafetyValidationErrorCode.INVALID_PATH_TYPE, SafetyValidationCategory.STRUCTURE)
             if st.st_atime == 0 and st.st_mtime == 0:
-                 raise UnsafePathError(f"Metadatos corruptos: {path.name}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+                 raise OSError(errno.EAGAIN, "Metadatos corruptos")
             return st
         except (PermissionError, OSError) as e:
             if isinstance(e, OSError) and e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN):

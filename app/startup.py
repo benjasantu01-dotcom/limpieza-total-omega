@@ -391,6 +391,9 @@ def _is_valid_registry_path(path_str: str) -> bool:
         target: Path = Path(clean_path)
         if target.is_symlink(): return False
         
+        # Validaciones de seguridad sobre el Path
+        if is_protected_path(target): return False
+        
         target_res = target.resolve(strict=False)
         if is_protected_path(target_res): return False
         

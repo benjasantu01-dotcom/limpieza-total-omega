@@ -357,9 +357,11 @@ def validate(raw_values: Any) -> AppSettings:
     for key_str, raw_val in raw_values.items():
         if key_str in _VALID_ENUM_KEYS:
             key_enum = _KEY_TO_ENUM[key_str]
-            validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
-            if validated_val is not None:
-                config[key_enum.value] = validated_val # type: ignore
+            validator = _VALIDATOR_MAP.get(key_enum)
+            if validator:
+                validated_val = validator.func(key_enum, raw_val)
+                if validated_val is not None:
+                    config[key_enum.value] = validated_val # type: ignore
     return config 
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
@@ -382,9 +384,8 @@ def _is_structure_valid(data: Any) -> bool:
     if not isinstance(data, dict) or not data or len(data) > 64: return False
     
     for key in ConfigKey:
-        if key.value not in data: return False
-        val = data[key.value]
-        if val is not None and not _is_valid_type(val, key): return False
+        val = data.get(key.value)
+        if val is None or not _is_valid_type(val, key): return False
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
@@ -499,10 +500,12 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     for key_str, value in changes.items():
         if key_str in _VALID_ENUM_KEYS:
             key_enum = _KEY_TO_ENUM[key_str]
-            val = _VALIDATOR_MAP[key_enum].func(key_enum, value)
-            if val is not None and val != current.get(key_str):
-                current[key_str] = val
-                modified = True
+            validator = _VALIDATOR_MAP.get(key_enum)
+            if validator:
+                val = validator.func(key_enum, value)
+                if val is not None and val != current.get(key_str):
+                    current[key_str] = val
+                    modified = True
     if modified: save(current, custom_base)
     return current
 
