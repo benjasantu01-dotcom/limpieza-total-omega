@@ -777,7 +777,7 @@ def _is_item_purgable(file_path: Optional[Path], item: Optional[QuarantineItem] 
     except (OSError, PermissionError, UnsafePathError): return False
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Limpia todo el directorio de cuarentena (borrado masivo)."""
+    """Limpia todo el directorio de cuarentena, eliminando solo archivos registrados en el manifiesto."""
     try:
         root_path: Path = quarantine_dir(base).resolve()
         if _is_filesystem_read_only(root_path) or is_protected_path(root_path): return 0
@@ -788,12 +788,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or not f.is_file() or not is_within_directory(f.resolve(), root_path): continue
             try:
                 if not f.exists(): continue
-                if f.is_symlink(): continue
                 item = item_map.get(f.name)
+                # Solo purgar archivos que estén explícitamente registrados en el manifiesto
                 if item and _is_item_purgable(f, item): 
                     purgado_ids.add(item.item_id)
-                elif not item and f.suffix != ".tmp":
-                    if _safe_unlink(f): pass
             except (OSError, PermissionError, UnsafePathError): continue
         if purgado_ids:
             new_items = [i for i in items if i.item_id not in purgado_ids]

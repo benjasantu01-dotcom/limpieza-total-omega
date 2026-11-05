@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **139** (27.6% de aceptación)
+- Mejoras aceptadas: **141** (28.0% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 292
+- Sin respuesta de la IA (error o límite): 289
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 23 | 1 | 11 | 3 | 66 |
+| 2026-11-03 | 23 | 1 | 11 | 3 | 62 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 33 | 1 | 8 | 1 | 37 |
+| 2026-11-05 | 35 | 1 | 9 | 1 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
 - manejo de errores y validación de entradas: **27**
 - rendimiento: **27**
-- seguridad defensiva: **25**
+- seguridad defensiva: **27**
 - robustez ante casos límite: **20**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **16**
 - `healthscore.py`: **16**
+- `quarantine.py`: **13**
 - `settings.py`: **13**
-- `quarantine.py`: **12**
+- `memory.py`: **13**
 - `browser.py`: **12**
-- `memory.py`: **12**
 - `safety.py`: **11**
 - `duplicates.py`: **10**
 - `assistant.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T03:31:00` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta en `purge_all` para asegurar que solo se eliminen archivos que están correctamente registrados en el manifiesto, evitando el borrado de archivos huérfanos o accidentales que podrían ser legítimos, manteniendo la integridad del sandbox.
+- `2026-11-05T03:29:32` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable del proceso antes de intentar cualquier operación, asegurando que no se pueda manipular la memoria de procesos críticos incluso si el handle se obtuvo exitosamente.
 - `2026-11-05T03:17:12` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita contra ataques de "path traversal" usando `Path.resolve()` en conjunto con la validación de prefijos, evitando que el escáner escape del directorio raíz previsto mediante symlinks o rutas relativas maliciosas.
 - `2026-11-05T03:16:47` **browser.py** (seguridad defensiva): Se ha implementado una validación de seguridad estricta en el método `_process_entry` mediante `is_safe_to_modify` para asegurar que cada subdirectorio y archivo individual analizado esté dentro de los límites permitidos, evitando que el escáner sea engañado por estructuras de archivos complejas o enlaces simbólicos maliciosos durante la recursión.
 - `2026-11-05T03:08:56` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación adicional mediante `ensure_safe_to_modify` antes de escribir en disco, garantizando que, aunque la función sea un intento de escritura, se apliquen las reglas estrictas de protección de rutas antes de cualquier operación de I/O.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T02:39:12` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen durante el escaneo (race conditions) y posibles errores de lectura en el sistema de archivos, asegurando que el recorrido no se interrumpa ante fallos puntuales.
 - `2026-11-05T02:27:28` **settings.py** (rendimiento): Optimizé `_read_and_parse_json` para realizar una lectura más eficiente y segura, evitando convertir todo el contenido a `str` si el archivo es grande o sospechoso, y simplificando el flujo de validación para reducir el uso de memoria durante el parseo de archivos pequeños.
 - `2026-11-05T02:25:56` **scanner.py** (rendimiento): Se optimizó el recorrido del escáner moviendo la evaluación de la extensión de archivo antes de realizar llamadas costosas al sistema de archivos (`entry.stat()` o verificaciones adicionales), reduciendo drásticamente la carga de I/O en directorios con muchos archivos irrelevantes.
-- `2026-11-05T02:16:25` **quarantine.py** (rendimiento): Optimicé el rendimiento de `quarantine.py` mediante el uso de un caché in-memory (`_INODE_USE_CACHE`) para los estados de bloqueo de archivos, evitando llamadas recurrentes costosas a `ctypes` y `fcntl` en operaciones masivas, y mejoré la eficiencia de `_get_sha256` integrando un chequeo previo del estado del archivo antes de calcular el hash, minimizando I/O innecesario.
-- `2026-11-05T02:07:47` **healthscore.py** (rendimiento): Se optimizó el acceso a las métricas del sistema reemplazando el uso intensivo de `getattr` dentro de bucles críticos y validaciones por un mapeo directo (`dict`) desde la instancia `SystemMetrics`, reduciendo la sobrecarga de resolución de atributos y mejorando el rendimiento en el pipeline de cálculo.

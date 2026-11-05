@@ -466,6 +466,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado, proceso inexistente o en zona restringida."
 
     try:
+        # Validación defensiva extra post-handle para asegurar que no se manipuló un proceso protegido
         if is_protected_path(Path(os.path.normpath(path_buf.value))):
             return False, "Operación denegada sobre archivos protegidos."
 
