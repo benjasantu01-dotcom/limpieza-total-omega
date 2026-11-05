@@ -275,7 +275,8 @@ class Scanner:
     @lru_cache(maxsize=128)
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos que no coinciden con las extensiones de interés heurístico."""
-        return os.path.splitext(name)[1].lower() in SUSPICIOUS_ALL_EXTS
+        _, ext = os.path.splitext(name)
+        return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
         """

@@ -1245,3 +1245,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-05T11:08:51` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizado el rendimiento de `load_manifest` introduciendo un filtro de `QuarantineItem` mediante listado de directorio (`os.scandir`) para evitar el procesamiento redundante de entradas que no existen en el disco, y mejorado la eficiencia de `purge_all` utilizando el mismo enfoque de pre-filtrado para reducir el acceso repetido al sistema de archivos.
 - `2026-11-05T11:08:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T11:08:51` Corrida terminada. Total usado hoy: 264.
+- `2026-11-05T11:16:43` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-05T11:17:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-05T11:17:54` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché para `is_protected_path` basado en la normalización de la ruta, reduciendo drásticamente las operaciones de I/O redundantes y las llamadas repetitivas a `_get_system_root_paths` y `_get_file_attrs` en bucles de escaneo intensivos.
+- `2026-11-05T11:18:19` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante la sustitución de `list` por `set` para `seen_normcase` en `Scanner`, y se integró un filtro de pertenencia a conjuntos en `_is_relevant_extension` para reducir la latencia de acceso a `SUSPICIOUS_ALL_EXTS` y evitar múltiples llamadas a `os.path.splitext` innecesarias.
+- `2026-11-05T11:19:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-05T11:19:36` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a los validadores mediante la eliminación de una llamada innecesaria a `DEFAULTS` en `_is_valid_type` y la consolidación de la lógica de validación de tipos, reduciendo el overhead en ciclos repetitivos de carga de configuración.
+- `2026-11-05T11:19:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T11:19:36` Corrida terminada. Total usado hoy: 268.

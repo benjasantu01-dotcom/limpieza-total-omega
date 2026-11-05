@@ -39,6 +39,7 @@ _NEGATIVE_SECURITY_CACHE: Final[set[tuple[int, int, int, int]]] = set()
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
 _FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
 _ATTR_CACHE: Final[dict[str, int]] = {}
+_PROTECTION_CACHE: Final[dict[str, bool]] = {}
 
 class SafetyValidationCategory(Enum):
     """Clasificación del tipo de falla detectada en la validación de seguridad."""
@@ -844,21 +845,28 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """Verifica si la ruta reside en directorios protegidos por el sistema."""
     if not path: return True
+    path_str = str(path)
+    if path_str in _PROTECTION_CACHE:
+        return _PROTECTION_CACHE[path_str]
+
     try:
-        norm_str = os.path.normcase(os.path.abspath(str(path)))
+        norm_str = os.path.normcase(os.path.abspath(path_str))
         root_paths = _get_system_root_paths()
         if any(norm_str.startswith(r) for r in root_paths):
+            _PROTECTION_CACHE[path_str] = True
             return True
         
         path_parts = Path(norm_str).parts
         if not PROTECTED_DIR_NAMES.isdisjoint(p.lower() for p in path_parts):
+            _PROTECTION_CACHE[path_str] = True
             return True
         
         attrs = _get_file_attrs(norm_str)
-        if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
-            return True
-            
-        return len(path_parts) <= 1
+        is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(path_parts) <= 1
+        
+        if len(_PROTECTION_CACHE) > 2048: _PROTECTION_CACHE.clear()
+        _PROTECTION_CACHE[path_str] = is_protected
+        return is_protected
     except (OSError, AttributeError, ValueError):
         return True
 
@@ -966,7 +974,7 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.is_protected_system:
         raise UnsafePathError("Protección defensiva: Archivo de sistema oculto/protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)
     if sd.has_flag(Win32Attr.OFFLINE):
-        raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationErrorCode.INTEGRITY)
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 

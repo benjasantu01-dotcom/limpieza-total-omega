@@ -92,8 +92,7 @@ def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
 def _is_valid_type(val: Any, key: ConfigKey) -> bool:
     """Valida si el tipo del valor coincide con el esquema definido en DEFAULTS."""
     default_val = DEFAULTS.get(key.value)
-    if default_val is None: return False
-    return isinstance(val, type(default_val))
+    return isinstance(val, type(default_val)) if default_val is not None else False
 
 __all__ = [
     "DEFAULTS", "SETTINGS_DIR", "SETTINGS_FILE", "API_KEY_ENV_VAR",
