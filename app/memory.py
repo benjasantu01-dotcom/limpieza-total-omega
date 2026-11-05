@@ -434,7 +434,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError): 
         return False, "El PID debe ser numérico."
         
-    if _is_system_process(target_pid) or not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
+    if target_pid <= 0 or _is_system_process(target_pid) or not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
         return False, "Operación no permitida o no disponible."
         
     path_buf = ctypes.create_unicode_buffer(1024)
@@ -451,5 +451,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la operación."
+    except Exception:
+        return False, "Error inesperado al intentar liberar memoria."
     finally:
         WindowsAPI.kernel32.CloseHandle(handle)

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
-- Rechazadas por tests: 9
+- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 261
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 260
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 44 | 2 | 16 | 5 | 101 |
-| 2026-11-05 | 131 | 7 | 34 | 4 | 160 |
+| 2026-11-04 | 44 | 1 | 15 | 5 | 99 |
+| 2026-11-05 | 132 | 7 | 35 | 5 | 161 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
 - rendimiento: **36**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **32**
 
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **17**
 - `settings.py`: **17**
 - `quarantine.py`: **15**
-- `memory.py`: **14**
+- `memory.py`: **15**
 - `duplicates.py`: **13**
 - `scanner.py`: **13**
 - `assistant.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T14:21:08` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` y el manejo de recursos garantizando que el `handle` se cierre incluso si ocurren excepciones inesperadas durante la operación de trim, además de validar explícitamente que el PID sea positivo antes de procesarlo.
 - `2026-11-05T14:11:52` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_compute_cached` y `summarize` reemplazando el uso implícito de `getattr` y acceso directo por el método `safe_get` ya existente, garantizando que el acceso a datos sea siempre validado y seguro frente a errores de estructura.
 - `2026-11-05T14:11:23` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `_get_mtime` validando la entrada y manejando explícitamente el caso en que el archivo desaparece durante el proceso, evitando errores no capturados al comparar rutas.
 - `2026-11-05T14:11:00` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando una validación explícita para asegurar que el sistema de archivos no devuelva resultados inconsistentes, previniendo errores en caso de rutas que se vuelven inaccesibles durante el escaneo y mejorando la calidad de los mensajes de error.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T12:18:46` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de un límite de recursión explícito para `_render_bar` y la adición de una validación `isinstance` estricta en el `__post_init__` y los métodos del dataclass `SystemMetrics`, evitando así la posible inyección de tipos inesperados antes de que los datos lleguen al motor de cómputo.
 - `2026-11-05T12:18:20` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` y `_safe_path_check` para prevenir el seguimiento de enlaces simbólicos y puntos de unión durante el escaneo, asegurando que el análisis de duplicados no escape de las rutas autorizadas.
 - `2026-11-05T12:09:33` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una validación explícita mediante `is_protected_path` sobre la resolución final de la ruta, asegurando que cualquier intento de acceso a través de links o rutas manipuladas que resuelvan en zonas bloqueadas sea denegado antes de iniciar cualquier operación de I/O.
-- `2026-11-05T12:09:21` **browser.py** (seguridad defensiva): Se reforzó la validación de seguridad en `_is_target_valid` para garantizar que la resolución de la ruta `target` no escape del directorio base mediante `resolve()` y `pathlib`, impidiendo ataques de traversal al construir rutas desde `BROWSER_CACHE_PATHS`.

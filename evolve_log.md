@@ -422,3 +422,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-05T14:12:44` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-05T14:12:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T14:12:44` Corrida terminada. Total usado hoy: 336.
+- `2026-11-05T14:20:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-05T14:21:08` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `trim_working_set` y el manejo de recursos garantizando que el `handle` se cierre incluso si ocurren excepciones inesperadas durante la operación de trim, además de validar explícitamente que el PID sea positivo antes de procesarlo.
+- `2026-11-05T14:21:34` ➖ Sin cambios en organizer.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejora la robustez de `stage_for_review` capturando errores de `shutil.move` individualmente y añadiendo una validación explícita de `is_safe_to_modify` para el archivo fuente, evitando que una excepción en un archivo bloquee la cola de procesamiento.
+- `2026-11-05T14:21:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-05T14:21:37` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-05T14:21:43` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-05T14:21:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-05T14:22:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-05T14:22:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T14:22:14` Corrida terminada. Total usado hoy: 340.
