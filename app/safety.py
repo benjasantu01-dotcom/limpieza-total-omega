@@ -1040,10 +1040,13 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
     """Validación recursiva de la profundidad y destino de los reparse points."""
     for p in [path] + list(path.parents):
         if _is_system_directory_junction(str(p)):
-            _validate_junction_depth(p)
-            final_path = _get_final_path_normalized(p)
-            if base_dir and not final_path.is_relative_to(base_dir):
-                raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+            try:
+                _validate_junction_depth(p)
+                final_path = _get_final_path_normalized(p)
+                if base_dir and not final_path.is_relative_to(base_dir):
+                    raise UnsafePathError(f"Redirección insegura en reparse point: {p}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+            except (OSError, PermissionError):
+                continue
 
 def _validate_path_components(path: Path) -> None:
     """Valida cada nodo de la ruta para detectar spoofing o referencias cíclicas."""

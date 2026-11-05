@@ -819,3 +819,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-05T07:14:33` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra rutas que no existen o son inaccesibles en `_iter_process_memory` y `trim_working_set`, asegurando que `GetModuleFileNameExW` no reciba ni procese búferes corruptos o inválidos, reforzando la estabilidad ante procesos que terminan durante el escaneo.
 - `2026-11-05T07:14:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T07:14:33` Corrida terminada. Total usado hoy: 172.
+- `2026-11-05T07:21:22` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-11-05T07:22:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-05T07:22:57` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-11-05T07:23:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-05T07:24:11` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad en `_validate_ntfs_reparse_redirection` para asegurar que, al validar la profundidad y el destino de enlaces simbólicos o junctions, se manejen correctamente los errores de permiso, evitando que una excepción no controlada detenga el escaneo completo cuando el acceso a un enlace sea restringido por el sistema.
+- `2026-11-05T07:24:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T07:24:11` Corrida terminada. Total usado hoy: 176.

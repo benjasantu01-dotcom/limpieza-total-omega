@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **154** (30.6% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 47
+- Mejoras aceptadas: **155** (30.8% de aceptación)
+- Rechazadas por tests: 10
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 278
+- Sin respuesta de la IA (error o límite): 277
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 0 | 1 | 0 | 0 | 11 |
+| 2026-11-03 | 0 | 0 | 0 | 0 | 8 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 71 | 3 | 18 | 2 | 78 |
+| 2026-11-05 | 72 | 3 | 19 | 2 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **30**
-- robustez ante casos límite: **24**
+- robustez ante casos límite: **25**
 - seguridad defensiva: **24**
 
 ## Mejoras aceptadas por archivo
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **11**
 - `assistant.py`: **10**
 - `branding.py`: **10**
-- `safety.py`: **9**
+- `safety.py`: **10**
 - `organizer.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T07:24:11` **safety.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `_validate_ntfs_reparse_redirection` para asegurar que, al validar la profundidad y el destino de enlaces simbólicos o junctions, se manejen correctamente los errores de permiso, evitando que una excepción no controlada detenga el escaneo completo cuando el acceso a un enlace sea restringido por el sistema.
 - `2026-11-05T07:14:33` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que no existen o son inaccesibles en `_iter_process_memory` y `trim_working_set`, asegurando que `GetModuleFileNameExW` no reciba ni procese búferes corruptos o inválidos, reforzando la estabilidad ante procesos que terminan durante el escaneo.
 - `2026-11-05T07:13:12` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante estados incoherentes del pipeline asegurando que `_compute_cached` maneje situaciones donde `PIPELINE_DEFINITIONS` o los pesos no coincidan, evitando divisiones por cero o claves faltantes durante la agregación.
 - `2026-11-05T07:11:39` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_collect_candidates` para manejar la posible eliminación o bloqueo de archivos durante la iteración del `scandir` (Race Condition), garantizando que el sistema no intente realizar operaciones de `stat` o hash sobre rutas que han dejado de ser válidas durante la ejecución.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T06:40:51` **memory.py** (rendimiento): Se ha optimizado `_iter_process_memory` mediante la pre-asignación y reutilización de buffers (haciendo el recorrido menos intensivo en memoria) y aplicando un filtro lógico temprano para evitar llamadas innecesarias a la API de `psapi` cuando el PID ya ha sido procesado o es inválido.
 - `2026-11-05T06:30:37` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para reducir drásticamente las llamadas a `os.path.abspath` y `Path.resolve()` innecesarias mediante el uso de la propiedad `path` de `os.DirEntry` y optimización de la validación de jerarquía, evitando la sobrecarga de crear múltiples objetos `Path` en cada iteración del loop principal.
 - `2026-11-05T06:23:09` **browser.py** (rendimiento): Optimicé el rendimiento del escáner de directorios eliminando la llamada redundante `is_safe_to_modify(Path(entry.path))` dentro del bucle de `_process_entry`, ya que la seguridad de la ruta base ya está garantizada por el contexto del escáner y la validación previa de la carpeta, ahorrando miles de instanciaciones de objetos `Path` y llamadas a funciones de validación costosas durante recorridos profundos.
-- `2026-11-05T06:22:59` **branding.py** (rendimiento): Optimicé el cálculo de `_draw_shield_stripes` eliminando el uso de `get_gradient_segments` (que implica múltiples llamados a funciones y generación de tuplas intermedias en cada frame) reemplazándolo por un cálculo de color lineal directo en el loop, reduciendo drásticamente el overhead durante el redibujado de la interfaz.
