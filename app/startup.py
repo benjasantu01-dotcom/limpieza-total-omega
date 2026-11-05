@@ -380,17 +380,19 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 def _is_valid_registry_path(path_str: str) -> bool:
     """Valida sintácticamente y resuelve una ruta obtenida del registro."""
-    if not path_str or ("\\" not in path_str and "/" not in path_str): return False
+    if not isinstance(path_str, str) or not path_str or ("\\" not in path_str and "/" not in path_str):
+        return False
     
     try:
-        target: Path = Path(path_str.strip('"')).resolve(strict=False)
+        clean_path = path_str.strip('"')
+        target: Path = Path(clean_path).resolve(strict=False)
         if is_protected_path(target): return False
         
         # Validación de seguridad: evitar caracteres sospechosos en la resolución
         if any(c in str(target) for c in SUSPICIOUS_CHARS): return False
         
         return True
-    except (OSError, RuntimeError, ValueError):
+    except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
 

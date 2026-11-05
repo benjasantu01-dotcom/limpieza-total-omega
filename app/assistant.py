@@ -206,14 +206,19 @@ class ProblemCriterion(NamedTuple):
     """
     metric_key: str
     threshold: float
-    operator: str
+    op_type: str # "<" o ">"
     message_format: str
 
+    @property
+    def _op_func(self) -> Callable[[float, float], bool]:
+        """Mapeo seguro de operadores lógicos para evitar evaluaciones dinámicas."""
+        return operator.lt if self.op_type == "<" else operator.gt
+
     def _evaluate_metric(self, val: float) -> bool:
-        """Aplica la comparación lógica (val < threshold o val > threshold)."""
+        """Aplica la comparación lógica definida en el criterio."""
         if not _check_metric_integrity(val):
             return False
-        return (val < self.threshold) if self.operator == "<" else (val > self.threshold)
+        return self._op_func(val, self.threshold)
 
     def is_triggered_by(self, val: float) -> bool:
         """Determina si la métrica excede el umbral de riesgo definido."""

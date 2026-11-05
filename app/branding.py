@@ -3,19 +3,6 @@ branding.py — identidad visual de Limpieza Total Omega.
 
 Centraliza la gestión de activos visuales, paletas de colores, jerarquías 
 tipográficas y sistemas de renderizado vectorial (SVG/Canvas).
-
-CONFIGURACIÓN Y ESTADOS:
-  - La paleta se expone mediante tipos de solo lectura para garantizar 
-    inmutabilidad y prevenir efectos secundarios durante la ejecución.
-  - Los gradientes utilizan segmentación por agrupación de colores consecutivos 
-    para optimizar el rendimiento de renderizado en el objeto Canvas.
-  - Las funciones de dibujo capturan excepciones para mantener la estabilidad UI.
-
-NOTA DE SEGURIDAD:
-  Las funciones de dibujo (Canvas) y generación de archivos (SVG) operan 
-  bajo principios de diseño defensivo, capturando excepciones para evitar que 
-  una paleta mal configurada detenga el hilo principal. Las operaciones de 
-  disco utilizan validadores estrictos mediante el módulo 'safety'.
 """
 
 from __future__ import annotations
@@ -28,7 +15,7 @@ from functools import lru_cache
 from safety import ensure_safe_to_modify, is_safe_to_modify, is_protected_path, filter_safe_paths
 import math
 
-# Definición de tipos para mejorar la semántica del código
+# --- Tipos de Datos Semánticos ---
 ColorHex: TypeAlias = str  
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
 SeverityStyle: TypeAlias = Tuple[ColorHex, str]  
@@ -38,10 +25,16 @@ BoundingBox: TypeAlias = Tuple[float, float, float, float]
 StopPoint: TypeAlias = Tuple[float, ColorHex]
 AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw", "se"]
 
-# Constantes de control para límites de renderizado escalable
+# --- Constantes de Layout y Renderizado ---
 _MIN_SCALE: Final[float] = 0.1
 _MAX_SCALE: Final[float] = 10.0
 _DEFAULT_SVG_SIZE: Final[int] = 128
+
+# Factores de conversión para renderizado geométrico del escudo base
+SHIELD_WIDTH: Final[float] = 128.0
+SHIELD_CENTER_X: Final[float] = 64.0
+SHIELD_CENTER_Y: Final[float] = 56.0
+SHIELD_RADIUS: Final[float] = 52.0
 
 class UIConfiguration(NamedTuple):
     """Contenedor inmutable de parámetros globales de identidad visual."""
@@ -64,20 +57,18 @@ class SeverityType(Enum):
     WARNING = "warning"
     DANGER = "danger"
 
-# Pre-generación de fragmentos SVG estáticos para mejorar performance
+# --- Identidad y Paleta ---
 _SVG_GRADIENT_STOPS: Final[str] = (
     '      <stop offset="0%" stop-color="#00f0c0"/>\n'
     '      <stop offset="55%" stop-color="#7c5cff"/>\n'
     '      <stop offset="100%" stop-color="#ff2d78"/>'
 )
 
-# Constantes de identidad corporativa
 APP_NAME: Final[str] = "Limpieza Total Omega"
 APP_SHORT_NAME: Final[str] = "Omega"
 APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
-# Paleta Maestra estática: Estructura de colores base para toda la interfaz
 class PaletteDict(TypedDict):
     background: ColorHex; surface: ColorHex; surface_alt: ColorHex; surface_hover: ColorHex
     card: ColorHex; accent: ColorHex; accent_hover: ColorHex; accent_dim: ColorHex
@@ -97,7 +88,6 @@ _RAW_PALETTE: Final[PaletteDict] = {
 
 PALETTE: Final[Mapping[str, ColorHex]] = MappingProxyType(_RAW_PALETTE)
 
-# Constantes directas: Exportación de colores críticos para acceso de alto rendimiento
 C_BACKGROUND: Final[ColorHex] = _RAW_PALETTE["background"]
 C_SURFACE: Final[ColorHex] = _RAW_PALETTE["surface"]
 C_SURFACE_ALT: Final[ColorHex] = _RAW_PALETTE["surface_alt"]
@@ -112,7 +102,7 @@ C_TEXT: Final[ColorHex] = _RAW_PALETTE["text"]
 C_TEXT_MUTED: Final[ColorHex] = _RAW_PALETTE["text_muted"]
 C_GLOW: Final[ColorHex] = _RAW_PALETTE["glow"]
 
-# Plantilla SVG parametrizada para generación de logos vectoriales
+# --- Generación de Recursos Visuales ---
 _SVG_TEMPLATE: Final[str] = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{{s}}" height="{{s}}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{{stops}}</linearGradient>
@@ -180,6 +170,7 @@ SEVERITY_MAP: Final[Mapping[SeverityType, str]] = MappingProxyType({
     SeverityType.WARNING: "\u26a0", SeverityType.DANGER: "\u2716"
 })
 
+# --- Funciones de Acceso a Metadatos ---
 def app_title() -> str: 
     """Retorna el nombre completo de la aplicación con su versión actual."""
     return f"{APP_NAME} v{APP_VERSION}"
@@ -327,7 +318,7 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
     segments.append(ColorSegment(colors[start], start, len(colors)))
     return tuple(segments)
 
-# Coordenadas relativas del escudo Omega (128x128 viewbox). 
+# Coordenadas base (128x128 viewbox) para la geometría vectorial del escudo.
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
 @lru_cache(maxsize=128)
@@ -398,7 +389,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
         if not params: return
-        by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + 64 * scale
+        by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + SHIELD_CENTER_X * scale
         for s in get_gradient_segments(n):
             if s.start_index >= len(params) or s.end_index > len(params): continue
             p_start, p_end = params[s.start_index], params[s.end_index - 1]
@@ -419,10 +410,10 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     if canvas is None or not all(map(math.isfinite, (size, canvas_x, canvas_y))): return
     try:
         val_size = float(size)
-        s = max(_MIN_SCALE, min(_MAX_SCALE, val_size / 128.0))
+        s = max(_MIN_SCALE, min(_MAX_SCALE, val_size / SHIELD_WIDTH))
         poly = _get_scaled_poly(s, canvas_x, canvas_y)
         if not poly: return
-        canvas.create_oval(canvas_x+(64-75)*s, canvas_y+(58-75)*s, canvas_x+(64+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
+        canvas.create_oval(canvas_x+(SHIELD_CENTER_X-75)*s, canvas_y+(58-75)*s, canvas_x+(SHIELD_CENTER_X+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, s)

@@ -1500,3 +1500,11 @@ assert not ['memory.py']
 - `2026-11-05T01:09:18` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-05T01:09:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T01:09:19` Corrida terminada. Total usado hoy: 28.
+- `2026-11-05T01:14:13` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-05T01:15:15` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-05T01:16:27` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del parseo del registro integrando validación de tipos estricta y manejo de excepciones en `_is_valid_registry_path` para evitar que rutas malformadas o inesperadas interrumpan la recolección.
+- `2026-11-05T01:17:07` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `ProblemCriterion` convirtiendo las comparaciones lógicas en un diccionario de funciones `lambda` para eliminar el uso de cadenas como identificadores de operadores, haciendo el código más robusto frente a errores de tipografía y facilitando su lectura.
+- `2026-11-05T01:17:37` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenimiento del archivo mediante la extracción de constantes mágicas a un bloque de `LAYOUT_CONSTANTS` y la adición de docstrings estructurados que explican las dependencias geométricas y lógicas, cumpliendo con el enfoque de legibilidad sin alterar el comportamiento.
+- `2026-11-05T01:17:47` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del motor de escaneo y la precisión de los docstrings en `browser.py`, clarificando las responsabilidades de los métodos recursivos y añadiendo tipeo más estricto en las estructuras de datos para evitar ambigüedades en la manipulación de rutas.
+- `2026-11-05T01:17:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T01:17:47` Corrida terminada. Total usado hoy: 32.
