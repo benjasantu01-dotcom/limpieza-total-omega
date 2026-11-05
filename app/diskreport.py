@@ -80,8 +80,11 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
 
 class ExtStats:
     """
-    Contenedor de métricas para una extensión de archivo específica.
-    Usa __slots__ para optimizar el uso de memoria durante escaneos masivos.
+    Almacena métricas acumuladas por extensión de archivo.
+    
+    Attributes:
+        total_bytes: Suma total de bytes de todos los archivos con esta extensión.
+        count: Cantidad total de archivos procesados con esta extensión.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -98,7 +101,10 @@ class ExtStats:
 
 class GlobalStats:
     """
-    Acumulador durante el escaneo recursivo para mantener el estado global de bytes y conteos.
+    Acumulador global utilizado durante el recorrido del disco.
+    
+    Mantiene el estado de bytes y conteos totales, delegando la granularidad
+    por extensión a diccionarios de objetos `ExtStats`.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -106,7 +112,7 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, ext: str) -> None:
-        """Registra un archivo y actualiza totales y métricas de extensión."""
+        """Actualiza el contador global y la métrica específica de la extensión."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1
@@ -115,7 +121,10 @@ class GlobalStats:
 
 class FolderMetrics:
     """
-    Contenedor temporal para el cálculo del peso de un subdirectorio durante la iteración.
+    Calculador de métricas para directorios.
+    
+    Utilizado internamente para consolidar el tamaño y conteo de archivos 
+    en una rama específica del sistema de archivos.
     """
     __slots__ = ('size', 'file_count')
     
@@ -371,18 +380,22 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Realiza un escaneo consolidado del directorio:
-    - Agrega estadísticas globales (bytes totales y conteo).
-    - Agrupa métricas por extensión.
-    - Mantiene un heap de tamaño `limit` para trackear los archivos más grandes de forma eficiente.
+    Realiza un escaneo consolidado del directorio manteniendo métricas de uso y un heap de archivos.
+    
+    Args:
+        directory: Ruta raíz a escanear.
+        skip_protected: Si es True, ignora rutas definidas como protegidas en safety.py.
+        limit: Tamaño máximo del heap para mantener track de los archivos más pesados.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
+        # Normalización de extensión para consistencia
         ext = path.suffix.lower() or "(sin extensión)"
         stats.register_file(size, ext)
         
+        # Mantenimiento de heap de archivos más grandes si el límite está activo
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))

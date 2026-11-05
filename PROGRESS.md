@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 261
+- Sin respuesta de la IA (error o límite): 259
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 41 | 1 | 14 | 5 | 99 |
-| 2026-11-05 | 135 | 7 | 35 | 5 | 162 |
+| 2026-11-04 | 40 | 1 | 14 | 5 | 96 |
+| 2026-11-05 | 138 | 7 | 35 | 5 | 163 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **33**
 - robustez ante casos límite: **33**
+- rendimiento: **32**
 - seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
 - `settings.py`: **18**
-- `diskreport.py`: **17**
-- `browser.py`: **16**
-- `quarantine.py`: **15**
+- `browser.py`: **17**
 - `memory.py`: **15**
+- `assistant.py`: **14**
+- `quarantine.py`: **14**
 - `scanner.py`: **13**
-- `assistant.py`: **13**
 - `safety.py`: **12**
 - `duplicates.py`: **12**
 - `branding.py`: **11**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T14:43:03` **diskreport.py** (legibilidad y documentación): Documenté con docstrings detallados las clases internas (`ExtStats`, `GlobalStats`, `FolderMetrics`) y simplifiqué la legibilidad de `_collect_summary_data` para clarificar la lógica de acumulación, facilitando el mantenimiento a futuro sin alterar la funcionalidad.
+- `2026-11-05T14:42:49` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados y la normalización de la terminología en `DirectoryScanner`, aclarando la lógica de protección frente a puntos de reparse.
+- `2026-11-05T14:41:50` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la normalización de docstrings (ajustándolos a la especificación PEP 257), la adición de Type Hints en funciones de orden superior y la clarificación de la intención de los decoradores de seguridad.
 - `2026-11-05T14:33:05` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_valid_registry_path` y `_is_registry_entry_safe` mediante la validación explícita de tipos `Path` y el manejo preventivo de excepciones `OSError` al operar sobre rutas malformadas, evitando que entradas inválidas o rutas con caracteres prohibidos inyecten fallos silenciosos en el inventario.
 - `2026-11-05T14:32:39` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate` y `_is_structure_valid` para evitar posibles errores de `KeyError` o `AttributeError` ante configuraciones que contengan claves inesperadas o valores nulos, asegurando que siempre se respete la integridad del esquema `AppSettings` incluso con archivos manipulados externamente.
 - `2026-11-05T14:31:43` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para incluir un manejo más preciso de excepciones, diferenciando entre errores de acceso transitorios (reintentables) y fallos estructurales definitivos, evitando que `UnsafePathError` se propague innecesariamente durante validaciones de rutina.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T12:39:46` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `startup.py` al implementar la verificación de puntos de reparse (junctions) y enlaces simbólicos mediante `os.path.islink` durante la lectura del registro y carpetas, evitando que el escáner sea inducido a recorrer árboles de directorios fuera de las rutas de inicio estándar.
 - `2026-11-05T12:39:17` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` para prevenir ataques de sustitución de archivos (TOCTOU) mediante el uso de `os.open` con `os.O_NOFOLLOW` y validaciones estrictas de estado (`fstat`) tras la apertura, asegurando que el archivo de configuración no sea un enlace simbólico o un reparse point.
 - `2026-11-05T12:38:47` **scanner.py** (seguridad defensiva): Se ha añadido una validación de `st_nlink` en `_safe_stat` para detectar de forma más robusta archivos sospechosos o inconsistentes (como puntos de reanálisis mal formados) a nivel de metadatos, fortaleciendo el escaneo defensivo.
-- `2026-11-05T12:30:17` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para archivos dispersos (sparse files) en `_validate_security_descriptor_attributes` y se ha robustecido `_validate_preconditions` para prevenir el uso de rutas que contengan el prefijo de dispositivo `\\.\` o `\\?\` en operaciones de modificación, mitigando riesgos de bypass a las protecciones del sistema de archivos de Windows.
-- `2026-11-05T12:29:22` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine.py` mediante la implementación de `_is_path_canonical`, asegurando que todas las rutas sean resueltas y normalizadas estrictamente antes de cualquier validación para prevenir vectores de ataque basados en nombres de archivos o rutas relativas ambiguas.
-- `2026-11-05T12:28:35` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de E/S en `stage_for_review` y `delete_reviewed` implementando una validación estricta de `is_safe_to_modify` y `is_protected_path` inmediatamente antes de cada operación de sistema, eliminando la posibilidad de que rutas de sistema se cuelen si el estado del disco cambió durante la ejecución.
