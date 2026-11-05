@@ -93,7 +93,6 @@ def _is_file_busy(path_str: str) -> bool:
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
     
-    # 0x00000000 permite abrir el archivo solo para consultar metadatos sin pedir acceso de lectura/escritura
     handle = kernel32.CreateFileW(path_long, 0, 0, None, 3, 0x00000080, None)
     if handle == INVALID_HANDLE_VALUE:
         return kernel32.GetLastError() == ERROR_SHARING_VIOLATION
@@ -957,11 +956,17 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
         raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationErrorCode.INTEGRITY)
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+    if sd.has_flag(Win32Attr.SPARSE_FILE):
+        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationCategory.INTEGRITY)
 
 def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> None:
     """Valida condiciones de entorno antes de la operación."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
+    
+    path_s = str(target_path)
+    if any(path_s.startswith(p) for p in ("\\\\.\\", "\\\\?\\")):
+        raise UnsafePathError("Prohibido uso de rutas de dispositivo en modificación.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     if os.name == 'nt':
         try:

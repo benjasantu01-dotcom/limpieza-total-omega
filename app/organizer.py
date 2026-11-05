@@ -360,15 +360,18 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             except (OSError, PermissionError):
                 return None
         
-        if not is_safe_to_modify(dest_base): return None
+        # Validar destino antes de empezar
+        if not is_safe_to_modify(dest_base) or is_protected_path(dest_base): return None
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
             try:
+                # Verificación de seguridad de doble capa antes de cada operación
                 if not _is_safe_for_disk_op(junk_file, dest_base): continue
                 target_path = _can_move_file(junk_file, dest_base)
                 if target_path and junk_file.path.exists(): 
-                    if is_safe_to_modify(junk_file.path):
+                    # Validar de nuevo que sea seguro antes de mover
+                    if is_safe_to_modify(junk_file.path) and not is_protected_path(junk_file.path):
                         shutil.move(str(junk_file.path), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
@@ -393,13 +396,17 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     try:
         dest = Path(review_dir).expanduser().resolve()
         if not dest.exists() or not dest.is_dir(): return 0
-        if not is_safe_to_modify(dest): return 0
+        
+        # Validación de seguridad del contenedor antes de iterar
+        if not is_safe_to_modify(dest) or is_protected_path(dest): return 0
         
         count = 0
         for item in dest.iterdir():
             try:
                 if not item.is_file() or item.is_symlink() or _is_junction(item): continue
                 if not is_valid_junk_extension(item.name): continue
+                
+                # Verificación final de seguridad antes de unlink()
                 if is_protected_path(item) or _is_file_locked(item): continue
                 if is_safe_to_modify(item):
                     item.unlink()

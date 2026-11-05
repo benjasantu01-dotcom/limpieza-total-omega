@@ -1298,3 +1298,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-05T12:21:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-11-05T12:21:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T12:21:22` Corrida terminada. Total usado hoy: 292.
+- `2026-11-05T12:28:06` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-05T12:28:35` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las operaciones de E/S en `stage_for_review` y `delete_reviewed` implementando una validación estricta de `is_safe_to_modify` y `is_protected_path` inmediatamente antes de cada operación de sistema, eliminando la posibilidad de que rutas de sistema se cuelen si el estado del disco cambió durante la ejecución.
+- `2026-11-05T12:29:22` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `quarantine.py` mediante la implementación de `_is_path_canonical`, asegurando que todas las rutas sean resueltas y normalizadas estrictamente antes de cualquier validación para prevenir vectores de ataque basados en nombres de archivos o rutas relativas ambiguas.
+- `2026-11-05T12:29:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-05T12:29:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-05T12:30:17` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para archivos dispersos (sparse files) en `_validate_security_descriptor_attributes` y se ha robustecido `_validate_preconditions` para prevenir el uso de rutas que contengan el prefijo de dispositivo `\\.\` o `\\?\` en operaciones de modificación, mitigando riesgos de bypass a las protecciones del sistema de archivos de Windows.
+- `2026-11-05T12:30:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T12:30:17` Corrida terminada. Total usado hoy: 296.
