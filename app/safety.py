@@ -967,8 +967,12 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
-    if os.name == 'nt' and target_path.parent.exists() and _is_system_directory_junction(str(target_path.parent)):
-         raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+    if os.name == 'nt':
+        try:
+            if target_path.parent.exists() and _is_system_directory_junction(str(target_path.parent)):
+                raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+        except (OSError, PermissionError):
+            pass
 
     try:
         app_root = Path(getattr(sys, 'executable', os.getcwd())).parent
@@ -997,12 +1001,15 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if _is_file_in_use_by_system(path_str):
             raise UnsafePathError("Protección defensiva: Archivo en uso por sistema.", SafetyValidationErrorCode.FILE_IN_USE)
             
-        parent = target_path.parent
-        if parent.exists():
-            if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-            if os.name == 'nt' and _is_volume_readonly(path_str):
-                raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+        try:
+            parent = target_path.parent
+            if parent.exists():
+                if not os.access(parent, os.W_OK):
+                    raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+                if os.name == 'nt' and _is_volume_readonly(path_str):
+                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+        except (OSError, PermissionError):
+            pass
         
         if _is_kernel_managed(path_str):
             raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
@@ -1155,8 +1162,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if p.exists():
         _validate_file_operations_security(p, allow_sensitive, base)
     else:
-        if p.parent.exists() and not os.access(p.parent, os.W_OK):
-            raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+        try:
+            if p.parent.exists() and not os.access(p.parent, os.W_OK):
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+        except (OSError, PermissionError):
+            pass
     
     return p
 

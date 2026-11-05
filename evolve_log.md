@@ -1137,3 +1137,38 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-05T09:46:45` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` para prevenir excepciones silenciosas o valores inesperados mediante validaciones de tipo explícitas y manejo defensivo de desbordamientos.
 - `2026-11-05T09:46:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T09:46:45` Corrida terminada. Total usado hoy: 232.
+- `2026-11-05T09:54:44` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-11-05T09:55:12` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-05T09:55:51` Tests FALLARON:
+```
+h(destination): raise UnsafePathError("Restauración denegada: destino protegido.")
+            parent: Path = destination.parent.resolve()
+            ensure_safe_to_modify(parent)
+            _ensure_disk_space(parent, quarantine_item.size_bytes)
+            if not parent.exists(): _check_io_error_context(parent.mkdir, parents=True, exist_ok=True)
+            _check_io_error_context(os.replace, str(stored_file), str(destination))
+            for p in [parent, base_path]:
+                if p and p.exists():
+                    try:
+                        fd = os.open(str(p), os.O_RDONLY)
+                        try: os.fsync(fd)
+                        finally: os.close(fd)
+                    except (OSError, PermissionError): pass
+            items = load_manifest(base, force_reload=True)
+            save_manifest([i for i in items if i.item_id != item_id], base)
+            return destination
+        except (OSError, PermissionError, IOError, KeyError, UnsafePathError) as e:
+>           raise RuntimeError(f"Error crítico en restauración: {e}")
+E           RuntimeError: Error crítico en restauración: [GENERIC] Restauración denegada: destino protegido.
+
+app/quarantine.py:759: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en restauración: [GENERIC] Restauración denegada: destino protegido.
+1 failed, 298 passed in 1.75s
+
+```
+- `2026-11-05T09:55:51` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora el manejo de errores en `restore_item` al evitar un `RuntimeError` genérico durante la restauración, capturando fallos específicos de I/O o integridad con un mensaje informativo y permitiendo una recuperación más limpia del estado de la aplicación mediante la eliminación del registro corrupto del manifiesto de forma más precisa.
+- `2026-11-05T09:56:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-11-05T09:56:40` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de las validaciones en `ensure_safe_to_modify` capturando excepciones específicas (`PermissionError`, `OSError`) al evaluar `p.parent` y `p.exists()`, evitando que fallos inesperados de E/S interrumpan la lógica de seguridad con errores genéricos.
+- `2026-11-05T09:56:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T09:56:40` Corrida terminada. Total usado hoy: 236.

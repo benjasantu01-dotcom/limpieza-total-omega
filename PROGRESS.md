@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **151** (30.0% de aceptación)
-- Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 47
+- Mejoras aceptadas: **152** (30.2% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 283
+- Sin respuesta de la IA (error o límite): 280
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 68 | 5 | 25 | 10 | 164 |
-| 2026-11-05 | 83 | 5 | 22 | 3 | 119 |
+| 2026-11-04 | 68 | 5 | 25 | 10 | 160 |
+| 2026-11-05 | 84 | 6 | 23 | 3 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **38**
 - rendimiento: **30**
 - seguridad defensiva: **29**
-- manejo de errores y validación de entradas: **28**
+- manejo de errores y validación de entradas: **29**
 - robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
@@ -38,13 +38,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **11**
 - `duplicates.py`: **10**
 - `scanner.py`: **10**
+- `safety.py`: **9**
 - `branding.py`: **9**
-- `safety.py`: **8**
 - `organizer.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T09:56:40` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de las validaciones en `ensure_safe_to_modify` capturando excepciones específicas (`PermissionError`, `OSError`) al evaluar `p.parent` y `p.exists()`, evitando que fallos inesperados de E/S interrumpan la lógica de seguridad con errores genéricos.
 - `2026-11-05T09:46:45` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` para prevenir excepciones silenciosas o valores inesperados mediante validaciones de tipo explícitas y manejo defensivo de desbordamientos.
 - `2026-11-05T09:44:56` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para evitar fallos silenciosos ante archivos inexistentes o inaccesibles, asegurando que la lógica de recomendación no se detenga ante errores de entrada.
 - `2026-11-05T09:35:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_collect_summary_data` envolviendo el recorrido del generador en un bloque try-except para capturar excepciones inesperadas durante la iteración, asegurando que el informe sea parcial en lugar de fallar completamente ante un error de acceso a disco.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T07:24:11` **safety.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `_validate_ntfs_reparse_redirection` para asegurar que, al validar la profundidad y el destino de enlaces simbólicos o junctions, se manejen correctamente los errores de permiso, evitando que una excepción no controlada detenga el escaneo completo cuando el acceso a un enlace sea restringido por el sistema.
 - `2026-11-05T07:14:33` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que no existen o son inaccesibles en `_iter_process_memory` y `trim_working_set`, asegurando que `GetModuleFileNameExW` no reciba ni procese búferes corruptos o inválidos, reforzando la estabilidad ante procesos que terminan durante el escaneo.
 - `2026-11-05T07:13:12` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante estados incoherentes del pipeline asegurando que `_compute_cached` maneje situaciones donde `PIPELINE_DEFINITIONS` o los pesos no coincidan, evitando divisiones por cero o claves faltantes durante la agregación.
-- `2026-11-05T07:11:39` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_collect_candidates` para manejar la posible eliminación o bloqueo de archivos durante la iteración del `scandir` (Race Condition), garantizando que el sistema no intente realizar operaciones de `stat` o hash sobre rutas que han dejado de ser válidas durante la ejecución.
