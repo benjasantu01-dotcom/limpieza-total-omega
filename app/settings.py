@@ -365,17 +365,11 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     """Verifica que el archivo de configuración sea legible, no alterado y propiedad del usuario."""
     try:
-        # Verifica que no es un enlace simbólico (lstat ya fue hecho afuera)
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
-        # Debe ser archivo regular con exactamente 1 link duro
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-        # Permisos estrictos: solo lectura/escritura para el dueño
         if (st.st_mode & 0o077) != 0: return False
-        # Chequeo de propiedad UID
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        # Límites de tamaño
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
-        # Seguridad lógica adicional
         return is_safe_to_modify(str(file_path))
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
@@ -396,8 +390,14 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
         
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        # Uso de os.open para evitar symlink race conditions al abrir
+        fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
+        try:
+            with os.fdopen(fd, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            os.close(fd)
+            raise
             
         if not _is_structure_valid(data): return None
         return data
@@ -420,7 +420,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     resolved_str = str(primary_path.resolve())
     try:
         if primary_path.exists() and primary_path.is_file():
-            # Verificamos estado previo al parseo
             st = primary_path.lstat()
             cached = _MANAGER.data_cache.get(resolved_str)
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:

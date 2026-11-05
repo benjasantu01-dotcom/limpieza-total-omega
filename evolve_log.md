@@ -445,3 +445,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-05T03:31:00` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta en `purge_all` para asegurar que solo se eliminen archivos que están correctamente registrados en el manifiesto, evitando el borrado de archivos huérfanos o accidentales que podrían ser legítimos, manteniendo la integridad del sandbox.
 - `2026-11-05T03:31:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T03:31:00` Corrida terminada. Total usado hoy: 84.
+- `2026-11-05T03:36:55` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-05T03:38:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-05T03:38:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-05T03:39:10` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-11-05T03:39:34` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-05T03:40:14` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la seguridad defensiva al limitar la lectura de archivos de configuración mediante `os.open` con flags restrictivos (`O_NOFOLLOW`) para prevenir ataques de symlink y mejorar la robustez frente a archivos maliciosos.
+- `2026-11-05T03:40:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T03:40:14` Corrida terminada. Total usado hoy: 88.

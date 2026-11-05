@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **141** (28.0% de aceptación)
+- Mejoras aceptadas: **142** (28.2% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 289
+- Sin respuesta de la IA (error o límite): 287
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 23 | 1 | 11 | 3 | 62 |
+| 2026-11-03 | 23 | 1 | 11 | 3 | 58 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 35 | 1 | 9 | 1 | 38 |
+| 2026-11-05 | 36 | 1 | 10 | 1 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **40**
+- seguridad defensiva: **28**
 - manejo de errores y validación de entradas: **27**
 - rendimiento: **27**
-- seguridad defensiva: **27**
 - robustez ante casos límite: **20**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **16**
 - `healthscore.py`: **16**
+- `settings.py`: **14**
 - `quarantine.py`: **13**
-- `settings.py`: **13**
 - `memory.py`: **13**
 - `browser.py`: **12**
 - `safety.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T03:40:14` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva al limitar la lectura de archivos de configuración mediante `os.open` con flags restrictivos (`O_NOFOLLOW`) para prevenir ataques de symlink y mejorar la robustez frente a archivos maliciosos.
 - `2026-11-05T03:31:00` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta en `purge_all` para asegurar que solo se eliminen archivos que están correctamente registrados en el manifiesto, evitando el borrado de archivos huérfanos o accidentales que podrían ser legítimos, manteniendo la integridad del sandbox.
 - `2026-11-05T03:29:32` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable del proceso antes de intentar cualquier operación, asegurando que no se pueda manipular la memoria de procesos críticos incluso si el handle se obtuvo exitosamente.
 - `2026-11-05T03:17:12` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita contra ataques de "path traversal" usando `Path.resolve()` en conjunto con la validación de prefijos, evitando que el escáner escape del directorio raíz previsto mediante symlinks o rutas relativas maliciosas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T02:46:23` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `_compute_cached` ante valores no numéricos, casos de corrupción y errores inesperados, asegurando que el pipeline siempre retorne un resultado válido y nunca se bloquee ante entradas malformadas.
 - `2026-11-05T02:39:12` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen durante el escaneo (race conditions) y posibles errores de lectura en el sistema de archivos, asegurando que el recorrido no se interrumpa ante fallos puntuales.
 - `2026-11-05T02:27:28` **settings.py** (rendimiento): Optimizé `_read_and_parse_json` para realizar una lectura más eficiente y segura, evitando convertir todo el contenido a `str` si el archivo es grande o sospechoso, y simplificando el flujo de validación para reducir el uso de memoria durante el parseo de archivos pequeños.
-- `2026-11-05T02:25:56` **scanner.py** (rendimiento): Se optimizó el recorrido del escáner moviendo la evaluación de la extensión de archivo antes de realizar llamadas costosas al sistema de archivos (`entry.stat()` o verificaciones adicionales), reduciendo drásticamente la carga de I/O en directorios con muchos archivos irrelevantes.
