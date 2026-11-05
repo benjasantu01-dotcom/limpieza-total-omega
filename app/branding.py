@@ -348,10 +348,9 @@ def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
     """Persiste el SVG en disco tras validar permisos y seguridad."""
-    if destination is None: return None
+    if not destination: return None
     try:
         dest_path = Path(destination).resolve()
-        # Verificación de seguridad antes de cualquier operación
         if not is_safe_to_modify(dest_path):
             return None
             
