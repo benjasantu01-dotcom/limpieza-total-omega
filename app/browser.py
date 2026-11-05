@@ -108,6 +108,10 @@ class DirectoryScanner:
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
         """Determina si un nodo es apto para escaneo y acumula el tamaño si corresponde."""
+        # Validación: ignorar nombres vacíos o caracteres de control que puedan causar errores en stat
+        if not entry.name or any(ord(c) < 32 for c in entry.name):
+            return total_bytes
+            
         name_lower = entry.name.lower()
         if name_lower in self.ctx.never_touch_lower:
             return total_bytes
@@ -122,11 +126,14 @@ class DirectoryScanner:
                 return total_bytes + subdir.bytes_found
         elif entry.is_file(follow_symlinks=False):
             if not _is_system_hidden(entry.path, self.ctx.kernel32):
-                st_file = entry.stat(follow_symlinks=False)
-                file_id = (st_file.st_dev, st_file.st_ino)
-                if file_id not in self.ctx.visited_files:
-                    self.ctx.visited_files.add(file_id)
-                    return total_bytes + st_file.st_size
+                try:
+                    st_file = entry.stat(follow_symlinks=False)
+                    file_id = (st_file.st_dev, st_file.st_ino)
+                    if file_id not in self.ctx.visited_files:
+                        self.ctx.visited_files.add(file_id)
+                        return total_bytes + st_file.st_size
+                except (OSError, PermissionError):
+                    pass
         return total_bytes
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:

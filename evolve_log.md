@@ -1467,3 +1467,10 @@ assert not ['memory.py']
 - `2026-11-05T00:36:45` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación de parámetros más estricta (`isinstance` y chequeo de `None`) antes de procesar valores, evitando posibles excepciones durante la ejecución en la UI.
 - `2026-11-05T00:36:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T00:36:45` Corrida terminada. Total usado hoy: 16.
+- `2026-11-05T00:43:36` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-05T00:44:08` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `DirectoryScanner._process_entry` agregando una validación explícita para evitar errores al intentar acceder a rutas con nombres inválidos o caracteres de control, asegurando que el proceso de escaneo sea resiliente ante estructuras de archivos inesperadas dentro de las carpetas de caché.
+- `2026-11-05T00:44:32` ➖ Sin cambios en diskreport.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `walk_files` y `largest_folders` envolviendo la resolución de rutas y los accesos a disco en bloques `try-except` más específicos para capturar errores de sistema (`OSError`, `PermissionError`) que puedan ocurrir durante el escaneo recursivo, evitando que una falla en una subcarpeta aborten el análisis completo.
+- `2026-11-05T00:44:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-05T00:45:05` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-05T00:45:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T00:45:05` Corrida terminada. Total usado hoy: 20.

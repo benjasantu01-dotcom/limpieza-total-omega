@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **124** (24.6% de aceptación)
+- Mejoras aceptadas: **125** (24.8% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 312
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 310
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 39 | 2 | 14 | 4 | 109 |
+| 2026-11-03 | 39 | 2 | 14 | 4 | 105 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 2 | 0 | 0 | 0 | 14 |
+| 2026-11-05 | 3 | 0 | 0 | 1 | 16 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **31**
 - rendimiento: **29**
+- manejo de errores y validación de entradas: **24**
 - seguridad defensiva: **23**
-- manejo de errores y validación de entradas: **23**
 - robustez ante casos límite: **18**
 
 ## Mejoras aceptadas por archivo
@@ -36,9 +36,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **12**
 - `safety.py`: **11**
 - `memory.py`: **10**
+- `browser.py`: **10**
 - `assistant.py`: **9**
 - `duplicates.py`: **9**
-- `browser.py`: **9**
 - `scanner.py`: **8**
 - `branding.py`: **7**
 - `startup.py`: **5**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T00:44:08` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `DirectoryScanner._process_entry` agregando una validación explícita para evitar errores al intentar acceder a rutas con nombres inválidos o caracteres de control, asegurando que el proceso de escaneo sea resiliente ante estructuras de archivos inesperadas dentro de las carpetas de caché.
 - `2026-11-05T00:36:45` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación de parámetros más estricta (`isinstance` y chequeo de `None`) antes de procesar valores, evitando posibles excepciones durante la ejecución en la UI.
 - `2026-11-05T00:36:20` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` para evitar errores en llamadas recursivas y agregué una validación de seguridad explícita en `_call_gemini` para asegurar que el `context_text` enviado sea seguro antes de serializarlo, cerrando una brecha donde un contexto mal formado podría causar un error en la cadena.
 - `2026-11-04T23:13:31` **settings.py** (seguridad defensiva): Se endureció la seguridad en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar que el archivo de configuración sea un archivo regular, propiedad exclusiva del usuario, evitando el seguimiento de enlaces simbólicos maliciosos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T22:22:08` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` y `trim_working_set` ante rutas malformadas o errores de lectura del buffer de memoria, añadiendo una validación estricta de la ruta obtenida mediante `os.path.normpath` para asegurar que las verificaciones de `safety` no sean eludidas por caracteres especiales o rutas relativas.
 - `2026-11-04T22:10:50` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escáner ante rutas mal formadas o inaccesibles añadiendo una validación explícita de `Path.resolve()` en el punto de entrada `directory_size` y un manejo más estricto de las excepciones durante la resolución de rutas, evitando que rutas con caracteres inválidos o bloqueos de sistema aborten el proceso.
 - `2026-11-04T17:28:53` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución redundante de `lstat()` y `resolve()` mediante el uso de una caché de rutas más efectiva y la normalización temprana de `resolved_str` dentro de `settings_path`, reduciendo la carga de E/S en accesos recurrentes.
-- `2026-11-04T17:20:10` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_id` reemplazando la creación de manejadores (`CreateFileW`) por la función API `GetFileInformationByHandleEx` sobre manejadores existentes cuando sea posible, y mejoré la gestión de la caché de identificadores limitando su crecimiento y evitando re-cálculos costosos para rutas ya procesadas.
