@@ -12,11 +12,15 @@ from __future__ import annotations
 import json
 import os
 import stat
+import platform
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 from functools import lru_cache
+
+if platform.system() == "Windows":
+    import msvcrt
 
 from safety import is_safe_to_modify, is_protected_path
 
@@ -195,6 +199,8 @@ class _SettingsManager:
             
             temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
             with open(temp_path, "wb") as f:
+                if platform.system() == "Windows":
+                    msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
                 f.write(serialized_bytes)
                 f.flush()
                 os.fsync(f.fileno())

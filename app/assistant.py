@@ -581,6 +581,7 @@ def _has_invalid_meta_characters(text: str) -> bool:
 
 def _is_safe_text_length(text: Any) -> bool:
     """Verifica que la cadena tenga una longitud válida (no nula y dentro de límites)."""
+    if isinstance(text, Path): return False
     return isinstance(text, str) and 0 < len(text) <= _MAX_TEXT_LENGTH and not is_protected_path(text)
 
 def _ensure_safe_text(text: Any) -> bool:

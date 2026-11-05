@@ -422,3 +422,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-05T03:00:45` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez del escaneo implementando una validación de rutas que maneja explícitamente errores de acceso denegado y excepciones de sistema, además de asegurar que `_is_readable` y `_is_valid_file_path` operen con la misma lógica de exclusión que el resto del módulo, evitando errores por desbordamiento o rutas malformadas durante la navegación.
 - `2026-11-05T03:00:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T03:00:45` Corrida terminada. Total usado hoy: 72.
+- `2026-11-05T03:06:10` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-11-05T03:06:46` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de archivos de configuración ante concurrencia al añadir un bloqueo preventivo (advisory locking) mediante `msvcrt.locking` en Windows, asegurando que si dos instancias intentan escribir el archivo simultáneamente, la integridad del JSON no se corrompa.
+- `2026-11-05T03:07:11` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-05T03:07:47` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `assistant.py` mediante la validación explícita del uso de métodos de `pathlib.Path` en la función `_is_safe_text_length`, evitando que se pasen objetos `Path` a las funciones de validación de texto que esperan strings, previniendo así posibles errores de tipo o escapes.
+- `2026-11-05T03:08:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-05T03:08:56` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación adicional mediante `ensure_safe_to_modify` antes de escribir en disco, garantizando que, aunque la función sea un intento de escritura, se apliquen las reglas estrictas de protección de rutas antes de cualquier operación de I/O.
+- `2026-11-05T03:08:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T03:08:56` Corrida terminada. Total usado hoy: 76.
