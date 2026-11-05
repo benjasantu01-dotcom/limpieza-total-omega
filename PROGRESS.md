@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 257
+- Sin respuesta de la IA (error o límite): 254
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 54 | 3 | 17 | 6 | 128 |
-| 2026-11-05 | 123 | 7 | 33 | 4 | 129 |
+| 2026-11-04 | 54 | 3 | 17 | 6 | 124 |
+| 2026-11-05 | 126 | 7 | 33 | 4 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,26 +25,29 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **36**
 - robustez ante casos límite: **33**
 - manejo de errores y validación de entradas: **32**
-- seguridad defensiva: **29**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
+- `settings.py`: **17**
 - `quarantine.py`: **16**
-- `settings.py`: **16**
 - `memory.py`: **15**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `branding.py`: **12**
 - `safety.py`: **12**
 - `duplicates.py`: **12**
 - `assistant.py`: **12**
 - `organizer.py`: **8**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T12:39:46` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `startup.py` al implementar la verificación de puntos de reparse (junctions) y enlaces simbólicos mediante `os.path.islink` durante la lectura del registro y carpetas, evitando que el escáner sea inducido a recorrer árboles de directorios fuera de las rutas de inicio estándar.
+- `2026-11-05T12:39:17` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` para prevenir ataques de sustitución de archivos (TOCTOU) mediante el uso de `os.open` con `os.O_NOFOLLOW` y validaciones estrictas de estado (`fstat`) tras la apertura, asegurando que el archivo de configuración no sea un enlace simbólico o un reparse point.
+- `2026-11-05T12:38:47` **scanner.py** (seguridad defensiva): Se ha añadido una validación de `st_nlink` en `_safe_stat` para detectar de forma más robusta archivos sospechosos o inconsistentes (como puntos de reanálisis mal formados) a nivel de metadatos, fortaleciendo el escaneo defensivo.
 - `2026-11-05T12:30:17` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para archivos dispersos (sparse files) en `_validate_security_descriptor_attributes` y se ha robustecido `_validate_preconditions` para prevenir el uso de rutas que contengan el prefijo de dispositivo `\\.\` o `\\?\` en operaciones de modificación, mitigando riesgos de bypass a las protecciones del sistema de archivos de Windows.
 - `2026-11-05T12:29:22` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine.py` mediante la implementación de `_is_path_canonical`, asegurando que todas las rutas sean resueltas y normalizadas estrictamente antes de cualquier validación para prevenir vectores de ataque basados en nombres de archivos o rutas relativas ambiguas.
 - `2026-11-05T12:28:35` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de E/S en `stage_for_review` y `delete_reviewed` implementando una validación estricta de `is_safe_to_modify` y `is_protected_path` inmediatamente antes de cada operación de sistema, eliminando la posibilidad de que rutas de sistema se cuelen si el estado del disco cambió durante la ejecución.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T12:00:33` **startup.py** (robustez ante casos límite): Mejora la robustez del parseo del registro ante rutas con espacios y comillas múltiples añadiendo una normalización más estricta en `_is_valid_registry_path`, asegurando que no se pierdan entradas válidas que contengan rutas legítimas con espacios.
 - `2026-11-05T12:00:18` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante archivos corruptos o malintencionados al añadir una validación de `st_nlink` (evitando enlaces duros/hardlinks sospechosos) y una comprobación de tamaño mínimo en `_is_file_secure_to_read` y `perform_atomic_write`, además de asegurar que la carpeta de configuración tenga los permisos correctos antes de proceder a la escritura, evitando así ataques de desbordamiento o reemplazo de archivos.
 - `2026-11-05T11:59:15` **scanner.py** (robustez ante casos límite): Se reforzó la robustez del escáner ante rutas malformadas o inaccesibles mediante la normalización y validación estricta de `entry.path` antes de cualquier procesamiento, previniendo errores de `TypeError` o `ValueError` al manejar entradas devueltas por `os.scandir` en entornos con permisos restrictivos o sistemas de archivos inestables.
-- `2026-11-05T11:58:25` **safety.py** (robustez ante casos límite): Se implementó un mecanismo de verificación de "en uso" más robusto utilizando `GetFileInformationByHandle` con acceso de consulta de metadatos en lugar de intentar abrir el archivo con acceso de lectura exclusivo, evitando falsos positivos cuando el archivo está bloqueado por el propio proceso o por lectura compartida.
-- `2026-11-05T11:48:56` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante fallos de E/S y corrupción de metadatos en `purge_all` y `load_manifest`, añadiendo validaciones de integridad preventivas y garantizando que las operaciones de limpieza no se detengan ante archivos huérfanos o inaccesibles, manteniendo la atomicidad requerida.
-- `2026-11-05T11:38:46` **healthscore.py** (robustez ante casos límite): Se implementó un control robusto en `_compute_cached` para prevenir que `SystemMetrics` mal formadas o valores extremos provoquen errores en tiempo de ejecución o resultados inconsistentes, asegurando que `_compute_cached` siempre reciba tipos consistentes tras la validación inicial.

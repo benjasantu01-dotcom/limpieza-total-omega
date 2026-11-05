@@ -190,6 +190,7 @@ class _SettingsManager:
             
             if resolved_path.exists():
                 try:
+                    # Usamos lstat para no seguir enlaces antes de validar
                     st = resolved_path.lstat()
                     if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
                     if (st.st_mode & 0o077) != 0: return False 
@@ -392,12 +393,16 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
     (evitando race conditions), parsea el contenido y valida su estructura interna.
     """
     try:
+        # Pre-verificación de lstat
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
         
-        fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
+        # O_NOFOLLOW impide abrir si el archivo es un symlink
+        flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0)
+        fd = os.open(file_path, flags)
         try:
             st_post = os.fstat(fd)
+            # Validación post-apertura: confirmar que seguimos en el archivo original
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1:
                 os.close(fd)
                 return None
@@ -409,7 +414,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
             return None
             
         if not _is_structure_valid(data): return None
-        return data, st
+        return data, st_post
     except (OSError, IOError, PermissionError, ValueError, TypeError):
         return None
 

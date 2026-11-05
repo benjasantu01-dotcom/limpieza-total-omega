@@ -150,8 +150,8 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         
     try:
         stats = entry.stat(follow_symlinks=False)
-        # Validar consistencia básica
-        if stats.st_size < 0:
+        # Validar consistencia básica: evita archivos sin enlaces o con tamaños anómalos
+        if stats.st_size < 0 or stats.st_nlink == 0:
             return None
         return stats
     except OSError as e:

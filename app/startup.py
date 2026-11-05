@@ -308,9 +308,9 @@ def startup_folders() -> List[Path]:
     seen_paths: Set[str] = set()
     for c in candidates:
         try:
-            if c and c.is_dir():
+            if c and c.is_dir() and not c.is_symlink():
                 resolved_str: str = os.path.normpath(str(c))
-                if resolved_str not in seen_paths and not c.is_symlink() and not is_protected_path(c):
+                if resolved_str not in seen_paths and not is_protected_path(c):
                     seen_paths.add(resolved_str)
                     valid_folders.append(c)
         except (OSError, RuntimeError, PermissionError):
@@ -322,10 +322,6 @@ def startup_folders() -> List[Path]:
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
     Valida un archivo dentro de la carpeta de inicio y crea una instancia `StartupEntry`.
-    
-    Aplica filtros de seguridad contra rutas protegidas, enlaces simbólicos para 
-    evitar el seguimiento de puntos de reparse, y valida que el archivo posea 
-    una extensión ejecutable estándar.
     """
     if not hasattr(entry, "path") or not hasattr(entry, "name"):
         return None
@@ -334,7 +330,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         return None
         
     try:
-        if not entry.is_file(follow_symlinks=False):
+        if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             _PROCESS_CACHE[entry.path] = False
             return None
         
@@ -389,14 +385,15 @@ def _is_valid_registry_path(path_str: str) -> bool:
         return False
     
     try:
-        # Limpieza más robusta para casos con comillas embebidas o rutas largas
         clean_path = path_str.strip(' "')
         if not clean_path: return False
         
-        target: Path = Path(clean_path).resolve(strict=False)
-        if is_protected_path(target): return False
+        target: Path = Path(clean_path)
+        if target.is_symlink(): return False
         
-        # Validación de seguridad: evitar caracteres sospechosos
+        target_res = target.resolve(strict=False)
+        if is_protected_path(target_res): return False
+        
         if any(c in str(target) for c in SUSPICIOUS_CHARS): return False
         
         return True
@@ -418,10 +415,6 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
     Parsea la salida CSV cruda de PowerShell hacia objetos `StartupEntry`.
-    
-    Esta función encapsula la lógica de deserialización de la salida de 
-    PowerShell, normalizando los campos y aplicando las reglas de seguridad
-    de `_is_registry_entry_safe` antes de instanciar cada `StartupEntry`.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
