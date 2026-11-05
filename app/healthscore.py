@@ -341,15 +341,15 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
         )
         
         # Procesamiento del pipeline mediante transformaciones funcionales declarativas
-        scores = [(entry, entry.scorer(metrics)) for entry in PIPELINE_DEFINITIONS]
+        scores_by_entry = [(entry, entry.scorer(metrics)) for entry in PIPELINE_DEFINITIONS]
         
         recommendations = [
-            msg for entry, ratio in scores for msg in _evaluate_rules(metrics, entry.rules, ratio)
+            msg for entry, ratio in scores_by_entry for msg in _evaluate_rules(metrics, entry.rules, ratio)
         ]
         
         metric_breakdown = {
-            e.area: int(_clamp(r * e.weight, 0.0, float(e.weight))) 
-            for e, r in scores
+            entry.area: int(_clamp(ratio * entry.weight, 0.0, float(entry.weight))) 
+            for entry, ratio in scores_by_entry
         }
                 
         if metrics.quarantined_count > 0:

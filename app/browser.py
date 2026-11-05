@@ -81,7 +81,18 @@ class DirectoryScanner:
     def __init__(self, context: ScanContext) -> None:
         self.ctx = context
 
+    def _should_stop_traversal(self, entry: os.DirEntry, depth: int) -> bool:
+        """Determina si la entrada debe ser ignorada por seguridad o límites."""
+        if not entry.name or any(ord(c) < 32 for c in entry.name):
+            return True
+        if entry.name.lower() in self.ctx.never_touch_lower:
+            return True
+        if depth > self.ctx.max_depth:
+            return True
+        return False
+
     def _is_path_allowed(self, path_str: str) -> bool:
+        """Verifica si una ruta está dentro del sandbox permitido y es segura."""
         if not path_str or _is_unc_path(path_str): return False
         try:
             path_obj = Path(path_str).resolve(strict=True)
@@ -94,10 +105,8 @@ class DirectoryScanner:
             return False
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
-        if not entry.name or any(ord(c) < 32 for c in entry.name):
-            return total_bytes
-            
-        if entry.name.lower() in self.ctx.never_touch_lower:
+        """Procesa una entrada individual (archivo o directorio)."""
+        if self._should_stop_traversal(entry, depth):
             return total_bytes
             
         if not is_safe_to_modify(Path(entry.path)):
@@ -120,6 +129,7 @@ class DirectoryScanner:
         return total_bytes
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
+        """Calcula el tamaño acumulado de archivos en una ruta de forma segura."""
         if not isinstance(root_path, str) or not root_path or not self._is_path_allowed(root_path):
             return ScanResult(0, False)
             
