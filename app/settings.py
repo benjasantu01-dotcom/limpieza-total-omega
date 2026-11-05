@@ -374,7 +374,11 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _is_structure_valid(data: Any) -> bool:
-    """Verifica que el JSON parseado sea un diccionario de tamaño controlado con tipos conformes al esquema."""
+    """
+    Verifica la integridad del diccionario JSON deserializado:
+    Comprueba que el objeto tenga las claves mínimas necesarias y que cada valor
+    mantenga el tipo de dato esperado respecto al esquema por defecto.
+    """
     if not isinstance(data, dict) or not data or len(data) > 64: return False
     
     # Validar existencia de cada clave obligatoria según ConfigKey
@@ -388,8 +392,8 @@ def _is_structure_valid(data: Any) -> bool:
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """
-    Intenta leer y parsear el archivo JSON, aplicando filtros de seguridad
-    de contenido y validación estructural estricta antes de retornar los datos.
+    Ejecuta el ciclo de carga: verifica permisos de archivo, abre de forma segura 
+    (evitando race conditions), parsea el contenido y valida su estructura interna.
     """
     try:
         st = file_path.lstat()
@@ -410,7 +414,11 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Asegura integridad: claves faltantes se rellenan, incompatibilidades se corrigen."""
+    """
+    Asegura la resiliencia del objeto de configuración: rellena claves faltantes 
+    con valores de fábrica, descarta tipos incompatibles y valida dependencias 
+    lógicas (ej: desactiva el asistente si no hay credenciales).
+    """
     coerced = DEFAULTS.copy()
     for key_name, value in settings.items():
         if key_name in DEFAULTS and value is not None and isinstance(value, type(DEFAULTS[key_name])):
