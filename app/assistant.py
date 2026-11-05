@@ -111,7 +111,7 @@ _FORBIDDEN_CHARS: Final[set[str]] = set("<>|&^$():;\n\r\t\"'\\`")
 
 def _is_nan_or_inf(val: Any) -> bool:
     """Valida que el valor numérico no sea NaN o Infinito, previniendo errores en cálculos."""
-    if not isinstance(val, (int, float)): return True
+    if not isinstance(val, (int, float)) or isinstance(val, bool): return True
     return math.isnan(val) or math.isinf(val)
 
 def _is_safe_key(key: str) -> bool:
@@ -136,6 +136,7 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     if val is None or isinstance(val, bool):
         return None
     try:
+        if isinstance(val, (dict, list, tuple)): return None
         f: float = float(val)
         if _is_safe_numeric_context(f) and spec.is_valid_type(f) and _is_metric_within_bounds(f, spec):
             return f
@@ -472,7 +473,7 @@ class SystemContext:
         """Valida e intenta extraer una métrica de una fuente externa arbitraria."""
         try:
             val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
-            if val is None or isinstance(val, bool) or callable(val):
+            if val is None or isinstance(val, (bool, dict, list, tuple)) or callable(val):
                 return None
             valid_val = _is_valid_numeric_update(val, spec)
             if valid_val is None: return None
@@ -482,7 +483,7 @@ class SystemContext:
 
     def _clean_grade(self, val: Any) -> str:
         """Desinfecta el campo de calificación eliminando secuencias de control."""
-        if not isinstance(val, (str, int, float)): return ""
+        if not isinstance(val, (str, int, float)) or isinstance(val, bool): return ""
         try:
             clean: str = str(val)
             clean = _REGEX_CONTROL_CHARS.sub(" ", clean)[:_MAX_GRADE_LEN].strip()

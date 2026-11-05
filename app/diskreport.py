@@ -54,12 +54,6 @@ FileRecord: TypeAlias = Tuple[int, Path]
 def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
     """
     Intenta obtener metadatos mediante lstat sin seguir enlaces simbólicos.
-    
-    Args:
-        path: Ruta a inspeccionar.
-        
-    Returns:
-        os.stat_result si tiene éxito, None en caso de error o ruta inválida.
     """
     if path is None:
         return None
@@ -72,12 +66,6 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
 def _is_reparse_point(entry: os.DirEntry) -> bool:
     """
     Verifica si una entrada de directorio es un punto de unión o reanálisis en Windows.
-    
-    Args:
-        entry: Objeto os.DirEntry de la ruta a validar.
-        
-    Returns:
-        True si la ruta es un punto de reanálisis o enlace simbólico.
     """
     try:
         if os.name == 'nt':
@@ -91,10 +79,6 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
 class ExtStats:
     """
     Contenedor de métricas para una extensión de archivo específica.
-    
-    Attributes:
-        total_bytes: Tamaño acumulado en bytes.
-        count: Cantidad total de archivos procesados con esta extensión.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -166,18 +150,13 @@ def _validate_limit(limit: Any) -> int:
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Valida la ruta de inicio para un escaneo.
-    
-    Verifica que la ruta sea absoluta, no esté bloqueada por `is_protected_path`,
-    no sea una ruta UNC (red) y tenga permisos de lectura.
     """
     if not directory:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
-        # Seguridad defensiva: Bloqueo de UNC y protegidos antes de acceder
         if str(p).startswith('\\\\') or is_protected_path(p):
             return None
-        # Validación de integridad de acceso y tipo
         if not p.is_dir() or not os.access(p, os.R_OK):
             return None
         return p
@@ -186,7 +165,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(name: str) -> bool:
-    """Detecta nombres de archivo sospechosos (caracteres de control o ilegales en Windows)."""
+    """Detecta nombres de archivo sospechosos."""
     if not name or '\0' in name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
     return any(c in name for c in SUSPICIOUS_CHARS) or any(char in name for char in ('<', '>', ':', '"', '|', '?', '*'))
@@ -326,9 +305,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= 0:
+                            if st and st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
-                    except (OSError, PermissionError, FileNotFoundError, ValueError):
+                    except (OSError, PermissionError, FileNotFoundError, ValueError, AttributeError):
                         continue
         except (OSError, PermissionError, NotADirectoryError, FileNotFoundError, ValueError):
             continue
@@ -352,7 +331,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Calcula el peso acumulado de subcarpetas de primer nivel usando un diccionario de agregación."""
+    """Calcula el peso acumulado de subcarpetas de primer nivel."""
     root = _validate_root(directory)
     if root is None: return []
     
@@ -385,9 +364,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Realiza un escaneo consolidado del directorio y retorna métricas agregadas.
-    
-    Utiliza un heap (`top_heap`) para mantener solo los archivos más grandes encontrados,
-    asegurando O(N log L) en términos de complejidad temporal y manteniendo bajo el uso de memoria.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -397,7 +373,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             ext = path.suffix.lower() or "(sin extensión)"
             stats.register_file(size, ext)
             
-            # Mantenimiento de heap: si limit > 0, guardamos solo los archivos de mayor tamaño.
             if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size, path))

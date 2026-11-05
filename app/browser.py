@@ -96,6 +96,7 @@ class DirectoryScanner:
         if not path_str or _is_unc_path(path_str): return False
         try:
             path_obj = Path(path_str).resolve(strict=True)
+            if path_obj.is_symlink(): return False
             if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
                 return False
             
@@ -127,7 +128,14 @@ class DirectoryScanner:
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """Calcula el tamaño acumulado de archivos en una ruta de forma segura."""
-        if not isinstance(root_path, str) or not root_path or not self._is_path_allowed(root_path):
+        if not isinstance(root_path, str) or not root_path:
+            return ScanResult(0, False)
+        
+        try:
+            p_root = Path(root_path)
+            if not p_root.exists() or p_root.is_symlink() or not self._is_path_allowed(root_path):
+                return ScanResult(0, False)
+        except (OSError, PermissionError):
             return ScanResult(0, False)
             
         if depth > self.ctx.max_depth:
