@@ -718,3 +718,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-05T05:11:29` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para evitar errores en tiempo de ejecución al encontrar rutas inexistentes o inaccesibles, asegurando que la aplicación no aborte procesos de análisis por condiciones de carrera o archivos bloqueados.
 - `2026-11-05T05:11:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T05:11:29` Corrida terminada. Total usado hoy: 124.
+- `2026-11-05T05:18:51` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-05T05:19:21` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_compute_cached` y `summarize` reemplazando los chequeos simples de `None` por validaciones de tipo explícitas y manejo defensivo de errores, asegurando que el motor analítico no propague estados inconsistentes si recibe datos inesperados.
+- `2026-11-05T05:20:26` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-05T05:20:58` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-05T05:21:10` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` al asegurar que las rutas se validen exhaustivamente contra `is_safe_to_modify` antes de cualquier operación y reemplacé el uso de `shutil.move` por una validación explícita para evitar errores en sistemas de archivos restringidos, mejorando el manejo de excepciones para evitar el colapso del proceso ante archivos bloqueados.
+- `2026-11-05T05:21:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T05:21:10` Corrida terminada. Total usado hoy: 128.

@@ -314,7 +314,7 @@ def grade_for_score(score: float | int) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
     """Evalúa reglas de advertencia según la métrica recibida y retorna lista de mensajes."""
-    if not isinstance(rules, tuple) or metrics is None:
+    if not isinstance(rules, tuple) or not isinstance(metrics, SystemMetrics):
         return []
         
     findings = []
@@ -331,7 +331,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """Orquestador central del cálculo de salud mediante pipeline (cacheado)."""
-    if metric_tuple is None or len(metric_tuple) != len(_VALIDATION_KEYS):
+    if not isinstance(metric_tuple, tuple) or len(metric_tuple) != len(_VALIDATION_KEYS):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
 
     try:
