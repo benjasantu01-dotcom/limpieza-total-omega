@@ -339,32 +339,29 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
         quarantined_count=_validate_numeric(quarantined, 0.0, 0.0, 10000.0)
     )
     
-    recommendations = []
-    metric_breakdown: Dict[MetricKey, int] = {}
-    total_points = 0.0
+    # Procesamiento del pipeline mediante transformaciones funcionales declarativas
+    scores = [(entry, entry.scorer(metrics)) for entry in PIPELINE_DEFINITIONS]
     
-    for entry in PIPELINE_DEFINITIONS:
-        try:
-            area_ratio = entry.scorer(metrics)
-            recommendations.extend(_evaluate_rules(metrics, entry.rules, area_ratio))
-            weighted_val = int(_clamp(area_ratio * entry.weight, 0.0, float(entry.weight)))
-            metric_breakdown[entry.area] = weighted_val
-            total_points += float(weighted_val)
-        except Exception:
-            continue
+    recommendations = [
+        msg for entry, ratio in scores for msg in _evaluate_rules(metrics, entry.rules, ratio)
+    ]
+    
+    metric_breakdown = {
+        e.area: int(_clamp(r * e.weight, 0.0, float(e.weight))) 
+        for e, r in scores
+    }
             
     if metrics.quarantined_count > 0:
-        quarantine_msg = _sanitize_msg("Existen elementos en cuarentena.")
-        if quarantine_msg:
-            recommendations.append(quarantine_msg)
+        if q_msg := _sanitize_msg("Existen elementos en cuarentena."):
+            recommendations.append(q_msg)
         
-    final_score = int(_clamp(total_points, 0.0, 100.0))
+    final_score = int(_clamp(sum(metric_breakdown.values()), 0.0, 100.0))
     
     return HealthResult(
         score=final_score,
         grade=grade_for_score(final_score),
         breakdown=metric_breakdown,
-        recommendations=recommendations if recommendations else ["No hay nada urgente para hacer. El sistema está en buen estado."]
+        recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

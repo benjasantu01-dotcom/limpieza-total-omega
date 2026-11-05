@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 33 | 2 | 12 | 4 | 101 |
+| 2026-11-03 | 30 | 2 | 11 | 4 | 101 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 9 | 0 | 1 | 1 | 21 |
+| 2026-11-05 | 12 | 0 | 2 | 1 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **33**
+- legibilidad y documentación: **36**
 - manejo de errores y validación de entradas: **27**
-- rendimiento: **24**
 - seguridad defensiva: **23**
+- rendimiento: **21**
 - robustez ante casos límite: **18**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
 - `settings.py`: **13**
-- `quarantine.py`: **12**
-- `diskreport.py`: **12**
-- `safety.py`: **11**
+- `diskreport.py`: **13**
+- `quarantine.py`: **11**
 - `browser.py`: **11**
+- `duplicates.py`: **10**
+- `safety.py`: **10**
 - `memory.py`: **10**
 - `assistant.py`: **9**
-- `duplicates.py`: **9**
-- `scanner.py`: **8**
+- `scanner.py`: **7**
 - `branding.py`: **7**
 - `startup.py`: **5**
 - `organizer.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T01:26:17` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `healthscore.py` mediante la refactorización de `_compute_cached` hacia un enfoque más declarativo, reemplazando la lógica de acumulación manual por una expresión de comprensión y mejorando la documentación de las interfaces funcionales mediante docstrings más precisos.
+- `2026-11-05T01:25:17` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) para clarificar las responsabilidades de las funciones de alto nivel, facilitando el mantenimiento y la comprensión de las estrategias de hashing.
+- `2026-11-05T01:24:52` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de Type Hints detallados en retornos de funciones (como `walk_files`), clarificación de docstrings complejos (explicando la técnica del heap para mayor eficiencia) y el uso de anotaciones para definir mejor las estructuras de datos internas, facilitando la comprensión del flujo de datos en el análisis de disco.
 - `2026-11-05T01:17:47` **browser.py** (legibilidad y documentación): Mejoré la legibilidad del motor de escaneo y la precisión de los docstrings en `browser.py`, clarificando las responsabilidades de los métodos recursivos y añadiendo tipeo más estricto en las estructuras de datos para evitar ambigüedades en la manipulación de rutas.
 - `2026-11-05T01:17:37` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del archivo mediante la extracción de constantes mágicas a un bloque de `LAYOUT_CONSTANTS` y la adición de docstrings estructurados que explican las dependencias geométricas y lógicas, cumpliendo con el enfoque de legibilidad sin alterar el comportamiento.
 - `2026-11-05T01:17:07` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `ProblemCriterion` convirtiendo las comparaciones lógicas en un diccionario de funciones `lambda` para eliminar el uso de cadenas como identificadores de operadores, haciendo el código más robusto frente a errores de tipografía y facilitando su lectura.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T23:13:31` **settings.py** (seguridad defensiva): Se endureció la seguridad en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar que el archivo de configuración sea un archivo regular, propiedad exclusiva del usuario, evitando el seguimiento de enlaces simbólicos maliciosos.
 - `2026-11-04T23:12:59` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` al verificar explícitamente que la ruta no sea un punto de unión (`reparse point`) mediante la validación de atributos del sistema antes de procesar cualquier entrada, garantizando que el escáner nunca escape del árbol de directorios asignado mediante enlaces simbólicos o junctions.
 - `2026-11-04T23:03:06` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de seguridad en `quarantine.py` mediante la implementación de `ensure_safe_to_modify` antes de operaciones de escritura en archivos, reemplazando chequeos condicionales débiles por validaciones que levantan excepciones ante cualquier irregularidad en el entorno de destino.
-- `2026-11-04T22:52:37` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `healthscore.py` mediante una validación más estricta en el uso de `getattr` dentro de `SystemMetrics.validate`, evitando la ejecución de lógica sobre atributos inesperados o maliciosos durante la inicialización del objeto.
-- `2026-11-04T22:52:10` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_safe_path_check` para asegurar que, antes de realizar cualquier operación de I/O, se valide el estado del archivo mediante `is_safe_to_modify`, evitando así la interacción accidental con archivos bloqueados o en estados inconsistentes durante la enumeración.
-- `2026-11-04T22:51:46` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `is_protected_path` en `_get_local_windows_drives` antes de acceder a la ruta, utilizando una comprobación de tipo más robusta al resolver el objeto `Path`, evitando posibles errores en la iteración de unidades de disco.
