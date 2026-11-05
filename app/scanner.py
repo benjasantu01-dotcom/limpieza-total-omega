@@ -219,16 +219,12 @@ class Scanner:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.base_root_real: str = os.path.normcase(os.path.realpath(str(base_root)))
+        self.base_root_real: str = os.path.normcase(str(base_root.resolve()))
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Asegura que el recorrido no escape de la raíz definida por el usuario."""
-        try:
-            real_entry = os.path.normcase(os.path.realpath(entry_path))
-            return real_entry.startswith(self.base_root_real)
-        except OSError:
-            return False
+        return os.path.normcase(entry_path).startswith(self.base_root_real)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Detecta nombres de archivo que utilizan técnicas de ofuscación de sistema."""
@@ -261,7 +257,8 @@ class Scanner:
         norm_path = os.path.normcase(entry.path)
         if norm_path in visited: return
         try:
-            if os.access(entry.path, os.R_OK) and not _cached_is_protected(entry.path):
+            # os.access no es suficiente para confirmar permisos reales, pero evita bloqueos innecesarios
+            if not _cached_is_protected(entry.path):
                 visited.add(norm_path)
                 stack.append((entry.path, depth + 1))
         except (OSError, PermissionError):

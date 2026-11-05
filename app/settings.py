@@ -381,12 +381,10 @@ def _is_structure_valid(data: Any) -> bool:
     """
     if not isinstance(data, dict) or not data or len(data) > 64: return False
     
-    # Validar existencia de cada clave obligatoria según ConfigKey
     all_keys = [k.value for k in ConfigKey]
     for key_name in all_keys:
         if key_name not in data: return False
         val = data[key_name]
-        # None es aceptable en crudo para ser corregido en _coerce_and_verify
         if val is not None and not _is_valid_type(val, _KEY_TO_ENUM[key_name]): return False
     return True
 
@@ -399,7 +397,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
         
-        # Uso de os.open para evitar symlink race conditions al abrir
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
             with os.fdopen(fd, "r", encoding="utf-8") as f:
@@ -409,7 +406,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             raise
             
         if not _is_structure_valid(data): return None
-        return data
+        return data, st
     except (OSError, IOError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
         return None
 
@@ -438,8 +435,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
                 return dict(cached[0])
             
-            data = _read_and_parse_json(primary_path)
-            if data is not None:
+            result = _read_and_parse_json(primary_path)
+            if result is not None:
+                data, st = result
                 settings = _coerce_and_verify(validate(data))
                 _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
                 return settings

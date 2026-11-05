@@ -796,3 +796,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-05T06:42:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
 - `2026-11-05T06:42:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T06:42:03` Corrida terminada. Total usado hoy: 160.
+- `2026-11-05T06:50:40` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-05T06:51:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-05T06:52:37` ➖ Sin cambios en safety.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché para los resultados de `_is_kernel_managed` y `is_protected_path` (en sus sub-procesos), reduciendo drásticamente las llamadas repetitivas a `os.environ` y `path.parts` que ocurren durante el escaneo de miles de archivos.
+- `2026-11-05T06:53:03` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scanner.py` reemplazando la construcción de `os.path.normcase(os.path.realpath(path))` dentro de los loops críticos por una comparación de strings pre-normalizada y evitando la creación redundante de objetos `Path` mediante el uso directo de `entry.path`.
+- `2026-11-05T06:53:33` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuración reemplazando el uso repetitivo de `os.path.exists()` y `lstat()` por una estrategia de caché más estricta en el Singleton `_SettingsManager`, evitando redundancia en la resolución de rutas.
+- `2026-11-05T06:53:45` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-05T06:53:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T06:53:45` Corrida terminada. Total usado hoy: 164.
