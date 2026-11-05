@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 12 | 1 | 6 | 1 | 32 |
+| 2026-11-03 | 10 | 1 | 5 | 1 | 31 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 43 | 3 | 12 | 1 | 73 |
+| 2026-11-05 | 45 | 3 | 13 | 1 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **35**
-- manejo de errores y validación de entradas: **29**
+- legibilidad y documentación: **36**
+- manejo de errores y validación de entradas: **30**
 - seguridad defensiva: **28**
-- rendimiento: **26**
+- rendimiento: **24**
 - robustez ante casos límite: **20**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **16**
 - `diskreport.py`: **16**
-- `memory.py`: **13**
+- `healthscore.py`: **15**
+- `settings.py`: **14**
 - `quarantine.py`: **13**
-- `settings.py`: **13**
 - `browser.py`: **12**
+- `memory.py`: **12**
 - `safety.py`: **10**
 - `assistant.py`: **9**
 - `duplicates.py`: **9**
 - `scanner.py`: **9**
+- `branding.py`: **8**
 - `organizer.py`: **7**
-- `branding.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T05:41:05` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos específicos a las estructuras de datos y funciones de soporte de color, además de organizar visualmente el código mediante secciones comentadas más claras, facilitando la auditoría de seguridad y el desarrollo futuro.
+- `2026-11-05T05:39:43` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` evitando el uso de iteradores sobre el diccionario durante la validación de tipos, garantizando que si una clave falta o es inválida, el sistema ignore la estructura corrupta en lugar de arriesgarse a comportamientos inesperados.
 - `2026-11-05T05:29:47` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` capturando errores específicos de `OSError` y `json.JSONDecodeError` mediante un bloque `try-except` más granular, asegurando que un manifiesto parcialmente corrupto o inaccesible no propague excepciones inesperadas hacia `main.py`, manteniendo el estado de consistencia del sistema mediante la inicialización segura a una lista vacía.
 - `2026-11-05T05:21:10` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al asegurar que las rutas se validen exhaustivamente contra `is_safe_to_modify` antes de cualquier operación y reemplacé el uso de `shutil.move` por una validación explícita para evitar errores en sistemas de archivos restringidos, mejorando el manejo de excepciones para evitar el colapso del proceso ante archivos bloqueados.
 - `2026-11-05T05:19:21` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_compute_cached` y `summarize` reemplazando los chequeos simples de `None` por validaciones de tipo explícitas y manejo defensivo de errores, asegurando que el motor analítico no propague estados inconsistentes si recibe datos inesperados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T03:17:12` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita contra ataques de "path traversal" usando `Path.resolve()` en conjunto con la validación de prefijos, evitando que el escáner escape del directorio raíz previsto mediante symlinks o rutas relativas maliciosas.
 - `2026-11-05T03:16:47` **browser.py** (seguridad defensiva): Se ha implementado una validación de seguridad estricta en el método `_process_entry` mediante `is_safe_to_modify` para asegurar que cada subdirectorio y archivo individual analizado esté dentro de los límites permitidos, evitando que el escáner sea engañado por estructuras de archivos complejas o enlaces simbólicos maliciosos durante la recursión.
 - `2026-11-05T03:08:56` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación adicional mediante `ensure_safe_to_modify` antes de escribir en disco, garantizando que, aunque la función sea un intento de escritura, se apliquen las reglas estrictas de protección de rutas antes de cualquier operación de I/O.
-- `2026-11-05T03:07:47` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `assistant.py` mediante la validación explícita del uso de métodos de `pathlib.Path` en la función `_is_safe_text_length`, evitando que se pasen objetos `Path` a las funciones de validación de texto que esperan strings, previniendo así posibles errores de tipo o escapes.
-- `2026-11-05T03:06:46` **settings.py** (robustez ante casos límite): Mejora la robustez del manejo de archivos de configuración ante concurrencia al añadir un bloqueo preventivo (advisory locking) mediante `msvcrt.locking` en Windows, asegurando que si dos instancias intentan escribir el archivo simultáneamente, la integridad del JSON no se corrompa.
