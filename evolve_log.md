@@ -725,3 +725,23 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-05T05:21:10` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` al asegurar que las rutas se validen exhaustivamente contra `is_safe_to_modify` antes de cualquier operación y reemplacé el uso de `shutil.move` por una validación explícita para evitar errores en sistemas de archivos restringidos, mejorando el manejo de excepciones para evitar el colapso del proceso ante archivos bloqueados.
 - `2026-11-05T05:21:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T05:21:10` Corrida terminada. Total usado hoy: 128.
+- `2026-11-05T05:29:00` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-11-05T05:29:47` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` capturando errores específicos de `OSError` y `json.JSONDecodeError` mediante un bloque `try-except` más granular, asegurando que un manifiesto parcialmente corrupto o inaccesible no propague excepciones inesperadas hacia `main.py`, manteniendo el estado de consistencia del sistema mediante la inicialización segura a una lista vacía.
+- `2026-11-05T05:30:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-11-05T05:30:58` Tests FALLARON:
+```
+hError: [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+36 failed, 263 passed in 2.28s
+
+```
+- `2026-11-05T05:30:58` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_get_file_id` y `_get_file_attrs` incorporando un manejo de excepciones más granular y defensivo, asegurando que ante cualquier error inesperado en la interacción con la API de Windows, las funciones retornen valores seguros (bloqueantes) en lugar de propagar errores o devolver resultados ambiguos.
+- `2026-11-05T05:31:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-05T05:31:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T05:31:09` Corrida terminada. Total usado hoy: 132.
