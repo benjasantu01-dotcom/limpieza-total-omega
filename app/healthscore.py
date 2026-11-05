@@ -211,12 +211,12 @@ _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
 }
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES["seguridad"]),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES["disco"]),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES["memoria"]),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), _RULES["basura"]),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), _RULES["duplicados"]),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES["arranque"]),
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES.get("seguridad", ())),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES.get("disco", ())),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES.get("memoria", ())),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), _RULES.get("basura", ())),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), _RULES.get("duplicados", ())),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES.get("arranque", ())),
 )
 
 _verify_pipeline_integrity(WEIGHTS, PIPELINE_DEFINITIONS)
@@ -341,22 +341,30 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
         )
         
         # Procesamiento del pipeline mediante transformaciones funcionales declarativas
-        scores_by_entry = [(entry, entry.scorer(metrics)) for entry in PIPELINE_DEFINITIONS]
+        scores_by_entry = []
+        for entry in PIPELINE_DEFINITIONS:
+            try:
+                scores_by_entry.append((entry, entry.scorer(metrics)))
+            except Exception:
+                scores_by_entry.append((entry, 0.0))
         
         recommendations = [
             msg for entry, ratio in scores_by_entry for msg in _evaluate_rules(metrics, entry.rules, ratio)
         ]
         
-        metric_breakdown = {
-            entry.area: int(_clamp(ratio * entry.weight, 0.0, float(entry.weight))) 
-            for entry, ratio in scores_by_entry
-        }
+        metric_breakdown = {}
+        total_score_sum = 0.0
+        for entry, ratio in scores_by_entry:
+            w = float(entry.weight)
+            val = int(_clamp(ratio * w, 0.0, w))
+            metric_breakdown[entry.area] = val
+            total_score_sum += val
                 
         if metrics.quarantined_count > 0:
             if q_msg := _sanitize_msg("Existen elementos en cuarentena."):
                 recommendations.append(q_msg)
             
-        final_score = int(_clamp(sum(metric_breakdown.values()), 0.0, 100.0))
+        final_score = int(_clamp(total_score_sum, 0.0, 100.0))
         
         return HealthResult(
             score=final_score,

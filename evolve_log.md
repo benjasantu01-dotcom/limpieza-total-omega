@@ -811,3 +811,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-05T07:02:46` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la robustez de `walk_files` y `_safe_stat` frente a errores de acceso y metadatos inconsistentes, asegurando que el escaneo no se interrumpa ante archivos bloqueados o con metadatos inaccesibles (común en entornos con alta actividad de disco).
 - `2026-11-05T07:02:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T07:02:46` Corrida terminada. Total usado hoy: 168.
+- `2026-11-05T07:11:14` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-05T07:11:39` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_collect_candidates` para manejar la posible eliminación o bloqueo de archivos durante la iteración del `scandir` (Race Condition), garantizando que el sistema no intente realizar operaciones de `stat` o hash sobre rutas que han dejado de ser válidas durante la ejecución.
+- `2026-11-05T07:12:39` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-05T07:13:12` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejora la robustez ante estados incoherentes del pipeline asegurando que `_compute_cached` maneje situaciones donde `PIPELINE_DEFINITIONS` o los pesos no coincidan, evitando divisiones por cero o claves faltantes durante la agregación.
+- `2026-11-05T07:14:19` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-05T07:14:33` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra rutas que no existen o son inaccesibles en `_iter_process_memory` y `trim_working_set`, asegurando que `GetModuleFileNameExW` no reciba ni procese búferes corruptos o inválidos, reforzando la estabilidad ante procesos que terminan durante el escaneo.
+- `2026-11-05T07:14:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T07:14:33` Corrida terminada. Total usado hoy: 172.
