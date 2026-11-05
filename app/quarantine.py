@@ -474,7 +474,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_isolation_safety(resolved_source, target_directory)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga el manifiesto de cuarentena, usando un caché para optimizar el rendimiento de la UI."""
+    """Carga el manifiesto, filtrando ítems cuyos archivos fueron borrados externamente."""
     try: 
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError): 
@@ -491,14 +491,24 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
                 return cached_items
-                
+        
+        # Obtener archivos existentes para limpiar manifiesto
+        existing_names = {entry.name for entry in os.scandir(base_dir) if entry.is_file()}
+        
         with open(m_path, "r", encoding="utf-8") as f: 
             data: Any = json.load(f)
             
         if not isinstance(data, list): 
             raise ValueError("Formato de manifiesto inválido.")
             
-        items: List[QuarantineItem] = [i for i in (QuarantineItem.from_dict(d) for d in data if isinstance(d, dict)) if i]
+        items = [i for i in (QuarantineItem.from_dict(d) for d in data if isinstance(d, dict)) 
+                 if i and i.stored_name in existing_names]
+        
+        # Guardar si hubo limpieza
+        if len(items) < len(data):
+            save_manifest(items, base)
+            
+        st = m_path.stat()
         _MANIFEST_CACHE[base_dir] = (items, st.st_mtime, st.st_size)
         return items
         
@@ -815,19 +825,18 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
-        # Pre-caché de iteración para minimizar llamadas al sistema dentro del loop
-        for f in root_path.iterdir():
-            fname = f.name
-            if fname == MANIFEST_NAME: continue
-            
-            item = item_map.get(fname)
-            if not item: continue
-            
-            try:
-                # Validamos solo si el nombre coincide, evitando is_within_directory pesado
-                if f.is_file() and _is_item_purgable(f, item):
-                    purgado_ids.add(item.item_id)
-            except (OSError, PermissionError, UnsafePathError): continue
+        with os.scandir(root_path) as it:
+            for entry in it:
+                if entry.name == MANIFEST_NAME or not entry.is_file():
+                    continue
+                item = item_map.get(entry.name)
+                if not item: continue
+                
+                try:
+                    f = Path(entry.path)
+                    if _is_item_purgable(f, item):
+                        purgado_ids.add(item.item_id)
+                except (OSError, PermissionError, UnsafePathError): continue
             
         if purgado_ids:
             new_items = [i for i in items if i.item_id not in purgado_ids]
