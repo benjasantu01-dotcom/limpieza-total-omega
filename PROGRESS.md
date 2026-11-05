@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **158** (31.3% de aceptación)
+- Mejoras aceptadas: **159** (31.5% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 274
+- Sin respuesta de la IA (error o límite): 272
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 75 | 3 | 19 | 2 | 85 |
+| 2026-11-04 | 83 | 7 | 29 | 12 | 185 |
+| 2026-11-05 | 76 | 3 | 20 | 2 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **30**
+- seguridad defensiva: **27**
 - robustez ante casos límite: **26**
-- seguridad defensiva: **26**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **18**
 - `diskreport.py`: **17**
-- `healthscore.py`: **17**
 - `settings.py`: **16**
 - `browser.py`: **16**
 - `memory.py`: **15**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T07:52:26` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la incorporación de una lista de bloqueo de términos para evitar que mensajes de error o recomendaciones filtren accidentalmente nombres de usuario, rutas del sistema o nombres de archivos sensibles.
 - `2026-11-05T07:42:41` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_path_allowed` asegurando que la validación de la ruta incluya la verificación de que la ruta resuelta reside físicamente dentro de `LOCALAPPDATA` mediante una comparación estricta de nombres normalizados, previniendo posibles escapes de sandbox ante enlaces simbólicos o rutas maliciosas.
 - `2026-11-05T07:33:24` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva del asistente restringiendo el acceso a atributos y métodos mediante `getattr` en `_get_safe_attr` y `SystemContext._apply_field`, asegurando que no se puedan invocar métodos críticos (como `__subclasses__` o `__init__`) mediante una lista blanca estricta de claves permitidas en `_VALIDATORS`.
 - `2026-11-05T07:32:33` **settings.py** (robustez ante casos límite): Se ha mejorado la resiliencia en la carga de archivos al manejar específicamente casos de archivos bloqueados, corruptos o con errores de permisos mediante un bloque `try-except` más robusto que garantiza un retorno seguro a `DEFAULTS` en lugar de una falla total o silenciosa, y se ha añadido una validación de `path` más estricta para evitar el uso de rutas con enlaces simbólicos intermedios que pudieran ser manipulados fuera de la app.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T06:53:33` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración reemplazando el uso repetitivo de `os.path.exists()` y `lstat()` por una estrategia de caché más estricta en el Singleton `_SettingsManager`, evitando redundancia en la resolución de rutas.
 - `2026-11-05T06:53:03` **scanner.py** (rendimiento): Optimicé el rendimiento de `scanner.py` reemplazando la construcción de `os.path.normcase(os.path.realpath(path))` dentro de los loops críticos por una comparación de strings pre-normalizada y evitando la creación redundante de objetos `Path` mediante el uso directo de `entry.path`.
 - `2026-11-05T06:42:00` **quarantine.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento mediante la implementación de un mecanismo de validación diferida y reutilización de objetos `Path` resueltos en `purge_all`, evitando el uso de llamadas costosas a `resolve()` y `iterdir()` dentro de loops críticos, lo que reduce la carga de I/O en directorios con muchos ítems.
-- `2026-11-05T06:41:20` **organizer.py** (rendimiento): Optimizé `_process_directory` y `scan_for_junk` mediante la consolidación del filtrado de rutas: ahora se utiliza un único chequeo de `is_protected_path` al inicio de la recursión y un `set` de `JUNK_EXTENSIONS` para evitar el acceso repetitivo a `Path.suffix` y múltiples llamadas a `is_protected_path` innecesarias, reduciendo el overhead de I/O y procesamiento en recorridos profundos.

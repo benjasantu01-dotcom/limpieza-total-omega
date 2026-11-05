@@ -31,7 +31,8 @@ MetricKey: TypeAlias = str
 _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
 _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
     "system32", "windows", "admin", "c:\\", "system", "kernel", "path", 
-    "root", "drive", "user", "profile", "appdata", "programdata", "exe", "dll"
+    "root", "drive", "user", "profile", "appdata", "programdata", "exe", "dll",
+    "boot", "windows", "users", "admin", "secret", "private"
 ])
 _MAX_MSG_LEN: Final[int] = 128
 _MAX_RECURSION_DEPTH: Final[int] = 5

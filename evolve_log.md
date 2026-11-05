@@ -840,3 +840,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-05T07:43:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-11-05T07:43:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T07:43:11` Corrida terminada. Total usado hoy: 184.
+- `2026-11-05T07:51:57` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-11-05T07:52:26` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la incorporación de una lista de bloqueo de términos para evitar que mensajes de error o recomendaciones filtren accidentalmente nombres de usuario, rutas del sistema o nombres de archivos sensibles.
+- `2026-11-05T07:53:28` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-05T07:53:54` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-05T07:54:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-05T07:54:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T07:54:30` Corrida terminada. Total usado hoy: 188.
