@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **135** (26.8% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 296
+- Sin respuesta de la IA (error o límite): 298
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 16 | 1 | 9 | 2 | 40 |
+| 2026-11-03 | 15 | 1 | 7 | 2 | 39 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 36 | 2 | 10 | 1 | 67 |
+| 2026-11-05 | 37 | 2 | 10 | 1 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **37**
 - seguridad defensiva: **28**
 - rendimiento: **27**
-- manejo de errores y validación de entradas: **22**
+- manejo de errores y validación de entradas: **23**
 - robustez ante casos límite: **20**
 
 ## Mejoras aceptadas por archivo
@@ -36,16 +36,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **13**
 - `quarantine.py`: **12**
 - `browser.py`: **11**
+- `assistant.py`: **10**
 - `safety.py`: **10**
-- `duplicates.py`: **9**
-- `assistant.py`: **9**
 - `scanner.py`: **9**
+- `duplicates.py`: **8**
 - `branding.py`: **7**
 - `organizer.py`: **6**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T05:02:10` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `ingest` para que el uso de `getattr` en `_validate_and_sanitize_data` sea más robusto ante objetos maliciosos o malformados, asegurando que `is_protected_path` siempre reciba una cadena y no un objeto inesperado.
 - `2026-11-05T03:40:14` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva al limitar la lectura de archivos de configuración mediante `os.open` con flags restrictivos (`O_NOFOLLOW`) para prevenir ataques de symlink y mejorar la robustez frente a archivos maliciosos.
 - `2026-11-05T03:31:00` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta en `purge_all` para asegurar que solo se eliminen archivos que están correctamente registrados en el manifiesto, evitando el borrado de archivos huérfanos o accidentales que podrían ser legítimos, manteniendo la integridad del sandbox.
 - `2026-11-05T03:29:32` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable del proceso antes de intentar cualquier operación, asegurando que no se pueda manipular la memoria de procesos críticos incluso si el handle se obtuvo exitosamente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T02:48:27` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_handle_for_safe_proc` y `_iter_process_memory` ante condiciones de carrera, garantizando que el `handle` sea cerrado de forma garantizada y añadiendo un chequeo explícito de nulidad para evitar errores de segmentación o llamadas a métodos en punteros inválidos.
 - `2026-11-05T02:46:23` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `_compute_cached` ante valores no numéricos, casos de corrupción y errores inesperados, asegurando que el pipeline siempre retorne un resultado válido y nunca se bloquee ante entradas malformadas.
 - `2026-11-05T02:39:12` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen durante el escaneo (race conditions) y posibles errores de lectura en el sistema de archivos, asegurando que el recorrido no se interrumpa ante fallos puntuales.
-- `2026-11-05T02:27:28` **settings.py** (rendimiento): Optimizé `_read_and_parse_json` para realizar una lectura más eficiente y segura, evitando convertir todo el contenido a `str` si el archivo es grande o sospechoso, y simplificando el flujo de validación para reducir el uso de memoria durante el parseo de archivos pequeños.

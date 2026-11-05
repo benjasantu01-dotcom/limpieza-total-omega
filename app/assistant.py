@@ -488,7 +488,7 @@ class SystemContext:
         try:
             clean: str = str(val)
             clean = _REGEX_CONTROL_CHARS.sub(" ", clean)[:_MAX_GRADE_LEN].strip()
-            if not clean or is_protected_path(clean) or not _ensure_safe_text(clean): 
+            if not clean or (isinstance(clean, str) and is_protected_path(clean)) or not _ensure_safe_text(clean): 
                 return ""
             return clean
         except Exception:
