@@ -348,7 +348,7 @@ def _query_working_set_bytes(handle: wintypes.HANDLE, counters: PROCESS_MEMORY_C
         return None
     return None
 
-def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: Callable) -> bool:
+def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]) -> bool:
     """Verifica que el ejecutable del proceso no se encuentre en rutas protegidas."""
     if handle is None or get_mod_name_func is None: return False
     try:
@@ -360,7 +360,7 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
-def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: Callable) -> Optional[wintypes.HANDLE]:
+def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]) -> Optional[wintypes.HANDLE]:
     """Gestiona de forma segura la obtención de un handle a un proceso externo."""
     try:
         handle = _get_process_handle(pid, access)

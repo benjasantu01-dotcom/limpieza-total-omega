@@ -77,11 +77,12 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
 }
 
 def _check_for_reparse_points(path: Path) -> None:
-    """Verifica que el archivo no sea una redirección NTFS o enlace simbólico, evitando traversal fuera del sandbox."""
+    """Verifica mediante atributos de archivo que la ruta no sea un punto de unión o reparse NTFS."""
     if path is None: raise UnsafePathError("Ruta nula en chequeo de reparse.")
     if os.name == 'nt':
         try:
             attrs: int = _get_win_attributes(path)
+            # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) detecta junctions/symlinks NTFS
             if attrs != -1 and (attrs & 0x400):
                 raise UnsafePathError("Ruta detectada como punto de reparse.")
         except (OSError, AttributeError):
@@ -90,14 +91,14 @@ def _check_for_reparse_points(path: Path) -> None:
         raise UnsafePathError("Ruta detectada como enlace simbólico.")
 
 def _check_path_for_junctions(path: Path) -> None:
-    """Wrapper semántico para verificar estructuras de directorios complejas."""
+    """Valida la integridad de la estructura de carpetas evitando seguir redirecciones."""
     _check_for_reparse_points(path)
 
 def _get_win_attributes(path: Path) -> int:
-    """Consulta atributos Win32 utilizando un caché temporal de 1s para optimizar llamadas a syscalls."""
+    """Consulta atributos de archivo Win32 con caché de 1s para reducir llamadas a la API de sistema."""
     if os.name != 'nt': return 0
-    p_str = str(path)
-    now = time.monotonic()
+    p_str: str = str(path)
+    now: float = time.monotonic()
     
     if p_str in _WIN_ATTR_CACHE:
         attrs, ts = _WIN_ATTR_CACHE[p_str]
@@ -112,13 +113,14 @@ def _get_win_attributes(path: Path) -> int:
         return -1
 
 def _win_has_system_attributes(path: Path) -> bool:
-    """Determina si un archivo posee atributos de sistema, oculto o temporal (Win32) que impiden el aislamiento seguro."""
-    attrs = _get_win_attributes(path)
+    """Determina si el archivo posee banderas críticas (sistema/oculto) que impiden un aislamiento seguro."""
+    attrs: int = _get_win_attributes(path)
     if attrs == -1: return True
+    # 0x02: Oculto, 0x04: Sistema, 0x100: Temporal
     return bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
 
 def _verify_source_fs_permissions(path: Path) -> None:
-    """Asegura que el origen no esté en rutas de red (UNC) y no tenga atributos de sistema bloqueantes."""
+    """Previene operaciones en rutas de red (UNC) y valida que no se modifiquen archivos de sistema."""
     p_str: str = str(path)
     if p_str.startswith(r"\\") or p_str.startswith("//"):
         raise UnsafePathError("Operaciones en rutas UNC no permitidas.")
@@ -127,13 +129,13 @@ def _verify_source_fs_permissions(path: Path) -> None:
         raise UnsafePathError("Archivo protegido por atributos de sistema o temporal.")
 
 def _is_filesystem_read_only(path: Path) -> bool:
-    """Comprueba si el S.O. permite escritura mediante el bit de permisos de directorio."""
+    """Verifica mediante acceso a escritura si el sistema operativo permite manipular el objeto."""
     if path is None: return True
     if not path.exists(): return False
     return not os.access(path, os.W_OK)
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
-    """Ejecuta una operación I/O aplicando reintento exponencial, mitigando bloqueos temporales por antivirus externos."""
+    """Wrapper para operaciones I/O con política de reintento exponencial ante bloqueos transitorios."""
     max_retries: int = 3
     for i in range(max_retries):
         try:
@@ -145,11 +147,12 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
     raise RuntimeError("Fallo de E/S tras múltiples intentos.")
 
 def _is_file_exclusive(path: Path) -> bool:
-    """Intenta abrir el archivo con acceso exclusivo (sin compartir lectura/escritura) para detectar uso por otros procesos."""
+    """Verifica si un archivo puede abrirse exclusivamente, detectando si es usado por otro proceso."""
     if path is None or not path.exists():
         return False
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
+        # GENERIC_READ (0x80000000), ShareMode=0 para exclusividad total
         handle: int = k32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
         if handle == -1 or handle == 0: return False
         k32.CloseHandle(handle)

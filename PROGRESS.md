@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **125** (24.8% de aceptación)
+- Mejoras aceptadas: **127** (25.2% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 311
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 309
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 30 | 2 | 11 | 4 | 101 |
+| 2026-11-03 | 29 | 2 | 11 | 3 | 99 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 12 | 0 | 2 | 1 | 21 |
+| 2026-11-05 | 15 | 0 | 3 | 1 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **36**
+- legibilidad y documentación: **39**
 - manejo de errores y validación de entradas: **27**
 - seguridad defensiva: **23**
 - rendimiento: **21**
-- robustez ante casos límite: **18**
+- robustez ante casos límite: **17**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **15**
 - `settings.py`: **13**
 - `diskreport.py`: **13**
-- `quarantine.py`: **11**
+- `quarantine.py`: **12**
 - `browser.py`: **11**
+- `memory.py`: **11**
 - `duplicates.py`: **10**
 - `safety.py`: **10**
-- `memory.py`: **10**
-- `assistant.py`: **9**
+- `assistant.py`: **8**
 - `scanner.py`: **7**
 - `branding.py`: **7**
 - `startup.py`: **5**
-- `organizer.py`: **4**
+- `organizer.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T01:37:21` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la intención de las funciones auxiliares de bajo nivel y aplicando *type hinting* consistente para reducir la ambigüedad en operaciones críticas de sistema.
+- `2026-11-05T01:36:37` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos explícitos a funciones auxiliares de seguridad (`_try_open_win_file`, `_is_recursive_violation`, etc.), clarificando el propósito de las comprobaciones de bajo nivel y manteniendo la integridad del código.
+- `2026-11-05T01:36:10` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de Type Hints detallados en los parámetros de la API Win32 y la clarificación de las estructuras de datos, facilitando la comprensión de las interacciones con el sistema operativo sin cambiar el comportamiento funcional.
 - `2026-11-05T01:26:17` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `healthscore.py` mediante la refactorización de `_compute_cached` hacia un enfoque más declarativo, reemplazando la lógica de acumulación manual por una expresión de comprensión y mejorando la documentación de las interfaces funcionales mediante docstrings más precisos.
 - `2026-11-05T01:25:17` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) para clarificar las responsabilidades de las funciones de alto nivel, facilitando el mantenimiento y la comprensión de las estrategias de hashing.
 - `2026-11-05T01:24:52` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de Type Hints detallados en retornos de funciones (como `walk_files`), clarificación de docstrings complejos (explicando la técnica del heap para mayor eficiencia) y el uso de anotaciones para definir mejor las estructuras de datos internas, facilitando la comprensión del flujo de datos en el análisis de disco.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T00:44:08` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `DirectoryScanner._process_entry` agregando una validación explícita para evitar errores al intentar acceder a rutas con nombres inválidos o caracteres de control, asegurando que el proceso de escaneo sea resiliente ante estructuras de archivos inesperadas dentro de las carpetas de caché.
 - `2026-11-05T00:36:45` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación de parámetros más estricta (`isinstance` y chequeo de `None`) antes de procesar valores, evitando posibles excepciones durante la ejecución en la UI.
 - `2026-11-05T00:36:20` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` para evitar errores en llamadas recursivas y agregué una validación de seguridad explícita en `_call_gemini` para asegurar que el `context_text` enviado sea seguro antes de serializarlo, cerrando una brecha donde un contexto mal formado podría causar un error en la cadena.
-- `2026-11-04T23:13:31` **settings.py** (seguridad defensiva): Se endureció la seguridad en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar que el archivo de configuración sea un archivo regular, propiedad exclusiva del usuario, evitando el seguimiento de enlaces simbólicos maliciosos.
-- `2026-11-04T23:12:59` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` al verificar explícitamente que la ruta no sea un punto de unión (`reparse point`) mediante la validación de atributos del sistema antes de procesar cualquier entrada, garantizando que el escáner nunca escape del árbol de directorios asignado mediante enlaces simbólicos o junctions.
-- `2026-11-04T23:03:06` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de seguridad en `quarantine.py` mediante la implementación de `ensure_safe_to_modify` antes de operaciones de escritura en archivos, reemplazando chequeos condicionales débiles por validaciones que levantan excepciones ante cualquier irregularidad en el entorno de destino.
