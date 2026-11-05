@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **156** (31.0% de aceptación)
+- Mejoras aceptadas: **158** (31.3% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 280
+- Sin respuesta de la IA (error o límite): 278
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 66 | 5 | 22 | 8 | 159 |
-| 2026-11-05 | 90 | 6 | 24 | 3 | 121 |
+| 2026-11-04 | 65 | 5 | 21 | 8 | 157 |
+| 2026-11-05 | 93 | 6 | 25 | 3 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **32**
 - seguridad defensiva: **29**
-- rendimiento: **28**
+- rendimiento: **27**
 - robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **17**
+- `healthscore.py`: **17**
 - `settings.py`: **16**
 - `diskreport.py`: **16**
-- `healthscore.py`: **16**
-- `memory.py`: **15**
+- `memory.py`: **16**
 - `quarantine.py`: **14**
 - `duplicates.py`: **11**
 - `scanner.py`: **11**
 - `assistant.py`: **11**
-- `safety.py`: **9**
 - `branding.py`: **9**
-- `organizer.py`: **6**
+- `safety.py`: **8**
+- `organizer.py`: **7**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T10:27:19` **organizer.py** (legibilidad y documentación): Se ha mejorado la legibilidad mediante la adición de Type Hints detallados en funciones críticas y se han documentado las restricciones de bajo nivel en el manejo de archivos (TOCTOU, bloqueos, integridad) mediante docstrings explícitos que aclaran el PORQUÉ de cada validación.
+- `2026-11-05T10:27:03` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos, reemplacé `Dict[str, Any]` por tipos concretos en `MEMORYSTATUSEX` y clarifiqué la lógica de manejo de errores en las operaciones de bajo nivel con `ctypes` para mejorar la mantenibilidad y legibilidad del código.
+- `2026-11-05T10:26:18` **healthscore.py** (legibilidad y documentación): He mejorado la legibilidad del pipeline de puntuación mediante la adición de Type Hints más precisos, documentación de los parámetros en las funciones de score y la clarificación de la intención de los decoradores, facilitando el mantenimiento futuro y la comprensión del flujo de datos.
 - `2026-11-05T10:17:03` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en funciones internas clave, aclarando las responsabilidades de cada paso en el pipeline de detección de duplicados y mejorando la legibilidad mediante Type Hints más precisos.
 - `2026-11-05T10:16:53` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings técnicos detallados en las funciones críticas de escaneo (`walk_files`, `_collect_summary_data`), explicando la lógica de recursión, el manejo de excepciones y la estrategia de filtrado para mejorar la mantenibilidad.
 - `2026-11-05T10:16:26` **browser.py** (legibilidad y documentación): Mejoré la legibilidad del motor de escaneo mediante la adición de docstrings técnicos, la clarificación de tipos en las firmas de `DirectoryScanner` y la sustitución de validaciones implícitas por verificaciones explícitas en `_is_path_allowed`, alineándome con el enfoque de documentación técnica y robustez.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T09:35:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_collect_summary_data` envolviendo el recorrido del generador en un bloque try-except para capturar excepciones inesperadas durante la iteración, asegurando que el informe sea parcial en lugar de fallar completamente ante un error de acceso a disco.
 - `2026-11-05T09:35:47` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `DirectoryScanner._is_path_allowed` reemplazando el uso de `path_obj.resolve()` (que puede disparar `OSError` en rutas muy largas o con caracteres especiales) por una validación lógica más segura, y añadí manejo de excepciones específicas para evitar que el escaneo se interrumpa por errores de acceso al sistema de archivos.
 - `2026-11-05T09:34:56` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_safe_attr` y `SystemContext.ingest` para manejar correctamente atributos que podrían ser `None` o disparar excepciones inesperadas durante la inspección de objetos, asegurando que el asistente nunca falle ante fuentes de datos inusuales o malformadas.
-- `2026-11-05T08:12:50` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` al implementar una verificación explícita de `st_nlink` y `st_mode` antes de abrir el descriptor de archivo, previniendo riesgos de enlaces simbólicos o alteraciones de permisos durante la lectura.
-- `2026-11-05T08:02:57` **quarantine.py** (seguridad defensiva): Se introdujo una validación de seguridad crítica en `_write_temp_to_final` para asegurar que el archivo temporal creado para la transferencia no sea manipulado o sea un enlace simbólico/reparse point antes de proceder con el reemplazo, aplicando el principio de defensa en profundidad.
-- `2026-11-05T07:52:26` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la incorporación de una lista de bloqueo de términos para evitar que mensajes de error o recomendaciones filtren accidentalmente nombres de usuario, rutas del sistema o nombres de archivos sensibles.

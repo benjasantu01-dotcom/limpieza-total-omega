@@ -231,7 +231,8 @@ def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
     return bool(_get_win_attributes(entry) & LIMITS.ATTRS.MASK_PROTECTED)
 
 def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
-    """Mitigación de TOCTOU: valida que el inodo/dispositivo sea el original mediante comparativa estática."""
+    """Mitigación de TOCTOU (Time-of-Check to Time-of-Use): valida que el inodo y el dispositivo 
+    se mantengan inalterados entre la detección y la ejecución para evitar race conditions."""
     try:
         if not src_real.exists(): return False
         stat_result = src_real.stat()
@@ -264,7 +265,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        # Validación de integridad de rutas
         if not dest_real.exists() or not dest_real.is_dir(): return False
         if not os.access(dest_real, os.W_OK): return False
         
@@ -275,7 +275,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or _is_junction(junk_file.path): return False
         
-        # Se requiere validación de seguridad de escritura sobre el destino, y existencia sobre el origen
         if not _validate_path_security(src_real, dest_real): return False
         if junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev: return False
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
@@ -296,7 +295,6 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 
 def _is_candidate_for_scan(name: str, stats: os.stat_result) -> bool:
     """Determina si un archivo cumple los criterios heurísticos para ser clasificado como basura."""
-    # Uso de la constante JUNK_EXTENSIONS pre-compilada
     if Path(name).suffix.lower() not in JUNK_EXTENSIONS:
         return False
     if stats.st_size >= LIMITS.MAX_FILE_SIZE_BYTES:
@@ -320,7 +318,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        # Optimización: solo procesar si la extensión coincide antes de stat pesado
                         if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
                             stats = entry.stat(follow_symlinks=False)
                             if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
@@ -340,7 +337,6 @@ def scan_for_junk(directories: Optional[Sequence[Union[str, Path]]] = None) -> L
     for d in filter(None, scan_list):
         try:
             p = Path(d).expanduser()
-            # Chequeo inicial de seguridad antes de iniciar recursión
             if p.exists() and p.is_dir() and not _is_unc_path(p) and not is_protected_path(p):
                 _process_directory(p, found, 0, protected_cache, visited)
         except (OSError, RuntimeError):
@@ -364,7 +360,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             except (OSError, PermissionError):
                 return None
         
-        # Validación de seguridad del destino
         if not is_safe_to_modify(dest_base): return None
         
         for junk_file in files:

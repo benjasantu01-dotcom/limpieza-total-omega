@@ -57,7 +57,7 @@ _VALIDATION_KEYS: Final[Tuple[str, ...]] = (
 _ALL_METRICS: Final[Tuple[str, ...]] = _VALIDATION_KEYS + ("quarantined_count",)
 
 def _guard_metric_access(func: Callable) -> Callable:
-    """Decorador de seguridad para validar el acceso a campos del sistema."""
+    """Decorador que asegura que solo se acceda a métricas definidas en el esquema."""
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         if args and isinstance(args[0], str) and args[0] not in _ALL_METRICS:
@@ -79,7 +79,7 @@ def _sanitize_msg(msg: str | Any) -> str:
     return clean.strip()[:_MAX_MSG_LEN]
 
 def _safe_factory(factory: Callable[[SystemMetrics], str]) -> Callable[[SystemMetrics], str]:
-    """Crea un envoltorio de seguridad que garantiza una salida limpia desde una factoría."""
+    """Envoltorio que garantiza que la generación de mensajes de reglas no propague excepciones."""
     def wrapper(metrics: SystemMetrics) -> str:
         try:
             msg = factory(metrics)
@@ -161,7 +161,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
         return min_val
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Genera funciones de normalización lineal."""
+    """Genera funciones de normalización lineal para métricas simples."""
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0: return 0.0
         try:
@@ -223,15 +223,18 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
 _verify_pipeline_integrity(WEIGHTS, PIPELINE_DEFINITIONS)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
+    """Calcula el ratio de salud para archivos basura basados en volumen."""
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
+    """Calcula el ratio de seguridad ponderando detecciones directas y advertencias."""
     count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
     warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
     penalization = (count * 0.05) + (warn * 0.25)
     return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
+    """Calcula el ratio de salud de memoria RAM."""
     if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
     try:
         return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
@@ -239,6 +242,7 @@ def score_memory(available_percent: float | int) -> NormalizedRatio:
         return 0.0
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
+    """Calcula el ratio de salud de almacenamiento libre en disco."""
     if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
     try:
         return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
@@ -246,9 +250,11 @@ def score_disk(free_percent: float | int) -> NormalizedRatio:
         return 0.0
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
+    """Calcula el ratio de salud según el desperdicio por archivos duplicados."""
     return _DUP_SCORER(float(duplicate_mb))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
+    """Calcula el ratio de salud basado en la carga de programas en el arranque."""
     return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_val: float, max_val: float) -> float:
@@ -311,6 +317,7 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def grade_for_score(score: float | int) -> str: 
+    """Wrapper para la lógica de categorización de notas."""
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
