@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **129** (25.6% de aceptación)
+- Mejoras aceptadas: **130** (25.8% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 305
+- Sin respuesta de la IA (error o límite): 304
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 24 | 1 | 11 | 3 | 85 |
+| 2026-11-03 | 24 | 1 | 11 | 3 | 81 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 22 | 1 | 5 | 1 | 31 |
+| 2026-11-05 | 23 | 1 | 5 | 1 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,12 +26,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **27**
 - rendimiento: **27**
 - seguridad defensiva: **22**
-- robustez ante casos límite: **13**
+- robustez ante casos límite: **14**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **15**
 - `healthscore.py`: **15**
-- `diskreport.py`: **14**
 - `settings.py`: **13**
 - `quarantine.py`: **12**
 - `browser.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T02:39:12` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen durante el escaneo (race conditions) y posibles errores de lectura en el sistema de archivos, asegurando que el recorrido no se interrumpa ante fallos puntuales.
 - `2026-11-05T02:27:28` **settings.py** (rendimiento): Optimizé `_read_and_parse_json` para realizar una lectura más eficiente y segura, evitando convertir todo el contenido a `str` si el archivo es grande o sospechoso, y simplificando el flujo de validación para reducir el uso de memoria durante el parseo de archivos pequeños.
 - `2026-11-05T02:25:56` **scanner.py** (rendimiento): Se optimizó el recorrido del escáner moviendo la evaluación de la extensión de archivo antes de realizar llamadas costosas al sistema de archivos (`entry.stat()` o verificaciones adicionales), reduciendo drásticamente la carga de I/O en directorios con muchos archivos irrelevantes.
 - `2026-11-05T02:16:25` **quarantine.py** (rendimiento): Optimicé el rendimiento de `quarantine.py` mediante el uso de un caché in-memory (`_INODE_USE_CACHE`) para los estados de bloqueo de archivos, evitando llamadas recurrentes costosas a `ctypes` y `fcntl` en operaciones masivas, y mejoré la eficiencia de `_get_sha256` integrando un chequeo previo del estado del archivo antes de calcular el hash, minimizando I/O innecesario.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T01:25:17` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) para clarificar las responsabilidades de las funciones de alto nivel, facilitando el mantenimiento y la comprensión de las estrategias de hashing.
 - `2026-11-05T01:24:52` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de Type Hints detallados en retornos de funciones (como `walk_files`), clarificación de docstrings complejos (explicando la técnica del heap para mayor eficiencia) y el uso de anotaciones para definir mejor las estructuras de datos internas, facilitando la comprensión del flujo de datos en el análisis de disco.
 - `2026-11-05T01:17:47` **browser.py** (legibilidad y documentación): Mejoré la legibilidad del motor de escaneo y la precisión de los docstrings en `browser.py`, clarificando las responsabilidades de los métodos recursivos y añadiendo tipeo más estricto en las estructuras de datos para evitar ambigüedades en la manipulación de rutas.
-- `2026-11-05T01:17:37` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del archivo mediante la extracción de constantes mágicas a un bloque de `LAYOUT_CONSTANTS` y la adición de docstrings estructurados que explican las dependencias geométricas y lógicas, cumpliendo con el enfoque de legibilidad sin alterar el comportamiento.

@@ -328,8 +328,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if isinstance(st.st_size, int) and st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                     except (OSError, PermissionError, FileNotFoundError):
+                        # Caso límite: el archivo desapareció durante el recorrido
                         continue
-        except (OSError, PermissionError, NotADirectoryError):
+        except (OSError, PermissionError, NotADirectoryError, FileNotFoundError):
+            # Caso límite: permiso denegado o carpeta eliminada durante el escaneo
             continue
 
 
@@ -393,15 +395,18 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        ext = path.suffix.lower() or "(sin extensión)"
-        stats.register_file(size, ext)
-        
-        # Mantenimiento de heap: si limit > 0, guardamos solo los archivos de mayor tamaño.
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+        try:
+            ext = path.suffix.lower() or "(sin extensión)"
+            stats.register_file(size, ext)
+            
+            # Mantenimiento de heap: si limit > 0, guardamos solo los archivos de mayor tamaño.
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size, path))
+        except (AttributeError, OSError):
+            continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
