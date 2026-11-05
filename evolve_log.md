@@ -847,3 +847,22 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-05T07:54:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-11-05T07:54:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T07:54:30` Corrida terminada. Total usado hoy: 188.
+- `2026-11-05T08:02:08` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-05T08:02:57` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una validación de seguridad crítica en `_write_temp_to_final` para asegurar que el archivo temporal creado para la transferencia no sea manipulado o sea un enlace simbólico/reparse point antes de proceder con el reemplazo, aplicando el principio de defensa en profundidad.
+- `2026-11-05T08:03:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-05T08:04:05` Tests FALLARON:
+```
+al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - RuntimeError: Sandbox inaccesible: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Sandbox inaccesible: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Sandbox inaccesible: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Sandbox inaccesible: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Sandbox inaccesible: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Sandbox inaccesible: Error al preparar directorio de cuarentena: [GENERIC] Directorio de cuarentena reside en ruta protegida.
+63 failed, 236 passed in 2.48s
+
+```
+- `2026-11-05T08:04:05` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha añadido una validación temprana contra `LONG_PATH_PREFIX` (UNC local) en `_is_file_id_cache` y un chequeo de integridad adicional para detectar cambios de tipo de archivo mediante `os.lstat` antes de operar, previniendo inyecciones de enlaces simbólicos (TOCTOU).
+- `2026-11-05T08:04:15` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-05T08:04:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T08:04:15` Corrida terminada. Total usado hoy: 192.

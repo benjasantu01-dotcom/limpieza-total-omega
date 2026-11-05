@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **159** (31.5% de aceptación)
-- Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 49
+- Mejoras aceptadas: **160** (31.7% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 272
+- Sin respuesta de la IA (error o límite): 269
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 83 | 7 | 29 | 12 | 185 |
-| 2026-11-05 | 76 | 3 | 20 | 2 | 87 |
+| 2026-11-04 | 83 | 7 | 29 | 12 | 181 |
+| 2026-11-05 | 77 | 4 | 21 | 2 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **30**
-- seguridad defensiva: **27**
+- seguridad defensiva: **28**
 - robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **16**
 - `browser.py`: **16**
 - `memory.py`: **15**
-- `quarantine.py`: **13**
+- `quarantine.py`: **14**
 - `assistant.py`: **11**
 - `duplicates.py`: **11**
 - `scanner.py`: **11**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T08:02:57` **quarantine.py** (seguridad defensiva): Se introdujo una validación de seguridad crítica en `_write_temp_to_final` para asegurar que el archivo temporal creado para la transferencia no sea manipulado o sea un enlace simbólico/reparse point antes de proceder con el reemplazo, aplicando el principio de defensa en profundidad.
 - `2026-11-05T07:52:26` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la incorporación de una lista de bloqueo de términos para evitar que mensajes de error o recomendaciones filtren accidentalmente nombres de usuario, rutas del sistema o nombres de archivos sensibles.
 - `2026-11-05T07:42:41` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_path_allowed` asegurando que la validación de la ruta incluya la verificación de que la ruta resuelta reside físicamente dentro de `LOCALAPPDATA` mediante una comparación estricta de nombres normalizados, previniendo posibles escapes de sandbox ante enlaces simbólicos o rutas maliciosas.
 - `2026-11-05T07:33:24` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva del asistente restringiendo el acceso a atributos y métodos mediante `getattr` en `_get_safe_attr` y `SystemContext._apply_field`, asegurando que no se puedan invocar métodos críticos (como `__subclasses__` o `__init__`) mediante una lista blanca estricta de claves permitidas en `_VALIDATORS`.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T07:01:42` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `SystemContext` ante valores inesperados en el proceso de ingesta, reemplazando las comparaciones directas de tipo booleano por una validación estricta de subclases numéricas, evitando que datos corruptos (como diccionarios o listas inyectadas en campos numéricos) bloqueen o deformen el contexto de la aplicación.
 - `2026-11-05T06:53:33` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración reemplazando el uso repetitivo de `os.path.exists()` y `lstat()` por una estrategia de caché más estricta en el Singleton `_SettingsManager`, evitando redundancia en la resolución de rutas.
 - `2026-11-05T06:53:03` **scanner.py** (rendimiento): Optimicé el rendimiento de `scanner.py` reemplazando la construcción de `os.path.normcase(os.path.realpath(path))` dentro de los loops críticos por una comparación de strings pre-normalizada y evitando la creación redundante de objetos `Path` mediante el uso directo de `entry.path`.
-- `2026-11-05T06:42:00` **quarantine.py** (rendimiento): Optimicé el manejo de la memoria y el rendimiento mediante la implementación de un mecanismo de validación diferida y reutilización de objetos `Path` resueltos en `purge_all`, evitando el uso de llamadas costosas a `resolve()` y `iterdir()` dentro de loops críticos, lo que reduce la carga de I/O en directorios con muchos ítems.

@@ -590,6 +590,9 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
     source_hash: str = _get_sha256(source_path)
     temp_dest: Path = _create_temp_file(source_path, dest_path)
     
+    # Defensa adicional: verificar que el archivo temporal no fue reemplazado por un link o reparse point
+    _check_for_reparse_points(temp_dest)
+    
     try:
         _perform_secure_copy(source_path, temp_dest, source_hash)
         if dest_path.exists(): raise FileExistsError("Colisión de ruta antes del reemplazo.")
