@@ -12,7 +12,7 @@ El proceso sigue tres pasos:
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Any, Final, NamedTuple, Annotated, Callable, TypeAlias, Protocol, Tuple
 from enum import Enum
 from pathlib import Path
@@ -280,22 +280,22 @@ class SystemMetrics:
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any:
         """Acceso restringido a atributos validados del sistema."""
-        val = getattr(self, field_name, default)
-        return val if isinstance(val, (int, float)) else default
+        return getattr(self, field_name, default)
 
     def validate(self) -> None:
         """Aplica límites de rango definidos en _METRIC_LIMITS a cada atributo."""
+        fields = asdict(self)
         for field_name in _ALL_METRICS:
-            if hasattr(self, field_name):
-                raw_val = getattr(self, field_name, 0.0)
-                min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
-                sanitized = _validate_numeric(raw_val, 0.0, min_v, max_v)
-                setattr(self, field_name, sanitized)
+            raw_val = fields.get(field_name, 0.0)
+            min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
+            sanitized = _validate_numeric(raw_val, 0.0, min_v, max_v)
+            setattr(self, field_name, sanitized)
 
     @property
     def is_finite(self) -> bool:
         """Verifica validez numérica (finitud) de todas las métricas."""
-        return all(math.isfinite(float(getattr(self, f, 0.0))) for f in _ALL_METRICS)
+        fields = asdict(self)
+        return all(math.isfinite(float(fields.get(f, 0.0))) for f in _ALL_METRICS)
 
 @dataclass
 class HealthResult:
@@ -371,7 +371,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     try:
         metrics.validate()
-        metric_tuple = tuple(float(getattr(metrics, f, 0.0)) for f in _VALIDATION_KEYS)
+        fields = asdict(metrics)
+        metric_tuple = tuple(float(fields.get(f, 0.0)) for f in _VALIDATION_KEYS)
         return _compute_cached(metric_tuple, float(metrics.quarantined_count))
     except (TypeError, ValueError, AttributeError, MemoryError) as e:
         logging.error(f"Fallo crítico al calcular score: {e}")
