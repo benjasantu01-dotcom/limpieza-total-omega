@@ -1268,3 +1268,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-05T11:40:34` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-05T11:40:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T11:40:34` Corrida terminada. Total usado hoy: 276.
+- `2026-11-05T11:47:20` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-05T11:47:47` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-05T11:48:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-05T11:48:56` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante fallos de E/S y corrupción de metadatos en `purge_all` y `load_manifest`, añadiendo validaciones de integridad preventivas y garantizando que las operaciones de limpieza no se detengan ante archivos huérfanos o inaccesibles, manteniendo la atomicidad requerida.
+- `2026-11-05T11:48:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-05T11:48:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T11:48:59` Corrida terminada. Total usado hoy: 280.

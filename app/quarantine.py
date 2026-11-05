@@ -830,7 +830,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 if entry.name == MANIFEST_NAME or not entry.is_file():
                     continue
                 item = item_map.get(entry.name)
-                if not item: continue
+                # Purga archivos huérfanos que no están en el manifiesto
+                if not item:
+                    try:
+                        _safe_unlink(Path(entry.path))
+                    except (OSError, PermissionError, UnsafePathError): continue
+                    continue
                 
                 try:
                     f = Path(entry.path)
