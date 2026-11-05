@@ -430,3 +430,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-05T03:08:56` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación adicional mediante `ensure_safe_to_modify` antes de escribir en disco, garantizando que, aunque la función sea un intento de escritura, se apliquen las reglas estrictas de protección de rutas antes de cualquier operación de I/O.
 - `2026-11-05T03:08:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T03:08:56` Corrida terminada. Total usado hoy: 76.
+- `2026-11-05T03:16:20` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-11-05T03:16:47` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha implementado una validación de seguridad estricta en el método `_process_entry` mediante `is_safe_to_modify` para asegurar que cada subdirectorio y archivo individual analizado esté dentro de los límites permitidos, evitando que el escáner sea engañado por estructuras de archivos complejas o enlaces simbólicos maliciosos durante la recursión.
+- `2026-11-05T03:17:12` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita contra ataques de "path traversal" usando `Path.resolve()` en conjunto con la validación de prefijos, evitando que el escáner escape del directorio raíz previsto mediante symlinks o rutas relativas maliciosas.
+- `2026-11-05T03:17:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-05T03:17:49` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.validate
+- `2026-11-05T03:17:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T03:17:49` Corrida terminada. Total usado hoy: 80.

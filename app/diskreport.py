@@ -177,6 +177,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         # Seguridad defensiva: Bloqueo de UNC y protegidos antes de acceder
         if str(p).startswith('\\\\') or is_protected_path(p):
             return None
+        # Validación de integridad de acceso y tipo
         if not p.is_dir() or not os.access(p, os.R_OK):
             return None
         return p
@@ -315,23 +316,27 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if entry.is_dir(follow_symlinks=False):
                             if _is_reparse_point(entry):
                                 continue
-                            if skip_protected and is_protected_path(Path(entry.path)):
+                            
+                            entry_path = Path(entry.path).resolve()
+                            # Validar que no se escape del raíz durante el recorrido
+                            if not str(entry_path).startswith(str(root_path)):
+                                continue
+                            
+                            if skip_protected and is_protected_path(entry_path):
                                 continue
                             
                             st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry.path)
+                                stack.append(str(entry_path))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             if isinstance(st.st_size, int) and st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
                     except (OSError, PermissionError, FileNotFoundError):
-                        # Caso límite: el archivo desapareció durante el recorrido
                         continue
         except (OSError, PermissionError, NotADirectoryError, FileNotFoundError):
-            # Caso límite: permiso denegado o carpeta eliminada durante el escaneo
             continue
 
 
@@ -362,7 +367,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Identificar la subcarpeta de primer nivel basándose en la ruta
             parts = Path(path).relative_to(root).parts
             if not parts: continue
             top_level = Path(root_str) / parts[0]
