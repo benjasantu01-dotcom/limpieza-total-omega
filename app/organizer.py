@@ -357,7 +357,11 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         return None
     try:
         dest_base = Path(review_dir).expanduser().resolve()
-        if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
+        if not dest_base.exists():
+            try:
+                dest_base.mkdir(parents=True, exist_ok=True)
+            except (OSError, PermissionError):
+                return None
         ensure_safe_to_modify(dest_base)
         
         for junk_file in files:

@@ -474,14 +474,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     handle = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if not handle:
-        return False, "Acceso denegado o proceso en zona restringida."
-
-    # Seguridad defensiva adicional: re-verificar ruta protegida explícitamente tras normalización
-    if is_protected_path(Path(os.path.normpath(path_buf.value))):
-        WindowsAPI.kernel32.CloseHandle(handle)
-        return False, "Operación denegada sobre archivos protegidos."
+        return False, "Acceso denegado, proceso inexistente o en zona restringida."
 
     try:
+        # Re-verificar estado de seguridad tras obtener handle para minimizar race conditions
+        if is_protected_path(Path(os.path.normpath(path_buf.value))):
+            return False, "Operación denegada sobre archivos protegidos."
+
         process_exit_code = wintypes.DWORD()
         if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(process_exit_code)) == 0:
             return False, "Error al consultar estado del proceso."

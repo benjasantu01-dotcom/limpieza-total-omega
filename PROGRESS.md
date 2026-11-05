@@ -8,23 +8,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **125** (24.8% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 310
+- Sin respuesta de la IA (error o límite): 309
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-03 | 39 | 2 | 14 | 4 | 105 |
+| 2026-11-03 | 37 | 2 | 14 | 4 | 103 |
 | 2026-11-04 | 83 | 7 | 29 | 12 | 189 |
-| 2026-11-05 | 3 | 0 | 0 | 1 | 16 |
+| 2026-11-05 | 5 | 0 | 1 | 1 | 17 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **31**
-- rendimiento: **29**
-- manejo de errores y validación de entradas: **24**
+- legibilidad y documentación: **30**
+- rendimiento: **28**
+- manejo de errores y validación de entradas: **26**
 - seguridad defensiva: **23**
 - robustez ante casos límite: **18**
 
@@ -34,18 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **13**
 - `settings.py`: **13**
 - `quarantine.py`: **12**
+- `memory.py`: **11**
 - `safety.py`: **11**
-- `memory.py`: **10**
 - `browser.py`: **10**
-- `assistant.py`: **9**
 - `duplicates.py`: **9**
 - `scanner.py`: **8**
+- `assistant.py`: **8**
 - `branding.py`: **7**
-- `startup.py`: **5**
-- `organizer.py`: **3**
+- `startup.py`: **4**
+- `organizer.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T00:55:48` **organizer.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `stage_for_review` y `delete_reviewed` al validar explícitamente la existencia de las rutas antes de proceder y envolver la lógica en bloques de control de excepciones más específicos, evitando fallos silenciosos ante rutas inexistentes o inaccesibles.
+- `2026-11-05T00:55:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo validaciones preventivas sobre el handle y el estado del proceso, asegurando que la operación de trim solo ocurra si el handle es válido, activo y tiene permisos confirmados, evitando excepciones descontroladas en el acceso a APIs de bajo nivel.
 - `2026-11-05T00:44:08` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `DirectoryScanner._process_entry` agregando una validación explícita para evitar errores al intentar acceder a rutas con nombres inválidos o caracteres de control, asegurando que el proceso de escaneo sea resiliente ante estructuras de archivos inesperadas dentro de las carpetas de caché.
 - `2026-11-05T00:36:45` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante una validación de parámetros más estricta (`isinstance` y chequeo de `None`) antes de procesar valores, evitando posibles excepciones durante la ejecución en la UI.
 - `2026-11-05T00:36:20` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` para evitar errores en llamadas recursivas y agregué una validación de seguridad explícita en `_call_gemini` para asegurar que el `context_text` enviado sea seguro antes de serializarlo, cerrando una brecha donde un contexto mal formado podría causar un error en la cadena.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-04T22:34:21` **settings.py** (robustez ante casos límite): Mejoré `_read_and_parse_json` para manejar explícitamente posibles errores de lectura parcial o bloqueos de archivo mediante un límite de tamaño más estricto y una verificación post-lectura, asegurando que el archivo no esté truncado o corrupto antes de procesarlo.
 - `2026-11-04T22:32:55` **safety.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de acceso en `_get_file_id` y `_is_file_locked_by_other_process` añadiendo bloques `try-except` más granulares y manejando estados de "hándle" inválido, previniendo que excepciones de I/O bloqueen el flujo de escaneo al encontrar archivos en uso exclusivo por el sistema (ej. archivos de paginación o archivos de sistema bloqueados).
 - `2026-11-04T22:22:08` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` y `trim_working_set` ante rutas malformadas o errores de lectura del buffer de memoria, añadiendo una validación estricta de la ruta obtenida mediante `os.path.normpath` para asegurar que las verificaciones de `safety` no sean eludidas por caracteres especiales o rutas relativas.
-- `2026-11-04T22:10:50` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escáner ante rutas mal formadas o inaccesibles añadiendo una validación explícita de `Path.resolve()` en el punto de entrada `directory_size` y un manejo más estricto de las excepciones durante la resolución de rutas, evitando que rutas con caracteres inválidos o bloqueos de sistema aborten el proceso.
-- `2026-11-04T17:28:53` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la ejecución redundante de `lstat()` y `resolve()` mediante el uso de una caché de rutas más efectiva y la normalización temprana de `resolved_str` dentro de `settings_path`, reduciendo la carga de E/S en accesos recurrentes.
