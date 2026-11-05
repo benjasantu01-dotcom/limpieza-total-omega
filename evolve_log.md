@@ -866,3 +866,71 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-05T08:04:15` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
 - `2026-11-05T08:04:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T08:04:15` Corrida terminada. Total usado hoy: 192.
+- `2026-11-05T08:12:19` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-11-05T08:12:50` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_read_and_parse_json` al implementar una verificación explícita de `st_nlink` y `st_mode` antes de abrir el descriptor de archivo, previniendo riesgos de enlaces simbólicos o alteraciones de permisos durante la lectura.
+- `2026-11-05T08:13:19` Tests FALLARON:
+```
+'MiApp'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.25s
+
+```
+- `2026-11-05T08:13:19` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `_is_valid_registry_path` y `_is_registry_entry_safe` mediante la integración del chequeo `is_safe_to_modify` para asegurar que las rutas extraídas del registro no apunten a ubicaciones protegidas del sistema antes de procesarlas, evitando así la inclusión de registros críticos que podrían ser malinterpretados o manipulados.
+- `2026-11-05T08:13:19` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-05T08:13:19` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-05T08:13:39` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-05T08:13:39` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-05T08:14:10` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-05T08:14:10` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-05T08:14:25` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-05T08:14:25` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-05T08:14:45` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-05T08:14:45` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-05T08:15:15` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-05T08:15:15` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-05T08:15:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T08:15:15` Corrida terminada. Total usado hoy: 196.

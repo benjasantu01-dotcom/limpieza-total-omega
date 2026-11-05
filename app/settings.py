@@ -399,6 +399,12 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
+            # Verifica nuevamente propiedades antes de convertir en stream
+            st_post = os.fstat(fd)
+            if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1:
+                os.close(fd)
+                return None
+            
             with os.fdopen(fd, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except Exception:
