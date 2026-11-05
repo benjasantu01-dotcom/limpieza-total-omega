@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 47 | 2 | 17 | 5 | 101 |
-| 2026-11-05 | 128 | 7 | 33 | 4 | 160 |
+| 2026-11-04 | 44 | 2 | 16 | 5 | 101 |
+| 2026-11-05 | 131 | 7 | 34 | 4 | 160 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **40**
 - rendimiento: **36**
+- manejo de errores y validación de entradas: **34**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **32**
-- manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **18**
+- `healthscore.py`: **18**
 - `browser.py`: **17**
-- `diskreport.py`: **17**
-- `healthscore.py`: **17**
 - `settings.py`: **17**
-- `quarantine.py`: **16**
-- `scanner.py`: **14**
+- `quarantine.py`: **15**
 - `memory.py`: **14**
+- `duplicates.py`: **13**
+- `scanner.py`: **13**
 - `assistant.py`: **13**
-- `safety.py`: **12**
-- `duplicates.py`: **12**
+- `safety.py`: **11**
 - `branding.py`: **11**
 - `organizer.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T14:11:52` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_compute_cached` y `summarize` reemplazando el uso implícito de `getattr` y acceso directo por el método `safe_get` ya existente, garantizando que el acceso a datos sea siempre validado y seguro frente a errores de estructura.
+- `2026-11-05T14:11:23` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `_get_mtime` validando la entrada y manejando explícitamente el caso en que el archivo desaparece durante el proceso, evitando errores no capturados al comparar rutas.
+- `2026-11-05T14:11:00` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando una validación explícita para asegurar que el sistema de archivos no devuelva resultados inconsistentes, previniendo errores en caso de rutas que se vuelven inaccesibles durante el escaneo y mejorando la calidad de los mensajes de error.
 - `2026-11-05T14:02:40` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_logo` mediante la validación proactiva de tipos y estados, previniendo excepciones en tiempo de ejecución al manipular rutas, escalas o valores geométricos inesperados.
 - `2026-11-05T14:02:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_numeric_update` reemplazando la comparación booleana con una comprobación explícita de `float`, asegurando que `NaN` o `Inf` se manejen correctamente mediante la integración de `_check_metric_integrity` dentro de la lógica de validación, evitando excepciones silenciosas al tratar tipos inesperados.
 - `2026-11-05T12:39:46` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `startup.py` al implementar la verificación de puntos de reparse (junctions) y enlaces simbólicos mediante `os.path.islink` durante la lectura del registro y carpetas, evitando que el escáner sea inducido a recorrer árboles de directorios fuera de las rutas de inicio estándar.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T12:18:20` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` y `_safe_path_check` para prevenir el seguimiento de enlaces simbólicos y puntos de unión durante el escaneo, asegurando que el análisis de duplicados no escape de las rutas autorizadas.
 - `2026-11-05T12:09:33` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una validación explícita mediante `is_protected_path` sobre la resolución final de la ruta, asegurando que cualquier intento de acceso a través de links o rutas manipuladas que resuelvan en zonas bloqueadas sea denegado antes de iniciar cualquier operación de I/O.
 - `2026-11-05T12:09:21` **browser.py** (seguridad defensiva): Se reforzó la validación de seguridad en `_is_target_valid` para garantizar que la resolución de la ruta `target` no escape del directorio base mediante `resolve()` y `pathlib`, impidiendo ataques de traversal al construir rutas desde `BROWSER_CACHE_PATHS`.
-- `2026-11-05T12:08:55` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` utilizando `is_safe_to_modify` para verificar la ruta sin lanzar excepciones innecesarias en el flujo, garantizando que la operación de escritura sea segura incluso si la ruta proporcionada es inválida o sensible, manteniendo la integridad del sistema.
-- `2026-11-05T12:08:24` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la ingesta de datos en `SystemContext` añadiendo una validación explícita para rechazar cualquier fuente que contenga claves de diccionario que sean rutas protegidas, previniendo que un JSON de configuración malintencionado intente inyectar o manipular rutas críticas mediante el método `ingest`.
-- `2026-11-05T12:00:33` **startup.py** (robustez ante casos límite): Mejora la robustez del parseo del registro ante rutas con espacios y comillas múltiples añadiendo una normalización más estricta en `_is_valid_registry_path`, asegurando que no se pierdan entradas válidas que contengan rutas legítimas con espacios.

@@ -203,21 +203,21 @@ _DUP_SCORER: Final = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER: Final = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
 _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
-    "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _safe_factory(lambda m: f"Riesgos de seguridad detectados: {m.suspicious_count}."), lambda m, r: r < WARN_THRESHOLD_HIGH),),
-    "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento."), lambda m, r: r < WARN_THRESHOLD_LOW),),
+    "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _safe_factory(lambda m: f"Riesgos de seguridad detectados: {m.safe_get('suspicious_count')}."), lambda m, r: r < WARN_THRESHOLD_HIGH),),
+    "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Espacio libre en disco bajo: {m.safe_get('disk_free_percent'):.1f} porciento."), lambda m, r: r < WARN_THRESHOLD_LOW),),
     "memoria": (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _safe_factory(lambda m: "Memoria disponible baja, optimice sus procesos."), lambda m, r: r < WARN_THRESHOLD_LOW),),
-    "basura": (RecommendationRule("basura", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Acumulacion de archivos temporales: {m.junk_mb:.0f} MB."), lambda m, r: r < WARN_THRESHOLD_MED),),
-    "duplicados": (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados."), lambda m, r: r < WARN_THRESHOLD_MED),),
-    "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Exceso de programas en arranque: {m.startup_count} entradas."), lambda m, r: r < WARN_THRESHOLD_LOW),),
+    "basura": (RecommendationRule("basura", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Acumulacion de archivos temporales: {m.safe_get('junk_mb'):.0f} MB."), lambda m, r: r < WARN_THRESHOLD_MED),),
+    "duplicados": (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Recuperacion posible: {m.safe_get('duplicate_mb'):.0f} MB en duplicados."), lambda m, r: r < WARN_THRESHOLD_MED),),
+    "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Exceso de programas en arranque: {m.safe_get('startup_count')} entradas."), lambda m, r: r < WARN_THRESHOLD_LOW),),
 }
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES.get("seguridad", ())),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES.get("disco", ())),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES.get("memoria", ())),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), _RULES.get("basura", ())),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), _RULES.get("duplicados", ())),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES.get("arranque", ())),
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.safe_get("suspicious_count"), m.safe_get("suspicious_warnings")), _RULES.get("seguridad", ())),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.safe_get("disk_free_percent")), _RULES.get("disco", ())),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.safe_get("memory_available_percent")), _RULES.get("memoria", ())),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.safe_get("junk_mb")), _RULES.get("basura", ())),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.safe_get("duplicate_mb")), _RULES.get("duplicados", ())),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.safe_get("startup_count")), _RULES.get("arranque", ())),
 )
 
 _verify_pipeline_integrity(WEIGHTS, PIPELINE_DEFINITIONS)
@@ -305,7 +305,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica validez numérica (finitud) de todas las métricas."""
-        return all(math.isfinite(float(getattr(self, f, 0.0))) for f in _ALL_METRICS)
+        return all(math.isfinite(float(self.safe_get(f, 0.0))) for f in _ALL_METRICS)
 
 @dataclass
 class HealthResult:
@@ -342,17 +342,16 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """Orquestador central del cálculo de salud mediante pipeline (cacheado)."""
-    # Se revalida la estructura para evitar desbordamientos o valores atípicos tras el paso por cache
     try:
         metrics = SystemMetrics(
-            junk_mb=_validate_numeric(metric_tuple[0], 0.0, 0.0, 1e9),
-            suspicious_count=int(_validate_numeric(metric_tuple[1], 0, 0, 5000)),
-            suspicious_warnings=int(_validate_numeric(metric_tuple[2], 0, 0, 5000)),
-            memory_available_percent=_validate_numeric(metric_tuple[3], 100.0, 0.0, 100.0),
-            disk_free_percent=_validate_numeric(metric_tuple[4], 100.0, 0.0, 100.0),
-            duplicate_mb=_validate_numeric(metric_tuple[5], 0.0, 0.0, 1e9),
-            startup_count=int(_validate_numeric(metric_tuple[6], 0, 0, 1000)),
-            quarantined_count=int(_validate_numeric(quarantined, 0, 0, 10000))
+            junk_mb=metric_tuple[0],
+            suspicious_count=int(metric_tuple[1]),
+            suspicious_warnings=int(metric_tuple[2]),
+            memory_available_percent=metric_tuple[3],
+            disk_free_percent=metric_tuple[4],
+            duplicate_mb=metric_tuple[5],
+            startup_count=int(metric_tuple[6]),
+            quarantined_count=int(quarantined)
         )
     except (IndexError, ValueError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Métrica malformada."])
@@ -377,7 +376,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
             metric_breakdown[entry.area] = val
             total_score_sum += val
                 
-        if metrics.quarantined_count > 0:
+        if metrics.safe_get("quarantined_count") > 0:
             if q_msg := _sanitize_msg("Existen elementos en cuarentena."):
                 recommendations.append(q_msg)
             
@@ -400,12 +399,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     try:
         metric_tuple = (
-            float(metrics.junk_mb), float(metrics.suspicious_count), 
-            float(metrics.suspicious_warnings), float(metrics.memory_available_percent),
-            float(metrics.disk_free_percent), float(metrics.duplicate_mb), 
-            float(metrics.startup_count)
+            float(metrics.safe_get("junk_mb")), float(metrics.safe_get("suspicious_count")), 
+            float(metrics.safe_get("suspicious_warnings")), float(metrics.safe_get("memory_available_percent")),
+            float(metrics.safe_get("disk_free_percent")), float(metrics.safe_get("duplicate_mb")), 
+            float(metrics.safe_get("startup_count"))
         )
-        return _compute_cached(metric_tuple, float(metrics.quarantined_count))
+        return _compute_cached(metric_tuple, float(metrics.safe_get("quarantined_count")))
     except (TypeError, ValueError, AttributeError, MemoryError) as e:
         logging.error(f"Fallo crítico al calcular score: {e}")
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Fallo al procesar métricas."])

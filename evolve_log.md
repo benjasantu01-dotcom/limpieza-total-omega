@@ -415,3 +415,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-05T14:02:48` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-05T14:02:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T14:02:48` Corrida terminada. Total usado hoy: 332.
+- `2026-11-05T14:10:32` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-05T14:11:00` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` implementando una validación explícita para asegurar que el sistema de archivos no devuelva resultados inconsistentes, previniendo errores en caso de rutas que se vuelven inaccesibles durante el escaneo y mejorando la calidad de los mensajes de error.
+- `2026-11-05T14:11:23` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `_get_mtime` validando la entrada y manejando explícitamente el caso en que el archivo desaparece durante el proceso, evitando errores no capturados al comparar rutas.
+- `2026-11-05T14:11:52` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_compute_cached` y `summarize` reemplazando el uso implícito de `getattr` y acceso directo por el método `safe_get` ya existente, garantizando que el acceso a datos sea siempre validado y seguro frente a errores de estructura.
+- `2026-11-05T14:12:44` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-05T14:12:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T14:12:44` Corrida terminada. Total usado hoy: 336.

@@ -317,7 +317,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 yield Path(entry.path), st.st_size
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
-        except (PermissionError, FileNotFoundError, OSError):
+        except (PermissionError, FileNotFoundError, OSError, ValueError):
             continue
 
 
@@ -394,12 +394,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """Genera una representación textual formateada de los resultados del escaneo para reporte."""
-    if not directory:
-        return ["Error: La ruta proporcionada está vacía."]
+    if directory is None:
+        return ["Error: No se ha especificado una ruta válida."]
         
     root = _validate_root(directory)
     if root is None: 
-        return ["Error: La ruta seleccionada no es válida, está protegida o no tiene permisos de lectura."]
+        return ["Error: La ruta seleccionada es inaccesible, está protegida o requiere permisos superiores."]
     
     data = _collect_summary_data(root, skip_protected, limit=20)
         

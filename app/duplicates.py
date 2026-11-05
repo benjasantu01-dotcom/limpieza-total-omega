@@ -151,6 +151,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     if paths is None: return groups_by_size
     
     for p in paths:
+        if p is None: continue
         item = Path(p)
         try:
             st = item.stat()
@@ -249,12 +250,12 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     return sum(g.wasted_bytes for g in groups) if groups else 0
 
 
-def _get_mtime(path: Path) -> Optional[float]:
+def _get_mtime(path: Optional[Path]) -> Optional[float]:
     """Obtiene el tiempo de última modificación validando la existencia del archivo."""
-    if not isinstance(path, Path): return None
+    if not isinstance(path, Path) or not path.exists(): return None
     try:
         return path.stat().st_mtime
-    except (OSError, PermissionError, FileNotFoundError):
+    except (OSError, PermissionError):
         return None
 
 
@@ -263,13 +264,16 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     if not group or not group.paths: 
         return None
         
-    candidates = [( _get_mtime(p), p) for p in group.paths]
-    valid_candidates = [c for c in candidates if c[0] is not None]
+    candidates = []
+    for p in group.paths:
+        mtime = _get_mtime(p)
+        if mtime is not None:
+            candidates.append((mtime, p))
     
-    if not valid_candidates:
-        return group.paths[0] if group.paths else None
+    if not candidates:
+        return group.paths[0]
         
-    return min(valid_candidates, key=lambda x: x[0])[1]
+    return min(candidates, key=lambda x: x[0])[1]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
