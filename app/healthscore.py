@@ -337,16 +337,20 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """Orquestador central del cálculo de salud mediante pipeline (cacheado)."""
-    metrics = SystemMetrics(
-        junk_mb=metric_tuple[0],
-        suspicious_count=int(metric_tuple[1]),
-        suspicious_warnings=int(metric_tuple[2]),
-        memory_available_percent=metric_tuple[3],
-        disk_free_percent=metric_tuple[4],
-        duplicate_mb=metric_tuple[5],
-        startup_count=int(metric_tuple[6]),
-        quarantined_count=int(quarantined)
-    )
+    # Se revalida la estructura para evitar desbordamientos o valores atípicos tras el paso por cache
+    try:
+        metrics = SystemMetrics(
+            junk_mb=_validate_numeric(metric_tuple[0], 0.0, 0.0, 1e9),
+            suspicious_count=int(_validate_numeric(metric_tuple[1], 0, 0, 5000)),
+            suspicious_warnings=int(_validate_numeric(metric_tuple[2], 0, 0, 5000)),
+            memory_available_percent=_validate_numeric(metric_tuple[3], 100.0, 0.0, 100.0),
+            disk_free_percent=_validate_numeric(metric_tuple[4], 100.0, 0.0, 100.0),
+            duplicate_mb=_validate_numeric(metric_tuple[5], 0.0, 0.0, 1e9),
+            startup_count=int(_validate_numeric(metric_tuple[6], 0, 0, 1000)),
+            quarantined_count=int(_validate_numeric(quarantined, 0, 0, 10000))
+        )
+    except (IndexError, ValueError):
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Métrica malformada."])
     
     try:
         scores_by_entry = []

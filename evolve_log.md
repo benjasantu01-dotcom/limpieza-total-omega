@@ -1260,3 +1260,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-05T11:28:41` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-11-05T11:28:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T11:28:41` Corrida terminada. Total usado hoy: 272.
+- `2026-11-05T11:37:08` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-11-05T11:37:37` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o con errores de lectura durante el escaneo, reemplazando la captura genérica de excepciones por una estructura que asegura que el flujo de iteración no se detenga innecesariamente ante errores de acceso a metadatos, garantizando una mayor consistencia en los resultados frente a sistemas de archivos con permisos restringidos.
+- `2026-11-05T11:38:18` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_collect_candidates` ante archivos que desaparecen durante el escaneo (condición de carrera) y archivos con errores de lectura de metadatos, evitando que una excepción puntual aborte la recolección de todo el directorio.
+- `2026-11-05T11:38:46` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se implementó un control robusto en `_compute_cached` para prevenir que `SystemMetrics` mal formadas o valores extremos provoquen errores en tiempo de ejecución o resultados inconsistentes, asegurando que `_compute_cached` siempre reciba tipos consistentes tras la validación inicial.
+- `2026-11-05T11:39:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-05T11:40:34` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-05T11:40:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T11:40:34` Corrida terminada. Total usado hoy: 276.

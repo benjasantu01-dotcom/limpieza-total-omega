@@ -313,9 +313,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file():
                             if st.st_size >= 0:
                                 yield Path(entry.path), st.st_size
-                    except (OSError, PermissionError, FileNotFoundError, ValueError, AttributeError):
+                    except (PermissionError, FileNotFoundError, OSError):
                         continue
-        except (OSError, PermissionError, NotADirectoryError, FileNotFoundError, ValueError):
+        except (PermissionError, FileNotFoundError, OSError):
             continue
 
 
@@ -377,21 +377,15 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    try:
-        for path, size in walk_files(directory, skip_protected):
-            try:
-                ext = path.suffix.lower() or "(sin extensión)"
-                stats.register_file(size, ext)
-                
-                if limit > 0:
-                    if len(top_heap) < limit:
-                        heapq.heappush(top_heap, (size, path))
-                    elif size > top_heap[0][0]:
-                        heapq.heapreplace(top_heap, (size, path))
-            except (AttributeError, OSError, ValueError):
-                continue
-    except Exception:
-        pass
+    for path, size in walk_files(directory, skip_protected):
+        ext = path.suffix.lower() or "(sin extensión)"
+        stats.register_file(size, ext)
+        
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
