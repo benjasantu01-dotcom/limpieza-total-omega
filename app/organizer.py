@@ -36,10 +36,12 @@ SortField: TypeAlias = Literal["size", "date"]
 @dataclass(frozen=True)
 class Win32Attributes:
     """Mapeo de constantes de atributos de archivo Win32 (kernel32)."""
-    JUNCTION: Final[int] = 0x400  # FILE_ATTRIBUTE_REPARSE_POINT
-    SYSTEM: Final[int] = 0x04     # FILE_ATTRIBUTE_SYSTEM
-    HIDDEN: Final[int] = 0x02     # FILE_ATTRIBUTE_HIDDEN
-    READONLY: Final[int] = 0x01   # FILE_ATTRIBUTE_READONLY
+    # FILE_ATTRIBUTE_REPARSE_POINT (0x400) se usa para detectar Junctions
+    JUNCTION: Final[int] = 0x400
+    # FILE_ATTRIBUTE_SYSTEM (0x04) y HIDDEN (0x02) se usan para filtrar archivos críticos
+    SYSTEM: Final[int] = 0x04
+    HIDDEN: Final[int] = 0x02
+    READONLY: Final[int] = 0x01
     MASK_PROTECTED: Final[int] = 0x04 | 0x02
 
 @dataclass(frozen=True)
@@ -273,7 +275,8 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or _is_junction(junk_file.path): return False
         
-        if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
+        # Se requiere validación de seguridad de escritura sobre el destino, y existencia sobre el origen
+        if not _validate_path_security(src_real, dest_real): return False
         if junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev: return False
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         if _is_recursive_violation(src_real, dest_real) or not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
