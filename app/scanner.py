@@ -123,11 +123,9 @@ def _is_readable(path: PathInput) -> bool:
         return False
     try:
         path_str = str(path)
-        if not path_str or "\0" in path_str or len(path_str) > SCAN_LIMITS.path_length_limit:
+        if not path_str or "\0" in path_str or len(path_str) > SCAN_LIMITS.path_length_limit or _cached_is_protected(path_str):
             return False
-        if _cached_is_protected(path_str):
-            return False
-        return os.access(path_str, os.R_OK) and _is_safe_by_attributes(Path(path_str))
+        return os.access(path_str, os.R_OK)
     except (OSError, PermissionError, ValueError, TypeError):
         return False
 
@@ -150,7 +148,11 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
         
     try:
-        return entry.stat(follow_symlinks=False)
+        stats = entry.stat(follow_symlinks=False)
+        # Validar consistencia básica
+        if stats.st_size < 0:
+            return None
+        return stats
     except OSError as e:
         if getattr(e, 'winerror', None) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             return None
@@ -257,7 +259,6 @@ class Scanner:
         norm_path = os.path.normcase(entry.path)
         if norm_path in visited: return
         try:
-            # os.access no es suficiente para confirmar permisos reales, pero evita bloqueos innecesarios
             if not _cached_is_protected(entry.path):
                 visited.add(norm_path)
                 stack.append((entry.path, depth + 1))

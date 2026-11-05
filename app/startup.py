@@ -101,11 +101,14 @@ class StartupEntry:
         Valida que la estructura del comando cumpla con las restricciones de 
         seguridad: longitud, ausencia de caracteres prohibidos y dispositivos.
         """
-        if not isinstance(self.command, str) or not self.command.strip():
+        if not isinstance(self.command, str):
             return False
-        if len(self.command) > MAX_PATH_LEN:
+        cmd_stripped = self.command.strip()
+        if not cmd_stripped:
             return False
-        if self._is_path_suspicious(self.command) or self._is_reserved_device_name(self.command):
+        if len(cmd_stripped) > MAX_PATH_LEN:
+            return False
+        if self._is_path_suspicious(cmd_stripped) or self._is_reserved_device_name(cmd_stripped):
             return False
         return True
 
@@ -438,7 +441,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             raw_name = row.get("Name")
             raw_cmd = row.get("Value")
             
-            if raw_name is None or raw_cmd is None:
+            if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
             
             n, c = raw_name.strip(), raw_cmd.strip()

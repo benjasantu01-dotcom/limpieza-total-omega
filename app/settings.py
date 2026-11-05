@@ -381,11 +381,10 @@ def _is_structure_valid(data: Any) -> bool:
     """
     if not isinstance(data, dict) or not data or len(data) > 64: return False
     
-    all_keys = [k.value for k in ConfigKey]
-    for key_name in all_keys:
-        if key_name not in data: return False
-        val = data[key_name]
-        if val is not None and not _is_valid_type(val, _KEY_TO_ENUM[key_name]): return False
+    for key in ConfigKey:
+        if key.value not in data: return False
+        val = data[key.value]
+        if val is not None and not _is_valid_type(val, key): return False
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
@@ -399,7 +398,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
-            # Verifica nuevamente propiedades antes de convertir en stream
             st_post = os.fstat(fd)
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1:
                 os.close(fd)
@@ -407,13 +405,13 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
             
             with os.fdopen(fd, "r", encoding="utf-8") as f:
                 data = json.load(f)
-        except Exception:
+        except (json.JSONDecodeError, OSError):
             os.close(fd)
             return None
             
         if not _is_structure_valid(data): return None
         return data, st
-    except (OSError, IOError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
+    except (OSError, IOError, PermissionError, ValueError, TypeError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:

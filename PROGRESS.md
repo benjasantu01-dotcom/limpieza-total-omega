@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **152** (30.2% de aceptación)
+- Mejoras aceptadas: **154** (30.6% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 280
+- Sin respuesta de la IA (error o límite): 279
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 68 | 5 | 25 | 10 | 160 |
-| 2026-11-05 | 84 | 6 | 23 | 3 | 120 |
+| 2026-11-04 | 67 | 5 | 23 | 10 | 159 |
+| 2026-11-05 | 87 | 6 | 24 | 3 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **38**
-- rendimiento: **30**
+- manejo de errores y validación de entradas: **32**
+- rendimiento: **29**
 - seguridad defensiva: **29**
-- manejo de errores y validación de entradas: **29**
 - robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **16**
+- `settings.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **16**
-- `settings.py`: **15**
+- `diskreport.py`: **15**
 - `memory.py`: **15**
 - `quarantine.py`: **14**
+- `scanner.py`: **11**
 - `assistant.py`: **11**
 - `duplicates.py`: **10**
-- `scanner.py`: **10**
 - `safety.py`: **9**
 - `branding.py`: **9**
 - `organizer.py`: **7**
-- `startup.py`: **4**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-05T10:06:22` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry.is_valid` y `parse_registry_csv` añadiendo validaciones explícitas de `None` y tipos antes de operar sobre las entradas, evitando posibles excepciones `AttributeError` o `TypeError` al procesar datos externos impredecibles.
+- `2026-11-05T10:05:55` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_is_structure_valid` añadiendo validaciones explícitas de tipo y longitud antes de la carga de datos, previniendo errores de ejecución ante archivos JSON malformados o inesperadamente grandes.
+- `2026-11-05T10:05:25` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas incorporando una validación explícita para archivos de tamaño cero en `_safe_stat` y robusteciendo `_is_readable` contra rutas malformadas antes de realizar el acceso a disco, reduciendo excepciones innecesarias.
 - `2026-11-05T09:56:40` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de las validaciones en `ensure_safe_to_modify` capturando excepciones específicas (`PermissionError`, `OSError`) al evaluar `p.parent` y `p.exists()`, evitando que fallos inesperados de E/S interrumpan la lógica de seguridad con errores genéricos.
 - `2026-11-05T09:46:45` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` para prevenir excepciones silenciosas o valores inesperados mediante validaciones de tipo explícitas y manejo defensivo de desbordamientos.
 - `2026-11-05T09:44:56` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `_get_mtime` para evitar fallos silenciosos ante archivos inexistentes o inaccesibles, asegurando que la lógica de recomendación no se detenga ante errores de entrada.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T07:42:41` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_path_allowed` asegurando que la validación de la ruta incluya la verificación de que la ruta resuelta reside físicamente dentro de `LOCALAPPDATA` mediante una comparación estricta de nombres normalizados, previniendo posibles escapes de sandbox ante enlaces simbólicos o rutas maliciosas.
 - `2026-11-05T07:33:24` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva del asistente restringiendo el acceso a atributos y métodos mediante `getattr` en `_get_safe_attr` y `SystemContext._apply_field`, asegurando que no se puedan invocar métodos críticos (como `__subclasses__` o `__init__`) mediante una lista blanca estricta de claves permitidas en `_VALIDATORS`.
 - `2026-11-05T07:32:33` **settings.py** (robustez ante casos límite): Se ha mejorado la resiliencia en la carga de archivos al manejar específicamente casos de archivos bloqueados, corruptos o con errores de permisos mediante un bloque `try-except` más robusto que garantiza un retorno seguro a `DEFAULTS` en lugar de una falla total o silenciosa, y se ha añadido una validación de `path` más estricta para evitar el uso de rutas con enlaces simbólicos intermedios que pudieran ser manipulados fuera de la app.
-- `2026-11-05T07:24:11` **safety.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `_validate_ntfs_reparse_redirection` para asegurar que, al validar la profundidad y el destino de enlaces simbólicos o junctions, se manejen correctamente los errores de permiso, evitando que una excepción no controlada detenga el escaneo completo cuando el acceso a un enlace sea restringido por el sistema.
-- `2026-11-05T07:14:33` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que no existen o son inaccesibles en `_iter_process_memory` y `trim_working_set`, asegurando que `GetModuleFileNameExW` no reciba ni procese búferes corruptos o inválidos, reforzando la estabilidad ante procesos que terminan durante el escaneo.
-- `2026-11-05T07:13:12` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante estados incoherentes del pipeline asegurando que `_compute_cached` maneje situaciones donde `PIPELINE_DEFINITIONS` o los pesos no coincidan, evitando divisiones por cero o claves faltantes durante la agregación.
