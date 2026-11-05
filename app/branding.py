@@ -270,7 +270,7 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     try:
         val = int(value.lstrip('#'), 16)
         return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
-    except ValueError: 
+    except (ValueError, TypeError): 
         return (0, 0, 0)
 
 @lru_cache(maxsize=256)
@@ -353,7 +353,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
             
         dest_path.write_text(logo_svg(int(size)), encoding="utf-8")
         return dest_path
-    except (OSError, PermissionError, RuntimeError, TypeError, ValueError): 
+    except (OSError, PermissionError, RuntimeError, TypeError, ValueError, AttributeError): 
         return None
 
 _ASCII_LOGO: Final[str] = (

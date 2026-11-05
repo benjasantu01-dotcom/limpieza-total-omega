@@ -20,7 +20,6 @@ import os
 import subprocess
 import csv
 import io
-import itertools
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
@@ -460,10 +459,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
     """
     Invoca PowerShell para extraer entradas Run del Registro de Windows.
-    
-    Utiliza '-LiteralPath' para prevenir el procesamiento de caracteres especiales 
-    como comodines (globbing) dentro de la ruta del registro, garantizando que el 
-    acceso a las claves de sistema sea exacto y predecible.
     """
     if os.name != "nt":
         return []
@@ -503,7 +498,12 @@ def list_startup_entries() -> StartupEntries:
     seen_commands: Set[str] = set()
     unique_entries: StartupEntries = []
     
-    for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
+    for entry in entries_from_folders():
+        if entry.command not in seen_commands:
+            seen_commands.add(entry.command)
+            unique_entries.append(entry)
+            
+    for entry in entries_from_registry():
         if entry.command not in seen_commands:
             seen_commands.add(entry.command)
             unique_entries.append(entry)

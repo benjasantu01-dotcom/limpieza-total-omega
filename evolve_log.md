@@ -1253,3 +1253,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-05T11:19:36` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a los validadores mediante la eliminación de una llamada innecesaria a `DEFAULTS` en `_is_valid_type` y la consolidación de la lógica de validación de tipos, reduciendo el overhead en ciclos repetitivos de carga de configuración.
 - `2026-11-05T11:19:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-05T11:19:36` Corrida terminada. Total usado hoy: 268.
+- `2026-11-05T11:26:55` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-05T11:27:26` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` implementando una técnica de "lazy evaluation" sobre la caché `_FULL_SCAN_CACHE` y eliminando la redundancia de `itertools.chain` que forzaba el escaneo simultáneo de todas las fuentes antes de procesar cualquier entrada.
+- `2026-11-05T11:28:01` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para detectar correctamente diccionarios y listas anidadas que podrían causar recursión infinita o desbordamiento de memoria al procesar respuestas de la API, añadiendo un chequeo explícito de tipos y profundidad.
+- `2026-11-05T11:28:33` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` para evitar caídas ante rutas inválidas o formatos de color malformados, asegurando que cualquier entrada inesperada sea gestionada mediante excepciones capturadas y valores de retorno seguros.
+- `2026-11-05T11:28:41` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-05T11:28:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-05T11:28:41` Corrida terminada. Total usado hoy: 272.
