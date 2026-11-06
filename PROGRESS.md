@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 114 | 6 | 28 | 4 | 128 |
-| 2026-11-06 | 83 | 11 | 35 | 12 | 83 |
+| 2026-11-05 | 111 | 6 | 28 | 4 | 127 |
+| 2026-11-06 | 85 | 11 | 36 | 12 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **37**
 - seguridad defensiva: **37**
-- rendimiento: **33**
+- rendimiento: **35**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `settings.py`: **19**
 - `browser.py`: **18**
-- `scanner.py`: **17**
+- `settings.py`: **18**
+- `healthscore.py`: **18**
+- `memory.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **17**
-- `safety.py`: **16**
-- `memory.py`: **16**
+- `scanner.py`: **16**
+- `safety.py`: **15**
 - `assistant.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T12:37:26` **memory.py** (rendimiento): Se ha optimizado `_iter_process_memory` pre-asignando el buffer de ruta y reutilizando los punteros de estructura para reducir la carga de asignación de memoria en cada iteración del bucle de procesos, mejorando el rendimiento en sistemas con muchos procesos activos.
+- `2026-11-06T12:35:35` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo reemplazando la creación dinámica de listas y el uso de `getattr` en el bucle principal de `_compute_cached` por una tupla inmutable de accesos directos, reduciendo la sobrecarga de resolución de atributos y la gestión de memoria durante el re-cálculo de métricas.
 - `2026-11-06T12:26:26` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando las múltiples llamadas redundantes a `entry.stat()` y `entry.is_dir()/is_file()` por un solo `entry.stat(follow_symlinks=False)`, reduciendo drásticamente las llamadas al sistema y el tiempo total de ejecución.
 - `2026-11-06T12:16:30` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud utilizando un `frozenset` pre-calculado en `active_problems` para evitar iteraciones redundantes y mejorar el rendimiento en consultas frecuentes, aprovechando que el estado es inmutable.
 - `2026-11-06T12:16:01` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `StartupEntry` mediante la unificación de criterios de validación y la clarificación de las responsabilidades de sus métodos privados, asegurando que cada componente tenga una docstring precisa que explique el "porqué" de las restricciones de seguridad.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T11:45:09` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings detallados para las funciones de renderizado geométrico y tipos complejos, aclarando el propósito de los cálculos de escalado (viewbox responsive) y el flujo de los segmentos de degradado.
 - `2026-11-06T11:35:51` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que el `command` (Value) sea una cadena no vacía y contenga una ruta válida antes de procesarlo, evitando errores de tipo al intentar realizar operaciones sobre `None` o valores inesperados.
 - `2026-11-06T11:35:09` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y validación de parámetros en el núcleo del escáner para evitar condiciones de carrera y fallos silenciosos al procesar entradas del sistema de archivos, asegurando que `_is_valid_file_path` y `_is_readable` operen de manera defensiva ante rutas malformadas o inaccesibles.
-- `2026-11-06T11:34:43` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_busy_or_invalid` y `_is_volume_readonly` al encapsular las llamadas a `GetVolumeInformationW` en bloques `try...except` más granulares, previniendo errores silenciosos de punteros nulos o tipos incorrectos en entornos donde las unidades pueden estar en estado transitorio.
-- `2026-11-06T11:24:35` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` mediante la adición de validaciones de tipo explícitas y chequeos preventivos de `None/empty` en la entrada, asegurando que las operaciones críticas de E/S no operen sobre rutas no resueltas o mal formadas, cumpliendo así con el enfoque de manejo de errores y validación.

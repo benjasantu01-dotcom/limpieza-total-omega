@@ -336,16 +336,16 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """Orquestador central del cálculo de salud mediante pipeline (cacheado)."""
     try:
-        validated_tuple = tuple(_validate_numeric(v, 0.0, -float('inf'), float('inf')) for v in metric_tuple)
+        # Acceso directo a tupla validada para evitar resolución costosa de objetos
         metrics = SystemMetrics(
-            junk_mb=validated_tuple[0],
-            suspicious_count=int(validated_tuple[1]),
-            suspicious_warnings=int(validated_tuple[2]),
-            memory_available_percent=validated_tuple[3],
-            disk_free_percent=validated_tuple[4],
-            duplicate_mb=validated_tuple[5],
-            startup_count=int(validated_tuple[6]),
-            quarantined_count=int(_validate_numeric(quarantined, 0.0, 0.0, 10000.0))
+            junk_mb=metric_tuple[0],
+            suspicious_count=int(metric_tuple[1]),
+            suspicious_warnings=int(metric_tuple[2]),
+            memory_available_percent=metric_tuple[3],
+            disk_free_percent=metric_tuple[4],
+            duplicate_mb=metric_tuple[5],
+            startup_count=int(metric_tuple[6]),
+            quarantined_count=int(quarantined)
         )
         
         metric_breakdown = {}
