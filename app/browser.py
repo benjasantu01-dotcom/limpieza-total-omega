@@ -295,7 +295,12 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
         if not target.exists() or not target.is_dir() or not os.access(target, os.R_OK): return False
         if not is_safe_to_modify(target) or is_protected_path(target): return False
         if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): return False
-        if _is_system_hidden(str(target), kernel) or target.name.lower() in NEVER_TOUCH: return False
+        if _is_system_hidden(str(target), kernel): return False
+        
+        # Verificar que ningún componente de la ruta esté en NEVER_TOUCH
+        parts = [p.lower() for p in target.parts]
+        if any(part in NEVER_TOUCH for part in parts):
+            return False
         
         if any(c in target.name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target.name):
             return False

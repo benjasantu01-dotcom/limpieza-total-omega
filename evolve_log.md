@@ -1090,3 +1090,11 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T08:22:01` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se ha refactorizado la lógica de validación dentro de `validate()` y `update()` para evitar recrear diccionarios innecesariamente y reducir las llamadas a `_VALIDATOR_MAP` mediante el uso de una caché local de validadores, mejorando el rendimiento en ciclos de actualización intensivos.
 - `2026-11-06T08:22:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T08:22:01` Corrida terminada. Total usado hoy: 128.
+- `2026-11-06T08:30:17` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-11-06T08:31:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-06T08:32:30` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-11-06T08:33:14` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de la ingesta de datos en `SystemContext` agregando una validación de tipos estricta y manejando casos donde el diccionario de entrada pueda contener claves inesperadas o valores nulos, evitando `KeyError` o comportamiento impredecible.
+- `2026-11-06T08:33:52` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y concurrencia de sistema mediante el uso de `pathlib` de forma más defensiva y la centralización de la validación de seguridad, asegurando que ante cualquier fallo en la jerarquía de directorios o permisos, la app mantenga su estado operativo en lugar de lanzar excepciones no capturadas.
+- `2026-11-06T08:34:01` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se añadió una validación en `_is_target_valid` para detectar si el directorio de caché reside dentro de una carpeta marcada en `NEVER_TOUCH` (como perfiles o datos de usuario), evitando que el escáner se aventure en rutas potencialmente críticas incluso si el nombre de la carpeta final es benigno.
+- `2026-11-06T08:34:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T08:34:01` Corrida terminada. Total usado hoy: 132.

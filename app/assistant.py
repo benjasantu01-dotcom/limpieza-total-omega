@@ -470,7 +470,12 @@ class SystemContext:
             if val is None or isinstance(val, (bool, dict, list, tuple)) or callable(val):
                 return None
             valid_val = _is_valid_numeric_update(val, spec)
-            return spec.type_hint(valid_val) if valid_val is not None else None
+            if valid_val is None: return None
+            
+            # Asegurar correspondencia estricta de tipo tras la validación numérica
+            if spec.type_hint is int:
+                return int(valid_val)
+            return float(valid_val)
         except (Exception, ValueError, TypeError):
             return None
 
@@ -498,8 +503,8 @@ class SystemContext:
         try:
             if isinstance(source, dict):
                 for k in source.keys():
-                    if isinstance(k, str) and is_protected_path(k): return {}
-            
+                    if not isinstance(k, str) or is_protected_path(k): continue
+                    
             grade_raw = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
             if cleaned_grade := self._clean_grade(grade_raw):
                 updates["grade"] = cleaned_grade
@@ -515,7 +520,7 @@ class SystemContext:
         if isinstance(source, (dict, list, tuple)):
             if isinstance(source, dict):
                 for k in source.keys():
-                    if isinstance(k, str) and is_protected_path(k): return False
+                    if not isinstance(k, str) or is_protected_path(k): return False
             return not _is_input_too_deep_or_complex(source)
         return True
 
