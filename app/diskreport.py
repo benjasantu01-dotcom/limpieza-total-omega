@@ -325,8 +325,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                             stack.append(entry.path)
                         elif entry.is_file():
-                            if st.st_size >= 0:
-                                yield p, st.st_size
+                            # Asegurar que el tamaño sea un entero válido
+                            size = getattr(st, 'st_size', 0)
+                            if isinstance(size, int) and size >= 0:
+                                yield p, size
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError, ValueError):
@@ -398,14 +400,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size in walk_files(directory, skip_protected):
         # Normalización de extensión para consistencia
         ext = path.suffix.lower() or "(sin extensión)"
-        stats.register_file(size, ext)
         
-        # Mantenimiento de heap de archivos más grandes si el límite está activo
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+        # Validar tamaño antes de registrar (defensa extra ante posibles errores de stat)
+        if isinstance(size, int) and size >= 0:
+            stats.register_file(size, ext)
+            
+            # Mantenimiento de heap de archivos más grandes si el límite está activo
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

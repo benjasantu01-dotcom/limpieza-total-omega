@@ -904,3 +904,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-06T06:32:12` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-06T06:32:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T06:32:12` Corrida terminada. Total usado hoy: 84.
+- `2026-11-06T06:38:13` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-06T06:38:40` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 3% del original (posible pérdida de código)
+- `2026-11-06T06:39:14` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` y `draw_ring` ante entradas inesperadas o estados inconsistentes, añadiendo validaciones explícitas de tipo y rango para prevenir excepciones no capturadas durante la ejecución.
+- `2026-11-06T06:39:42` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-06T06:40:00` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante entradas de archivos vacías o con errores de lectura durante el escaneo, asegurando que los contadores no procesen valores inválidos y mejorando la consistencia en el manejo de excepciones.
+- `2026-11-06T06:40:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T06:40:00` Corrida terminada. Total usado hoy: 88.

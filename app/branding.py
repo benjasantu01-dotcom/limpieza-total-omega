@@ -345,7 +345,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         if destination is None: return None
         dest_path = Path(destination).resolve()
         
-        # Validaciones de seguridad y estado
+        # Validar tipo de ruta y seguridad
         if not is_safe_to_modify(dest_path):
             return None
             
@@ -435,12 +435,13 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """Renderiza indicadores circulares para representar salud del sistema."""
-    if canvas is None or percent is None or not isinstance(size, int) or not isinstance(thickness, int): return
+    if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))
-        d, t = max(20, min(2048, size)), max(2, thickness)
+        d = max(20, min(2048, int(size)))
+        t = max(2, int(thickness))
         pad = t / 2.0
-        bb: BoundingBox = (canvas_x + pad, canvas_y + pad, canvas_x + d - pad, canvas_y + d - pad)
+        bb: BoundingBox = (float(canvas_x) + pad, float(canvas_y) + pad, float(canvas_x) + d - pad, float(canvas_y) + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=t)
         if val > 0: canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=t)
     except (AttributeError, TypeError, ValueError): pass

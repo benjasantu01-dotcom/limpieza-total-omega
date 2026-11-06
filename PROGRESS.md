@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 22 | 1 | 9 | 4 | 34 |
+| 2026-11-04 | 20 | 1 | 8 | 4 | 33 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 25 | 3 | 11 | 5 | 40 |
+| 2026-11-06 | 27 | 3 | 12 | 5 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **41**
 - seguridad defensiva: **38**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **20**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
-- `diskreport.py`: **18**
-- `quarantine.py`: **17**
-- `memory.py`: **16**
 - `scanner.py`: **16**
+- `quarantine.py`: **16**
 - `browser.py`: **16**
 - `assistant.py`: **15**
+- `memory.py`: **15**
 - `safety.py`: **13**
 - `duplicates.py`: **12**
-- `branding.py`: **10**
+- `branding.py`: **11**
 - `organizer.py`: **8**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T06:40:00` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante entradas de archivos vacías o con errores de lectura durante el escaneo, asegurando que los contadores no procesen valores inválidos y mejorando la consistencia en el manejo de excepciones.
+- `2026-11-06T06:39:14` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` ante entradas inesperadas o estados inconsistentes, añadiendo validaciones explícitas de tipo y rango para prevenir excepciones no capturadas durante la ejecución.
 - `2026-11-06T05:17:15` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_read_and_parse_json` al verificar explícitamente que la ruta no sea un punto de reparse antes de abrirla, alineando la carga con las salvaguardas que ya existían en `perform_atomic_write`.
 - `2026-11-06T05:08:42` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación crítica de "propiedad de ruta" en `Scanner._is_safe_entry` y `Scanner.process_entry`, garantizando que el escáner no solo verifique la raíz inicial, sino que toda entrada procesada resida físicamente dentro del subárbol esperado, previniendo posibles ataques de *path traversal* o escalada fuera del ámbito de escaneo.
 - `2026-11-06T05:08:25` **safety.py** (seguridad defensiva): Se añadió una validación defensiva en `_validate_preconditions` para detectar si el directorio padre de la ruta objetivo es una raíz de unidad (`drive root`) o un punto de montaje, previniendo operaciones de modificación accidental en niveles críticos de la jerarquía de almacenamiento.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T04:26:50` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `OSError` durante la lectura de metadatos iniciales, previniendo errores en caso de archivos que cambian de estado o se bloquean justo al iniciar el proceso de aislamiento.
 - `2026-11-06T04:17:46` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` ante procesos que finalizan durante la iteración o cuyos handles no pueden ser cerrados correctamente, asegurando que `WindowsAPI.kernel32.CloseHandle` siempre se llame de forma segura incluso ante fallos en `GetProcessMemoryInfo`.
 - `2026-11-06T04:16:26` **healthscore.py** (robustez ante casos límite): He mejorado la robustez de `SystemMetrics.validate` ante entradas `NaN` o `inf` (que pueden ocurrir por cálculos matemáticos erróneos en otros módulos) mediante la implementación de una verificación de finitud más estricta durante el proceso de validación, garantizando que el pipeline de puntuación no colapse por valores numéricos inválidos.
-- `2026-11-06T04:07:12` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de `st_ino` en `walk_files` para manejar sistemas de archivos que no soportan inodos (como FAT32/exFAT en ciertos contextos), evitando errores inesperados en el registro de `visited_inodes` al iterar.
-- `2026-11-06T04:05:56` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante datos de entrada malformados o inesperados en `ingest` y `_apply_field`, asegurando que si una métrica falla en la validación, el proceso de carga continúe con el resto de los datos en lugar de abortar silenciosamente o dejar el estado inconsistente.
