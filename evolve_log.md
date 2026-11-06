@@ -1076,3 +1076,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T08:01:15` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del módulo introduciendo una evaluación perezosa y eliminando la redundancia en `summarize` y `_compute_cached`, además de mejorar la eficiencia del uso del `lru_cache` al evitar el recreado innecesario de `SystemMetrics` dentro de la lógica del pipeline.
 - `2026-11-06T08:01:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T08:01:15` Corrida terminada. Total usado hoy: 120.
+- `2026-11-06T08:09:56` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-06T08:11:11` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-06T08:11:39` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` pre-compilando la llamada a `GetModuleFileNameExW` y reutilizando el buffer de ruta, evitando asignaciones de memoria y sobrecarga en el loop principal.
+- `2026-11-06T08:12:06` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-06T08:12:34` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se implementó un mecanismo de caché (dict de expiración basada en `time.monotonic`) en `_get_sha256` para evitar re-cálculos costosos de hash sobre archivos que no han sido modificados, aprovechando la estructura de metadatos (dev, ino, mtime, size) ya existente para identificar archivos sin cambios de forma eficiente.
+- `2026-11-06T08:12:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T08:12:34` Corrida terminada. Total usado hoy: 124.

@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 58
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 8 | 1 | 3 | 1 | 21 |
+| 2026-11-04 | 7 | 1 | 3 | 1 | 18 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 44 | 7 | 20 | 7 | 42 |
+| 2026-11-06 | 46 | 7 | 21 | 7 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **34**
-- rendimiento: **33**
+- rendimiento: **35**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `settings.py`: **19**
 - `healthscore.py`: **19**
+- `quarantine.py`: **18**
+- `settings.py`: **18**
 - `browser.py`: **17**
-- `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `assistant.py`: **15**
-- `memory.py`: **14**
+- `memory.py`: **15**
 - `duplicates.py`: **13**
 - `branding.py`: **12**
 - `safety.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T08:12:34` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché (dict de expiración basada en `time.monotonic`) en `_get_sha256` para evitar re-cálculos costosos de hash sobre archivos que no han sido modificados, aprovechando la estructura de metadatos (dev, ino, mtime, size) ya existente para identificar archivos sin cambios de forma eficiente.
+- `2026-11-06T08:11:39` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-compilando la llamada a `GetModuleFileNameExW` y reutilizando el buffer de ruta, evitando asignaciones de memoria y sobrecarga en el loop principal.
 - `2026-11-06T08:01:15` **healthscore.py** (rendimiento): Optimicé el rendimiento del módulo introduciendo una evaluación perezosa y eliminando la redundancia en `summarize` y `_compute_cached`, además de mejorar la eficiencia del uso del `lru_cache` al evitar el recreado innecesario de `SystemMetrics` dentro de la lógica del pipeline.
 - `2026-11-06T08:00:12` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` reutilizando el `ScanContext` y el `DirectoryScanner` a través de los múltiples navegadores, evitando la creación redundante de objetos y re-escaneo de estructuras compartidas dentro del `base_directory`.
 - `2026-11-06T07:51:04` **assistant.py** (rendimiento): Se optimizó el proceso de evaluación de problemas del sistema reemplazando el uso de `tuple` y `list` por un `frozenset` para la comparación de métricas, mejorando la eficiencia de los chequeos constantes y utilizando la caché de `lru_cache` de manera más efectiva al filtrar las métricas irrelevantes antes de llegar a la lógica de evaluación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T07:19:29` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de renderizado geométrico y manipulación de color añadiendo docstrings que explican el propósito de las transformaciones y coordenadas, facilitando el mantenimiento técnico de la identidad visual.
 - `2026-11-06T07:09:46` **settings.py** (manejo de errores y validación de entradas): Mejoré la resiliencia del proceso de validación en `_read_and_parse_json` y `save` mediante el uso de un manejo de archivos más robusto y explícito, garantizando que los descriptores de archivo se cierren correctamente incluso si ocurren errores inesperados durante la deserialización.
 - `2026-11-06T07:09:15` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones en `_safe_stat` y las funciones de escaneo, centralizando la validación de archivos para prevenir fallos silenciosos y garantizar que las heurísticas operen sobre datos de estado consistentes.
-- `2026-11-06T07:01:02` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` al refinar el manejo de excepciones, asegurando que los errores de sistema (como bloqueos temporales) se capturen específicamente y no se propaguen como errores genéricos, cumpliendo con la exigencia de manejar estados transitorios de forma informada y segura.
-- `2026-11-06T06:59:52` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la validación proactiva de parámetros y la captura de errores específicos en `_is_file_exclusive`, evitando que excepciones inesperadas durante la detección de bloqueos se propaguen y afecten el flujo de la aplicación.

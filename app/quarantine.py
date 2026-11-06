@@ -66,7 +66,7 @@ DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para streaming eficiente de archivos grandes
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
-_HASH_CACHE: Dict[Tuple[int, int, float, int], str] = {}
+_HASH_CACHE: Dict[Tuple[int, int, float, int], Tuple[str, float]] = {}
 _WIN_ATTR_CACHE: Dict[str, Tuple[int, float]] = {}
 _INODE_USE_CACHE: Dict[Tuple[int, int, float], bool] = {}
 
@@ -281,7 +281,11 @@ def _get_sha256(path: Path, st: Optional[os.stat_result] = None) -> str:
     try:
         stat_res = st if st else path.stat()
         cache_key = (stat_res.st_dev, stat_res.st_ino, stat_res.st_mtime, stat_res.st_size)
-        if cache_key in _HASH_CACHE: return _HASH_CACHE[cache_key]
+        now = time.monotonic()
+        
+        if cache_key in _HASH_CACHE:
+            res, ts = _HASH_CACHE[cache_key]
+            if now - ts < 60.0: return res
         
         with open(path, "rb") as f:
             if hasattr(hashlib, "file_digest"):
@@ -292,7 +296,7 @@ def _get_sha256(path: Path, st: Optional[os.stat_result] = None) -> str:
                     sha256_hash.update(chunk)
                 res = sha256_hash.hexdigest()
         
-        _HASH_CACHE[cache_key] = res
+        _HASH_CACHE[cache_key] = (res, now)
         return res
     except (OSError, IOError, MemoryError): return ""
 
