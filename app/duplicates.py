@@ -103,7 +103,7 @@ def _safe_path_check(path: Path) -> bool:
         # Validar ruta absoluta para evitar traversal o redirecciones fuera de scope
         resolved_path = path.resolve(strict=True)
         return not is_protected_path(resolved_path) and not is_junction(path)
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, ValueError):
         return False
 
 
@@ -117,7 +117,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo de un archivo. 
     Retorna el hash hexadecimal si es accesible, o None en caso de error.
     """
-    if not isinstance(path, Path) or path in _full_hash_cache: return _full_hash_cache.get(path)
+    if path is None or not isinstance(path, Path) or path in _full_hash_cache: return _full_hash_cache.get(path)
     if not _safe_path_check(path): return None
     
     try:
@@ -137,7 +137,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     Genera un fingerprint rápido (SHA256 del encabezado) para descartar falsos positivos.
     Retorna el hash hexadecimal de los primeros N bytes, o None si el archivo es muy pequeño.
     """
-    if not isinstance(path, Path) or path in _partial_cache: return _partial_cache.get(path)
+    if path is None or not isinstance(path, Path) or path in _partial_cache: return _partial_cache.get(path)
     if not _safe_path_check(path): return None
     
     try:
@@ -210,7 +210,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hashing a una lista y agrupa rutas con colisiones detectadas."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if _safe_path_check(path):
+        if path is not None and _safe_path_check(path):
             if (d := hash_func(path)): groups[d].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
@@ -221,7 +221,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     1. Hash Parcial (rápido, 64KB) para descartar archivos distintos rápidamente.
     2. Hash Completo (SHA256) solo si las colisiones del hash parcial persisten.
     """
-    if len(paths) < 2: return {}
+    if not paths or len(paths) < 2: return {}
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
@@ -232,7 +232,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona la estrategia de hashing según tamaño: hash completo para archivos pequeños, o optimizado para grandes."""
-    if len(paths) < 2: return []
+    if not paths or len(paths) < 2: return []
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
     else:
@@ -258,7 +258,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_mtime(path: Optional[Path]) -> Optional[float]:
     """Obtiene el tiempo de última modificación validando la existencia del archivo."""
-    if not isinstance(path, Path) or not path.exists(): return None
+    if path is None or not isinstance(path, Path) or not path.exists(): return None
     try:
         return path.stat().st_mtime
     except (OSError, PermissionError):
@@ -267,7 +267,7 @@ def _get_mtime(path: Optional[Path]) -> Optional[float]:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """Sugiere conservar el archivo cuya fecha de modificación sea más remota (el más antiguo)."""
-    if not group or not group.paths: 
+    if group is None or not group.paths: 
         return None
         
     candidates = []
@@ -284,7 +284,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Transforma un objeto DuplicateGroup en un reporte legible para la interfaz."""
-    if not group or not group.paths: return []
+    if group is None or not group.paths: return []
     keeper = suggest_keeper(group)
     
     mb = round(group.size_bytes / 1048576, 2)

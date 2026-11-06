@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 55
+- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 56
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 237
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 20 | 1 | 8 | 4 | 33 |
+| 2026-11-04 | 18 | 1 | 8 | 4 | 31 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 27 | 3 | 12 | 5 | 41 |
+| 2026-11-06 | 28 | 5 | 13 | 5 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **39**
 - seguridad defensiva: **38**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
+- `settings.py`: **19**
 - `diskreport.py`: **19**
 - `healthscore.py`: **18**
-- `scanner.py`: **16**
 - `quarantine.py`: **16**
 - `browser.py`: **16**
 - `assistant.py`: **15**
 - `memory.py`: **15**
+- `scanner.py`: **15**
+- `duplicates.py`: **13**
 - `safety.py`: **13**
-- `duplicates.py`: **12**
 - `branding.py`: **11**
 - `organizer.py`: **8**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T06:48:52` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_path_check` y `hash_file` mediante la validación explícita de `None` y errores de tipo en las entradas, evitando que excepciones inesperadas rompan el flujo de procesamiento en el bucle de duplicados.
 - `2026-11-06T06:40:00` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante entradas de archivos vacías o con errores de lectura durante el escaneo, asegurando que los contadores no procesen valores inválidos y mejorando la consistencia en el manejo de excepciones.
 - `2026-11-06T06:39:14` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` ante entradas inesperadas o estados inconsistentes, añadiendo validaciones explícitas de tipo y rango para prevenir excepciones no capturadas durante la ejecución.
 - `2026-11-06T05:17:15` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_read_and_parse_json` al verificar explícitamente que la ruta no sea un punto de reparse antes de abrirla, alineando la carga con las salvaguardas que ya existían en `perform_atomic_write`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T04:36:23` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o eliminados durante la iteración al añadir un bloque `try-except` específico dentro de `process_entry`, asegurando que `entry.is_dir()` o `entry.name` no lancen excepciones inesperadas (como `FileNotFoundError`) cuando un proceso externo elimina el archivo justo después de que `os.scandir` lo haya listado.
 - `2026-11-06T04:26:50` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `OSError` durante la lectura de metadatos iniciales, previniendo errores en caso de archivos que cambian de estado o se bloquean justo al iniciar el proceso de aislamiento.
 - `2026-11-06T04:17:46` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` ante procesos que finalizan durante la iteración o cuyos handles no pueden ser cerrados correctamente, asegurando que `WindowsAPI.kernel32.CloseHandle` siempre se llame de forma segura incluso ante fallos en `GetProcessMemoryInfo`.
-- `2026-11-06T04:16:26` **healthscore.py** (robustez ante casos límite): He mejorado la robustez de `SystemMetrics.validate` ante entradas `NaN` o `inf` (que pueden ocurrir por cálculos matemáticos erróneos en otros módulos) mediante la implementación de una verificación de finitud más estricta durante el proceso de validación, garantizando que el pipeline de puntuación no colapse por valores numéricos inválidos.

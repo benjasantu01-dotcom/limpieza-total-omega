@@ -911,3 +911,63 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-06T06:40:00` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante entradas de archivos vacías o con errores de lectura durante el escaneo, asegurando que los contadores no procesen valores inválidos y mejorando la consistencia en el manejo de excepciones.
 - `2026-11-06T06:40:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T06:40:00` Corrida terminada. Total usado hoy: 88.
+- `2026-11-06T06:48:26` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-06T06:48:52` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_safe_path_check` y `hash_file` mediante la validación explícita de `None` y errores de tipo en las entradas, evitando que excepciones inesperadas rompan el flujo de procesamiento en el bucle de duplicados.
+- `2026-11-06T06:49:21` Tests FALLARON:
+```
+grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
+    
+>       return _compute_cached(metrics)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: unhashable type: 'SystemMetrics'
+
+app/healthscore.py:386: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_clean_system_scores_high - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_a_broken_system_scores_low - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_score_never_leaves_the_zero_to_hundred_range - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommendation - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_quarantined_files_are_mentioned - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_compute_score_is_pure_and_repeatable - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recommendations - TypeError: unhashable type: 'SystemMetrics'
+9 failed, 290 passed in 1.84s
+
+```
+- `2026-11-06T06:49:21` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_compute_cached` y `summarize` reemplazando el uso de índices de tupla posicionales, que son propensos a errores y difíciles de mantener, por el acceso nominal a los atributos de `SystemMetrics` para garantizar la integridad de los datos procesados.
+- `2026-11-06T06:50:24` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-06T06:50:41` Tests FALLARON:
+```
+...................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: memory.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: memory.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.63s
+
+```
+- `2026-11-06T06:50:41` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `_safe_int_conversion` y `_extract_process_info` mediante validaciones de entrada más estrictas y manejo explícito de excepciones, asegurando que valores `None` o malformados no propaguen errores hacia la lógica de diagnóstico.
+- `2026-11-06T06:50:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T06:50:41` Corrida terminada. Total usado hoy: 92.
