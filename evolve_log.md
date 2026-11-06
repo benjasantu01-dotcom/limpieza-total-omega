@@ -1145,3 +1145,59 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T09:34:12` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): el archivo se encogió al 7% del original (posible pérdida de código)
 - `2026-11-06T09:34:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T09:34:12` Corrida terminada. Total usado hoy: 156.
+- `2026-11-06T09:41:42` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-06T09:42:10` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Mejoré la seguridad en `_is_safe_entry` y `process_entry` al reforzar la validación de la jerarquía de directorios mediante `os.path.commonpath`, lo cual evita ataques de "path traversal" donde un enlace simbólico o una ruta maliciosa podrían intentar escapar del `base_root` definido, independientemente de cómo se resuelva el `normcase`.
+- `2026-11-06T09:42:41` Tests FALLARON:
+```
+     estandar = set(sys.stdlib_module_names)
+    
+        for archivo in app_modules(include_gui=True):
+            for nombre in imported_names(parse(archivo)):
+>               assert nombre in estandar or nombre in locales or nombre in permitidos_externos, (
+                    f"{archivo.name} importa '{nombre}', que no es de la librería "
+                    "estándar ni del proyecto. No se permiten dependencias nuevas."
+                )
+E               AssertionError: settings.py importa 'win32security', que no es de la librería estándar ni del proyecto. No se permiten dependencias nuevas.
+E               assert ('win32security' in {'__future__', '_abc', '_aix_support', '_ast', '_asyncio', '_bisect', ...} or 'win32security' in {'assistant', 'branding', 'browser', 'diskreport', 'duplicates', 'healthscore', ...} or 'win32security' in {'customtkinter'})
+
+evolve/tests/test_integrity.py:177: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_no_new_third_party_dependencies - AssertionError: settings.py importa 'win32security', que no es de la librería estándar ni del proyecto. No se permiten dependencias nuevas.
+assert ('win32security' in {'__future__', '_abc', '_aix_support', '_ast', '_asyncio', '_bisect', ...} or 'win32security' in {'assistant', 'branding', 'browser', 'diskreport', 'duplicates', 'healthscore', ...} or 'win32security' in {'customtkinter'})
+1 failed, 298 passed in 0.91s
+
+```
+- `2026-11-06T09:42:41` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de la lectura del archivo de configuración añadiendo una validación explícita de `st_uid` en Windows (donde `os.getuid()` no está disponible) mediante `ctypes` para asegurar que el archivo de configuración pertenezca efectivamente al propietario del proceso, previniendo riesgos de manipulación externa.
+- `2026-11-06T09:43:13` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.90s
+
+```
+- `2026-11-06T09:43:13` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva al evitar el seguimiento de enlaces simbólicos mediante `resolve(strict=False)` en los chequeos de integridad, asegurando que las rutas validadas no escapen del árbol de directorios esperado y manteniendo la consistencia con las reglas del proyecto.
+- `2026-11-06T09:43:13` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-06T09:43:13` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-06T09:43:34` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-06T09:43:34` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-06T09:44:04` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-06T09:44:04` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-06T09:44:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T09:44:04` Corrida terminada. Total usado hoy: 160.

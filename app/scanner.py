@@ -248,7 +248,10 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica recursivamente que la ruta no escape fuera de la jerarquía raíz definida."""
-        return os.path.normcase(entry_path).startswith(self.base_root_real)
+        try:
+            return os.path.commonpath([self.base_root_real, os.path.normcase(os.path.abspath(entry_path))]) == self.base_root_real
+        except (ValueError, OSError):
+            return False
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida que el nombre de archivo no contenga caracteres o patrones de evasión prohibidos."""
