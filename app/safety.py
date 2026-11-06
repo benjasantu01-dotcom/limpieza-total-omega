@@ -528,7 +528,7 @@ def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
         if kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0) == 0:
             return True
         return False
-    except (OSError, ctypes.ArgumentError): return True
+    except (OSError, AttributeError, TypeError, ctypes.ArgumentError): return True
 
 @lru_cache(maxsize=128)
 def _get_drive_type(root: str) -> int:
@@ -758,7 +758,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError) as e:
         raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 
@@ -1163,7 +1163,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     p = normalize(str(path).strip())
     
     if _is_kernel_managed(str(p)):
-        raise UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationErrorCode.PERMISSION)
 
     if os.name == 'nt' and _is_system_directory_junction(str(p)):
         raise UnsafePathError(f"Modificación denegada sobre punto de reparse: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)

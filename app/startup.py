@@ -440,6 +440,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             raw_name = row.get("Name")
             raw_cmd = row.get("Value")
             
+            # Validación robusta: asegurar que los campos existan y sean strings válidos
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
             

@@ -114,11 +114,9 @@ def _is_valid_file_path(path: PathInput) -> bool:
         return False
     try:
         path_str = str(path)
-        if not path_str or "\0" in path_str:
+        if not path_str or "\0" in path_str or len(path_str) > SCAN_LIMITS.path_length_limit:
             return False
         abs_path = os.path.abspath(path_str)
-        if len(abs_path) > SCAN_LIMITS.path_length_limit:
-            return False
         target_path = Path(abs_path)
         return target_path.exists() and not _cached_is_protected(abs_path) and target_path.is_file() and _is_safe_by_attributes(target_path)
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
@@ -130,7 +128,9 @@ def _is_readable(path: PathInput) -> bool:
         return False
     try:
         path_str = str(path)
-        if not path_str or "\0" in path_str or len(path_str) > SCAN_LIMITS.path_length_limit or _cached_is_protected(path_str):
+        if not path_str or "\0" in path_str or len(path_str) > SCAN_LIMITS.path_length_limit:
+            return False
+        if _cached_is_protected(path_str):
             return False
         return os.access(path_str, os.R_OK)
     except (OSError, PermissionError, ValueError, TypeError):
@@ -233,10 +233,6 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 class Scanner:
     """
     Controlador central para la ejecución del escaneo recursivo mediante stack.
-
-    Gestiona el estado de la sesión de escaneo, incluyendo caché de rutas procesadas
-    para evitar ciclos y redundancia, y orquesta la aplicación de todas las heurísticas
-    registradas en `ALL_CHECKS`.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -265,7 +261,6 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Realiza comprobaciones de seguridad atómicas antes de permitir la interacción con una entrada.
-        Valida integridad de nombre, reparse points y restricciones de alcance.
         """
         try:
             path_str = getattr(entry, 'path', None)
@@ -304,7 +299,6 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
         """
         Punto de entrada de procesamiento de una unidad del sistema de archivos.
-        Diferencia entre navegar directorios o aplicar heurísticas en archivos individuales.
         """
         try:
             if not self._is_safe_entry(entry):
@@ -356,7 +350,6 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Orquestador principal del escaneo recursivo mediante un stack (DFS).
-    Maneja la inicialización del escáner y la iteración segura por el árbol.
     """
     if directory is None: return []
     try:
