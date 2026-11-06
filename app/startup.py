@@ -208,10 +208,10 @@ class StartupEntry:
         Normaliza y resuelve una ruta candidateada a formato absoluto, validando 
         la existencia y accesibilidad del archivo físico en disco.
         """
-        if not isinstance(path_raw, str) or not path_raw:
+        if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw:
             return ""
         
-        if len(path_raw) > MAX_PATH_LEN or "\0" in path_raw or any(ord(c) < 32 for c in path_raw):
+        if len(path_raw) > MAX_PATH_LEN or any(ord(c) < 32 for c in path_raw):
             return ""
             
         try:
@@ -381,12 +381,13 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 def _is_valid_registry_path(path_str: str) -> bool:
     """Valida sintácticamente y resuelve una ruta obtenida del registro."""
-    if not isinstance(path_str, str) or not path_str or ("\\" not in path_str and "/" not in path_str):
+    if not isinstance(path_str, str):
         return False
-    
+        
     try:
         clean_path = path_str.strip(' "')
-        if not clean_path: return False
+        if not clean_path or "\0" in clean_path or ("\\" not in clean_path and "/" not in clean_path):
+            return False
         
         target: Path = Path(clean_path)
         if target.is_symlink(): return False

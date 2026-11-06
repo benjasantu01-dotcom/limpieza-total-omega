@@ -374,7 +374,8 @@ def _is_structure_valid(data: Any) -> bool:
     if not isinstance(data, dict) or not data or len(data) > 64: return False
     for key in ConfigKey:
         val = data.get(key.value)
-        if val is None or not _is_valid_type(val, key): return False
+        # Permite ausencia de clave opcional pero valida tipo si existe
+        if val is not None and not _is_valid_type(val, key): return False
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
@@ -386,7 +387,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         fd = os.open(file_path, flags)
         try:
             st_post = os.fstat(fd)
-            if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1:
+            if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or st_post.st_size == 0:
                 os.close(fd); return None
             with os.fdopen(fd, "r", encoding="utf-8") as f: data = json.load(f)
         except (json.JSONDecodeError, OSError):

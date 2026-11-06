@@ -263,18 +263,21 @@ class Scanner:
         Aplica filtros de seguridad pre-acceso sobre una entrada del sistema.
         Valida integridad de nombre, reparse points y límites de raíz.
         """
-        path_str = getattr(entry, 'path', None)
-        if not path_str or not isinstance(path_str, str): return False
-        
-        if path_str in self.safe_cache: return True
-        
-        if self._has_invalid_name(entry.name): return False
-        if self._is_reparse_point(entry): return False
-        if _cached_is_protected(path_str): return False
-        if not self._is_inside_base_root(path_str): return False
-        
-        self.safe_cache.add(path_str)
-        return True
+        try:
+            path_str = getattr(entry, 'path', None)
+            if not path_str or not isinstance(path_str, str): return False
+            
+            if path_str in self.safe_cache: return True
+            
+            if self._has_invalid_name(entry.name): return False
+            if self._is_reparse_point(entry): return False
+            if _cached_is_protected(path_str): return False
+            if not self._is_inside_base_root(path_str): return False
+            
+            self.safe_cache.add(path_str)
+            return True
+        except OSError:
+            return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
         """Gestiona el encolado de directorios para el recorrido, controlando la profundidad."""
@@ -301,17 +304,20 @@ class Scanner:
         Si es un directorio, delega a `_handle_directory`; si es un archivo relevante,
         ejecuta las heurísticas de seguridad sobre él.
         """
-        if not self._is_safe_entry(entry):
+        try:
+            if not self._is_safe_entry(entry):
+                return
+            
+            if entry.is_dir():
+                self._handle_directory(entry, stack, depth, visited)
+            elif self._is_relevant_extension(entry.name):
+                path_norm = os.path.normcase(entry.path)
+                if path_norm not in self.seen_normcase:
+                    self.seen_normcase.add(path_norm)
+                    # Se utiliza la ruta en cadena para evitar instanciar Path innecesariamente
+                    self._run_file_heuristics(Path(entry.path), entry)
+        except OSError:
             return
-        
-        if entry.is_dir():
-            self._handle_directory(entry, stack, depth, visited)
-        elif self._is_relevant_extension(entry.name):
-            path_norm = os.path.normcase(entry.path)
-            if path_norm not in self.seen_normcase:
-                self.seen_normcase.add(path_norm)
-                # Se utiliza la ruta en cadena para evitar instanciar Path innecesariamente
-                self._run_file_heuristics(Path(entry.path), entry)
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre un archivo identificado."""

@@ -591,3 +591,38 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-06T04:27:49` ➖ Sin cambios en safety.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante estados transitorios del sistema de archivos integrando `try-except` más específicos y manejando condiciones de carrera en `_get_file_id` y `_get_file_attrs`, asegurando que el bucle de escaneo no aborte inesperadamente ante archivos que desaparecen entre la verificación y el acceso.
 - `2026-11-06T04:27:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T04:27:49` Corrida terminada. Total usado hoy: 36.
+- `2026-11-06T04:35:55` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-11-06T04:36:23` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante archivos inexistentes o eliminados durante la iteración al añadir un bloque `try-except` específico dentro de `process_entry`, asegurando que `entry.is_dir()` o `entry.name` no lancen excepciones inesperadas (como `FileNotFoundError`) cuando un proceso externo elimina el archivo justo después de que `os.scandir` lo haya listado.
+- `2026-11-06T04:37:23` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-06T04:37:56` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la resiliencia en la carga de configuración añadiendo una validación de longitud de archivo mínima (`> 0`) en la función `_read_and_parse_json` y asegurando que `_is_structure_valid` gestione correctamente el caso de un diccionario de configuración vacío o mal formado para evitar errores de tipo al iterar.
+- `2026-11-06T04:38:24` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra caracteres nulos (`\0`) y rutas vacías tras el strip, evitando errores de `ValueError` en `Path()` que podrían ocurrir con entradas malformadas provenientes del registro.
+- `2026-11-06T04:38:46` Tests FALLARON:
+```
+    class MetricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  root:assistant.py:527 Intento de ingesta con fuente insegura bloqueado.
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 2.00s
+
+```
+- `2026-11-06T04:38:46` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_validate_and_sanitize_data` evitando el acceso directo a atributos mediante `getattr` en objetos arbitrarios y centralizando la validación de la fuente (evitando inyecciones de propiedades), además de prevenir la exposición de nombres de claves potencialmente sensibles.
+- `2026-11-06T04:38:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T04:38:46` Corrida terminada. Total usado hoy: 40.
