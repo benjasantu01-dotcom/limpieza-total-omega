@@ -633,3 +633,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-06T04:47:50` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-11-06T04:47:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T04:47:50` Corrida terminada. Total usado hoy: 44.
+- `2026-11-06T04:56:14` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-06T04:56:44` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la implementación de un decorador de validación de argumentos en el acceso al pipeline y la sanitización proactiva de claves en `_compute_cached`, evitando la inyección de datos inesperados en el proceso de cómputo.
+- `2026-11-06T04:57:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-06T04:58:27` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-06T04:58:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-06T04:58:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T04:58:39` Corrida terminada. Total usado hoy: 48.

@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 54
+- Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 231
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 34 | 1 | 10 | 5 | 60 |
+| 2026-11-04 | 34 | 1 | 10 | 5 | 56 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 20 | 2 | 9 | 5 | 8 |
+| 2026-11-06 | 21 | 2 | 10 | 5 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,13 +26,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
+- `healthscore.py`: **20**
 - `settings.py`: **20**
-- `healthscore.py`: **19**
 - `memory.py`: **17**
 - `browser.py`: **17**
 - `scanner.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T04:56:44` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de un decorador de validación de argumentos en el acceso al pipeline y la sanitización proactiva de claves en `_compute_cached`, evitando la inyección de datos inesperados en el proceso de cómputo.
 - `2026-11-06T04:47:40` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_protected_path` al procesar cada entrada de archivo (no solo directorios), garantizando que el escáner no reporte ni acceda a archivos que hayan podido ser reclasificados como protegidos dinámicamente o que infrinjan las reglas de seguridad.
 - `2026-11-06T04:47:08` **browser.py** (seguridad defensiva): Se ha añadido una validación estricta de nombres de archivo en `_is_target_valid` para prevenir que el escáner intente procesar componentes de caché que contengan caracteres sospechosos o secuencias de control potencialmente maliciosas, reforzando la seguridad defensiva contra posibles archivos malformados.
 - `2026-11-06T04:38:24` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra caracteres nulos (`\0`) y rutas vacías tras el strip, evitando errores de `ValueError` en `Path()` que podrían ocurrir con entradas malformadas provenientes del registro.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T03:56:33` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo reemplazando la creación repetitiva de objetos `Path` en el bucle principal de `Scanner.process_entry` por la manipulación directa de `os.DirEntry.path`, y mejoré el filtrado inicial al mover la comprobación de extensiones antes de cualquier operación costosa de `stat`.
 - `2026-11-06T03:45:24` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` pre-asignando el buffer de ruta y procesando los PIDs mediante un generador filtrado para reducir la carga de llamadas a la API de Windows en cada iteración del bucle principal.
 - `2026-11-06T03:36:05` **healthscore.py** (rendimiento): Optimizado el rendimiento del pipeline de puntuación eliminando la recolección redundante de datos en `summarize` mediante el uso del diccionario `result.breakdown` preexistente, y mejorando el uso de memoria en `_compute_cached` al evitar la creación de listas intermedias (`scores_by_entry`) durante el cálculo del score.
-- `2026-11-06T03:35:16` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación de miles de objetos `Path` y llamadas redundantes a `relative_to` dentro del loop, usando el string de la raíz y operaciones de búsqueda de prefijos, reduciendo el overhead de procesamiento en directorios grandes.

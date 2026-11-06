@@ -348,14 +348,14 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
     """Orquestador central del cálculo de salud mediante pipeline (cacheado)."""
     try:
         metrics = SystemMetrics(
-            junk_mb=metric_tuple[0],
-            suspicious_count=int(metric_tuple[1]),
-            suspicious_warnings=int(metric_tuple[2]),
-            memory_available_percent=metric_tuple[3],
-            disk_free_percent=metric_tuple[4],
-            duplicate_mb=metric_tuple[5],
-            startup_count=int(metric_tuple[6]),
-            quarantined_count=int(quarantined)
+            junk_mb=_validate_numeric(metric_tuple[0], 0.0, 0.0, 1e9),
+            suspicious_count=int(_validate_numeric(metric_tuple[1], 0.0, 0.0, 5000.0)),
+            suspicious_warnings=int(_validate_numeric(metric_tuple[2], 0.0, 0.0, 5000.0)),
+            memory_available_percent=_validate_numeric(metric_tuple[3], 0.0, 0.0, 100.0),
+            disk_free_percent=_validate_numeric(metric_tuple[4], 0.0, 0.0, 100.0),
+            duplicate_mb=_validate_numeric(metric_tuple[5], 0.0, 0.0, 1e9),
+            startup_count=int(_validate_numeric(metric_tuple[6], 0.0, 0.0, 1000.0)),
+            quarantined_count=int(_validate_numeric(quarantined, 0.0, 0.0, 10000.0))
         )
     except (IndexError, ValueError):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Métrica malformada."])
