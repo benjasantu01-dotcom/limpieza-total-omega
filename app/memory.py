@@ -363,13 +363,11 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     path_buf = ctypes.create_unicode_buffer(512)
-    processed_pids: Set[int] = set()
     
-    for i in range(count):
-        pid = int(pids[i])
-        if pid in processed_pids or _is_system_process(pid): continue
-        processed_pids.add(pid)
-        
+    # Procesar PIDs válidos solo una vez
+    valid_pids = (pid for pid in pids[:count] if pid > 0 and not _is_system_process(pid))
+    
+    for pid in valid_pids:
         handle = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
         if handle is None: continue
         
