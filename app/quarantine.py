@@ -724,7 +724,20 @@ def _validate_input_path(source: PathLike) -> Path:
     return p_source
 
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
-    """Aísla un archivo en cuarentena confirmando su integridad y garantizando su futura restauración."""
+    """
+    Aísla un archivo en cuarentena.
+
+    Args:
+        source: Ruta del archivo a aislar.
+        reason: Descripción del motivo de la cuarentena.
+        base: Directorio base de la cuarentena.
+
+    Returns:
+        QuarantineItem con los metadatos del archivo aislado.
+
+    Raises:
+        RuntimeError: Si ocurre un error de E/S o fallo de integridad.
+    """
     p_source: Path = _validate_input_path(source)
     try:
         initial_stat = p_source.stat()
@@ -745,7 +758,6 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     
-    # La validación TOCTOU final ocurre dentro de _atomic_isolate_file
     try:
         file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
         item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
@@ -765,7 +777,19 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un archivo verificando su integridad contra el manifiesto antes de moverlo al origen."""
+    """
+    Restaura un archivo verificando su integridad contra el manifiesto antes de moverlo al origen.
+
+    Args:
+        item_id: Identificador único del ítem.
+        base: Directorio base de la cuarentena.
+
+    Returns:
+        Path: Ruta donde el archivo fue restaurado.
+
+    Raises:
+        RuntimeError: Si la integridad falla o el archivo no existe.
+    """
     if not isinstance(item_id, str) or not item_id.strip(): raise ValueError("ID de ítem vacío.")
     try:
         base_path: Path = quarantine_dir(base)
