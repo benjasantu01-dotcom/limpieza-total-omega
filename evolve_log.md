@@ -755,3 +755,4 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T17:51:54` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T17:51:54` Corrida terminada. Total usado hoy: 350.
 - `2026-11-06T18:00:57` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-06T18:11:07` Presupuesto diario agotado (350 usados). Corte hasta mañana.
