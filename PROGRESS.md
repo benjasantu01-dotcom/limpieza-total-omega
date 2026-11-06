@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 107 | 6 | 28 | 4 | 127 |
-| 2026-11-06 | 87 | 11 | 37 | 13 | 84 |
+| 2026-11-05 | 106 | 6 | 26 | 4 | 126 |
+| 2026-11-06 | 88 | 11 | 38 | 13 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **37**
-- robustez ante casos límite: **34**
-- seguridad defensiva: **33**
+- robustez ante casos límite: **35**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **18**
-- `memory.py`: **17**
 - `browser.py`: **17**
+- `memory.py`: **16**
 - `safety.py`: **16**
 - `scanner.py`: **16**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
 - `duplicates.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **9**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T12:57:02` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_validate_and_sanitize_data` en `assistant.py` al implementar un manejo de errores más estricto y una verificación explícita contra valores `None` al procesar diccionarios, evitando posibles fallos ante entradas malformadas que intenten inyectar claves inválidas o tipos de datos inesperados en el contexto del sistema.
 - `2026-11-06T12:47:18` **safety.py** (rendimiento): Se implementó un sistema de "Short-Circuit Caching" en `_evaluate_security_rules` y `_get_file_id` para evitar múltiples llamadas costosas al sistema de archivos mediante la validación de `file_id` como clave principal, reduciendo significativamente el tiempo de CPU en iteraciones sobre directorios con muchos archivos.
 - `2026-11-06T12:46:06` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché con expiración más inteligente y evitando redundancia en la verificación de atributos nativos de Windows.
 - `2026-11-06T12:37:26` **memory.py** (rendimiento): Se ha optimizado `_iter_process_memory` pre-asignando el buffer de ruta y reutilizando los punteros de estructura para reducir la carga de asignación de memoria en cada iteración del bucle de procesos, mejorando el rendimiento en sistemas con muchos procesos activos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T11:54:38` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de Type Hints más precisos, la estandarización de docstrings (siguiendo el estilo de los módulos core) y la clarificación de la lógica en `_collect_candidates` para separar explícitamente las comprobaciones de seguridad del recorrido de directorios.
 - `2026-11-06T11:45:55` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación de tipos, facilitando la comprensión del flujo de datos en el análisis de disco.
 - `2026-11-06T11:45:45` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos y type hints detallados en `DirectoryScanner`, aclarando los mecanismos de protección contra el escape de directorios y la recursión infinita para garantizar la mantenibilidad.
-- `2026-11-06T11:45:09` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings detallados para las funciones de renderizado geométrico y tipos complejos, aclarando el propósito de los cálculos de escalado (viewbox responsive) y el flujo de los segmentos de degradado.

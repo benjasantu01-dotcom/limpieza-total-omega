@@ -507,8 +507,9 @@ class SystemContext:
                     if not isinstance(k, str) or is_protected_path(k): continue
                     
             grade_raw = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
-            if cleaned_grade := self._clean_grade(grade_raw):
-                updates["grade"] = cleaned_grade
+            if grade_raw is not None:
+                if cleaned_grade := self._clean_grade(grade_raw):
+                    updates["grade"] = cleaned_grade
         except (AttributeError, TypeError, ValueError):
             pass
             
