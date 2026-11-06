@@ -304,12 +304,9 @@ class Scanner:
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = os.path.normcase(entry.path)
         if norm_path in visited: return
-        try:
-            if not _cached_is_protected(entry.path) and self._is_inside_base_root(entry.path):
-                visited.add(norm_path)
-                stack.append((entry.path, depth + 1))
-        except (OSError, PermissionError):
-            pass
+        
+        visited.add(norm_path)
+        stack.append((entry.path, depth + 1))
 
     @lru_cache(maxsize=128)
     def _is_relevant_extension(self, name: str) -> bool:
@@ -322,17 +319,18 @@ class Scanner:
         Gestiona una entrada del sistema de archivos, decidiendo si debe ser 
         descendida (directorio) o analizada heurísticamente (archivo ejecutable/sospechoso).
         """
-        try:
-            if not self._is_safe_entry(entry):
-                return
+        if not self._is_safe_entry(entry):
+            return
             
-            if entry.is_dir():
+        try:
+            if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack, depth, visited)
-            elif self._is_relevant_extension(entry.name):
-                path_norm = os.path.normcase(entry.path)
-                if path_norm not in self.seen_normcase:
-                    self.seen_normcase.add(path_norm)
-                    self._run_file_heuristics(Path(entry.path), entry)
+            elif entry.is_file(follow_symlinks=False):
+                if self._is_relevant_extension(entry.name):
+                    path_norm = os.path.normcase(entry.path)
+                    if path_norm not in self.seen_normcase:
+                        self.seen_normcase.add(path_norm)
+                        self._run_file_heuristics(Path(entry.path), entry)
         except OSError:
             return
 

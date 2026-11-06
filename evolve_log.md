@@ -724,3 +724,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T17:11:59` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 57% del original (posible pérdida de código)
 - `2026-11-06T17:11:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T17:11:59` Corrida terminada. Total usado hoy: 336.
+- `2026-11-06T17:20:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-06T17:20:51` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el método `process_entry` y la lógica de escaneo para reducir las llamadas repetitivas al sistema de archivos mediante el uso de `os.DirEntry.is_dir()` y `os.DirEntry.is_file()`, evitando resoluciones redundantes y garantizando que las verificaciones de seguridad se realicen sobre estados ya cargados en memoria por `os.scandir`.
+- `2026-11-06T17:21:18` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._check_path_safety, _Validators._is_safe_path, _Validators._validate_enum_str
+- `2026-11-06T17:21:46` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-11-06T17:22:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez de la ingesta de datos en `SystemContext` añadiendo una validación explícita para evitar que `NaN` o valores infinitos (que pueden causar comportamientos inesperados en las operaciones lógicas de comparación) se filtren en la estructura de métricas, reforzando `_is_safe_numeric_context` y la lógica de actualización.
+- `2026-11-06T17:22:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T17:22:11` Corrida terminada. Total usado hoy: 340.

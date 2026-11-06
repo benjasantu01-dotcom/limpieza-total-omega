@@ -540,7 +540,9 @@ class SystemContext:
         """Actualiza el estado y purga caches."""
         for k, v in updates.items():
             if k in _VALID_METRIC_KEYS:
-                setattr(self, k, v)
+                # Validar de nuevo el valor antes de setearlo en el objeto
+                if _is_safe_numeric_context(v):
+                    setattr(self, k, v)
             elif k == "grade" and isinstance(v, str):
                 setattr(self, k, v)
         self.analyzed = True
