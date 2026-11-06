@@ -195,26 +195,38 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 # --- Suite de Heurísticas ---
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Marca archivos con 0 bytes que frecuentemente actúan como placeholders en infecciones."""
+    """
+    Analiza si un archivo tiene un tamaño de 0 bytes, lo cual es inusual para archivos 
+    ejecutables y puede indicar corrupción o marcadores de inyección.
+    """
     if stats is not None and getattr(stats, "st_size", -1) == 0:
         return Suspicion(path, "Archivo vacío detectado (posible marcador de relleno)", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta ofuscación de tipo de archivo mediante extensiones múltiples (ej: doc.pdf.exe)."""
+    """
+    Busca patrones de doble extensión (e.g., .pdf.exe) diseñados para engañar al usuario 
+    sobre la naturaleza real del ejecutable.
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de ofuscación", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta ejecutables que suplantan nombres de servicios del sistema fuera de las carpetas protegidas."""
+    """
+    Verifica si un ejecutable utiliza nombres de procesos críticos del sistema fuera 
+    de la carpeta System32, un patrón común en malware residente.
+    """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Analiza la frescura de ejecutables en carpetas de alto riesgo para identificar descargas no deseadas."""
+    """
+    Evalúa si un ejecutable ha sido creado recientemente en carpetas volátiles 
+    (Descargas, Temp), lo cual aumenta significativamente su perfil de riesgo.
+    """
     if path is None or path.parent is None or stats is None: 
         return None
     try:
@@ -237,6 +249,7 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 class Scanner:
     """
     Controlador central para la ejecución del escaneo recursivo mediante stack.
+    Gestiona el estado del recorrido, la prevención de ciclos y el cacheo de resultados.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -265,6 +278,7 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Realiza comprobaciones de seguridad atómicas antes de permitir la interacción con una entrada.
+        Valida integridad de nombre, atributos, permisos y límites de ámbito.
         """
         try:
             path_str = getattr(entry, 'path', None)
@@ -283,7 +297,10 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
-        """Prepara el directorio detectado para el escaneo recursivo respetando el límite de profundidad."""
+        """
+        Registra un directorio válido en el stack de procesamiento, controlando 
+        la profundidad máxima de recursión y evitando ciclos mediante un set de visitados.
+        """
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = os.path.normcase(entry.path)
         if norm_path in visited: return
@@ -302,7 +319,8 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
         """
-        Punto de entrada de procesamiento de una unidad del sistema de archivos.
+        Gestiona una entrada del sistema de archivos, decidiendo si debe ser 
+        descendida (directorio) o analizada heurísticamente (archivo ejecutable/sospechoso).
         """
         try:
             if not self._is_safe_entry(entry):
