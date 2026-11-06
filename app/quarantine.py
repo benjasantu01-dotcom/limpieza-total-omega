@@ -747,6 +747,7 @@ def _validate_input_path(source: PathLike) -> Path:
     p_source: Path = _is_path_canonical(Path(path_val))
     if path_val.startswith(r"\\") or path_val.startswith("//"): raise UnsafePathError("Rutas UNC no permitidas.")
     if len(path_val) > 260: raise UnsafePathError("Ruta de entrada excede límites.")
+    if len(p_source.parts) > 32: raise UnsafePathError("Profundidad de ruta de entrada excesiva.")
     if p_source == p_source.anchor: raise UnsafePathError("No se permite aislar la raíz de una unidad.")
     if not p_source.exists(): raise FileNotFoundError("Archivo origen no encontrado.")
     _check_for_reparse_points(p_source)

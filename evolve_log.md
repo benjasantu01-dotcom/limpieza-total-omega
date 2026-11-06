@@ -748,3 +748,9 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T17:46:43` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-11-06T17:46:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T17:46:43` Corrida terminada. Total usado hoy: 348.
+- `2026-11-06T17:50:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-06T17:51:36` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` al introducir un chequeo explícito de límite de profundidad de ruta antes de cualquier operación, garantizando que tanto la ruta de origen como la de destino se mantengan dentro de los límites de seguridad del SO antes de iniciar procesos de E/S costosos.
+- `2026-11-06T17:51:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-11-06T17:51:54` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-06T17:51:54` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T17:51:54` Corrida terminada. Total usado hoy: 350.

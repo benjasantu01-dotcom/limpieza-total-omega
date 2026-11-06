@@ -5,25 +5,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **194** (38.6% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 67
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 62 | 2 | 14 | 3 | 75 |
-| 2026-11-06 | 131 | 13 | 53 | 14 | 137 |
+| 2026-11-05 | 62 | 2 | 14 | 3 | 71 |
+| 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 - rendimiento: **35**
 - seguridad defensiva: **33**
 
@@ -31,8 +31,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **21**
 - `healthscore.py`: **20**
+- `quarantine.py`: **19**
 - `scanner.py`: **18**
-- `quarantine.py`: **18**
 - `memory.py`: **17**
 - `safety.py`: **17**
 - `assistant.py`: **14**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T17:51:36` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` al introducir un chequeo explícito de límite de profundidad de ruta antes de cualquier operación, garantizando que tanto la ruta de origen como la de destino se mantengan dentro de los límites de seguridad del SO antes de iniciar procesos de E/S costosos.
 - `2026-11-06T17:46:32` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_get_handle_for_safe_proc` y `_iter_process_memory` ante casos límite de procesos que terminan inesperadamente durante la ejecución, añadiendo una validación explícita mediante `GetExitCodeProcess` antes de intentar leer información de memoria, evitando así lecturas fallidas o errores en llamadas a la API de Windows.
 - `2026-11-06T17:41:26` **healthscore.py** (robustez ante casos límite): Mejora la robustez del motor de cálculo ante valores de entrada atípicos o maliciosos, reforzando la integridad numérica en el pipeline mediante un chequeo de finitud adicional antes de la división en los scorers y asegurando que `_clamp` maneje correctamente casos de `NaN` o `Inf` sin depender de excepciones externas.
 - `2026-11-06T17:30:54` **branding.py** (robustez ante casos límite): Se ha robustecido `save_logo_svg` y `_get_scaled_poly` ante posibles valores nulos o corruptos, asegurando que los fallos en la resolución de rutas o en los cálculos aritméticos devuelvan estados seguros en lugar de propagar excepciones hacia la interfaz.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T16:41:07` **startup.py** (legibilidad y documentación): He mejorado la documentación técnica del módulo `startup.py`, transformando comentarios genéricos en docstrings que explican el "porqué" de las decisiones de seguridad y la lógica del procesamiento, además de añadir type hints a variables internas que facilitan el mantenimiento del código.
 - `2026-11-06T16:40:22` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en las funciones de heurística y el método principal `process_entry`, clarificando el propósito, las condiciones de retorno y las expectativas de entrada para cada componente, mejorando la mantenibilidad del código sin alterar su lógica funcional.
 - `2026-11-06T16:31:24` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo `quarantine.py` documentando los parámetros y retornos de las funciones clave con docstrings consistentes y añadiendo tipos sugeridos en secciones que carecían de claridad, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
-- `2026-11-06T16:30:23` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, estandarización de docstrings (siguiendo estilo Google/NumPy) y la extracción de lógica compleja de validación en `_process_directory` a una función auxiliar para reducir el anidamiento y mejorar la claridad del flujo de trabajo.
