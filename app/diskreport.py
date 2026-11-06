@@ -75,6 +75,7 @@ def _is_reparse_point(entry: os.DirEntry) -> bool:
     """
     try:
         if os.name == 'nt':
+            # Acceso seguro a atributos de archivo; el acceso puede fallar si el archivo cambia o desaparece
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         return entry.is_symlink()
     except (AttributeError, OSError, TypeError):
@@ -289,7 +290,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
-                        st = entry.stat(follow_symlinks=False)
+                        # Captura de errores específicos al intentar obtener metadatos de entrada
+                        try:
+                            st = entry.stat(follow_symlinks=False)
+                        except OSError:
+                            continue
+
                         p = Path(entry.path)
                         
                         if skip_protected and is_protected_path(p):

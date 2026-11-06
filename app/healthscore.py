@@ -322,53 +322,63 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     """Evalúa reglas de advertencia según la métrica recibida y retorna lista de mensajes."""
     if not isinstance(rules, tuple) or not isinstance(metrics, SystemMetrics):
         return []
-    return [msg for rule in rules if rule.check(metrics, normalized_ratio) and (msg := rule.message_factory(metrics))]
+    results = []
+    for rule in rules:
+        try:
+            if rule.check(metrics, normalized_ratio):
+                msg = rule.message_factory(metrics)
+                if msg: results.append(msg)
+        except Exception:
+            continue
+    return results
 
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """Orquestador central del cálculo de salud mediante pipeline (cacheado)."""
-    # Nueva validación de seguridad de datos crudos antes de instanciar la clase
-    validated_tuple = tuple(_validate_numeric(v, 0.0, -float('inf'), float('inf')) for v in metric_tuple)
-    metrics = SystemMetrics(
-        junk_mb=validated_tuple[0],
-        suspicious_count=int(validated_tuple[1]),
-        suspicious_warnings=int(validated_tuple[2]),
-        memory_available_percent=validated_tuple[3],
-        disk_free_percent=validated_tuple[4],
-        duplicate_mb=validated_tuple[5],
-        startup_count=int(validated_tuple[6]),
-        quarantined_count=int(_validate_numeric(quarantined, 0.0, 0.0, 10000.0))
-    )
-    
-    metric_breakdown = {}
-    total_score_sum = 0.0
-    recommendations = []
-    
-    for entry in PIPELINE_DEFINITIONS:
-        ratio = entry.scorer(metrics)
-        val = int(_clamp(ratio * float(entry.weight), 0.0, float(entry.weight)))
-        metric_breakdown[entry.area] = val
-        total_score_sum += val
-        recommendations.extend(_evaluate_rules(metrics, entry.rules, ratio))
-    
-    if metrics.quarantined_count > 0 and (q_msg := _sanitize_msg("Existen elementos en cuarentena.")):
-        recommendations.append(q_msg)
+    try:
+        validated_tuple = tuple(_validate_numeric(v, 0.0, -float('inf'), float('inf')) for v in metric_tuple)
+        metrics = SystemMetrics(
+            junk_mb=validated_tuple[0],
+            suspicious_count=int(validated_tuple[1]),
+            suspicious_warnings=int(validated_tuple[2]),
+            memory_available_percent=validated_tuple[3],
+            disk_free_percent=validated_tuple[4],
+            duplicate_mb=validated_tuple[5],
+            startup_count=int(validated_tuple[6]),
+            quarantined_count=int(_validate_numeric(quarantined, 0.0, 0.0, 10000.0))
+        )
         
-    final_score = int(_clamp(total_score_sum, 0.0, 100.0))
-    
-    return HealthResult(
-        score=final_score,
-        grade=grade_for_score(final_score),
-        breakdown=metric_breakdown,
-        recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
-    )
+        metric_breakdown = {}
+        total_score_sum = 0.0
+        recommendations = []
+        
+        for entry in PIPELINE_DEFINITIONS:
+            ratio = entry.scorer(metrics)
+            val = int(_clamp(ratio * float(entry.weight), 0.0, float(entry.weight)))
+            metric_breakdown[entry.area] = val
+            total_score_sum += val
+            recommendations.extend(_evaluate_rules(metrics, entry.rules, ratio))
+        
+        if metrics.quarantined_count > 0:
+            msg = _sanitize_msg("Existen elementos en cuarentena.")
+            if msg: recommendations.append(msg)
+            
+        final_score = int(_clamp(total_score_sum, 0.0, 100.0))
+        
+        return HealthResult(
+            score=final_score,
+            grade=grade_for_score(final_score),
+            breakdown=metric_breakdown,
+            recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+        )
+    except Exception as e:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=[f"Error crítico durante el análisis: {type(e).__name__}"])
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Punto de entrada principal para el cálculo del score de salud."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
-    # Asegurar integridad antes del cache
     metrics.validate()
     return _compute_cached((
         metrics.junk_mb, float(metrics.suspicious_count), 
@@ -380,7 +390,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int, depth: int = 0) -> str:
     """Genera representación visual en texto de los puntajes con control de recursión."""
-    return "#" * points + "." * (max(1, max_val) - points) if depth <= _MAX_RECURSION_DEPTH else "..."
+    points = int(max(0, points))
+    max_val = max(1, max_val)
+    if depth > _MAX_RECURSION_DEPTH: return "..."
+    return "#" * min(points, max_val) + "." * (max_val - min(points, max_val))
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte legible a partir del resultado de salud."""
@@ -392,7 +405,7 @@ def summarize(result: HealthResult | None) -> List[str]:
         val = result.breakdown.get(entry.area, 0)
         lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
     
-    recs = [f"  - {s}" for s in result.recommendations]
+    recs = [f"  - {s}" for s in (result.recommendations or [])]
     lines.extend(("", "Recomendaciones:", *recs))
     return lines
 

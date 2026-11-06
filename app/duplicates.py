@@ -276,8 +276,9 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
         if mtime is not None:
             candidates.append((mtime, p))
     
+    # Si no pudimos obtener mtime de ninguno, devolvemos el primero disponible como respaldo
     if not candidates:
-        return group.paths[0]
+        return group.paths[0] if group.paths else None
         
     return min(candidates, key=lambda x: x[0])[1]
 
@@ -290,5 +291,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     mb = round(group.size_bytes / 1048576, 2)
     wasted = round(group.wasted_bytes / 1048576, 2)
     lines = [f"{group.count} copias de {mb} MB (recuperable: {wasted} MB)"]
-    lines.extend(f"   {'[conservar]' if p == keeper else '[duplicado]'} {p}" for p in group.paths)
+    for p in group.paths:
+        status = "[conservar]" if (keeper and p == keeper) else "[duplicado]"
+        lines.append(f"   {status} {p}")
     return lines
