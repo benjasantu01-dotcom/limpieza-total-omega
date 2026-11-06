@@ -69,17 +69,14 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
         return None
 
 
-def _is_reparse_point(entry: os.DirEntry) -> bool:
+def _is_reparse_point(stat: os.stat_result) -> bool:
     """
     Verifica si una entrada es un punto de unión o reanálisis (Windows) o enlace (Unix).
-    
-    Args:
-        entry: La entrada del directorio escaneada por os.scandir.
     """
     try:
         if os.name == 'nt':
-            return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
-        return entry.is_symlink()
+            return bool(stat.st_file_attributes & 0x400)
+        return False # is_symlink se maneja mediante el iterador de scandir
     except (AttributeError, OSError, TypeError):
         return False
 
@@ -290,17 +287,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorrido iterativo (DFS) del árbol de archivos con detección de ciclos mediante Inodes.
-    
-    Args:
-        directory: Directorio raíz donde iniciar.
-        skip_protected: Si se deben ignorar carpetas del sistema.
     """
     root_path = _validate_root(directory)
     if not root_path: return
     
-    root_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [root_str]
+    stack: List[str] = [str(root_path)]
     
     root_stat = _safe_stat(root_path)
     if root_stat and hasattr(root_stat, 'st_ino'):
@@ -311,22 +303,17 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
+                    if _is_excluded_path(entry.name):
+                        continue
                     try:
-                        if _is_excluded_path(entry.name):
-                            continue
-                        
-                        try:
-                            st = entry.stat(follow_symlinks=False)
-                        except OSError:
-                            continue
-
+                        st = entry.stat(follow_symlinks=False)
                         p = Path(entry.path)
                         
                         if skip_protected and is_protected_path(p):
                             continue
 
                         if entry.is_dir():
-                            if _is_reparse_point(entry):
+                            if _is_reparse_point(st):
                                 continue
                             if hasattr(st, 'st_ino'):
                                 inode = (st.st_dev, st.st_ino)
@@ -336,8 +323,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             stack.append(entry.path)
                         elif entry.is_file():
                             size = getattr(st, 'st_size', 0)
-                            if isinstance(size, int) and size >= 0:
-                                yield p, size
+                            yield p, size
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError, ValueError):

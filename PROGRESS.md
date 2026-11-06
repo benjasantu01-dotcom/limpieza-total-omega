@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 64
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 210
+- Rechazadas por guardia de seguridad: 63
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 116 | 6 | 29 | 4 | 129 |
-| 2026-11-06 | 82 | 11 | 35 | 11 | 81 |
+| 2026-11-05 | 114 | 6 | 28 | 4 | 128 |
+| 2026-11-06 | 83 | 11 | 35 | 12 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **37**
 - seguridad defensiva: **37**
-- rendimiento: **32**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **20**
 - `settings.py`: **19**
-- `diskreport.py`: **19**
 - `browser.py`: **18**
-- `memory.py`: **17**
 - `scanner.py`: **17**
 - `quarantine.py`: **17**
 - `healthscore.py`: **17**
 - `safety.py`: **16**
+- `memory.py`: **16**
 - `assistant.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **13**
-- `organizer.py`: **9**
 - `startup.py`: **9**
+- `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T12:26:26` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando las múltiples llamadas redundantes a `entry.stat()` y `entry.is_dir()/is_file()` por un solo `entry.stat(follow_symlinks=False)`, reduciendo drásticamente las llamadas al sistema y el tiempo total de ejecución.
 - `2026-11-06T12:16:30` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud utilizando un `frozenset` pre-calculado en `active_problems` para evitar iteraciones redundantes y mejorar el rendimiento en consultas frecuentes, aprovechando que el estado es inmutable.
 - `2026-11-06T12:16:01` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `StartupEntry` mediante la unificación de criterios de validación y la clarificación de las responsabilidades de sus métodos privados, asegurando que cada componente tenga una docstring precisa que explique el "porqué" de las restricciones de seguridad.
 - `2026-11-06T12:15:33` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de validación y gestión de caché mediante docstrings más precisos y la implementación de type hints explícitos, facilitando la comprensión del flujo de datos sin alterar la lógica de seguridad existente.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T11:35:09` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y validación de parámetros en el núcleo del escáner para evitar condiciones de carrera y fallos silenciosos al procesar entradas del sistema de archivos, asegurando que `_is_valid_file_path` y `_is_readable` operen de manera defensiva ante rutas malformadas o inaccesibles.
 - `2026-11-06T11:34:43` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_busy_or_invalid` y `_is_volume_readonly` al encapsular las llamadas a `GetVolumeInformationW` en bloques `try...except` más granulares, previniendo errores silenciosos de punteros nulos o tipos incorrectos en entornos donde las unidades pueden estar en estado transitorio.
 - `2026-11-06T11:24:35` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` mediante la adición de validaciones de tipo explícitas y chequeos preventivos de `None/empty` en la entrada, asegurando que las operaciones críticas de E/S no operen sobre rutas no resueltas o mal formadas, cumpliendo así con el enfoque de manejo de errores y validación.
-- `2026-11-06T11:24:08` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `_extract_process_info` y `trim_working_set` implementando validaciones defensivas ante tipos de datos inesperados y garantizando la limpieza de recursos (handles) ante excepciones, siguiendo el enfoque de manejo de errores y validación de entradas.
