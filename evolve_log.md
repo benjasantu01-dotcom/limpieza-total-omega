@@ -688,3 +688,32 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-06T16:51:59` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` reemplazando la conversión repetida a `str` y `Path` dentro del bucle principal por el uso directo de `entry.path`, evitando la creación innecesaria de objetos `Path` y reduciendo la sobrecarga de CPU en recorridos de directorios grandes.
 - `2026-11-06T16:51:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T16:51:59` Corrida terminada. Total usado hoy: 328.
+- `2026-11-06T16:59:53` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-06T17:00:18` Tests FALLARON:
+```
+pp/duplicates.py:182: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:159: SyntaxWarning: invalid escape sequence '\A'
+    de sus argumentos en líneas de comandos de registro del tipo `"C:\App\app.exe" /flag`.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+3 failed, 296 passed, 7 warnings in 0.93s
+
+```
+- `2026-11-06T17:00:18` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Optimizé la estrategia de recolección en `_collect_candidates` para realizar la verificación de archivos ocultos y de sistema de forma temprana mediante `os.scandir` (usando `entry.stat()` ya disponible) en lugar de realizar llamadas adicionales a `is_system_or_hidden` que invoca `GetFileAttributesW` por cada archivo.
+- `2026-11-06T17:00:46` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se ha optimizado el rendimiento de `healthscore.py` eliminando el cálculo redundante de `PipelineEntry.rules` mediante la conversión de la estructura de búsqueda a un diccionario pre-procesado, evitando así la reconstrucción constante de tuplas y la búsqueda lineal dentro del bucle de orquestación.
+- `2026-11-06T17:01:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-06T17:02:03` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de métricas reduciendo el uso de `ctypes.create_unicode_buffer` (costoso) al reutilizar un único búfer prealocado en la iteración, y se reemplazó la creación dinámica de listas de PIDs por un generador eficiente para evitar iterar dos veces sobre los resultados del sistema.
+- `2026-11-06T17:02:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T17:02:03` Corrida terminada. Total usado hoy: 332.

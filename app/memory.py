@@ -378,25 +378,19 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     exit_code = wintypes.DWORD()
     
-    valid_pids = (pid for pid in pids[:count] if pid > 0 and not _is_system_process(pid))
-    
-    for pid in valid_pids:
+    for pid in (p for p in pids[:count] if p > 0 and not _is_system_process(p)):
         handle = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
         if handle is None: continue
         
         try:
-            # Re-verificar estado para minimizar race-conditions
             if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
                 continue
                 
             if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
                 ws = pmc.WorkingSetSize
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
-                    name_from_buf = str(path_buf.value).split('\\')[-1]
-                    yield ProcessMemory(name_from_buf, pid, BytesValue(ws))
-        except (ctypes.WinError, OSError):
-            # Error al intentar obtener contadores, salteamos el proceso
-            pass
+                    name = str(path_buf.value).split('\\')[-1]
+                    yield ProcessMemory(name, pid, BytesValue(ws))
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 

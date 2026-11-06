@@ -217,12 +217,12 @@ _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
 }
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.safe_get("suspicious_count"), m.safe_get("suspicious_warnings")), _RULES.get("seguridad", ())),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.safe_get("disk_free_percent")), _RULES.get("disco", ())),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.safe_get("memory_available_percent")), _RULES.get("memoria", ())),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.safe_get("junk_mb")), _RULES.get("basura", ())),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.safe_get("duplicate_mb")), _RULES.get("duplicados", ())),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.safe_get("startup_count")), _RULES.get("arranque", ())),
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.safe_get("suspicious_count"), m.safe_get("suspicious_warnings")), _RULES["seguridad"]),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.safe_get("disk_free_percent")), _RULES["disco"]),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.safe_get("memory_available_percent")), _RULES["memoria"]),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.safe_get("junk_mb")), _RULES["basura"]),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.safe_get("duplicate_mb")), _RULES["duplicados"]),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.safe_get("startup_count")), _RULES["arranque"]),
 )
 
 _verify_pipeline_integrity(WEIGHTS, PIPELINE_DEFINITIONS)

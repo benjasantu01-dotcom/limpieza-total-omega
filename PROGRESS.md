@@ -7,36 +7,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 16
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 69 | 4 | 17 | 3 | 83 |
-| 2026-11-06 | 123 | 12 | 48 | 14 | 131 |
+| 2026-11-05 | 67 | 4 | 16 | 3 | 82 |
+| 2026-11-06 | 125 | 13 | 49 | 14 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **34**
-- rendimiento: **31**
+- rendimiento: **33**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `healthscore.py`: **19**
-- `safety.py`: **18**
+- `healthscore.py`: **20**
 - `quarantine.py`: **18**
+- `safety.py`: **17**
 - `scanner.py`: **17**
-- `settings.py`: **16**
+- `memory.py`: **16**
 - `browser.py`: **15**
-- `memory.py`: **15**
+- `settings.py`: **15**
 - `assistant.py`: **14**
 - `duplicates.py`: **11**
 - `branding.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T17:02:03` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas reduciendo el uso de `ctypes.create_unicode_buffer` (costoso) al reutilizar un único búfer prealocado en la iteración, y se reemplazó la creación dinámica de listas de PIDs por un generador eficiente para evitar iterar dos veces sobre los resultados del sistema.
+- `2026-11-06T17:00:46` **healthscore.py** (rendimiento): Se ha optimizado el rendimiento de `healthscore.py` eliminando el cálculo redundante de `PipelineEntry.rules` mediante la conversión de la estructura de búsqueda a un diccionario pre-procesado, evitando así la reconstrucción constante de tuplas y la búsqueda lineal dentro del bucle de orquestación.
 - `2026-11-06T16:51:59` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la conversión repetida a `str` y `Path` dentro del bucle principal por el uso directo de `entry.path`, evitando la creación innecesaria de objetos `Path` y reduciendo la sobrecarga de CPU en recorridos de directorios grandes.
 - `2026-11-06T16:50:57` **branding.py** (rendimiento): Se optimizó `_draw_shield_stripes` eliminando el loop anidado sobre los segmentos, aprovechando el hecho de que `get_gradient_segments` ya pre-calcula los rangos de índices, evitando re-iterar innecesariamente sobre estructuras de datos.
 - `2026-11-06T16:50:25` **assistant.py** (rendimiento): Optimizé `_evaluate_active_problems` eliminando el uso de `tuple` y `list` redundantes dentro del bucle de comparación, utilizando generadores para reducir la presión sobre la memoria durante el procesamiento de métricas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T16:11:14` **browser.py** (legibilidad y documentación): Mejora la legibilidad del motor de escaneo mediante la refactorización de `DirectoryScanner._process_entry` para separar claramente la lógica de navegación (directorios) de la de recolección (archivos), facilitando el mantenimiento y garantizando la claridad en las validaciones.
 - `2026-11-06T16:11:01` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna incluyendo Type Hints explícitos para las tuplas de parámetros geométricos en `_get_stripe_params`, y se han añadido docstrings detallados en las funciones de renderizado complejo para explicar la lógica de traslación y escalado de coordenadas.
 - `2026-11-06T16:10:27` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data`, extrayendo la lógica compleja de sanitización en métodos privados más específicos, clarificando el flujo de validación y añadiendo docstrings que explican las decisiones de seguridad tomadas.
-- `2026-11-06T16:02:19` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate()` y `_read_and_parse_json` añadiendo validaciones explícitas de tipos y longitud para prevenir inyecciones de datos o desbordamientos en el parseo JSON, asegurando que cualquier entrada maliciosa o corrupta sea rechazada en lugar de tratarse como un valor nulo silencioso.
-- `2026-11-06T16:02:01` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `check_recent_executable_in_downloads` para evitar fallos silenciosos ante atributos inesperados del sistema de archivos, asegurando que la heurística sea robusta frente a metadatos dañados o inaccesibles.
