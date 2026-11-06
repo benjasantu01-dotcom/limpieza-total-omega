@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 60
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 3 | 0 | 2 | 0 | 17 |
+| 2026-11-04 | 1 | 0 | 0 | 0 | 17 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 51 | 7 | 23 | 8 | 43 |
+| 2026-11-06 | 52 | 7 | 24 | 8 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **37**
-- robustez ante casos límite: **36**
-- seguridad defensiva: **34**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **19**
 - `diskreport.py`: **19**
-- `quarantine.py`: **18**
-- `healthscore.py`: **18**
-- `scanner.py`: **17**
+- `healthscore.py`: **19**
 - `browser.py`: **17**
+- `quarantine.py`: **17**
 - `assistant.py`: **16**
+- `scanner.py`: **16**
 - `memory.py`: **15**
 - `branding.py`: **13**
 - `safety.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T08:41:46` **healthscore.py** (robustez ante casos límite): Mejora la robustez del motor ante valores de entrada atípicos o maliciosos durante la deserialización de métricas en el proceso `_compute_cached` y `compute_score`, asegurando que `SystemMetrics` siempre trabaje con datos validados.
 - `2026-11-06T08:34:01` **browser.py** (robustez ante casos límite): Se añadió una validación en `_is_target_valid` para detectar si el directorio de caché reside dentro de una carpeta marcada en `NEVER_TOUCH` (como perfiles o datos de usuario), evitando que el escáner se aventure en rutas potencialmente críticas incluso si el nombre de la carpeta final es benigno.
 - `2026-11-06T08:33:52` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y concurrencia de sistema mediante el uso de `pathlib` de forma más defensiva y la centralización de la validación de seguridad, asegurando que ante cualquier fallo en la jerarquía de directorios o permisos, la app mantenga su estado operativo en lugar de lanzar excepciones no capturadas.
 - `2026-11-06T08:33:14` **assistant.py** (robustez ante casos límite): Mejoré la robustez de la ingesta de datos en `SystemContext` agregando una validación de tipos estricta y manejando casos donde el diccionario de entrada pueda contener claves inesperadas o valores nulos, evitando `KeyError` o comportamiento impredecible.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T07:40:04` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los parámetros y retornos en las funciones clave de validación y aislamiento mediante Google-style docstrings, facilitando la comprensión de la lógica de seguridad implementada.
 - `2026-11-06T07:31:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (especificando brevemente el propósito de cada función y, donde correspondía, los detalles sobre sus efectos colaterales o requerimientos de sistema) y se han añadido sugerencias de tipo más precisas para clarificar la interfaz de los `ctypes.Callbacks` usados en la manipulación de procesos.
 - `2026-11-06T07:29:37` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de funciones que carecían de ellos y se documentó el propósito de las funciones internas del pipeline para mejorar la mantenibilidad y claridad del flujo de datos sin alterar la funcionalidad.
-- `2026-11-06T07:20:47` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings detallados en funciones críticas y se ha simplificado la estructura de tipos en `_collect_candidates` para mayor claridad, manteniendo la robustez operativa requerida.

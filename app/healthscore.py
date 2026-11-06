@@ -327,15 +327,17 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
     """Orquestador central del cálculo de salud mediante pipeline (cacheado)."""
+    # Nueva validación de seguridad de datos crudos antes de instanciar la clase
+    validated_tuple = tuple(_validate_numeric(v, 0.0, -float('inf'), float('inf')) for v in metric_tuple)
     metrics = SystemMetrics(
-        junk_mb=metric_tuple[0],
-        suspicious_count=int(metric_tuple[1]),
-        suspicious_warnings=int(metric_tuple[2]),
-        memory_available_percent=metric_tuple[3],
-        disk_free_percent=metric_tuple[4],
-        duplicate_mb=metric_tuple[5],
-        startup_count=int(metric_tuple[6]),
-        quarantined_count=int(quarantined)
+        junk_mb=validated_tuple[0],
+        suspicious_count=int(validated_tuple[1]),
+        suspicious_warnings=int(validated_tuple[2]),
+        memory_available_percent=validated_tuple[3],
+        disk_free_percent=validated_tuple[4],
+        duplicate_mb=validated_tuple[5],
+        startup_count=int(validated_tuple[6]),
+        quarantined_count=int(_validate_numeric(quarantined, 0.0, 0.0, 10000.0))
     )
     
     metric_breakdown = {}
@@ -366,6 +368,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
+    # Asegurar integridad antes del cache
+    metrics.validate()
     return _compute_cached((
         metrics.junk_mb, float(metrics.suspicious_count), 
         float(metrics.suspicious_warnings), metrics.memory_available_percent,

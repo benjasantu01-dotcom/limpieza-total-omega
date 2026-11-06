@@ -1098,3 +1098,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T08:34:01` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se añadió una validación en `_is_target_valid` para detectar si el directorio de caché reside dentro de una carpeta marcada en `NEVER_TOUCH` (como perfiles o datos de usuario), evitando que el escáner se aventure en rutas potencialmente críticas incluso si el nombre de la carpeta final es benigno.
 - `2026-11-06T08:34:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T08:34:01` Corrida terminada. Total usado hoy: 132.
+- `2026-11-06T08:40:30` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-11-06T08:40:57` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-11-06T08:41:18` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-06T08:41:46` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejora la robustez del motor ante valores de entrada atípicos o maliciosos durante la deserialización de métricas en el proceso `_compute_cached` y `compute_score`, asegurando que `SystemMetrics` siempre trabaje con datos validados.
+- `2026-11-06T08:42:34` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-06T08:42:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T08:42:34` Corrida terminada. Total usado hoy: 136.
