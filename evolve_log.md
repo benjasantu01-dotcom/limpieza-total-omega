@@ -1550,3 +1550,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-11-06T13:17:45` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` agregando un manejo explícito de errores ante archivos bloqueados por el SO (sharing violation) y asegurando que las operaciones de I/O en la transferencia al sandbox sean resilientes mediante el uso del wrapper `_check_io_error_context` ya presente en el módulo.
 - `2026-11-06T13:17:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T13:17:45` Corrida terminada. Total usado hoy: 244.
+- `2026-11-06T13:25:59` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-11-06T13:26:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-06T13:27:31` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación temprana de permisos de escritura a nivel de directorio en `ensure_safe_to_modify` para evitar intentos innecesarios de acceso a archivos dentro de carpetas donde el usuario no tiene permisos, reduciendo así la carga de llamadas al sistema y mejorando la robustez frente a directorios protegidos por ACLs.
+- `2026-11-06T13:27:57` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-06T13:28:04` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: robustez ante casos límite): el archivo se encogió al 5% del original (posible pérdida de código)
+- `2026-11-06T13:28:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T13:28:04` Corrida terminada. Total usado hoy: 248.

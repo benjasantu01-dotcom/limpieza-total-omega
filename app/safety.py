@@ -1005,6 +1005,9 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
                     raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
                 if parent == Path(parent.anchor) or os.path.ismount(parent):
                     raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
+                # NUEVA VALIDACIÓN: Permiso de escritura del contenedor
+                if not os.access(parent, os.W_OK):
+                    raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         except (OSError, PermissionError):
             pass
 
@@ -1034,8 +1037,6 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         try:
             parent = target_path.parent
             if parent.exists():
-                if not os.access(parent, os.W_OK):
-                    raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
                 if os.name == 'nt' and _is_volume_readonly(guard.path_str):
                     raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationCategory.ENVIRONMENT)
         except (OSError, PermissionError):
@@ -1198,7 +1199,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     else:
         try:
             if p.parent.exists() and not os.access(p.parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
         except (OSError, PermissionError):
             pass
     
