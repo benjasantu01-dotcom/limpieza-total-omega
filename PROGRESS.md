@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 104 | 5 | 25 | 4 | 106 |
-| 2026-11-06 | 99 | 12 | 43 | 13 | 93 |
+| 2026-11-05 | 104 | 5 | 25 | 4 | 102 |
+| 2026-11-06 | 102 | 12 | 43 | 13 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **41**
+- seguridad defensiva: **38**
 - rendimiento: **37**
-- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `healthscore.py`: **20**
 - `quarantine.py`: **19**
+- `settings.py`: **18**
+- `safety.py`: **18**
 - `browser.py`: **17**
-- `settings.py`: **17**
 - `memory.py`: **17**
-- `safety.py`: **17**
-- `scanner.py`: **16**
+- `scanner.py`: **17**
 - `assistant.py`: **14**
 - `duplicates.py`: **14**
 - `branding.py`: **12**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T14:08:42` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` al implementar una validación estricta de metadatos mediante `fstat` antes de abrir el archivo, asegurando que no haya sido reemplazado por un enlace simbólico u otro tipo de archivo malicioso durante el proceso de apertura.
+- `2026-11-06T14:08:10` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_safe_stat` al añadir una comprobación explícita para evitar que `entry.stat()` resuelva enlaces simbólicos que podrían apuntar fuera de la jerarquía permitida, asegurando que solo se analicen archivos físicos reales.
+- `2026-11-06T14:07:41` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` implementando una validación de "punto de reparseo de destino" en `_validate_no_reparse_traversal`, asegurando que, además de detectar el enlace, se verifique que el destino real no escape del directorio base, evitando así el *link traversal* malintencionado.
 - `2026-11-06T13:58:15` **quarantine.py** (seguridad defensiva): Mejoré `quarantine_dir` y `_safe_unlink` implementando un chequeo explícito de la naturaleza del directorio base usando `path.resolve()` antes de realizar operaciones de creación o sincronización, lo que evita vulnerabilidades por rutas ambiguas o enlaces no previstos durante la inicialización del sandbox.
 - `2026-11-06T13:57:29` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de E/S en `organizer.py` mediante la implementación de `os.replace` (atómico) en lugar de `shutil.move` para evitar inconsistencias durante el movimiento, y se añadió una validación explícita de `is_safe_to_modify` antes de la ejecución de `item.unlink()` en el proceso de borrado, asegurando que el flujo de control se mantenga dentro de las garantías del sistema de seguridad.
 - `2026-11-06T13:47:52` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del módulo añadiendo una comprobación de tipo estricta (`isinstance(msg, str)`) y una verificación de finitud numérica adicional dentro del pipeline de recomendaciones para evitar que valores NaN o infinitos propaguen estados de error hacia la interfaz.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T13:07:22` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `_render_bar` ante entradas mal formadas y casos límite, asegurando que el renderizado de barras nunca genere excepciones ni retorne resultados visualmente engañosos.
 - `2026-11-06T13:06:35` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante rutas que se vuelven inaccesibles o desaparecen durante el recorrido (casos de concurrencia o archivos temporales), asegurando que los fallos en la obtención de atributos de archivo no interrumpan el escaneo ni propaguen excepciones inesperadas.
 - `2026-11-06T12:57:02` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_validate_and_sanitize_data` en `assistant.py` al implementar un manejo de errores más estricto y una verificación explícita contra valores `None` al procesar diccionarios, evitando posibles fallos ante entradas malformadas que intenten inyectar claves inválidas o tipos de datos inesperados en el contexto del sistema.
-- `2026-11-06T12:47:18` **safety.py** (rendimiento): Se implementó un sistema de "Short-Circuit Caching" en `_evaluate_security_rules` y `_get_file_id` para evitar múltiples llamadas costosas al sistema de archivos mediante la validación de `file_id` como clave principal, reduciendo significativamente el tiempo de CPU en iteraciones sobre directorios con muchos archivos.
-- `2026-11-06T12:46:06` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché con expiración más inteligente y evitando redundancia en la verificación de atributos nativos de Windows.
-- `2026-11-06T12:37:26` **memory.py** (rendimiento): Se ha optimizado `_iter_process_memory` pre-asignando el buffer de ruta y reutilizando los punteros de estructura para reducir la carga de asignación de memoria en cada iteración del bucle de procesos, mejorando el rendimiento en sistemas con muchos procesos activos.

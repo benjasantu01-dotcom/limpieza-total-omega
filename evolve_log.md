@@ -416,3 +416,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-06T13:58:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-06T13:58:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T13:58:18` Corrida terminada. Total usado hoy: 260.
+- `2026-11-06T14:06:43` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-06T14:07:41` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `safety.py` implementando una validación de "punto de reparseo de destino" en `_validate_no_reparse_traversal`, asegurando que, además de detectar el enlace, se verifique que el destino real no escape del directorio base, evitando así el *link traversal* malintencionado.
+- `2026-11-06T14:08:10` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `_safe_stat` al añadir una comprobación explícita para evitar que `entry.stat()` resuelva enlaces simbólicos que podrían apuntar fuera de la jerarquía permitida, asegurando que solo se analicen archivos físicos reales.
+- `2026-11-06T14:08:42` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_read_and_parse_json` al implementar una validación estricta de metadatos mediante `fstat` antes de abrir el archivo, asegurando que no haya sido reemplazado por un enlace simbólico u otro tipo de archivo malicioso durante el proceso de apertura.
+- `2026-11-06T14:08:55` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-11-06T14:08:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T14:08:55` Corrida terminada. Total usado hoy: 264.

@@ -157,7 +157,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Obtiene metadatos asegurando que el archivo no esté en uso (vía winerror) 
-    y que sea una entidad física válida en el disco.
+    y que sea una entidad física válida en el disco, evitando resolución de enlaces.
     """
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
         return None
@@ -167,7 +167,6 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         
     try:
         stats = entry.stat(follow_symlinks=False)
-        # Validación de integridad de datos básicos
         if stats.st_size < 0:
             return None
         return stats
@@ -338,7 +337,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
         return []
     try:
         if not path.is_file(): return []
-        stats = entry.stat() if entry else path.stat()
+        stats = entry.stat(follow_symlinks=False) if entry else path.stat()
     except (OSError, PermissionError):
         return []
         

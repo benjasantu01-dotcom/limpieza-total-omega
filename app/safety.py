@@ -1132,6 +1132,7 @@ def _validate_no_reparse_traversal(path: Path) -> None:
         if current.is_symlink() or _is_system_directory_junction(str(current)):
             _validate_junction_depth(current)
             target = _get_final_path_normalized(current)
+            # Verificación de destino: el destino final del enlace no debe escapar del volumen raíz o base
             if not target.is_relative_to(Path(path.anchor)):
                 raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
 
@@ -1170,7 +1171,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     guard = SafetyGuard(p)
     
     if _is_kernel_managed(guard.path_str):
-        raise UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationErrorCode.PERMISSION)
+        raise UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION)
 
     if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
         raise UnsafePathError(f"Modificación denegada sobre punto de reparse: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
@@ -1199,7 +1200,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     else:
         try:
             if p.parent.exists() and not os.access(p.parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         except (OSError, PermissionError):
             pass
     
