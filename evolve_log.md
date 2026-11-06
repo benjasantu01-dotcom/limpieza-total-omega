@@ -636,3 +636,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-06T15:40:10` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos de tipo simplistas por validaciones defensivas que garantizan la integridad de los datos antes de operar, evitando posibles estados inconsistentes.
 - `2026-11-06T15:40:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T15:40:10` Corrida terminada. Total usado hoy: 300.
+- `2026-11-06T15:48:37` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-06T15:49:46` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-06T15:50:16` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-06T15:50:42` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-06T15:51:27` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_dir` centralizando la validación de permisos y estados mediante un bloque `try-except` más específico y la verificación explícita de `is_safe_to_modify` para prevenir que rutas con atributos inusuales o bloqueadas por políticas de seguridad impidan el funcionamiento de la app.
+- `2026-11-06T15:51:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T15:51:27` Corrida terminada. Total usado hoy: 304.

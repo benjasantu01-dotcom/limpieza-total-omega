@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 88 | 4 | 20 | 4 | 88 |
-| 2026-11-06 | 106 | 12 | 43 | 13 | 126 |
+| 2026-11-05 | 84 | 4 | 20 | 4 | 88 |
+| 2026-11-06 | 107 | 12 | 44 | 13 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **38**
-- rendimiento: **37**
+- rendimiento: **36**
+- legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `healthscore.py`: **19**
-- `scanner.py`: **17**
-- `settings.py`: **17**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `browser.py`: **16**
 - `memory.py`: **16**
-- `assistant.py`: **14**
+- `scanner.py`: **16**
+- `settings.py`: **16**
+- `assistant.py`: **13**
 - `duplicates.py`: **12**
 - `branding.py`: **11**
-- `startup.py`: **9**
 - `organizer.py`: **8**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T15:51:27` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_dir` centralizando la validación de permisos y estados mediante un bloque `try-except` más específico y la verificación explícita de `is_safe_to_modify` para prevenir que rutas con atributos inusuales o bloqueadas por políticas de seguridad impidan el funcionamiento de la app.
 - `2026-11-06T15:40:10` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos de tipo simplistas por validaciones defensivas que garantizan la integridad de los datos antes de operar, evitando posibles estados inconsistentes.
 - `2026-11-06T15:39:17` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `walk_files` validando explícitamente los resultados de las funciones de entrada para evitar procesar objetos `None` o estados inconsistentes, reforzando el manejo de excepciones al leer metadatos de archivos.
 - `2026-11-06T15:38:51` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_target_valid` añadiendo validaciones preventivas de tipos y estados para evitar errores en tiempo de ejecución al manipular rutas potencialmente malformadas o inaccesibles.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T13:46:58` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_local_windows_drives` al añadir una validación estricta de la ruta antes de intentar cualquier operación de sistema, previniendo errores por rutas inexistentes o inaccesibles que podrían causar una excepción no controlada en el bucle de detección de unidades.
 - `2026-11-06T13:27:31` **safety.py** (robustez ante casos límite): Se ha añadido una validación temprana de permisos de escritura a nivel de directorio en `ensure_safe_to_modify` para evitar intentos innecesarios de acceso a archivos dentro de carpetas donde el usuario no tiene permisos, reduciendo así la carga de llamadas al sistema y mejorando la robustez frente a directorios protegidos por ACLs.
 - `2026-11-06T13:17:45` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` agregando un manejo explícito de errores ante archivos bloqueados por el SO (sharing violation) y asegurando que las operaciones de I/O en la transferencia al sandbox sean resilientes mediante el uso del wrapper `_check_io_error_context` ya presente en el módulo.
-- `2026-11-06T13:17:16` **organizer.py** (robustez ante casos límite): Se introdujo una validación estricta de la integridad de la estructura de directorios durante el escaneo para prevenir ataques de manipulación de rutas (`Symlink/Junction attack`) y se mejoró la resiliencia ante errores de permiso en `stage_for_review` asegurando que la operación solo proceda si la ruta fuente es un archivo válido y no ha cambiado desde la detección.
