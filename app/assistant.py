@@ -468,8 +468,10 @@ class SystemContext:
             else:
                 val = _get_safe_attr(source, key)
             
+            # Evitar inyecciones de estructuras complejas o tipos prohibidos
             if val is None or isinstance(val, (bool, dict, list, tuple)) or callable(val):
                 return None
+            
             valid_val = _is_valid_numeric_update(val, spec)
             if valid_val is None: return None
             
@@ -502,12 +504,13 @@ class SystemContext:
                 updates[k] = val
         
         try:
+            # Validación adicional para asegurar que las claves de dict no sean rutas
             if isinstance(source, dict):
                 for k in source.keys():
                     if not isinstance(k, str) or is_protected_path(k): continue
                     
             grade_raw = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
-            if grade_raw is not None:
+            if grade_raw is not None and not isinstance(grade_raw, (dict, list, tuple)):
                 if cleaned_grade := self._clean_grade(grade_raw):
                     updates["grade"] = cleaned_grade
         except (AttributeError, TypeError, ValueError):

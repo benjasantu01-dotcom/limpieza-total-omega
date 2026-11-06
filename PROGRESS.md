@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 94 | 4 | 22 | 4 | 88 |
-| 2026-11-06 | 102 | 12 | 43 | 13 | 122 |
+| 2026-11-05 | 91 | 4 | 21 | 4 | 88 |
+| 2026-11-06 | 103 | 12 | 43 | 13 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **41**
 - seguridad defensiva: **38**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `healthscore.py`: **19**
 - `quarantine.py`: **18**
 - `safety.py`: **18**
-- `memory.py`: **17**
+- `healthscore.py`: **18**
 - `scanner.py`: **17**
 - `settings.py`: **17**
+- `memory.py`: **16**
 - `browser.py`: **15**
-- `duplicates.py`: **13**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
+- `duplicates.py`: **12**
 - `branding.py`: **11**
 - `organizer.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T15:31:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext` agregando una validación explícita para evitar que `source.get()` retorne tipos de datos inesperados (como `dict` o `list`) durante la extracción de métricas, y aseguré que `_apply_field` devuelva `None` consistentemente ante cualquier fallo, evitando inyecciones de estructuras complejas en el estado.
 - `2026-11-06T14:08:42` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` al implementar una validación estricta de metadatos mediante `fstat` antes de abrir el archivo, asegurando que no haya sido reemplazado por un enlace simbólico u otro tipo de archivo malicioso durante el proceso de apertura.
 - `2026-11-06T14:08:10` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_safe_stat` al añadir una comprobación explícita para evitar que `entry.stat()` resuelva enlaces simbólicos que podrían apuntar fuera de la jerarquía permitida, asegurando que solo se analicen archivos físicos reales.
 - `2026-11-06T14:07:41` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` implementando una validación de "punto de reparseo de destino" en `_validate_no_reparse_traversal`, asegurando que, además de detectar el enlace, se verifique que el destino real no escape del directorio base, evitando así el *link traversal* malintencionado.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T13:16:48` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_get_process_handle` y `_iter_process_memory` ante procesos que terminan inesperadamente durante la ejecución, añadiendo una validación explícita de `handle` tras la apertura y asegurando la liberación de recursos en caso de fallos de E/S.
 - `2026-11-06T13:07:22` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `_render_bar` ante entradas mal formadas y casos límite, asegurando que el renderizado de barras nunca genere excepciones ni retorne resultados visualmente engañosos.
 - `2026-11-06T13:06:35` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante rutas que se vuelven inaccesibles o desaparecen durante el recorrido (casos de concurrencia o archivos temporales), asegurando que los fallos en la obtención de atributos de archivo no interrumpan el escaneo ni propaguen excepciones inesperadas.
-- `2026-11-06T12:57:02` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_validate_and_sanitize_data` en `assistant.py` al implementar un manejo de errores más estricto y una verificación explícita contra valores `None` al procesar diccionarios, evitando posibles fallos ante entradas malformadas que intenten inyectar claves inválidas o tipos de datos inesperados en el contexto del sistema.
