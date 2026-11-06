@@ -449,6 +449,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if handle is None:
         return False, "Acceso denegado o proceso en zona restringida."
 
+    # Validación adicional de seguridad: asegurar que el ejecutable no sea un archivo protegido
+    try:
+        p = Path(os.path.normpath(str(path_buf.value)))
+        if is_protected_path(p):
+            WindowsAPI.kernel32.CloseHandle(handle)
+            return False, "Acción bloqueada por seguridad sobre proceso protegido."
+    except Exception:
+        WindowsAPI.kernel32.CloseHandle(handle)
+        return False, "Error al validar la seguridad del proceso."
+
     try:
         process_exit_code = wintypes.DWORD()
         if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(process_exit_code)) == 0 or process_exit_code.value != STILL_ACTIVE_EXIT_CODE:

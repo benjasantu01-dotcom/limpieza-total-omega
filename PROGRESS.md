@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 60
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 0 | 0 | 0 | 0 | 6 |
+| 2026-11-04 | 0 | 0 | 0 | 0 | 2 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 58 | 7 | 25 | 10 | 48 |
+| 2026-11-06 | 59 | 7 | 26 | 10 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **37**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **19**
 - `browser.py`: **18**
 - `quarantine.py`: **18**
+- `memory.py`: **17**
 - `assistant.py`: **16**
-- `memory.py`: **16**
 - `scanner.py`: **16**
 - `safety.py`: **14**
 - `branding.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T09:24:10` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable antes de ejecutar cualquier operación de control, mitigando el riesgo de manipulaciones sobre procesos del sistema o protegidos aun cuando el handle haya sido obtenido.
 - `2026-11-06T09:13:00` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `drive_usage` implementando una validación estricta de rutas mediante `pathlib` para evitar que rutas malformadas o relativas escapen del contexto del usuario, asegurando que `resolve()` no genere errores imprevistos ante entradas inválidas.
 - `2026-11-06T09:12:46` **browser.py** (seguridad defensiva): Se reforzó `_is_target_valid` para incluir un chequeo explícito de `realpath` antes de validar la pertenencia al sandbox, evitando ataques de redirección mediante enlaces simbólicos o junctions que podrían haber eludido la validación previa.
 - `2026-11-06T09:03:19` **settings.py** (robustez ante casos límite): Mejoré la resiliencia en la carga de configuración añadiendo una comprobación explícita para evitar la desbordamiento de pila por recursión de enlaces simbólicos mediante `follow_symlinks=False` en `os.stat` y refinando la validación de archivos inexistentes o inaccesibles.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T08:21:20` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) para los resultados de `_get_file_attrs`, evitando llamadas redundantes a `kernel32.GetFileAttributesW` en bucles de escaneo intensivos mientras se mantiene la integridad de los datos, mejorando el rendimiento sin sacrificar seguridad.
 - `2026-11-06T08:12:34` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché (dict de expiración basada en `time.monotonic`) en `_get_sha256` para evitar re-cálculos costosos de hash sobre archivos que no han sido modificados, aprovechando la estructura de metadatos (dev, ino, mtime, size) ya existente para identificar archivos sin cambios de forma eficiente.
 - `2026-11-06T08:11:39` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-compilando la llamada a `GetModuleFileNameExW` y reutilizando el buffer de ruta, evitando asignaciones de memoria y sobrecarga en el loop principal.
-- `2026-11-06T08:01:15` **healthscore.py** (rendimiento): Optimicé el rendimiento del módulo introduciendo una evaluación perezosa y eliminando la redundancia en `summarize` y `_compute_cached`, además de mejorar la eficiencia del uso del `lru_cache` al evitar el recreado innecesario de `SystemMetrics` dentro de la lógica del pipeline.

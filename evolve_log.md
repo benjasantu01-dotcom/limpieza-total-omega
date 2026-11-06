@@ -1127,3 +1127,13 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T09:13:00` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `drive_usage` implementando una validación estricta de rutas mediante `pathlib` para evitar que rutas malformadas o relativas escapen del contexto del usuario, asegurando que `resolve()` no genere errores imprevistos ante entradas inválidas.
 - `2026-11-06T09:13:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T09:13:00` Corrida terminada. Total usado hoy: 148.
+- `2026-11-06T09:21:17` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-06T09:21:45` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-06T09:21:45` Gemini devolvió 500 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-06T09:21:49` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-06T09:22:10` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-06T09:22:23` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-06T09:23:43` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-06T09:24:10` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable antes de ejecutar cualquier operación de control, mitigando el riesgo de manipulaciones sobre procesos del sistema o protegidos aun cuando el handle haya sido obtenido.
+- `2026-11-06T09:24:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T09:24:10` Corrida terminada. Total usado hoy: 152.
