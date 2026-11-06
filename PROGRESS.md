@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 64
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 213
+- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 65
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 118 | 7 | 30 | 4 | 133 |
-| 2026-11-06 | 77 | 11 | 34 | 10 | 80 |
+| 2026-11-05 | 118 | 6 | 30 | 4 | 130 |
+| 2026-11-06 | 78 | 11 | 35 | 11 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **41**
 - seguridad defensiva: **37**
 - rendimiento: **31**
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **18**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
+- `safety.py`: **16**
 - `scanner.py`: **16**
-- `safety.py`: **15**
 - `assistant.py`: **13**
 - `branding.py`: **13**
 - `duplicates.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T12:06:33` **safety.py** (legibilidad y documentación): Se introdujo `SafetyGuard` como una clase de contexto (o encapsulador lógico) para centralizar la validación de estados y reducir la duplicación de código en la lógica de `ensure_safe_to_modify`, mejorando la legibilidad mediante la encapsulación de las verificaciones de estado que antes estaban dispersas en múltiples funciones.
 - `2026-11-06T11:56:31` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints de retorno y docstrings detallados en funciones críticas (como `_iter_process_memory` y `_get_handle_for_safe_proc`) para clarificar el flujo de manejo de recursos y la lógica de filtrado de seguridad.
 - `2026-11-06T11:54:38` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de Type Hints más precisos, la estandarización de docstrings (siguiendo el estilo de los módulos core) y la clarificación de la lógica en `_collect_candidates` para separar explícitamente las comprobaciones de seguridad del recorrido de directorios.
 - `2026-11-06T11:45:55` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación de tipos, facilitando la comprensión del flujo de datos en el análisis de disco.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T11:14:22` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `format_group` eliminando la suposición de que los elementos de `group.paths` siempre son accesibles, protegiendo a la interfaz de errores en tiempo de ejecución si un archivo desaparece durante el análisis.
 - `2026-11-06T11:13:57` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y las funciones de escaneo agregando una captura específica para `OSError` al intentar acceder a los atributos del archivo, garantizando que el recolector de métricas no falle ante permisos denegados o inconsistencias del sistema de archivos durante un `os.scandir`.
 - `2026-11-06T11:05:28` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` implementando un filtrado más estricto y seguro de los parámetros de entrada, asegurando que `bases` sea una secuencia válida y manejando posibles errores de resolución de rutas dentro del bucle principal mediante un bloque `try-except` más específico.
-- `2026-11-06T11:05:16` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones de acceso a metadatos (`color`, `font_size`, `icon`) mediante una validación estricta de sus entradas y un manejo de errores más explícito, asegurando que ante valores inesperados no se degrade la experiencia de usuario y se mantenga la integridad de la interfaz.
