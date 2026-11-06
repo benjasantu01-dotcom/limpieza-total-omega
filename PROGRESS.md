@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 59
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 1 | 0 | 0 | 0 | 17 |
+| 2026-11-04 | 0 | 0 | 0 | 0 | 14 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 52 | 7 | 24 | 8 | 45 |
+| 2026-11-06 | 54 | 7 | 25 | 8 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **40**
+- robustez ante casos límite: **39**
 - rendimiento: **37**
-- robustez ante casos límite: **37**
-- seguridad defensiva: **32**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **19**
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
+- `quarantine.py`: **18**
+- `settings.py`: **18**
 - `browser.py`: **17**
-- `quarantine.py`: **17**
 - `assistant.py`: **16**
+- `memory.py`: **16**
 - `scanner.py`: **16**
-- `memory.py`: **15**
 - `branding.py`: **13**
 - `safety.py`: **13**
 - `duplicates.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T08:53:24` **quarantine.py** (robustez ante casos límite): Se mejoró `_is_file_exclusive` para que, en caso de error de acceso inesperado (como un proceso bloqueando el archivo con permisos restringidos), retorne `False` de forma segura, evitando asumir que el archivo es "libre" cuando el sistema operativo deniega la consulta, mejorando la robustez ante casos límite de E/S.
+- `2026-11-06T08:51:09` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_process_executable_safe` y `_extract_process_info` mediante validaciones adicionales ante rutas malformadas o inexistentes, garantizando que el módulo maneje correctamente procesos con rutas inaccesibles o caracteres especiales sin lanzar excepciones.
 - `2026-11-06T08:41:46` **healthscore.py** (robustez ante casos límite): Mejora la robustez del motor ante valores de entrada atípicos o maliciosos durante la deserialización de métricas en el proceso `_compute_cached` y `compute_score`, asegurando que `SystemMetrics` siempre trabaje con datos validados.
 - `2026-11-06T08:34:01` **browser.py** (robustez ante casos límite): Se añadió una validación en `_is_target_valid` para detectar si el directorio de caché reside dentro de una carpeta marcada en `NEVER_TOUCH` (como perfiles o datos de usuario), evitando que el escáner se aventure en rutas potencialmente críticas incluso si el nombre de la carpeta final es benigno.
 - `2026-11-06T08:33:52` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y concurrencia de sistema mediante el uso de `pathlib` de forma más defensiva y la centralización de la validación de seguridad, asegurando que ante cualquier fallo en la jerarquía de directorios o permisos, la app mantenga su estado operativo en lugar de lanzar excepciones no capturadas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T07:51:04` **assistant.py** (rendimiento): Se optimizó el proceso de evaluación de problemas del sistema reemplazando el uso de `tuple` y `list` por un `frozenset` para la comparación de métricas, mejorando la eficiencia de los chequeos constantes y utilizando la caché de `lru_cache` de manera más efectiva al filtrar las métricas irrelevantes antes de llegar a la lógica de evaluación.
 - `2026-11-06T07:41:23` **scanner.py** (legibilidad y documentación): Se han añadido docstrings descriptivos a las funciones de heurística y métodos de `Scanner` para clarificar la lógica de negocio detrás de los filtros de seguridad, mejorando la mantenibilidad sin alterar la funcionalidad.
 - `2026-11-06T07:40:04` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los parámetros y retornos en las funciones clave de validación y aislamiento mediante Google-style docstrings, facilitando la comprensión de la lógica de seguridad implementada.
-- `2026-11-06T07:31:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (especificando brevemente el propósito de cada función y, donde correspondía, los detalles sobre sus efectos colaterales o requerimientos de sistema) y se han añadido sugerencias de tipo más precisas para clarificar la interfaz de los `ctypes.Callbacks` usados en la manipulación de procesos.
-- `2026-11-06T07:29:37` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de funciones que carecían de ellos y se documentó el propósito de las funciones internas del pipeline para mejorar la mantenibilidad y claridad del flujo de datos sin alterar la funcionalidad.

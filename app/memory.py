@@ -329,10 +329,12 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
     """Verifica que el ejecutable del proceso no se encuentre en ruta protegida."""
     if handle is None or get_mod_name_func is None: return False
     try:
-        if get_mod_name_func(handle, None, path_buffer, len(path_buffer)) <= 0:
-            return False 
-        p = Path(os.path.normpath(str(path_buffer.value)))
-        if not p.exists(): return False
+        length = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
+        if length <= 0: return False 
+        raw_path = str(path_buffer.value)
+        if not raw_path: return False
+        p = Path(os.path.normpath(raw_path))
+        if not p.is_absolute() or not p.exists(): return False
         return not is_protected_path(p)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False

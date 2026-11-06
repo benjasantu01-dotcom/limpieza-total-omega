@@ -166,7 +166,7 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
 def _is_file_exclusive(path: Path) -> bool:
     """
     Intenta abrir un archivo de forma exclusiva (ShareMode=0). 
-    Si falla, el archivo está siendo bloqueado por otro proceso del SO.
+    Si falla por bloqueo o falta de permisos, retorna False.
     """
     if path is None or not path.exists():
         return False
