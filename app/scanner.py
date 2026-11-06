@@ -95,7 +95,10 @@ def _cached_is_protected(path_str: str) -> bool:
         return True
 
 def _is_safe_by_attributes(path: Path) -> bool:
-    """Valida que el archivo no sea un reparse point (Junction/Symlink) vía syscall."""
+    """
+    Valida mediante atributos de archivo que la ruta no sea un reparse point.
+    Previene seguir enlaces simbólicos o junctions que podrían causar ciclos infinitos.
+    """
     try:
         attrs = path.stat().st_file_attributes
         return not (attrs & SCAN_LIMITS.reparse_point_mask)
@@ -103,7 +106,10 @@ def _is_safe_by_attributes(path: Path) -> bool:
         return True
 
 def _is_valid_file_path(path: PathInput) -> bool:
-    """Valida existencia, seguridad y tipo de archivo para operaciones de lectura."""
+    """
+    Valida si un path es un archivo real, no protegido y físicamente accesible.
+    Utiliza normalización estricta para evitar ataques de path traversal.
+    """
     if path is None:
         return False
     try:
@@ -119,7 +125,7 @@ def _is_valid_file_path(path: PathInput) -> bool:
         return False
 
 def _is_readable(path: PathInput) -> bool:
-    """Comprueba si el proceso tiene permisos de lectura sobre la ruta dada."""
+    """Verifica permisos de lectura a nivel de sistema operativo para el proceso actual."""
     if path is None:
         return False
     try:
@@ -131,7 +137,10 @@ def _is_readable(path: PathInput) -> bool:
         return False
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
-    """Obtiene atributos de bajo nivel de una entrada de directorio sin seguir enlaces."""
+    """
+    Obtiene atributos de Win32 sin resolver el enlace.
+    Indispensable para identificar directorios virtuales que no deben ser escaneados.
+    """
     if not isinstance(entry, os.DirEntry) or not entry.path:
         return 0
     try:
@@ -141,7 +150,10 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Obtiene metadatos de archivo de forma segura, descartando puntos de reanálisis."""
+    """
+    Obtiene metadatos asegurando que el archivo no esté en uso (vía winerror) 
+    y que sea una entidad física válida en el disco.
+    """
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
         return None
         
@@ -150,7 +162,6 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         
     try:
         stats = entry.stat(follow_symlinks=False)
-        # Validar consistencia básica: evita archivos sin enlaces o con tamaños anómalos
         if stats.st_size < 0 or stats.st_nlink == 0:
             return None
         return stats
@@ -160,7 +171,10 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
-    """Verifica que la estructura de la ruta no contenga caracteres inválidos o evasiones."""
+    """
+    Valida la integridad del string del path. Detecta intentos de evasión mediante
+    caracteres no imprimibles (RTL) o formatos de red (UNC) no soportados.
+    """
     if not isinstance(path_str, str) or not path_str.strip() or "\0" in path_str:
         return False
     try:
