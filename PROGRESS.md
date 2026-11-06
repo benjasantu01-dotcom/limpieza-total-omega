@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 67
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 104 | 5 | 25 | 4 | 110 |
-| 2026-11-06 | 97 | 12 | 42 | 13 | 92 |
+| 2026-11-05 | 104 | 5 | 25 | 4 | 106 |
+| 2026-11-06 | 99 | 12 | 43 | 13 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,13 +25,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **41**
 - rendimiento: **37**
-- seguridad defensiva: **33**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `healthscore.py`: **20**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `browser.py`: **17**
 - `settings.py`: **17**
 - `memory.py`: **17**
@@ -40,11 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **14**
 - `duplicates.py`: **14**
 - `branding.py`: **12**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T13:58:15` **quarantine.py** (seguridad defensiva): Mejoré `quarantine_dir` y `_safe_unlink` implementando un chequeo explícito de la naturaleza del directorio base usando `path.resolve()` antes de realizar operaciones de creación o sincronización, lo que evita vulnerabilidades por rutas ambiguas o enlaces no previstos durante la inicialización del sandbox.
+- `2026-11-06T13:57:29` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de E/S en `organizer.py` mediante la implementación de `os.replace` (atómico) en lugar de `shutil.move` para evitar inconsistencias durante el movimiento, y se añadió una validación explícita de `is_safe_to_modify` antes de la ejecución de `item.unlink()` en el proceso de borrado, asegurando que el flujo de control se mantenga dentro de las garantías del sistema de seguridad.
 - `2026-11-06T13:47:52` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del módulo añadiendo una comprobación de tipo estricta (`isinstance(msg, str)`) y una verificación de finitud numérica adicional dentro del pipeline de recomendaciones para evitar que valores NaN o infinitos propaguen estados de error hacia la interfaz.
 - `2026-11-06T13:47:21` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `_collect_candidates` para prevenir el seguimiento de enlaces simbólicos o puntos de reanálisis durante el recorrido del árbol, asegurando que `is_safe_to_modify` y `is_protected_path` actúen siempre como filtros de barrera antes de cualquier acceso a metadatos.
 - `2026-11-06T13:46:58` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_local_windows_drives` al añadir una validación estricta de la ruta antes de intentar cualquier operación de sistema, previniendo errores por rutas inexistentes o inaccesibles que podrían causar una excepción no controlada en el bucle de detección de unidades.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T12:47:18` **safety.py** (rendimiento): Se implementó un sistema de "Short-Circuit Caching" en `_evaluate_security_rules` y `_get_file_id` para evitar múltiples llamadas costosas al sistema de archivos mediante la validación de `file_id` como clave principal, reduciendo significativamente el tiempo de CPU en iteraciones sobre directorios con muchos archivos.
 - `2026-11-06T12:46:06` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché con expiración más inteligente y evitando redundancia en la verificación de atributos nativos de Windows.
 - `2026-11-06T12:37:26` **memory.py** (rendimiento): Se ha optimizado `_iter_process_memory` pre-asignando el buffer de ruta y reutilizando los punteros de estructura para reducir la carga de asignación de memoria en cada iteración del bucle de procesos, mejorando el rendimiento en sistemas con muchos procesos activos.
-- `2026-11-06T12:35:35` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo reemplazando la creación dinámica de listas y el uso de `getattr` en el bucle principal de `_compute_cached` por una tupla inmutable de accesos directos, reduciendo la sobrecarga de resolución de atributos y la gestión de memoria durante el re-cálculo de métricas.
-- `2026-11-06T12:26:26` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando las múltiples llamadas redundantes a `entry.stat()` y `entry.is_dir()/is_file()` por un solo `entry.stat(follow_symlinks=False)`, reduciendo drásticamente las llamadas al sistema y el tiempo total de ejecución.

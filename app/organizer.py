@@ -365,9 +365,9 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             
             target_path = _can_move_file(junk_file, dest_base)
             if target_path and junk_file.path.exists(): 
-                shutil.move(str(junk_file.path), str(target_path))
+                os.replace(str(junk_file.path), str(target_path))
         return dest_base
-    except (OSError, shutil.Error, PermissionError) as e:
+    except (OSError, PermissionError) as e:
         logger.error(f"Falla en stage_for_review: {e}")
         return None
 

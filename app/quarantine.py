@@ -345,7 +345,8 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         _check_io_error_context(path.unlink)
         if parent.exists():
             try:
-                fd = os.open(str(parent), os.O_RDONLY)
+                parent_abs = _is_path_canonical(parent)
+                fd = os.open(str(parent_abs), os.O_RDONLY)
                 try: os.fsync(fd)
                 finally: os.close(fd)
             except (OSError, PermissionError): pass
@@ -407,16 +408,18 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if not path.name.strip() or path == path.parent: raise UnsafePathError("Ruta de cuarentena inválida: raíz o vacía.")
         _check_path_for_junctions(path)
         if is_protected_path(path): raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
-        if path.exists():
-            if not path.is_dir(): raise UnsafePathError("Ruta de cuarentena apunta a un archivo existente.")
-            if not os.access(path, os.W_OK | os.R_OK): raise PermissionError("Directorio inaccesible para operaciones de I/O.")
-            if not is_safe_to_modify(path): raise UnsafePathError("Ruta de cuarentena marcada como insegura.")
-            if _is_filesystem_read_only(path): raise PermissionError("Permisos insuficientes en directorio.")
+        
+        path_resolved = path.resolve()
+        if path_resolved.exists():
+            if not path_resolved.is_dir(): raise UnsafePathError("Ruta de cuarentena apunta a un archivo existente.")
+            if not os.access(path_resolved, os.W_OK | os.R_OK): raise PermissionError("Directorio inaccesible para operaciones de I/O.")
+            if not is_safe_to_modify(path_resolved): raise UnsafePathError("Ruta de cuarentena marcada como insegura.")
+            if _is_filesystem_read_only(path_resolved): raise PermissionError("Permisos insuficientes en directorio.")
         else:
-            _check_io_error_context(path.mkdir, parents=True, exist_ok=True)
-            if not path.exists() or not path.is_dir(): raise OSError("Fallo al asegurar directorio de cuarentena.")
-        _ensure_path_ownership(path)
-        return path
+            _check_io_error_context(path_resolved.mkdir, parents=True, exist_ok=True)
+            if not path_resolved.exists() or not path_resolved.is_dir(): raise OSError("Fallo al asegurar directorio de cuarentena.")
+        _ensure_path_ownership(path_resolved)
+        return path_resolved
     except (OSError, RuntimeError, UnsafePathError, PermissionError) as e:
         raise OSError(f"Error al preparar directorio de cuarentena: {e}")
 
@@ -649,7 +652,8 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
         if dest_path.exists(): raise FileExistsError("Colisión de ruta antes del reemplazo.")
         os.replace(temp_dest, dest_path)
         try:
-            fd = os.open(str(dest_path.parent), os.O_RDONLY)
+            parent_abs = _is_path_canonical(dest_path.parent)
+            fd = os.open(str(parent_abs), os.O_RDONLY)
             try: os.fsync(fd)
             finally: os.close(fd)
         except OSError: pass
@@ -830,7 +834,8 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         for p in [parent, base_path]:
             if p and p.exists():
                 try:
-                    fd = os.open(str(p), os.O_RDONLY)
+                    p_abs = _is_path_canonical(p)
+                    fd = os.open(str(p_abs), os.O_RDONLY)
                     try: os.fsync(fd)
                     finally: os.close(fd)
                 except (OSError, PermissionError): pass
@@ -901,7 +906,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             new_items = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
             try:
-                fd = os.open(str(root_path), os.O_RDONLY)
+                root_abs = _is_path_canonical(root_path)
+                fd = os.open(str(root_abs), os.O_RDONLY)
                 try: os.fsync(fd)
                 finally: os.close(fd)
             except (OSError, PermissionError): pass

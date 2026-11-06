@@ -409,3 +409,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-06T13:48:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-06T13:48:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T13:48:51` Corrida terminada. Total usado hoy: 256.
+- `2026-11-06T13:56:32` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-06T13:57:01` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-06T13:57:29` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las operaciones de E/S en `organizer.py` mediante la implementación de `os.replace` (atómico) en lugar de `shutil.move` para evitar inconsistencias durante el movimiento, y se añadió una validación explícita de `is_safe_to_modify` antes de la ejecución de `item.unlink()` en el proceso de borrado, asegurando que el flujo de control se mantenga dentro de las garantías del sistema de seguridad.
+- `2026-11-06T13:58:15` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré `quarantine_dir` y `_safe_unlink` implementando un chequeo explícito de la naturaleza del directorio base usando `path.resolve()` antes de realizar operaciones de creación o sincronización, lo que evita vulnerabilidades por rutas ambiguas o enlaces no previstos durante la inicialización del sandbox.
+- `2026-11-06T13:58:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-06T13:58:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T13:58:18` Corrida terminada. Total usado hoy: 260.
