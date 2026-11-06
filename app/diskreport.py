@@ -354,17 +354,19 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
     root_str = str(root)
+    # Aseguramos el separador final para el split de prefijo
+    prefix = root_str if root_str.endswith(os.sep) else root_str + os.sep
     
     for path, size in walk_files(root, skip_protected):
-        try:
-            rel_path = path.relative_to(root)
-            if not rel_path.parts: continue
-            top_level = Path(root_str) / rel_path.parts[0]
-            m = stats[str(top_level)]
+        p_str = str(path)
+        if p_str.startswith(prefix):
+            # Obtener el nombre del componente inmediato dentro de la raíz
+            relative = p_str[len(prefix):]
+            top_part = relative.split(os.sep)[0]
+            top_level = os.path.join(root_str, top_part)
+            m = stats[top_level]
             m.size += size
             m.file_count += 1
-        except (ValueError, OSError, RuntimeError):
-            continue
             
     results = [FolderUsage(Path(p), m.size, m.file_count) for p, m in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)

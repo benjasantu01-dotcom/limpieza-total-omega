@@ -345,11 +345,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 @lru_cache(maxsize=128)
 def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
-    """Orquestador central del cálculo de salud mediante pipeline (cacheado).
-    
-    Toma métricas crudas, ejecuta el pipeline de scorers, combina los ratios 
-    según pesos ponderados y recolecta las advertencias generadas por el sistema.
-    """
+    """Orquestador central del cálculo de salud mediante pipeline (cacheado)."""
     try:
         metrics = SystemMetrics(
             junk_mb=metric_tuple[0],
@@ -365,25 +361,21 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Métrica malformada."])
     
     try:
-        scores_by_entry = []
-        for entry in PIPELINE_DEFINITIONS:
-            try:
-                scores_by_entry.append((entry, entry.scorer(metrics)))
-            except Exception:
-                scores_by_entry.append((entry, 0.0))
-        
-        recommendations = [
-            msg for entry, ratio in scores_by_entry for msg in _evaluate_rules(metrics, entry.rules, ratio)
-        ]
-        
         metric_breakdown = {}
         total_score_sum = 0.0
-        for entry, ratio in scores_by_entry:
-            w = float(entry.weight)
-            val = int(_clamp(ratio * w, 0.0, w))
-            metric_breakdown[entry.area] = val
-            total_score_sum += val
-                
+        recommendations = []
+        
+        for entry in PIPELINE_DEFINITIONS:
+            try:
+                ratio = entry.scorer(metrics)
+                w = float(entry.weight)
+                val = int(_clamp(ratio * w, 0.0, w))
+                metric_breakdown[entry.area] = val
+                total_score_sum += val
+                recommendations.extend(_evaluate_rules(metrics, entry.rules, ratio))
+            except Exception:
+                metric_breakdown[entry.area] = 0
+        
         if metrics.safe_get("quarantined_count") > 0:
             if q_msg := _sanitize_msg("Existen elementos en cuarentena."):
                 recommendations.append(q_msg)

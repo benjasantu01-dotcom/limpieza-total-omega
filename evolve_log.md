@@ -549,3 +549,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-06T03:26:22` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-11-06T03:26:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T03:26:22` Corrida terminada. Total usado hoy: 12.
+- `2026-11-06T03:34:48` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-06T03:35:16` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la creación de miles de objetos `Path` y llamadas redundantes a `relative_to` dentro del loop, usando el string de la raíz y operaciones de búsqueda de prefijos, reduciendo el overhead de procesamiento en directorios grandes.
+- `2026-11-06T03:35:38` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-06T03:36:05` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizado el rendimiento del pipeline de puntuación eliminando la recolección redundante de datos en `summarize` mediante el uso del diccionario `result.breakdown` preexistente, y mejorando el uso de memoria en `_compute_cached` al evitar la creación de listas intermedias (`scores_by_entry`) durante el cálculo del score.
+- `2026-11-06T03:36:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-06T03:36:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T03:36:51` Corrida terminada. Total usado hoy: 16.

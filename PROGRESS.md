@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 254
+- Sin respuesta de la IA (error o límite): 252
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 35 | 1 | 12 | 5 | 89 |
+| 2026-11-04 | 35 | 1 | 11 | 5 | 86 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 5 | 1 | 4 | 0 | 2 |
+| 2026-11-06 | 7 | 1 | 5 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **38**
+- rendimiento: **34**
 - seguridad defensiva: **32**
-- rendimiento: **32**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
+- `diskreport.py`: **18**
 - `settings.py`: **18**
-- `diskreport.py`: **17**
 - `browser.py`: **16**
 - `memory.py`: **15**
 - `assistant.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T03:36:05` **healthscore.py** (rendimiento): Optimizado el rendimiento del pipeline de puntuación eliminando la recolección redundante de datos en `summarize` mediante el uso del diccionario `result.breakdown` preexistente, y mejorando el uso de memoria en `_compute_cached` al evitar la creación de listas intermedias (`scores_by_entry`) durante el cálculo del score.
+- `2026-11-06T03:35:16` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación de miles de objetos `Path` y llamadas redundantes a `relative_to` dentro del loop, usando el string de la raíz y operaciones de búsqueda de prefijos, reduciendo el overhead de procesamiento en directorios grandes.
 - `2026-11-06T03:25:48` **assistant.py** (rendimiento): Se optimizó el proceso de inicialización y búsqueda del asistente mediante la conversión de `_TOKENS_MAP` a un sistema de búsqueda basado en `frozenset` y la simplificación de la lógica de saneamiento de entrada en `local_answer` para evitar redundancias de procesamiento.
 - `2026-11-06T03:16:02` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de bajo nivel y la lógica de escaneo mediante docstrings detallados que explican el "porqué" de las validaciones, asegurando que cualquier colaborador entienda las restricciones críticas de seguridad sin necesidad de inferirlas.
 - `2026-11-06T03:15:35` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `safety.py` integrando docstrings técnicos detallados en las funciones de validación crítica y estandarizando la nomenclatura de variables internas para reflejar su propósito según los estándares de arquitectura del proyecto.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T14:33:05` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_valid_registry_path` y `_is_registry_entry_safe` mediante la validación explícita de tipos `Path` y el manejo preventivo de excepciones `OSError` al operar sobre rutas malformadas, evitando que entradas inválidas o rutas con caracteres prohibidos inyecten fallos silenciosos en el inventario.
 - `2026-11-05T14:32:39` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate` y `_is_structure_valid` para evitar posibles errores de `KeyError` o `AttributeError` ante configuraciones que contengan claves inesperadas o valores nulos, asegurando que siempre se respete la integridad del esquema `AppSettings` incluso con archivos manipulados externamente.
 - `2026-11-05T14:31:43` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para incluir un manejo más preciso de excepciones, diferenciando entre errores de acceso transitorios (reintentables) y fallos estructurales definitivos, evitando que `UnsafePathError` se propague innecesariamente durante validaciones de rutina.
-- `2026-11-05T14:21:08` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` y el manejo de recursos garantizando que el `handle` se cierre incluso si ocurren excepciones inesperadas durante la operación de trim, además de validar explícitamente que el PID sea positivo antes de procesarlo.
-- `2026-11-05T14:11:52` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_compute_cached` y `summarize` reemplazando el uso implícito de `getattr` y acceso directo por el método `safe_get` ya existente, garantizando que el acceso a datos sea siempre validado y seguro frente a errores de estructura.
