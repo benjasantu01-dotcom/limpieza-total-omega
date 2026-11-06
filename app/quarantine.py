@@ -68,7 +68,7 @@ CHUNK_SIZE: int = 262144  # 256KB para streaming eficiente de archivos grandes
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
 _HASH_CACHE: Dict[Tuple[int, int, float, int], Tuple[str, float]] = {}
 _WIN_ATTR_CACHE: Dict[str, Tuple[int, float]] = {}
-_INODE_USE_CACHE: Dict[Tuple[int, int, float], bool] = {}
+_INODE_USE_CACHE: Dict[Tuple[int, int, float], Tuple[bool, float]] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -283,6 +283,7 @@ def _get_sha256(path: Path, st: Optional[os.stat_result] = None) -> str:
         cache_key = (stat_res.st_dev, stat_res.st_ino, stat_res.st_mtime, stat_res.st_size)
         now = time.monotonic()
         
+        # Cache de 1 minuto para evitar re-cálculos costosos en ciclos rápidos
         if cache_key in _HASH_CACHE:
             res, ts = _HASH_CACHE[cache_key]
             if now - ts < 60.0: return res
@@ -306,11 +307,16 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     try:
         st = path.stat()
         cache_key = (st.st_dev, st.st_ino, st.st_mtime)
-        if cache_key in _INODE_USE_CACHE: return _INODE_USE_CACHE[cache_key]
+        now = time.monotonic()
+        
+        # Uso de caché con TTL corto (0.5s) para minimizar syscalls en loops de escaneo
+        if cache_key in _INODE_USE_CACHE:
+            res, ts = _INODE_USE_CACHE[cache_key]
+            if now - ts < 0.5: return res
         
         in_use = (st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path))
             
-        _INODE_USE_CACHE[cache_key] = in_use
+        _INODE_USE_CACHE[cache_key] = (in_use, now)
         return in_use
     except (OSError, PermissionError):
         return True

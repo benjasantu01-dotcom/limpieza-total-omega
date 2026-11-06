@@ -1522,3 +1522,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-11-06T12:37:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-11-06T12:37:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T12:37:37` Corrida terminada. Total usado hoy: 228.
+- `2026-11-06T12:45:14` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-11-06T12:46:06` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché con expiración más inteligente y evitando redundancia en la verificación de atributos nativos de Windows.
+- `2026-11-06T12:46:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 98): unterminated string literal (detected at line 98)
+- `2026-11-06T12:47:18` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un sistema de "Short-Circuit Caching" en `_evaluate_security_rules` y `_get_file_id` para evitar múltiples llamadas costosas al sistema de archivos mediante la validación de `file_id` como clave principal, reduciendo significativamente el tiempo de CPU en iteraciones sobre directorios con muchos archivos.
+- `2026-11-06T12:47:30` ➖ Sin cambios en scanner.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento del escaneo reemplazando las múltiples llamadas a `os.path.normcase` y `os.path.abspath` dentro de `process_entry` y el bucle de `scan_directory` por un conjunto (`visited`) que almacena las rutas normalizadas, evitando el reprocesamiento de directorios y reduciendo drásticamente las llamadas al sistema.
+- `2026-11-06T12:47:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T12:47:30` Corrida terminada. Total usado hoy: 232.

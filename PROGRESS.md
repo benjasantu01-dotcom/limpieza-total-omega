@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 64
-- Sin cambios (nada sustancial que mejorar): 16
+- Rechazadas por guardia de seguridad: 65
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 111 | 6 | 28 | 4 | 127 |
-| 2026-11-06 | 85 | 11 | 36 | 12 | 84 |
+| 2026-11-05 | 107 | 6 | 28 | 4 | 127 |
+| 2026-11-06 | 87 | 11 | 37 | 13 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **37**
-- rendimiento: **35**
+- rendimiento: **37**
 - robustez ante casos límite: **34**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `browser.py`: **18**
+- `diskreport.py`: **19**
+- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **18**
 - `memory.py`: **17**
-- `quarantine.py`: **17**
+- `browser.py`: **17**
+- `safety.py`: **16**
 - `scanner.py`: **16**
-- `safety.py`: **15**
-- `assistant.py`: **14**
-- `branding.py`: **13**
+- `assistant.py`: **13**
 - `duplicates.py`: **13**
+- `branding.py`: **12**
 - `startup.py`: **9**
 - `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T12:47:18` **safety.py** (rendimiento): Se implementó un sistema de "Short-Circuit Caching" en `_evaluate_security_rules` y `_get_file_id` para evitar múltiples llamadas costosas al sistema de archivos mediante la validación de `file_id` como clave principal, reduciendo significativamente el tiempo de CPU en iteraciones sobre directorios con muchos archivos.
+- `2026-11-06T12:46:06` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché con expiración más inteligente y evitando redundancia en la verificación de atributos nativos de Windows.
 - `2026-11-06T12:37:26` **memory.py** (rendimiento): Se ha optimizado `_iter_process_memory` pre-asignando el buffer de ruta y reutilizando los punteros de estructura para reducir la carga de asignación de memoria en cada iteración del bucle de procesos, mejorando el rendimiento en sistemas con muchos procesos activos.
 - `2026-11-06T12:35:35` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo reemplazando la creación dinámica de listas y el uso de `getattr` en el bucle principal de `_compute_cached` por una tupla inmutable de accesos directos, reduciendo la sobrecarga de resolución de atributos y la gestión de memoria durante el re-cálculo de métricas.
 - `2026-11-06T12:26:26` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando las múltiples llamadas redundantes a `entry.stat()` y `entry.is_dir()/is_file()` por un solo `entry.stat(follow_symlinks=False)`, reduciendo drásticamente las llamadas al sistema y el tiempo total de ejecución.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T11:45:55` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación de tipos, facilitando la comprensión del flujo de datos en el análisis de disco.
 - `2026-11-06T11:45:45` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos y type hints detallados en `DirectoryScanner`, aclarando los mecanismos de protección contra el escape de directorios y la recursión infinita para garantizar la mantenibilidad.
 - `2026-11-06T11:45:09` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings detallados para las funciones de renderizado geométrico y tipos complejos, aclarando el propósito de los cálculos de escalado (viewbox responsive) y el flujo de los segmentos de degradado.
-- `2026-11-06T11:35:51` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que el `command` (Value) sea una cadena no vacía y contenga una ruta válida antes de procesarlo, evitando errores de tipo al intentar realizar operaciones sobre `None` o valores inesperados.
-- `2026-11-06T11:35:09` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y validación de parámetros en el núcleo del escáner para evitar condiciones de carrera y fallos silenciosos al procesar entradas del sistema de archivos, asegurando que `_is_valid_file_path` y `_is_readable` operen de manera defensiva ante rutas malformadas o inaccesibles.

@@ -34,7 +34,7 @@ FILE_ID_INFO_LEVEL: Final[int] = 18
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
-# Cachés de seguridad para optimizar el rendimiento del bucle de escaneo
+# Cachés de seguridad optimizados: el file_id es el identificador persistente del SO
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], bool]] = {}
 _NEGATIVE_SECURITY_CACHE: Final[set[tuple[int, int, int, int]]] = set()
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
@@ -143,7 +143,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     except (OSError, PermissionError, Exception):
         pass
                 
-    if len(_FILE_ID_CACHE) >= 2048: _FILE_ID_CACHE.clear()
+    if len(_FILE_ID_CACHE) >= 4096: _FILE_ID_CACHE.clear()
     _FILE_ID_CACHE[path_str] = res
     return res
 
@@ -266,7 +266,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 attrs = Win32Attr.SYSTEM
             else:
                 return INVALID_FILE_ATTRIBUTES
-        if len(_ATTR_CACHE) > 4096: _ATTR_CACHE.clear()
+        if len(_ATTR_CACHE) > 8192: _ATTR_CACHE.clear()
         _ATTR_CACHE[path_str] = (attrs, now)
         return attrs
     except (AttributeError, ctypes.ArgumentError, OSError, ValueError, Exception):
@@ -685,7 +685,7 @@ def _evaluate_security_rules(state: SafetyState) -> None:
     """Ejecuta los predicados de seguridad sobre un estado de archivo capturado."""
     if state.file_id in _NEGATIVE_SECURITY_CACHE:
         raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
-    if _SECURITY_CACHE.get(state.file_id):
+    if state.file_id in _SECURITY_CACHE:
         return
 
     for reason, predicate in _VALIDATOR_MAP.items():
