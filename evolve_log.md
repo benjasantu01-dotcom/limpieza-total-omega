@@ -1013,3 +1013,66 @@ assert not {'replace'}
 - `2026-11-06T07:51:17` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-11-06T07:51:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T07:51:17` Corrida terminada. Total usado hoy: 116.
+- `2026-11-06T07:59:45` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-06T08:00:12` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `detect_profiles` reutilizando el `ScanContext` y el `DirectoryScanner` a través de los múltiples navegadores, evitando la creación redundante de objetos y re-escaneo de estructuras compartidas dentro del `base_directory`.
+- `2026-11-06T08:00:38` Tests FALLARON:
+```
+/pytest-of-runner/pytest-2/test_walk_files_finds_everythi0')
+
+    def test_walk_files_finds_everything_recursively(tmp_path):
+        (tmp_path / "raiz.txt").write_text("12345")
+        sub = tmp_path / "sub" / "mas"
+        sub.mkdir(parents=True)
+        (sub / "hondo.txt").write_text("1234567890")
+>       encontrados = {p.name: s for p, s in diskreport.walk_files(tmp_path)}
+                       ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:568: AttributeError
+_____________________ test_walk_files_skips_system_folders _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_walk_files_skips_system_f0')
+
+    def test_walk_files_skips_system_folders(tmp_path):
+        (tmp_path / "normal.txt").write_text("x")
+        sistema = tmp_path / "Program Files"
+        sistema.mkdir()
+        (sistema / "oculto.txt").write_text("y")
+>       nombres = {p.name for p, _ in diskreport.walk_files(tmp_path)}
+                   ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:577: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'str' object has no attribute 'name'
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - AttributeError: 'str' object has no attribute 'name'
+2 failed, 297 passed in 1.29s
+
+```
+- `2026-11-06T08:00:38` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimizé la performance del escaneo consolidado (`_collect_summary_data`) eliminando la llamada repetitiva a `path.suffix` en el ciclo principal y evitando la creación de objetos `Path` innecesarios dentro de `walk_files` al procesar archivos.
+- `2026-11-06T08:01:03` Tests FALLARON:
+```
+pth + 1))
+                            elif entry.is_file(follow_symlinks=False):
+                                if skip_protected and is_protected_path(entry_path): continue
+                                stat = entry.stat(follow_symlinks=False)
+                                if stat.st_size >= min_size:
+                                    inode_id = (stat.st_dev, stat.st_ino)
+                                    if inode_id not in visited:
+                                        # Validación consolidada para evitar llamadas repetidas
+>                                       if not (stat.st_file_attributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)) and _safe_path_check(entry_path):
+                                                ^^^^^^^^^^^^^^^^^^^^^^^
+E                                       AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+
+app/duplicates.py:197: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+3 failed, 296 passed in 1.54s
+
+```
+- `2026-11-06T08:01:03` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de recolección de candidatos en `_collect_candidates` para evitar llamadas redundantes a `is_safe_to_modify` y `is_system_or_hidden`, consolidando estas validaciones en una sola pasada al obtener los atributos del archivo mediante `entry.stat()`.
+- `2026-11-06T08:01:15` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del módulo introduciendo una evaluación perezosa y eliminando la redundancia en `summarize` y `_compute_cached`, además de mejorar la eficiencia del uso del `lru_cache` al evitar el recreado innecesario de `SystemMetrics` dentro de la lógica del pipeline.
+- `2026-11-06T08:01:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T08:01:15` Corrida terminada. Total usado hoy: 120.

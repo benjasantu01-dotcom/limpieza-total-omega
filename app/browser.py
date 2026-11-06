@@ -84,13 +84,10 @@ class DirectoryScanner:
 
     def _should_stop_traversal(self, entry: os.DirEntry, depth: int) -> bool:
         """Determina si una entrada debe ser ignorada por seguridad o límites de profundidad."""
-        # Protección contra nombres de archivo maliciosos o de control
         if not entry.name or any(ord(c) < 32 for c in entry.name):
             return True
-        # Exclusión explícita de archivos críticos definidos en NEVER_TOUCH
         if entry.name.lower() in self.ctx.never_touch_lower:
             return True
-        # Límite de profundidad para prevenir el desbordamiento de pila en estructuras profundas
         if depth > self.ctx.max_depth:
             return True
         return False
@@ -105,11 +102,9 @@ class DirectoryScanner:
         
         try:
             path_obj = Path(path_str)
-            # Verificación de integridad: el archivo no debe estar en zonas protegidas
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
             
-            # Verificación de confinamiento: asegurar que la ruta sea subdirectorio del sandbox
             real_path = os.path.normcase(os.path.abspath(path_str))
             return real_path.startswith(self.ctx.sandbox_base_norm)
         except (OSError, RuntimeError, ValueError):
@@ -125,16 +120,13 @@ class DirectoryScanner:
             
         try:
             if entry.is_dir(follow_symlinks=False):
-                # Validar seguridad antes de descender, omitiendo puntos de reparse (Junctions)
                 if not self.ctx.is_junction(entry.path) and self._is_path_allowed(entry.path):
                     subdir = self.get_size(entry.path, depth + 1)
                     return total_bytes + subdir.bytes_found
             elif entry.is_file(follow_symlinks=False):
-                # Ignorar archivos ocultos o de sistema para evitar tocar configuración accidental
                 if not _is_system_hidden(entry.path, self.ctx.kernel32):
                     st_file = entry.stat(follow_symlinks=False)
                     file_id = (st_file.st_dev, st_file.st_ino)
-                    # Deduplicación por inodo para evitar conteo doble en hardlinks
                     if file_id not in self.ctx.visited_files:
                         self.ctx.visited_files.add(file_id)
                         return total_bytes + st_file.st_size
@@ -305,7 +297,6 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
         if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): return False
         if _is_system_hidden(str(target), kernel) or target.name.lower() in NEVER_TOUCH: return False
         
-        # Validar caracteres peligrosos en el nombre de la carpeta target
         if any(c in target.name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target.name):
             return False
         
@@ -332,6 +323,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         except (OSError, RuntimeError):
             continue
             
+        # Reutilizamos el contexto y el scanner para el base directory actual
         ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
         scanner = DirectoryScanner(ctx)
         
