@@ -470,9 +470,8 @@ class SystemContext:
             if val is None or isinstance(val, (bool, dict, list, tuple)) or callable(val):
                 return None
             valid_val = _is_valid_numeric_update(val, spec)
-            if valid_val is None: return None
-            return spec.type_hint(valid_val)
-        except Exception:
+            return spec.type_hint(valid_val) if valid_val is not None else None
+        except (Exception, ValueError, TypeError):
             return None
 
     def _clean_grade(self, val: Any) -> str:

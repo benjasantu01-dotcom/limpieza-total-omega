@@ -570,3 +570,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-06T03:57:25` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-11-06T03:57:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T03:57:25` Corrida terminada. Total usado hoy: 24.
+- `2026-11-06T04:05:18` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-11-06T04:05:56` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante datos de entrada malformados o inesperados en `ingest` y `_apply_field`, asegurando que si una métrica falla en la validación, el proceso de carga continúe con el resto de los datos en lugar de abortar silenciosamente o dejar el estado inconsistente.
+- `2026-11-06T04:06:38` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `save_logo_svg` ante fallos en el sistema de archivos (ej. permisos denegados o rutas de solo lectura) y se aseguró que el uso de `Path` no lance excepciones imprevistas al interactuar con rutas inválidas.
+- `2026-11-06T04:07:01` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-06T04:07:12` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia de `st_ino` en `walk_files` para manejar sistemas de archivos que no soportan inodos (como FAT32/exFAT en ciertos contextos), evitando errores inesperados en el registro de `visited_inodes` al iterar.
+- `2026-11-06T04:07:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T04:07:12` Corrida terminada. Total usado hoy: 28.

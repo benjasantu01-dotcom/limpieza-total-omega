@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 53
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 246
+- Rechazadas por guardia de seguridad: 52
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 34 | 1 | 11 | 5 | 79 |
+| 2026-11-04 | 34 | 1 | 10 | 5 | 76 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 10 | 1 | 7 | 2 | 4 |
+| 2026-11-06 | 12 | 1 | 7 | 3 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **37**
+- robustez ante casos límite: **31**
 - seguridad defensiva: **31**
-- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **19**
 - `settings.py`: **19**
-- `diskreport.py`: **18**
 - `healthscore.py`: **18**
 - `memory.py`: **16**
+- `assistant.py`: **16**
 - `browser.py`: **16**
 - `scanner.py`: **15**
-- `assistant.py`: **15**
 - `quarantine.py`: **15**
 - `safety.py`: **13**
 - `duplicates.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T04:07:12` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de `st_ino` en `walk_files` para manejar sistemas de archivos que no soportan inodos (como FAT32/exFAT en ciertos contextos), evitando errores inesperados en el registro de `visited_inodes` al iterar.
+- `2026-11-06T04:05:56` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante datos de entrada malformados o inesperados en `ingest` y `_apply_field`, asegurando que si una métrica falla en la validación, el proceso de carga continúe con el resto de los datos en lugar de abortar silenciosamente o dejar el estado inconsistente.
 - `2026-11-06T03:57:03` **settings.py** (rendimiento): Optimizé la carga de configuración implementando `lru_cache` sobre `load` y simplificando el acceso mediante `_MANAGER` para evitar redundancias en la resolución de rutas y validación de archivos, reduciendo llamadas innecesarias al sistema de archivos en operaciones repetidas.
 - `2026-11-06T03:56:33` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo reemplazando la creación repetitiva de objetos `Path` en el bucle principal de `Scanner.process_entry` por la manipulación directa de `os.DirEntry.path`, y mejoré el filtrado inicial al mover la comprobación de extensiones antes de cualquier operación costosa de `stat`.
 - `2026-11-06T03:45:24` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` pre-asignando el buffer de ruta y procesando los PIDs mediante un generador filtrado para reducir la carga de llamadas a la API de Windows en cada iteración del bucle principal.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T14:52:32` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `healthscore.py` mediante docstrings detallados en las funciones de procesamiento del pipeline, explicando el propósito de la normalización lineal, la clausura de valores y la integración de reglas de advertencia, facilitando la comprensión del flujo de datos para futuras auditorías o expansiones.
 - `2026-11-05T14:51:56` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y la tipificación en `duplicates.py` añadiendo docstrings descriptivos a funciones clave y explicitando los retornos de las operaciones de hash, facilitando la comprensión del flujo de "falsos positivos" y la estrategia de filtrado en cascada.
 - `2026-11-05T14:43:03` **diskreport.py** (legibilidad y documentación): Documenté con docstrings detallados las clases internas (`ExtStats`, `GlobalStats`, `FolderMetrics`) y simplifiqué la legibilidad de `_collect_summary_data` para clarificar la lógica de acumulación, facilitando el mantenimiento a futuro sin alterar la funcionalidad.
-- `2026-11-05T14:42:49` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados y la normalización de la terminología en `DirectoryScanner`, aclarando la lógica de protección frente a puntos de reparse.
-- `2026-11-05T14:41:50` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la normalización de docstrings (ajustándolos a la especificación PEP 257), la adición de Type Hints en funciones de orden superior y la clarificación de la intención de los decoradores de seguridad.
