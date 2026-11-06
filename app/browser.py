@@ -285,15 +285,17 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not p.exists() or not p.is_dir() or not os.access(p, os.R_OK): return 0
     
     try:
-        root_norm = os.path.normcase(os.path.realpath(str(p)))
+        abs_p = p.resolve()
+        root_norm = os.path.normcase(str(abs_p))
     except (OSError, RuntimeError):
         return 0
 
     ctx = ScanContext(root_norm, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
-    return DirectoryScanner(ctx).get_size(str(p)).bytes_found
+    return DirectoryScanner(ctx).get_size(root_norm).bytes_found
 
 def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """Verifica si un directorio de caché objetivo es apto para el análisis."""
+    if not isinstance(target, Path): return False
     try:
         if not target.exists() or not target.is_dir() or not os.access(target, os.R_OK): return False
         if not is_safe_to_modify(target) or is_protected_path(target): return False

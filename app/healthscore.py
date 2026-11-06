@@ -382,6 +382,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
+    # Validamos métricas antes de procesar para asegurar integridad
     metrics.validate()
     return _compute_cached((
         metrics.junk_mb, float(metrics.suspicious_count), 
@@ -407,6 +408,7 @@ def summarize(result: HealthResult | None) -> List[str]:
         val = result.breakdown.get(entry.area, 0)
         lines.append(f"  {entry.area.capitalize():<12} {val:>2}/{entry.weight:<2} [{_render_bar(val, entry.weight)}]")
     
+    # Validamos que existan recomendaciones antes de iterar
     recs = [f"  - {s}" for s in (result.recommendations or [])]
     lines.extend(("", "Recomendaciones:", *recs))
     return lines

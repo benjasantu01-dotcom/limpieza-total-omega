@@ -314,7 +314,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and is_protected_path(p):
                             continue
 
-                        if entry.is_dir():
+                        if entry.is_dir(follow_symlinks=False):
                             if _is_reparse_point(st):
                                 continue
                             if hasattr(st, 'st_ino'):
@@ -323,7 +323,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     continue
                                 visited_inodes.add(inode)
                             stack.append(entry.path)
-                        elif entry.is_file():
+                        elif entry.is_file(follow_symlinks=False):
                             size = getattr(st, 'st_size', 0)
                             yield p, size
                     except (PermissionError, FileNotFoundError, OSError):
@@ -394,7 +394,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
+            elif top_heap and size > top_heap[0][0]:
                 heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
@@ -407,7 +407,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         return ["Error: Ruta inaccesible o protegida."]
         
     data = _collect_summary_data(root, skip_protected, limit=20)
-    if data.total_files == 0: 
+    if not data or data.total_files == 0: 
         return ["Aviso: No se encontraron archivos."]
     
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]
