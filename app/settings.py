@@ -383,6 +383,8 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
     try:
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
+        # Doble verificación: asegurar que no es reparse point inmediatamente antes de abrir
+        if _Validators._is_reparse_point(str(file_path)): return None
         flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0)
         fd = os.open(file_path, flags)
         try:

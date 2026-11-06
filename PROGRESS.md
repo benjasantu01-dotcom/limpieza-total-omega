@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
-- Rechazadas por tests: 10
+- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 56
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 34 | 1 | 10 | 5 | 52 |
+| 2026-11-04 | 34 | 1 | 10 | 5 | 48 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 24 | 2 | 11 | 5 | 10 |
+| 2026-11-06 | 25 | 3 | 11 | 5 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **38**
+- seguridad defensiva: **38**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
-- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **21**
 - `diskreport.py`: **20**
 - `healthscore.py`: **20**
-- `settings.py`: **20**
 - `memory.py`: **17**
 - `scanner.py`: **17**
 - `browser.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T05:17:15` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_read_and_parse_json` al verificar explícitamente que la ruta no sea un punto de reparse antes de abrirla, alineando la carga con las salvaguardas que ya existían en `perform_atomic_write`.
 - `2026-11-06T05:08:42` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación crítica de "propiedad de ruta" en `Scanner._is_safe_entry` y `Scanner.process_entry`, garantizando que el escáner no solo verifique la raíz inicial, sino que toda entrada procesada resida físicamente dentro del subárbol esperado, previniendo posibles ataques de *path traversal* o escalada fuera del ámbito de escaneo.
 - `2026-11-06T05:08:25` **safety.py** (seguridad defensiva): Se añadió una validación defensiva en `_validate_preconditions` para detectar si el directorio padre de la ruta objetivo es una raíz de unidad (`drive root`) o un punto de montaje, previniendo operaciones de modificación accidental en niveles críticos de la jerarquía de almacenamiento.
 - `2026-11-06T05:07:13` **quarantine.py** (seguridad defensiva): Mejoré `quarantine_file` para evitar condiciones de carrera entre la validación inicial y la operación de aislamiento (TOCTOU), reemplazando las verificaciones redundantes por un bloqueo explícito de exclusividad antes de la copia, y asegurando que la ruta destino no exista físicamente en ningún momento antes de la operación de `os.replace` para mantener la atomicidad.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T04:16:26` **healthscore.py** (robustez ante casos límite): He mejorado la robustez de `SystemMetrics.validate` ante entradas `NaN` o `inf` (que pueden ocurrir por cálculos matemáticos erróneos en otros módulos) mediante la implementación de una verificación de finitud más estricta durante el proceso de validación, garantizando que el pipeline de puntuación no colapse por valores numéricos inválidos.
 - `2026-11-06T04:07:12` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de `st_ino` en `walk_files` para manejar sistemas de archivos que no soportan inodos (como FAT32/exFAT en ciertos contextos), evitando errores inesperados en el registro de `visited_inodes` al iterar.
 - `2026-11-06T04:05:56` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante datos de entrada malformados o inesperados en `ingest` y `_apply_field`, asegurando que si una métrica falla en la validación, el proceso de carga continúe con el resto de los datos en lugar de abortar silenciosamente o dejar el estado inconsistente.
-- `2026-11-06T03:57:03` **settings.py** (rendimiento): Optimizé la carga de configuración implementando `lru_cache` sobre `load` y simplificando el acceso mediante `_MANAGER` para evitar redundancias en la resolución de rutas y validación de archivos, reduciendo llamadas innecesarias al sistema de archivos en operaciones repetidas.
