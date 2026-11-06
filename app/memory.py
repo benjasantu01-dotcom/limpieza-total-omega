@@ -316,7 +316,7 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
     if WindowsAPI.kernel32 is None: return None
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-        if not handle or handle == INVALID_HANDLE_VALUE:
+        if not handle:
             return None
         return wintypes.HANDLE(handle)
     except (ctypes.WinError, OSError):
@@ -345,7 +345,7 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
     validación de seguridad falla o el proceso no está activo.
     """
     handle = _get_process_handle(pid, access)
-    if handle is None: return None
+    if not handle or handle == INVALID_HANDLE_VALUE: return None
     try:
         exit_code = wintypes.DWORD()
         if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
@@ -474,7 +474,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
     # Re-abrir handle para la acción final tras validar
     handle = _get_process_handle(target_pid, TRIM_ACCESS_MASK)
-    if not handle:
+    if not handle or handle == INVALID_HANDLE_VALUE:
         return False, "No se pudo re-abrir el proceso para la acción."
 
     try:

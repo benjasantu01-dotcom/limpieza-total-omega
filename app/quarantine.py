@@ -615,10 +615,16 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         _check_for_reparse_points(source)
         if st.st_nlink > 1: raise UnsafePathError("Archivo origen con enlaces múltiples.")
         ensure_safe_to_modify(temp_dest.parent)
-        with open(source, "rb") as f_src, open(temp_dest, "wb") as f_dst:
-            shutil.copyfileobj(f_src, f_dst)
-            f_dst.flush()
-            os.fsync(f_dst.fileno())
+        
+        # Uso de wrapper de reintento para E/S ante posibles bloqueos de sistema
+        def _copy():
+            with open(source, "rb") as f_src, open(temp_dest, "wb") as f_dst:
+                shutil.copyfileobj(f_src, f_dst)
+                f_dst.flush()
+                os.fsync(f_dst.fileno())
+        
+        _check_io_error_context(_copy)
+        
         try: os.chmod(temp_dest, 0o600)
         except OSError: pass
         _verify_copied_data(st, temp_dest, source_hash)

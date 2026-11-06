@@ -359,6 +359,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
+            if not junk_file.path.is_file(): continue
             
             if not _is_safe_for_disk_op(junk_file, dest_base): continue
             
