@@ -134,7 +134,10 @@ def _win_has_system_attributes(path: Path) -> bool:
     return bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
 
 def _verify_source_fs_permissions(path: Path) -> None:
-    """Previene operaciones en rutas UNC y valida que el archivo destino no sea un ítem de sistema."""
+    """
+    Previene operaciones en rutas UNC y valida que el archivo origen 
+    no posea atributos protegidos del sistema.
+    """
     p_str: str = str(path)
     if p_str.startswith(r"\\") or p_str.startswith("//"):
         raise UnsafePathError("Operaciones en rutas UNC no permitidas.")

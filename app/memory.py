@@ -49,6 +49,7 @@ MegabytesValue = NewType("MegabytesValue", float)
 
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
+# Límite heurístico para filtrar procesos anómalos o ruido en mediciones.
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 WIN32_PROCESS_QUERY_LIMITED: Final[int] = 0x1000
@@ -92,7 +93,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura nativa para GlobalMemoryStatusEx de Win32."""
+    """Estructura Win32 GlobalMemoryStatusEx para obtener estado global de RAM."""
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -106,7 +107,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura nativa para estadísticas de memoria de procesos (PSAPI)."""
+    """Estructura Win32 para contadores detallados de memoria de proceso (PSAPI)."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
