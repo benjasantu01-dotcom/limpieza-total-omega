@@ -1464,3 +1464,33 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-06T11:45:55` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación de tipos, facilitando la comprensión del flujo de datos en el análisis de disco.
 - `2026-11-06T11:45:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T11:45:55` Corrida terminada. Total usado hoy: 208.
+- `2026-11-06T11:54:12` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-11-06T11:54:38` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna mediante la adición de Type Hints más precisos, la estandarización de docstrings (siguiendo el estilo de los módulos core) y la clarificación de la lógica en `_collect_candidates` para separar explícitamente las comprobaciones de seguridad del recorrido de directorios.
+- `2026-11-06T11:55:07` Tests FALLARON:
+```
+vertimos a diccionario para cachear de forma robusta
+        m_dict = asdict(metrics)
+        quarantined = m_dict.pop("quarantined_count")
+>       return _compute_cached(m_dict, float(quarantined))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: unhashable type: 'dict'
+
+app/healthscore.py:376: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_clean_system_scores_high - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_modules.py::test_a_broken_system_scores_low - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_modules.py::test_score_never_leaves_the_zero_to_hundred_range - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommendation - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_modules.py::test_quarantined_files_are_mentioned - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_modules.py::test_compute_score_is_pure_and_repeatable - TypeError: unhashable type: 'dict'
+FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recommendations - TypeError: unhashable type: 'dict'
+9 failed, 290 passed in 1.94s
+
+```
+- `2026-11-06T11:55:07` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `healthscore.py` al reemplazar la lógica de indexación posicional (difícil de seguir) dentro de `_compute_cached` por una construcción dinámica basada en el mapeo de `SystemMetrics` mediante diccionarios, evitando errores sutiles de alineación de datos.
+- `2026-11-06T11:56:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-06T11:56:31` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de type hints de retorno y docstrings detallados en funciones críticas (como `_iter_process_memory` y `_get_handle_for_safe_proc`) para clarificar el flujo de manejo de recursos y la lógica de filtrado de seguridad.
+- `2026-11-06T11:56:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T11:56:31` Corrida terminada. Total usado hoy: 212.

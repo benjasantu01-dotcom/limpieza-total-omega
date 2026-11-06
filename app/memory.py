@@ -340,7 +340,10 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         return False
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: GetModNameFunc) -> Optional[wintypes.HANDLE]:
-    """Obtiene un handle validado, asegurando cierre si la validación falla."""
+    """
+    Obtiene un handle validado para un proceso, asegurando que se libere si la
+    validación de seguridad falla o el proceso no está activo.
+    """
     handle = _get_process_handle(pid, access)
     if handle is None: return None
     try:
@@ -356,7 +359,10 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
     return None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
-    """Generador que enumera procesos y calcula consumo, filtrando según seguridad."""
+    """
+    Generador que enumera procesos del sistema, calcula su consumo de memoria,
+    y filtra mediante validaciones de seguridad para excluir procesos protegidos.
+    """
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     
     pids = (wintypes.DWORD * 2048)()

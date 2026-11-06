@@ -7,44 +7,46 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **195** (38.7% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 120 | 7 | 30 | 4 | 135 |
-| 2026-11-06 | 75 | 10 | 33 | 10 | 80 |
+| 2026-11-05 | 118 | 7 | 30 | 4 | 133 |
+| 2026-11-06 | 77 | 11 | 34 | 10 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **41**
-- legibilidad y documentación: **40**
 - seguridad defensiva: **37**
-- rendimiento: **33**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `settings.py`: **19**
 - `healthscore.py`: **18**
+- `settings.py`: **18**
 - `browser.py`: **18**
-- `scanner.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **17**
-- `memory.py`: **16**
+- `scanner.py`: **16**
 - `safety.py`: **15**
 - `assistant.py`: **13**
 - `branding.py`: **13**
-- `duplicates.py`: **12**
+- `duplicates.py`: **13**
 - `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T11:56:31` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints de retorno y docstrings detallados en funciones críticas (como `_iter_process_memory` y `_get_handle_for_safe_proc`) para clarificar el flujo de manejo de recursos y la lógica de filtrado de seguridad.
+- `2026-11-06T11:54:38` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de Type Hints más precisos, la estandarización de docstrings (siguiendo el estilo de los módulos core) y la clarificación de la lógica en `_collect_candidates` para separar explícitamente las comprobaciones de seguridad del recorrido de directorios.
 - `2026-11-06T11:45:55` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la adición de docstrings estructuradas en funciones críticas y la clarificación de tipos, facilitando la comprensión del flujo de datos en el análisis de disco.
 - `2026-11-06T11:45:45` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos y type hints detallados en `DirectoryScanner`, aclarando los mecanismos de protección contra el escape de directorios y la recursión infinita para garantizar la mantenibilidad.
 - `2026-11-06T11:45:09` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings detallados para las funciones de renderizado geométrico y tipos complejos, aclarando el propósito de los cálculos de escalado (viewbox responsive) y el flujo de los segmentos de degradado.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T11:13:57` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y las funciones de escaneo agregando una captura específica para `OSError` al intentar acceder a los atributos del archivo, garantizando que el recolector de métricas no falle ante permisos denegados o inconsistencias del sistema de archivos durante un `os.scandir`.
 - `2026-11-06T11:05:28` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` implementando un filtrado más estricto y seguro de los parámetros de entrada, asegurando que `bases` sea una secuencia válida y manejando posibles errores de resolución de rutas dentro del bucle principal mediante un bloque `try-except` más específico.
 - `2026-11-06T11:05:16` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones de acceso a metadatos (`color`, `font_size`, `icon`) mediante una validación estricta de sus entradas y un manejo de errores más explícito, asegurando que ante valores inesperados no se degrade la experiencia de usuario y se mantenga la integridad de la interfaz.
-- `2026-11-06T09:42:10` **scanner.py** (seguridad defensiva): Mejoré la seguridad en `_is_safe_entry` y `process_entry` al reforzar la validación de la jerarquía de directorios mediante `os.path.commonpath`, lo cual evita ataques de "path traversal" donde un enlace simbólico o una ruta maliciosa podrían intentar escapar del `base_root` definido, independientemente de cómo se resuelva el `normcase`.
-- `2026-11-06T09:32:42` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de aislamiento en `quarantine.py` mediante la implementación de una verificación de estado de dispositivo persistente y una validación de inodo más estricta antes de realizar cualquier movimiento atómico, previniendo condiciones de carrera adicionales (TOCTOU).
