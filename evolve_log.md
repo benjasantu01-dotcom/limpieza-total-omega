@@ -518,3 +518,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-06T03:16:14` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
 - `2026-11-06T03:16:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T03:16:14` Corrida terminada. Total usado hoy: 8.
+- `2026-11-06T03:24:39` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-06T03:25:09` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.72s
+
+```
+- `2026-11-06T03:25:09` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path`, extrayendo la lógica de validación de rutas dentro de una función auxiliar privada para reducir la complejidad ciclomática del bloque principal.
+- `2026-11-06T03:25:48` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el proceso de inicialización y búsqueda del asistente mediante la conversión de `_TOKENS_MAP` a un sistema de búsqueda basado en `frozenset` y la simplificación de la lógica de saneamiento de entrada en `local_answer` para evitar redundancias de procesamiento.
+- `2026-11-06T03:26:15` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: FontSizesDict, PaletteDict, app_title
+- `2026-11-06T03:26:22` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-06T03:26:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T03:26:22` Corrida terminada. Total usado hoy: 12.

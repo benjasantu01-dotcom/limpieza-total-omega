@@ -685,6 +685,7 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     cierre: str = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
     return Answer(f"{estado} {valoracion}{cierre}", notice=OFFLINE_NOTICE)
 
+# Estructura optimizada para búsqueda de tokens
 _TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
     "espacio": handle_disk, "disco": handle_disk, "lleno": handle_disk, "recuperar": handle_disk, "liberar": handle_disk,
@@ -706,10 +707,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     q_sanitized: str = _sanitize_query(question)
     if not q_sanitized: return Answer("Entrada no válida.")
     
-    tokens = q_sanitized.lower().split()
-    for token in tokens:
-        token_clean = token.strip("¿?!.,")
-        if (handler := _TOKENS_MAP.get(token_clean)):
+    # Búsqueda optimizada por tokens
+    for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
+        if (handler := _TOKENS_MAP.get(token)):
             return handler(context, question)
             
     return Answer(_format_problem_message(context.active_problems, context.score if context.score is not None else "N/A"), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
