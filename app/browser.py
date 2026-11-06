@@ -65,6 +65,7 @@ SYSTEM_HIDDEN_FLAGS: int = (
 class ScanContext:
     """
     Estado inmutable compartido durante la recursión del escaneo de disco.
+    Define las restricciones de navegación para el DirectoryScanner.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -76,14 +77,15 @@ class ScanContext:
 
 class DirectoryScanner:
     """
-    Motor de recorrido recursivo diseñado para el escaneo de directorios de caché
-    con validación estricta de seguridad y prevención de recursión infinita.
+    Motor de recorrido recursivo para el escaneo de directorios de caché.
+    Implementa validaciones de seguridad para evitar escapes del sandbox y
+    prevenir la entrada en puntos de reparse (junctions).
     """
     def __init__(self, context: ScanContext) -> None:
         self.ctx = context
 
     def _should_stop_traversal(self, entry: os.DirEntry, depth: int) -> bool:
-        """Determina si una entrada debe ser ignorada por seguridad o límites de profundidad."""
+        """Determina si una entrada debe ignorarse por límites de seguridad o profundidad."""
         if not entry.name or any(ord(c) < 32 for c in entry.name):
             return True
         if entry.name.lower() in self.ctx.never_touch_lower:
@@ -94,8 +96,8 @@ class DirectoryScanner:
 
     def _is_path_allowed(self, path_str: str) -> bool:
         """
-        Valida que la ruta sea segura según los estándares definidos en safety.py
-        y que resida estrictamente dentro del sandbox configurado.
+        Valida que la ruta sea segura según safety.py y que su ubicación
+        real esté contenida dentro de la base autorizada (sandbox).
         """
         if not path_str or _is_unc_path(path_str): 
             return False
@@ -112,8 +114,8 @@ class DirectoryScanner:
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
         """
-        Procesa una entrada individual (archivo o directorio) dentro del iterador
-        de escaneo, acumulando el tamaño total de archivos válidos encontrados.
+        Procesa una entrada (archivo o directorio), acumulando bytes tras verificar
+        que el componente no sea un enlace simbólico o un archivo de sistema.
         """
         if self._should_stop_traversal(entry, depth):
             return total_bytes
@@ -136,8 +138,9 @@ class DirectoryScanner:
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
         """
-        Calcula recursivamente el tamaño en bytes del directorio proporcionado.
-        Implementa protección contra ciclos de directorios y acceso a sistemas protegidos.
+        Calcula recursivamente el tamaño en bytes del directorio.
+        Evita ciclos de directorios usando inodos (dev, ino) y prohíbe el
+        seguimiento de puntos de reparse.
         """
         if not isinstance(root_path, str) or not root_path:
             return ScanResult(0, False)
