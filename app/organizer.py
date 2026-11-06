@@ -291,13 +291,14 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
         return False
     return True
 
-def _is_candidate_for_scan(name: str, stats: os.stat_result) -> bool:
-    """Determina si un archivo cumple los criterios heurísticos para ser clasificado como basura."""
-    if Path(name).suffix.lower() not in JUNK_EXTENSIONS:
+def _is_valid_junk_entry(entry: os.DirEntry) -> bool:
+    """Determina si una entrada de archivo es un candidato legítimo para el escaneo."""
+    try:
+        if Path(entry.name).suffix.lower() not in JUNK_EXTENSIONS: return False
+        stats = entry.stat(follow_symlinks=False)
+        return stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry)
+    except (PermissionError, OSError):
         return False
-    if stats.st_size >= LIMITS.MAX_FILE_SIZE_BYTES:
-        return False
-    return True
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """Recorre recursivamente directorios para identificar candidatos, manteniendo control sobre el límite de profundidad."""
@@ -315,11 +316,15 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
-                    elif entry.is_file(follow_symlinks=False):
-                        if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
-                            stats = entry.stat(follow_symlinks=False)
-                            if stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry):
-                                found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                    elif entry.is_file(follow_symlinks=False) and _is_valid_junk_entry(entry):
+                        stats = entry.stat(follow_symlinks=False)
+                        found.append(JunkFile(
+                            Path(entry.path), 
+                            stats.st_size, 
+                            datetime.fromtimestamp(stats.st_mtime), 
+                            stats.st_ino, 
+                            stats.st_dev
+                        ))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):

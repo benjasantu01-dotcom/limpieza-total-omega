@@ -374,7 +374,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
-    # Pre-asignar recursos de memoria fuera del bucle
     path_buf = ctypes.create_unicode_buffer(512)
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     exit_code = wintypes.DWORD()
@@ -395,7 +394,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
                     name_from_buf = str(path_buf.value).split('\\')[-1]
                     yield ProcessMemory(name_from_buf, pid, BytesValue(ws))
-        except Exception:
+        except (ctypes.WinError, OSError):
+            # Error al intentar obtener contadores, salteamos el proceso
             pass
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)

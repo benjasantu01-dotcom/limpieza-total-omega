@@ -497,7 +497,16 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_isolation_safety(source_path, target_directory)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga el manifiesto, filtrando ítems cuyos archivos fueron borrados externamente."""
+    """
+    Carga el manifiesto de cuarentena, filtrando ítems cuyos archivos fueron borrados externamente.
+    
+    Args:
+        base: Directorio base de la cuarentena.
+        force_reload: Forzar lectura desde disco ignorando el cache.
+        
+    Returns:
+        Lista de objetos QuarantineItem válidos.
+    """
     try: 
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError): 
