@@ -171,7 +171,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido BFS para recolectar archivos aptos para ser analizados.
-    Evita recursión infinita y respeta las restricciones de seguridad del sistema.
+    Utiliza un set de tuplas (dev, ino) para identificar inodos de forma única.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[Tuple[int, int]] = set()
@@ -197,9 +197,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             if skip_protected and is_protected_path(entry_path): continue
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size >= min_size:
-                                inode = (stat.st_dev, stat.st_ino)
-                                if inode not in visited and not is_system_or_hidden(entry_path) and _safe_path_check(entry_path):
-                                    visited.add(inode)
+                                inode_id = (stat.st_dev, stat.st_ino)
+                                if inode_id not in visited and not is_system_or_hidden(entry_path) and _safe_path_check(entry_path):
+                                    visited.add(inode_id)
                                     size_map[stat.st_size].append(entry_path)
                     except (OSError, PermissionError):
                         continue
