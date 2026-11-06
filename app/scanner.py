@@ -162,12 +162,13 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         
     try:
         stats = entry.stat(follow_symlinks=False)
-        if stats.st_size < 0 or stats.st_nlink == 0:
+        # Validación de integridad de datos básicos
+        if stats.st_size < 0:
             return None
         return stats
     except OSError as e:
-        if getattr(e, 'winerror', None) in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
-            return None
+        if getattr(e, 'winerror', None) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
+            logger.debug(f"Error inesperado al leer metadatos de {entry.path}: {e}")
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -314,7 +315,6 @@ class Scanner:
                 path_norm = os.path.normcase(entry.path)
                 if path_norm not in self.seen_normcase:
                     self.seen_normcase.add(path_norm)
-                    # Se utiliza la ruta en cadena para evitar instanciar Path innecesariamente
                     self._run_file_heuristics(Path(entry.path), entry)
         except OSError:
             return
@@ -330,7 +330,7 @@ class Scanner:
                 if finding:
                     self.results.append(finding)
             except Exception as e:
-                logger.debug(f"Heurística {check_fn.__name__} omitida para {path.name} por fallo: {e}")
+                logger.debug(f"Heurística {check_fn.__name__} omitida para {path.name} por error: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Realiza un análisis heurístico único sobre un archivo puntual."""

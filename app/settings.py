@@ -196,17 +196,21 @@ class _SettingsManager:
                 except OSError: return False
             
             temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
-            with open(temp_path, "wb") as f:
-                if platform.system() == "Windows":
-                    msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
-                f.write(serialized_bytes)
-                f.flush()
-                os.fsync(f.fileno())
-            
-            os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
-            os.replace(temp_path, resolved_path)
-            self.clear(resolved_str)
-            return True
+            try:
+                with open(temp_path, "wb") as f:
+                    if platform.system() == "Windows":
+                        msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+                    f.write(serialized_bytes)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
+                os.replace(temp_path, resolved_path)
+                self.clear(resolved_str)
+                return True
+            finally:
+                if temp_path.exists():
+                    try: os.remove(temp_path)
+                    except OSError: pass
         except (OSError, IOError, PermissionError, ValueError, RuntimeError):
             return False
 
@@ -383,20 +387,21 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
     try:
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
-        # Doble verificación: asegurar que no es reparse point inmediatamente antes de abrir
         if _Validators._is_reparse_point(str(file_path)): return None
         flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0)
         fd = os.open(file_path, flags)
         try:
             st_post = os.fstat(fd)
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or st_post.st_size == 0:
-                os.close(fd); return None
-            with os.fdopen(fd, "r", encoding="utf-8") as f: data = json.load(f)
-        except (json.JSONDecodeError, OSError):
-            os.close(fd); return None
-        if not _is_structure_valid(data): return None
-        return data, st_post
-    except (OSError, IOError, PermissionError, ValueError, TypeError): return None
+                return None
+            with os.fdopen(fd, "r", encoding="utf-8") as f: 
+                data = json.load(f)
+            if not _is_structure_valid(data): return None
+            return data, st_post
+        finally:
+            os.close(fd)
+    except (json.JSONDecodeError, OSError, IOError, PermissionError, ValueError, TypeError): 
+        return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura la resiliencia del objeto de configuración."""

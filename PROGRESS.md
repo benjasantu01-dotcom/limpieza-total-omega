@@ -9,43 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 57
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 233
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 17 | 1 | 8 | 3 | 29 |
+| 2026-11-04 | 15 | 1 | 7 | 3 | 28 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 31 | 5 | 14 | 5 | 41 |
+| 2026-11-06 | 33 | 5 | 15 | 6 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **39**
 - seguridad defensiva: **38**
-- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **37**
-- rendimiento: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **19**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
 - `quarantine.py`: **17**
+- `healthscore.py`: **17**
 - `browser.py`: **16**
+- `scanner.py`: **16**
 - `memory.py`: **15**
-- `scanner.py`: **15**
 - `safety.py`: **14**
 - `assistant.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **12**
 - `branding.py`: **11**
 - `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T07:09:46` **settings.py** (manejo de errores y validación de entradas): Mejoré la resiliencia del proceso de validación en `_read_and_parse_json` y `save` mediante el uso de un manejo de archivos más robusto y explícito, garantizando que los descriptores de archivo se cierren correctamente incluso si ocurren errores inesperados durante la deserialización.
+- `2026-11-06T07:09:15` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones en `_safe_stat` y las funciones de escaneo, centralizando la validación de archivos para prevenir fallos silenciosos y garantizar que las heurísticas operen sobre datos de estado consistentes.
 - `2026-11-06T07:01:02` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` al refinar el manejo de excepciones, asegurando que los errores de sistema (como bloqueos temporales) se capturen específicamente y no se propaguen como errores genéricos, cumpliendo con la exigencia de manejar estados transitorios de forma informada y segura.
 - `2026-11-06T06:59:52` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la validación proactiva de parámetros y la captura de errores específicos en `_is_file_exclusive`, evitando que excepciones inesperadas durante la detección de bloqueos se propaguen y afecten el flujo de la aplicación.
 - `2026-11-06T06:59:08` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita y validación de tipos en los parámetros de entrada y el manejo de excepciones durante la resolución de rutas, evitando que valores malformados (None, tipos incorrectos, o fallas en el sistema de archivos) provoquen interrupciones en el flujo de trabajo del usuario.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T04:56:44` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de un decorador de validación de argumentos en el acceso al pipeline y la sanitización proactiva de claves en `_compute_cached`, evitando la inyección de datos inesperados en el proceso de cómputo.
 - `2026-11-06T04:47:40` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_protected_path` al procesar cada entrada de archivo (no solo directorios), garantizando que el escáner no reporte ni acceda a archivos que hayan podido ser reclasificados como protegidos dinámicamente o que infrinjan las reglas de seguridad.
 - `2026-11-06T04:47:08` **browser.py** (seguridad defensiva): Se ha añadido una validación estricta de nombres de archivo en `_is_target_valid` para prevenir que el escáner intente procesar componentes de caché que contengan caracteres sospechosos o secuencias de control potencialmente maliciosas, reforzando la seguridad defensiva contra posibles archivos malformados.
-- `2026-11-06T04:38:24` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra caracteres nulos (`\0`) y rutas vacías tras el strip, evitando errores de `ValueError` en `Path()` que podrían ocurrir con entradas malformadas provenientes del registro.
-- `2026-11-06T04:37:56` **settings.py** (robustez ante casos límite): Mejoré la resiliencia en la carga de configuración añadiendo una validación de longitud de archivo mínima (`> 0`) en la función `_read_and_parse_json` y asegurando que `_is_structure_valid` gestione correctamente el caso de un diccionario de configuración vacío o mal formado para evitar errores de tipo al iterar.
