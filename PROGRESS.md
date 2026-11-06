@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 129 | 7 | 34 | 4 | 142 |
-| 2026-11-06 | 62 | 9 | 28 | 10 | 79 |
+| 2026-11-05 | 126 | 7 | 33 | 4 | 142 |
+| 2026-11-06 | 64 | 9 | 29 | 10 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
 - robustez ante casos límite: **41**
+- legibilidad y documentación: **39**
 - rendimiento: **37**
 - seguridad defensiva: **37**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
 - `quarantine.py`: **19**
 - `diskreport.py`: **19**
 - `settings.py`: **19**
+- `healthscore.py`: **18**
 - `scanner.py`: **17**
-- `memory.py`: **16**
-- `browser.py`: **16**
+- `browser.py`: **17**
+- `memory.py`: **15**
 - `assistant.py`: **14**
 - `safety.py`: **14**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `duplicates.py`: **11**
-- `organizer.py`: **9**
+- `organizer.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T11:05:28` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` implementando un filtrado más estricto y seguro de los parámetros de entrada, asegurando que `bases` sea una secuencia válida y manejando posibles errores de resolución de rutas dentro del bucle principal mediante un bloque `try-except` más específico.
+- `2026-11-06T11:05:16` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones de acceso a metadatos (`color`, `font_size`, `icon`) mediante una validación estricta de sus entradas y un manejo de errores más explícito, asegurando que ante valores inesperados no se degrade la experiencia de usuario y se mantenga la integridad de la interfaz.
 - `2026-11-06T09:42:10` **scanner.py** (seguridad defensiva): Mejoré la seguridad en `_is_safe_entry` y `process_entry` al reforzar la validación de la jerarquía de directorios mediante `os.path.commonpath`, lo cual evita ataques de "path traversal" donde un enlace simbólico o una ruta maliciosa podrían intentar escapar del `base_root` definido, independientemente de cómo se resuelva el `normcase`.
 - `2026-11-06T09:32:42` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de aislamiento en `quarantine.py` mediante la implementación de una verificación de estado de dispositivo persistente y una validación de inodo más estricta antes de realizar cualquier movimiento atómico, previniendo condiciones de carrera adicionales (TOCTOU).
 - `2026-11-06T09:32:01` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `stage_for_review` y `delete_reviewed` eliminando el uso de lógica condicional sobre `is_safe_to_modify` en favor de un enfoque de pre-validación estricta, asegurando que ninguna operación de E/S ocurra si el destino o la fuente no pasan las comprobaciones de seguridad, protegiendo así contra manipulaciones imprevistas del sistema de archivos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T08:41:46` **healthscore.py** (robustez ante casos límite): Mejora la robustez del motor ante valores de entrada atípicos o maliciosos durante la deserialización de métricas en el proceso `_compute_cached` y `compute_score`, asegurando que `SystemMetrics` siempre trabaje con datos validados.
 - `2026-11-06T08:34:01` **browser.py** (robustez ante casos límite): Se añadió una validación en `_is_target_valid` para detectar si el directorio de caché reside dentro de una carpeta marcada en `NEVER_TOUCH` (como perfiles o datos de usuario), evitando que el escáner se aventure en rutas potencialmente críticas incluso si el nombre de la carpeta final es benigno.
 - `2026-11-06T08:33:52` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y concurrencia de sistema mediante el uso de `pathlib` de forma más defensiva y la centralización de la validación de seguridad, asegurando que ante cualquier fallo en la jerarquía de directorios o permisos, la app mantenga su estado operativo en lugar de lanzar excepciones no capturadas.
-- `2026-11-06T08:33:14` **assistant.py** (robustez ante casos límite): Mejoré la robustez de la ingesta de datos en `SystemContext` agregando una validación de tipos estricta y manejando casos donde el diccionario de entrada pueda contener claves inesperadas o valores nulos, evitando `KeyError` o comportamiento impredecible.
-- `2026-11-06T08:22:01` **settings.py** (rendimiento): Se ha refactorizado la lógica de validación dentro de `validate()` y `update()` para evitar recrear diccionarios innecesariamente y reducir las llamadas a `_VALIDATOR_MAP` mediante el uso de una caché local de validadores, mejorando el rendimiento en ciclos de actualización intensivos.

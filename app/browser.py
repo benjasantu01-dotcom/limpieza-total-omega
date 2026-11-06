@@ -313,7 +313,7 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Escanea el sistema en busca de cachés de navegadores conocidos."""
-    raw_bases = list(bases) if (isinstance(bases, (list, tuple))) else base_directories()
+    raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
     if not raw_bases or not isinstance(browser_map, dict): return []
@@ -322,29 +322,26 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
-        if not isinstance(base, Path) or not base.exists(): continue
+        if not isinstance(base, Path): continue
         
         try:
+            if not base.exists(): continue
             base_norm = os.path.normcase(os.path.realpath(str(base)))
-        except (OSError, RuntimeError):
-            continue
             
-        # Reutilizamos el contexto y el scanner para el base directory actual
-        ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
-        scanner = DirectoryScanner(ctx)
-        
-        for browser_key, relative_path in browser_map.items():
-            if not _is_valid_rel_path(relative_path): continue
+            ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
+            scanner = DirectoryScanner(ctx)
             
-            try:
+            for browser_key, relative_path in browser_map.items():
+                if not _is_valid_rel_path(relative_path): continue
+                
                 target = base.joinpath(*relative_path.split("\\"))
                 if not _is_target_valid(target, base_norm, kernel): continue
                 
                 scan_res = scanner.get_size(str(target))
                 if scan_res.success and scan_res.bytes_found > 0:
                     found.append(BrowserCache(str(browser_key), target, scan_res.bytes_found))
-            except Exception:
-                continue
+        except (OSError, RuntimeError, PermissionError):
+            continue
     
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found

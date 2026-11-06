@@ -1390,3 +1390,15 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-06T10:57:12` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-06T10:57:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T10:57:12` Corrida terminada. Total usado hoy: 188.
+- `2026-11-06T11:03:15` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-06T11:03:18` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-06T11:03:18` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-06T11:03:38` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-06T11:03:38` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-06T11:04:08` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-11-06T11:04:08` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-06T11:04:42` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 5% del original (posible pérdida de código)
+- `2026-11-06T11:05:16` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de las funciones de acceso a metadatos (`color`, `font_size`, `icon`) mediante una validación estricta de sus entradas y un manejo de errores más explícito, asegurando que ante valores inesperados no se degrade la experiencia de usuario y se mantenga la integridad de la interfaz.
+- `2026-11-06T11:05:28` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `detect_profiles` implementando un filtrado más estricto y seguro de los parámetros de entrada, asegurando que `bases` sea una secuencia válida y manejando posibles errores de resolución de rutas dentro del bucle principal mediante un bloque `try-except` más específico.
+- `2026-11-06T11:05:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T11:05:28` Corrida terminada. Total usado hoy: 192.
