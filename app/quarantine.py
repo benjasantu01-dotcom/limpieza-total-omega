@@ -660,7 +660,8 @@ class IsolationManager:
         """Verificación TOCTOU: asegura que el archivo origen no haya cambiado durante la operación."""
         if source is None or not source.exists(): raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
         current_stat = source.stat()
-        if current_stat.st_ino != original_stat.st_ino: raise RuntimeError("Integridad comprometida: archivo reemplazado (TOCTOU).")
+        if current_stat.st_ino != original_stat.st_ino or current_stat.st_dev != original_stat.st_dev: 
+            raise RuntimeError("Integridad comprometida: archivo reemplazado o movido (TOCTOU).")
         if current_stat.st_nlink > 1: raise UnsafePathError("Aislamiento denegado: enlaces físicos múltiples.")
         dest_res: Path = _is_path_canonical(dest)
         base_res: Path = _is_path_canonical(dest.parent)

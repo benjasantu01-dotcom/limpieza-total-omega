@@ -36,9 +36,7 @@ SortField: TypeAlias = Literal["size", "date"]
 @dataclass(frozen=True)
 class Win32Attributes:
     """Mapeo de constantes de atributos de archivo Win32 (kernel32)."""
-    # FILE_ATTRIBUTE_REPARSE_POINT (0x400) se usa para detectar Junctions
     JUNCTION: Final[int] = 0x400
-    # FILE_ATTRIBUTE_SYSTEM (0x04) y HIDDEN (0x02) se usan para filtrar archivos críticos
     SYSTEM: Final[int] = 0x04
     HIDDEN: Final[int] = 0x02
     READONLY: Final[int] = 0x01
@@ -355,26 +353,23 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists():
-            try:
-                dest_base.mkdir(parents=True, exist_ok=True)
-            except (OSError, PermissionError):
-                return None
+            dest_base.mkdir(parents=True, exist_ok=True)
         
-        if not is_safe_to_modify(dest_base) or is_protected_path(dest_base): return None
+        # Validar destino central antes de procesar
+        if not is_safe_to_modify(dest_base): return None
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
-            try:
-                if not _is_safe_for_disk_op(junk_file, dest_base): continue
-                target_path = _can_move_file(junk_file, dest_base)
-                if target_path and junk_file.path.exists(): 
-                    if is_safe_to_modify(junk_file.path) and not is_protected_path(junk_file.path):
-                        shutil.move(str(junk_file.path), str(target_path))
-            except (OSError, shutil.Error, PermissionError) as e:
-                logger.error(f"Error moviendo {junk_file.path}: {e}")
+            
+            # Validación consolidada previa a la operación
+            if not _is_safe_for_disk_op(junk_file, dest_base): continue
+            
+            target_path = _can_move_file(junk_file, dest_base)
+            if target_path and junk_file.path.exists(): 
+                shutil.move(str(junk_file.path), str(target_path))
         return dest_base
-    except (OSError, RuntimeError, TypeError, ValueError) as e:
-        logger.error(f"Falla crítica en stage_for_review: {e}")
+    except (OSError, shutil.Error, PermissionError) as e:
+        logger.error(f"Falla en stage_for_review: {e}")
         return None
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
@@ -392,22 +387,18 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir(): return 0
-        
-        if not is_safe_to_modify(dest) or is_protected_path(dest): return 0
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest): return 0
         
         count = 0
         for item in dest.iterdir():
             try:
-                if not item.is_file() or item.is_symlink() or _is_junction(item): continue
-                if not is_valid_junk_extension(item.name): continue
-                if is_protected_path(item) or _is_file_locked(item): continue
-                if is_safe_to_modify(item):
-                    item.unlink()
-                    count += 1
-            except (OSError, PermissionError, ValueError, AttributeError) as e:
-                logger.warning(f"No se pudo eliminar {item}: {e}")
+                # Pre-validación estricta para el borrado
+                if item.is_file() and not item.is_symlink() and not _is_junction(item):
+                    if is_valid_junk_extension(item.name) and is_safe_to_modify(item) and not _is_file_locked(item):
+                        item.unlink()
+                        count += 1
+            except (OSError, PermissionError):
+                continue
         return count
-    except (OSError, PermissionError, RuntimeError, TypeError, ValueError) as e:
-        logger.error(f"Falla crítica en delete_reviewed: {e}")
+    except (OSError, PermissionError, RuntimeError):
         return 0
