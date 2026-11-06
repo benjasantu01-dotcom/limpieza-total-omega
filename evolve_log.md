@@ -738,3 +738,13 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T17:31:48` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-11-06T17:31:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T17:31:48` Corrida terminada. Total usado hoy: 344.
+- `2026-11-06T17:40:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-06T17:41:26` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejora la robustez del motor de cálculo ante valores de entrada atípicos o maliciosos, reforzando la integridad numérica en el pipeline mediante un chequeo de finitud adicional antes de la división en los scorers y asegurando que `_clamp` maneje correctamente casos de `NaN` o `Inf` sin depender de excepciones externas.
+- `2026-11-06T17:42:26` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-06T17:43:29` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-06T17:44:36` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-06T17:45:48` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-11-06T17:46:32` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_get_handle_for_safe_proc` y `_iter_process_memory` ante casos límite de procesos que terminan inesperadamente durante la ejecución, añadiendo una validación explícita mediante `GetExitCodeProcess` antes de intentar leer información de memoria, evitando así lecturas fallidas o errores en llamadas a la API de Windows.
+- `2026-11-06T17:46:43` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-06T17:46:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T17:46:43` Corrida terminada. Total usado hoy: 348.

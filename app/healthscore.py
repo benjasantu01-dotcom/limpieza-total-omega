@@ -168,7 +168,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """Generador: crea funciones de normalización lineal para métricas de volumen."""
     def scorer(val: float) -> NormalizedRatio:
-        if limit <= 0.0: return 0.0
+        if limit <= 0.0 or not math.isfinite(val): return 0.0
         try:
             ratio = val / limit
             return _clamp(1.0 - ratio if inverse else ratio)
@@ -242,17 +242,19 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud de memoria RAM basado en porcentaje disponible."""
-    if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
+    val = float(available_percent)
+    if _LIMIT_RAM_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
     try:
-        return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
+        return _clamp(val / _LIMIT_RAM_PERCENT)
     except ZeroDivisionError:
         return 0.0
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud de almacenamiento libre basado en porcentaje total."""
-    if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
+    val = float(free_percent)
+    if _LIMIT_DISK_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
     try:
-        return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
+        return _clamp(val / _LIMIT_DISK_PERCENT)
     except ZeroDivisionError:
         return 0.0
 

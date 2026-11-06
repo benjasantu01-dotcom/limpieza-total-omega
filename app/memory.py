@@ -346,15 +346,16 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
     """
     handle = _get_process_handle(pid, access)
     if not handle or handle == INVALID_HANDLE_VALUE: return None
-    try:
-        exit_code = wintypes.DWORD()
-        if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            return None
+    
+    # Validar que el proceso sigue vivo antes de proceder
+    exit_code = wintypes.DWORD()
+    if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+        WindowsAPI.kernel32.CloseHandle(handle)
+        return None
             
-        if _is_process_executable_safe(handle, path_buf, get_mod_name_func):
-            return handle
-    except (ctypes.WinError, OSError, Exception):
-        pass
+    if _is_process_executable_safe(handle, path_buf, get_mod_name_func):
+        return handle
+        
     WindowsAPI.kernel32.CloseHandle(handle)
     return None
 
@@ -376,16 +377,12 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     path_buf = ctypes.create_unicode_buffer(512)
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
-    exit_code = wintypes.DWORD()
     
     for pid in (p for p in pids[:count] if p > 0 and not _is_system_process(p)):
         handle = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
         if handle is None: continue
         
         try:
-            if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-                continue
-                
             if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
                 ws = pmc.WorkingSetSize
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:

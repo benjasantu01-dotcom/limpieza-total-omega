@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 63 | 4 | 14 | 3 | 76 |
-| 2026-11-06 | 129 | 13 | 53 | 14 | 135 |
+| 2026-11-05 | 62 | 2 | 14 | 3 | 75 |
+| 2026-11-06 | 131 | 13 | 53 | 14 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
+- robustez ante casos límite: **36**
 - rendimiento: **35**
-- seguridad defensiva: **34**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
 - `scanner.py`: **18**
 - `quarantine.py`: **18**
+- `memory.py`: **17**
 - `safety.py`: **17**
-- `memory.py`: **16**
-- `settings.py`: **15**
 - `assistant.py`: **14**
 - `browser.py`: **14**
+- `settings.py`: **14**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
 - `startup.py`: **9**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T17:46:32` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_get_handle_for_safe_proc` y `_iter_process_memory` ante casos límite de procesos que terminan inesperadamente durante la ejecución, añadiendo una validación explícita mediante `GetExitCodeProcess` antes de intentar leer información de memoria, evitando así lecturas fallidas o errores en llamadas a la API de Windows.
+- `2026-11-06T17:41:26` **healthscore.py** (robustez ante casos límite): Mejora la robustez del motor de cálculo ante valores de entrada atípicos o maliciosos, reforzando la integridad numérica en el pipeline mediante un chequeo de finitud adicional antes de la división en los scorers y asegurando que `_clamp` maneje correctamente casos de `NaN` o `Inf` sin depender de excepciones externas.
 - `2026-11-06T17:30:54` **branding.py** (robustez ante casos límite): Se ha robustecido `save_logo_svg` y `_get_scaled_poly` ante posibles valores nulos o corruptos, asegurando que los fallos en la resolución de rutas o en los cálculos aritméticos devuelvan estados seguros en lugar de propagar excepciones hacia la interfaz.
 - `2026-11-06T17:22:11` **assistant.py** (robustez ante casos límite): Se mejora la robustez de la ingesta de datos en `SystemContext` añadiendo una validación explícita para evitar que `NaN` o valores infinitos (que pueden causar comportamientos inesperados en las operaciones lógicas de comparación) se filtren en la estructura de métricas, reforzando `_is_safe_numeric_context` y la lógica de actualización.
 - `2026-11-06T17:20:51` **scanner.py** (rendimiento): Se optimizó el método `process_entry` y la lógica de escaneo para reducir las llamadas repetitivas al sistema de archivos mediante el uso de `os.DirEntry.is_dir()` y `os.DirEntry.is_file()`, evitando resoluciones redundantes y garantizando que las verificaciones de seguridad se realicen sobre estados ya cargados en memoria por `os.scandir`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T16:40:22` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en las funciones de heurística y el método principal `process_entry`, clarificando el propósito, las condiciones de retorno y las expectativas de entrada para cada componente, mejorando la mantenibilidad del código sin alterar su lógica funcional.
 - `2026-11-06T16:31:24` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo `quarantine.py` documentando los parámetros y retornos de las funciones clave con docstrings consistentes y añadiendo tipos sugeridos en secciones que carecían de claridad, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-11-06T16:30:23` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, estandarización de docstrings (siguiendo estilo Google/NumPy) y la extracción de lógica compleja de validación en `_process_directory` a una función auxiliar para reducir el anidamiento y mejorar la claridad del flujo de trabajo.
-- `2026-11-06T16:29:53` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de las responsabilidades de las funciones de bajo nivel en `memory.py` y se ha sustituido el `try-except` genérico en `_iter_process_memory` por un manejo de errores más específico y documentado, mejorando la robustez y legibilidad.
-- `2026-11-06T16:20:59` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica mediante la inclusión de type hints explícitos en el pipeline de ejecución, la clarificación de los docstrings en las funciones críticas y la organización de la sección de constantes, facilitando la comprensión del flujo de datos sin alterar la lógica.
