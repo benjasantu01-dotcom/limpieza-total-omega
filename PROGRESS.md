@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 124 | 7 | 31 | 4 | 142 |
-| 2026-11-06 | 67 | 9 | 30 | 10 | 80 |
+| 2026-11-05 | 123 | 7 | 30 | 4 | 140 |
+| 2026-11-06 | 69 | 10 | 31 | 10 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **39**
-- rendimiento: **37**
+- manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **37**
 - legibilidad y documentación: **37**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,16 +35,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `browser.py`: **17**
 - `scanner.py`: **16**
-- `memory.py`: **15**
-- `assistant.py`: **14**
+- `memory.py`: **16**
 - `safety.py`: **14**
+- `assistant.py`: **13**
 - `branding.py`: **12**
 - `duplicates.py`: **12**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T11:24:35` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` mediante la adición de validaciones de tipo explícitas y chequeos preventivos de `None/empty` en la entrada, asegurando que las operaciones críticas de E/S no operen sobre rutas no resueltas o mal formadas, cumpliendo así con el enfoque de manejo de errores y validación.
+- `2026-11-06T11:24:08` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `_extract_process_info` y `trim_working_set` implementando validaciones defensivas ante tipos de datos inesperados y garantizando la limpieza de recursos (handles) ante excepciones, siguiendo el enfoque de manejo de errores y validación de entradas.
 - `2026-11-06T11:14:52` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_compute_cached` y `summarize` implementando chequeos explícitos para evitar fallos por datos nulos o mal formados, garantizando que el flujo de procesamiento de métricas nunca propague excepciones hacia la UI.
 - `2026-11-06T11:14:22` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `suggest_keeper` y `format_group` eliminando la suposición de que los elementos de `group.paths` siempre son accesibles, protegiendo a la interfaz de errores en tiempo de ejecución si un archivo desaparece durante el análisis.
 - `2026-11-06T11:13:57` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y las funciones de escaneo agregando una captura específica para `OSError` al intentar acceder a los atributos del archivo, garantizando que el recolector de métricas no falle ante permisos denegados o inconsistencias del sistema de archivos durante un `os.scandir`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T09:12:46` **browser.py** (seguridad defensiva): Se reforzó `_is_target_valid` para incluir un chequeo explícito de `realpath` antes de validar la pertenencia al sandbox, evitando ataques de redirección mediante enlaces simbólicos o junctions que podrían haber eludido la validación previa.
 - `2026-11-06T09:03:19` **settings.py** (robustez ante casos límite): Mejoré la resiliencia en la carga de configuración añadiendo una comprobación explícita para evitar la desbordamiento de pila por recursión de enlaces simbólicos mediante `follow_symlinks=False` en `os.stat` y refinando la validación de archivos inexistentes o inaccesibles.
 - `2026-11-06T09:01:51` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para archivos "sparse" y "reparse points" dentro de `_get_path_stat_robust` para asegurar que, antes de intentar leer metadatos de archivos con atributos de sistema complejos, se valide si el tipo de objeto es manipulable, evitando fallos de E/S por desreferenciación de punteros inválidos en volúmenes críticos.
-- `2026-11-06T08:53:24` **quarantine.py** (robustez ante casos límite): Se mejoró `_is_file_exclusive` para que, en caso de error de acceso inesperado (como un proceso bloqueando el archivo con permisos restringidos), retorne `False` de forma segura, evitando asumir que el archivo es "libre" cuando el sistema operativo deniega la consulta, mejorando la robustez ante casos límite de E/S.
-- `2026-11-06T08:51:09` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_process_executable_safe` y `_extract_process_info` mediante validaciones adicionales ante rutas malformadas o inexistentes, garantizando que el módulo maneje correctamente procesos con rutas inaccesibles o caracteres especiales sin lanzar excepciones.

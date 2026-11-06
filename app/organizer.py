@@ -355,13 +355,11 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
         
-        # Validar destino central antes de procesar
         if not is_safe_to_modify(dest_base): return None
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
             
-            # Validación consolidada previa a la operación
             if not _is_safe_for_disk_op(junk_file, dest_base): continue
             
             target_path = _can_move_file(junk_file, dest_base)
@@ -374,8 +372,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Determina la ruta de destino segura para evitar sobreescrituras en el área de revisión."""
+    if not isinstance(junk_file.modified, datetime): return None
     try:
-        if not isinstance(junk_file.modified, datetime): return None
         timestamp = int(junk_file.modified.timestamp())
         safe_name = f"{junk_file.path.stem}_{timestamp}{junk_file.path.suffix}"
         return _generate_unique_target(dest_base / safe_name)
@@ -392,7 +390,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
-                # Pre-validación estricta para el borrado
                 if item.is_file() and not item.is_symlink() and not _is_junction(item):
                     if is_valid_junk_extension(item.name) and is_safe_to_modify(item) and not _is_file_locked(item):
                         item.unlink()
