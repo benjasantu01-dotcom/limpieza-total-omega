@@ -52,9 +52,14 @@ class SuspicionCheck(Protocol):
     """
     Define el contrato para funciones de inspección heurística.
 
-    Protocolo utilizado para inyectar nuevas reglas de análisis. Las funciones que
-    implementan este protocolo deben ser puras (o seguras frente a efectos secundarios)
-    y procesar metadatos en lugar de leer el contenido del archivo.
+    Args:
+        path: Ruta absoluta al archivo a analizar.
+        entry: Objeto DirEntry opcional para acceder a atributos sin syscalls extras.
+        now_ts: Timestamp actual para cálculos de antigüedad.
+        stats: Resultados de stat() para evitar lecturas duplicadas.
+
+    Returns:
+        Un objeto Suspicion si se detecta una anomalía, None en caso contrario.
     """
     def __call__(
         self, 

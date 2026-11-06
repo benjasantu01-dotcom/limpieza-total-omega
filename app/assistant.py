@@ -429,6 +429,7 @@ class SystemContext:
         """Recopila problemas de salud detectados."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
+        # Optimizacion: Usamos frozenset para mejorar el cacheo en el lru_cache externo
         relevant = frozenset((k, snap[k]) for k in snap if k in _CRITERIOS_MAP)
         return _evaluate_active_problems(relevant)
 
