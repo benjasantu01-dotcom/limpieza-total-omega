@@ -719,7 +719,10 @@ def _validate_input_path(source: PathLike) -> Path:
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
     """Aísla un archivo en cuarentena confirmando su integridad y garantizando su futura restauración."""
     p_source: Path = _validate_input_path(source)
-    initial_stat = p_source.stat()
+    try:
+        initial_stat = p_source.stat()
+    except OSError as e:
+        raise RuntimeError(f"Error al acceder a metadatos de origen: {e}")
     
     if _is_filesystem_read_only(p_source.parent): raise OSError("El archivo origen reside en un volumen de solo lectura.")
     try: dest_dir: Path = quarantine_dir(base)
