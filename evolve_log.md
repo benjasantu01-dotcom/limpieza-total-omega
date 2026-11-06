@@ -717,3 +717,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T17:02:03` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de métricas reduciendo el uso de `ctypes.create_unicode_buffer` (costoso) al reutilizar un único búfer prealocado en la iteración, y se reemplazó la creación dinámica de listas de PIDs por un generador eficiente para evitar iterar dos veces sobre los resultados del sistema.
 - `2026-11-06T17:02:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T17:02:03` Corrida terminada. Total usado hoy: 332.
+- `2026-11-06T17:10:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-06T17:10:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-06T17:11:19` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al sistema de archivos en `purge_all` mediante el uso de `os.scandir` para evitar múltiples llamadas a `exists()` y `is_file()` en cada iteración del bucle, reduciendo significativamente el overhead de E/S al procesar directorios con muchos archivos.
+- `2026-11-06T17:11:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-11-06T17:11:59` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 57% del original (posible pérdida de código)
+- `2026-11-06T17:11:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T17:11:59` Corrida terminada. Total usado hoy: 336.

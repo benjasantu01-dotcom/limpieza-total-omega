@@ -524,6 +524,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
                 return cached_items
         
+        # Uso de dict comprehension con set para búsqueda eficiente
         existing_names = {entry.name for entry in os.scandir(base_dir) if entry.is_file()}
         
         with open(m_path, "r", encoding="utf-8") as f: 

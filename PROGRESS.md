@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 67 | 4 | 16 | 3 | 82 |
-| 2026-11-06 | 125 | 13 | 49 | 14 | 131 |
+| 2026-11-05 | 65 | 4 | 16 | 3 | 80 |
+| 2026-11-06 | 126 | 13 | 51 | 14 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **38**
-- rendimiento: **33**
+- seguridad defensiva: **36**
+- rendimiento: **34**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `healthscore.py`: **20**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `safety.py`: **17**
 - `scanner.py`: **17**
 - `memory.py`: **16**
-- `browser.py`: **15**
 - `settings.py`: **15**
-- `assistant.py`: **14**
+- `browser.py`: **14**
+- `assistant.py`: **13**
 - `duplicates.py`: **11**
 - `branding.py`: **11**
 - `startup.py`: **9**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T17:11:19` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` mediante el uso de `os.scandir` para evitar múltiples llamadas a `exists()` y `is_file()` en cada iteración del bucle, reduciendo significativamente el overhead de E/S al procesar directorios con muchos archivos.
 - `2026-11-06T17:02:03` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas reduciendo el uso de `ctypes.create_unicode_buffer` (costoso) al reutilizar un único búfer prealocado en la iteración, y se reemplazó la creación dinámica de listas de PIDs por un generador eficiente para evitar iterar dos veces sobre los resultados del sistema.
 - `2026-11-06T17:00:46` **healthscore.py** (rendimiento): Se ha optimizado el rendimiento de `healthscore.py` eliminando el cálculo redundante de `PipelineEntry.rules` mediante la conversión de la estructura de búsqueda a un diccionario pre-procesado, evitando así la reconstrucción constante de tuplas y la búsqueda lineal dentro del bucle de orquestación.
 - `2026-11-06T16:51:59` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la conversión repetida a `str` y `Path` dentro del bucle principal por el uso directo de `entry.path`, evitando la creación innecesaria de objetos `Path` y reduciendo la sobrecarga de CPU en recorridos de directorios grandes.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T16:20:09` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de recorrido de archivos y clases auxiliares, aclarando el propósito y las restricciones de seguridad (`is_protected_path`) para facilitar su mantenimiento.
 - `2026-11-06T16:11:14` **browser.py** (legibilidad y documentación): Mejora la legibilidad del motor de escaneo mediante la refactorización de `DirectoryScanner._process_entry` para separar claramente la lógica de navegación (directorios) de la de recolección (archivos), facilitando el mantenimiento y garantizando la claridad en las validaciones.
 - `2026-11-06T16:11:01` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna incluyendo Type Hints explícitos para las tuplas de parámetros geométricos en `_get_stripe_params`, y se han añadido docstrings detallados en las funciones de renderizado complejo para explicar la lógica de traslación y escalado de coordenadas.
-- `2026-11-06T16:10:27` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data`, extrayendo la lógica compleja de sanitización en métodos privados más específicos, clarificando el flujo de validación y añadiendo docstrings que explican las decisiones de seguridad tomadas.
