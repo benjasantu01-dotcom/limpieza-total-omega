@@ -355,11 +355,9 @@ def validate(raw_values: Any) -> AppSettings:
     for key_str, raw_val in raw_values.items():
         if key_str in _VALID_ENUM_KEYS:
             key_enum = _KEY_TO_ENUM[key_str]
-            validator = _VALIDATOR_MAP.get(key_enum)
-            if validator:
-                validated_val = validator.func(key_enum, raw_val)
-                if validated_val is not None:
-                    config[key_enum.value] = validated_val # type: ignore
+            if (validator := _VALIDATOR_MAP.get(key_enum)):
+                if (validated_val := validator.func(key_enum, raw_val)) is not None:
+                    config[key_enum.value] = validated_val
     return config 
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
@@ -378,7 +376,6 @@ def _is_structure_valid(data: Any) -> bool:
     if not isinstance(data, dict) or not data or len(data) > 64: return False
     for key in ConfigKey:
         val = data.get(key.value)
-        # Permite ausencia de clave opcional pero valida tipo si existe
         if val is not None and not _is_valid_type(val, key): return False
     return True
 
@@ -476,10 +473,8 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     for key_str, value in changes.items():
         if key_str in _VALID_ENUM_KEYS:
             key_enum = _KEY_TO_ENUM[key_str]
-            validator = _VALIDATOR_MAP.get(key_enum)
-            if validator:
-                val = validator.func(key_enum, value)
-                if val is not None and val != current.get(key_str):
+            if (validator := _VALIDATOR_MAP.get(key_enum)):
+                if (val := validator.func(key_enum, value)) is not None and val != current.get(key_str):
                     current[key_str] = val
                     modified = True
     if modified: save(current, custom_base)

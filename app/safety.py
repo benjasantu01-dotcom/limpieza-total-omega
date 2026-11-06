@@ -39,7 +39,7 @@ _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], bool]] = {}
 _NEGATIVE_SECURITY_CACHE: Final[set[tuple[int, int, int, int]]] = set()
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
 _FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
-_ATTR_CACHE: Final[dict[str, int]] = {}
+_ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, bool]] = {}
 
 class SafetyValidationCategory(Enum):
@@ -236,11 +236,14 @@ def _is_path_too_long(path_str: str) -> bool:
     return isinstance(path_str, str) and len(path_str) > MAX_PATH_LENGTH
 
 def _get_file_attrs(path_str: Optional[str]) -> int:
-    """Interfaz segura hacia GetFileAttributesW para obtener flags de sistema."""
+    """Interfaz segura hacia GetFileAttributesW para obtener flags de sistema con TTL de 5s."""
     if not isinstance(path_str, str) or not path_str:
         return 0
+    now = time.monotonic()
     if path_str in _ATTR_CACHE:
-        return _ATTR_CACHE[path_str]
+        val, ts = _ATTR_CACHE[path_str]
+        if now - ts < 5.0:
+            return val
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == INVALID_FILE_ATTRIBUTES:
@@ -250,7 +253,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
             else:
                 return INVALID_FILE_ATTRIBUTES
         if len(_ATTR_CACHE) > 4096: _ATTR_CACHE.clear()
-        _ATTR_CACHE[path_str] = attrs
+        _ATTR_CACHE[path_str] = (attrs, now)
         return attrs
     except (AttributeError, ctypes.ArgumentError, OSError, ValueError, Exception):
         return 0
