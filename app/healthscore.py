@@ -322,12 +322,15 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     """Evalúa reglas de advertencia según la métrica recibida y retorna lista de mensajes."""
     if not isinstance(rules, tuple) or not isinstance(metrics, SystemMetrics):
         return []
+    if not isinstance(normalized_ratio, (float, int)) or not math.isfinite(normalized_ratio):
+        return []
     results = []
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):
                 msg = rule.message_factory(metrics)
-                if msg: results.append(msg)
+                if isinstance(msg, str) and msg: 
+                    results.append(msg)
         except Exception:
             continue
     return results

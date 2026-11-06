@@ -402,3 +402,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-06T13:38:38` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
 - `2026-11-06T13:38:38` Rotación — log: 1188 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T13:38:38` Corrida terminada. Total usado hoy: 252.
+- `2026-11-06T13:46:29` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-06T13:46:58` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_get_local_windows_drives` al añadir una validación estricta de la ruta antes de intentar cualquier operación de sistema, previniendo errores por rutas inexistentes o inaccesibles que podrían causar una excepción no controlada en el bucle de detección de unidades.
+- `2026-11-06T13:47:21` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las verificaciones de seguridad en `_collect_candidates` para prevenir el seguimiento de enlaces simbólicos o puntos de reanálisis durante el recorrido del árbol, asegurando que `is_safe_to_modify` y `is_protected_path` actúen siempre como filtros de barrera antes de cualquier acceso a metadatos.
+- `2026-11-06T13:47:52` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del módulo añadiendo una comprobación de tipo estricta (`isinstance(msg, str)`) y una verificación de finitud numérica adicional dentro del pipeline de recomendaciones para evitar que valores NaN o infinitos propaguen estados de error hacia la interfaz.
+- `2026-11-06T13:48:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-06T13:48:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T13:48:51` Corrida terminada. Total usado hoy: 256.

@@ -175,12 +175,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in it:
                     try:
                         entry_path = Path(entry.path)
-                        # No seguir enlaces o puntos de reanálisis
+                        # Pre-validación estricta antes de acceder a metadatos
+                        if skip_protected and is_protected_path(entry_path): continue
+                        if is_junction(entry_path): continue
+                        
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(entry_path) and not entry.is_symlink():
+                            if depth + 1 <= MAX_RECURSION_DEPTH:
                                 queue.append((entry_path, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            if skip_protected and is_protected_path(entry_path): continue
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size >= min_size:
                                 inode_id = (stat.st_dev, stat.st_ino)

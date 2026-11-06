@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 104 | 5 | 25 | 4 | 114 |
-| 2026-11-06 | 94 | 12 | 41 | 13 | 92 |
+| 2026-11-05 | 104 | 5 | 25 | 4 | 110 |
+| 2026-11-06 | 97 | 12 | 42 | 13 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,12 +25,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **41**
 - rendimiento: **37**
-- seguridad defensiva: **30**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `healthscore.py`: **19**
+- `diskreport.py`: **21**
+- `healthscore.py`: **20**
 - `quarantine.py`: **18**
 - `browser.py`: **17**
 - `settings.py`: **17**
@@ -38,13 +38,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `scanner.py`: **16**
 - `assistant.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
 - `branding.py`: **12**
 - `organizer.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T13:47:52` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del módulo añadiendo una comprobación de tipo estricta (`isinstance(msg, str)`) y una verificación de finitud numérica adicional dentro del pipeline de recomendaciones para evitar que valores NaN o infinitos propaguen estados de error hacia la interfaz.
+- `2026-11-06T13:47:21` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `_collect_candidates` para prevenir el seguimiento de enlaces simbólicos o puntos de reanálisis durante el recorrido del árbol, asegurando que `is_safe_to_modify` y `is_protected_path` actúen siempre como filtros de barrera antes de cualquier acceso a metadatos.
+- `2026-11-06T13:46:58` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_local_windows_drives` al añadir una validación estricta de la ruta antes de intentar cualquier operación de sistema, previniendo errores por rutas inexistentes o inaccesibles que podrían causar una excepción no controlada en el bucle de detección de unidades.
 - `2026-11-06T13:27:31` **safety.py** (robustez ante casos límite): Se ha añadido una validación temprana de permisos de escritura a nivel de directorio en `ensure_safe_to_modify` para evitar intentos innecesarios de acceso a archivos dentro de carpetas donde el usuario no tiene permisos, reduciendo así la carga de llamadas al sistema y mejorando la robustez frente a directorios protegidos por ACLs.
 - `2026-11-06T13:17:45` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` agregando un manejo explícito de errores ante archivos bloqueados por el SO (sharing violation) y asegurando que las operaciones de I/O en la transferencia al sandbox sean resilientes mediante el uso del wrapper `_check_io_error_context` ya presente en el módulo.
 - `2026-11-06T13:17:16` **organizer.py** (robustez ante casos límite): Se introdujo una validación estricta de la integridad de la estructura de directorios durante el escaneo para prevenir ataques de manipulación de rutas (`Symlink/Junction attack`) y se mejoró la resiliencia ante errores de permiso en `stage_for_review` asegurando que la operación solo proceda si la ruta fuente es un archivo válido y no ha cambiado desde la detección.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T12:37:26` **memory.py** (rendimiento): Se ha optimizado `_iter_process_memory` pre-asignando el buffer de ruta y reutilizando los punteros de estructura para reducir la carga de asignación de memoria en cada iteración del bucle de procesos, mejorando el rendimiento en sistemas con muchos procesos activos.
 - `2026-11-06T12:35:35` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo reemplazando la creación dinámica de listas y el uso de `getattr` en el bucle principal de `_compute_cached` por una tupla inmutable de accesos directos, reduciendo la sobrecarga de resolución de atributos y la gestión de memoria durante el re-cálculo de métricas.
 - `2026-11-06T12:26:26` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando las múltiples llamadas redundantes a `entry.stat()` y `entry.is_dir()/is_file()` por un solo `entry.stat(follow_symlinks=False)`, reduciendo drásticamente las llamadas al sistema y el tiempo total de ejecución.
-- `2026-11-06T12:16:30` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud utilizando un `frozenset` pre-calculado en `active_problems` para evitar iteraciones redundantes y mejorar el rendimiento en consultas frecuentes, aprovechando que el estado es inmutable.
-- `2026-11-06T12:16:01` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `StartupEntry` mediante la unificación de criterios de validación y la clarificación de las responsabilidades de sus métodos privados, asegurando que cada componente tenga una docstring precisa que explique el "porqué" de las restricciones de seguridad.
-- `2026-11-06T12:15:33` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de validación y gestión de caché mediante docstrings más precisos y la implementación de type hints explícitos, facilitando la comprensión del flujo de datos sin alterar la lógica de seguridad existente.
