@@ -162,7 +162,6 @@ class _SettingsManager:
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
-        # Cache: {resolved_path_str: (data_proxy, mtime, size)}
         self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
 
     def clear(self, resolved_path_str: str) -> None:
@@ -190,7 +189,6 @@ class _SettingsManager:
             
             if resolved_path.exists():
                 try:
-                    # Usamos lstat para no seguir enlaces antes de validar
                     st = resolved_path.lstat()
                     if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
                     if (st.st_mode & 0o077) != 0: return False 
@@ -327,7 +325,6 @@ class _Validators:
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         return _Validators._validate_enum_str(text, key)
 
-# Mapeo explícito entre claves de configuración y sus validadores correspondientes
 _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingProxyType({
     ConfigKey.TEMA: _ValidatorEntry(_Validators.str),
     ConfigKey.ACENTO: _ValidatorEntry(_Validators.str),
@@ -348,10 +345,7 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 })
 
 def validate(raw_values: Any) -> AppSettings:
-    """
-    Valida un diccionario de configuración arbitrario contra el esquema definido.
-    Descarta claves desconocidas o valores cuyo tipo/rango no sea admisible.
-    """
+    """Valida un diccionario de configuración arbitrario contra el esquema definido."""
     if not _is_dict(raw_values): return DEFAULTS.copy()
     config = DEFAULTS.copy()
     for key_str, raw_val in raw_values.items():
@@ -376,55 +370,33 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _is_structure_valid(data: Any) -> bool:
-    """
-    Verifica la integridad del diccionario JSON deserializado:
-    Comprueba que el objeto tenga las claves mínimas necesarias y que cada valor
-    mantenga el tipo de dato esperado respecto al esquema por defecto.
-    """
+    """Verifica la integridad del diccionario JSON deserializado."""
     if not isinstance(data, dict) or not data or len(data) > 64: return False
-    
     for key in ConfigKey:
         val = data.get(key.value)
         if val is None or not _is_valid_type(val, key): return False
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
-    """
-    Ejecuta el ciclo de carga: verifica permisos de archivo, abre de forma segura 
-    (evitando race conditions), parsea el contenido y valida su estructura interna.
-    """
+    """Ejecuta el ciclo de carga: verifica, abre, parsea y valida."""
     try:
-        # Pre-verificación de lstat
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
-        
-        # O_NOFOLLOW impide abrir si el archivo es un symlink
         flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0)
         fd = os.open(file_path, flags)
         try:
             st_post = os.fstat(fd)
-            # Validación post-apertura: confirmar que seguimos en el archivo original
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1:
-                os.close(fd)
-                return None
-            
-            with os.fdopen(fd, "r", encoding="utf-8") as f:
-                data = json.load(f)
+                os.close(fd); return None
+            with os.fdopen(fd, "r", encoding="utf-8") as f: data = json.load(f)
         except (json.JSONDecodeError, OSError):
-            os.close(fd)
-            return None
-            
+            os.close(fd); return None
         if not _is_structure_valid(data): return None
         return data, st_post
-    except (OSError, IOError, PermissionError, ValueError, TypeError):
-        return None
+    except (OSError, IOError, PermissionError, ValueError, TypeError): return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """
-    Asegura la resiliencia del objeto de configuración: rellena claves faltantes 
-    con valores de fábrica, descarta tipos incompatibles y valida dependencias 
-    lógicas (ej: desactiva el asistente si no hay credenciales).
-    """
+    """Asegura la resiliencia del objeto de configuración."""
     coerced = DEFAULTS.copy()
     for key_name, value in settings.items():
         if key_name in DEFAULTS and value is not None and isinstance(value, type(DEFAULTS[key_name])):
@@ -433,6 +405,7 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         coerced["asistente_activado"] = False
     return coerced
 
+@lru_cache(maxsize=8)
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Retorna los settings actuales desde el caché o cargando desde disco."""
     primary_path = settings_path(custom_base)
@@ -443,32 +416,27 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             cached = _MANAGER.data_cache.get(resolved_str)
             if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
                 return dict(cached[0])
-            
             result = _read_and_parse_json(primary_path)
             if result is not None:
                 data, st = result
                 settings = _coerce_and_verify(validate(data))
                 _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
                 return settings
-    except (OSError, PermissionError): 
-        pass
+    except (OSError, PermissionError): pass
     return DEFAULTS.copy()
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Resuelve la ruta definitiva del archivo de configuración, validando seguridad."""
+    """Resuelve la ruta definitiva del archivo de configuración."""
     cache_key = str(custom_base) if custom_base else "DEFAULT"
-    if cache_key in _MANAGER.path_cache:
-        return _MANAGER.path_cache[cache_key]
+    if cache_key in _MANAGER.path_cache: return _MANAGER.path_cache[cache_key]
     try:
         base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
         if is_safe_to_modify(str(base)):
             if not base.exists():
                 try: base.mkdir(parents=True, exist_ok=True)
                 except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE
-            
             if not os.access(base, os.R_OK | os.W_OK) or _Validators._is_reparse_point(str(base)): 
                 return SETTINGS_DIR / SETTINGS_FILE
-            
             full_path = base / SETTINGS_FILE
             _MANAGER.path_cache[cache_key] = full_path
             return full_path
@@ -486,8 +454,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             try:
                 st = config_path.stat()
                 _MANAGER.data_cache[str(config_path.resolve())] = (MappingProxyType(cleaned_settings), st.st_mtime, st.st_size)
-            except OSError:
-                pass
+                load.cache_clear()
+            except OSError: pass
             return config_path
         return None
     except (OSError, PermissionError, AttributeError, TypeError, ValueError): return None

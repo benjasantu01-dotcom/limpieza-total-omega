@@ -563,3 +563,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-06T03:46:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-11-06T03:46:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T03:46:30` Corrida terminada. Total usado hoy: 20.
+- `2026-11-06T03:55:05` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-11-06T03:55:55` ➖ Sin cambios en safety.py (enfoque: rendimiento). Motivo: Se implementó un sistema de `lru_cache` para `_is_kernel_managed` y se racionalizaron las llamadas a `os.path` y `Path` dentro de los bucles críticos de validación, minimizando la recreación de objetos `Path` y reduciendo accesos redundantes al sistema de archivos mediante el uso de `_SECURITY_CACHE` y `_STRUCTURAL_CACHE` ya existentes.
+- `2026-11-06T03:56:33` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo reemplazando la creación repetitiva de objetos `Path` en el bucle principal de `Scanner.process_entry` por la manipulación directa de `os.DirEntry.path`, y mejoré el filtrado inicial al mover la comprobación de extensiones antes de cualquier operación costosa de `stat`.
+- `2026-11-06T03:57:03` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la carga de configuración implementando `lru_cache` sobre `load` y simplificando el acceso mediante `_MANAGER` para evitar redundancias en la resolución de rutas y validación de archivos, reduciendo llamadas innecesarias al sistema de archivos en operaciones repetidas.
+- `2026-11-06T03:57:25` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-11-06T03:57:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T03:57:25` Corrida terminada. Total usado hoy: 24.

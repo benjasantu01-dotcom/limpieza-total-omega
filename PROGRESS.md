@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 249
+- Rechazadas por guardia de seguridad: 53
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 246
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 35 | 1 | 11 | 5 | 82 |
+| 2026-11-04 | 34 | 1 | 11 | 5 | 79 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 8 | 1 | 6 | 1 | 4 |
+| 2026-11-06 | 10 | 1 | 7 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **35**
-- seguridad defensiva: **32**
+- rendimiento: **37**
+- seguridad defensiva: **31**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
-- `settings.py`: **18**
+- `healthscore.py`: **18**
 - `memory.py`: **16**
 - `browser.py`: **16**
+- `scanner.py`: **15**
 - `assistant.py`: **15**
 - `quarantine.py`: **15**
-- `scanner.py`: **14**
 - `safety.py`: **13**
 - `duplicates.py`: **13**
 - `branding.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T03:57:03` **settings.py** (rendimiento): Optimizé la carga de configuración implementando `lru_cache` sobre `load` y simplificando el acceso mediante `_MANAGER` para evitar redundancias en la resolución de rutas y validación de archivos, reduciendo llamadas innecesarias al sistema de archivos en operaciones repetidas.
+- `2026-11-06T03:56:33` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo reemplazando la creación repetitiva de objetos `Path` en el bucle principal de `Scanner.process_entry` por la manipulación directa de `os.DirEntry.path`, y mejoré el filtrado inicial al mover la comprobación de extensiones antes de cualquier operación costosa de `stat`.
 - `2026-11-06T03:45:24` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` pre-asignando el buffer de ruta y procesando los PIDs mediante un generador filtrado para reducir la carga de llamadas a la API de Windows en cada iteración del bucle principal.
 - `2026-11-06T03:36:05` **healthscore.py** (rendimiento): Optimizado el rendimiento del pipeline de puntuación eliminando la recolección redundante de datos en `summarize` mediante el uso del diccionario `result.breakdown` preexistente, y mejorando el uso de memoria en `_compute_cached` al evitar la creación de listas intermedias (`scores_by_entry`) durante el cálculo del score.
 - `2026-11-06T03:35:16` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación de miles de objetos `Path` y llamadas redundantes a `relative_to` dentro del loop, usando el string de la raíz y operaciones de búsqueda de prefijos, reduciendo el overhead de procesamiento en directorios grandes.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-05T14:43:03` **diskreport.py** (legibilidad y documentación): Documenté con docstrings detallados las clases internas (`ExtStats`, `GlobalStats`, `FolderMetrics`) y simplifiqué la legibilidad de `_collect_summary_data` para clarificar la lógica de acumulación, facilitando el mantenimiento a futuro sin alterar la funcionalidad.
 - `2026-11-05T14:42:49` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados y la normalización de la terminología en `DirectoryScanner`, aclarando la lógica de protección frente a puntos de reparse.
 - `2026-11-05T14:41:50` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la normalización de docstrings (ajustándolos a la especificación PEP 257), la adición de Type Hints en funciones de orden superior y la clarificación de la intención de los decoradores de seguridad.
-- `2026-11-05T14:33:05` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_valid_registry_path` y `_is_registry_entry_safe` mediante la validación explícita de tipos `Path` y el manejo preventivo de excepciones `OSError` al operar sobre rutas malformadas, evitando que entradas inválidas o rutas con caracteres prohibidos inyecten fallos silenciosos en el inventario.
-- `2026-11-05T14:32:39` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate` y `_is_structure_valid` para evitar posibles errores de `KeyError` o `AttributeError` ante configuraciones que contengan claves inesperadas o valores nulos, asegurando que siempre se respete la integridad del esquema `AppSettings` incluso con archivos manipulados externamente.

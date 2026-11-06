@@ -310,6 +310,7 @@ class Scanner:
             path_norm = os.path.normcase(entry.path)
             if path_norm not in self.seen_normcase:
                 self.seen_normcase.add(path_norm)
+                # Se utiliza la ruta en cadena para evitar instanciar Path innecesariamente
                 self._run_file_heuristics(Path(entry.path), entry)
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
