@@ -8,25 +8,25 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 58
-- Sin cambios (nada sustancial que mejorar): 14
+- Rechazadas por guardia de seguridad: 59
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 10 | 1 | 5 | 2 | 24 |
+| 2026-11-04 | 9 | 1 | 4 | 1 | 23 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 41 | 5 | 18 | 7 | 41 |
+| 2026-11-06 | 42 | 5 | 20 | 7 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **36**
-- rendimiento: **30**
+- robustez ante casos límite: **35**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `browser.py`: **16**
-- `memory.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
+- `memory.py`: **14**
 - `safety.py`: **13**
 - `duplicates.py`: **13**
 - `branding.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T07:51:04` **assistant.py** (rendimiento): Se optimizó el proceso de evaluación de problemas del sistema reemplazando el uso de `tuple` y `list` por un `frozenset` para la comparación de métricas, mejorando la eficiencia de los chequeos constantes y utilizando la caché de `lru_cache` de manera más efectiva al filtrar las métricas irrelevantes antes de llegar a la lógica de evaluación.
 - `2026-11-06T07:41:23` **scanner.py** (legibilidad y documentación): Se han añadido docstrings descriptivos a las funciones de heurística y métodos de `Scanner` para clarificar la lógica de negocio detrás de los filtros de seguridad, mejorando la mantenibilidad sin alterar la funcionalidad.
 - `2026-11-06T07:40:04` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los parámetros y retornos en las funciones clave de validación y aislamiento mediante Google-style docstrings, facilitando la comprensión de la lógica de seguridad implementada.
 - `2026-11-06T07:31:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (especificando brevemente el propósito de cada función y, donde correspondía, los detalles sobre sus efectos colaterales o requerimientos de sistema) y se han añadido sugerencias de tipo más precisas para clarificar la interfaz de los `ctypes.Callbacks` usados en la manipulación de procesos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T06:59:52` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la validación proactiva de parámetros y la captura de errores específicos en `_is_file_exclusive`, evitando que excepciones inesperadas durante la detección de bloqueos se propaguen y afecten el flujo de la aplicación.
 - `2026-11-06T06:59:08` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita y validación de tipos en los parámetros de entrada y el manejo de excepciones durante la resolución de rutas, evitando que valores malformados (None, tipos incorrectos, o fallas en el sistema de archivos) provoquen interrupciones en el flujo de trabajo del usuario.
 - `2026-11-06T06:48:52` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_path_check` y `hash_file` mediante la validación explícita de `None` y errores de tipo en las entradas, evitando que excepciones inesperadas rompan el flujo de procesamiento en el bucle de duplicados.
-- `2026-11-06T06:40:00` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante entradas de archivos vacías o con errores de lectura durante el escaneo, asegurando que los contadores no procesen valores inválidos y mejorando la consistencia en el manejo de excepciones.

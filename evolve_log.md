@@ -1006,3 +1006,10 @@ assert not {'replace'}
 - `2026-11-06T07:41:23` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se han añadido docstrings descriptivos a las funciones de heurística y métodos de `Scanner` para clarificar la lógica de negocio detrás de los filtros de seguridad, mejorando la mantenibilidad sin alterar la funcionalidad.
 - `2026-11-06T07:41:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T07:41:23` Corrida terminada. Total usado hoy: 112.
+- `2026-11-06T07:49:31` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-06T07:50:06` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._validate_enum_str
+- `2026-11-06T07:50:26` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): el archivo se encogió al 39% del original (posible pérdida de código)
+- `2026-11-06T07:51:04` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el proceso de evaluación de problemas del sistema reemplazando el uso de `tuple` y `list` por un `frozenset` para la comparación de métricas, mejorando la eficiencia de los chequeos constantes y utilizando la caché de `lru_cache` de manera más efectiva al filtrar las métricas irrelevantes antes de llegar a la lógica de evaluación.
+- `2026-11-06T07:51:17` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-06T07:51:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T07:51:17` Corrida terminada. Total usado hoy: 116.
