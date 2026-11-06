@@ -992,3 +992,10 @@ assert not {'replace'}
 - `2026-11-06T07:20:47` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna mediante docstrings detallados en funciones críticas y se ha simplificado la estructura de tipos en `_collect_candidates` para mayor claridad, manteniendo la robustez operativa requerida.
 - `2026-11-06T07:20:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T07:20:47` Corrida terminada. Total usado hoy: 104.
+- `2026-11-06T07:29:08` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-11-06T07:29:37` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los parámetros de funciones que carecían de ellos y se documentó el propósito de las funciones internas del pipeline para mejorar la mantenibilidad y claridad del flujo de datos sin alterar la funcionalidad.
+- `2026-11-06T07:30:37` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-06T07:31:05` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de docstrings (especificando brevemente el propósito de cada función y, donde correspondía, los detalles sobre sus efectos colaterales o requerimientos de sistema) y se han añadido sugerencias de tipo más precisas para clarificar la interfaz de los `ctypes.Callbacks` usados en la manipulación de procesos.
+- `2026-11-06T07:31:18` ➖ Sin cambios en organizer.py (enfoque: legibilidad y documentación). Motivo: Se agregaron docstrings detallados a las funciones de validación y procesado en `organizer.py` para explicar el propósito y las restricciones de seguridad subyacentes, mejorando la legibilidad técnica sin alterar el comportamiento.
+- `2026-11-06T07:31:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T07:31:18` Corrida terminada. Total usado hoy: 108.

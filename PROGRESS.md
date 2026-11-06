@@ -9,36 +9,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 56
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 231
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 13 | 1 | 6 | 3 | 27 |
+| 2026-11-04 | 11 | 1 | 5 | 3 | 26 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 37 | 5 | 15 | 6 | 41 |
+| 2026-11-06 | 39 | 5 | 16 | 7 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **38**
 - robustez ante casos límite: **37**
-- rendimiento: **32**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
 - `diskreport.py`: **20**
+- `settings.py`: **19**
+- `healthscore.py`: **18**
 - `browser.py`: **17**
-- `healthscore.py`: **17**
 - `quarantine.py`: **16**
 - `scanner.py`: **16**
-- `safety.py`: **14**
-- `memory.py`: **14**
+- `memory.py`: **15**
 - `assistant.py`: **14**
+- `safety.py`: **13**
 - `duplicates.py`: **13**
 - `branding.py`: **12**
 - `organizer.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T07:31:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (especificando brevemente el propósito de cada función y, donde correspondía, los detalles sobre sus efectos colaterales o requerimientos de sistema) y se han añadido sugerencias de tipo más precisas para clarificar la interfaz de los `ctypes.Callbacks` usados en la manipulación de procesos.
+- `2026-11-06T07:29:37` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de funciones que carecían de ellos y se documentó el propósito de las funciones internas del pipeline para mejorar la mantenibilidad y claridad del flujo de datos sin alterar la funcionalidad.
 - `2026-11-06T07:20:47` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings detallados en funciones críticas y se ha simplificado la estructura de tipos en `_collect_candidates` para mayor claridad, manteniendo la robustez operativa requerida.
 - `2026-11-06T07:20:25` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo mediante la adición de Type Hints detallados, la unificación de docstrings siguiendo el estándar de Google, y la simplificación de la lógica en `largest_folders` para mejorar la claridad del flujo de trabajo sin alterar la funcionalidad.
 - `2026-11-06T07:19:57` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `DirectoryScanner` mediante la adición de Type Hints en los retornos y docstrings detallados que explican el "porqué" de las exclusiones de seguridad, facilitando el mantenimiento técnico de la lógica de escaneo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T06:40:00` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante entradas de archivos vacías o con errores de lectura durante el escaneo, asegurando que los contadores no procesen valores inválidos y mejorando la consistencia en el manejo de excepciones.
 - `2026-11-06T06:39:14` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` ante entradas inesperadas o estados inconsistentes, añadiendo validaciones explícitas de tipo y rango para prevenir excepciones no capturadas durante la ejecución.
 - `2026-11-06T05:17:15` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_read_and_parse_json` al verificar explícitamente que la ruta no sea un punto de reparse antes de abrirla, alineando la carga con las salvaguardas que ya existían en `perform_atomic_write`.
-- `2026-11-06T05:08:42` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al añadir una validación crítica de "propiedad de ruta" en `Scanner._is_safe_entry` y `Scanner.process_entry`, garantizando que el escáner no solo verifique la raíz inicial, sino que toda entrada procesada resida físicamente dentro del subárbol esperado, previniendo posibles ataques de *path traversal* o escalada fuera del ámbito de escaneo.
-- `2026-11-06T05:08:25` **safety.py** (seguridad defensiva): Se añadió una validación defensiva en `_validate_preconditions` para detectar si el directorio padre de la ruta objetivo es una raíz de unidad (`drive root`) o un punto de montaje, previniendo operaciones de modificación accidental en niveles críticos de la jerarquía de almacenamiento.

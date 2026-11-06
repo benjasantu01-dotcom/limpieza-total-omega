@@ -56,13 +56,13 @@ _VALIDATION_KEYS: Final[Tuple[str, ...]] = (
 )
 _ALL_METRICS: Final[Tuple[str, ...]] = _VALIDATION_KEYS + ("quarantined_count",)
 
-def _guard_metric_access(func: Callable) -> Callable:
+def _guard_metric_access(func: Callable[[Any, str, Any], Any]) -> Callable[[Any, str, Any], Any]:
     """Decorador que asegura que solo se acceda a métricas definidas en el esquema."""
     @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if args and isinstance(args[0], str) and args[0] not in _ALL_METRICS:
-            return 0.0
-        return func(*args, **kwargs)
+    def wrapper(instance: Any, field_name: str, default: Any = 0.0) -> Any:
+        if field_name not in _ALL_METRICS:
+            return default
+        return func(instance, field_name, default)
     return wrapper
 
 def _is_sensitive_input(data: Any) -> bool:
@@ -161,11 +161,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
         return min_val
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Genera una función de normalización lineal que mapea valores de entrada a [0.0, 1.0].
-    
-    Si 'inverse' es True, un valor de 0 mapea a 1.0 (óptimo), útil para métricas de 'desecho'.
-    Si 'inverse' es False, un valor de 0 mapea a 0.0, útil para métricas de 'disponibilidad'.
-    """
+    """Genera una función de normalización lineal que mapea valores de entrada a [0.0, 1.0]."""
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0: return 0.0
         try:
