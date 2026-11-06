@@ -695,15 +695,20 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 attrs = _get_file_attrs(str(path))
                 if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.DIRECTORY | Win32Attr.REPARSE_POINT)):
                     raise UnsafePathError(f"Estructura no válida: {path.name}", SafetyValidationErrorCode.INVALID_PATH_TYPE, SafetyValidationCategory.STRUCTURE)
+            
+            # Verificación de validez básica de timestamps si están disponibles
             if st.st_atime == 0 and st.st_mtime == 0:
                  raise OSError(errno.EAGAIN, "Metadatos corruptos")
             return st
         except (PermissionError, OSError) as e:
+            # Captura errores transitorios típicos de E/S
             if isinstance(e, OSError) and e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN):
                 if attempt < max_retries - 1:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
-            raise UnsafePathError(f"Error accediendo a metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+            # Clasificamos explícitamente errores de acceso o inexistencia
+            code = SafetyValidationErrorCode.ACCESS_DENIED if isinstance(e, PermissionError) else SafetyValidationErrorCode.IO_ERROR
+            raise UnsafePathError(f"Error accediendo a metadatos: {path.name}", code, SafetyValidationCategory.INTEGRITY)
     raise UnsafePathError(f"Archivo inestable tras reintentos: {path.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
 
 def _check_file_integrity(state: SafetyState) -> None:
@@ -715,6 +720,7 @@ def _check_file_integrity(state: SafetyState) -> None:
         current_stat = _get_path_stat_robust(state.path)
         current_id = _get_file_id(str(state.path))
         
+        # Validaciones de identidad persistente y tipo de nodo
         if state.file_id != (0, 0, 0, 0) and current_id != state.file_id:
             raise UnsafePathError(f"Manipulación de identidad detectada (TOCTOU): {state.path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION, SafetyValidationCategory.INTEGRITY)
         
@@ -723,8 +729,9 @@ def _check_file_integrity(state: SafetyState) -> None:
         
         _evaluate_security_rules(state)
     except (OSError, PermissionError, UnsafePathError) as e:
-        if isinstance(e, UnsafePathError): raise
-        raise UnsafePathError(f"Fallo durante integridad: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+        if isinstance(e, UnsafePathError):
+            raise
+        raise UnsafePathError(f"Fallo crítico durante integridad: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path_str: str) -> bool:
@@ -1089,7 +1096,8 @@ def _validate_path_components(path: Path) -> None:
     for i in range(len(parts)):
         current_check = anchor.joinpath(*parts[:i+1])
         if "~" in current_check.name or re.search(r'[\u200E\u200F\u202A-\u202E]', current_check.name):
-            raise UnsafePathError("Ruta con spoofing de nombres detectada.", SafetyValidationErrorCode.SHORT_NAME_SPOOFING, SafetyValidationCategory.STRUCTURE)
+            # Nota: Usamos un código de error existente apropiado
+            raise UnsafePathError("Ruta con spoofing de nombres detectada.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
         
         if current_check.exists():
             try:
@@ -1138,6 +1146,8 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
             _validate_ntfs_reparse_redirection(p, base)
         _check_file_integrity(state)
     except (OSError, PermissionError, UnsafePathError) as e:
+        if isinstance(e, UnsafePathError):
+            raise
         raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:

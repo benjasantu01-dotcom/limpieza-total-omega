@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 56
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 235
+- Rechazadas por guardia de seguridad: 57
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 18 | 1 | 8 | 4 | 31 |
+| 2026-11-04 | 17 | 1 | 8 | 3 | 29 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 28 | 5 | 13 | 5 | 41 |
+| 2026-11-06 | 31 | 5 | 14 | 5 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **39**
 - seguridad defensiva: **38**
-- rendimiento: **37**
+- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **37**
-- manejo de errores y validación de entradas: **35**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **19**
 - `diskreport.py`: **19**
 - `healthscore.py`: **18**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `browser.py`: **16**
-- `assistant.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **15**
+- `safety.py`: **14**
+- `assistant.py`: **14**
 - `duplicates.py`: **13**
-- `safety.py`: **13**
 - `branding.py`: **11**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T07:01:02` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` al refinar el manejo de excepciones, asegurando que los errores de sistema (como bloqueos temporales) se capturen específicamente y no se propaguen como errores genéricos, cumpliendo con la exigencia de manejar estados transitorios de forma informada y segura.
+- `2026-11-06T06:59:52` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la validación proactiva de parámetros y la captura de errores específicos en `_is_file_exclusive`, evitando que excepciones inesperadas durante la detección de bloqueos se propaguen y afecten el flujo de la aplicación.
+- `2026-11-06T06:59:08` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita y validación de tipos en los parámetros de entrada y el manejo de excepciones durante la resolución de rutas, evitando que valores malformados (None, tipos incorrectos, o fallas en el sistema de archivos) provoquen interrupciones en el flujo de trabajo del usuario.
 - `2026-11-06T06:48:52` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_path_check` y `hash_file` mediante la validación explícita de `None` y errores de tipo en las entradas, evitando que excepciones inesperadas rompan el flujo de procesamiento en el bucle de duplicados.
 - `2026-11-06T06:40:00` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante entradas de archivos vacías o con errores de lectura durante el escaneo, asegurando que los contadores no procesen valores inválidos y mejorando la consistencia en el manejo de excepciones.
 - `2026-11-06T06:39:14` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` ante entradas inesperadas o estados inconsistentes, añadiendo validaciones explícitas de tipo y rango para prevenir excepciones no capturadas durante la ejecución.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T04:47:08` **browser.py** (seguridad defensiva): Se ha añadido una validación estricta de nombres de archivo en `_is_target_valid` para prevenir que el escáner intente procesar componentes de caché que contengan caracteres sospechosos o secuencias de control potencialmente maliciosas, reforzando la seguridad defensiva contra posibles archivos malformados.
 - `2026-11-06T04:38:24` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra caracteres nulos (`\0`) y rutas vacías tras el strip, evitando errores de `ValueError` en `Path()` que podrían ocurrir con entradas malformadas provenientes del registro.
 - `2026-11-06T04:37:56` **settings.py** (robustez ante casos límite): Mejoré la resiliencia en la carga de configuración añadiendo una validación de longitud de archivo mínima (`> 0`) en la función `_read_and_parse_json` y asegurando que `_is_structure_valid` gestione correctamente el caso de un diccionario de configuración vacío o mal formado para evitar errores de tipo al iterar.
-- `2026-11-06T04:36:23` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o eliminados durante la iteración al añadir un bloque `try-except` específico dentro de `process_entry`, asegurando que `entry.is_dir()` o `entry.name` no lancen excepciones inesperadas (como `FileNotFoundError`) cuando un proceso externo elimina el archivo justo después de que `os.scandir` lo haya listado.
-- `2026-11-06T04:26:50` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `OSError` durante la lectura de metadatos iniciales, previniendo errores en caso de archivos que cambian de estado o se bloquean justo al iniciar el proceso de aislamiento.
-- `2026-11-06T04:17:46` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` ante procesos que finalizan durante la iteración o cuyos handles no pueden ser cerrados correctamente, asegurando que `WindowsAPI.kernel32.CloseHandle` siempre se llame de forma segura incluso ante fallos en `GetProcessMemoryInfo`.
