@@ -382,13 +382,15 @@ def _is_structure_valid(data: Any) -> bool:
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """Ejecuta el ciclo de carga: verifica, abre, parsea y valida."""
     try:
+        # Usamos lstat sin seguir symlinks para evitar ciclos o fugas de permisos
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
-        if _Validators._is_reparse_point(str(file_path)): return None
+        
         flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0)
         fd = os.open(file_path, flags)
         try:
             st_post = os.fstat(fd)
+            # Doble comprobación post-apertura para evitar race conditions (TOCTOU)
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or st_post.st_size == 0:
                 return None
             with os.fdopen(fd, "r", encoding="utf-8") as f: 

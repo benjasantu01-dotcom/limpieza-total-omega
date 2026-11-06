@@ -1113,3 +1113,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T08:53:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-06T08:53:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T08:53:31` Corrida terminada. Total usado hoy: 140.
+- `2026-11-06T09:00:53` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-11-06T09:01:51` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para archivos "sparse" y "reparse points" dentro de `_get_path_stat_robust` para asegurar que, antes de intentar leer metadatos de archivos con atributos de sistema complejos, se valide si el tipo de objeto es manipulable, evitando fallos de E/S por desreferenciación de punteros inválidos en volúmenes críticos.
+- `2026-11-06T09:02:17` ➖ Sin cambios en scanner.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante errores de acceso a disco durante el recorrido del sistema de archivos al añadir una gestión de excepciones específica en `process_entry`, garantizando que un fallo en la llamada de `entry.is_dir()` no interrumpa el bucle de escaneo completo.
+- `2026-11-06T09:03:19` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la resiliencia en la carga de configuración añadiendo una comprobación explícita para evitar la desbordamiento de pila por recursión de enlaces simbólicos mediante `follow_symlinks=False` en `os.stat` y refinando la validación de archivos inexistentes o inaccesibles.
+- `2026-11-06T09:03:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-06T09:03:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T09:03:41` Corrida terminada. Total usado hoy: 144.

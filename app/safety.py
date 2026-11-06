@@ -696,8 +696,10 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             st = path.stat()
             if os.name == 'nt':
                 attrs = _get_file_attrs(str(path))
-                if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.DIRECTORY | Win32Attr.REPARSE_POINT)):
-                    raise UnsafePathError(f"Estructura no válida: {path.name}", SafetyValidationErrorCode.INVALID_PATH_TYPE, SafetyValidationCategory.STRUCTURE)
+                # Bloqueo estricto para objetos inestables ante I/O directo
+                if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.DIRECTORY | Win32Attr.REPARSE_POINT | Win32Attr.SPARSE_FILE)):
+                    if not path.is_file() and not path.is_dir():
+                        raise UnsafePathError(f"Estructura no válida o corrupta: {path.name}", SafetyValidationErrorCode.INVALID_PATH_TYPE, SafetyValidationCategory.STRUCTURE)
             
             # Verificación de validez básica de timestamps si están disponibles
             if st.st_atime == 0 and st.st_mtime == 0:
@@ -756,7 +758,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError) as e:
         raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 

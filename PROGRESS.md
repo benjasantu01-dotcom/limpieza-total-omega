@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 60
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 0 | 0 | 0 | 0 | 14 |
+| 2026-11-04 | 0 | 0 | 0 | 0 | 10 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 54 | 7 | 25 | 8 | 46 |
+| 2026-11-06 | 56 | 7 | 25 | 9 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
+- robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **39**
 - rendimiento: **37**
 - seguridad defensiva: **31**
 
@@ -32,20 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
+- `settings.py`: **19**
 - `quarantine.py`: **18**
-- `settings.py`: **18**
 - `browser.py`: **17**
 - `assistant.py`: **16**
 - `memory.py`: **16**
 - `scanner.py`: **16**
+- `safety.py`: **14**
 - `branding.py`: **13**
-- `safety.py`: **13**
 - `duplicates.py`: **12**
 - `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T09:03:19` **settings.py** (robustez ante casos límite): Mejoré la resiliencia en la carga de configuración añadiendo una comprobación explícita para evitar la desbordamiento de pila por recursión de enlaces simbólicos mediante `follow_symlinks=False` en `os.stat` y refinando la validación de archivos inexistentes o inaccesibles.
+- `2026-11-06T09:01:51` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para archivos "sparse" y "reparse points" dentro de `_get_path_stat_robust` para asegurar que, antes de intentar leer metadatos de archivos con atributos de sistema complejos, se valide si el tipo de objeto es manipulable, evitando fallos de E/S por desreferenciación de punteros inválidos en volúmenes críticos.
 - `2026-11-06T08:53:24` **quarantine.py** (robustez ante casos límite): Se mejoró `_is_file_exclusive` para que, en caso de error de acceso inesperado (como un proceso bloqueando el archivo con permisos restringidos), retorne `False` de forma segura, evitando asumir que el archivo es "libre" cuando el sistema operativo deniega la consulta, mejorando la robustez ante casos límite de E/S.
 - `2026-11-06T08:51:09` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_process_executable_safe` y `_extract_process_info` mediante validaciones adicionales ante rutas malformadas o inexistentes, garantizando que el módulo maneje correctamente procesos con rutas inaccesibles o caracteres especiales sin lanzar excepciones.
 - `2026-11-06T08:41:46` **healthscore.py** (robustez ante casos límite): Mejora la robustez del motor ante valores de entrada atípicos o maliciosos durante la deserialización de métricas en el proceso `_compute_cached` y `compute_score`, asegurando que `SystemMetrics` siempre trabaje con datos validados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T08:01:15` **healthscore.py** (rendimiento): Optimicé el rendimiento del módulo introduciendo una evaluación perezosa y eliminando la redundancia en `summarize` y `_compute_cached`, además de mejorar la eficiencia del uso del `lru_cache` al evitar el recreado innecesario de `SystemMetrics` dentro de la lógica del pipeline.
 - `2026-11-06T08:00:12` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` reutilizando el `ScanContext` y el `DirectoryScanner` a través de los múltiples navegadores, evitando la creación redundante de objetos y re-escaneo de estructuras compartidas dentro del `base_directory`.
 - `2026-11-06T07:51:04` **assistant.py** (rendimiento): Se optimizó el proceso de evaluación de problemas del sistema reemplazando el uso de `tuple` y `list` por un `frozenset` para la comparación de métricas, mejorando la eficiencia de los chequeos constantes y utilizando la caché de `lru_cache` de manera más efectiva al filtrar las métricas irrelevantes antes de llegar a la lógica de evaluación.
-- `2026-11-06T07:41:23` **scanner.py** (legibilidad y documentación): Se han añadido docstrings descriptivos a las funciones de heurística y métodos de `Scanner` para clarificar la lógica de negocio detrás de los filtros de seguridad, mejorando la mantenibilidad sin alterar la funcionalidad.
-- `2026-11-06T07:40:04` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los parámetros y retornos en las funciones clave de validación y aislamiento mediante Google-style docstrings, facilitando la comprensión de la lógica de seguridad implementada.
