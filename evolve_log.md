@@ -640,3 +640,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-06T04:58:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-11-06T04:58:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T04:58:39` Corrida terminada. Total usado hoy: 48.
+- `2026-11-06T05:06:28` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-06T05:07:13` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré `quarantine_file` para evitar condiciones de carrera entre la validación inicial y la operación de aislamiento (TOCTOU), reemplazando las verificaciones redundantes por un bloqueo explícito de exclusividad antes de la copia, y asegurando que la ruta destino no exista físicamente en ningún momento antes de la operación de `os.replace` para mantener la atomicidad.
+- `2026-11-06T05:07:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-06T05:08:25` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió una validación defensiva en `_validate_preconditions` para detectar si el directorio padre de la ruta objetivo es una raíz de unidad (`drive root`) o un punto de montaje, previniendo operaciones de modificación accidental en niveles críticos de la jerarquía de almacenamiento.
+- `2026-11-06T05:08:42` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al añadir una validación crítica de "propiedad de ruta" en `Scanner._is_safe_entry` y `Scanner.process_entry`, garantizando que el escáner no solo verifique la raíz inicial, sino que toda entrada procesada resida físicamente dentro del subárbol esperado, previniendo posibles ataques de *path traversal* o escalada fuera del ámbito de escaneo.
+- `2026-11-06T05:08:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T05:08:42` Corrida terminada. Total usado hoy: 52.

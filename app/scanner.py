@@ -73,7 +73,7 @@ PathInput: TypeAlias = Union[Path, str, None]
 
 # Expresiones regulares para detección de técnicas de evasión
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
-RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d\u200b\u00a0\ufeff]")
+RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d\u202b\u200b\u00a0\ufeff]")
 RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
 INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[\. ]$")
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
@@ -285,7 +285,7 @@ class Scanner:
         norm_path = os.path.normcase(entry.path)
         if norm_path in visited: return
         try:
-            if not _cached_is_protected(entry.path):
+            if not _cached_is_protected(entry.path) and self._is_inside_base_root(entry.path):
                 visited.add(norm_path)
                 stack.append((entry.path, depth + 1))
         except (OSError, PermissionError):

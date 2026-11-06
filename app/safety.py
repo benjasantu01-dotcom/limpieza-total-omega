@@ -978,8 +978,12 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     
     if os.name == 'nt':
         try:
-            if target_path.parent.exists() and _is_system_directory_junction(str(target_path.parent)):
-                raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+            parent = target_path.parent
+            if parent.exists():
+                if _is_system_directory_junction(str(parent)):
+                    raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                if parent == Path(parent.anchor) or os.path.ismount(parent):
+                    raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
         except (OSError, PermissionError):
             pass
 

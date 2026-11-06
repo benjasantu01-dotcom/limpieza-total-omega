@@ -668,6 +668,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if _is_path_canonical(source.parent) == _is_path_canonical(destination.parent): raise UnsafePathError("Origen y destino colisionan en la misma carpeta.")
     if _win_has_system_attributes(source) or not source.is_file(): raise UnsafePathError("Aislamiento denegado: atributo de sistema o no regular.")
     ensure_safe_to_modify(destination.parent)
+    
+    # Bloqueo preventivo de exclusividad para evitar TOCTOU durante la lectura
+    if not _is_file_exclusive(source): raise IOError("El archivo origen está siendo modificado o está bloqueado.")
+    
     with open(source, "rb") as f:
         stat_orig = os.fstat(f.fileno())
         if stat_orig.st_size != original_size or stat_orig.st_nlink > 1: raise RuntimeError("El archivo cambió o tiene enlaces inválidos (TOCTOU).")
@@ -737,6 +741,8 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
+    
+    # La validación TOCTOU final ocurre dentro de _atomic_isolate_file
     try:
         file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
         item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
