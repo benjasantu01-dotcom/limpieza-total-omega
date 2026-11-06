@@ -1120,3 +1120,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T09:03:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-11-06T09:03:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T09:03:41` Corrida terminada. Total usado hoy: 144.
+- `2026-11-06T09:11:03` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-11-06T09:11:46` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Se endureció la seguridad en `_build_payload` y `_call_gemini` mediante la implementación de `_is_safe_payload_structure` y validaciones adicionales de URL, eliminando el riesgo de que una entrada maliciosa manipule la estructura JSON enviada o apunte a un endpoint no autorizado.
+- `2026-11-06T09:12:19` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-06T09:12:46` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó `_is_target_valid` para incluir un chequeo explícito de `realpath` antes de validar la pertenencia al sandbox, evitando ataques de redirección mediante enlaces simbólicos o junctions que podrían haber eludido la validación previa.
+- `2026-11-06T09:13:00` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `drive_usage` implementando una validación estricta de rutas mediante `pathlib` para evitar que rutas malformadas o relativas escapen del contexto del usuario, asegurando que `resolve()` no genere errores imprevistos ante entradas inválidas.
+- `2026-11-06T09:13:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T09:13:00` Corrida terminada. Total usado hoy: 148.
