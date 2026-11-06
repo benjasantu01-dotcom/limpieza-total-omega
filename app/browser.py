@@ -298,6 +298,10 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
         if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): return False
         if _is_system_hidden(str(target), kernel) or target.name.lower() in NEVER_TOUCH: return False
         
+        # Validar caracteres peligrosos en el nombre de la carpeta target
+        if any(c in target.name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target.name):
+            return False
+        
         target_norm = os.path.normcase(os.path.abspath(str(target.resolve())))
         return target_norm.startswith(base_norm)
     except (OSError, PermissionError, RuntimeError):

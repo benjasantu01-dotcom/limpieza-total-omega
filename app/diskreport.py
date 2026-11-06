@@ -308,13 +308,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
+                        p = Path(entry.path)
                         
+                        # Verificación de seguridad antes de procesar cualquier entrada
+                        if skip_protected and is_protected_path(p):
+                            continue
+
                         if entry.is_dir():
                             if _is_reparse_point(entry):
-                                continue
-                            
-                            p = Path(entry.path)
-                            if skip_protected and is_protected_path(p):
                                 continue
                             
                             if hasattr(st, 'st_ino'):
@@ -325,7 +326,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             stack.append(entry.path)
                         elif entry.is_file():
                             if st.st_size >= 0:
-                                yield Path(entry.path), st.st_size
+                                yield p, st.st_size
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError, ValueError):

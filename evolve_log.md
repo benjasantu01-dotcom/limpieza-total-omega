@@ -626,3 +626,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-06T04:38:46` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_validate_and_sanitize_data` evitando el acceso directo a atributos mediante `getattr` en objetos arbitrarios y centralizando la validación de la fuente (evitando inyecciones de propiedades), además de prevenir la exposición de nombres de claves potencialmente sensibles.
 - `2026-11-06T04:38:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T04:38:46` Corrida terminada. Total usado hoy: 40.
+- `2026-11-06T04:46:05` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-11-06T04:46:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-06T04:47:08` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta de nombres de archivo en `_is_target_valid` para prevenir que el escáner intente procesar componentes de caché que contengan caracteres sospechosos o secuencias de control potencialmente maliciosas, reforzando la seguridad defensiva contra posibles archivos malformados.
+- `2026-11-06T04:47:40` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_protected_path` al procesar cada entrada de archivo (no solo directorios), garantizando que el escáner no reporte ni acceda a archivos que hayan podido ser reclasificados como protegidos dinámicamente o que infrinjan las reglas de seguridad.
+- `2026-11-06T04:47:50` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-06T04:47:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T04:47:50` Corrida terminada. Total usado hoy: 44.

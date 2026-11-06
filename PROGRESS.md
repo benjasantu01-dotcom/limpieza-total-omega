@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 34 | 1 | 10 | 5 | 64 |
+| 2026-11-04 | 34 | 1 | 10 | 5 | 60 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 18 | 2 | 9 | 5 | 6 |
+| 2026-11-06 | 20 | 2 | 9 | 5 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,17 +26,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
-- seguridad defensiva: **31**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **20**
 - `settings.py`: **20**
-- `diskreport.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **17**
+- `browser.py`: **17**
 - `scanner.py`: **16**
 - `assistant.py`: **16**
-- `browser.py`: **16**
 - `quarantine.py`: **16**
 - `safety.py`: **13**
 - `duplicates.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T04:47:40` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_protected_path` al procesar cada entrada de archivo (no solo directorios), garantizando que el escáner no reporte ni acceda a archivos que hayan podido ser reclasificados como protegidos dinámicamente o que infrinjan las reglas de seguridad.
+- `2026-11-06T04:47:08` **browser.py** (seguridad defensiva): Se ha añadido una validación estricta de nombres de archivo en `_is_target_valid` para prevenir que el escáner intente procesar componentes de caché que contengan caracteres sospechosos o secuencias de control potencialmente maliciosas, reforzando la seguridad defensiva contra posibles archivos malformados.
 - `2026-11-06T04:38:24` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra caracteres nulos (`\0`) y rutas vacías tras el strip, evitando errores de `ValueError` en `Path()` que podrían ocurrir con entradas malformadas provenientes del registro.
 - `2026-11-06T04:37:56` **settings.py** (robustez ante casos límite): Mejoré la resiliencia en la carga de configuración añadiendo una validación de longitud de archivo mínima (`> 0`) en la función `_read_and_parse_json` y asegurando que `_is_structure_valid` gestione correctamente el caso de un diccionario de configuración vacío o mal formado para evitar errores de tipo al iterar.
 - `2026-11-06T04:36:23` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o eliminados durante la iteración al añadir un bloque `try-except` específico dentro de `process_entry`, asegurando que `entry.is_dir()` o `entry.name` no lancen excepciones inesperadas (como `FileNotFoundError`) cuando un proceso externo elimina el archivo justo después de que `os.scandir` lo haya listado.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T03:45:24` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` pre-asignando el buffer de ruta y procesando los PIDs mediante un generador filtrado para reducir la carga de llamadas a la API de Windows en cada iteración del bucle principal.
 - `2026-11-06T03:36:05` **healthscore.py** (rendimiento): Optimizado el rendimiento del pipeline de puntuación eliminando la recolección redundante de datos en `summarize` mediante el uso del diccionario `result.breakdown` preexistente, y mejorando el uso de memoria en `_compute_cached` al evitar la creación de listas intermedias (`scores_by_entry`) durante el cálculo del score.
 - `2026-11-06T03:35:16` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación de miles de objetos `Path` y llamadas redundantes a `relative_to` dentro del loop, usando el string de la raíz y operaciones de búsqueda de prefijos, reduciendo el overhead de procesamiento en directorios grandes.
-- `2026-11-06T03:25:48` **assistant.py** (rendimiento): Se optimizó el proceso de inicialización y búsqueda del asistente mediante la conversión de `_TOKENS_MAP` a un sistema de búsqueda basado en `frozenset` y la simplificación de la lógica de saneamiento de entrada en `local_answer` para evitar redundancias de procesamiento.
-- `2026-11-06T03:16:02` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de bajo nivel y la lógica de escaneo mediante docstrings detallados que explican el "porqué" de las validaciones, asegurando que cualquier colaborador entienda las restricciones críticas de seguridad sin necesidad de inferirlas.
