@@ -643,3 +643,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-06T15:51:27` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_dir` centralizando la validación de permisos y estados mediante un bloque `try-except` más específico y la verificación explícita de `is_safe_to_modify` para prevenir que rutas con atributos inusuales o bloqueadas por políticas de seguridad impidan el funcionamiento de la app.
 - `2026-11-06T15:51:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T15:51:27` Corrida terminada. Total usado hoy: 304.
+- `2026-11-06T15:58:48` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-06T15:59:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-06T15:59:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-06T16:00:26` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-06T16:01:28` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones de seguridad en `safety.py` reemplazando los chequeos genéricos por verificaciones específicas de `None` y tipos, agregando captura de excepciones `ValueError` y `TypeError` en puntos críticos de normalización para prevenir fallos inesperados de ejecución ante entradas mal formadas o nulas.
+- `2026-11-06T16:02:01` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `check_recent_executable_in_downloads` para evitar fallos silenciosos ante atributos inesperados del sistema de archivos, asegurando que la heurística sea robusta frente a metadatos dañados o inaccesibles.
+- `2026-11-06T16:02:19` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `validate()` y `_read_and_parse_json` añadiendo validaciones explícitas de tipos y longitud para prevenir inyecciones de datos o desbordamientos en el parseo JSON, asegurando que cualquier entrada maliciosa o corrupta sea rechazada en lugar de tratarse como un valor nulo silencioso.
+- `2026-11-06T16:02:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T16:02:19` Corrida terminada. Total usado hoy: 308.

@@ -107,7 +107,7 @@ class SafetyState(NamedTuple):
 
 def _is_file_busy(path_str: str) -> bool:
     """Verifica si el archivo está bloqueado por otro proceso intentando abrirlo en modo exclusivo."""
-    if os.name != 'nt': return False
+    if not isinstance(path_str, str) or os.name != 'nt': return False
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
     handle = kernel32.CreateFileW(path_long, 0, 0, None, 3, 0x00000080, None)
@@ -241,7 +241,7 @@ def _to_long_path(path_str: str) -> str:
         try:
             abs_path = os.path.abspath(path_str)
             return LONG_PATH_PREFIX + abs_path
-        except (OSError, ValueError):
+        except (OSError, ValueError, TypeError):
             return path_str
     return path_str
 
@@ -791,7 +791,7 @@ def _normalize_resolved(path_str: str) -> Path:
     """Resuelve la ruta absoluta normalizando puntos de reparseo."""
     try:
         return Path(os.path.abspath(path_str)).resolve(strict=False)
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return Path(path_str).absolute()
 
 @lru_cache(maxsize=4096)
@@ -852,7 +852,7 @@ def is_drive_root(path: PathLike) -> bool:
 @lru_cache(maxsize=1024)
 def is_protected_path(path: PathLike) -> bool:
     """Determina si una ruta reside en directorios de sistema protegidos."""
-    if not path: return True
+    if path is None: return True
     path_str = str(path)
     if path_str in _PROTECTION_CACHE:
         return _PROTECTION_CACHE[path_str]
@@ -875,7 +875,7 @@ def is_protected_path(path: PathLike) -> bool:
         if len(_PROTECTION_CACHE) > 2048: _PROTECTION_CACHE.clear()
         _PROTECTION_CACHE[path_str] = is_protected
         return is_protected
-    except (OSError, AttributeError, ValueError):
+    except (OSError, AttributeError, ValueError, TypeError):
         return True
 
 def _get_final_path_normalized(p: Path) -> Path:
@@ -920,7 +920,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 @lru_cache(maxsize=2048)
 def is_sensitive_file(path: PathLike) -> bool:
     """Verifica si la extensión del archivo es crítica."""
-    if not path: return True
+    if path is None: return True
     try: 
         p_str = str(path)
         return _is_sensitive_extension(os.path.splitext(p_str)[1])
@@ -1005,7 +1005,6 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
                     raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
                 if parent == Path(parent.anchor) or os.path.ismount(parent):
                     raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
-                # NUEVA VALIDACIÓN: Permiso de escritura del contenedor
                 if not os.access(parent, os.W_OK):
                     raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         except (OSError, PermissionError):
@@ -1090,13 +1089,13 @@ def _validate_path_components(path: Path) -> None:
     """Analiza cada segmento de la ruta para detectar spoofing o bucles."""
     try:
         resolved_path = path.resolve()
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         resolved_path = path
 
     try:
         anchor = Path(resolved_path.anchor)
         parts = resolved_path.parts
-    except (AttributeError, ValueError):
+    except (AttributeError, ValueError, TypeError):
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
         
     visited: set[Path] = set()
@@ -1132,7 +1131,6 @@ def _validate_no_reparse_traversal(path: Path) -> None:
         if current.is_symlink() or _is_system_directory_junction(str(current)):
             _validate_junction_depth(current)
             target = _get_final_path_normalized(current)
-            # Verificación de destino: el destino final del enlace no debe escapar del volumen raíz o base
             if not target.is_relative_to(Path(path.anchor)):
                 raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
 

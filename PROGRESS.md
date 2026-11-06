@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 64
+- Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 84 | 4 | 20 | 4 | 88 |
-| 2026-11-06 | 107 | 12 | 44 | 13 | 128 |
+| 2026-11-05 | 81 | 4 | 20 | 4 | 87 |
+| 2026-11-06 | 110 | 12 | 45 | 13 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **38**
-- rendimiento: **36**
 - legibilidad y documentación: **35**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `healthscore.py`: **19**
 - `quarantine.py`: **18**
-- `safety.py`: **17**
-- `browser.py`: **16**
+- `safety.py`: **18**
+- `scanner.py`: **17**
+- `settings.py`: **17**
 - `memory.py`: **16**
-- `scanner.py`: **16**
-- `settings.py`: **16**
+- `browser.py`: **15**
 - `assistant.py`: **13**
 - `duplicates.py`: **12**
-- `branding.py`: **11**
+- `branding.py`: **10**
 - `organizer.py`: **8**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T16:02:19` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate()` y `_read_and_parse_json` añadiendo validaciones explícitas de tipos y longitud para prevenir inyecciones de datos o desbordamientos en el parseo JSON, asegurando que cualquier entrada maliciosa o corrupta sea rechazada en lugar de tratarse como un valor nulo silencioso.
+- `2026-11-06T16:02:01` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `check_recent_executable_in_downloads` para evitar fallos silenciosos ante atributos inesperados del sistema de archivos, asegurando que la heurística sea robusta frente a metadatos dañados o inaccesibles.
+- `2026-11-06T16:01:28` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de seguridad en `safety.py` reemplazando los chequeos genéricos por verificaciones específicas de `None` y tipos, agregando captura de excepciones `ValueError` y `TypeError` en puntos críticos de normalización para prevenir fallos inesperados de ejecución ante entradas mal formadas o nulas.
 - `2026-11-06T15:51:27` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_dir` centralizando la validación de permisos y estados mediante un bloque `try-except` más específico y la verificación explícita de `is_safe_to_modify` para prevenir que rutas con atributos inusuales o bloqueadas por políticas de seguridad impidan el funcionamiento de la app.
 - `2026-11-06T15:40:10` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos de tipo simplistas por validaciones defensivas que garantizan la integridad de los datos antes de operar, evitando posibles estados inconsistentes.
 - `2026-11-06T15:39:17` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `walk_files` validando explícitamente los resultados de las funciones de entrada para evitar procesar objetos `None` o estados inconsistentes, reforzando el manejo de excepciones al leer metadatos de archivos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T13:57:29` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de E/S en `organizer.py` mediante la implementación de `os.replace` (atómico) en lugar de `shutil.move` para evitar inconsistencias durante el movimiento, y se añadió una validación explícita de `is_safe_to_modify` antes de la ejecución de `item.unlink()` en el proceso de borrado, asegurando que el flujo de control se mantenga dentro de las garantías del sistema de seguridad.
 - `2026-11-06T13:47:52` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del módulo añadiendo una comprobación de tipo estricta (`isinstance(msg, str)`) y una verificación de finitud numérica adicional dentro del pipeline de recomendaciones para evitar que valores NaN o infinitos propaguen estados de error hacia la interfaz.
 - `2026-11-06T13:47:21` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `_collect_candidates` para prevenir el seguimiento de enlaces simbólicos o puntos de reanálisis durante el recorrido del árbol, asegurando que `is_safe_to_modify` y `is_protected_path` actúen siempre como filtros de barrera antes de cualquier acceso a metadatos.
-- `2026-11-06T13:46:58` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_local_windows_drives` al añadir una validación estricta de la ruta antes de intentar cualquier operación de sistema, previniendo errores por rutas inexistentes o inaccesibles que podrían causar una excepción no controlada en el bucle de detección de unidades.
-- `2026-11-06T13:27:31` **safety.py** (robustez ante casos límite): Se ha añadido una validación temprana de permisos de escritura a nivel de directorio en `ensure_safe_to_modify` para evitar intentos innecesarios de acceso a archivos dentro de carpetas donde el usuario no tiene permisos, reduciendo así la carga de llamadas al sistema y mejorando la robustez frente a directorios protegidos por ACLs.
-- `2026-11-06T13:17:45` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` agregando un manejo explícito de errores ante archivos bloqueados por el SO (sharing violation) y asegurando que las operaciones de I/O en la transferencia al sandbox sean resilientes mediante el uso del wrapper `_check_io_error_context` ya presente en el módulo.

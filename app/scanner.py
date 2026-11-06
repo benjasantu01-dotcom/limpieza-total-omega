@@ -223,8 +223,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
             if isinstance(mtime, (int, float)) and mtime > 0:
                 if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
                     return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
-    except (AttributeError, ValueError, TypeError):
-        pass
+    except (AttributeError, ValueError, TypeError) as e:
+        logger.debug(f"Error procesando metadatos temporales para {path}: {e}")
     return None
 
 ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
