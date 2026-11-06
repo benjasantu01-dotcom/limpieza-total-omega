@@ -330,11 +330,14 @@ def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Aplica escalado (0.1 a 10.0) y traslación a los vértices base para renderizado responsive."""
     if not math.isfinite(scale) or scale <= 0 or not math.isfinite(x) or not math.isfinite(y): 
         return ()
-    res = [0.0] * len(SHIELD_BASE_COORDS)
-    for i in range(0, len(SHIELD_BASE_COORDS), 2):
-        res[i] = x + (SHIELD_BASE_COORDS[i] * scale)
-        res[i+1] = y + (SHIELD_BASE_COORDS[i+1] * scale)
-    return tuple(res)
+    try:
+        res = [0.0] * len(SHIELD_BASE_COORDS)
+        for i in range(0, len(SHIELD_BASE_COORDS), 2):
+            res[i] = x + (SHIELD_BASE_COORDS[i] * scale)
+            res[i+1] = y + (SHIELD_BASE_COORDS[i+1] * scale)
+        return tuple(res)
+    except (TypeError, ValueError):
+        return ()
 
 def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
     """Genera código XML para renderizado vectorial externo del logo."""
@@ -346,7 +349,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         dest_path = Path(destination).resolve()
-        # Verificación de seguridad sin elevar excepciones al entorno
+        # Verificación estricta de seguridad
         if not is_safe_to_modify(dest_path):
             return None
             

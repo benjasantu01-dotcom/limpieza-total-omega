@@ -731,3 +731,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T17:22:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez de la ingesta de datos en `SystemContext` añadiendo una validación explícita para evitar que `NaN` o valores infinitos (que pueden causar comportamientos inesperados en las operaciones lógicas de comparación) se filtren en la estructura de métricas, reforzando `_is_safe_numeric_context` y la lógica de actualización.
 - `2026-11-06T17:22:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T17:22:11` Corrida terminada. Total usado hoy: 340.
+- `2026-11-06T17:30:23` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-06T17:30:54` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido `save_logo_svg` y `_get_scaled_poly` ante posibles valores nulos o corruptos, asegurando que los fallos en la resolución de rutas o en los cálculos aritméticos devuelvan estados seguros en lugar de propagar excepciones hacia la interfaz.
+- `2026-11-06T17:31:18` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-06T17:31:42` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-11-06T17:31:48` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-06T17:31:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T17:31:48` Corrida terminada. Total usado hoy: 344.

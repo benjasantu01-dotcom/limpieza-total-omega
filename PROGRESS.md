@@ -8,43 +8,44 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 64 | 4 | 15 | 3 | 78 |
-| 2026-11-06 | 128 | 13 | 53 | 14 | 132 |
+| 2026-11-05 | 63 | 4 | 14 | 3 | 76 |
+| 2026-11-06 | 129 | 13 | 53 | 14 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **35**
 - rendimiento: **35**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **34**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `quarantine.py`: **19**
 - `healthscore.py`: **19**
 - `scanner.py`: **18**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `memory.py`: **16**
 - `settings.py`: **15**
 - `assistant.py`: **14**
 - `browser.py`: **14**
+- `branding.py`: **12**
 - `duplicates.py`: **11**
-- `branding.py`: **11**
 - `startup.py`: **9**
 - `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T17:30:54` **branding.py** (robustez ante casos límite): Se ha robustecido `save_logo_svg` y `_get_scaled_poly` ante posibles valores nulos o corruptos, asegurando que los fallos en la resolución de rutas o en los cálculos aritméticos devuelvan estados seguros en lugar de propagar excepciones hacia la interfaz.
 - `2026-11-06T17:22:11` **assistant.py** (robustez ante casos límite): Se mejora la robustez de la ingesta de datos en `SystemContext` añadiendo una validación explícita para evitar que `NaN` o valores infinitos (que pueden causar comportamientos inesperados en las operaciones lógicas de comparación) se filtren en la estructura de métricas, reforzando `_is_safe_numeric_context` y la lógica de actualización.
 - `2026-11-06T17:20:51` **scanner.py** (rendimiento): Se optimizó el método `process_entry` y la lógica de escaneo para reducir las llamadas repetitivas al sistema de archivos mediante el uso de `os.DirEntry.is_dir()` y `os.DirEntry.is_file()`, evitando resoluciones redundantes y garantizando que las verificaciones de seguridad se realicen sobre estados ya cargados en memoria por `os.scandir`.
 - `2026-11-06T17:11:19` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` mediante el uso de `os.scandir` para evitar múltiples llamadas a `exists()` y `is_file()` en cada iteración del bucle, reduciendo significativamente el overhead de E/S al procesar directorios con muchos archivos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T16:30:23` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, estandarización de docstrings (siguiendo estilo Google/NumPy) y la extracción de lógica compleja de validación en `_process_directory` a una función auxiliar para reducir el anidamiento y mejorar la claridad del flujo de trabajo.
 - `2026-11-06T16:29:53` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de las responsabilidades de las funciones de bajo nivel en `memory.py` y se ha sustituido el `try-except` genérico en `_iter_process_memory` por un manejo de errores más específico y documentado, mejorando la robustez y legibilidad.
 - `2026-11-06T16:20:59` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica mediante la inclusión de type hints explícitos en el pipeline de ejecución, la clarificación de los docstrings en las funciones críticas y la organización de la sección de constantes, facilitando la comprensión del flujo de datos sin alterar la lógica.
-- `2026-11-06T16:20:09` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de recorrido de archivos y clases auxiliares, aclarando el propósito y las restricciones de seguridad (`is_protected_path`) para facilitar su mantenimiento.
