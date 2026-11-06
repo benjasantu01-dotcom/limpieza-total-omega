@@ -306,6 +306,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if _is_excluded_path(entry.name):
                         continue
                     try:
+                        # Obtenemos stat con manejo de errores para archivos inaccesibles/desaparecidos
                         st = entry.stat(follow_symlinks=False)
                         p = Path(entry.path)
                         

@@ -390,10 +390,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int, depth: int = 0) -> str:
     """Genera representación visual en texto de los puntajes con control de recursión."""
-    points = int(max(0, points))
-    max_val = max(1, max_val)
-    if depth > _MAX_RECURSION_DEPTH: return "..."
-    return "#" * min(points, max_val) + "." * (max_val - min(points, max_val))
+    if depth > _MAX_RECURSION_DEPTH or max_val <= 0: return ""
+    safe_points = int(_clamp(float(points), 0.0, float(max_val)))
+    return "#" * safe_points + "." * (max_val - safe_points)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte legible a partir del resultado de salud."""
