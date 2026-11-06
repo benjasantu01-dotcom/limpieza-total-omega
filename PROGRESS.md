@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 244
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-04 | 34 | 1 | 10 | 5 | 76 |
+| 2026-11-04 | 34 | 1 | 10 | 5 | 72 |
 | 2026-11-05 | 140 | 7 | 35 | 5 | 163 |
-| 2026-11-06 | 12 | 1 | 7 | 3 | 5 |
+| 2026-11-06 | 14 | 1 | 8 | 3 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **37**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **33**
 - seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
+- `healthscore.py`: **19**
 - `settings.py`: **19**
-- `healthscore.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `assistant.py`: **16**
 - `browser.py`: **16**
 - `scanner.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T04:17:46` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` ante procesos que finalizan durante la iteración o cuyos handles no pueden ser cerrados correctamente, asegurando que `WindowsAPI.kernel32.CloseHandle` siempre se llame de forma segura incluso ante fallos en `GetProcessMemoryInfo`.
+- `2026-11-06T04:16:26` **healthscore.py** (robustez ante casos límite): He mejorado la robustez de `SystemMetrics.validate` ante entradas `NaN` o `inf` (que pueden ocurrir por cálculos matemáticos erróneos en otros módulos) mediante la implementación de una verificación de finitud más estricta durante el proceso de validación, garantizando que el pipeline de puntuación no colapse por valores numéricos inválidos.
 - `2026-11-06T04:07:12` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de `st_ino` en `walk_files` para manejar sistemas de archivos que no soportan inodos (como FAT32/exFAT en ciertos contextos), evitando errores inesperados en el registro de `visited_inodes` al iterar.
 - `2026-11-06T04:05:56` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante datos de entrada malformados o inesperados en `ingest` y `_apply_field`, asegurando que si una métrica falla en la validación, el proceso de carga continúe con el resto de los datos en lugar de abortar silenciosamente o dejar el estado inconsistente.
 - `2026-11-06T03:57:03` **settings.py** (rendimiento): Optimizé la carga de configuración implementando `lru_cache` sobre `load` y simplificando el acceso mediante `_MANAGER` para evitar redundancias en la resolución de rutas y validación de archivos, reduciendo llamadas innecesarias al sistema de archivos en operaciones repetidas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T03:07:05` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la implementación de `docstrings` en funciones críticas que carecían de ellos, la clarificación de tipos de retorno en funciones de validación (usando `bool` en lugar de implicación) y la normalización de la estructura de las funciones de chequeo (`_verify_source_fs_permissions`, `_check_isolation_safety`) para que sigan un estándar de fallo temprano y explícito que facilite la auditoría.
 - `2026-11-06T03:05:55` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica del módulo `memory.py` mediante docstrings explícitos sobre el propósito de las estructuras de la API Win32 y la justificación de los umbrales de seguridad, facilitando el mantenimiento a futuro sin alterar la funcionalidad.
 - `2026-11-05T14:52:32` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `healthscore.py` mediante docstrings detallados en las funciones de procesamiento del pipeline, explicando el propósito de la normalización lineal, la clausura de valores y la integración de reglas de advertencia, facilitando la comprensión del flujo de datos para futuras auditorías o expansiones.
-- `2026-11-05T14:51:56` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y la tipificación en `duplicates.py` añadiendo docstrings descriptivos a funciones clave y explicitando los retornos de las operaciones de hash, facilitando la comprensión del flujo de "falsos positivos" y la estrategia de filtrado en cascada.
-- `2026-11-05T14:43:03` **diskreport.py** (legibilidad y documentación): Documenté con docstrings detallados las clases internas (`ExtStats`, `GlobalStats`, `FolderMetrics`) y simplifiqué la legibilidad de `_collect_summary_data` para clarificar la lógica de acumulación, facilitando el mantenimiento a futuro sin alterar la funcionalidad.

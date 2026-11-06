@@ -289,7 +289,7 @@ class SystemMetrics:
         # Validación estricta de tipos de entrada
         for field_name in _ALL_METRICS:
             val = getattr(self, field_name)
-            if not isinstance(val, (int, float)):
+            if not isinstance(val, (int, float)) or isinstance(val, bool):
                 setattr(self, field_name, 0.0)
         self.validate()
 
@@ -299,7 +299,7 @@ class SystemMetrics:
         return getattr(self, field_name, default)
 
     def validate(self) -> None:
-        """Aplica límites de rango definidos en _METRIC_LIMITS a cada atributo."""
+        """Aplica límites de rango definidos en _METRIC_LIMITS a cada atributo y asegura finitud."""
         for field_name in _ALL_METRICS:
             raw_val = getattr(self, field_name, 0.0)
             min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))

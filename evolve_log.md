@@ -577,3 +577,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-06T04:07:12` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia de `st_ino` en `walk_files` para manejar sistemas de archivos que no soportan inodos (como FAT32/exFAT en ciertos contextos), evitando errores inesperados en el registro de `visited_inodes` al iterar.
 - `2026-11-06T04:07:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-06T04:07:12` Corrida terminada. Total usado hoy: 28.
+- `2026-11-06T04:15:32` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-06T04:15:56` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-06T04:16:26` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). He mejorado la robustez de `SystemMetrics.validate` ante entradas `NaN` o `inf` (que pueden ocurrir por cálculos matemáticos erróneos en otros módulos) mediante la implementación de una verificación de finitud más estricta durante el proceso de validación, garantizando que el pipeline de puntuación no colapse por valores numéricos inválidos.
+- `2026-11-06T04:17:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-06T04:17:46` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_iter_process_memory` ante procesos que finalizan durante la iteración o cuyos handles no pueden ser cerrados correctamente, asegurando que `WindowsAPI.kernel32.CloseHandle` siempre se llame de forma segura incluso ante fallos en `GetProcessMemoryInfo`.
+- `2026-11-06T04:17:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-06T04:17:46` Corrida terminada. Total usado hoy: 32.
