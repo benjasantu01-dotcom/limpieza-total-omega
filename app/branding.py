@@ -24,6 +24,8 @@ CoordinateSequence: TypeAlias = Tuple[float, ...]
 BoundingBox: TypeAlias = Tuple[float, float, float, float]
 StopPoint: TypeAlias = Tuple[float, ColorHex]
 AnchorPoint: TypeAlias = Literal["center", "n", "s", "e", "w", "nw", "ne", "sw", "se"]
+# Representa (espesor, offset_y_inicial, offset_y_final)
+StripeParams: TypeAlias = Tuple[float, float, float]
 
 # --- Constantes de Layout y Renderizado ---
 _MIN_SCALE: Final[float] = 0.1
@@ -375,11 +377,15 @@ STRIPE_COUNT_FACTOR: Final[float] = 28.0
 STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
-def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float], ...]:
-    """Calcula la geometría proporcional (espesor y offset Y) de las franjas decorativas."""
+def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
+    """
+    Calcula la geometría proporcional de las franjas decorativas internas.
+    Retorna una tupla de tuplas donde cada elemento contiene el espesor
+    y los offsets verticales relativos para el posicionamiento en el Canvas.
+    """
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     tf = STRIPE_THICKNESS_SCALE * scale
-    params = []
+    params: List[StripeParams] = []
     for i in range(n):
         rel = i / (n - 1) if n > 1 else 0
         thick = tf * (1.0 if rel < 0.55 else 1.0 - ((rel - 0.55) * 1.9))
@@ -387,7 +393,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas internas optimizando llamadas mediante segmentos pre-calculados."""
+    """Renderiza las franjas degradadas internas usando coordenadas escaladas."""
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
@@ -411,7 +417,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Función de alto nivel para dibujar la estructura vectorial compleja del escudo en Canvas."""
+    """Renderiza la estructura vectorial compleja del escudo en un Canvas dado."""
     if canvas is None: return
     try:
         s = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))

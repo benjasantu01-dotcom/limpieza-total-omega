@@ -494,27 +494,36 @@ class SystemContext:
         except Exception:
             return ""
 
+    def _validate_keys_safe(self, source: dict[str, Any]) -> bool:
+        """Verifica que las claves del diccionario de origen no sean rutas sensibles."""
+        for k in source.keys():
+            if not isinstance(k, str) or is_protected_path(k):
+                return False
+        return True
+
+    def _extract_grade(self, source: Any) -> str:
+        """Extrae y limpia el campo grade de una fuente segura."""
+        grade_raw = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
+        if grade_raw is not None and not isinstance(grade_raw, (dict, list, tuple)):
+            return self._clean_grade(grade_raw)
+        return ""
+
     def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
         """Extrae y sanitiza métricas de una fuente externa."""
         updates = {}
+        # Primero sanitizar claves si es diccionario
+        if isinstance(source, dict) and not self._validate_keys_safe(source):
+            return {}
+
         for k in _VALID_METRIC_KEYS:
             spec = _VALIDATORS[k]
             val = self._apply_field(source, k, spec)
             if val is not None:
                 updates[k] = val
         
-        try:
-            # Validación adicional para asegurar que las claves de dict no sean rutas
-            if isinstance(source, dict):
-                for k in source.keys():
-                    if not isinstance(k, str) or is_protected_path(k): continue
-                    
-            grade_raw = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
-            if grade_raw is not None and not isinstance(grade_raw, (dict, list, tuple)):
-                if cleaned_grade := self._clean_grade(grade_raw):
-                    updates["grade"] = cleaned_grade
-        except (AttributeError, TypeError, ValueError):
-            pass
+        # Procesar calificación
+        if cleaned_grade := self._extract_grade(source):
+            updates["grade"] = cleaned_grade
             
         return updates
 

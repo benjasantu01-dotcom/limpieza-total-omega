@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 215
 
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 81 | 4 | 20 | 4 | 87 |
-| 2026-11-06 | 110 | 12 | 45 | 13 | 128 |
+| 2026-11-05 | 79 | 4 | 19 | 4 | 86 |
+| 2026-11-06 | 113 | 12 | 45 | 13 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **41**
 - seguridad defensiva: **38**
-- legibilidad y documentación: **35**
-- rendimiento: **33**
+- legibilidad y documentación: **38**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,16 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **18**
 - `scanner.py`: **17**
 - `settings.py`: **17**
-- `memory.py`: **16**
-- `browser.py`: **15**
-- `assistant.py`: **13**
+- `browser.py`: **16**
+- `memory.py`: **15**
+- `assistant.py`: **14**
 - `duplicates.py`: **12**
-- `branding.py`: **10**
-- `organizer.py`: **8**
+- `branding.py`: **11**
 - `startup.py`: **8**
+- `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-06T16:11:14` **browser.py** (legibilidad y documentación): Mejora la legibilidad del motor de escaneo mediante la refactorización de `DirectoryScanner._process_entry` para separar claramente la lógica de navegación (directorios) de la de recolección (archivos), facilitando el mantenimiento y garantizando la claridad en las validaciones.
+- `2026-11-06T16:11:01` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna incluyendo Type Hints explícitos para las tuplas de parámetros geométricos en `_get_stripe_params`, y se han añadido docstrings detallados en las funciones de renderizado complejo para explicar la lógica de traslación y escalado de coordenadas.
+- `2026-11-06T16:10:27` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data`, extrayendo la lógica compleja de sanitización en métodos privados más específicos, clarificando el flujo de validación y añadiendo docstrings que explican las decisiones de seguridad tomadas.
 - `2026-11-06T16:02:19` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate()` y `_read_and_parse_json` añadiendo validaciones explícitas de tipos y longitud para prevenir inyecciones de datos o desbordamientos en el parseo JSON, asegurando que cualquier entrada maliciosa o corrupta sea rechazada en lugar de tratarse como un valor nulo silencioso.
 - `2026-11-06T16:02:01` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `check_recent_executable_in_downloads` para evitar fallos silenciosos ante atributos inesperados del sistema de archivos, asegurando que la heurística sea robusta frente a metadatos dañados o inaccesibles.
 - `2026-11-06T16:01:28` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de seguridad en `safety.py` reemplazando los chequeos genéricos por verificaciones específicas de `None` y tipos, agregando captura de excepciones `ValueError` y `TypeError` en puntos críticos de normalización para prevenir fallos inesperados de ejecución ante entradas mal formadas o nulas.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T14:08:10` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_safe_stat` al añadir una comprobación explícita para evitar que `entry.stat()` resuelva enlaces simbólicos que podrían apuntar fuera de la jerarquía permitida, asegurando que solo se analicen archivos físicos reales.
 - `2026-11-06T14:07:41` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` implementando una validación de "punto de reparseo de destino" en `_validate_no_reparse_traversal`, asegurando que, además de detectar el enlace, se verifique que el destino real no escape del directorio base, evitando así el *link traversal* malintencionado.
 - `2026-11-06T13:58:15` **quarantine.py** (seguridad defensiva): Mejoré `quarantine_dir` y `_safe_unlink` implementando un chequeo explícito de la naturaleza del directorio base usando `path.resolve()` antes de realizar operaciones de creación o sincronización, lo que evita vulnerabilidades por rutas ambiguas o enlaces no previstos durante la inicialización del sandbox.
-- `2026-11-06T13:57:29` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones de E/S en `organizer.py` mediante la implementación de `os.replace` (atómico) en lugar de `shutil.move` para evitar inconsistencias durante el movimiento, y se añadió una validación explícita de `is_safe_to_modify` antes de la ejecución de `item.unlink()` en el proceso de borrado, asegurando que el flujo de control se mantenga dentro de las garantías del sistema de seguridad.
-- `2026-11-06T13:47:52` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del módulo añadiendo una comprobación de tipo estricta (`isinstance(msg, str)`) y una verificación de finitud numérica adicional dentro del pipeline de recomendaciones para evitar que valores NaN o infinitos propaguen estados de error hacia la interfaz.
-- `2026-11-06T13:47:21` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `_collect_candidates` para prevenir el seguimiento de enlaces simbólicos o puntos de reanálisis durante el recorrido del árbol, asegurando que `is_safe_to_modify` y `is_protected_path` actúen siempre como filtros de barrera antes de cualquier acceso a metadatos.

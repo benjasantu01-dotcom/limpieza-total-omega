@@ -112,26 +112,37 @@ class DirectoryScanner:
         except (OSError, RuntimeError, ValueError):
             return False
 
+    def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
+        """Gestiona la recursión en directorios válidos."""
+        if not self.ctx.is_junction(entry.path) and self._is_path_allowed(entry.path):
+            return self.get_size(entry.path, depth + 1).bytes_found
+        return 0
+
+    def _handle_file(self, entry: os.DirEntry) -> int:
+        """Valida y calcula el tamaño de archivos individuales."""
+        if not _is_system_hidden(entry.path, self.ctx.kernel32):
+            try:
+                st_file = entry.stat(follow_symlinks=False)
+                file_id = (st_file.st_dev, st_file.st_ino)
+                if file_id not in self.ctx.visited_files:
+                    self.ctx.visited_files.add(file_id)
+                    return st_file.st_size
+            except (OSError, PermissionError):
+                pass
+        return 0
+
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
         """
-        Procesa una entrada (archivo o directorio), acumulando bytes tras verificar
-        que el componente no sea un enlace simbólico o un archivo de sistema.
+        Distribuye el procesamiento de entradas según su tipo (directorio o archivo).
         """
         if self._should_stop_traversal(entry, depth):
             return total_bytes
             
         try:
             if entry.is_dir(follow_symlinks=False):
-                if not self.ctx.is_junction(entry.path) and self._is_path_allowed(entry.path):
-                    subdir = self.get_size(entry.path, depth + 1)
-                    return total_bytes + subdir.bytes_found
+                return total_bytes + self._handle_directory(entry, depth)
             elif entry.is_file(follow_symlinks=False):
-                if not _is_system_hidden(entry.path, self.ctx.kernel32):
-                    st_file = entry.stat(follow_symlinks=False)
-                    file_id = (st_file.st_dev, st_file.st_ino)
-                    if file_id not in self.ctx.visited_files:
-                        self.ctx.visited_files.add(file_id)
-                        return total_bytes + st_file.st_size
+                return total_bytes + self._handle_file(entry)
         except (OSError, PermissionError):
             pass
         return total_bytes
