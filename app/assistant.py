@@ -395,12 +395,11 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 @lru_cache(maxsize=128)
 def _evaluate_active_problems(metrics_items: frozenset[tuple[str, float]]) -> tuple[str, ...]:
     """Evalúa los problemas activos del sistema basado en métricas."""
-    results = []
-    for key, val in metrics_items:
-        for criterion in _CRITERIOS_MAP.get(key, ()):
-            msg = criterion.format_if_triggered(val)
-            if msg: results.append(msg)
-    return tuple(results)
+    return tuple(
+        msg for key, val in metrics_items 
+        for criterion in _CRITERIOS_MAP.get(key, ()) 
+        if (msg := criterion.format_if_triggered(val)) is not None
+    )
 
 @dataclass
 class SystemContext:
@@ -429,7 +428,6 @@ class SystemContext:
         """Recopila problemas de salud detectados."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        # Optimizacion: Usamos frozenset para mejorar el cacheo en el lru_cache externo
         relevant = frozenset((k, snap[k]) for k in snap if k in _CRITERIOS_MAP)
         return _evaluate_active_problems(relevant)
 

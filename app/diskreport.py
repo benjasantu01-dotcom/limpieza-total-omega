@@ -286,12 +286,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorrido profundo (DFS) por el árbol de directorios.
-    
-    Args:
-        directory: Punto de inicio del escaneo.
-        skip_protected: Si es True, omite rutas que violen los filtros de seguridad 
-                        del sistema (safety.is_protected_path).
+    Recorrido profundo (DFS) por el árbol de directorios optimizado.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -312,9 +307,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     try:
                         st = entry.stat(follow_symlinks=False)
-                        p = Path(entry.path)
                         
-                        if skip_protected and is_protected_path(p):
+                        if skip_protected and is_protected_path(entry.path):
                             continue
 
                         if entry.is_dir(follow_symlinks=False):
@@ -327,8 +321,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                             stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            size = getattr(st, 'st_size', 0)
-                            yield p, size
+                            yield Path(entry.path), getattr(st, 'st_size', 0)
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError, ValueError):
