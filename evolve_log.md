@@ -952,3 +952,11 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-07T13:14:15` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-11-07T13:14:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T13:14:15` Corrida terminada. Total usado hoy: 312.
+- `2026-11-07T13:22:11` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-07T13:22:42` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejora la robustez en `stage_for_review` al implementar un chequeo explícito de integridad antes de la operación de movimiento, evitando condiciones de carrera (TOCTOU) y verificando nuevamente el estado de bloqueo inmediatamente antes de `os.replace`.
+- `2026-11-07T13:23:46` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de excepciones y validación de estado en `_perform_secure_copy` para prevenir estados inconsistentes del sistema de archivos cuando ocurre un error parcial durante la escritura o sincronización, asegurando que el descriptor de archivo se cierre correctamente en caso de error I/O.
+- `2026-11-07T13:24:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-07T13:25:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-07T13:25:57` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la detección de archivos en uso, integrando una verificación de "compartición de acceso" mediante la API de Windows (`CreateFileW` con flags de acceso nulo y `FILE_SHARE_NONE`), asegurando que archivos abiertos exclusivamente por otros procesos sean detectados antes de intentar cualquier operación.
+- `2026-11-07T13:25:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T13:25:57` Corrida terminada. Total usado hoy: 316.

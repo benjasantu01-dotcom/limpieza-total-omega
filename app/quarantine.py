@@ -603,10 +603,11 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         ensure_safe_to_modify(temp_dest.parent)
         
         def _copy():
-            with open(source, "rb") as f_src, open(temp_dest, "wb") as f_dst:
-                shutil.copyfileobj(f_src, f_dst)
-                f_dst.flush()
-                os.fsync(f_dst.fileno())
+            with open(source, "rb") as f_src:
+                with open(temp_dest, "wb") as f_dst:
+                    shutil.copyfileobj(f_src, f_dst)
+                    f_dst.flush()
+                    os.fsync(f_dst.fileno())
         
         _check_io_error_context(_copy)
         

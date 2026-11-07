@@ -381,12 +381,16 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
-            if not junk_file.path.is_file(): continue
             
+            # Validación de estado previo al movimiento (evitar TOCTOU)
+            if not _validate_file_identity(junk_file, junk_file.path) or _is_file_locked(junk_file.path):
+                continue
+                
             if not _is_safe_for_disk_op(junk_file, dest_base): continue
             
             target_path = _can_move_file(junk_file, dest_base)
-            if target_path and junk_file.path.exists(): 
+            # Doble confirmación de bloqueo antes del reemplazo final
+            if target_path and junk_file.path.exists() and not _is_file_locked(junk_file.path): 
                 os.replace(str(junk_file.path), str(target_path))
         return dest_base
     except (OSError, PermissionError) as e:

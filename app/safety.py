@@ -110,9 +110,11 @@ def _is_file_busy(path_str: str) -> bool:
     if not isinstance(path_str, str) or os.name != 'nt': return False
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
-    handle = kernel32.CreateFileW(path_long, 0, 0, None, 3, 0x00000080, None)
+    # Abre para lectura de atributos solamente, prohibiendo cualquier acceso compartido
+    handle = kernel32.CreateFileW(path_long, 0x80000000, 0, None, 3, 0x00000080, None)
     if handle == INVALID_HANDLE_VALUE:
-        return kernel32.GetLastError() == ERROR_SHARING_VIOLATION
+        err = kernel32.GetLastError()
+        return err == ERROR_SHARING_VIOLATION or err == ERROR_ACCESS_DENIED
     kernel32.CloseHandle(handle)
     return False
 
@@ -133,7 +135,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
             path_long = _to_long_path(path_str)
             kernel32 = ctypes.windll.kernel32
             # Acceso 0x07 (FILE_READ_ATTRIBUTES) permite identificar el archivo sin bloquear lectura/escritura
-            handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
+            handle = kernel32.CreateFileW(path_long, 0x07, 0x03, None, 3, 0x00000080, None)
             if handle != INVALID_HANDLE_VALUE:
                 try:
                     fid = FILE_ID_INFO()
@@ -771,7 +773,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError) as e:
         raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 

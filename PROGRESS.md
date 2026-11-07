@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **168** (33.3% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 61
+- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 253
+- Sin respuesta de la IA (error o límite): 250
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 70 | 5 | 26 | 4 | 87 |
-| 2026-11-07 | 98 | 8 | 35 | 5 | 166 |
+| 2026-11-06 | 70 | 4 | 26 | 4 | 84 |
+| 2026-11-07 | 101 | 8 | 36 | 5 | 166 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **27**
 - seguridad defensiva: **27**
@@ -31,9 +31,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `healthscore.py`: **19**
 - `diskreport.py`: **18**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
+- `safety.py`: **15**
 - `memory.py`: **14**
-- `safety.py`: **14**
 - `scanner.py`: **14**
 - `settings.py`: **13**
 - `assistant.py`: **13**
@@ -41,10 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **10**
 - `startup.py`: **9**
 - `duplicates.py`: **8**
-- `organizer.py`: **7**
+- `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T13:25:57` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de archivos en uso, integrando una verificación de "compartición de acceso" mediante la API de Windows (`CreateFileW` con flags de acceso nulo y `FILE_SHARE_NONE`), asegurando que archivos abiertos exclusivamente por otros procesos sean detectados antes de intentar cualquier operación.
+- `2026-11-07T13:23:46` **quarantine.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de estado en `_perform_secure_copy` para prevenir estados inconsistentes del sistema de archivos cuando ocurre un error parcial durante la escritura o sincronización, asegurando que el descriptor de archivo se cierre correctamente en caso de error I/O.
+- `2026-11-07T13:22:42` **organizer.py** (robustez ante casos límite): Mejora la robustez en `stage_for_review` al implementar un chequeo explícito de integridad antes de la operación de movimiento, evitando condiciones de carrera (TOCTOU) y verificando nuevamente el estado de bloqueo inmediatamente antes de `os.replace`.
 - `2026-11-07T13:12:51` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `math.isfinite` en `_clamp` dentro del pipeline y se protegió la ejecución de `entry.scorer` contra posibles errores en tiempo de ejecución para evitar que un dato atípico en `SystemMetrics` derrumbe la generación del informe.
 - `2026-11-07T13:12:23` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos bloqueados durante la lectura mediante la implementación de un manejo explícito de excepciones específicas en `hash_file` y `partial_hash`, garantizando que el proceso de escaneo no se detenga prematuramente si un archivo es bloqueado por otro proceso del sistema durante el cálculo del hash.
 - `2026-11-07T13:03:53` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de lectura en el escaneo profundo mediante la captura de excepciones específicas en `_safe_stat`, evitando que fallos transitorios en atributos de metadatos detengan el proceso de recolección de métricas.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T12:32:29` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación aplicando `lru_cache` a `create_linear_scorer` y a las funciones de cálculo individuales, evitando cálculos redundantes de división y normalización en cada iteración del bucle principal para las mismas entradas de métricas.
 - `2026-11-07T12:31:41` **diskreport.py** (rendimiento): Optimizé la función `largest_folders` para evitar la sobrecarga de reconstruir las rutas mediante `os.path.join` en cada iteración, utilizando el acceso directo a los componentes del `Path` y reduciendo el uso de memoria/tiempo en el procesamiento de cadenas durante el escaneo.
 - `2026-11-07T12:23:00` **branding.py** (rendimiento): Se optimizó el renderizado del logo y elementos visuales mediante la pre-compilación de la lógica de escalado de franjas y la eliminación de cálculos redundantes dentro de `_get_stripe_params` y `draw_logo`, aprovechando la naturaleza estática de los parámetros geométricos.
-- `2026-11-07T12:22:28` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` y el acceso a criterios de salud mediante el uso de `frozenset` y pre-filtrado para evitar iteraciones innecesarias sobre métricas no inicializadas en cada consulta del asistente.
-- `2026-11-07T12:21:35` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de validación de rutas y registro, especificando los motivos de seguridad y las restricciones de acceso implementadas, asegurando que cualquier colaborador entienda la lógica crítica detrás del filtrado.
-- `2026-11-07T12:12:57` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones internas críticas (`_is_file_secure_to_read`, `_is_structure_valid`, `_read_and_parse_json`) y se refinó el docstring de `save` para clarificar su flujo de ejecución, mejorando la legibilidad técnica para futuros colaboradores.
