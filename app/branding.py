@@ -38,6 +38,9 @@ SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
 SHIELD_RADIUS: Final[float] = 52.0
 
+# Vértices del polígono base del escudo (ordenados: superior, laterales, inferior)
+SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
+
 class UIConfiguration(NamedTuple):
     """Configuración de parámetros globales para la interfaz gráfica."""
     font_family: str = "Segoe UI"
@@ -321,9 +324,6 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
             start = i
     segments.append(ColorSegment(colors[start], start, len(colors)))
     return tuple(segments)
-
-# Coordenadas base (128x128 viewbox) para la geometría vectorial del escudo.
-SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
