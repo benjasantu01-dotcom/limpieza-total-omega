@@ -360,19 +360,20 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if root is None: return []
     
-    stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
-    root_str = str(root)
-    prefix = root_str if root_str.endswith(os.sep) else root_str + os.sep
+    stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
-        relative = str(path)[len(prefix):]
-        if relative:
-            top_part = relative.split(os.sep)[0]
-            top_level = os.path.join(root_str, top_part)
-            stats[top_level].size += size
-            stats[top_level].file_count += 1
+        # Encontrar la carpeta de primer nivel relativa a root
+        try:
+            parts = path.relative_to(root).parts
+            if parts:
+                top_level = root / parts[0]
+                stats[top_level].size += size
+                stats[top_level].file_count += 1
+        except ValueError:
+            continue
             
-    results = [FolderUsage(Path(p), m.size, m.file_count) for p, m in stats.items()]
+    results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
 
 

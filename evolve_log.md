@@ -917,3 +917,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-07T12:23:22` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-11-07T12:23:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T12:23:22` Corrida terminada. Total usado hoy: 292.
+- `2026-11-07T12:31:13` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-07T12:31:41` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `largest_folders` para evitar la sobrecarga de reconstruir las rutas mediante `os.path.join` en cada iteración, utilizando el acceso directo a los componentes del `Path` y reduciendo el uso de memoria/tiempo en el procesamiento de cadenas durante el escaneo.
+- `2026-11-07T12:32:02` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-07T12:32:29` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del pipeline de puntuación aplicando `lru_cache` a `create_linear_scorer` y a las funciones de cálculo individuales, evitando cálculos redundantes de división y normalización en cada iteración del bucle principal para las mismas entradas de métricas.
+- `2026-11-07T12:33:24` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, wrapper
+- `2026-11-07T12:33:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T12:33:24` Corrida terminada. Total usado hoy: 296.

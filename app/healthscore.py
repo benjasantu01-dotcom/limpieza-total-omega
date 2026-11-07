@@ -172,6 +172,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """Generador: crea funciones de normalización lineal para métricas de volumen."""
+    @lru_cache(maxsize=32)
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0 or not math.isfinite(val): return 0.0
         try:
@@ -218,10 +219,12 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
 
 # --- Funciones de Cálculo de Salud ---
 
+@lru_cache(maxsize=16)
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud para archivos basura basados en volumen."""
     return _JUNK_SCORER(float(junk_mb))
 
+@lru_cache(maxsize=16)
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
     """Calcula el ratio de seguridad penalizando detecciones y advertencias."""
     count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
@@ -229,6 +232,7 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
     penalization = (count * 0.05) + (warn * 0.25)
     return _clamp(1.0 - penalization)
 
+@lru_cache(maxsize=16)
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud de memoria RAM basado en porcentaje disponible."""
     val = float(available_percent)
@@ -238,6 +242,7 @@ def score_memory(available_percent: float | int) -> NormalizedRatio:
     except ZeroDivisionError:
         return 0.0
 
+@lru_cache(maxsize=16)
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud de almacenamiento libre basado en porcentaje total."""
     val = float(free_percent)
@@ -247,10 +252,12 @@ def score_disk(free_percent: float | int) -> NormalizedRatio:
     except ZeroDivisionError:
         return 0.0
 
+@lru_cache(maxsize=16)
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud según el desperdicio por duplicados."""
     return _DUP_SCORER(float(duplicate_mb))
 
+@lru_cache(maxsize=16)
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
     """Calcula el ratio de salud basado en la carga de programas en el arranque."""
     return _STARTUP_SCORER(float(startup_count))
