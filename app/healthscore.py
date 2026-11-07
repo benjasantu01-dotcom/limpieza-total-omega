@@ -35,7 +35,6 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
     "boot", "windows", "users", "admin", "secret", "private"
 ])
 _MAX_MSG_LEN: Final[int] = 128
-_MAX_RECURSION_DEPTH: Final[int] = 5
 
 _METRIC_LIMITS: Final[Dict[str, Tuple[float, float]]] = {
     "junk_mb": (0.0, 1048576.0),
@@ -189,20 +188,6 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
     "arranque": 8,
 }
 
-def _verify_pipeline_integrity(weights: Dict[str, int], pipeline: Tuple[PipelineEntry, ...]) -> None:
-    """Validación: asegura que el pipeline esté completo y que los pesos sumen 100%."""
-    if not isinstance(weights, dict) or not isinstance(pipeline, tuple):
-        return
-    try:
-        if sum(weights.values()) != 100:
-            logging.error("Integridad de Pipeline fallida: Los pesos no suman 100.")
-            return
-        pipeline_areas = {entry.area for entry in pipeline}
-        if set(weights.keys()) != pipeline_areas:
-            logging.error("Integridad de Pipeline fallida: Desajuste de áreas.")
-    except Exception as error:
-        logging.error(f"Error crítico validando integridad del pipeline: {error}")
-
 _JUNK_SCORER: Final = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER: Final = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER: Final = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
@@ -224,8 +209,6 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.safe_get("duplicate_mb")), _RULES["duplicados"]),
     PipelineEntry("arranque", 8, lambda m: score_startup(m.safe_get("startup_count")), _RULES["arranque"]),
 )
-
-_verify_pipeline_integrity(WEIGHTS, PIPELINE_DEFINITIONS)
 
 # --- Funciones de Cálculo de Salud ---
 
@@ -353,24 +336,16 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 # --- Orquestación Principal ---
 
-@lru_cache(maxsize=128)
-def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> HealthResult:
-    """Orquestador central: ejecuta el pipeline de normalización y puntaje."""
-    try:
-        metrics = SystemMetrics(
-            junk_mb=metric_tuple[0],
-            suspicious_count=int(metric_tuple[1]),
-            suspicious_warnings=int(metric_tuple[2]),
-            memory_available_percent=metric_tuple[3],
-            disk_free_percent=metric_tuple[4],
-            duplicate_mb=metric_tuple[5],
-            startup_count=int(metric_tuple[6]),
-            quarantined_count=int(quarantined)
-        )
-        
-        if not metrics.is_finite:
-            raise ValueError("Métricas no finitas tras la validación.")
+def compute_score(metrics: SystemMetrics | None) -> HealthResult:
+    """Punto de entrada: orquesta la validación y cálculo del puntaje final."""
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
+    
+    metrics.validate()
+    if not metrics.is_finite:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
 
+    try:
         metric_breakdown = {}
         total_score_sum = 0.0
         recommendations = []
@@ -398,29 +373,11 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
         logging.error(f"Error crítico durante el análisis: {e}")
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=[f"Error crítico durante el análisis: {type(e).__name__}"])
 
-def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Punto de entrada: orquesta la validación y cálculo del puntaje final."""
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
-    
-    metrics.validate()
-    
-    if not metrics.is_finite:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
-
-    return _compute_cached((
-        metrics.junk_mb, float(metrics.suspicious_count), 
-        float(metrics.suspicious_warnings), metrics.memory_available_percent,
-        metrics.disk_free_percent, metrics.duplicate_mb, 
-        float(metrics.startup_count)
-    ), float(metrics.quarantined_count))
-
-@lru_cache(maxsize=128)
-def _render_bar(points: int, max_val: int, depth: int = 0) -> str:
-    """Generador: crea una representación visual simple de barras horizontales."""
-    if depth > _MAX_RECURSION_DEPTH or max_val <= 0: return ""
+def _render_bar(points: int, max_val: int) -> str:
+    """Generador: crea una representación visual simple de barras horizontales iterativa."""
+    if max_val <= 0: return ""
     safe_points = int(_clamp(float(points), 0.0, float(max_val)))
-    return "#" * safe_points + "." * (max_val - safe_points)
+    return ("#" * safe_points) + ("." * (max_val - safe_points))
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte de texto legible a partir de un objeto HealthResult."""

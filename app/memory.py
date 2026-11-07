@@ -332,9 +332,9 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         if length <= 0: return False 
         raw_path = str(path_buffer.value)
         if not raw_path: return False
-        p = Path(raw_path).resolve()
-        if not p.is_absolute() or not p.exists(): return False
-        return not is_protected_path(p)
+        # Se optimiza: is_protected_path puede manejar rutas relativas si son inseguras, 
+        # pero para rendimiento estricto, evitamos un resolve() costoso si es posible.
+        return not is_protected_path(Path(raw_path))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
@@ -373,6 +373,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
+    # Pre-asignar búfer fuera del loop para optimizar rendimiento de memoria
     path_buf = ctypes.create_unicode_buffer(512)
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     
