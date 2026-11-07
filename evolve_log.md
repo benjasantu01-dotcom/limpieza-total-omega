@@ -842,3 +842,54 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-07T00:42:10` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se implementó una protección defensiva contra el "Time-of-Check to Time-of-Use" (TOCTOU) reforzando la validación de la identidad del archivo mediante `GetFileInformationByHandle` antes de realizar cualquier operación crítica, asegurando que la ruta no haya sido reemplazada por un enlace o reparse point después de la primera validación.
 - `2026-11-07T00:42:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T00:42:10` Corrida terminada. Total usado hoy: 16.
+- `2026-11-07T00:48:35` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-07T00:49:07` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-07T00:49:37` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la seguridad en `_is_file_secure_to_read` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier operación de lectura, asegurando que el archivo de configuración nunca pueda residir en una ubicación protegida del sistema, incluso si la verificación de permisos `os.access` pasara.
+- `2026-11-07T00:50:05` Tests FALLARON:
+```
+
+E         + set()
+E         - {
+E         -     'MiPrograma',
+E         -     'Otro',
+E         - }
+
+evolve/tests/test_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:163
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:163: SyntaxWarning: invalid escape sequence '\A'
+    de sus argumentos en líneas de comandos de registro del tipo `"C:\App\app.exe" /flag`.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert set() == {'MiPrograma', 'Otro'}
+  
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + set()
+  - {
+  -     'MiPrograma',
+  -     'Otro',
+  - }
+1 failed, 298 passed, 8 warnings in 1.68s
+
+```
+- `2026-11-07T00:50:05` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_valid_executable` añadiendo una validación explícita mediante `os.access(p, os.X_OK)` para asegurar que solo se consideren como ejecutables válidos aquellos archivos que el sistema realmente permite ejecutar, previniendo falsos positivos en archivos de datos con extensiones coincidentes.
+- `2026-11-07T00:50:05` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-07T00:50:05` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-07T00:50:25` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-07T00:50:25` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-07T00:50:55` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-07T00:50:55` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-07T00:50:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T00:50:55` Corrida terminada. Total usado hoy: 20.
