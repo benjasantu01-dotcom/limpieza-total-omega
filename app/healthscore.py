@@ -338,6 +338,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         return []
     results = []
     for rule in rules:
+        if not isinstance(rule, RecommendationRule):
+            continue
         try:
             if rule.check(metrics, normalized_ratio):
                 msg = rule.message_factory(metrics)

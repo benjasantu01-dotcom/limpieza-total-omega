@@ -333,7 +333,7 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         if length <= 0: return False 
         raw_path = str(path_buffer.value)
         if not raw_path: return False
-        p = Path(os.path.normpath(raw_path))
+        p = Path(raw_path).resolve()
         if not p.is_absolute() or not p.exists(): return False
         return not is_protected_path(p)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
@@ -347,7 +347,6 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
     handle = _get_process_handle(pid, access)
     if not handle or handle == INVALID_HANDLE_VALUE: return None
     
-    # Validar que el proceso sigue vivo antes de proceder
     exit_code = wintypes.DWORD()
     if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
         WindowsAPI.kernel32.CloseHandle(handle)
@@ -448,22 +447,23 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida o no disponible."
         
     path_buf = ctypes.create_unicode_buffer(1024)
+    # Validar acceso y seguridad antes de cualquier operación de trim
     handle = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if handle is None:
         return False, "Acceso denegado o proceso en zona restringida."
 
     try:
-        p = Path(os.path.normpath(str(path_buf.value)))
+        # Validación final de seguridad sobre la ruta resuelta
+        p = Path(path_buf.value).resolve()
         if is_protected_path(p):
             return False, "Acción bloqueada por seguridad sobre proceso protegido."
     except Exception:
         return False, "Error al validar la seguridad del proceso."
     finally:
-        if handle:
-            WindowsAPI.kernel32.CloseHandle(handle)
+        WindowsAPI.kernel32.CloseHandle(handle)
 
-    # Re-abrir handle para la acción final tras validar
+    # Re-abrir handle para la acción final tras validar, garantizando cierre
     handle = _get_process_handle(target_pid, TRIM_ACCESS_MASK)
     if not handle or handle == INVALID_HANDLE_VALUE:
         return False, "No se pudo re-abrir el proceso para la acción."

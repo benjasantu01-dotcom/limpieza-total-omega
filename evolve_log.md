@@ -826,3 +826,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-07T00:19:50` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-11-07T00:19:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T00:19:50` Corrida terminada. Total usado hoy: 8.
+- `2026-11-07T00:28:16` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-07T00:28:41` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-07T00:29:08` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del pipeline mediante la inyección de una validación explícita de tipos en `_evaluate_rules` y la protección de `PIPELINE_DEFINITIONS` contra modificaciones en tiempo de ejecución, asegurando que las reglas no sean reemplazadas por objetos inseguros.
+- `2026-11-07T00:30:11` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-07T00:30:36` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez en la validación de rutas dentro de `_is_process_executable_safe` y `trim_working_set` utilizando `pathlib.Path.resolve()` para evitar problemas con rutas relativas o aliases y garantizando que la comparación con `is_protected_path` se realice sobre rutas absolutas normalizadas, además de consolidar la lógica de cierre de handles para evitar fugas de recursos en caso de fallos intermedios.
+- `2026-11-07T00:30:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T00:30:36` Corrida terminada. Total usado hoy: 12.

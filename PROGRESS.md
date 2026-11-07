@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 62 | 2 | 14 | 3 | 65 |
+| 2026-11-05 | 62 | 2 | 14 | 3 | 61 |
 | 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 4 | 1 | 0 | 0 | 3 |
+| 2026-11-07 | 6 | 1 | 1 | 0 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **40**
+- seguridad defensiva: **36**
 - rendimiento: **35**
-- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `healthscore.py`: **20**
+- `healthscore.py`: **21**
 - `scanner.py`: **19**
 - `quarantine.py`: **19**
+- `memory.py`: **18**
 - `safety.py`: **18**
-- `memory.py`: **17**
 - `browser.py`: **15**
 - `settings.py`: **15**
 - `assistant.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T00:30:36` **memory.py** (seguridad defensiva): Se ha mejorado la robustez en la validación de rutas dentro de `_is_process_executable_safe` y `trim_working_set` utilizando `pathlib.Path.resolve()` para evitar problemas con rutas relativas o aliases y garantizando que la comparación con `is_protected_path` se realice sobre rutas absolutas normalizadas, además de consolidar la lógica de cierre de handles para evitar fugas de recursos en caso de fallos intermedios.
+- `2026-11-07T00:29:08` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del pipeline mediante la inyección de una validación explícita de tipos en `_evaluate_rules` y la protección de `PIPELINE_DEFINITIONS` contra modificaciones en tiempo de ejecución, asegurando que las reglas no sean reemplazadas por objetos inseguros.
 - `2026-11-07T00:19:39` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` añadiendo una comprobación explícita mediante `pathlib.Path.is_symlink()` combinada con una validación de `os.path.islink()` para cubrir posibles inconsistencias en el sistema de archivos de Windows y asegurar que no se sigan enlaces simbólicos hacia fuera del sandbox.
 - `2026-11-07T00:09:50` **settings.py** (robustez ante casos límite): Se ha mejorado `_read_and_parse_json` para manejar explícitamente el caso de archivos vacíos o con errores de lectura durante el acceso a bajo nivel, garantizando que el sistema regrese a `DEFAULTS` sin excepciones inesperadas y reforzando la robustez ante estados inconsistentes del sistema de archivos.
 - `2026-11-07T00:09:21` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_safe_stat` y en `process_entry` al manejar explícitamente excepciones de sistema (`OSError`) durante el acceso a metadatos, evitando que el escáner se detenga prematuramente ante archivos bloqueados o con descriptores inválidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T17:11:19` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` mediante el uso de `os.scandir` para evitar múltiples llamadas a `exists()` y `is_file()` en cada iteración del bucle, reduciendo significativamente el overhead de E/S al procesar directorios con muchos archivos.
 - `2026-11-06T17:02:03` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas reduciendo el uso de `ctypes.create_unicode_buffer` (costoso) al reutilizar un único búfer prealocado en la iteración, y se reemplazó la creación dinámica de listas de PIDs por un generador eficiente para evitar iterar dos veces sobre los resultados del sistema.
 - `2026-11-06T17:00:46` **healthscore.py** (rendimiento): Se ha optimizado el rendimiento de `healthscore.py` eliminando el cálculo redundante de `PipelineEntry.rules` mediante la conversión de la estructura de búsqueda a un diccionario pre-procesado, evitando así la reconstrucción constante de tuplas y la búsqueda lineal dentro del bucle de orquestación.
-- `2026-11-06T16:51:59` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la conversión repetida a `str` y `Path` dentro del bucle principal por el uso directo de `entry.path`, evitando la creación innecesaria de objetos `Path` y reduciendo la sobrecarga de CPU en recorridos de directorios grandes.
-- `2026-11-06T16:50:57` **branding.py** (rendimiento): Se optimizó `_draw_shield_stripes` eliminando el loop anidado sobre los segmentos, aprovechando el hecho de que `get_gradient_segments` ya pre-calcula los rangos de índices, evitando re-iterar innecesariamente sobre estructuras de datos.
