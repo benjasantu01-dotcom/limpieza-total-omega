@@ -931,3 +931,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-07T12:43:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-11-07T12:43:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T12:43:15` Corrida terminada. Total usado hoy: 300.
+- `2026-11-07T12:51:52` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-07T12:53:02` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un sistema de "Short-Circuit Caching" en `_validate_security_rules` y `_check_file_integrity` mediante un nuevo caché `_NEGATIVE_SECURITY_CACHE`, evitando la ejecución costosa de múltiples verificaciones de estado (IO calls y kernel calls) para archivos que ya han sido identificados como inseguros en la misma sesión, mejorando significativamente el rendimiento en escaneos profundos.
+- `2026-11-07T12:53:29` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner moviendo la normalización de rutas fuera del bucle de heurísticas mediante el uso de `seen_normcase` en `Scanner.process_entry` y consolidando las comprobaciones de extensión para evitar múltiples llamadas a `os.path.splitext` y accesos innecesarios al sistema de archivos.
+- `2026-11-07T12:54:08` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `_Validators._is_safe_path` y `_Validators._run_safety_checks` añadiendo un cache `lru_cache` al primero y reutilizando el chequeo de la cadena de padres en el segundo, reduciendo significativamente las llamadas al sistema de archivos en operaciones repetidas.
+- `2026-11-07T12:54:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-07T12:54:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T12:54:19` Corrida terminada. Total usado hoy: 304.

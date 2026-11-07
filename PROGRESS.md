@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **166** (32.9% de aceptación)
+- Mejoras aceptadas: **167** (33.1% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 252
+- Sin respuesta de la IA (error o límite): 251
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 76 | 6 | 29 | 4 | 89 |
-| 2026-11-07 | 90 | 8 | 34 | 5 | 163 |
+| 2026-11-06 | 74 | 6 | 29 | 4 | 87 |
+| 2026-11-07 | 93 | 8 | 34 | 5 | 164 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- seguridad defensiva: **33**
 - manejo de errores y validación de entradas: **32**
+- seguridad defensiva: **31**
 - robustez ante casos límite: **29**
-- rendimiento: **24**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `healthscore.py`: **18**
+- `diskreport.py`: **17**
 - `memory.py`: **15**
-- `scanner.py`: **14**
-- `safety.py`: **13**
-- `browser.py`: **12**
-- `settings.py`: **12**
+- `scanner.py`: **15**
+- `safety.py`: **14**
+- `settings.py`: **13**
 - `assistant.py`: **12**
+- `browser.py`: **11**
 - `branding.py`: **10**
 - `startup.py`: **9**
 - `organizer.py`: **8**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T12:54:08` **settings.py** (rendimiento): Optimicé el rendimiento de `_Validators._is_safe_path` y `_Validators._run_safety_checks` añadiendo un cache `lru_cache` al primero y reutilizando el chequeo de la cadena de padres en el segundo, reduciendo significativamente las llamadas al sistema de archivos en operaciones repetidas.
+- `2026-11-07T12:53:29` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la normalización de rutas fuera del bucle de heurísticas mediante el uso de `seen_normcase` en `Scanner.process_entry` y consolidando las comprobaciones de extensión para evitar múltiples llamadas a `os.path.splitext` y accesos innecesarios al sistema de archivos.
+- `2026-11-07T12:53:02` **safety.py** (rendimiento): Se implementó un sistema de "Short-Circuit Caching" en `_validate_security_rules` y `_check_file_integrity` mediante un nuevo caché `_NEGATIVE_SECURITY_CACHE`, evitando la ejecución costosa de múltiples verificaciones de estado (IO calls y kernel calls) para archivos que ya han sido identificados como inseguros en la misma sesión, mejorando significativamente el rendimiento en escaneos profundos.
 - `2026-11-07T12:41:57` **memory.py** (rendimiento): Optimizé `_iter_process_memory` sustituyendo el buffer de nombres `path_buf` compartido por un acceso local más eficiente y mejoré el rendimiento del filtrado de procesos evitando llamadas redundantes a `is_protected_path` al validar la existencia del handle antes de la resolución de nombre.
 - `2026-11-07T12:32:29` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación aplicando `lru_cache` a `create_linear_scorer` y a las funciones de cálculo individuales, evitando cálculos redundantes de división y normalización en cada iteración del bucle principal para las mismas entradas de métricas.
 - `2026-11-07T12:31:41` **diskreport.py** (rendimiento): Optimizé la función `largest_folders` para evitar la sobrecarga de reconstruir las rutas mediante `os.path.join` en cada iteración, utilizando el acceso directo a los componentes del `Path` y reduciendo el uso de memoria/tiempo en el procesamiento de cadenas durante el escaneo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T12:02:58` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados en funciones críticas de E/S, aclarando el propósito y los riesgos de las validaciones de seguridad de bajo nivel, además de estandarizar el uso de type hints en `_process_directory`.
 - `2026-11-07T12:02:29` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la API de bajo nivel envolviendo las constantes y funciones de Win32 en una clase `WindowsAPI` más robusta y añadiendo docstrings descriptivos a los tipos de datos complejos para clarificar su propósito.
 - `2026-11-07T11:53:03` **healthscore.py** (legibilidad y documentación): Documenté el propósito de los decoradores y las funciones de validación crítica en `healthscore.py` para clarificar la arquitectura del pipeline y mejorar la mantenibilidad técnica del módulo.
-- `2026-11-07T11:51:47` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en retornos de funciones, la simplificación de lógicas de filtrado en `_collect_candidates` y la clarificación de docstrings en las estrategias de hashing para hacer explícito el flujo de datos.
-- `2026-11-07T11:51:23` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en clases clave y la estandarización de las anotaciones de tipo para mejorar la trazabilidad del flujo de datos en el módulo `diskreport.py`.
-- `2026-11-07T11:50:58` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de escaneo y la clarificación de los docstrings en `DirectoryScanner`, asegurando que el propósito de cada método recursivo sea evidente para futuros mantenedores sin alterar la lógica de seguridad.

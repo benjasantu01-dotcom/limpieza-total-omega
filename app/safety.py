@@ -683,7 +683,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _evaluate_security_rules(state: SafetyState) -> None:
-    """Verifica reglas de integridad mediante caché de IDs únicos."""
+    """Verifica reglas de integridad mediante caché de IDs únicos con short-circuiting."""
     if state.file_id in _NEGATIVE_SECURITY_CACHE:
         raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
     if state.file_id in _SECURITY_CACHE:
@@ -729,6 +729,9 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
 
 def _check_file_integrity(state: SafetyState) -> None:
     """Detecta condiciones de carrera TOCTOU comparando identificadores únicos."""
+    if state.file_id in _NEGATIVE_SECURITY_CACHE:
+        raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
+        
     if not state.path.exists():
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
     
@@ -768,7 +771,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError) as e:
         raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 

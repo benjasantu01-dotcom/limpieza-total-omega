@@ -277,6 +277,7 @@ class _Validators:
         return p.is_absolute() and _Validators._run_safety_checks(str(p))
 
     @staticmethod
+    @lru_cache(maxsize=64)
     def _is_safe_path(path_str: str) -> bool:
         """Filtro primario de seguridad para rutas: longitud, caracteres prohibidos y puntos de acceso."""
         if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False

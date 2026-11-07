@@ -247,7 +247,6 @@ class Scanner:
             norm_entry = _get_canonical_path(entry_path)
             if not norm_entry or not self.base_root_real:
                 return False
-            # Verifica que norm_entry sea subdirectorio o igual a la base
             return os.path.commonpath([self.base_root_real, norm_entry]) == self.base_root_real
         except (ValueError, OSError):
             return False
