@@ -164,7 +164,7 @@ class ProcessMemory:
 
 def format_bytes(num: Optional[int | float]) -> str:
     """Convierte bytes a formato humano legible (ej. 1.5 GB)."""
-    if not isinstance(num, (int, float)) or math.isnan(num) or num < 0:
+    if not isinstance(num, (int, float)) or math.isnan(num) or math.isinf(num) or num < 0:
         return "0 B"
     if num == 0:
         return "0 B"
@@ -187,6 +187,7 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
     
     try:
         if isinstance(value, (int, float)):
+            if math.isnan(value) or math.isinf(value): return BytesValue(0)
             val = int(value * multiplier)
         elif isinstance(value, str):
             clean_val = "".join(filter(str.isdigit, value))
@@ -332,8 +333,6 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         if length <= 0: return False 
         raw_path = str(path_buffer.value)
         if not raw_path: return False
-        # Se optimiza: is_protected_path puede manejar rutas relativas si son inseguras, 
-        # pero para rendimiento estricto, evitamos un resolve() costoso si es posible.
         return not is_protected_path(Path(raw_path))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
@@ -373,7 +372,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
-    # Pre-asignar búfer fuera del loop para optimizar rendimiento de memoria
     path_buf = ctypes.create_unicode_buffer(512)
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     
@@ -463,20 +461,20 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     finally:
         WindowsAPI.kernel32.CloseHandle(handle)
 
-    # Re-abrir handle para la acción final tras validar, garantizando cierre
-    handle = _get_process_handle(target_pid, TRIM_ACCESS_MASK)
-    if not handle or handle == INVALID_HANDLE_VALUE:
+    # Re-abrir handle para la acción final
+    final_handle = _get_process_handle(target_pid, TRIM_ACCESS_MASK)
+    if not final_handle or final_handle == INVALID_HANDLE_VALUE:
         return False, "No se pudo re-abrir el proceso para la acción."
 
     try:
         process_exit_code = wintypes.DWORD()
-        if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(process_exit_code)) == 0 or process_exit_code.value != STILL_ACTIVE_EXIT_CODE:
+        if WindowsAPI.kernel32.GetExitCodeProcess(final_handle, ctypes.byref(process_exit_code)) == 0 or process_exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso ya ha finalizado o no responde."
             
-        if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
+        if WindowsAPI.psapi.EmptyWorkingSet(final_handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la operación."
     except Exception:
         return False, "Error inesperado al intentar liberar memoria."
     finally:
-        WindowsAPI.kernel32.CloseHandle(handle)
+        WindowsAPI.kernel32.CloseHandle(final_handle)

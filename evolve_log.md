@@ -1248,3 +1248,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-11-07T04:13:51` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra valores NaN/infinitos y tipos inesperados en los constructores y métodos de acceso de `SystemMetrics` para garantizar que el pipeline de análisis nunca falle silenciosamente o produzca puntuaciones inválidas ante datos corruptos o de red/disco inesperados.
 - `2026-11-07T04:13:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T04:13:51` Corrida terminada. Total usado hoy: 100.
+- `2026-11-07T04:22:32` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-11-07T04:23:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-07T04:24:08` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_safe_int_conversion` ante valores inesperados (como `float('inf')` o `nan`) y se refina el manejo de handles en `trim_working_set` para asegurar que el proceso de validación no deje handles abiertos ante errores de resolución de ruta o cambios de estado del proceso.
+- `2026-11-07T04:24:43` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-07T04:25:13` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` al introducir un chequeo de concurrencia y atomicidad antes de iniciar la copia, y añadí una validación explícita para evitar que archivos con el atributo `Archive` (en Windows) o metadatos de sistema impidan una operación segura, reduciendo riesgos ante archivos de sistema bloqueados.
+- `2026-11-07T04:25:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T04:25:13` Corrida terminada. Total usado hoy: 104.

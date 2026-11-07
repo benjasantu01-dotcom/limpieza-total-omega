@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 226
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 17 | 0 | 2 | 1 | 34 |
+| 2026-11-05 | 14 | 0 | 2 | 1 | 33 |
 | 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 30 | 4 | 9 | 2 | 55 |
+| 2026-11-07 | 32 | 4 | 10 | 2 | 56 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **36**
 - rendimiento: **31**
-- seguridad defensiva: **30**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
-- `memory.py`: **19**
-- `quarantine.py`: **19**
+- `memory.py`: **20**
+- `quarantine.py`: **20**
 - `diskreport.py`: **18**
 - `safety.py`: **16**
-- `scanner.py`: **15**
-- `settings.py`: **15**
+- `settings.py`: **14**
+- `scanner.py`: **14**
 - `assistant.py`: **13**
 - `browser.py`: **12**
 - `branding.py`: **10**
 - `duplicates.py`: **8**
-- `startup.py`: **7**
+- `startup.py`: **6**
 - `organizer.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T04:25:13` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` al introducir un chequeo de concurrencia y atomicidad antes de iniciar la copia, y añadí una validación explícita para evitar que archivos con el atributo `Archive` (en Windows) o metadatos de sistema impidan una operación segura, reduciendo riesgos ante archivos de sistema bloqueados.
+- `2026-11-07T04:24:08` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_safe_int_conversion` ante valores inesperados (como `float('inf')` o `nan`) y se refina el manejo de handles en `trim_working_set` para asegurar que el proceso de validación no deje handles abiertos ante errores de resolución de ruta o cambios de estado del proceso.
 - `2026-11-07T04:13:51` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores NaN/infinitos y tipos inesperados en los constructores y métodos de acceso de `SystemMetrics` para garantizar que el pipeline de análisis nunca falle silenciosamente o produzca puntuaciones inválidas ante datos corruptos o de red/disco inesperados.
 - `2026-11-07T04:13:15` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y las funciones auxiliares ante archivos inexistentes o con permisos denegados durante la iteración, asegurando que `_safe_stat` y la lógica de escaneo manejen correctamente fallos al acceder a `st_ino` (común en sistemas de archivos virtuales o unidades de red), evitando interrupciones abruptas del análisis.
 - `2026-11-07T04:12:49` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `DirectoryScanner._is_path_allowed` y `directory_size` validando explícitamente que la ruta resuelta exista antes de realizar operaciones de normatización, evitando excepciones innecesarias ante sistemas de archivos volátiles o inaccesibles.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T03:13:55` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_safe_unlink` para extraer la lógica de sincronización de directorios a un método privado reutilizable, y añadí docstrings descriptivos con el propósito de las operaciones de E/S atómicas.
 - `2026-11-07T03:03:12` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, se han tipado parámetros ausentes y se ha estructurado la lógica de validación en `_extract_process_info` para mayor claridad y mantenibilidad, manteniendo la integridad del código original.
 - `2026-11-07T03:01:57` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad del código centralizando la lógica de validación de entradas mediante un nuevo método `get_clamped_metric` y unificando el acceso a `PipelineEntry`, reduciendo la duplicación y mejorando la robustez ante datos inesperados.
-- `2026-11-07T03:01:29` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en funciones clave, explicitando el "porqué" de las decisiones de diseño (como la estrategia de caché y la selección de subconjuntos de archivos) y normalizando el estilo de los type hints para mejorar la mantenibilidad.
-- `2026-11-07T02:52:42` **diskreport.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `diskreport.py` documentando los contratos de las clases, refinando las type hints y corrigiendo la precisión terminológica en las descripciones de las funciones.

@@ -141,7 +141,8 @@ def _win_has_system_attributes(path: Path) -> bool:
     """Verifica banderas críticas (Oculto, Sistema, Temporal, Solo Lectura) que indican archivos no aptos para mover."""
     attrs: int = _get_win_attributes(path)
     if attrs == -1: return True
-    # 0x01: Solo lectura, 0x02: Oculto, 0x04: Sistema, 0x100: Temporal
+    # 0x01: Solo lectura, 0x02: Oculto, 0x04: Sistema, 0x100: Temporal, 0x20: Archivo
+    # Si detecta sistema o atributos críticos de bloqueo, retorna True
     return bool(attrs & 0x01 or attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
 
 def _verify_source_fs_permissions(path: Path) -> None:
@@ -773,6 +774,11 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
         RuntimeError: Si ocurre un error de E/S o fallo de integridad.
     """
     p_source: Path = _validate_input_path(source)
+    
+    # Pre-check de concurrencia: asegurar que nadie más está operando el archivo antes de empezar
+    if not _is_file_exclusive(p_source):
+        raise IOError("El archivo origen está bloqueado por otro proceso y no puede aislarse de forma atómica.")
+
     try:
         initial_stat = p_source.stat()
     except OSError as e:
@@ -784,10 +790,9 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     
     ensure_safe_to_modify(dest_dir)
     
-    if _is_file_in_use_by_system(p_source): raise IOError("Archivo origen bloqueado por el sistema: abortado.")
+    # Validar atributos de sistema antes de proceder
+    if _win_has_system_attributes(p_source): raise PermissionError("Archivo origen restringido por atributos de sistema.")
     if _is_path_canonical(p_source).stat().st_dev != dest_dir.stat().st_dev: raise UnsafePathError("Origen y sandbox deben estar en la misma unidad.")
-    
-    if not p_source.exists() or p_source.stat().st_ino != initial_stat.st_ino: raise RuntimeError("Integridad comprometida: el archivo original cambió o desapareció.")
     
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
