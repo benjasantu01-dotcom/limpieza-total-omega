@@ -301,6 +301,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if _is_excluded_path(entry.name):
                         continue
                     try:
+                        # Obtenemos stat con manejo defensivo de acceso
                         st = entry.stat(follow_symlinks=False)
                         
                         if skip_protected and is_protected_path(Path(entry.path)):

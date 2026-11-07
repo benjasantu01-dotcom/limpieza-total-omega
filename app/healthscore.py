@@ -361,6 +361,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         
         for entry in PIPELINE_DEFINITIONS:
             ratio = entry.scorer(metrics)
+            # Validación secundaria de ratio para asegurar consistencia del pipeline
+            if not math.isfinite(ratio): ratio = 0.0
+            
             val = int(_clamp(ratio * float(entry.weight), 0.0, float(entry.weight)))
             metric_breakdown[entry.area] = val
             total_score_sum += val

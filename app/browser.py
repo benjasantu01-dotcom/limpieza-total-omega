@@ -304,20 +304,19 @@ def directory_size(path: Optional[OSPath]) -> int:
     ctx = ScanContext(root_norm, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
     return DirectoryScanner(ctx).get_size(root_norm).bytes_found
 
-def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
+def _is_target_valid(target: Optional[Path], base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """Verifica si un directorio de caché objetivo es apto para el análisis."""
-    if not isinstance(target, Path): return False
+    if not isinstance(target, Path) or not target.exists() or not target.is_dir(): 
+        return False
     try:
-        if not target.exists() or not target.is_dir() or not os.access(target, os.R_OK): return False
-        if not is_safe_to_modify(target) or is_protected_path(target): return False
+        if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): 
+            return False
         
-        # Validación de enlaces: no seguir junctions ni symlinks hacia fuera del sandbox
         if _IS_JUNCTION_FN(str(target)) or target.is_symlink() or os.path.islink(target):
             return False
             
         if _is_system_hidden(str(target), kernel): return False
         
-        # Verificar que ningún componente de la ruta esté en NEVER_TOUCH
         parts = [p.lower() for p in target.parts]
         if any(part in NEVER_TOUCH for part in parts):
             return False
@@ -325,10 +324,9 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
         if any(c in target.name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target.name):
             return False
         
-        # Validación crítica: resolver la ruta real para prevenir escape del sandbox
         target_norm = os.path.realpath(str(target))
         return os.path.commonpath([target_norm, base_norm]) == base_norm
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError, ValueError):
         return False
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:

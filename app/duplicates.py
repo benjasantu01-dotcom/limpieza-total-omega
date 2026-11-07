@@ -115,7 +115,8 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Utiliza un caché interno para evitar re-hash de un mismo archivo si aparece en
     distintas búsquedas durante la misma ejecución.
     """
-    if not isinstance(path, Path) or path in _full_hash_cache: return _full_hash_cache.get(path)
+    if not isinstance(path, Path): return None
+    if path in _full_hash_cache: return _full_hash_cache.get(path)
     if not _safe_path_check(path): return None
     
     try:
@@ -126,7 +127,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         digest = hasher.hexdigest()
         _full_hash_cache[path] = digest
         return digest
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, ValueError):
         return None
 
 
@@ -136,16 +137,18 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     Esta optimización permite descartar rápidamente archivos con encabezados distintos,
     reduciendo drásticamente las operaciones de E/S en archivos de gran tamaño.
     """
-    if not isinstance(path, Path) or path in _partial_cache: return _partial_cache.get(path)
+    if not isinstance(path, Path): return None
+    if path in _partial_cache: return _partial_cache.get(path)
     if not _safe_path_check(path): return None
     
     try:
         with open(path, "rb") as f:
-            if not (header := f.read(read_bytes)): return None
+            header = f.read(read_bytes)
+            if not header: return None
             digest_val = hashlib.sha256(header).hexdigest()
             _partial_cache[path] = digest_val
             return digest_val
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, ValueError):
         return None
 
 
