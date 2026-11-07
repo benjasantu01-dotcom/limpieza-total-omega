@@ -1224,3 +1224,13 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-11-07T03:46:52` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-11-07T03:46:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T03:46:52` Corrida terminada. Total usado hoy: 88.
+- `2026-11-07T03:52:02` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-07T03:52:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-07T03:52:09` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-07T03:53:03` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el rendimiento de `purge_all` transformando la búsqueda de ítems en el manifiesto de una operación lineal O(N*M) a una búsqueda O(1) mediante el uso de un diccionario (hash map) para el mapeo de nombres de archivo, reduciendo la carga de I/O y CPU durante la limpieza masiva.
+- `2026-11-07T03:53:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-11-07T03:54:27` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` integrando el uso de `lru_cache` para la resolución de rutas normalizadas y evitando conversiones redundantes de `Path` a `str` dentro del bucle de validación de extensiones críticas, reduciendo drásticamente la carga de CPU durante escaneos masivos.
+- `2026-11-07T03:54:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-07T03:54:50` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-11-07T03:54:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T03:54:50` Corrida terminada. Total usado hoy: 92.

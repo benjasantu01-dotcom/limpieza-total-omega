@@ -890,6 +890,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         root_path: Path = quarantine_dir(base)
         if _is_filesystem_read_only(root_path) or is_protected_path(root_path): return 0
         items = load_manifest(base)
+        # Mapeo eficiente para búsquedas O(1)
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         

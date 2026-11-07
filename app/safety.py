@@ -858,13 +858,14 @@ def is_protected_path(path: PathLike) -> bool:
         return _PROTECTION_CACHE[path_str]
 
     try:
-        norm_str = os.path.normcase(os.path.abspath(path_str))
+        norm_p = _normalize_resolved(path_str)
+        norm_str = os.path.normcase(str(norm_p))
         root_paths = _get_system_root_paths()
         if any(norm_str.startswith(r) for r in root_paths):
             _PROTECTION_CACHE[path_str] = True
             return True
         
-        path_parts = Path(norm_str).parts
+        path_parts = norm_p.parts
         if not PROTECTED_DIR_NAMES.isdisjoint(p.lower() for p in path_parts):
             _PROTECTION_CACHE[path_str] = True
             return True
@@ -922,8 +923,8 @@ def is_sensitive_file(path: PathLike) -> bool:
     """Verifica si la extensión es crítica para la estabilidad."""
     if path is None: return True
     try: 
-        p_str = str(path)
-        return _is_sensitive_extension(os.path.splitext(p_str)[1])
+        ext = os.path.splitext(str(path))[1]
+        return _is_sensitive_extension(ext)
     except (TypeError, ValueError, OSError): return True 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
@@ -986,7 +987,7 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     if sd.has_flag(Win32Attr.SPARSE_FILE):
-        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationCategory.INTEGRITY)
 
 def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> None:
     """Valida el entorno (admin, app directory, locks) antes de modificar."""
