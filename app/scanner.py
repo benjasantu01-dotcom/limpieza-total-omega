@@ -19,8 +19,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
-from typing import List, Optional, Union, Final, Protocol, NamedTuple, Sequence, Tuple, TypeAlias
+from typing import List, Optional, Union, Final, Protocol, NamedTuple, Sequence, Tuple, TypeAlias, TYPE_CHECKING
 from safety import is_protected_path
+
+if TYPE_CHECKING:
+    from typing import Type
 
 # Configuración de logger para el seguimiento de excepciones en el escaneo
 logger: Final = logging.getLogger(__name__)
@@ -51,15 +54,6 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Define el contrato para funciones de inspección heurística.
-
-    Args:
-        path: Ruta absoluta al archivo a analizar.
-        entry: Objeto DirEntry opcional para acceder a atributos sin syscalls extras.
-        now_ts: Timestamp actual para cálculos de antigüedad.
-        stats: Resultados de stat() para evitar lecturas duplicadas.
-
-    Returns:
-        Un objeto Suspicion si se detecta una anomalía, None en caso contrario.
     """
     def __call__(
         self, 
@@ -71,7 +65,6 @@ class SuspicionCheck(Protocol):
 
 # Alias de tipos para mejorar la legibilidad de las firmas de funciones
 ScanResult: TypeAlias = List[Suspicion]
-# Stack compuesto por (ruta_absoluta, nivel_profundidad_actual)
 TraversalStack: TypeAlias = List[Tuple[str, int]]
 Timestamp: TypeAlias = float
 PathInput: TypeAlias = Union[Path, str, None]
@@ -109,7 +102,6 @@ def _get_canonical_path(path_str: str) -> str:
 def _is_safe_by_attributes(path: Path) -> bool:
     """
     Valida mediante atributos de archivo que la ruta no sea un reparse point.
-    Previene seguir enlaces simbólicos o junctions que podrían causar ciclos infinitos.
     """
     try:
         attrs = path.stat().st_file_attributes
@@ -120,7 +112,6 @@ def _is_safe_by_attributes(path: Path) -> bool:
 def _is_valid_file_path(path: PathInput) -> bool:
     """
     Valida si un path es un archivo real, no protegido y físicamente accesible.
-    Utiliza normalización estricta para evitar ataques de path traversal.
     """
     if path is None:
         return False
@@ -152,7 +143,6 @@ def _is_readable(path: PathInput) -> bool:
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """
     Obtiene atributos de Win32 sin resolver el enlace.
-    Indispensable para identificar directorios virtuales que no deben ser escaneados.
     """
     if not isinstance(entry, os.DirEntry) or not entry.path:
         return 0
@@ -164,8 +154,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
-    Obtiene metadatos asegurando que el archivo no esté en uso (vía winerror) 
-    y que sea una entidad física válida en el disco, evitando resolución de enlaces.
+    Obtiene metadatos asegurando que el archivo no esté en uso.
     """
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
         return None
@@ -185,8 +174,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """
-    Valida la integridad del string del path. Detecta intentos de evasión mediante
-    caracteres no imprimibles (RTL) o formatos de red (UNC) no soportados.
+    Valida la integridad del string del path.
     """
     if not isinstance(path_str, str) or not path_str.strip() or "\0" in path_str:
         return False
@@ -247,7 +235,7 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica recursivamente que la ruta no escape fuera de la jerarquía raíz definida."""
+        """Verifica que la ruta resuelta esté contenida bajo la jerarquía base."""
         try:
             norm_entry = _get_canonical_path(entry_path)
             return bool(norm_entry and os.path.commonpath([self.base_root_real, norm_entry]) == self.base_root_real)
@@ -255,13 +243,16 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
+        """Valida que el nombre de archivo no contenga caracteres o patrones prohibidos."""
         if not isinstance(name, str) or not name or "\0" in name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
+        """Determina si la entrada es un punto de reanálisis (Junction/Symlink)."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
+        """Valida si una entrada es apta para ser procesada durante el escaneo."""
         try:
             path_str = getattr(entry, 'path', None)
             if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
@@ -279,6 +270,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
+        """Gestiona la inserción de subdirectorios en la pila de recorrido con control de profundidad."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = _get_canonical_path(entry.path)
         if not norm_path or norm_path in visited: return
@@ -288,10 +280,12 @@ class Scanner:
 
     @lru_cache(maxsize=128)
     def _is_relevant_extension(self, name: str) -> bool:
+        """Filtra archivos de interés según extensiones configuradas."""
         _, ext = os.path.splitext(name)
         return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
+        """Procesa una entrada del directorio, decidiendo si explorar o analizar."""
         if not self._is_safe_entry(entry):
             return
         try:
@@ -307,6 +301,7 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
+        """Ejecuta la suite de heurísticas sobre un archivo identificado."""
         stats = _safe_stat(entry)
         if stats is None:
             return

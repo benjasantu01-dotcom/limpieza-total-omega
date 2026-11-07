@@ -962,6 +962,13 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _RESERVED_NAMES_PATTERN.fullmatch(target_path.name):
         raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME, SafetyValidationCategory.STRUCTURE)
 
+    _validate_path_depth_and_root_access(target_path)
+
+    if len(_STRUCTURAL_CACHE) > 2048: _STRUCTURAL_CACHE.clear()
+    _STRUCTURAL_CACHE[path_string] = True
+
+def _validate_path_depth_and_root_access(target_path: Path) -> None:
+    """Verifica límites de profundidad y accesos restringidos a la raíz."""
     try:
         t_parts = target_path.parts
         if target_path.exists() and not target_path.is_absolute():
@@ -975,9 +982,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     except (AttributeError, TypeError, ValueError):
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 
-    if len(_STRUCTURAL_CACHE) > 2048: _STRUCTURAL_CACHE.clear()
-    _STRUCTURAL_CACHE[path_string] = True
-
 def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     """Valida atributos críticos para evitar ataques de redirección o dispersión."""
     if sd.is_protected_system:
@@ -989,6 +993,20 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.has_flag(Win32Attr.SPARSE_FILE):
         raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationCategory.INTEGRITY)
 
+def _check_container_permissions(target_path: Path) -> None:
+    """Verifica si el directorio contenedor permite escritura."""
+    try:
+        parent = target_path.parent
+        if parent.exists():
+            if _is_system_directory_junction(str(parent)):
+                raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+            if parent == Path(parent.anchor) or os.path.ismount(parent):
+                raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
+            if not os.access(parent, os.W_OK):
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+    except (OSError, PermissionError):
+        pass
+
 def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> None:
     """Valida el entorno (admin, app directory, locks) antes de modificar."""
     guard = SafetyGuard(target_path)
@@ -999,17 +1017,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         raise UnsafePathError("Prohibido uso de rutas de dispositivo en modificación.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     if os.name == 'nt':
-        try:
-            parent = target_path.parent
-            if parent.exists():
-                if _is_system_directory_junction(str(parent)):
-                    raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
-                if parent == Path(parent.anchor) or os.path.ismount(parent):
-                    raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
-                if not os.access(parent, os.W_OK):
-                    raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
-        except (OSError, PermissionError):
-            pass
+        _check_container_permissions(target_path)
 
     try:
         app_root = Path(getattr(sys, 'executable', os.getcwd())).parent
@@ -1177,7 +1185,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise UnsafePathError(f"Modificación denegada sobre punto de reparse: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
     if p.exists() and not (p.is_file() or p.is_dir()):
-        raise UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE, SafetyValidationCategory.STRUCTURE)
+        raise UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE, SafetyValidationSTRUCTURE)
     
     base = None
     if base_dir:

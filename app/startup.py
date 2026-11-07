@@ -84,8 +84,9 @@ class StartupEntry:
     """
     Representa una entrada de inicio detectada. 
 
-    Gestiona el ciclo de vida de una entrada, desde la recepción de la 
-    línea de comando cruda hasta la validación y resolución absoluta de la ruta.
+    Gestiona la lógica de validación, saneamiento y resolución de rutas para 
+    asegurar que cada entrada sea legítima y no represente un riesgo de seguridad
+    al intentar acceder al disco para verificar su existencia.
     """
     name: str
     command: str
@@ -113,8 +114,8 @@ class StartupEntry:
 
     def _is_reserved_device_name(self, path_raw: str) -> bool:
         """
-        Verifica si la ruta apunta a un alias de dispositivo de Windows (ej. NUL, COM1).
-        Hacer operaciones de archivo sobre estos nombres puede bloquear el hilo principal.
+        Detecta rutas que apuntan a dispositivos del sistema (ej. NUL) que 
+        podrían causar bloqueos de ejecución en llamadas al sistema de archivos.
         """
         if not isinstance(path_raw, str) or "\0" in path_raw:
             return True
@@ -129,9 +130,8 @@ class StartupEntry:
 
     def _is_path_suspicious(self, path_raw: str) -> bool:
         """
-        Bloquea caracteres de shell (inyección de comandos) y rutas UNC de red.
-        Las rutas UNC son excluidas porque los tiempos de respuesta del recurso remoto 
-        pueden degradar la experiencia de usuario de la app.
+        Determina si una cadena de comando contiene caracteres de inyección de shell
+        o rutas UNC de red, las cuales son evitadas por latencia y seguridad.
         """
         if not isinstance(path_raw, str):
             return True
@@ -139,8 +139,8 @@ class StartupEntry:
 
     def _is_valid_executable(self, path: Path) -> bool:
         """
-        Filtra archivos por extensión permitida. Excluye enlaces simbólicos (`is_symlink`)
-        como política preventiva contra el seguimiento de punteros no controlados.
+        Verifica si un objeto Path corresponde a un archivo ejecutable permitido,
+        ignorando enlaces simbólicos para prevenir ataques de redirección.
         """
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
@@ -148,15 +148,15 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Elimina caracteres de control ASCII (código < 32) para limpiar la cadena de comando."""
+        """Elimina caracteres de control ASCII no imprimibles de la línea de comandos."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae la ruta contenida entre comillas. Es crítico para separar el ejecutable 
-        de sus argumentos en líneas de comandos de registro del tipo `"C:\App\app.exe" /flag`.
+        Extrae y valida la ruta absoluta dentro de comandos entrecomillados, 
+        comunes en las claves 'Run' del registro para manejar espacios.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
@@ -180,8 +180,8 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Valida que el archivo exista y sea seguro. Usa `is_safe_to_modify` para cumplir
-        con la política de seguridad del proyecto que prohíbe tocar rutas críticas.
+        Implementa el chequeo estricto de seguridad utilizando el módulo 
+        'safety' para verificar que la ruta no sea sensible antes de acceder.
         """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
@@ -206,7 +206,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_raw: str) -> str:
         """
-        Normaliza una ruta a formato absoluto y verifica su existencia física.
+        Normaliza una ruta de sistema, resuelve referencias a disco y almacena 
+        el resultado para minimizar el impacto en el rendimiento del escaneo.
         """
         if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw:
             return ""
@@ -241,8 +242,8 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, cmd_line: str) -> str:
         """
-        Decodifica la línea de comando para extraer el ejecutable. Diferencia entre
-        rutas entrecomilladas (más precisas) y rutas simples.
+        Interpreta la línea de comandos para aislar el ejecutable, delegando la
+        limpieza según si la ruta está citada o es una ruta de sistema plana.
         """
         if not isinstance(cmd_line, str) or not cmd_line:
             return ""
@@ -267,7 +268,8 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Retorna la ruta absoluta del ejecutable mediante resolución diferida. 
+        Propiedad de acceso lazy: resuelve y devuelve la ruta absoluta del 
+        ejecutable solo cuando es necesario, optimizando el tiempo de escaneo.
         """
         if self._checked_exists:
             return self._exec_cache or ""
