@@ -310,7 +310,11 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
     try:
         if not target.exists() or not target.is_dir() or not os.access(target, os.R_OK): return False
         if not is_safe_to_modify(target) or is_protected_path(target): return False
-        if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): return False
+        
+        # Validación de enlaces: no seguir junctions ni symlinks hacia fuera del sandbox
+        if _IS_JUNCTION_FN(str(target)) or target.is_symlink() or os.path.islink(target):
+            return False
+            
         if _is_system_hidden(str(target), kernel): return False
         
         # Verificar que ningún componente de la ruta esté en NEVER_TOUCH

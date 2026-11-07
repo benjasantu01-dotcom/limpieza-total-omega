@@ -797,3 +797,32 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-07T00:10:04` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-11-07T00:10:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T00:10:04` Corrida terminada. Total usado hoy: 4.
+- `2026-11-07T00:18:03` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-11-07T00:18:44` Tests FALLARON:
+```
+---------------------
+WARNING  root:assistant.py:555 Intento de ingesta con fuente insegura bloqueado.
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:159: SyntaxWarning: invalid escape sequence '\A'
+    de sus argumentos en líneas de comandos de registro del tipo `"C:\App\app.exe" /flag`.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+1 failed, 298 passed, 7 warnings in 1.64s
+
+```
+- `2026-11-07T00:18:44` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_payload_structure` en `ingest`, garantizando que solo estructuras de datos simples y planas (sin objetos complejos ni inyecciones) sean procesadas al recibir métricas externas, evitando ataques por desbordamiento de estructuras.
+- `2026-11-07T00:19:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-07T00:19:39` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_target_valid` añadiendo una comprobación explícita mediante `pathlib.Path.is_symlink()` combinada con una validación de `os.path.islink()` para cubrir posibles inconsistencias en el sistema de archivos de Windows y asegurar que no se sigan enlaces simbólicos hacia fuera del sandbox.
+- `2026-11-07T00:19:50` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-11-07T00:19:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T00:19:50` Corrida terminada. Total usado hoy: 8.

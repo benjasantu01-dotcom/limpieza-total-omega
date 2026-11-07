@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 62 | 2 | 14 | 3 | 69 |
+| 2026-11-05 | 62 | 2 | 14 | 3 | 65 |
 | 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 3 | 0 | 0 | 0 | 1 |
+| 2026-11-07 | 4 | 1 | 0 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **40**
 - rendimiento: **35**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,9 +36,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `safety.py`: **18**
 - `memory.py`: **17**
+- `browser.py`: **15**
 - `settings.py`: **15**
 - `assistant.py`: **14**
-- `browser.py`: **14**
 - `branding.py`: **12**
 - `duplicates.py`: **11**
 - `startup.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T00:19:39` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` añadiendo una comprobación explícita mediante `pathlib.Path.is_symlink()` combinada con una validación de `os.path.islink()` para cubrir posibles inconsistencias en el sistema de archivos de Windows y asegurar que no se sigan enlaces simbólicos hacia fuera del sandbox.
 - `2026-11-07T00:09:50` **settings.py** (robustez ante casos límite): Se ha mejorado `_read_and_parse_json` para manejar explícitamente el caso de archivos vacíos o con errores de lectura durante el acceso a bajo nivel, garantizando que el sistema regrese a `DEFAULTS` sin excepciones inesperadas y reforzando la robustez ante estados inconsistentes del sistema de archivos.
 - `2026-11-07T00:09:21` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_safe_stat` y en `process_entry` al manejar explícitamente excepciones de sistema (`OSError`) durante el acceso a metadatos, evitando que el escáner se detenga prematuramente ante archivos bloqueados o con descriptores inválidos.
 - `2026-11-07T00:08:51` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `_get_file_id` y `_is_file_busy` implementando un manejo defensivo contra handles inválidos y rutas mal formadas (Unicode/longitud), evitando excepciones no capturadas durante la fase de escaneo inicial.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T17:00:46` **healthscore.py** (rendimiento): Se ha optimizado el rendimiento de `healthscore.py` eliminando el cálculo redundante de `PipelineEntry.rules` mediante la conversión de la estructura de búsqueda a un diccionario pre-procesado, evitando así la reconstrucción constante de tuplas y la búsqueda lineal dentro del bucle de orquestación.
 - `2026-11-06T16:51:59` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la conversión repetida a `str` y `Path` dentro del bucle principal por el uso directo de `entry.path`, evitando la creación innecesaria de objetos `Path` y reduciendo la sobrecarga de CPU en recorridos de directorios grandes.
 - `2026-11-06T16:50:57` **branding.py** (rendimiento): Se optimizó `_draw_shield_stripes` eliminando el loop anidado sobre los segmentos, aprovechando el hecho de que `get_gradient_segments` ya pre-calcula los rangos de índices, evitando re-iterar innecesariamente sobre estructuras de datos.
-- `2026-11-06T16:50:25` **assistant.py** (rendimiento): Optimizé `_evaluate_active_problems` eliminando el uso de `tuple` y `list` redundantes dentro del bucle de comparación, utilizando generadores para reducir la presión sobre la memoria durante el procesamiento de métricas.
