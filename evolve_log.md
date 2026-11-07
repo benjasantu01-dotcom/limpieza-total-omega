@@ -833,3 +833,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-07T00:30:36` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez en la validación de rutas dentro de `_is_process_executable_safe` y `trim_working_set` utilizando `pathlib.Path.resolve()` para evitar problemas con rutas relativas o aliases y garantizando que la comparación con `is_protected_path` se realice sobre rutas absolutas normalizadas, además de consolidar la lógica de cierre de handles para evitar fugas de recursos en caso de fallos intermedios.
 - `2026-11-07T00:30:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T00:30:36` Corrida terminada. Total usado hoy: 12.
+- `2026-11-07T00:38:25` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-07T00:38:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-07T00:39:41` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la validación en `_validate_isolation_request` para impedir que archivos con el bit de "solo lectura" (ReadOnly) sean movidos, evitando conflictos en sistemas donde este atributo implica restricciones de administración o uso por el kernel.
+- `2026-11-07T00:40:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-07T00:41:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-07T00:41:24` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-07T00:42:10` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se implementó una protección defensiva contra el "Time-of-Check to Time-of-Use" (TOCTOU) reforzando la validación de la identidad del archivo mediante `GetFileInformationByHandle` antes de realizar cualquier operación crítica, asegurando que la ruta no haya sido reemplazada por un enlace o reparse point después de la primera validación.
+- `2026-11-07T00:42:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T00:42:10` Corrida terminada. Total usado hoy: 16.

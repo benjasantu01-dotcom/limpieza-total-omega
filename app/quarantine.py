@@ -128,10 +128,11 @@ def _get_win_attributes(path: Path) -> int:
         return -1
 
 def _win_has_system_attributes(path: Path) -> bool:
-    """Verifica banderas críticas (Oculto, Sistema, Temporal) que indican archivos no aptos para mover."""
+    """Verifica banderas críticas (Oculto, Sistema, Temporal, Solo Lectura) que indican archivos no aptos para mover."""
     attrs: int = _get_win_attributes(path)
     if attrs == -1: return True
-    return bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
+    # 0x01: Solo lectura, 0x02: Oculto, 0x04: Sistema, 0x100: Temporal
+    return bool(attrs & 0x01 or attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
 
 def _verify_source_fs_permissions(path: Path) -> None:
     """
@@ -483,8 +484,9 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _verify_source_fs_permissions(source_path)
     _check_for_reparse_points(source_path)
     
+    # Validar si el origen es de solo lectura (podría indicar archivo bloqueado/sistema)
     if _win_has_system_attributes(source_path): 
-        raise UnsafePathError("Aislamiento denegado: archivo con atributos de sistema.")
+        raise UnsafePathError("Aislamiento denegado: archivo con atributos de sistema o solo lectura.")
     
     if len(str(target_directory)) > 240: 
         raise UnsafePathError("Ruta de cuarentena demasiado larga.")

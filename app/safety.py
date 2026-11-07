@@ -1146,6 +1146,7 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
         raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
     
     try:
+        # Validación crítica TOCTOU: Obtenemos ID de archivo seguro mediante handle
         state = SafetyState(
             path=p,
             descriptor=guard.get_descriptor(),
