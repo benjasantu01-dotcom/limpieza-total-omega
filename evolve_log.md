@@ -1125,3 +1125,32 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-11-07T02:32:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-07T02:32:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T02:32:19` Corrida terminada. Total usado hoy: 60.
+- `2026-11-07T02:40:41` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-11-07T02:41:05` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 17% del original (posible pérdida de código)
+- `2026-11-07T02:41:31` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-07T02:41:59` Tests FALLARON:
+```
+ de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-1/test_describe_never_prints_the0/config.json\n\n  Tema: oscuro\n  Asistente: no'
+
+evolve/tests/test_assistant.py:178: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:159: SyntaxWarning: invalid escape sequence '\A'
+    de sus argumentos en líneas de comandos de registro del tipo `"C:\App\app.exe" /flag`.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-1/test_describe_never_prints_the0/config.json\n\n  Tema: oscuro\n  Asistente: no'
+1 failed, 298 passed, 7 warnings in 1.58s
+
+```
+- `2026-11-07T02:41:59` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo verificaciones explícitas de estado de archivo antes de operar, evitando el uso de bloques `try-except` genéricos que ocultaban errores de IO y asegurando que las rutas no solo sean seguras, sino que existan y cumplan con expectativas de metadatos (tamaño, tipo) antes de cualquier apertura.
+- `2026-11-07T02:42:11` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` mediante la captura explícita de `OSError` y `ValueError` al trabajar con rutas potencialmente malformadas, evitando que la aplicación se detenga o reporte datos corruptos ante entradas del registro inesperadas o caracteres inválidos.
+- `2026-11-07T02:42:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T02:42:11` Corrida terminada. Total usado hoy: 64.
