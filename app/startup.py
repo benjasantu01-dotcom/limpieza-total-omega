@@ -382,7 +382,8 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 def _is_valid_registry_path(path_str: str) -> bool:
     """
-    Valida sintácticamente una ruta de archivo obtenida del registro.
+    Verifica que la cadena provista sea una ruta de sistema válida, no protegida
+    y libre de caracteres que permitan inyección de comandos o bucles de red.
     """
     if not isinstance(path_str, str):
         return False
@@ -422,6 +423,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
     Procesa la salida CSV cruda de PowerShell hacia una lista de `StartupEntry`.
+    Utiliza un parser robusto que ignora fallos en registros malformados.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -457,7 +459,8 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
     """
-    Invoca PowerShell para extraer valores de registro.
+    Invoca PowerShell para extraer valores de registro. Los filtros de seguridad
+    se aplican en el script de PowerShell para minimizar la transferencia de datos.
     """
     if os.name != "nt":
         return []

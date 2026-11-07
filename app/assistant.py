@@ -350,6 +350,7 @@ _VALIDATORS: Final[ValidationSpec] = {
 }
 
 _VALID_METRIC_KEYS: Final[set[str]] = set(_VALIDATORS.keys())
+_METRIC_KEYS_WITH_CRITERIA: Final[frozenset[str]] = frozenset(_CRITERIOS_MAP.keys())
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """Convierte a float asegurando que el resultado sea finito, real y no negativo."""
@@ -400,8 +401,6 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 def _evaluate_active_problems(metrics_items: frozenset[tuple[str, float]]) -> tuple[str, ...]:
     """
     Evalúa el estado de salud basado en métricas.
-    
-    Utiliza un mapa de criterios para determinar qué mensajes de alerta activar.
     """
     return tuple(
         msg for key, val in metrics_items 
@@ -436,7 +435,7 @@ class SystemContext:
         """Recopila problemas detectados basándose en los criterios de salud."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        relevant = frozenset((k, snap[k]) for k in snap if k in _CRITERIOS_MAP)
+        relevant = frozenset((k, snap[k]) for k in snap if k in _METRIC_KEYS_WITH_CRITERIA)
         return _evaluate_active_problems(relevant)
 
     @property

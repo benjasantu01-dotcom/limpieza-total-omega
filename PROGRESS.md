@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **165** (32.7% de aceptación)
+- Mejoras aceptadas: **166** (32.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 252
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 81 | 6 | 31 | 6 | 92 |
-| 2026-11-07 | 84 | 8 | 32 | 4 | 160 |
+| 2026-11-06 | 79 | 6 | 30 | 6 | 91 |
+| 2026-11-07 | 87 | 8 | 32 | 4 | 161 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
-- robustez ante casos límite: **34**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **33**
+- robustez ante casos límite: **32**
 - manejo de errores y validación de entradas: **32**
-- rendimiento: **19**
+- rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
-- `healthscore.py`: **18**
 - `diskreport.py`: **17**
-- `memory.py`: **15**
+- `healthscore.py`: **17**
 - `safety.py`: **14**
+- `memory.py`: **14**
 - `scanner.py`: **14**
 - `settings.py`: **13**
 - `browser.py`: **12**
-- `assistant.py`: **11**
-- `branding.py`: **9**
+- `assistant.py`: **12**
+- `branding.py`: **10**
+- `startup.py`: **9**
 - `organizer.py`: **8**
-- `startup.py`: **8**
 - `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T12:23:00` **branding.py** (rendimiento): Se optimizó el renderizado del logo y elementos visuales mediante la pre-compilación de la lógica de escalado de franjas y la eliminación de cálculos redundantes dentro de `_get_stripe_params` y `draw_logo`, aprovechando la naturaleza estática de los parámetros geométricos.
+- `2026-11-07T12:22:28` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` y el acceso a criterios de salud mediante el uso de `frozenset` y pre-filtrado para evitar iteraciones innecesarias sobre métricas no inicializadas en cada consulta del asistente.
+- `2026-11-07T12:21:35` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de validación de rutas y registro, especificando los motivos de seguridad y las restricciones de acceso implementadas, asegurando que cualquier colaborador entienda la lógica crítica detrás del filtrado.
 - `2026-11-07T12:12:57` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones internas críticas (`_is_file_secure_to_read`, `_is_structure_valid`, `_read_and_parse_json`) y se refinó el docstring de `save` para clarificar su flujo de ejecución, mejorando la legibilidad técnica para futuros colaboradores.
 - `2026-11-07T12:12:43` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que aclaran el rol de cada componente en el pipeline de escaneo, permitiendo a otros desarrolladores entender el flujo de datos sin necesidad de descifrar la implementación.
 - `2026-11-07T12:12:15` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_drive_restrictions`, extrayendo la lógica de validación de unidades a una estructura de datos declarativa (una lista de tuplas con mensajes de error y códigos asociados), lo cual facilita futuras ampliaciones y mejora la claridad del flujo de control.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T11:42:16` **assistant.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el decorador `_ensure_handler_is_safe` y en los métodos de `SystemContext` para mejorar la mantenibilidad y claridad del flujo de validación de datos.
 - `2026-11-07T11:40:54` **settings.py** (manejo de errores y validación de entradas): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para manejar explícitamente escenarios de configuración parcial o corrupta, asegurando que si una clave falta o es inválida, el sistema la normalice contra `DEFAULTS` en lugar de fallar silenciosamente o cargar estados inconsistentes.
 - `2026-11-07T11:31:04` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_unlink` y `purge_item` reemplazando los `try-except` genéricos que silenciaban errores de IO críticos por un manejo explícito que preserva la trazabilidad del error sin comprometer la seguridad.
-- `2026-11-07T11:10:34` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones de acceso a metadatos (`color`, `font_size`, `icon`, `tab_label`) mediante la validación explícita de tipos y la implementación de fallbacks seguros ante entradas `None` o inválidas, eliminando el riesgo de excepciones inesperadas al procesar configuraciones externas.
-- `2026-11-07T09:48:49` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva al añadir una validación de puntos de reparse (junctions y symlinks) en `_is_valid_registry_path` y `_is_registry_entry_safe`, evitando que el escáner del registro siga referencias externas que podrían causar bucles infinitos o fugas fuera del scope de seguridad.
-- `2026-11-07T09:42:44` **scanner.py** (seguridad defensiva): Se mejora la seguridad defensiva mediante la validación explícita de rutas de destino en `_is_inside_base_root` y la adición de `os.path.realpath` en la inicialización del `Scanner` para garantizar que el análisis heurístico no escape de la raíz permitida mediante enlaces simbólicos o rutas relativas complejas.
