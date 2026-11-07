@@ -372,7 +372,6 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
         if is_protected_path(resolved_str): return False
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-        # Verificar permisos: solo el dueño debe tener acceso de escritura (0o600 o similar)
         if (st.st_mode & 0o077) != 0: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size < 16 or st.st_size > MAX_SETTINGS_SIZE: return False
@@ -390,7 +389,6 @@ def _is_structure_valid(data: Any) -> bool:
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """Ejecuta el ciclo de lectura y parsing: verifica seguridad, abre archivo y valida estructura JSON."""
     try:
-        # Pre-check: el archivo debe existir y ser un archivo regular antes de proceder
         if not file_path.exists() or not file_path.is_file(): return None
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
@@ -405,7 +403,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
                 return None
             with os.fdopen(fd, "r", encoding="utf-8") as f: 
                 data = json.load(f)
-            if not _is_structure_valid(data): return None
+            if not isinstance(data, dict): return None
             return data, st_post
         except (json.JSONDecodeError, OSError, ValueError):
             os.close(fd)
@@ -508,7 +506,6 @@ def reset(custom_base: PathLike | None = None) -> AppSettings:
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
     """Acceso rápido a una clave de configuración específica mediante el cargador principal."""
-    # Acceso optimizado: intentar leer de la caché interna del gestor antes de invocar load()
     settings = load(custom_base)
     return settings.get(key)
 

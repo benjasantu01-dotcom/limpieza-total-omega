@@ -163,7 +163,10 @@ def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Calla
     return wrapper
 
 def _ensure_handler_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador: Asegura la integridad del contexto y captura errores durante la respuesta."""
+    """
+    Decorador: Garantiza que el contexto sea válido y gestiona excepciones 
+    para asegurar que la aplicación no colapse ante un fallo de lógica en el asistente.
+    """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not isinstance(ctx, SystemContext): 
@@ -467,8 +470,11 @@ class SystemContext:
         """Verifica si la clave es una métrica válida del sistema."""
         return key in _VALID_METRIC_KEYS
 
-    def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
-        """Extrae, valida y convierte un valor específico desde la fuente externa."""
+    def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
+        """
+        Extrae, valida y convierte un valor específico desde una fuente externa (dict u objeto).
+        Asegura que el tipo resultante coincida con la especificación esperada.
+        """
         try:
             val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
             

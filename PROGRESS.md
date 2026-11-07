@@ -7,37 +7,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **162** (32.1% de aceptación)
-- Rechazadas por tests: 15
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 254
+- Sin respuesta de la IA (error o límite): 255
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 89 | 7 | 34 | 7 | 95 |
-| 2026-11-07 | 73 | 8 | 29 | 3 | 159 |
+| 2026-11-06 | 87 | 6 | 33 | 7 | 95 |
+| 2026-11-07 | 75 | 8 | 30 | 3 | 160 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **38**
 - robustez ante casos límite: **37**
-- legibilidad y documentación: **37**
 - seguridad defensiva: **33**
-- manejo de errores y validación de entradas: **31**
-- rendimiento: **24**
+- manejo de errores y validación de entradas: **32**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `healthscore.py`: **18**
+- `healthscore.py`: **17**
 - `diskreport.py`: **16**
-- `memory.py`: **15**
 - `safety.py`: **14**
+- `memory.py`: **14**
+- `settings.py`: **13**
 - `scanner.py`: **13**
-- `settings.py`: **12**
+- `assistant.py`: **12**
 - `browser.py`: **12**
-- `assistant.py`: **11**
 - `branding.py`: **10**
 - `startup.py`: **8**
 - `organizer.py`: **7**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T11:42:16` **assistant.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el decorador `_ensure_handler_is_safe` y en los métodos de `SystemContext` para mejorar la mantenibilidad y claridad del flujo de validación de datos.
+- `2026-11-07T11:40:54` **settings.py** (manejo de errores y validación de entradas): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para manejar explícitamente escenarios de configuración parcial o corrupta, asegurando que si una clave falta o es inválida, el sistema la normalice contra `DEFAULTS` en lugar de fallar silenciosamente o cargar estados inconsistentes.
 - `2026-11-07T11:31:04` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_unlink` y `purge_item` reemplazando los `try-except` genéricos que silenciaban errores de IO críticos por un manejo explícito que preserva la trazabilidad del error sin comprometer la seguridad.
 - `2026-11-07T11:10:34` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones de acceso a metadatos (`color`, `font_size`, `icon`, `tab_label`) mediante la validación explícita de tipos y la implementación de fallbacks seguros ante entradas `None` o inválidas, eliminando el riesgo de excepciones inesperadas al procesar configuraciones externas.
 - `2026-11-07T09:48:49` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva al añadir una validación de puntos de reparse (junctions y symlinks) en `_is_valid_registry_path` y `_is_registry_entry_safe`, evitando que el escáner del registro siga referencias externas que podrían causar bucles infinitos o fugas fuera del scope de seguridad.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T08:49:37` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación crítica de espacio en `_can_write_to_destination` para manejar posibles errores de desbordamiento (overflow) al calcular tamaños y se añadió una validación de `st_dev` en `_is_safe_for_disk_op` para prevenir intentos fallidos de movimiento entre volúmenes distintos, lo cual es una operación propensa a fallos en `os.replace`.
 - `2026-11-07T08:47:46` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `compute_score` ante valores inesperados, asegurando que `_METRIC_LIMITS` siempre provea límites válidos (evitando `KeyError`) y reforzando la integridad numérica de los ratios calculados en el pipeline antes de la suma final.
 - `2026-11-07T08:38:29` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escáner (`walk_files`) añadiendo un manejo de excepciones más granular ante archivos bloqueados o inaccesibles, evitando que una sola entrada con permisos denegados interrumpa el recorrido completo de la estructura de archivos.
-- `2026-11-07T08:38:00` **browser.py** (robustez ante casos límite): Se introdujo una verificación de integridad adicional en `_is_target_valid` para validar que el `base_norm` sea un directorio existente antes de calcular `os.path.commonpath`, evitando errores en casos límite donde la ruta base calculada desde `LOCALAPPDATA` podría ser inválida o inaccesible, fortaleciendo la robustez del escaneo ante entornos de usuario atípicos.
-- `2026-11-07T08:37:36` **branding.py** (robustez ante casos límite): Se ha añadido validación de tipo y valor en `save_logo_svg` para prevenir comportamientos inesperados ante parámetros inválidos, además de encapsular la conversión de `size` en un bloque de control robusto que asegura que `logo_svg` siempre reciba un entero válido dentro del rango permitido, evitando excepciones de formato en tiempo de ejecución.
