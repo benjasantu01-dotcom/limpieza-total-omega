@@ -790,3 +790,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - A
 - `2026-11-06T23:37:22` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-06T23:47:35` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-06T23:57:41` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-07T00:07:53` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-07T00:08:51` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `_get_file_id` y `_is_file_busy` implementando un manejo defensivo contra handles inválidos y rutas mal formadas (Unicode/longitud), evitando excepciones no capturadas durante la fase de escaneo inicial.
+- `2026-11-07T00:09:21` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la función `_safe_stat` y en `process_entry` al manejar explícitamente excepciones de sistema (`OSError`) durante el acceso a metadatos, evitando que el escáner se detenga prematuramente ante archivos bloqueados o con descriptores inválidos.
+- `2026-11-07T00:09:50` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado `_read_and_parse_json` para manejar explícitamente el caso de archivos vacíos o con errores de lectura durante el acceso a bajo nivel, garantizando que el sistema regrese a `DEFAULTS` sin excepciones inesperadas y reforzando la robustez ante estados inconsistentes del sistema de archivos.
+- `2026-11-07T00:10:04` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-11-07T00:10:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T00:10:04` Corrida terminada. Total usado hoy: 4.

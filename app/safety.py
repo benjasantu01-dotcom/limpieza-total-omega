@@ -132,6 +132,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         else:
             path_long = _to_long_path(path_str)
             kernel32 = ctypes.windll.kernel32
+            # Acceso mínimo: abrir solo para lectura de atributos (0x00)
             handle = kernel32.CreateFileW(path_long, 0, 0x07, None, 3, 0x00000080, None)
             if handle != INVALID_HANDLE_VALUE:
                 try:

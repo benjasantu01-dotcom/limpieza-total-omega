@@ -171,8 +171,9 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         return stats
     except OSError as e:
+        # Registramos errores conocidos de acceso o falta, omitimos otros silenciosamente
         if getattr(e, 'winerror', None) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
-            logger.debug(f"Error inesperado al leer metadatos de {entry.path}: {e}")
+            logger.debug(f"Error accediendo a metadatos de {entry.path}: {e}")
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -293,7 +294,7 @@ class Scanner:
             
             self.safe_cache.add(path_str)
             return True
-        except OSError:
+        except (OSError, AttributeError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
@@ -331,7 +332,7 @@ class Scanner:
                     if path_norm not in self.seen_normcase:
                         self.seen_normcase.add(path_norm)
                         self._run_file_heuristics(Path(entry.path), entry)
-        except OSError:
+        except (OSError, PermissionError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:

@@ -400,10 +400,13 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
                 data = json.load(f)
             if not _is_structure_valid(data): return None
             return data, st_post
+        except (json.JSONDecodeError, OSError, ValueError):
+            os.close(fd)
+            return None
         except:
             os.close(fd)
             raise
-    except (json.JSONDecodeError, OSError, IOError, PermissionError, ValueError, TypeError): 
+    except (OSError, IOError, PermissionError, TypeError): 
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
