@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **163** (32.3% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 61
+- Mejoras aceptadas: **162** (32.1% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 254
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 91 | 8 | 34 | 7 | 96 |
-| 2026-11-07 | 72 | 8 | 27 | 3 | 158 |
+| 2026-11-06 | 89 | 7 | 34 | 7 | 95 |
+| 2026-11-07 | 73 | 8 | 29 | 3 | 159 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **37**
 - legibilidad y documentación: **37**
 - seguridad defensiva: **33**
-- manejo de errores y validación de entradas: **30**
-- rendimiento: **26**
+- manejo de errores y validación de entradas: **31**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `healthscore.py`: **18**
 - `diskreport.py`: **16**
 - `memory.py`: **15**
 - `safety.py`: **14**
-- `browser.py`: **13**
 - `scanner.py`: **13**
-- `assistant.py`: **12**
 - `settings.py`: **12**
+- `browser.py`: **12**
+- `assistant.py`: **11**
 - `branding.py`: **10**
 - `startup.py`: **8**
 - `organizer.py`: **7**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T11:31:04` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_unlink` y `purge_item` reemplazando los `try-except` genéricos que silenciaban errores de IO críticos por un manejo explícito que preserva la trazabilidad del error sin comprometer la seguridad.
 - `2026-11-07T11:10:34` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones de acceso a metadatos (`color`, `font_size`, `icon`, `tab_label`) mediante la validación explícita de tipos y la implementación de fallbacks seguros ante entradas `None` o inválidas, eliminando el riesgo de excepciones inesperadas al procesar configuraciones externas.
 - `2026-11-07T09:48:49` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva al añadir una validación de puntos de reparse (junctions y symlinks) en `_is_valid_registry_path` y `_is_registry_entry_safe`, evitando que el escáner del registro siga referencias externas que podrían causar bucles infinitos o fugas fuera del scope de seguridad.
 - `2026-11-07T09:42:44` **scanner.py** (seguridad defensiva): Se mejora la seguridad defensiva mediante la validación explícita de rutas de destino en `_is_inside_base_root` y la adición de `os.path.realpath` en la inicialización del `Scanner` para garantizar que el análisis heurístico no escape de la raíz permitida mediante enlaces simbólicos o rutas relativas complejas.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T08:38:29` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escáner (`walk_files`) añadiendo un manejo de excepciones más granular ante archivos bloqueados o inaccesibles, evitando que una sola entrada con permisos denegados interrumpa el recorrido completo de la estructura de archivos.
 - `2026-11-07T08:38:00` **browser.py** (robustez ante casos límite): Se introdujo una verificación de integridad adicional en `_is_target_valid` para validar que el `base_norm` sea un directorio existente antes de calcular `os.path.commonpath`, evitando errores en casos límite donde la ruta base calculada desde `LOCALAPPDATA` podría ser inválida o inaccesible, fortaleciendo la robustez del escaneo ante entornos de usuario atípicos.
 - `2026-11-07T08:37:36` **branding.py** (robustez ante casos límite): Se ha añadido validación de tipo y valor en `save_logo_svg` para prevenir comportamientos inesperados ante parámetros inválidos, además de encapsular la conversión de `size` en un bloque de control robusto que asegura que `logo_svg` siempre reciba un entero válido dentro del rango permitido, evitando excepciones de formato en tiempo de ejecución.
-- `2026-11-07T08:28:41` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` reduciendo la complejidad del script de PowerShell y minimizando las llamadas innecesarias al sistema mediante un filtrado previo de las claves del registro, evitando procesar exhaustivamente propiedades que no contienen ejecutables (como las de metadatos de PSObject).

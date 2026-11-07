@@ -873,3 +873,11 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-07T11:26:23` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-07T11:26:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T11:26:23` Corrida terminada. Total usado hoy: 268.
+- `2026-11-07T11:30:10` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-07T11:30:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-07T11:31:04` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_unlink` y `purge_item` reemplazando los `try-except` genéricos que silenciaban errores de IO críticos por un manejo explícito que preserva la trazabilidad del error sin comprometer la seguridad.
+- `2026-11-07T11:31:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-07T11:31:47` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 10% del original (posible pérdida de código)
+- `2026-11-07T11:31:59` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-07T11:31:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T11:31:59` Corrida terminada. Total usado hoy: 272.

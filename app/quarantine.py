@@ -336,7 +336,8 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         if parent.exists():
             _sync_directory(parent)
         return True
-    except (OSError, PermissionError, UnsafePathError): return False
+    except (UnsafePathError, OSError, PermissionError):
+        return False
 
 def _check_path_syntax_integrity(path: Path) -> None:
     """Valida la sintaxis de la ruta para prevenir inyecciones o desbordamientos."""
@@ -828,7 +829,9 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
-    if not quarantine_item.verify_integrity(stored_file): raise UnsafePathError(f"Integridad fallida: {item_id}.")
+    if not quarantine_item.verify_integrity(stored_file):
+        raise UnsafePathError(f"Integridad fallida: {item_id}.")
+    
     if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256, expected_inode=quarantine_item.file_inode, expected_device=quarantine_item.device_id):
         items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)
