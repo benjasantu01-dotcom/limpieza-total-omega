@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 231
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 107 | 10 | 43 | 9 | 115 |
-| 2026-11-07 | 68 | 8 | 25 | 3 | 116 |
+| 2026-11-06 | 107 | 10 | 43 | 9 | 111 |
+| 2026-11-07 | 69 | 8 | 25 | 3 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **37**
-- seguridad defensiva: **30**
+- seguridad defensiva: **31**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `healthscore.py`: **19**
 - `diskreport.py`: **18**
 - `memory.py`: **16**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T09:31:24` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `quarantine.py` integrando `ensure_safe_to_modify` en `_safe_unlink` de forma directa, eliminando la dependencia implícita de que el llamador realice todas las verificaciones, y protegiendo el manifiesto contra escrituras parciales mediante una validación estricta de atomicidad en `save_manifest`.
 - `2026-11-07T09:20:21` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita con `is_safe_to_modify` antes de iterar cualquier directorio, protegiendo contra manipulaciones de rutas maliciosas durante el recorrido del sistema de archivos.
 - `2026-11-07T09:19:45` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_root` y `drive_usage` incorporando una verificación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier acceso, asegurando que no se sigan puntos de montaje o rutas hacia sistemas protegidos mediante manipulaciones de `Path.resolve()`.
 - `2026-11-07T09:11:56` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la ingestión de datos dentro de `SystemContext` al añadir una validación estricta que impide la inyección de tipos complejos o recursivos en los atributos del objeto, utilizando una profundidad máxima y verificaciones de tipo más robustas para asegurar que solo lleguen valores escalares esperados.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T07:48:04` **startup.py** (legibilidad y documentación): Documenté el propósito de los métodos privados y las propiedades de la clase `StartupEntry` utilizando docstrings más descriptivos, clarificando la distinción entre las tareas de limpieza, resolución de rutas y validación de seguridad para mejorar la mantenibilidad del código.
 - `2026-11-07T07:47:53` **settings.py** (legibilidad y documentación): He mejorado la documentación del sistema de validación añadiendo docstrings que explican el propósito de cada método de `_Validators`, eliminando la ambigüedad sobre qué hace cada normalizador y fortaleciendo la legibilidad técnica sin alterar el comportamiento.
 - `2026-11-07T07:47:21` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en los métodos de `Scanner` y el uso de `TYPE_CHECKING` para evitar dependencias circulares y clarificar las intenciones del diseño.
-- `2026-11-07T07:46:56` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_preconditions` y `_validate_structural_safety`, extrayendo la lógica de validación de permisos y entorno en funciones privadas auxiliares con nombres descriptivos y type hints consistentes, facilitando la comprensión del flujo de seguridad para futuros colaboradores.

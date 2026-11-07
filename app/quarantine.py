@@ -312,7 +312,10 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     """Auditoría de seguridad previa a una operación de borrado físico (unlink)."""
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
+    
+    # Integración explícita de seguridad
     ensure_safe_to_modify(path)
+    
     if is_protected_path(path.parent): raise UnsafePathError("Protección de jerarquía: directorio padre no seguro.")
     _check_for_reparse_points(path)
     if is_protected_path(path) or ":" in path.name: raise UnsafePathError("Ruta protegida o ADS detectado.")
@@ -529,6 +532,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     except (TypeError, ValueError) as e: raise ValueError(f"Error al serializar metadatos: {e}")
     temp_name: Optional[str] = None
     try:
+        # Atomicidad garantizada: creamos el temp en el directorio destino
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             temp_name = tf.name
             tf.write(encoded_content)

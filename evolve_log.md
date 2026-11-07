@@ -614,3 +614,11 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-07T09:20:33` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva del contenedor `SystemMetrics` evitando la inyección de tipos inesperados y asegurando la integridad estricta de sus valores mediante el uso de `__slots__` para prevenir la creación de atributos dinámicos no validados (protección de estado) y validaciones en la escritura de atributos.
 - `2026-11-07T09:20:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T09:20:33` Corrida terminada. Total usado hoy: 220.
+- `2026-11-07T09:27:58` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-07T09:28:54` Gemini no devolvió un bloque de archivo válido para main.py (enfoque: seguridad defensiva).
+- `2026-11-07T09:29:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-07T09:30:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-07T09:30:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-07T09:31:24` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `quarantine.py` integrando `ensure_safe_to_modify` en `_safe_unlink` de forma directa, eliminando la dependencia implícita de que el llamador realice todas las verificaciones, y protegiendo el manifiesto contra escrituras parciales mediante una validación estricta de atomicidad en `save_manifest`.
+- `2026-11-07T09:31:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T09:31:24` Corrida terminada. Total usado hoy: 224.
