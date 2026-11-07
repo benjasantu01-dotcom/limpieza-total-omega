@@ -256,13 +256,12 @@ class Scanner:
         try:
             path_str = getattr(entry, 'path', None)
             if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
-            
             if path_str in self.safe_cache: return True
-            
             if self._has_invalid_name(entry.name): return False
             if self._is_reparse_point(entry): return False
             if _cached_is_protected(path_str): return False
             if not self._is_inside_base_root(path_str): return False
+            if not os.access(path_str, os.R_OK): return False
             
             self.safe_cache.add(path_str)
             return True

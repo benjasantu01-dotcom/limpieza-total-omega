@@ -1117,18 +1117,21 @@ def _validate_path_components(path: Path) -> None:
         if "~" in current_check.name or re.search(r'[\u200E\u200F\u202A-\u202E]', current_check.name):
             raise UnsafePathError("Ruta con spoofing de nombres detectada.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
         
-        if current_check.exists():
-            try:
-                resolved = current_check.resolve()
-                if resolved in visited:
-                    raise UnsafePathError(f"Referencia circular detectada: {current_check}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationCategory.INTEGRITY)
-                visited.add(resolved)
-                
-                if _is_system_directory_junction(str(current_check)):
-                    if _get_final_path_normalized(current_check) is None:
-                        raise UnsafePathError(f"Punto de reparse inaccesible: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
-            except (OSError, RuntimeError, PermissionError):
-                continue
+        try:
+            if current_check.exists():
+                try:
+                    resolved = current_check.resolve()
+                    if resolved in visited:
+                        raise UnsafePathError(f"Referencia circular detectada: {current_check}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationCategory.INTEGRITY)
+                    visited.add(resolved)
+                    
+                    if _is_system_directory_junction(str(current_check)):
+                        if _get_final_path_normalized(current_check) is None:
+                            raise UnsafePathError(f"Punto de reparse inaccesible: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                except (OSError, RuntimeError, PermissionError):
+                    continue
+        except (OSError, PermissionError):
+            continue
     
     _validate_no_reparse_traversal(path)
 
@@ -1185,7 +1188,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise UnsafePathError(f"Modificación denegada sobre punto de reparse: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
     if p.exists() and not (p.is_file() or p.is_dir()):
-        raise UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE, SafetyValidationSTRUCTURE)
+        raise UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE, SafetyValidationCategory.STRUCTURE)
     
     base = None
     if base_dir:

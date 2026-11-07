@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 67
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 107 | 10 | 43 | 9 | 127 |
-| 2026-11-07 | 63 | 7 | 24 | 3 | 111 |
+| 2026-11-06 | 107 | 10 | 43 | 9 | 123 |
+| 2026-11-07 | 65 | 7 | 25 | 3 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **37**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
 - seguridad defensiva: **27**
 - rendimiento: **26**
 
@@ -33,9 +33,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `diskreport.py`: **17**
 - `memory.py`: **16**
-- `safety.py`: **14**
+- `safety.py`: **15**
+- `scanner.py`: **14**
 - `browser.py`: **14**
-- `scanner.py`: **13**
 - `settings.py`: **13**
 - `branding.py`: **11**
 - `assistant.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T08:59:31` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inválidas o inaccesibles integrando una validación previa de existencia y permisos mediante `os.access` en `_is_safe_entry`, evitando así el manejo de excepciones costosas dentro del bucle de escaneo.
+- `2026-11-07T08:59:18` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `_get_path_stat_robust` y otras funciones fallen silenciosamente ante estados de archivo inexistentes o de acceso denegado durante el recorrido, añadiendo un `try-except` robusto en la validación de componentes (`_validate_path_components`) para asegurar que el escaneo de rutas no se interrumpa por errores de acceso en subdirectorios protegidos o de sistema.
 - `2026-11-07T08:49:37` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación crítica de espacio en `_can_write_to_destination` para manejar posibles errores de desbordamiento (overflow) al calcular tamaños y se añadió una validación de `st_dev` en `_is_safe_for_disk_op` para prevenir intentos fallidos de movimiento entre volúmenes distintos, lo cual es una operación propensa a fallos en `os.replace`.
 - `2026-11-07T08:47:46` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `compute_score` ante valores inesperados, asegurando que `_METRIC_LIMITS` siempre provea límites válidos (evitando `KeyError`) y reforzando la integridad numérica de los ratios calculados en el pipeline antes de la suma final.
 - `2026-11-07T08:38:29` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escáner (`walk_files`) añadiendo un manejo de excepciones más granular ante archivos bloqueados o inaccesibles, evitando que una sola entrada con permisos denegados interrumpa el recorrido completo de la estructura de archivos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T07:37:35` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los retornos de las funciones de soporte (`_get_win_attributes`, `_is_file_in_use_by_system`), consolidando docstrings para aclarar las responsabilidades de las funciones de bajo nivel y aplicando un nombrado más descriptivo en parámetros internos para evitar ambigüedades técnicas en la capa de seguridad.
 - `2026-11-07T07:36:49` **organizer.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo añadiendo type hints faltantes en funciones críticas, normalizando el uso de `Final` y `TypeAlias`, e incluyendo docstrings detallados en las funciones de validación de seguridad para explicar el PORQUÉ de las comprobaciones de bajo nivel (como la mitigación TOCTOU o las restricciones de los sistemas de archivos de Windows).
 - `2026-11-07T07:26:09` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones principales y la clarificación de tipos complejos con alias específicos, facilitando la legibilidad para el mantenimiento.
-- `2026-11-07T07:17:26` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenimiento del código mediante la formalización de las reglas de negocio del escáner en una constante `SYSTEM_HIDDEN_FLAGS` y la extracción de la lógica de validación de entradas dentro de `DirectoryScanner`, aclarando el propósito de cada chequeo de seguridad.
-- `2026-11-07T07:16:42` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo la lógica de validación de claves en métodos privados (`_is_valid_metric_key`) y utilizando tipado más explícito, lo que facilita entender el flujo de datos sin alterar el comportamiento.
