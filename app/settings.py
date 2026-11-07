@@ -369,14 +369,21 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     """Verifica que el archivo de configuración sea legible, no alterado y propiedad del usuario."""
     try:
-        resolved_str = str(file_path.resolve())
+        resolved_path = file_path.resolve()
+        resolved_str = str(resolved_path)
         if is_protected_path(resolved_str): return False
+        
+        # Validación de seguridad contra enlaces y manipulación de estructura
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-        if (st.st_mode & 0o077) != 0: return False
+        
+        # Verificar que el usuario sea el dueño exclusivo
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+        if (st.st_mode & 0o077) != 0: return False
+        
+        # Verificación final de integridad de tamaño y seguridad lógica
         if st.st_size < 16 or st.st_size > MAX_SETTINGS_SIZE: return False
-        return is_safe_to_modify(str(file_path))
+        return is_safe_to_modify(resolved_str)
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _is_structure_valid(data: Any) -> bool:
@@ -400,6 +407,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
             st_post = os.fstat(fd)
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or st_post.st_size == 0:
                 return None
+            # Verificación de identidad para evitar TOCTOU
             if st_post.st_ino != st.st_ino or st_post.st_dev != st.st_dev:
                 return None
             with os.fdopen(fd, "r", encoding="utf-8") as f: 

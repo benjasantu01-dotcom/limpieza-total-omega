@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 70 | 4 | 26 | 4 | 68 |
-| 2026-11-07 | 108 | 10 | 38 | 6 | 170 |
+| 2026-11-06 | 70 | 4 | 26 | 4 | 64 |
+| 2026-11-07 | 110 | 10 | 38 | 6 | 172 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **33**
+- seguridad defensiva: **35**
 - manejo de errores y validación de entradas: **32**
 - rendimiento: **27**
 
@@ -35,16 +35,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **16**
 - `memory.py`: **15**
 - `scanner.py`: **15**
-- `settings.py`: **13**
+- `settings.py`: **14**
 - `assistant.py`: **13**
 - `browser.py`: **12**
 - `branding.py`: **10**
+- `startup.py`: **10**
 - `organizer.py`: **9**
-- `startup.py`: **9**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T14:15:11` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_process_folder_entry` mediante la verificación estricta de que el archivo no sea un punto de reparse (reparse point), previniendo que la aplicación siga enlaces simbólicos o junctions que podrían apuntar a áreas críticas fuera del directorio de inicio escaneado.
+- `2026-11-07T14:14:36` **settings.py** (seguridad defensiva): Se reforzó `_is_file_secure_to_read` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y asegurar que el archivo de configuración sea un archivo regular, sin enlaces simbólicos ni propietarios sospechosos, antes de ser procesado por el parser JSON.
 - `2026-11-07T14:05:01` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_within_directory` incorporando la resolución del `parent` mediante `_get_final_path_normalized` para asegurar que la relación de parentesco se valide sobre las rutas físicas reales, evitando que el uso de enlaces simbólicos o junctions en el directorio base permita evadir las restricciones de alcance.
 - `2026-11-07T14:03:39` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita para evitar colisiones de rutas fuera de la carpeta designada (usando `is_within_directory` sobre la ruta resuelta) y se centralizó el chequeo de exclusividad antes de la apertura del archivo para prevenir el acceso a archivos en uso que no fueron correctamente bloqueados por el chequeo previo.
 - `2026-11-07T13:55:14` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva de `organizer.py` implementando una validación estricta de la ruta destino en `stage_for_review` y `delete_reviewed`, asegurando mediante `ensure_safe_to_modify` que cualquier operación de escritura sea validada por el módulo de seguridad central, evitando el uso de condiciones booleanas que podrían ocultar errores de permisos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T13:12:51` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `math.isfinite` en `_clamp` dentro del pipeline y se protegió la ejecución de `entry.scorer` contra posibles errores en tiempo de ejecución para evitar que un dato atípico en `SystemMetrics` derrumbe la generación del informe.
 - `2026-11-07T13:12:23` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos bloqueados durante la lectura mediante la implementación de un manejo explícito de excepciones específicas en `hash_file` y `partial_hash`, garantizando que el proceso de escaneo no se detenga prematuramente si un archivo es bloqueado por otro proceso del sistema durante el cálculo del hash.
 - `2026-11-07T13:03:53` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de lectura en el escaneo profundo mediante la captura de excepciones específicas en `_safe_stat`, evitando que fallos transitorios en atributos de metadatos detengan el proceso de recolección de métricas.
-- `2026-11-07T13:03:39` **browser.py** (robustez ante casos límite): Se ha añadido una validación estricta en `_is_target_valid` para detectar si el directorio objetivo de caché es un archivo (o un punto de reparse que apunte a un archivo) en lugar de un directorio, evitando así posibles errores de manipulación de rutas en sistemas con estructuras de perfiles dañadas o redirecciones inesperadas.
-- `2026-11-07T13:02:42` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemContext.ingest` y `build_context` para manejar casos límite de datos de entrada mal formados, garantizando que si una fuente (como una configuración corrupta) intenta inyectar tipos de datos inesperados (listas, diccionarios profundos o rutas), el asistente ignore esos campos en lugar de propagar errores o bloquear la operación.

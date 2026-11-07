@@ -322,7 +322,8 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
-    Valida un objeto de archivo encontrado en una carpeta de inicio.
+    Valida un objeto de archivo encontrado en una carpeta de inicio,
+    bloqueando explícitamente reparse points (junctions/links).
     """
     if not hasattr(entry, "path") or not hasattr(entry, "name"):
         return None
@@ -331,10 +332,17 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         return None
         
     try:
+        # Verifica que sea un archivo real y que no sea un enlace/reparse point
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             _PROCESS_CACHE[entry.path] = False
             return None
         
+        # Validación adicional de reparse points (Windows specific)
+        path_obj: Path = Path(entry.path)
+        if path_obj.is_symlink() or os.path.splitdrive(entry.path)[0].upper() == "\\\\":
+            _PROCESS_CACHE[entry.path] = False
+            return None
+
         _, ext = os.path.splitext(entry.name)
         if not ext or ext.lower() not in EXECUTABLE_EXTS:
             _PROCESS_CACHE[entry.path] = False
@@ -344,7 +352,6 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
             _PROCESS_CACHE[entry.path] = False
             return None
             
-        path_obj: Path = Path(entry.path)
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             _PROCESS_CACHE[entry.path] = False
             return None
