@@ -191,7 +191,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if is_junction(entry_path): continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            if depth + 1 <= MAX_RECURSION_DEPTH:
+                            if depth + 1 <= MAX_RECURSION_DEPTH and is_safe_to_modify(entry_path):
                                 queue.append((entry_path, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat(follow_symlinks=False)

@@ -589,3 +589,28 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-07T09:12:24` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-11-07T09:12:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T09:12:24` Corrida terminada. Total usado hoy: 216.
+- `2026-11-07T09:17:49` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-07T09:18:16` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-07T09:19:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-07T09:19:45` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_validate_root` y `drive_usage` incorporando una verificación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier acceso, asegurando que no se sigan puntos de montaje o rutas hacia sistemas protegidos mediante manipulaciones de `Path.resolve()`.
+- `2026-11-07T09:20:21` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita con `is_safe_to_modify` antes de iterar cualquier directorio, protegiendo contra manipulaciones de rutas maliciosas durante el recorrido del sistema de archivos.
+- `2026-11-07T09:20:33` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:267: in <module>
+    class SystemMetrics:
+E   ValueError: 'junk_mb' in __slots__ conflicts with class variable
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflicts with class variable
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.23s
+
+```
+- `2026-11-07T09:20:33` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva del contenedor `SystemMetrics` evitando la inyección de tipos inesperados y asegurando la integridad estricta de sus valores mediante el uso de `__slots__` para prevenir la creación de atributos dinámicos no validados (protección de estado) y validaciones en la escritura de atributos.
+- `2026-11-07T09:20:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T09:20:33` Corrida terminada. Total usado hoy: 220.

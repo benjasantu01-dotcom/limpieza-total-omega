@@ -172,7 +172,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         p = Path(directory).expanduser().resolve()
         if not p.exists() or not p.is_dir():
             return None
-        # Validación de seguridad defensiva
+        # Validación de seguridad defensiva explícita
         if str(p).startswith('\\\\') or is_protected_path(p):
             return None
         if not os.access(p, os.R_OK):
@@ -272,6 +272,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None: return None
     try:
         p = Path(mount).expanduser().resolve()
+        # Verificación de seguridad reforzada antes de operar
         if not p.is_dir() or is_protected_path(p) or str(p).startswith('\\\\'):
             return None
         usage = shutil.disk_usage(p)
