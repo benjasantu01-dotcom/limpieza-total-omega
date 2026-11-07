@@ -372,6 +372,7 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
         if is_protected_path(resolved_str): return False
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+        # Verificar permisos: solo el dueño debe tener acceso de escritura (0o600 o similar)
         if (st.st_mode & 0o077) != 0: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size < 16 or st.st_size > MAX_SETTINGS_SIZE: return False

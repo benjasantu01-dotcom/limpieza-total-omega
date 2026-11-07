@@ -1314,3 +1314,43 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-07T05:05:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-07T05:05:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T05:05:46` Corrida terminada. Total usado hoy: 120.
+- `2026-11-07T05:13:21` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-07T05:14:04` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): el archivo se encogió al 6% del original (posible pérdida de código)
+- `2026-11-07T05:14:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-07T05:14:37` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la implementación de `_get_canonical_path` para evitar ataques de resolución de rutas (path traversal) y normalización inconsistente, asegurando que `_is_safe_entry` valide contra la raíz real incluso en presencia de caracteres especiales.
+- `2026-11-07T05:15:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-07T05:16:14` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la validación en `_is_file_secure_to_read` añadiendo una comprobación explícita para evitar que el archivo de configuración sea un enlace simbólico o un reparse point, además de limitar los permisos de acceso a nivel de sistema de archivos para asegurar que solo el dueño pueda leer el archivo (impidiendo ataques de lectura mediante enlaces simbólicos o permisos laxos).
+- `2026-11-07T05:16:25` Tests FALLARON:
+```
+ted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:159
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:159: SyntaxWarning: invalid escape sequence '\A'
+    de sus argumentos en líneas de comandos de registro del tipo `"C:\App\app.exe" /flag`.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.44s
+
+```
+- `2026-11-07T05:16:25` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `startup.py` centralizando la validación de rutas mediante la integración estricta de `is_protected_path` antes de cualquier operación de resolución, asegurando que las rutas malformadas o fuera de los límites permitidos no sigan procesándose en la lógica de resolución (evitando potencialmente errores en `Path.resolve()` sobre rutas protegidas).
+- `2026-11-07T05:16:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T05:16:25` Corrida terminada. Total usado hoy: 124.

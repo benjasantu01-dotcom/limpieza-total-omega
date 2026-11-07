@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 69
+- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 14 | 0 | 2 | 1 | 17 |
+| 2026-11-05 | 14 | 0 | 2 | 1 | 13 |
 | 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 39 | 5 | 13 | 2 | 61 |
+| 2026-11-07 | 41 | 6 | 14 | 2 | 61 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **32**
+- seguridad defensiva: **34**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **20**
 - `diskreport.py`: **19**
 - `safety.py`: **16**
-- `settings.py`: **15**
-- `scanner.py`: **15**
+- `settings.py`: **16**
+- `scanner.py`: **16**
 - `assistant.py`: **14**
 - `browser.py`: **13**
 - `branding.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T05:16:14` **settings.py** (seguridad defensiva): Se endureció la validación en `_is_file_secure_to_read` añadiendo una comprobación explícita para evitar que el archivo de configuración sea un enlace simbólico o un reparse point, además de limitar los permisos de acceso a nivel de sistema de archivos para asegurar que solo el dueño pueda leer el archivo (impidiendo ataques de lectura mediante enlaces simbólicos o permisos laxos).
+- `2026-11-07T05:14:37` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de `_get_canonical_path` para evitar ataques de resolución de rutas (path traversal) y normalización inconsistente, asegurando que `_is_safe_entry` valide contra la raíz real incluso en presencia de caracteres especiales.
 - `2026-11-07T05:05:26` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` para mitigar condiciones de carrera TOCTOU, asegurando que el archivo origen no sea un punto de unión (junction) o enlace simbólico inmediatamente antes de la lectura, añadiendo una capa de validación adicional en el momento crítico de la transferencia.
 - `2026-11-07T04:54:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo `healthscore.py` al aplicar un esquema de validación estricto en el acceso a datos internos, impidiendo la inyección de tipos inesperados en los campos críticos de `SystemMetrics` mediante una validación explícita durante la mutación de atributos.
 - `2026-11-07T04:53:30` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_validate_root` para evitar ataques de directorio transversal (`path traversal`) al normalizar la ruta antes de validar que esté contenida, asegurando que `resolve()` no escape de restricciones y que `is_protected_path` sea invocado sobre una ruta absoluta y limpia.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T04:13:15` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y las funciones auxiliares ante archivos inexistentes o con permisos denegados durante la iteración, asegurando que `_safe_stat` y la lógica de escaneo manejen correctamente fallos al acceder a `st_ino` (común en sistemas de archivos virtuales o unidades de red), evitando interrupciones abruptas del análisis.
 - `2026-11-07T04:12:49` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `DirectoryScanner._is_path_allowed` y `directory_size` validando explícitamente que la ruta resuelta exista antes de realizar operaciones de normatización, evitando excepciones innecesarias ante sistemas de archivos volátiles o inaccesibles.
 - `2026-11-07T04:02:46` **settings.py** (rendimiento): Optimicé el rendimiento del acceso a configuraciones eliminando la llamada innecesaria a `load().get(key)` dentro de `get()` y `assistant_enabled()`, reemplazándola por una consulta directa a la caché del gestor si está disponible, y consolidando la lógica de validación de tipos en un diccionario precomputado.
-- `2026-11-07T03:54:27` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` integrando el uso de `lru_cache` para la resolución de rutas normalizadas y evitando conversiones redundantes de `Path` a `str` dentro del bucle de validación de extensiones críticas, reduciendo drásticamente la carga de CPU durante escaneos masivos.
-- `2026-11-07T03:53:03` **quarantine.py** (rendimiento): Se optimizó el rendimiento de `purge_all` transformando la búsqueda de ítems en el manifiesto de una operación lineal O(N*M) a una búsqueda O(1) mediante el uso de un diccionario (hash map) para el mapeo de nombres de archivo, reduciendo la carga de I/O y CPU durante la limpieza masiva.
