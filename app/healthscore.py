@@ -366,6 +366,9 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
             quarantined_count=int(quarantined)
         )
         
+        if not metrics.is_finite:
+            raise ValueError("Métricas no finitas tras la validación.")
+
         metric_breakdown = {}
         total_score_sum = 0.0
         recommendations = []
@@ -377,7 +380,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
             total_score_sum += val
             recommendations.extend(_evaluate_rules(metrics, entry.rules, ratio))
         
-        if metrics.quarantined_count > 0:
+        if metrics.safe_get("quarantined_count") > 0:
             msg = _sanitize_msg("Existen elementos en cuarentena.")
             if msg: recommendations.append(msg)
             
@@ -390,6 +393,7 @@ def _compute_cached(metric_tuple: Tuple[float, ...], quarantined: float) -> Heal
             recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
         )
     except Exception as e:
+        logging.error(f"Error crítico durante el análisis: {e}")
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=[f"Error crítico durante el análisis: {type(e).__name__}"])
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -398,6 +402,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Formato de métricas inválido."])
     
     metrics.validate()
+    
+    if not metrics.is_finite:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada corruptos."])
+
     return _compute_cached((
         metrics.junk_mb, float(metrics.suspicious_count), 
         float(metrics.suspicious_warnings), metrics.memory_available_percent,

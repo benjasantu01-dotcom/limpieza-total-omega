@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 47 | 1 | 10 | 2 | 42 |
+| 2026-11-05 | 44 | 1 | 9 | 2 | 42 |
 | 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 9 | 2 | 2 | 0 | 39 |
+| 2026-11-07 | 10 | 2 | 2 | 0 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **39**
 - seguridad defensiva: **39**
+- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **36**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `healthscore.py`: **20**
+- `healthscore.py`: **21**
 - `diskreport.py`: **19**
-- `safety.py`: **18**
-- `scanner.py`: **18**
+- `quarantine.py`: **19**
+- `safety.py`: **17**
+- `scanner.py`: **17**
 - `memory.py`: **16**
 - `settings.py`: **15**
 - `browser.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T02:22:21` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del método `SystemMetrics.validate` y `compute_score` añadiendo verificaciones explícitas de integridad para prevenir estados inválidos o parcialmente inicializados que podrían causar errores durante el cálculo del pipeline.
 - `2026-11-07T00:49:37` **settings.py** (seguridad defensiva): Se endureció la seguridad en `_is_file_secure_to_read` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier operación de lectura, asegurando que el archivo de configuración nunca pueda residir en una ubicación protegida del sistema, incluso si la verificación de permisos `os.access` pasara.
 - `2026-11-07T00:42:10` **safety.py** (seguridad defensiva): Se implementó una protección defensiva contra el "Time-of-Check to Time-of-Use" (TOCTOU) reforzando la validación de la identidad del archivo mediante `GetFileInformationByHandle` antes de realizar cualquier operación crítica, asegurando que la ruta no haya sido reemplazada por un enlace o reparse point después de la primera validación.
 - `2026-11-07T00:39:41` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la validación en `_validate_isolation_request` para impedir que archivos con el bit de "solo lectura" (ReadOnly) sean movidos, evitando conflictos en sistemas donde este atributo implica restricciones de administración o uso por el kernel.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-06T17:41:26` **healthscore.py** (robustez ante casos límite): Mejora la robustez del motor de cálculo ante valores de entrada atípicos o maliciosos, reforzando la integridad numérica en el pipeline mediante un chequeo de finitud adicional antes de la división en los scorers y asegurando que `_clamp` maneje correctamente casos de `NaN` o `Inf` sin depender de excepciones externas.
 - `2026-11-06T17:30:54` **branding.py** (robustez ante casos límite): Se ha robustecido `save_logo_svg` y `_get_scaled_poly` ante posibles valores nulos o corruptos, asegurando que los fallos en la resolución de rutas o en los cálculos aritméticos devuelvan estados seguros en lugar de propagar excepciones hacia la interfaz.
 - `2026-11-06T17:22:11` **assistant.py** (robustez ante casos límite): Se mejora la robustez de la ingesta de datos en `SystemContext` añadiendo una validación explícita para evitar que `NaN` o valores infinitos (que pueden causar comportamientos inesperados en las operaciones lógicas de comparación) se filtren en la estructura de métricas, reforzando `_is_safe_numeric_context` y la lógica de actualización.
-- `2026-11-06T17:20:51` **scanner.py** (rendimiento): Se optimizó el método `process_entry` y la lógica de escaneo para reducir las llamadas repetitivas al sistema de archivos mediante el uso de `os.DirEntry.is_dir()` y `os.DirEntry.is_file()`, evitando resoluciones redundantes y garantizando que las verificaciones de seguridad se realicen sobre estados ya cargados en memoria por `os.scandir`.
