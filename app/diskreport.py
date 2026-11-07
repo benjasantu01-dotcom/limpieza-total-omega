@@ -53,7 +53,7 @@ FileRecord: TypeAlias = Tuple[int, Path]
 
 def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
     """
-    Obtiene metadatos mediante os.lstat (no sigue enlaces simbólicos).
+    Intenta obtener metadatos sin seguir enlaces simbólicos.
 
     Args:
         path: Ruta a inspeccionar.
@@ -72,7 +72,12 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
 def _is_reparse_point(stat: os.stat_result) -> bool:
     """
     Determina si la ruta es un punto de reanálisis (Windows) o enlace.
-    La lógica de reanálisis se basa en st_file_attributes para sistemas NTFS.
+
+    Args:
+        stat: Resultado de os.lstat del archivo.
+
+    Returns:
+        True si es un punto de reanálisis, False en caso contrario.
     """
     try:
         if os.name == 'nt':
@@ -84,7 +89,7 @@ def _is_reparse_point(stat: os.stat_result) -> bool:
 
 class ExtStats:
     """
-    Acumulador mutable para métricas de una extensión de archivo particular.
+    Acumulador para métricas de una extensión de archivo particular.
     Usa __slots__ para optimizar memoria durante el recorrido del disco.
     """
     __slots__ = ('total_bytes', 'count')
@@ -94,16 +99,19 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Suma bytes al acumulador y cuenta un nuevo archivo procesado."""
+        """
+        Suma bytes al acumulador y cuenta un nuevo archivo procesado.
+        
+        Args:
+            size: Tamaño del archivo en bytes.
+        """
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
 
 
 class GlobalStats:
-    """
-    Contenedor de estado durante la agregación de métricas de disco.
-    """
+    """Contenedor de estado durante la agregación de métricas de disco."""
     def __init__(self) -> None:
         self.total_bytes: int = 0
         self.total_files: int = 0
@@ -118,9 +126,7 @@ class GlobalStats:
 
 
 class FolderMetrics:
-    """
-    Estructura auxiliar para calcular el tamaño de carpetas individuales.
-    """
+    """Estructura auxiliar para calcular el tamaño de carpetas individuales."""
     __slots__ = ('size', 'file_count')
     
     def __init__(self) -> None:
@@ -156,7 +162,9 @@ def _validate_limit(limit: Any) -> int:
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Normaliza y valida la ruta raíz, verificando su existencia y permisos.
-    Retorna None si la ruta está protegida o es inaccesible.
+
+    Returns:
+        Un objeto Path si es válida, o None si está protegida o es inaccesible.
     """
     if not directory:
         return None

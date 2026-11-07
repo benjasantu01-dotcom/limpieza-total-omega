@@ -8,33 +8,33 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 66
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 229
+- Rechazadas por guardia de seguridad: 67
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 124 | 12 | 49 | 14 | 133 |
-| 2026-11-07 | 50 | 7 | 17 | 2 | 96 |
+| 2026-11-06 | 123 | 12 | 48 | 12 | 133 |
+| 2026-11-07 | 51 | 7 | 19 | 2 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **38**
 - manejo de errores y validación de entradas: **37**
 - seguridad defensiva: **34**
-- rendimiento: **27**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
 - `healthscore.py`: **20**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `memory.py`: **17**
-- `scanner.py`: **15**
 - `settings.py`: **15**
+- `scanner.py`: **14**
 - `browser.py`: **14**
 - `safety.py`: **14**
 - `assistant.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T07:26:09` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones principales y la clarificación de tipos complejos con alias específicos, facilitando la legibilidad para el mantenimiento.
 - `2026-11-07T07:17:26` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenimiento del código mediante la formalización de las reglas de negocio del escáner en una constante `SYSTEM_HIDDEN_FLAGS` y la extracción de la lógica de validación de entradas dentro de `DirectoryScanner`, aclarando el propósito de cada chequeo de seguridad.
 - `2026-11-07T07:16:42` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo la lógica de validación de claves en métodos privados (`_is_valid_metric_key`) y utilizando tipado más explícito, lo que facilita entender el flujo de datos sin alterar el comportamiento.
 - `2026-11-07T07:16:04` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `_is_registry_entry_safe` incorporando validaciones de tipo explícitas y chequeos de integridad ante datos malformados, asegurando que el parser no falle silenciosamente ni procese entradas corruptas provenientes de PowerShell.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T05:05:26` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` para mitigar condiciones de carrera TOCTOU, asegurando que el archivo origen no sea un punto de unión (junction) o enlace simbólico inmediatamente antes de la lectura, añadiendo una capa de validación adicional en el momento crítico de la transferencia.
 - `2026-11-07T04:54:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo `healthscore.py` al aplicar un esquema de validación estricto en el acceso a datos internos, impidiendo la inyección de tipos inesperados en los campos críticos de `SystemMetrics` mediante una validación explícita durante la mutación de atributos.
 - `2026-11-07T04:53:30` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_validate_root` para evitar ataques de directorio transversal (`path traversal`) al normalizar la ruta antes de validar que esté contenida, asegurando que `resolve()` no escape de restricciones y que `is_protected_path` sea invocado sobre una ruta absoluta y limpia.
-- `2026-11-07T04:45:18` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_is_target_valid` integrando `os.path.realpath` con `os.path.commonpath` para garantizar una comparación de rutas canónica y robusta contra ataques de escape de directorio (directory traversal), asegurando que los objetivos siempre residan estrictamente dentro del sandbox definido.

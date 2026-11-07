@@ -469,3 +469,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-07T07:17:26` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenimiento del código mediante la formalización de las reglas de negocio del escáner en una constante `SYSTEM_HIDDEN_FLAGS` y la extracción de la lógica de validación de entradas dentro de `DirectoryScanner`, aclarando el propósito de cada chequeo de seguridad.
 - `2026-11-07T07:17:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T07:17:26` Corrida terminada. Total usado hoy: 172.
+- `2026-11-07T07:25:43` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-11-07T07:26:09` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones principales y la clarificación de tipos complejos con alias específicos, facilitando la legibilidad para el mantenimiento.
+- `2026-11-07T07:26:30` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: legibilidad y documentación).
+- `2026-11-07T07:27:31` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.get_clamped_metric, grade_for_score, score_disk, score_duplicates, score_junk, score_memory, score_security, score_startup
+- `2026-11-07T07:27:36` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 2% del original (posible pérdida de código)
+- `2026-11-07T07:27:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T07:27:36` Corrida terminada. Total usado hoy: 176.
