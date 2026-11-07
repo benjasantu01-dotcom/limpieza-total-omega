@@ -95,7 +95,7 @@ def _cached_is_protected(path_str: str) -> bool:
 def _get_canonical_path(path_str: str) -> str:
     """Normaliza y resuelve la ruta de forma segura para evitar traversal."""
     try:
-        return os.path.normcase(os.path.abspath(path_str))
+        return os.path.normcase(os.path.realpath(path_str))
     except (OSError, ValueError):
         return ""
 
@@ -238,7 +238,10 @@ class Scanner:
         """Verifica que la ruta resuelta esté contenida bajo la jerarquía base."""
         try:
             norm_entry = _get_canonical_path(entry_path)
-            return bool(norm_entry and os.path.commonpath([self.base_root_real, norm_entry]) == self.base_root_real)
+            if not norm_entry or not self.base_root_real:
+                return False
+            # Verifica que norm_entry sea subdirectorio o igual a la base
+            return os.path.commonpath([self.base_root_real, norm_entry]) == self.base_root_real
         except (ValueError, OSError):
             return False
 

@@ -622,3 +622,13 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-07T09:31:24` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `quarantine.py` integrando `ensure_safe_to_modify` en `_safe_unlink` de forma directa, eliminando la dependencia implícita de que el llamador realice todas las verificaciones, y protegiendo el manifiesto contra escrituras parciales mediante una validación estricta de atomicidad en `save_manifest`.
 - `2026-11-07T09:31:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T09:31:24` Corrida terminada. Total usado hoy: 224.
+- `2026-11-07T09:38:09` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-07T09:38:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-07T09:39:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-07T09:40:33` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-07T09:41:39` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-07T09:42:13` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): el archivo se encogió al 12% del original (posible pérdida de código)
+- `2026-11-07T09:42:44` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se mejora la seguridad defensiva mediante la validación explícita de rutas de destino en `_is_inside_base_root` y la adición de `os.path.realpath` en la inicialización del `Scanner` para garantizar que el análisis heurístico no escape de la raíz permitida mediante enlaces simbólicos o rutas relativas complejas.
+- `2026-11-07T09:43:02` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: seguridad defensiva).
+- `2026-11-07T09:43:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T09:43:02` Corrida terminada. Total usado hoy: 228.
