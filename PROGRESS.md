@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 123 | 12 | 48 | 12 | 133 |
-| 2026-11-07 | 51 | 7 | 19 | 2 | 97 |
+| 2026-11-06 | 121 | 12 | 47 | 11 | 133 |
+| 2026-11-07 | 53 | 7 | 20 | 3 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **39**
-- robustez ante casos límite: **38**
+- legibilidad y documentación: **41**
+- robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **37**
 - seguridad defensiva: **34**
-- rendimiento: **26**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `healthscore.py`: **20**
 - `diskreport.py`: **18**
 - `memory.py`: **17**
-- `settings.py`: **15**
 - `scanner.py`: **14**
+- `settings.py`: **14**
 - `browser.py`: **14**
 - `safety.py`: **14**
-- `assistant.py`: **12**
+- `assistant.py`: **11**
 - `branding.py`: **10**
 - `duplicates.py`: **7**
+- `organizer.py`: **7**
 - `startup.py`: **6**
-- `organizer.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T07:37:35` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en los retornos de las funciones de soporte (`_get_win_attributes`, `_is_file_in_use_by_system`), consolidando docstrings para aclarar las responsabilidades de las funciones de bajo nivel y aplicando un nombrado más descriptivo en parámetros internos para evitar ambigüedades técnicas en la capa de seguridad.
+- `2026-11-07T07:36:49` **organizer.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo añadiendo type hints faltantes en funciones críticas, normalizando el uso de `Final` y `TypeAlias`, e incluyendo docstrings detallados en las funciones de validación de seguridad para explicar el PORQUÉ de las comprobaciones de bajo nivel (como la mitigación TOCTOU o las restricciones de los sistemas de archivos de Windows).
 - `2026-11-07T07:26:09` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones principales y la clarificación de tipos complejos con alias específicos, facilitando la legibilidad para el mantenimiento.
 - `2026-11-07T07:17:26` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenimiento del código mediante la formalización de las reglas de negocio del escáner en una constante `SYSTEM_HIDDEN_FLAGS` y la extracción de la lógica de validación de entradas dentro de `DirectoryScanner`, aclarando el propósito de cada chequeo de seguridad.
 - `2026-11-07T07:16:42` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo la lógica de validación de claves en métodos privados (`_is_valid_metric_key`) y utilizando tipado más explícito, lo que facilita entender el flujo de datos sin alterar el comportamiento.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T05:16:14` **settings.py** (seguridad defensiva): Se endureció la validación en `_is_file_secure_to_read` añadiendo una comprobación explícita para evitar que el archivo de configuración sea un enlace simbólico o un reparse point, además de limitar los permisos de acceso a nivel de sistema de archivos para asegurar que solo el dueño pueda leer el archivo (impidiendo ataques de lectura mediante enlaces simbólicos o permisos laxos).
 - `2026-11-07T05:14:37` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de `_get_canonical_path` para evitar ataques de resolución de rutas (path traversal) y normalización inconsistente, asegurando que `_is_safe_entry` valide contra la raíz real incluso en presencia de caracteres especiales.
 - `2026-11-07T05:05:26` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` para mitigar condiciones de carrera TOCTOU, asegurando que el archivo origen no sea un punto de unión (junction) o enlace simbólico inmediatamente antes de la lectura, añadiendo una capa de validación adicional en el momento crítico de la transferencia.
-- `2026-11-07T04:54:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo `healthscore.py` al aplicar un esquema de validación estricto en el acceso a datos internos, impidiendo la inyección de tipos inesperados en los campos críticos de `SystemMetrics` mediante una validación explícita durante la mutación de atributos.
-- `2026-11-07T04:53:30` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_validate_root` para evitar ataques de directorio transversal (`path traversal`) al normalizar la ruta antes de validar que esté contenida, asegurando que `resolve()` no escape de restricciones y que `is_protected_path` sea invocado sobre una ruta absoluta y limpia.
