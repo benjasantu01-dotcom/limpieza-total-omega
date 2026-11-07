@@ -455,3 +455,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-07T06:57:40` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` encapsulando la verificación de `is_file_exclusive` dentro de un bloque `try/except` y añadiendo chequeos explícitos para rutas inexistentes antes de realizar operaciones de IO, mitigando riesgos de condiciones de carrera y excepciones no capturadas.
 - `2026-11-07T06:57:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T06:57:40` Corrida terminada. Total usado hoy: 164.
+- `2026-11-07T07:05:24` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-11-07T07:05:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-11-07T07:06:16` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 47% del original (posible pérdida de código)
+- `2026-11-07T07:06:40` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-07T07:06:53` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-07T07:06:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T07:06:53` Corrida terminada. Total usado hoy: 168.
