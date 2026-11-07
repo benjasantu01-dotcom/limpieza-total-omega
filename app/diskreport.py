@@ -161,8 +161,11 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if not directory:
         return None
     try:
-        p = Path(directory).expanduser().resolve(strict=True)
-        if not p.is_dir() or str(p).startswith('\\\\') or is_protected_path(p):
+        p = Path(directory).expanduser().resolve()
+        if not p.exists() or not p.is_dir():
+            return None
+        # Validación de seguridad defensiva
+        if str(p).startswith('\\\\') or is_protected_path(p):
             return None
         if not os.access(p, os.R_OK):
             return None
@@ -185,7 +188,7 @@ def _get_local_windows_drives() -> List[str]:
         drive = f"{letter}:\\"
         try:
             if os.path.exists(drive):
-                drive_path = Path(drive).resolve(strict=True)
+                drive_path = Path(drive).resolve()
                 if not is_protected_path(drive_path) and os.access(drive, os.R_OK):
                     drives.append(drive)
         except (OSError, PermissionError, TypeError, RuntimeError):
@@ -260,7 +263,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """Obtiene métricas de uso de disco de una unidad específica."""
     if mount is None: return None
     try:
-        p = Path(mount).expanduser().resolve(strict=True)
+        p = Path(mount).expanduser().resolve()
         if not p.is_dir() or is_protected_path(p) or str(p).startswith('\\\\'):
             return None
         usage = shutil.disk_usage(p)

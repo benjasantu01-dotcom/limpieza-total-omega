@@ -278,6 +278,14 @@ class SystemMetrics:
     def __post_init__(self) -> None:
         self.validate()
 
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Protección: asegura que solo campos conocidos acepten valores validados."""
+        if name in _ALL_METRICS:
+            val = _validate_numeric(value, 0.0, *_METRIC_LIMITS.get(name, (0.0, 1e9)))
+            super().__setattr__(name, val)
+        else:
+            super().__setattr__(name, value)
+
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any:
         """Acceso seguro a atributos del contenedor tras validación."""
@@ -292,7 +300,7 @@ class SystemMetrics:
         """Aplica límites definidos en _METRIC_LIMITS y asegura la integridad numérica."""
         for field_name in _ALL_METRICS:
             val = self.get_clamped_metric(field_name)
-            object.__setattr__(self, field_name, val)
+            super().__setattr__(field_name, val)
 
     @property
     def is_finite(self) -> bool:

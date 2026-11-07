@@ -1300,3 +1300,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-07T04:45:18` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_is_target_valid` integrando `os.path.realpath` con `os.path.commonpath` para garantizar una comparación de rutas canónica y robusta contra ataques de escape de directorio (directory traversal), asegurando que los objetivos siempre residan estrictamente dentro del sandbox definido.
 - `2026-11-07T04:45:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T04:45:18` Corrida terminada. Total usado hoy: 112.
+- `2026-11-07T04:53:02` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-07T04:53:30` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `_validate_root` para evitar ataques de directorio transversal (`path traversal`) al normalizar la ruta antes de validar que esté contenida, asegurando que `resolve()` no escape de restricciones y que `is_protected_path` sea invocado sobre una ruta absoluta y limpia.
+- `2026-11-07T04:53:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-07T04:54:23` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva del módulo `healthscore.py` al aplicar un esquema de validación estricto en el acceso a datos internos, impidiendo la inyección de tipos inesperados en los campos críticos de `SystemMetrics` mediante una validación explícita durante la mutación de atributos.
+- `2026-11-07T04:55:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-07T04:55:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T04:55:13` Corrida terminada. Total usado hoy: 116.
