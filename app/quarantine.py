@@ -76,6 +76,16 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
     "LPT6", "LPT7", "LPT8", "LPT9"
 }
 
+def _sync_directory(directory: Path) -> None:
+    """Forzar la escritura de metadatos del directorio al disco para garantizar atomicidad."""
+    try:
+        dir_abs = _is_path_canonical(directory)
+        fd = os.open(str(dir_abs), os.O_RDONLY)
+        try: os.fsync(fd)
+        finally: os.close(fd)
+    except (OSError, PermissionError):
+        pass
+
 def _is_path_canonical(path: Path) -> Path:
     """Normaliza y valida que la ruta sea absoluta, evitando ambigüedades de sistema."""
     try:
@@ -345,12 +355,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         parent: Path = path.parent
         _check_io_error_context(path.unlink)
         if parent.exists():
-            try:
-                parent_abs = _is_path_canonical(parent)
-                fd = os.open(str(parent_abs), os.O_RDONLY)
-                try: os.fsync(fd)
-                finally: os.close(fd)
-            except (OSError, PermissionError): pass
+            _sync_directory(parent)
         return True
     except (OSError, PermissionError, UnsafePathError): return False
 
@@ -565,11 +570,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             tf.flush()
             os.fsync(tf.fileno())
         os.replace(temp_name, target_path)
-        try:
-            fd = os.open(str(base_path), os.O_RDONLY)
-            try: os.fsync(fd)
-            finally: os.close(fd)
-        except OSError: pass
+        _sync_directory(base_path)
         st = target_path.stat()
         _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size)
         return target_path
@@ -663,12 +664,7 @@ def _write_temp_to_final(source_path: Path, dest_path: Path) -> Tuple[str, Inode
         _perform_secure_copy(source_path, temp_dest, source_hash)
         if dest_path.exists(): raise FileExistsError("Colisión de ruta antes del reemplazo.")
         os.replace(temp_dest, dest_path)
-        try:
-            parent_abs = _is_path_canonical(dest_path.parent)
-            fd = os.open(str(parent_abs), os.O_RDONLY)
-            try: os.fsync(fd)
-            finally: os.close(fd)
-        except OSError: pass
+        _sync_directory(dest_path.parent)
         
         dest_stat = dest_path.stat()
         if dest_stat.st_nlink > 1: raise UnsafePathError("Integridad comprometida: destino tiene enlaces múltiples.")
@@ -850,12 +846,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         _check_io_error_context(os.replace, str(stored_file), str(destination))
         for p in [parent, base_path]:
             if p and p.exists():
-                try:
-                    p_abs = _is_path_canonical(p)
-                    fd = os.open(str(p_abs), os.O_RDONLY)
-                    try: os.fsync(fd)
-                    finally: os.close(fd)
-                except (OSError, PermissionError): pass
+                _sync_directory(p)
         items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)
         return destination
@@ -922,12 +913,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if purgado_ids:
             new_items = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
-            try:
-                root_abs = _is_path_canonical(root_path)
-                fd = os.open(str(root_abs), os.O_RDONLY)
-                try: os.fsync(fd)
-                finally: os.close(fd)
-            except (OSError, PermissionError): pass
+            _sync_directory(root_path)
         return len(purgado_ids)
     except (OSError, PermissionError, UnsafePathError, RuntimeError): return 0
 
