@@ -127,6 +127,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         _full_hash_cache[path] = digest
         return digest
     except (OSError, PermissionError, IOError, ValueError):
+        # Manejo ante archivos bloqueados por el SO o procesos concurrentes
         return None
 
 
@@ -147,6 +148,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             _partial_cache[path] = digest_val
             return digest_val
     except (OSError, PermissionError, IOError, ValueError):
+        # El archivo puede estar bloqueado o inaccesible durante la lectura
         return None
 
 

@@ -945,3 +945,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-07T13:03:53` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la resiliencia ante errores de lectura en el escaneo profundo mediante la captura de excepciones específicas en `_safe_stat`, evitando que fallos transitorios en atributos de metadatos detengan el proceso de recolección de métricas.
 - `2026-11-07T13:03:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T13:03:53` Corrida terminada. Total usado hoy: 308.
+- `2026-11-07T13:11:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-07T13:12:23` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante archivos bloqueados durante la lectura mediante la implementación de un manejo explícito de excepciones específicas en `hash_file` y `partial_hash`, garantizando que el proceso de escaneo no se detenga prematuramente si un archivo es bloqueado por otro proceso del sistema durante el cálculo del hash.
+- `2026-11-07T13:12:51` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `math.isfinite` en `_clamp` dentro del pipeline y se protegió la ejecución de `entry.scorer` contra posibles errores en tiempo de ejecución para evitar que un dato atípico en `SystemMetrics` derrumbe la generación del informe.
+- `2026-11-07T13:14:03` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, wrapper
+- `2026-11-07T13:14:15` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-07T13:14:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T13:14:15` Corrida terminada. Total usado hoy: 312.

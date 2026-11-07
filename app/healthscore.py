@@ -374,8 +374,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         recommendations = []
         
         for entry in PIPELINE_DEFINITIONS:
-            ratio = entry.scorer(metrics)
-            # Validación secundaria: ratio debe ser un valor finito en [0,1]
+            try:
+                ratio = entry.scorer(metrics)
+            except Exception:
+                ratio = 0.0
+            
+            # Validación: ratio debe ser un valor finito en [0,1]
             ratio = _clamp(ratio)
             
             val = int(ratio * float(entry.weight))

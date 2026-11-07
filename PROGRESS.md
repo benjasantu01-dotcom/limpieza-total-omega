@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **167** (33.1% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 62
+- Mejoras aceptadas: **168** (33.3% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 252
+- Sin respuesta de la IA (error o límite): 253
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 71 | 6 | 28 | 4 | 87 |
-| 2026-11-07 | 96 | 8 | 34 | 5 | 165 |
+| 2026-11-06 | 70 | 5 | 26 | 4 | 87 |
+| 2026-11-07 | 98 | 8 | 35 | 5 | 166 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
+- robustez ante casos límite: **34**
 - manejo de errores y validación de entradas: **32**
-- robustez ante casos límite: **32**
-- seguridad defensiva: **28**
 - rendimiento: **27**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **19**
 - `diskreport.py`: **18**
-- `healthscore.py`: **18**
 - `quarantine.py`: **17**
-- `scanner.py`: **15**
 - `memory.py`: **14**
 - `safety.py`: **14**
+- `scanner.py`: **14**
 - `settings.py`: **13**
 - `assistant.py`: **13**
 - `browser.py`: **12**
 - `branding.py`: **10**
 - `startup.py`: **9**
-- `duplicates.py`: **7**
+- `duplicates.py`: **8**
 - `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T13:12:51` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `math.isfinite` en `_clamp` dentro del pipeline y se protegió la ejecución de `entry.scorer` contra posibles errores en tiempo de ejecución para evitar que un dato atípico en `SystemMetrics` derrumbe la generación del informe.
+- `2026-11-07T13:12:23` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos bloqueados durante la lectura mediante la implementación de un manejo explícito de excepciones específicas en `hash_file` y `partial_hash`, garantizando que el proceso de escaneo no se detenga prematuramente si un archivo es bloqueado por otro proceso del sistema durante el cálculo del hash.
 - `2026-11-07T13:03:53` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de lectura en el escaneo profundo mediante la captura de excepciones específicas en `_safe_stat`, evitando que fallos transitorios en atributos de metadatos detengan el proceso de recolección de métricas.
 - `2026-11-07T13:03:39` **browser.py** (robustez ante casos límite): Se ha añadido una validación estricta en `_is_target_valid` para detectar si el directorio objetivo de caché es un archivo (o un punto de reparse que apunte a un archivo) en lugar de un directorio, evitando así posibles errores de manipulación de rutas en sistemas con estructuras de perfiles dañadas o redirecciones inesperadas.
 - `2026-11-07T13:02:42` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemContext.ingest` y `build_context` para manejar casos límite de datos de entrada mal formados, garantizando que si una fuente (como una configuración corrupta) intenta inyectar tipos de datos inesperados (listas, diccionarios profundos o rutas), el asistente ignore esos campos en lugar de propagar errores o bloquear la operación.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T12:22:28` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` y el acceso a criterios de salud mediante el uso de `frozenset` y pre-filtrado para evitar iteraciones innecesarias sobre métricas no inicializadas en cada consulta del asistente.
 - `2026-11-07T12:21:35` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de validación de rutas y registro, especificando los motivos de seguridad y las restricciones de acceso implementadas, asegurando que cualquier colaborador entienda la lógica crítica detrás del filtrado.
 - `2026-11-07T12:12:57` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones internas críticas (`_is_file_secure_to_read`, `_is_structure_valid`, `_read_and_parse_json`) y se refinó el docstring de `save` para clarificar su flujo de ejecución, mejorando la legibilidad técnica para futuros colaboradores.
-- `2026-11-07T12:12:43` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que aclaran el rol de cada componente en el pipeline de escaneo, permitiendo a otros desarrolladores entender el flujo de datos sin necesidad de descifrar la implementación.
-- `2026-11-07T12:12:15` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_drive_restrictions`, extrayendo la lógica de validación de unidades a una estructura de datos declarativa (una lista de tuplas con mensajes de error y códigos asociados), lo cual facilita futuras ampliaciones y mejora la claridad del flujo de control.
