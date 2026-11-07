@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 39 | 0 | 7 | 2 | 38 |
+| 2026-11-05 | 36 | 0 | 6 | 2 | 38 |
 | 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 16 | 3 | 4 | 1 | 44 |
+| 2026-11-07 | 19 | 3 | 5 | 1 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **40**
 - seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **39**
-- rendimiento: **30**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
+- `healthscore.py`: **21**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
-- `safety.py`: **17**
-- `scanner.py`: **17**
-- `memory.py`: **17**
-- `settings.py`: **15**
+- `memory.py`: **18**
+- `safety.py`: **16**
+- `scanner.py`: **16**
+- `settings.py`: **14**
 - `assistant.py`: **14**
 - `branding.py`: **12**
 - `browser.py`: **12**
+- `duplicates.py`: **10**
 - `startup.py`: **9**
-- `duplicates.py`: **9**
 - `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T03:03:12` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, se han tipado parámetros ausentes y se ha estructurado la lógica de validación en `_extract_process_info` para mayor claridad y mantenibilidad, manteniendo la integridad del código original.
+- `2026-11-07T03:01:57` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad del código centralizando la lógica de validación de entradas mediante un nuevo método `get_clamped_metric` y unificando el acceso a `PipelineEntry`, reduciendo la duplicación y mejorando la robustez ante datos inesperados.
+- `2026-11-07T03:01:29` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en funciones clave, explicitando el "porqué" de las decisiones de diseño (como la estrategia de caché y la selección de subconjuntos de archivos) y normalizando el estilo de los type hints para mejorar la mantenibilidad.
 - `2026-11-07T02:52:42` **diskreport.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `diskreport.py` documentando los contratos de las clases, refinando las type hints y corrigiendo la precisión terminológica en las descripciones de las funciones.
 - `2026-11-07T02:52:06` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings técnicos detallados en los métodos de renderizado geométrico y se han reemplazado las tuplas de coordenadas mágicas por una constante estructurada para facilitar la legibilidad del modelo vectorial.
 - `2026-11-07T02:51:35` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y type hints precisos, además de refactorizar la lógica de evaluación de criterios para facilitar el mantenimiento bajo el enfoque de "legibilidad y documentación".
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T00:39:41` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la validación en `_validate_isolation_request` para impedir que archivos con el bit de "solo lectura" (ReadOnly) sean movidos, evitando conflictos en sistemas donde este atributo implica restricciones de administración o uso por el kernel.
 - `2026-11-07T00:30:36` **memory.py** (seguridad defensiva): Se ha mejorado la robustez en la validación de rutas dentro de `_is_process_executable_safe` y `trim_working_set` utilizando `pathlib.Path.resolve()` para evitar problemas con rutas relativas o aliases y garantizando que la comparación con `is_protected_path` se realice sobre rutas absolutas normalizadas, además de consolidar la lógica de cierre de handles para evitar fugas de recursos en caso de fallos intermedios.
 - `2026-11-07T00:29:08` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del pipeline mediante la inyección de una validación explícita de tipos en `_evaluate_rules` y la protección de `PIPELINE_DEFINITIONS` contra modificaciones en tiempo de ejecución, asegurando que las reglas no sean reemplazadas por objetos inseguros.
-- `2026-11-07T00:19:39` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_target_valid` añadiendo una comprobación explícita mediante `pathlib.Path.is_symlink()` combinada con una validación de `os.path.islink()` para cubrir posibles inconsistencias en el sistema de archivos de Windows y asegurar que no se sigan enlaces simbólicos hacia fuera del sandbox.
-- `2026-11-07T00:09:50` **settings.py** (robustez ante casos límite): Se ha mejorado `_read_and_parse_json` para manejar explícitamente el caso de archivos vacíos o con errores de lectura durante el acceso a bajo nivel, garantizando que el sistema regrese a `DEFAULTS` sin excepciones inesperadas y reforzando la robustez ante estados inconsistentes del sistema de archivos.
-- `2026-11-07T00:09:21` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_safe_stat` y en `process_entry` al manejar explícitamente excepciones de sistema (`OSError`) durante el acceso a metadatos, evitando que el escáner se detenga prematuramente ante archivos bloqueados o con descriptores inválidos.

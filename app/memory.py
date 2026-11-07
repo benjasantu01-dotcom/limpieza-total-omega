@@ -241,7 +241,10 @@ def _is_valid_process(name: str, pid: int, ws: int) -> bool:
     return 0 < ws < MAX_VALID_PROCESS_MEM_BYTES
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Parsea una línea CSV y retorna un objeto de proceso validado."""
+    """
+    Parsea una línea CSV con formato 'nombre,pid,working_set' y retorna
+    un objeto de proceso validado si la línea es íntegra y segura.
+    """
     if not isinstance(line, str): return None
     parts = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None

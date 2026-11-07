@@ -91,12 +91,12 @@ class DuplicateGroup:
 
 def _safe_path_check(path: Path) -> bool:
     """
-    Valida la integridad de una ruta. Verifica seguridad, existencia,
-    permisos y que no sea un punto de unión o ruta protegida.
+    Valida la integridad de una ruta. 
+    Se utiliza para filtrar archivos antes de cualquier operación de lectura costosa,
+    asegurando que el módulo solo procese archivos permitidos y evitando loops en reparse points.
     """
     if not isinstance(path, Path): return False
     try:
-        # Nota: Usamos is_safe_to_modify como predicado bool para evitar excepciones
         if not path.is_file() or not is_safe_to_modify(path):
             return False
         return not is_protected_path(path.resolve(strict=True)) and not is_junction(path)
@@ -110,7 +110,11 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo de un archivo; retorna None en error."""
+    """
+    Calcula el hash SHA256 completo. 
+    Utiliza un caché interno para evitar re-hash de un mismo archivo si aparece en
+    distintas búsquedas durante la misma ejecución.
+    """
     if not isinstance(path, Path) or path in _full_hash_cache: return _full_hash_cache.get(path)
     if not _safe_path_check(path): return None
     
@@ -127,7 +131,11 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Genera un fingerprint rápido (SHA256 del encabezado); retorna None en error."""
+    """
+    Genera un fingerprint rápido (SHA256 del encabezado).
+    Esta optimización permite descartar rápidamente archivos con encabezados distintos,
+    reduciendo drásticamente las operaciones de E/S en archivos de gran tamaño.
+    """
     if not isinstance(path, Path) or path in _partial_cache: return _partial_cache.get(path)
     if not _safe_path_check(path): return None
     
@@ -158,8 +166,9 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido BFS para recolectar candidatos válidos.
-    Utiliza inodos (dev, ino) para evitar procesar el mismo archivo múltiples veces.
+    Realiza un recorrido BFS para recolectar candidatos. 
+    Utiliza una tupla de inodos (dev, ino) como llave de visita para manejar correctamente 
+    enlaces duros y evitar el procesamiento redundante de duplicados ya detectados.
     """
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[Tuple[int, int]] = set()
@@ -175,7 +184,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in it:
                     try:
                         entry_path = Path(entry.path)
-                        # Pre-validación estricta antes de acceder a metadatos
                         if skip_protected and is_protected_path(entry_path): continue
                         if is_junction(entry_path): continue
                         
@@ -203,7 +211,10 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Refina grupos mediante Hash Parcial y, de persistir, Hash Completo."""
+    """
+    Refina grupos mediante Hash Parcial y, de persistir, Hash Completo.
+    Esta función es el núcleo de la lógica de refinamiento iterativo.
+    """
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
@@ -245,7 +256,11 @@ def _get_mtime(path: Path) -> Optional[float]:
 
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
-    """Sugiere el archivo más antiguo del grupo para conservar."""
+    """
+    Sugiere el archivo más antiguo del grupo para conservar.
+    La heurística de antigüedad minimiza el riesgo de borrar archivos que podrían
+    ser versiones más recientes o backups.
+    """
     if not group.paths: return None
     candidates = [(m, p) for p in group.paths if (m := _get_mtime(p)) is not None]
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]

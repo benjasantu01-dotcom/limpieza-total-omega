@@ -300,13 +300,15 @@ class SystemMetrics:
         """Acceso seguro a atributos del contenedor tras validación."""
         return getattr(self, field_name, default)
 
+    def get_clamped_metric(self, field_name: str) -> float:
+        """Retorna una métrica asegurando que esté dentro de los límites definidos."""
+        min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
+        return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
+
     def validate(self) -> None:
         """Aplica límites definidos en _METRIC_LIMITS y asegura la integridad numérica."""
         for field_name in _ALL_METRICS:
-            raw_val = getattr(self, field_name, 0.0)
-            min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
-            sanitized = _validate_numeric(raw_val, 0.0, min_v, max_v)
-            setattr(self, field_name, sanitized)
+            setattr(self, field_name, self.get_clamped_metric(field_name))
 
     @property
     def is_finite(self) -> bool:
