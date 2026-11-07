@@ -1118,3 +1118,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-11-07T02:25:44` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-11-07T02:25:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T02:25:44` Corrida terminada. Total usado hoy: 56.
+- `2026-11-07T02:30:30` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-07T02:31:02` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_safe_int_conversion` y `_extract_process_info` mediante validaciones de entrada más estrictas y manejo de excepciones específico para prevenir comportamientos inesperados ante datos de sistema corruptos o malformados, alineándose con el enfoque de manejo de errores y validación.
+- `2026-11-07T02:31:29` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-07T02:32:13` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). He mejorado `quarantine.py` refactorizando el manejo de excepciones en `_safe_unlink` y `_atomic_isolate_file`, sustituyendo capturas genéricas (como `Exception`) por bloques específicos y añadiendo una validación explícita para asegurar que el manifiesto nunca se corrompa por una escritura incompleta, centralizando la lógica de recuperación de errores en un punto único que respeta la integridad del sistema.
+- `2026-11-07T02:32:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-07T02:32:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T02:32:19` Corrida terminada. Total usado hoy: 60.

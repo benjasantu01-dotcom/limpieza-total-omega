@@ -124,7 +124,7 @@ def _get_win_attributes(path: Path) -> int:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(p_str)
         _WIN_ATTR_CACHE[p_str] = (attrs, now)
         return attrs
-    except (OSError, AttributeError, WindowsError):
+    except (OSError, AttributeError):
         return -1
 
 def _win_has_system_attributes(path: Path) -> bool:
@@ -178,7 +178,7 @@ def _is_file_exclusive(path: Path) -> bool:
             if handle == -1 or handle == 0: return False
             k32.CloseHandle(handle)
             return True
-        except (OSError, AttributeError, Exception):
+        except (OSError, AttributeError):
             return False
     
     try:
@@ -716,7 +716,11 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         IsolationManager.validate_atomicity(source, stat_orig, destination)
         if destination.exists(): raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         destination.parent.mkdir(parents=True, exist_ok=True)
-        h, i, d, mtime = _write_temp_to_final(source, destination)
+        try:
+            h, i, d, mtime = _write_temp_to_final(source, destination)
+        except (OSError, IOError, UnsafePathError, FileExistsError) as e:
+            raise RuntimeError(f"Error durante la escritura del archivo aislado: {e}")
+            
         ensure_safe_to_modify(destination, allow_sensitive=True)
         if destination.stat().st_ino != i or destination.stat().st_dev != d or _get_sha256(destination) != h or destination.stat().st_nlink > 1:
             raise RuntimeError("Integridad comprometida: destino inconsistente.")

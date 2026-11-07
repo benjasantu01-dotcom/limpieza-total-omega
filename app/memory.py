@@ -188,16 +188,15 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
     try:
         if isinstance(value, (int, float)):
             val = int(value * multiplier)
-            return BytesValue(max(0, val)) if val < (2**63 - 1) else BytesValue(0)
+        elif isinstance(value, str):
+            clean_val = "".join(filter(str.isdigit, value))
+            val = int(clean_val) * multiplier if clean_val else 0
+        else:
+            return BytesValue(0)
             
-        if isinstance(value, str):
-            digits = "".join(filter(str.isdigit, value.split()[0]))
-            if not digits: return BytesValue(0)
-            val = int(digits) * multiplier
-            return BytesValue(val) if 0 <= val < (2**63 - 1) else BytesValue(0)
+        return BytesValue(max(0, val)) if val < (2**63 - 1) else BytesValue(0)
     except (ValueError, OverflowError, TypeError):
-        pass
-    return BytesValue(0)
+        return BytesValue(0)
 
 _is_windows: bool = os.name == "nt"
 _linux_mem_path: Path = Path("/proc/meminfo")
@@ -213,13 +212,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     metrics: Dict[str, BytesValue] = {}
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
-        try:
-            key, _, value_part = line.partition(":")
-            key_stripped = key.strip()
-            if not key_stripped: continue
-            metrics[key_stripped] = _safe_int_conversion(value_part, 1024)
-        except Exception:
-            continue
+        key, _, value_part = line.partition(":")
+        key_stripped = key.strip()
+        if not key_stripped: continue
+        metrics[key_stripped] = _safe_int_conversion(value_part, 1024)
             
     total: BytesValue = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
