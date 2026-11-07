@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 66
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 219
+- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 65
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 34 | 0 | 6 | 1 | 37 |
+| 2026-11-05 | 31 | 0 | 5 | 1 | 37 |
 | 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 21 | 3 | 6 | 1 | 45 |
+| 2026-11-07 | 22 | 4 | 6 | 2 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
-- robustez ante casos límite: **39**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **39**
+- robustez ante casos límite: **36**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
 - `quarantine.py`: **20**
-- `diskreport.py`: **19**
+- `healthscore.py`: **20**
+- `diskreport.py`: **18**
 - `memory.py`: **18**
 - `safety.py`: **17**
 - `scanner.py`: **16**
-- `settings.py`: **14**
+- `settings.py`: **15**
 - `assistant.py`: **14**
 - `browser.py`: **12**
 - `branding.py`: **11**
-- `duplicates.py`: **10**
+- `duplicates.py`: **9**
 - `startup.py`: **8**
 - `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T03:22:55` **settings.py** (legibilidad y documentación): Mejoré la legibilidad del código introduciendo Type Hints específicos para los validadores en `_VALIDATOR_MAP`, y documenté la lógica de la escritura atómica mediante un docstring detallado en `_SettingsManager`, facilitando el mantenimiento de las operaciones críticas sobre disco.
 - `2026-11-07T03:14:47` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en las funciones de validación de bajo nivel, clarificando los mecanismos de seguridad (Kernel API, validación de integridad y TOCTOU) para asegurar la mantenibilidad del proyecto.
 - `2026-11-07T03:13:55` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_safe_unlink` para extraer la lógica de sincronización de directorios a un método privado reutilizable, y añadí docstrings descriptivos con el propósito de las operaciones de E/S atómicas.
 - `2026-11-07T03:03:12` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, se han tipado parámetros ausentes y se ha estructurado la lógica de validación en `_extract_process_info` para mayor claridad y mantenibilidad, manteniendo la integridad del código original.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T02:22:21` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del método `SystemMetrics.validate` y `compute_score` añadiendo verificaciones explícitas de integridad para prevenir estados inválidos o parcialmente inicializados que podrían causar errores durante el cálculo del pipeline.
 - `2026-11-07T00:49:37` **settings.py** (seguridad defensiva): Se endureció la seguridad en `_is_file_secure_to_read` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier operación de lectura, asegurando que el archivo de configuración nunca pueda residir en una ubicación protegida del sistema, incluso si la verificación de permisos `os.access` pasara.
 - `2026-11-07T00:42:10` **safety.py** (seguridad defensiva): Se implementó una protección defensiva contra el "Time-of-Check to Time-of-Use" (TOCTOU) reforzando la validación de la identidad del archivo mediante `GetFileInformationByHandle` antes de realizar cualquier operación crítica, asegurando que la ruta no haya sido reemplazada por un enlace o reparse point después de la primera validación.
-- `2026-11-07T00:39:41` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la validación en `_validate_isolation_request` para impedir que archivos con el bit de "solo lectura" (ReadOnly) sean movidos, evitando conflictos en sistemas donde este atributo implica restricciones de administración o uso por el kernel.

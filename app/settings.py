@@ -172,8 +172,10 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Ejecuta escritura mediante archivo temporal y reemplazo atómico para prevenir corrupción.
-        Verifica permisos y seguridad del sistema de archivos antes de proceder.
+        Garantiza la persistencia de datos mediante una operación de escritura transaccional.
+        1. Crea un archivo temporal en el mismo directorio.
+        2. Escribe el contenido y fuerza el vaciado a disco (fsync) para evitar pérdida de datos ante fallos.
+        3. Realiza un reemplazo atómico a nivel de SO (os.replace).
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 16: return False
