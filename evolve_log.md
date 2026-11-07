@@ -448,3 +448,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-07T06:46:35` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo en `compute_score` mediante una validación explícita del estado de las métricas tras la validación interna, garantizando que el pipeline nunca procese valores que puedan haber mutado a estados inconsistentes o no finitos.
 - `2026-11-07T06:46:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T06:46:35` Corrida terminada. Total usado hoy: 160.
+- `2026-11-07T06:55:11` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-07T06:56:19` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-07T06:56:48` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-07T06:57:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-07T06:57:40` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` encapsulando la verificación de `is_file_exclusive` dentro de un bloque `try/except` y añadiendo chequeos explícitos para rutas inexistentes antes de realizar operaciones de IO, mitigando riesgos de condiciones de carrera y excepciones no capturadas.
+- `2026-11-07T06:57:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T06:57:40` Corrida terminada. Total usado hoy: 164.

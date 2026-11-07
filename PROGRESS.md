@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 129 | 13 | 52 | 14 | 136 |
-| 2026-11-07 | 46 | 7 | 14 | 2 | 91 |
+| 2026-11-06 | 127 | 12 | 51 | 14 | 136 |
+| 2026-11-07 | 47 | 7 | 15 | 2 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **37**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **36**
 - seguridad defensiva: **34**
-- rendimiento: **31**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
-- `scanner.py`: **16**
+- `scanner.py`: **15**
 - `settings.py`: **15**
 - `safety.py`: **14**
 - `browser.py`: **13**
-- `assistant.py`: **12**
+- `assistant.py`: **11**
 - `branding.py`: **10**
 - `duplicates.py`: **7**
 - `organizer.py`: **6**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T06:57:40` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` encapsulando la verificación de `is_file_exclusive` dentro de un bloque `try/except` y añadiendo chequeos explícitos para rutas inexistentes antes de realizar operaciones de IO, mitigando riesgos de condiciones de carrera y excepciones no capturadas.
 - `2026-11-07T06:46:35` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo en `compute_score` mediante una validación explícita del estado de las métricas tras la validación interna, garantizando que el pipeline nunca procese valores que puedan haber mutado a estados inconsistentes o no finitos.
 - `2026-11-07T06:46:23` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) incorporando validaciones de entrada (`None`/`Path`) y manejos de excepciones más granulares para prevenir fallos silenciosos al procesar rutas inaccesibles, asegurando que el flujo de detección de duplicados no se interrumpa ante errores de E/S.
 - `2026-11-07T06:45:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` capturando errores específicos en `entry.stat()` y `entry.is_dir/file` para evitar que el escaneo completo aborte prematuramente ante archivos bloqueados o inaccesibles, asegurando que el reporte siga procesando el resto del disco.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T04:44:22` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la ingesta de datos externos añadiendo una validación explícita para asegurar que los datos fuente no contengan objetos `pathlib.Path` o tipos complejos inusuales, previniendo así posibles ataques de inyección de objetos o manipulación de rutas a través de diccionarios malformados.
 - `2026-11-07T04:35:35` **settings.py** (robustez ante casos límite): Se añadió una validación explícita de `path.exists()` y `path.is_dir()` antes de intentar leer el archivo de configuración en `_read_and_parse_json` para robustecer la resiliencia ante condiciones de carrera donde el archivo pueda desaparecer o ser reemplazado por un directorio entre la comprobación inicial y la apertura.
 - `2026-11-07T04:34:48` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `_is_readable` y `_is_valid_file_path` agregando un manejo explícito de rutas que contienen caracteres nulos, evitando excepciones de bajo nivel en el sistema de archivos al interactuar con rutas malformadas.
-- `2026-11-07T04:25:13` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` al introducir un chequeo de concurrencia y atomicidad antes de iniciar la copia, y añadí una validación explícita para evitar que archivos con el atributo `Archive` (en Windows) o metadatos de sistema impidan una operación segura, reduciendo riesgos ante archivos de sistema bloqueados.

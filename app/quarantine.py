@@ -779,8 +779,11 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     p_source: Path = _validate_input_path(source)
     
     # Pre-check de concurrencia: asegurar que nadie más está operando el archivo antes de empezar
-    if not _is_file_exclusive(p_source):
-        raise IOError("El archivo origen está bloqueado por otro proceso y no puede aislarse de forma atómica.")
+    try:
+        if not _is_file_exclusive(p_source):
+            raise IOError("El archivo origen está bloqueado por otro proceso.")
+    except (OSError, PermissionError) as e:
+        raise RuntimeError(f"Error de acceso durante pre-check de exclusividad: {e}")
 
     try:
         initial_stat = p_source.stat()
