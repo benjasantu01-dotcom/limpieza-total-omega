@@ -111,7 +111,10 @@ class ExtStats:
 
 
 class GlobalStats:
-    """Contenedor de estado durante la agregación de métricas de disco."""
+    """
+    Gestor del estado de agregación durante el escaneo.
+    Centraliza las estadísticas de archivos y extensiones encontrados.
+    """
     def __init__(self) -> None:
         self.total_bytes: int = 0
         self.total_files: int = 0
@@ -126,7 +129,9 @@ class GlobalStats:
 
 
 class FolderMetrics:
-    """Estructura auxiliar para calcular el tamaño de carpetas individuales."""
+    """
+    Métrica temporal para calcular el tamaño de subcarpetas durante el recorrido.
+    """
     __slots__ = ('size', 'file_count')
     
     def __init__(self) -> None:

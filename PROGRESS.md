@@ -6,45 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **162** (32.1% de aceptación)
+- Mejoras aceptadas: **164** (32.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 255
+- Sin respuesta de la IA (error o límite): 254
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 87 | 6 | 33 | 7 | 95 |
-| 2026-11-07 | 75 | 8 | 30 | 3 | 160 |
+| 2026-11-06 | 85 | 6 | 32 | 7 | 94 |
+| 2026-11-07 | 79 | 8 | 30 | 3 | 160 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **37**
 - seguridad defensiva: **33**
 - manejo de errores y validación de entradas: **32**
-- rendimiento: **22**
+- rendimiento: **20**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `healthscore.py`: **17**
-- `diskreport.py`: **16**
-- `safety.py`: **14**
+- `quarantine.py`: **19**
+- `healthscore.py`: **18**
+- `diskreport.py`: **17**
 - `memory.py`: **14**
 - `settings.py`: **13**
+- `browser.py`: **13**
+- `safety.py`: **13**
 - `scanner.py`: **13**
 - `assistant.py`: **12**
-- `browser.py`: **12**
 - `branding.py`: **10**
 - `startup.py`: **8**
 - `organizer.py`: **7**
-- `duplicates.py`: **6**
+- `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T11:53:03` **healthscore.py** (legibilidad y documentación): Documenté el propósito de los decoradores y las funciones de validación crítica en `healthscore.py` para clarificar la arquitectura del pipeline y mejorar la mantenibilidad técnica del módulo.
+- `2026-11-07T11:51:47` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en retornos de funciones, la simplificación de lógicas de filtrado en `_collect_candidates` y la clarificación de docstrings en las estrategias de hashing para hacer explícito el flujo de datos.
+- `2026-11-07T11:51:23` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en clases clave y la estandarización de las anotaciones de tipo para mejorar la trazabilidad del flujo de datos en el módulo `diskreport.py`.
+- `2026-11-07T11:50:58` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de escaneo y la clarificación de los docstrings en `DirectoryScanner`, asegurando que el propósito de cada método recursivo sea evidente para futuros mantenedores sin alterar la lógica de seguridad.
 - `2026-11-07T11:42:16` **assistant.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el decorador `_ensure_handler_is_safe` y en los métodos de `SystemContext` para mejorar la mantenibilidad y claridad del flujo de validación de datos.
 - `2026-11-07T11:40:54` **settings.py** (manejo de errores y validación de entradas): Mejoré `_read_and_parse_json` y `_coerce_and_verify` para manejar explícitamente escenarios de configuración parcial o corrupta, asegurando que si una clave falta o es inválida, el sistema la normalice contra `DEFAULTS` en lugar de fallar silenciosamente o cargar estados inconsistentes.
 - `2026-11-07T11:31:04` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_unlink` y `purge_item` reemplazando los `try-except` genéricos que silenciaban errores de IO críticos por un manejo explícito que preserva la trazabilidad del error sin comprometer la seguridad.
@@ -56,7 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T09:19:45` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_root` y `drive_usage` incorporando una verificación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier acceso, asegurando que no se sigan puntos de montaje o rutas hacia sistemas protegidos mediante manipulaciones de `Path.resolve()`.
 - `2026-11-07T09:11:56` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la ingestión de datos dentro de `SystemContext` al añadir una validación estricta que impide la inyección de tipos complejos o recursivos en los atributos del objeto, utilizando una profundidad máxima y verificaciones de tipo más robustas para asegurar que solo lleguen valores escalares esperados.
 - `2026-11-07T08:59:31` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inválidas o inaccesibles integrando una validación previa de existencia y permisos mediante `os.access` en `_is_safe_entry`, evitando así el manejo de excepciones costosas dentro del bucle de escaneo.
-- `2026-11-07T08:59:18` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `_get_path_stat_robust` y otras funciones fallen silenciosamente ante estados de archivo inexistentes o de acceso denegado durante el recorrido, añadiendo un `try-except` robusto en la validación de componentes (`_validate_path_components`) para asegurar que el escaneo de rutas no se interrumpa por errores de acceso en subdirectorios protegidos o de sistema.
-- `2026-11-07T08:49:37` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación crítica de espacio en `_can_write_to_destination` para manejar posibles errores de desbordamiento (overflow) al calcular tamaños y se añadió una validación de `st_dev` en `_is_safe_for_disk_op` para prevenir intentos fallidos de movimiento entre volúmenes distintos, lo cual es una operación propensa a fallos en `os.replace`.
-- `2026-11-07T08:47:46` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `compute_score` ante valores inesperados, asegurando que `_METRIC_LIMITS` siempre provea límites válidos (evitando `KeyError`) y reforzando la integridad numérica de los ratios calculados en el pipeline antes de la suma final.
-- `2026-11-07T08:38:29` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escáner (`walk_files`) añadiendo un manejo de excepciones más granular ante archivos bloqueados o inaccesibles, evitando que una sola entrada con permisos denegados interrumpa el recorrido completo de la estructura de archivos.

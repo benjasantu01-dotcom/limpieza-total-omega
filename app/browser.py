@@ -85,11 +85,11 @@ class DirectoryScanner:
         self.ctx = context
 
     def _is_restricted_name(self, name: str) -> bool:
-        """Verifica nombres de archivo reservados o bloqueados."""
+        """Verifica si el nombre del archivo contiene caracteres ilegales o está en lista negra."""
         return any(ord(c) < 32 for c in name) or name.lower() in self.ctx.never_touch_lower
 
     def _should_stop_traversal(self, entry: os.DirEntry, depth: int) -> bool:
-        """Determina si una entrada debe ignorarse por límites de seguridad o profundidad."""
+        """Decide si ignorar una entrada basándose en profundidad máxima o restricciones de nombre."""
         if not entry.name or self._is_restricted_name(entry.name):
             return True
         if depth > self.ctx.max_depth:
@@ -98,8 +98,8 @@ class DirectoryScanner:
 
     def _is_path_allowed(self, path_str: str) -> bool:
         """
-        Valida que la ruta sea segura según safety.py y que su ubicación
-        real esté contenida dentro de la base autorizada (sandbox).
+        Valida mediante seguridad de nivel de app que la ruta sea segura y 
+        mantenga la integridad del sandbox (no escapar de la base autorizada).
         """
         if not path_str or _is_unc_path(path_str): 
             return False
@@ -115,13 +115,13 @@ class DirectoryScanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
-        """Gestiona la recursión en directorios válidos."""
+        """Invoca recursivamente el escaneo si la subcarpeta es un directorio válido y no un junction."""
         if not self.ctx.is_junction(entry.path) and self._is_path_allowed(entry.path):
             return self.get_size(entry.path, depth + 1).bytes_found
         return 0
 
     def _handle_file(self, entry: os.DirEntry) -> int:
-        """Valida y calcula el tamaño de archivos individuales."""
+        """Obtiene el tamaño de un archivo individual evitando duplicados por inodo/dispositivo."""
         if not _is_system_hidden(entry.path, self.ctx.kernel32):
             try:
                 st_file = entry.stat(follow_symlinks=False)
@@ -134,7 +134,7 @@ class DirectoryScanner:
         return 0
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
-        """Distribuye el procesamiento según el tipo de entrada."""
+        """Dirige el procesamiento de la entrada según si es archivo o carpeta."""
         if self._should_stop_traversal(entry, depth):
             return total_bytes
             
@@ -148,7 +148,10 @@ class DirectoryScanner:
         return total_bytes
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
-        """Calcula el tamaño de un directorio evitando ciclos y reparse points."""
+        """
+        Punto de entrada para calcular el peso de un directorio.
+        Verifica integridad contra reparse points y ciclos de directorios.
+        """
         if not isinstance(root_path, str) or not root_path or not self._is_path_allowed(root_path):
             return ScanResult(0, False)
             
@@ -157,7 +160,6 @@ class DirectoryScanner:
 
         try:
             st = os.lstat(root_path)
-            # Extracción de atributos de reparse si está disponible
             attrs = getattr(st, 'st_file_attributes', 0)
             if self.ctx.is_junction(root_path) or (attrs & FileAttributes.REPARSE_POINT):
                 return ScanResult(0, True)
@@ -318,7 +320,6 @@ def _is_target_valid(target: Optional[Path], base_norm: str, kernel: Optional[ct
         if any(c in target.name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target.name):
             return False
         
-        # Validación extra de integridad para la ruta base
         if not os.path.exists(base_norm):
             return False
             

@@ -57,7 +57,10 @@ _ALL_METRICS: Final[Tuple[str, ...]] = _VALIDATION_KEYS + ("quarantined_count",)
 # --- Decoradores y Utilidades de Seguridad ---
 
 def _guard_metric_access(func: Callable[[Any, str, Any], Any]) -> Callable[[Any, str, Any], Any]:
-    """Decorador: restringe el acceso a métricas no definidas en el esquema global."""
+    """
+    Decorador de acceso: Valida que el campo consultado en SystemMetrics sea una métrica 
+    conocida antes de permitir la ejecución del getter. Previene fugas de atributos internos.
+    """
     @wraps(func)
     def wrapper(instance: Any, field_name: str, default: Any = 0.0) -> Any:
         if field_name not in _ALL_METRICS:
@@ -72,14 +75,17 @@ def _is_sensitive_input(data: Any) -> bool:
     return any(term in d_low for term in _BLOCKED_TERMS)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Limpiador: filtra caracteres prohibidos y recorta mensajes largos de diagnóstico."""
+    """Limpiador: aplica filtrado de caracteres y validación de seguridad a mensajes de texto."""
     if not isinstance(msg, str) or len(msg) > (_MAX_MSG_LEN * 4) or _is_sensitive_input(msg): 
         return ""
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
     return clean.strip()[:_MAX_MSG_LEN]
 
 def _safe_factory(factory: Callable[[SystemMetrics], str]) -> Callable[[SystemMetrics], str]:
-    """Envoltorio: encapsula generadores de mensajes para prevenir la propagación de excepciones."""
+    """
+    Envoltorio de robustez: Encapsula la generación dinámica de mensajes en un bloque 
+    try-except para garantizar que una falla en una regla no detenga todo el pipeline.
+    """
     def wrapper(metrics: SystemMetrics) -> str:
         try:
             msg = factory(metrics)
