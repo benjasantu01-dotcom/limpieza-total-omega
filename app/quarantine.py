@@ -669,11 +669,17 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
     _check_for_reparse_points(source)
     
-    if _is_path_canonical(source.parent) == _is_path_canonical(destination.parent): raise UnsafePathError("Origen y destino colisionan en la misma carpeta.")
+    resolved_source = _is_path_canonical(source)
+    resolved_dest = _is_path_canonical(destination)
+    
+    if is_within_directory(resolved_source, resolved_dest.parent):
+        raise UnsafePathError("Colisión de rutas detectada en el sandbox.")
+    
     if _win_has_system_attributes(source) or not source.is_file(): raise UnsafePathError("Aislamiento denegado: atributo de sistema o no regular.")
     ensure_safe_to_modify(destination.parent)
     
-    if not _is_file_exclusive(source): raise IOError("El archivo origen está siendo modificado o está bloqueado.")
+    # Chequeo de exclusividad antes de abrir
+    if not _is_file_exclusive(source): raise IOError("El archivo origen está bloqueado por otro proceso.")
     
     with open(source, "rb") as f:
         stat_orig = os.fstat(f.fileno())

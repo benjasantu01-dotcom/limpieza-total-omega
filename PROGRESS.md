@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 70 | 4 | 26 | 4 | 72 |
-| 2026-11-07 | 106 | 10 | 37 | 6 | 169 |
+| 2026-11-06 | 70 | 4 | 26 | 4 | 68 |
+| 2026-11-07 | 108 | 10 | 38 | 6 | 170 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **38**
+- seguridad defensiva: **33**
 - manejo de errores y validación de entradas: **32**
-- seguridad defensiva: **31**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
 - `diskreport.py`: **19**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
+- `safety.py`: **16**
 - `memory.py`: **15**
-- `safety.py`: **15**
 - `scanner.py`: **15**
 - `settings.py`: **13**
 - `assistant.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T14:05:01` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_within_directory` incorporando la resolución del `parent` mediante `_get_final_path_normalized` para asegurar que la relación de parentesco se valide sobre las rutas físicas reales, evitando que el uso de enlaces simbólicos o junctions en el directorio base permita evadir las restricciones de alcance.
+- `2026-11-07T14:03:39` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita para evitar colisiones de rutas fuera de la carpeta designada (usando `is_within_directory` sobre la ruta resuelta) y se centralizó el chequeo de exclusividad antes de la apertura del archivo para prevenir el acceso a archivos en uso que no fueron correctamente bloqueados por el chequeo previo.
 - `2026-11-07T13:55:14` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva de `organizer.py` implementando una validación estricta de la ruta destino en `stage_for_review` y `delete_reviewed`, asegurando mediante `ensure_safe_to_modify` que cualquier operación de escritura sea validada por el módulo de seguridad central, evitando el uso de condiciones booleanas que podrían ocultar errores de permisos.
 - `2026-11-07T13:54:58` **memory.py** (seguridad defensiva): Se ha centralizado y robustecido la validación de seguridad en `trim_working_set` eliminando la duplicación de lógica de resolución de rutas y aplicando una validación más estricta sobre la integridad del proceso antes de intentar cualquier operación de sistema, utilizando `is_protected_path` de forma consistente con las reglas de seguridad.
 - `2026-11-07T13:53:17` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo mediante la implementación de `_is_finite_numeric` para centralizar la validación de integridad numérica y prevenir errores de lógica en el pipeline, además de blindar la inicialización del objeto `SystemMetrics` mediante una validación estricta de tipos antes de invocar `__post_init__`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T13:03:53` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de lectura en el escaneo profundo mediante la captura de excepciones específicas en `_safe_stat`, evitando que fallos transitorios en atributos de metadatos detengan el proceso de recolección de métricas.
 - `2026-11-07T13:03:39` **browser.py** (robustez ante casos límite): Se ha añadido una validación estricta en `_is_target_valid` para detectar si el directorio objetivo de caché es un archivo (o un punto de reparse que apunte a un archivo) en lugar de un directorio, evitando así posibles errores de manipulación de rutas en sistemas con estructuras de perfiles dañadas o redirecciones inesperadas.
 - `2026-11-07T13:02:42` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemContext.ingest` y `build_context` para manejar casos límite de datos de entrada mal formados, garantizando que si una fuente (como una configuración corrupta) intenta inyectar tipos de datos inesperados (listas, diccionarios profundos o rutas), el asistente ignore esos campos en lugar de propagar errores o bloquear la operación.
-- `2026-11-07T12:54:08` **settings.py** (rendimiento): Optimicé el rendimiento de `_Validators._is_safe_path` y `_Validators._run_safety_checks` añadiendo un cache `lru_cache` al primero y reutilizando el chequeo de la cadena de padres en el segundo, reduciendo significativamente las llamadas al sistema de archivos en operaciones repetidas.
-- `2026-11-07T12:53:29` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la normalización de rutas fuera del bucle de heurísticas mediante el uso de `seen_normcase` en `Scanner.process_entry` y consolidando las comprobaciones de extensión para evitar múltiples llamadas a `os.path.splitext` y accesos innecesarios al sistema de archivos.

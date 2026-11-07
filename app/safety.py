@@ -911,7 +911,7 @@ def _get_final_path_normalized(p: Path) -> Path:
 
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Verifica relación de parentesco entre directorios."""
+    """Verifica relación de parentesco entre directorios utilizando rutas físicas reales."""
     if child is None or parent is None: return False
     try:
         c_path = normalize(child)
