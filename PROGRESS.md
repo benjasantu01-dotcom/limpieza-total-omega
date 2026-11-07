@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 67
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 229
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 126 | 12 | 50 | 14 | 134 |
-| 2026-11-07 | 47 | 7 | 17 | 2 | 95 |
+| 2026-11-06 | 124 | 12 | 49 | 14 | 133 |
+| 2026-11-07 | 50 | 7 | 17 | 2 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **36**
-- legibilidad y documentación: **36**
+- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **37**
 - seguridad defensiva: **34**
-- rendimiento: **29**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
 - `quarantine.py`: **21**
-- `memory.py`: **18**
+- `healthscore.py`: **20**
 - `diskreport.py`: **17**
+- `memory.py`: **17**
 - `scanner.py`: **15**
 - `settings.py`: **15**
+- `browser.py`: **14**
 - `safety.py`: **14**
-- `browser.py`: **13**
-- `assistant.py`: **11**
+- `assistant.py`: **12**
 - `branding.py`: **10**
 - `duplicates.py`: **7**
+- `startup.py`: **6**
 - `organizer.py`: **6**
-- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T07:17:26` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenimiento del código mediante la formalización de las reglas de negocio del escáner en una constante `SYSTEM_HIDDEN_FLAGS` y la extracción de la lógica de validación de entradas dentro de `DirectoryScanner`, aclarando el propósito de cada chequeo de seguridad.
+- `2026-11-07T07:16:42` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo la lógica de validación de claves en métodos privados (`_is_valid_metric_key`) y utilizando tipado más explícito, lo que facilita entender el flujo de datos sin alterar el comportamiento.
+- `2026-11-07T07:16:04` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `_is_registry_entry_safe` incorporando validaciones de tipo explícitas y chequeos de integridad ante datos malformados, asegurando que el parser no falle silenciosamente ni procese entradas corruptas provenientes de PowerShell.
 - `2026-11-07T06:57:40` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` encapsulando la verificación de `is_file_exclusive` dentro de un bloque `try/except` y añadiendo chequeos explícitos para rutas inexistentes antes de realizar operaciones de IO, mitigando riesgos de condiciones de carrera y excepciones no capturadas.
 - `2026-11-07T06:46:35` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo en `compute_score` mediante una validación explícita del estado de las métricas tras la validación interna, garantizando que el pipeline nunca procese valores que puedan haber mutado a estados inconsistentes o no finitos.
 - `2026-11-07T06:46:23` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) incorporando validaciones de entrada (`None`/`Path`) y manejos de excepciones más granulares para prevenir fallos silenciosos al procesar rutas inaccesibles, asegurando que el flujo de detección de duplicados no se interrumpa ante errores de E/S.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T04:54:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo `healthscore.py` al aplicar un esquema de validación estricto en el acceso a datos internos, impidiendo la inyección de tipos inesperados en los campos críticos de `SystemMetrics` mediante una validación explícita durante la mutación de atributos.
 - `2026-11-07T04:53:30` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_validate_root` para evitar ataques de directorio transversal (`path traversal`) al normalizar la ruta antes de validar que esté contenida, asegurando que `resolve()` no escape de restricciones y que `is_protected_path` sea invocado sobre una ruta absoluta y limpia.
 - `2026-11-07T04:45:18` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_is_target_valid` integrando `os.path.realpath` con `os.path.commonpath` para garantizar una comparación de rutas canónica y robusta contra ataques de escape de directorio (directory traversal), asegurando que los objetivos siempre residan estrictamente dentro del sandbox definido.
-- `2026-11-07T04:44:22` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la ingesta de datos externos añadiendo una validación explícita para asegurar que los datos fuente no contengan objetos `pathlib.Path` o tipos complejos inusuales, previniendo así posibles ataques de inyección de objetos o manipulación de rutas a través de diccionarios malformados.
-- `2026-11-07T04:35:35` **settings.py** (robustez ante casos límite): Se añadió una validación explícita de `path.exists()` y `path.is_dir()` antes de intentar leer el archivo de configuración en `_read_and_parse_json` para robustecer la resiliencia ante condiciones de carrera donde el archivo pueda desaparecer o ser reemplazado por un directorio entre la comprobación inicial y la apertura.
-- `2026-11-07T04:34:48` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `_is_readable` y `_is_valid_file_path` agregando un manejo explícito de rutas que contienen caracteres nulos, evitando excepciones de bajo nivel en el sistema de archivos al interactuar con rutas malformadas.

@@ -437,19 +437,15 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(row, dict):
                 continue
             
-            raw_name: Optional[str] = row.get("Name")
-            raw_cmd: Optional[str] = row.get("Value")
+            raw_name = row.get("Name")
+            raw_cmd = row.get("Value")
             
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
             
-            n, c = raw_name.strip(), raw_cmd.strip()
-            if not n or not c:
-                continue
-            
-            if _is_registry_entry_safe(n, c, seen_commands):
-                seen_commands.add(c)
-                parsed_entries.append(StartupEntry(name=n, command=c, source=source))
+            if _is_registry_entry_safe(raw_name, raw_cmd, seen_commands):
+                seen_commands.add(raw_cmd.strip())
+                parsed_entries.append(StartupEntry(name=raw_name.strip(), command=raw_cmd.strip(), source=source))
             
     except (csv.Error, OSError, ValueError, TypeError, AttributeError):
         return parsed_entries

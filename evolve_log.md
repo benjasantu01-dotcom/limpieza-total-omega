@@ -462,3 +462,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-07T07:06:53` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-07T07:06:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T07:06:53` Corrida terminada. Total usado hoy: 168.
+- `2026-11-07T07:15:35` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-07T07:16:04` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` y `_is_registry_entry_safe` incorporando validaciones de tipo explícitas y chequeos de integridad ante datos malformados, asegurando que el parser no falle silenciosamente ni procese entradas corruptas provenientes de PowerShell.
+- `2026-11-07T07:16:42` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo la lógica de validación de claves en métodos privados (`_is_valid_metric_key`) y utilizando tipado más explícito, lo que facilita entender el flujo de datos sin alterar el comportamiento.
+- `2026-11-07T07:17:15` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-07T07:17:26` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenimiento del código mediante la formalización de las reglas de negocio del escáner en una constante `SYSTEM_HIDDEN_FLAGS` y la extracción de la lógica de validación de entradas dentro de `DirectoryScanner`, aclarando el propósito de cada chequeo de seguridad.
+- `2026-11-07T07:17:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T07:17:26` Corrida terminada. Total usado hoy: 172.

@@ -463,13 +463,14 @@ class SystemContext:
         """Verifica que la calificación (grade) no sea una ruta o entrada peligrosa."""
         return _ensure_safe_text(self.grade) if (self.grade and len(self.grade) > 0) else True
 
+    def _is_valid_metric_key(self, key: str) -> bool:
+        """Verifica si la clave es una métrica válida del sistema."""
+        return key in _VALID_METRIC_KEYS
+
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Extrae, valida y convierte un valor específico desde la fuente externa."""
         try:
-            if isinstance(source, dict):
-                val = source.get(key)
-            else:
-                val = _get_safe_attr(source, key)
+            val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
             
             if val is None or isinstance(val, (bool, dict, list, tuple, Path)) or callable(val):
                 return None
@@ -477,9 +478,7 @@ class SystemContext:
             valid_val = _is_valid_numeric_update(val, spec)
             if valid_val is None: return None
             
-            if spec.type_hint is int:
-                return int(valid_val)
-            return float(valid_val)
+            return int(valid_val) if spec.type_hint is int else float(valid_val)
         except (Exception, ValueError, TypeError):
             return None
 
@@ -497,10 +496,7 @@ class SystemContext:
 
     def _validate_keys_safe(self, source: dict[str, Any]) -> bool:
         """Asegura que ninguna clave de entrada sea una ruta sensible del sistema."""
-        for k in source.keys():
-            if not isinstance(k, str) or is_protected_path(k):
-                return False
-        return True
+        return all(isinstance(k, str) and not is_protected_path(k) for k in source.keys())
 
     def _extract_grade(self, source: Any) -> str:
         """Extrae el campo 'grade' de una fuente de datos dict u objeto."""
@@ -511,15 +507,13 @@ class SystemContext:
 
     def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
         """Procesa y sanitiza todas las métricas recibidas de una fuente externa."""
-        updates = {}
         if isinstance(source, dict) and not self._validate_keys_safe(source):
             return {}
 
-        for k in _VALID_METRIC_KEYS:
-            spec = _VALIDATORS[k]
-            val = self._apply_field(source, k, spec)
-            if val is not None:
-                updates[k] = val
+        updates = {
+            k: val for k in _VALID_METRIC_KEYS 
+            if (val := self._apply_field(source, k, _VALIDATORS[k])) is not None
+        }
         
         if cleaned_grade := self._extract_grade(source):
             updates["grade"] = cleaned_grade
@@ -533,19 +527,17 @@ class SystemContext:
         if isinstance(source, Path): return False
         if isinstance(source, (dict, list, tuple)):
             if isinstance(source, dict):
-                for k in source.keys():
-                    if not isinstance(k, str) or is_protected_path(k): return False
+                if not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
+                    return False
             return not _is_input_too_deep_or_complex(source)
         return True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
-        for k, v in updates.items():
-            if k in _VALID_METRIC_KEYS:
-                if _is_safe_numeric_context(v):
-                    setattr(self, k, v)
-            elif k == "grade" and isinstance(v, str):
-                setattr(self, k, v)
+        for key, value in updates.items():
+            if self._is_valid_metric_key(key) or key == "grade":
+                setattr(self, key, value)
+        
         self.analyzed = True
         for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
             self.__dict__.pop(attr, None)

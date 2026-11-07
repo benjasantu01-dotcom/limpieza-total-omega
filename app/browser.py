@@ -84,11 +84,13 @@ class DirectoryScanner:
     def __init__(self, context: ScanContext) -> None:
         self.ctx = context
 
+    def _is_restricted_name(self, name: str) -> bool:
+        """Verifica nombres de archivo reservados o bloqueados."""
+        return any(ord(c) < 32 for c in name) or name.lower() in self.ctx.never_touch_lower
+
     def _should_stop_traversal(self, entry: os.DirEntry, depth: int) -> bool:
         """Determina si una entrada debe ignorarse por límites de seguridad o profundidad."""
-        if not entry.name or any(ord(c) < 32 for c in entry.name):
-            return True
-        if entry.name.lower() in self.ctx.never_touch_lower:
+        if not entry.name or self._is_restricted_name(entry.name):
             return True
         if depth > self.ctx.max_depth:
             return True
@@ -132,9 +134,7 @@ class DirectoryScanner:
         return 0
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
-        """
-        Distribuye el procesamiento de entradas según su tipo (directorio o archivo).
-        """
+        """Distribuye el procesamiento según el tipo de entrada."""
         if self._should_stop_traversal(entry, depth):
             return total_bytes
             
@@ -148,15 +148,8 @@ class DirectoryScanner:
         return total_bytes
 
     def get_size(self, root_path: str, depth: int = 0) -> ScanResult:
-        """
-        Calcula recursivamente el tamaño en bytes del directorio.
-        Evita ciclos de directorios usando inodos (dev, ino) y prohíbe el
-        seguimiento de puntos de reparse.
-        """
-        if not isinstance(root_path, str) or not root_path:
-            return ScanResult(0, False)
-        
-        if not self._is_path_allowed(root_path):
+        """Calcula el tamaño de un directorio evitando ciclos y reparse points."""
+        if not isinstance(root_path, str) or not root_path or not self._is_path_allowed(root_path):
             return ScanResult(0, False)
             
         if depth > self.ctx.max_depth:
@@ -164,8 +157,9 @@ class DirectoryScanner:
 
         try:
             st = os.lstat(root_path)
-            is_reparse = (st.st_file_attributes & FileAttributes.REPARSE_POINT) if hasattr(st, 'st_file_attributes') else False
-            if self.ctx.is_junction(root_path) or is_reparse:
+            # Extracción de atributos de reparse si está disponible
+            attrs = getattr(st, 'st_file_attributes', 0)
+            if self.ctx.is_junction(root_path) or (attrs & FileAttributes.REPARSE_POINT):
                 return ScanResult(0, True)
             dir_id = (st.st_dev, st.st_ino)
         except (OSError, PermissionError, FileNotFoundError):
