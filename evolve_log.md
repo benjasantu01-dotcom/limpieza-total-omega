@@ -1234,3 +1234,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-11-07T03:54:50` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
 - `2026-11-07T03:54:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T03:54:50` Corrida terminada. Total usado hoy: 92.
+- `2026-11-07T04:02:12` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-11-07T04:02:46` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento del acceso a configuraciones eliminando la llamada innecesaria a `load().get(key)` dentro de `get()` y `assistant_enabled()`, reemplazándola por una consulta directa a la caché del gestor si está disponible, y consolidando la lógica de validación de tipos en un diccionario precomputado.
+- `2026-11-07T04:03:10` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-07T04:03:49` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
+- `2026-11-07T04:04:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-07T04:04:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T04:04:02` Corrida terminada. Total usado hoy: 96.

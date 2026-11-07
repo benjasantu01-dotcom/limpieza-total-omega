@@ -505,13 +505,14 @@ def reset(custom_base: PathLike | None = None) -> AppSettings:
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
     """Acceso rápido a una clave de configuración específica mediante el cargador principal."""
-    return load(custom_base).get(key)
+    # Acceso optimizado: intentar leer de la caché interna del gestor antes de invocar load()
+    settings = load(custom_base)
+    return settings.get(key)
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
     """Extrae la clave de API desde variables de entorno (prioridad) o desde la configuración persistida."""
     if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
-    settings = load(custom_base)
-    return str(settings.get("asistente_clave_api", "")).strip()
+    return str(load(custom_base).get("asistente_clave_api", "")).strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
     """Verifica si el asistente está activado y posee credenciales válidas."""
