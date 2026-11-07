@@ -6,46 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 68
+- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 2 | 0 | 0 | 0 | 0 |
-| 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 41 | 6 | 14 | 2 | 89 |
+| 2026-11-06 | 131 | 13 | 53 | 14 | 137 |
+| 2026-11-07 | 42 | 7 | 14 | 2 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **38**
 - seguridad defensiva: **34**
 - rendimiento: **31**
-- manejo de errores y validación de entradas: **30**
+- manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
 - `quarantine.py`: **21**
-- `memory.py`: **19**
+- `healthscore.py`: **20**
+- `memory.py`: **18**
 - `diskreport.py`: **17**
 - `scanner.py`: **16**
 - `safety.py`: **15**
 - `settings.py`: **15**
 - `assistant.py`: **12**
 - `browser.py`: **12**
-- `branding.py`: **9**
-- `duplicates.py`: **7**
+- `branding.py`: **10**
+- `duplicates.py`: **6**
 - `organizer.py`: **6**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T06:38:01` **branding.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y validación de parámetros en las funciones `save_logo_svg` y `draw_logo` mediante la captura explícita de errores de tipo y cálculo, garantizando que el estado interno no se corrompa ante entradas inesperadas.
 - `2026-11-07T05:16:14` **settings.py** (seguridad defensiva): Se endureció la validación en `_is_file_secure_to_read` añadiendo una comprobación explícita para evitar que el archivo de configuración sea un enlace simbólico o un reparse point, además de limitar los permisos de acceso a nivel de sistema de archivos para asegurar que solo el dueño pueda leer el archivo (impidiendo ataques de lectura mediante enlaces simbólicos o permisos laxos).
 - `2026-11-07T05:14:37` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de `_get_canonical_path` para evitar ataques de resolución de rutas (path traversal) y normalización inconsistente, asegurando que `_is_safe_entry` valide contra la raíz real incluso en presencia de caracteres especiales.
 - `2026-11-07T05:05:26` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` para mitigar condiciones de carrera TOCTOU, asegurando que el archivo origen no sea un punto de unión (junction) o enlace simbólico inmediatamente antes de la lectura, añadiendo una capa de validación adicional en el momento crítico de la transferencia.
@@ -60,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T04:13:51` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores NaN/infinitos y tipos inesperados en los constructores y métodos de acceso de `SystemMetrics` para garantizar que el pipeline de análisis nunca falle silenciosamente o produzca puntuaciones inválidas ante datos corruptos o de red/disco inesperados.
 - `2026-11-07T04:13:15` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y las funciones auxiliares ante archivos inexistentes o con permisos denegados durante la iteración, asegurando que `_safe_stat` y la lógica de escaneo manejen correctamente fallos al acceder a `st_ino` (común en sistemas de archivos virtuales o unidades de red), evitando interrupciones abruptas del análisis.
 - `2026-11-07T04:12:49` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `DirectoryScanner._is_path_allowed` y `directory_size` validando explícitamente que la ruta resuelta exista antes de realizar operaciones de normatización, evitando excepciones innecesarias ante sistemas de archivos volátiles o inaccesibles.
-- `2026-11-07T04:02:46` **settings.py** (rendimiento): Optimicé el rendimiento del acceso a configuraciones eliminando la llamada innecesaria a `load().get(key)` dentro de `get()` y `assistant_enabled()`, reemplazándola por una consulta directa a la caché del gestor si está disponible, y consolidando la lógica de validación de tipos en un diccionario precomputado.

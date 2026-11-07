@@ -349,14 +349,11 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         dest_path = Path(destination).resolve()
-        # Verificación estricta de seguridad
         if not is_safe_to_modify(dest_path):
             return None
-            
         parent = dest_path.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-            
         dest_path.write_text(logo_svg(int(size)), encoding="utf-8")
         return dest_path
     except (OSError, PermissionError, TypeError, ValueError, AttributeError): 
@@ -402,8 +399,6 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         params = _get_stripe_params(scale, n)
         if not params: return
         by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + SHIELD_CENTER_X * scale
-        
-        # Iteración optimizada sobre segmentos de color pre-calculados
         for seg in get_gradient_segments(n):
             color = seg.hex_color
             for i in range(seg.start_index, seg.end_index):
@@ -424,13 +419,16 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     """Renderiza la estructura vectorial compleja del escudo en un Canvas dado."""
     if canvas is None: return
     try:
-        s = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
-        poly = _get_scaled_poly(s, float(canvas_x), float(canvas_y))
+        val_size = float(size)
+        val_x = float(canvas_x)
+        val_y = float(canvas_y)
+        s = max(_MIN_SCALE, min(_MAX_SCALE, val_size / SHIELD_WIDTH))
+        poly = _get_scaled_poly(s, val_x, val_y)
         if not poly: return
-        canvas.create_oval(canvas_x+(SHIELD_CENTER_X-75)*s, canvas_y+(58-75)*s, canvas_x+(SHIELD_CENTER_X+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
+        canvas.create_oval(val_x+(SHIELD_CENTER_X-75)*s, val_y+(58-75)*s, val_x+(SHIELD_CENTER_X+75)*s, val_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
-        _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
-        _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, s)
+        _draw_shield_stripes(canvas, val_x, val_y, s)
+        _draw_shield_icon_decorations(canvas, val_x, val_y, s)
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
