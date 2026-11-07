@@ -184,19 +184,19 @@ def app_title() -> str:
 
 def color(name: Optional[str]) -> ColorHex: 
     """Recupera un valor de la paleta por nombre, con fallback a gris neutro."""
-    if isinstance(name, str) and name in PALETTE:
+    if name is not None and isinstance(name, str) and name in PALETTE:
         return PALETTE[name]
     return "#808080"
 
 def font_size(name: Optional[str]) -> int: 
     """Obtiene el tamaño de fuente asociado a un estilo de texto."""
-    if isinstance(name, str) and name in FONT_SIZES:
+    if name is not None and isinstance(name, str) and name in FONT_SIZES:
         return FONT_SIZES[name]
     return UI_CONFIG.body_size
 
 def icon(section: Optional[str]) -> str: 
     """Obtiene el glifo Unicode asociado a un nombre de sección."""
-    if isinstance(section, str) and section in ICONS:
+    if section is not None and isinstance(section, str) and section in ICONS:
         return ICONS[section]
     return "\u2022"
 
