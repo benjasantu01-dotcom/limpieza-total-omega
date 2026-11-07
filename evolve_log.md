@@ -1307,3 +1307,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-07T04:55:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-07T04:55:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T04:55:13` Corrida terminada. Total usado hoy: 116.
+- `2026-11-07T05:03:15` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-07T05:03:53` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-07T05:04:19` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-07T05:05:26` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_atomic_isolate_file` para mitigar condiciones de carrera TOCTOU, asegurando que el archivo origen no sea un punto de unión (junction) o enlace simbólico inmediatamente antes de la lectura, añadiendo una capa de validación adicional en el momento crítico de la transferencia.
+- `2026-11-07T05:05:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-07T05:05:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T05:05:46` Corrida terminada. Total usado hoy: 120.

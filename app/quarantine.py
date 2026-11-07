@@ -698,6 +698,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     _check_path_syntax_integrity(destination)
     _check_path_syntax_integrity(source)
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
+    # Refuerzo preventivo: verificar estado de enlaces antes de la apertura
+    _check_for_reparse_points(source)
+    
     if _is_path_canonical(source.parent) == _is_path_canonical(destination.parent): raise UnsafePathError("Origen y destino colisionan en la misma carpeta.")
     if _win_has_system_attributes(source) or not source.is_file(): raise UnsafePathError("Aislamiento denegado: atributo de sistema o no regular.")
     ensure_safe_to_modify(destination.parent)

@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 14 | 0 | 2 | 1 | 21 |
+| 2026-11-05 | 14 | 0 | 2 | 1 | 17 |
 | 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 38 | 5 | 12 | 2 | 59 |
+| 2026-11-07 | 39 | 5 | 13 | 2 | 61 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **38**
+- seguridad defensiva: **32**
 - rendimiento: **31**
-- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
+- `quarantine.py`: **21**
 - `memory.py`: **20**
-- `quarantine.py`: **20**
 - `diskreport.py`: **19**
 - `safety.py`: **16**
 - `settings.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T05:05:26` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` para mitigar condiciones de carrera TOCTOU, asegurando que el archivo origen no sea un punto de unión (junction) o enlace simbólico inmediatamente antes de la lectura, añadiendo una capa de validación adicional en el momento crítico de la transferencia.
 - `2026-11-07T04:54:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo `healthscore.py` al aplicar un esquema de validación estricto en el acceso a datos internos, impidiendo la inyección de tipos inesperados en los campos críticos de `SystemMetrics` mediante una validación explícita durante la mutación de atributos.
 - `2026-11-07T04:53:30` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_validate_root` para evitar ataques de directorio transversal (`path traversal`) al normalizar la ruta antes de validar que esté contenida, asegurando que `resolve()` no escape de restricciones y que `is_protected_path` sea invocado sobre una ruta absoluta y limpia.
 - `2026-11-07T04:45:18` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_is_target_valid` integrando `os.path.realpath` con `os.path.commonpath` para garantizar una comparación de rutas canónica y robusta contra ataques de escape de directorio (directory traversal), asegurando que los objetivos siempre residan estrictamente dentro del sandbox definido.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T04:02:46` **settings.py** (rendimiento): Optimicé el rendimiento del acceso a configuraciones eliminando la llamada innecesaria a `load().get(key)` dentro de `get()` y `assistant_enabled()`, reemplazándola por una consulta directa a la caché del gestor si está disponible, y consolidando la lógica de validación de tipos en un diccionario precomputado.
 - `2026-11-07T03:54:27` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` integrando el uso de `lru_cache` para la resolución de rutas normalizadas y evitando conversiones redundantes de `Path` a `str` dentro del bucle de validación de extensiones críticas, reduciendo drásticamente la carga de CPU durante escaneos masivos.
 - `2026-11-07T03:53:03` **quarantine.py** (rendimiento): Se optimizó el rendimiento de `purge_all` transformando la búsqueda de ítems en el manifiesto de una operación lineal O(N*M) a una búsqueda O(1) mediante el uso de un diccionario (hash map) para el mapeo de nombres de archivo, reduciendo la carga de I/O y CPU durante la limpieza masiva.
-- `2026-11-07T03:46:40` **memory.py** (rendimiento): Optimizado el rendimiento de `_iter_process_memory` al pre-asignar el búfer de ruta y evitar llamadas redundantes de `Path.resolve()` dentro del ciclo, reduciendo la carga de I/O en sistemas con gran cantidad de procesos.
