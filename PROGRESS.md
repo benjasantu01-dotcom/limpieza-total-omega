@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **169** (33.5% de aceptación)
+- Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 67
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 111 | 11 | 44 | 9 | 129 |
-| 2026-11-07 | 58 | 7 | 23 | 3 | 109 |
+| 2026-11-06 | 110 | 11 | 43 | 9 | 127 |
+| 2026-11-07 | 61 | 7 | 23 | 3 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **37**
-- seguridad defensiva: **31**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **33**
+- seguridad defensiva: **30**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `quarantine.py`: **20**
 - `healthscore.py`: **18**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
 - `memory.py`: **16**
 - `safety.py`: **15**
 - `scanner.py`: **14**
 - `settings.py`: **14**
-- `browser.py`: **13**
+- `browser.py`: **14**
+- `branding.py`: **11**
 - `assistant.py`: **11**
-- `branding.py`: **10**
 - `duplicates.py`: **7**
 - `organizer.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T08:38:29` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escáner (`walk_files`) añadiendo un manejo de excepciones más granular ante archivos bloqueados o inaccesibles, evitando que una sola entrada con permisos denegados interrumpa el recorrido completo de la estructura de archivos.
+- `2026-11-07T08:38:00` **browser.py** (robustez ante casos límite): Se introdujo una verificación de integridad adicional en `_is_target_valid` para validar que el `base_norm` sea un directorio existente antes de calcular `os.path.commonpath`, evitando errores en casos límite donde la ruta base calculada desde `LOCALAPPDATA` podría ser inválida o inaccesible, fortaleciendo la robustez del escaneo ante entornos de usuario atípicos.
+- `2026-11-07T08:37:36` **branding.py** (robustez ante casos límite): Se ha añadido validación de tipo y valor en `save_logo_svg` para prevenir comportamientos inesperados ante parámetros inválidos, además de encapsular la conversión de `size` en un bloque de control robusto que asegura que `logo_svg` siempre reciba un entero válido dentro del rango permitido, evitando excepciones de formato en tiempo de ejecución.
 - `2026-11-07T08:28:41` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` reduciendo la complejidad del script de PowerShell y minimizando las llamadas innecesarias al sistema mediante un filtrado previo de las claves del registro, evitando procesar exhaustivamente propiedades que no contienen ejecutables (como las de metadatos de PSObject).
 - `2026-11-07T07:48:04` **startup.py** (legibilidad y documentación): Documenté el propósito de los métodos privados y las propiedades de la clase `StartupEntry` utilizando docstrings más descriptivos, clarificando la distinción entre las tareas de limpieza, resolución de rutas y validación de seguridad para mejorar la mantenibilidad del código.
 - `2026-11-07T07:47:53` **settings.py** (legibilidad y documentación): He mejorado la documentación del sistema de validación añadiendo docstrings que explican el propósito de cada método de `_Validators`, eliminando la ambigüedad sobre qué hace cada normalizador y fortaleciendo la legibilidad técnica sin alterar el comportamiento.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T07:16:42` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo la lógica de validación de claves en métodos privados (`_is_valid_metric_key`) y utilizando tipado más explícito, lo que facilita entender el flujo de datos sin alterar el comportamiento.
 - `2026-11-07T07:16:04` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `_is_registry_entry_safe` incorporando validaciones de tipo explícitas y chequeos de integridad ante datos malformados, asegurando que el parser no falle silenciosamente ni procese entradas corruptas provenientes de PowerShell.
 - `2026-11-07T06:57:40` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` encapsulando la verificación de `is_file_exclusive` dentro de un bloque `try/except` y añadiendo chequeos explícitos para rutas inexistentes antes de realizar operaciones de IO, mitigando riesgos de condiciones de carrera y excepciones no capturadas.
-- `2026-11-07T06:46:35` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo en `compute_score` mediante una validación explícita del estado de las métricas tras la validación interna, garantizando que el pipeline nunca procese valores que puedan haber mutado a estados inconsistentes o no finitos.
-- `2026-11-07T06:46:23` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) incorporando validaciones de entrada (`None`/`Path`) y manejos de excepciones más granulares para prevenir fallos silenciosos al procesar rutas inaccesibles, asegurando que el flujo de detección de duplicados no se interrumpa ante errores de E/S.
-- `2026-11-07T06:45:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` capturando errores específicos en `entry.stat()` y `entry.is_dir/file` para evitar que el escaneo completo aborte prematuramente ante archivos bloqueados o inaccesibles, asegurando que el reporte siga procesando el resto del disco.

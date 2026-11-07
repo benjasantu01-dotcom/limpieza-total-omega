@@ -318,6 +318,10 @@ def _is_target_valid(target: Optional[Path], base_norm: str, kernel: Optional[ct
         if any(c in target.name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target.name):
             return False
         
+        # Validación extra de integridad para la ruta base
+        if not os.path.exists(base_norm):
+            return False
+            
         target_norm = os.path.realpath(str(target))
         return os.path.commonpath([target_norm, base_norm]) == base_norm
     except (OSError, PermissionError, RuntimeError, ValueError):

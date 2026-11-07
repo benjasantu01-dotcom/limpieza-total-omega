@@ -555,3 +555,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-07T08:29:10` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemContext._apply_field
 - `2026-11-07T08:29:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T08:29:10` Corrida terminada. Total usado hoy: 200.
+- `2026-11-07T08:37:04` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-07T08:37:36` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido validación de tipo y valor en `save_logo_svg` para prevenir comportamientos inesperados ante parámetros inválidos, además de encapsular la conversión de `size` en un bloque de control robusto que asegura que `logo_svg` siempre reciba un entero válido dentro del rango permitido, evitando excepciones de formato en tiempo de ejecución.
+- `2026-11-07T08:38:00` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad adicional en `_is_target_valid` para validar que el `base_norm` sea un directorio existente antes de calcular `os.path.commonpath`, evitando errores en casos límite donde la ruta base calculada desde `LOCALAPPDATA` podría ser inválida o inaccesible, fortaleciendo la robustez del escaneo ante entornos de usuario atípicos.
+- `2026-11-07T08:38:29` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejora la robustez del escáner (`walk_files`) añadiendo un manejo de excepciones más granular ante archivos bloqueados o inaccesibles, evitando que una sola entrada con permisos denegados interrumpa el recorrido completo de la estructura de archivos.
+- `2026-11-07T08:38:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-07T08:38:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T08:38:35` Corrida terminada. Total usado hoy: 204.
