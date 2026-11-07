@@ -383,10 +383,10 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     if isinstance(val, Path): return True
     if isinstance(val, (list, tuple)):
         if len(val) > _MAX_COLLECTION_SIZE: return True
-        return any(isinstance(i, (list, tuple, dict)) or isinstance(i, Path) and _is_input_too_deep_or_complex(i, depth + 1) for i in val)
+        return any(isinstance(i, (list, tuple, dict)) or (isinstance(i, Path) or _is_input_too_deep_or_complex(i, depth + 1)) for i in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return True
-        return any(isinstance(v, (list, tuple, dict)) or isinstance(v, Path) and _is_input_too_deep_or_complex(v, depth + 1) for v in val.values())
+        return any(isinstance(v, (list, tuple, dict)) or (isinstance(v, Path) or _is_input_too_deep_or_complex(v, depth + 1)) for v in val.values())
     return True
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
@@ -472,6 +472,7 @@ class SystemContext:
         try:
             val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
             
+            # Validación estricta para evitar objetos complejos o tipos no permitidos
             if val is None or isinstance(val, (bool, dict, list, tuple, Path)) or callable(val):
                 return None
             
