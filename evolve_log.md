@@ -924,3 +924,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-07T12:33:24` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, wrapper
 - `2026-11-07T12:33:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T12:33:24` Corrida terminada. Total usado hoy: 296.
+- `2026-11-07T12:41:25` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-07T12:41:57` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `_iter_process_memory` sustituyendo el buffer de nombres `path_buf` compartido por un acceso local más eficiente y mejoré el rendimiento del filtrado de procesos evitando llamadas redundantes a `is_protected_path` al validar la existencia del handle antes de la resolución de nombre.
+- `2026-11-07T12:42:23` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-07T12:43:11` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: He mejorado el rendimiento del módulo mediante la implementación de un caché de resultados para `_is_file_in_use_by_system`, reduciendo la cantidad de llamadas costosas a `ctypes` y al sistema de archivos mediante el uso de la tupla de metadatos del archivo (dispositivo, inodo y tiempo de modificación) como clave de caché.
+- `2026-11-07T12:43:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-07T12:43:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T12:43:15` Corrida terminada. Total usado hoy: 300.
