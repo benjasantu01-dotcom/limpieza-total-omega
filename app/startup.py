@@ -462,12 +462,13 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
         return []
     
     keys_formatted: str = ", ".join([f"'{k}'" for k in keys])
+    # Optimizamos el script: filtra propiedades de metadatos (PS*) directamente en PowerShell
     ps_script: str = f"""
     $ErrorActionPreference = 'SilentlyContinue'
     foreach ($path in @({keys_formatted})) {{
         $item = Get-ItemProperty -LiteralPath $path -ErrorAction SilentlyContinue
         if ($item) {{
-            $item.PSObject.Properties | Where-Object {{ $_.Name -ne 'PSPath' -and $_.Name -ne 'PSParentPath' -and $_.Name -ne 'PSChildName' -and $_.Name -ne 'PSDrive' -and $_.Name -ne 'PSProvider' }} | 
+            $item.PSObject.Properties | Where-Object {{ $_.MemberType -eq 'NoteProperty' -and $_.Name -notmatch '^PS' }} | 
             Select-Object @{{Name='Name';Expression={{$_.Name}}}}, @{{Name='Value';Expression={{$_.Value}}}}
         }}
     }} | ConvertTo-Csv -NoTypeInformation

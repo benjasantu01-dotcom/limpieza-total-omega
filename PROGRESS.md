@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **169** (33.5% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 113 | 11 | 45 | 9 | 130 |
-| 2026-11-07 | 57 | 7 | 20 | 3 | 109 |
+| 2026-11-06 | 111 | 11 | 44 | 9 | 129 |
+| 2026-11-07 | 58 | 7 | 23 | 3 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **37**
-- seguridad defensiva: **33**
+- seguridad defensiva: **31**
 - robustez ante casos límite: **30**
-- rendimiento: **25**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
-- `healthscore.py`: **19**
-- `diskreport.py`: **17**
+- `healthscore.py`: **18**
+- `diskreport.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **15**
 - `scanner.py`: **14**
@@ -41,10 +41,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **10**
 - `duplicates.py`: **7**
 - `organizer.py`: **7**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T08:28:41` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` reduciendo la complejidad del script de PowerShell y minimizando las llamadas innecesarias al sistema mediante un filtrado previo de las claves del registro, evitando procesar exhaustivamente propiedades que no contienen ejecutables (como las de metadatos de PSObject).
 - `2026-11-07T07:48:04` **startup.py** (legibilidad y documentación): Documenté el propósito de los métodos privados y las propiedades de la clase `StartupEntry` utilizando docstrings más descriptivos, clarificando la distinción entre las tareas de limpieza, resolución de rutas y validación de seguridad para mejorar la mantenibilidad del código.
 - `2026-11-07T07:47:53` **settings.py** (legibilidad y documentación): He mejorado la documentación del sistema de validación añadiendo docstrings que explican el propósito de cada método de `_Validators`, eliminando la ambigüedad sobre qué hace cada normalizador y fortaleciendo la legibilidad técnica sin alterar el comportamiento.
 - `2026-11-07T07:47:21` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en los métodos de `Scanner` y el uso de `TYPE_CHECKING` para evitar dependencias circulares y clarificar las intenciones del diseño.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T06:46:35` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo en `compute_score` mediante una validación explícita del estado de las métricas tras la validación interna, garantizando que el pipeline nunca procese valores que puedan haber mutado a estados inconsistentes o no finitos.
 - `2026-11-07T06:46:23` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) incorporando validaciones de entrada (`None`/`Path`) y manejos de excepciones más granulares para prevenir fallos silenciosos al procesar rutas inaccesibles, asegurando que el flujo de detección de duplicados no se interrumpa ante errores de E/S.
 - `2026-11-07T06:45:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` capturando errores específicos en `entry.stat()` y `entry.is_dir/file` para evitar que el escaneo completo aborte prematuramente ante archivos bloqueados o inaccesibles, asegurando que el reporte siga procesando el resto del disco.
-- `2026-11-07T06:45:32` **browser.py** (manejo de errores y validación de entradas): Se mejora la robustez del escaneo mediante la validación explícita de `target` en `detect_profiles` y el uso de `pathlib.Path` para evitar errores de tipo en las operaciones de join, además de refinar las condiciones de filtrado en `_is_target_valid` para prevenir excepciones ante rutas inexistentes o inaccesibles.

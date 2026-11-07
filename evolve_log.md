@@ -547,3 +547,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-07T08:20:35` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-07T08:20:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T08:20:35` Corrida terminada. Total usado hoy: 196.
+- `2026-11-07T08:26:54` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-07T08:27:21` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-11-07T08:27:56` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-11-07T08:28:41` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_registry` reduciendo la complejidad del script de PowerShell y minimizando las llamadas innecesarias al sistema mediante un filtrado previo de las claves del registro, evitando procesar exhaustivamente propiedades que no contienen ejecutables (como las de metadatos de PSObject).
+- `2026-11-07T08:28:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-07T08:29:10` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemContext._apply_field
+- `2026-11-07T08:29:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T08:29:10` Corrida terminada. Total usado hoy: 200.
