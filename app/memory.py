@@ -52,20 +52,25 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 # Límite heurístico para filtrar procesos anómalos o ruido en mediciones.
 MAX_VALID_PROCESS_MEM_BYTES: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
-WIN32_PROCESS_QUERY_LIMITED: Final[int] = 0x1000
-WIN32_PROCESS_SET_QUOTA: Final[int] = 0x0100
-WIN32_PROCESS_QUERY_INFO: Final[int] = 0x0400
-TRIM_ACCESS_MASK: Final[int] = 0x00200000 | WIN32_PROCESS_SET_QUOTA | WIN32_PROCESS_QUERY_INFO
-
 INVALID_HANDLE_VALUE: Final[int] = -1
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
-
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 
 class WindowsAPI:
-    """Namespace para acceso controlado a librerías nativas Win32."""
+    """
+    Namespace que centraliza el acceso a librerías nativas Win32.
+    Define máscaras de acceso y métodos de API para operaciones de memoria.
+    """
     kernel32 = ctypes.windll.kernel32 if os.name == "nt" else None
     psapi = ctypes.windll.psapi if os.name == "nt" else None
+    
+    # Máscaras de acceso para OpenProcess
+    QUERY_LIMITED: Final[int] = 0x1000
+    QUERY_INFO: Final[int] = 0x0400
+    SET_QUOTA: Final[int] = 0x0100
+    
+    # Máscara combinada para operaciones de Trim
+    TRIM_ACCESS: Final[int] = 0x00200000 | SET_QUOTA | QUERY_INFO
 
 class CacheEntry(NamedTuple):
     """Caché temporal con timestamp para controlar la expiración de datos."""
@@ -107,7 +112,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 para contadores detallados de memoria de proceso (PSAPI)."""
+    """Contadores detallados de memoria de proceso usados por GetProcessMemoryInfo."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
@@ -376,7 +381,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     
     for pid in (p for p in pids[:count] if p > 0 and not _is_system_process(p)):
-        handle = _get_handle_for_safe_proc(pid, WIN32_PROCESS_QUERY_LIMITED, path_buf, get_mod_name)
+        handle = _get_handle_for_safe_proc(pid, WindowsAPI.QUERY_LIMITED, path_buf, get_mod_name)
         if handle is None: continue
         
         try:
@@ -446,7 +451,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         
     path_buf = ctypes.create_unicode_buffer(1024)
     # Validar acceso y seguridad antes de cualquier operación de trim
-    handle = _get_handle_for_safe_proc(target_pid, TRIM_ACCESS_MASK, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
+    handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if handle is None:
         return False, "Acceso denegado o proceso en zona restringida."
@@ -462,7 +467,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         WindowsAPI.kernel32.CloseHandle(handle)
 
     # Re-abrir handle para la acción final
-    final_handle = _get_process_handle(target_pid, TRIM_ACCESS_MASK)
+    final_handle = _get_process_handle(target_pid, WindowsAPI.TRIM_ACCESS)
     if not final_handle or final_handle == INVALID_HANDLE_VALUE:
         return False, "No se pudo re-abrir el proceso para la acción."
 

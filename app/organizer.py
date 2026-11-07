@@ -145,7 +145,11 @@ def _is_file_read_only(path: Path) -> bool:
     return bool(_get_win_attributes(path) & LIMITS.ATTRS.READONLY)
 
 def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
-    """Determina si una ruta es un punto de reparse para prevenir la entrada en bucles infinitos."""
+    """
+    Determina si una ruta es un punto de reparse (Junction/Symlink). 
+    Crucial para evitar que el escáner de archivos entre en ciclos infinitos 
+    o acceda a rutas de sistema montadas fuera de la jerarquía normal.
+    """
     try:
         if isinstance(entry, Path) and entry.is_symlink(): return True
         return bool(_get_win_attributes(entry) & LIMITS.ATTRS.JUNCTION)
@@ -176,7 +180,11 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _try_open_win_file(path: Path) -> bool:
-    """Intenta abrir un handle de archivo exclusivo para verificar si está bloqueado por otro proceso."""
+    """
+    Intenta abrir un handle de archivo exclusivo para verificar si está bloqueado por otro proceso.
+    Utiliza el acceso GENERIC_READ y el modo de compartición 0 (exclusivo) para disparar error
+    si el archivo ya está en uso.
+    """
     try:
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0x00000001, None, 3, 0x00000080, None
@@ -241,7 +249,10 @@ def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
         return False
 
 def _can_write_to_destination(dest_real: Path, size: int) -> bool:
-    """Verifica disponibilidad de espacio en disco mediante APIs de bajo nivel antes de iniciar el movimiento."""
+    """
+    Verifica disponibilidad de espacio en disco mediante APIs de bajo nivel (Win32 API) 
+    para asegurar que el movimiento no agote los recursos del sistema de archivos.
+    """
     try:
         target_dir = dest_real.parent if dest_real.exists() else dest_real
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK):
@@ -306,6 +317,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
     """
     Realiza un recorrido recursivo controlado del sistema de archivos, 
     registrando candidatos encontrados bajo las restricciones de profundidad impuestas.
+    Utiliza una caché de rutas visitadas para prevenir bucles de enlaces simbólicos.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
         

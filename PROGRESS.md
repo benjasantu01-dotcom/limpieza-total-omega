@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 85 | 6 | 32 | 7 | 94 |
-| 2026-11-07 | 79 | 8 | 30 | 3 | 160 |
+| 2026-11-06 | 83 | 6 | 31 | 6 | 94 |
+| 2026-11-07 | 81 | 8 | 31 | 4 | 160 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
-- robustez ante casos límite: **37**
+- legibilidad y documentación: **44**
+- robustez ante casos límite: **36**
 - seguridad defensiva: **33**
 - manejo de errores y validación de entradas: **32**
-- rendimiento: **20**
+- rendimiento: **19**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
 - `healthscore.py`: **18**
 - `diskreport.py`: **17**
-- `memory.py`: **14**
-- `settings.py`: **13**
+- `memory.py`: **15**
 - `browser.py`: **13**
 - `safety.py`: **13**
 - `scanner.py`: **13**
-- `assistant.py`: **12**
+- `settings.py`: **12**
+- `assistant.py`: **11**
 - `branding.py`: **10**
+- `organizer.py`: **8**
 - `startup.py`: **8**
-- `organizer.py`: **7**
 - `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T12:02:58` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados en funciones críticas de E/S, aclarando el propósito y los riesgos de las validaciones de seguridad de bajo nivel, además de estandarizar el uso de type hints en `_process_directory`.
+- `2026-11-07T12:02:29` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la API de bajo nivel envolviendo las constantes y funciones de Win32 en una clase `WindowsAPI` más robusta y añadiendo docstrings descriptivos a los tipos de datos complejos para clarificar su propósito.
 - `2026-11-07T11:53:03` **healthscore.py** (legibilidad y documentación): Documenté el propósito de los decoradores y las funciones de validación crítica en `healthscore.py` para clarificar la arquitectura del pipeline y mejorar la mantenibilidad técnica del módulo.
 - `2026-11-07T11:51:47` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en retornos de funciones, la simplificación de lógicas de filtrado en `_collect_candidates` y la clarificación de docstrings en las estrategias de hashing para hacer explícito el flujo de datos.
 - `2026-11-07T11:51:23` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en clases clave y la estandarización de las anotaciones de tipo para mejorar la trazabilidad del flujo de datos en el módulo `diskreport.py`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T09:31:24` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `quarantine.py` integrando `ensure_safe_to_modify` en `_safe_unlink` de forma directa, eliminando la dependencia implícita de que el llamador realice todas las verificaciones, y protegiendo el manifiesto contra escrituras parciales mediante una validación estricta de atomicidad en `save_manifest`.
 - `2026-11-07T09:20:21` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita con `is_safe_to_modify` antes de iterar cualquier directorio, protegiendo contra manipulaciones de rutas maliciosas durante el recorrido del sistema de archivos.
 - `2026-11-07T09:19:45` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_validate_root` y `drive_usage` incorporando una verificación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier acceso, asegurando que no se sigan puntos de montaje o rutas hacia sistemas protegidos mediante manipulaciones de `Path.resolve()`.
-- `2026-11-07T09:11:56` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la ingestión de datos dentro de `SystemContext` al añadir una validación estricta que impide la inyección de tipos complejos o recursivos en los atributos del objeto, utilizando una profundidad máxima y verificaciones de tipo más robustas para asegurar que solo lleguen valores escalares esperados.
-- `2026-11-07T08:59:31` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inválidas o inaccesibles integrando una validación previa de existencia y permisos mediante `os.access` en `_is_safe_entry`, evitando así el manejo de excepciones costosas dentro del bucle de escaneo.
