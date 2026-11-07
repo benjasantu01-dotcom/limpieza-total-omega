@@ -104,7 +104,7 @@ class DirectoryScanner:
         
         try:
             path_obj = Path(path_str)
-            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+            if not path_obj.exists() or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
             
             real_path = os.path.normcase(os.path.realpath(path_str))
@@ -296,7 +296,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not p.exists() or not p.is_dir() or not os.access(p, os.R_OK): return 0
     
     try:
-        abs_p = p.resolve()
+        abs_p = p.resolve(strict=True)
         root_norm = os.path.normcase(str(abs_p))
     except (OSError, RuntimeError):
         return 0

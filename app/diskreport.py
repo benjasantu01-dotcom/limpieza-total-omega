@@ -287,7 +287,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     stack: List[str] = [str(root_path)]
     
     root_stat = _safe_stat(root_path)
-    if root_stat and hasattr(root_stat, 'st_ino'):
+    if root_stat and hasattr(root_stat, 'st_ino') and hasattr(root_stat, 'st_dev'):
         visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
     
     while stack:
@@ -300,13 +300,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         st = entry.stat(follow_symlinks=False)
                         
-                        if skip_protected and is_protected_path(entry.path):
+                        if skip_protected and is_protected_path(Path(entry.path)):
                             continue
 
                         if entry.is_dir(follow_symlinks=False):
                             if _is_reparse_point(st):
                                 continue
-                            if hasattr(st, 'st_ino'):
+                            if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
                                 inode = (st.st_dev, st.st_ino)
                                 if inode in visited_inodes:
                                     continue

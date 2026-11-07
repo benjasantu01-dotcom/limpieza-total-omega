@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 20 | 0 | 3 | 1 | 34 |
+| 2026-11-05 | 17 | 0 | 2 | 1 | 34 |
 | 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 27 | 4 | 9 | 2 | 54 |
+| 2026-11-07 | 30 | 4 | 9 | 2 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **33**
+- robustez ante casos límite: **34**
 - rendimiento: **31**
-- robustez ante casos límite: **31**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `healthscore.py`: **20**
+- `healthscore.py`: **21**
 - `memory.py`: **19**
-- `safety.py`: **17**
-- `diskreport.py`: **17**
+- `quarantine.py`: **19**
+- `diskreport.py`: **18**
+- `safety.py`: **16**
 - `scanner.py`: **15**
 - `settings.py`: **15**
 - `assistant.py`: **13**
-- `browser.py`: **11**
+- `browser.py`: **12**
 - `branding.py`: **10**
 - `duplicates.py`: **8**
-- `organizer.py`: **7**
 - `startup.py`: **7**
+- `organizer.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T04:13:51` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores NaN/infinitos y tipos inesperados en los constructores y métodos de acceso de `SystemMetrics` para garantizar que el pipeline de análisis nunca falle silenciosamente o produzca puntuaciones inválidas ante datos corruptos o de red/disco inesperados.
+- `2026-11-07T04:13:15` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y las funciones auxiliares ante archivos inexistentes o con permisos denegados durante la iteración, asegurando que `_safe_stat` y la lógica de escaneo manejen correctamente fallos al acceder a `st_ino` (común en sistemas de archivos virtuales o unidades de red), evitando interrupciones abruptas del análisis.
+- `2026-11-07T04:12:49` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `DirectoryScanner._is_path_allowed` y `directory_size` validando explícitamente que la ruta resuelta exista antes de realizar operaciones de normatización, evitando excepciones innecesarias ante sistemas de archivos volátiles o inaccesibles.
 - `2026-11-07T04:02:46` **settings.py** (rendimiento): Optimicé el rendimiento del acceso a configuraciones eliminando la llamada innecesaria a `load().get(key)` dentro de `get()` y `assistant_enabled()`, reemplazándola por una consulta directa a la caché del gestor si está disponible, y consolidando la lógica de validación de tipos en un diccionario precomputado.
 - `2026-11-07T03:54:27` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` integrando el uso de `lru_cache` para la resolución de rutas normalizadas y evitando conversiones redundantes de `Path` a `str` dentro del bucle de validación de extensiones críticas, reduciendo drásticamente la carga de CPU durante escaneos masivos.
 - `2026-11-07T03:53:03` **quarantine.py** (rendimiento): Se optimizó el rendimiento de `purge_all` transformando la búsqueda de ítems en el manifiesto de una operación lineal O(N*M) a una búsqueda O(1) mediante el uso de un diccionario (hash map) para el mapeo de nombres de archivo, reduciendo la carga de I/O y CPU durante la limpieza masiva.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T03:01:57` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad del código centralizando la lógica de validación de entradas mediante un nuevo método `get_clamped_metric` y unificando el acceso a `PipelineEntry`, reduciendo la duplicación y mejorando la robustez ante datos inesperados.
 - `2026-11-07T03:01:29` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en funciones clave, explicitando el "porqué" de las decisiones de diseño (como la estrategia de caché y la selección de subconjuntos de archivos) y normalizando el estilo de los type hints para mejorar la mantenibilidad.
 - `2026-11-07T02:52:42` **diskreport.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `diskreport.py` documentando los contratos de las clases, refinando las type hints y corrigiendo la precisión terminológica en las descripciones de las funciones.
-- `2026-11-07T02:52:06` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings técnicos detallados en los métodos de renderizado geométrico y se han reemplazado las tuplas de coordenadas mágicas por una constante estructurada para facilitar la legibilidad del modelo vectorial.
-- `2026-11-07T02:51:35` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y type hints precisos, además de refactorizar la lógica de evaluación de criterios para facilitar el mantenimiento bajo el enfoque de "legibilidad y documentación".
-- `2026-11-07T02:42:11` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` mediante la captura explícita de `OSError` y `ValueError` al trabajar con rutas potencialmente malformadas, evitando que la aplicación se detenga o reporte datos corruptos ante entradas del registro inesperadas o caracteres inválidos.

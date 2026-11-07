@@ -291,7 +291,8 @@ class SystemMetrics:
     def validate(self) -> None:
         """Aplica límites definidos en _METRIC_LIMITS y asegura la integridad numérica."""
         for field_name in _ALL_METRICS:
-            setattr(self, field_name, self.get_clamped_metric(field_name))
+            val = self.get_clamped_metric(field_name)
+            object.__setattr__(self, field_name, val)
 
     @property
     def is_finite(self) -> bool:
