@@ -248,12 +248,13 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
             return False
         if os.name == 'nt':
             free_bytes = ctypes.c_ulonglong(0)
-            ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(target_dir), None, None, ctypes.byref(free_bytes))
-            return free_bytes.value >= (size + LIMITS.MIN_FREE_SPACE_BYTES)
+            if ctypes.windll.kernel32.GetDiskFreeSpaceExW(str(target_dir), None, None, ctypes.byref(free_bytes)):
+                return free_bytes.value >= (size + LIMITS.MIN_FREE_SPACE_BYTES)
+            return False
         else:
             stat = os.statvfs(target_dir)
             return (stat.f_bavail * stat.f_frsize) >= (size + LIMITS.MIN_FREE_SPACE_BYTES)
-    except (OSError, AttributeError, TypeError):
+    except (OSError, AttributeError, TypeError, OverflowError):
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:

@@ -281,7 +281,8 @@ class SystemMetrics:
     def __setattr__(self, name: str, value: Any) -> None:
         """Protección: asegura que solo campos conocidos acepten valores validados."""
         if name in _ALL_METRICS:
-            val = _validate_numeric(value, 0.0, *_METRIC_LIMITS.get(name, (0.0, 1e9)))
+            limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
+            val = _validate_numeric(value, 0.0, *limits)
             super().__setattr__(name, val)
         else:
             super().__setattr__(name, value)
@@ -361,10 +362,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         
         for entry in PIPELINE_DEFINITIONS:
             ratio = entry.scorer(metrics)
-            # Validación secundaria de ratio para asegurar consistencia del pipeline
-            if not math.isfinite(ratio): ratio = 0.0
+            # Validación secundaria: ratio debe ser un valor finito en [0,1]
+            ratio = _clamp(ratio)
             
-            val = int(_clamp(ratio * float(entry.weight), 0.0, float(entry.weight)))
+            val = int(ratio * float(entry.weight))
             metric_breakdown[entry.area] = val
             total_score_sum += val
             recommendations.extend(_evaluate_rules(metrics, entry.rules, ratio))

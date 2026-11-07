@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **171** (33.9% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 66
+- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 237
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 110 | 11 | 43 | 9 | 127 |
-| 2026-11-07 | 61 | 7 | 23 | 3 | 110 |
+| 2026-11-06 | 107 | 10 | 43 | 9 | 127 |
+| 2026-11-07 | 63 | 7 | 24 | 3 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **37**
-- robustez ante casos límite: **33**
-- seguridad defensiva: **30**
+- robustez ante casos límite: **35**
+- seguridad defensiva: **27**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `diskreport.py`: **17**
 - `memory.py`: **16**
-- `safety.py`: **15**
-- `scanner.py`: **14**
-- `settings.py`: **14**
+- `safety.py`: **14**
 - `browser.py`: **14**
+- `scanner.py`: **13**
+- `settings.py`: **13**
 - `branding.py`: **11**
 - `assistant.py`: **11**
+- `organizer.py`: **8**
 - `duplicates.py`: **7**
-- `organizer.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T08:49:37` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación crítica de espacio en `_can_write_to_destination` para manejar posibles errores de desbordamiento (overflow) al calcular tamaños y se añadió una validación de `st_dev` en `_is_safe_for_disk_op` para prevenir intentos fallidos de movimiento entre volúmenes distintos, lo cual es una operación propensa a fallos en `os.replace`.
+- `2026-11-07T08:47:46` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `compute_score` ante valores inesperados, asegurando que `_METRIC_LIMITS` siempre provea límites válidos (evitando `KeyError`) y reforzando la integridad numérica de los ratios calculados en el pipeline antes de la suma final.
 - `2026-11-07T08:38:29` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escáner (`walk_files`) añadiendo un manejo de excepciones más granular ante archivos bloqueados o inaccesibles, evitando que una sola entrada con permisos denegados interrumpa el recorrido completo de la estructura de archivos.
 - `2026-11-07T08:38:00` **browser.py** (robustez ante casos límite): Se introdujo una verificación de integridad adicional en `_is_target_valid` para validar que el `base_norm` sea un directorio existente antes de calcular `os.path.commonpath`, evitando errores en casos límite donde la ruta base calculada desde `LOCALAPPDATA` podría ser inválida o inaccesible, fortaleciendo la robustez del escaneo ante entornos de usuario atípicos.
 - `2026-11-07T08:37:36` **branding.py** (robustez ante casos límite): Se ha añadido validación de tipo y valor en `save_logo_svg` para prevenir comportamientos inesperados ante parámetros inválidos, además de encapsular la conversión de `size` en un bloque de control robusto que asegura que `logo_svg` siempre reciba un entero válido dentro del rango permitido, evitando excepciones de formato en tiempo de ejecución.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T07:26:09` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones principales y la clarificación de tipos complejos con alias específicos, facilitando la legibilidad para el mantenimiento.
 - `2026-11-07T07:17:26` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenimiento del código mediante la formalización de las reglas de negocio del escáner en una constante `SYSTEM_HIDDEN_FLAGS` y la extracción de la lógica de validación de entradas dentro de `DirectoryScanner`, aclarando el propósito de cada chequeo de seguridad.
 - `2026-11-07T07:16:42` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_validate_and_sanitize_data` y `_apply_updates`, extrayendo la lógica de validación de claves en métodos privados (`_is_valid_metric_key`) y utilizando tipado más explícito, lo que facilita entender el flujo de datos sin alterar el comportamiento.
-- `2026-11-07T07:16:04` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `_is_registry_entry_safe` incorporando validaciones de tipo explícitas y chequeos de integridad ante datos malformados, asegurando que el parser no falle silenciosamente ni procese entradas corruptas provenientes de PowerShell.
-- `2026-11-07T06:57:40` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `quarantine_file` encapsulando la verificación de `is_file_exclusive` dentro de un bloque `try/except` y añadiendo chequeos explícitos para rutas inexistentes antes de realizar operaciones de IO, mitigando riesgos de condiciones de carrera y excepciones no capturadas.

@@ -562,3 +562,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-07T08:38:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-11-07T08:38:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T08:38:35` Corrida terminada. Total usado hoy: 204.
+- `2026-11-07T08:47:15` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-11-07T08:47:46` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` y `compute_score` ante valores inesperados, asegurando que `_METRIC_LIMITS` siempre provea límites válidos (evitando `KeyError`) y reforzando la integridad numérica de los ratios calculados en el pipeline antes de la suma final.
+- `2026-11-07T08:48:58` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-07T08:49:24` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-07T08:49:37` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo una comprobación crítica de espacio en `_can_write_to_destination` para manejar posibles errores de desbordamiento (overflow) al calcular tamaños y se añadió una validación de `st_dev` en `_is_safe_for_disk_op` para prevenir intentos fallidos de movimiento entre volúmenes distintos, lo cual es una operación propensa a fallos en `os.replace`.
+- `2026-11-07T08:49:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T08:49:37` Corrida terminada. Total usado hoy: 208.
