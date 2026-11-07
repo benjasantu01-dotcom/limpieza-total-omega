@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 14 | 0 | 2 | 1 | 29 |
+| 2026-11-05 | 14 | 0 | 2 | 1 | 25 |
 | 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 34 | 4 | 11 | 2 | 57 |
+| 2026-11-07 | 36 | 5 | 11 | 2 | 58 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **38**
 - rendimiento: **31**
-- seguridad defensiva: **27**
+- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,8 +37,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **16**
 - `settings.py`: **15**
 - `scanner.py`: **15**
-- `assistant.py`: **13**
-- `browser.py`: **12**
+- `assistant.py`: **14**
+- `browser.py`: **13**
 - `branding.py`: **10**
 - `duplicates.py`: **8**
 - `startup.py`: **6**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T04:45:18` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_is_target_valid` integrando `os.path.realpath` con `os.path.commonpath` para garantizar una comparación de rutas canónica y robusta contra ataques de escape de directorio (directory traversal), asegurando que los objetivos siempre residan estrictamente dentro del sandbox definido.
+- `2026-11-07T04:44:22` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la ingesta de datos externos añadiendo una validación explícita para asegurar que los datos fuente no contengan objetos `pathlib.Path` o tipos complejos inusuales, previniendo así posibles ataques de inyección de objetos o manipulación de rutas a través de diccionarios malformados.
 - `2026-11-07T04:35:35` **settings.py** (robustez ante casos límite): Se añadió una validación explícita de `path.exists()` y `path.is_dir()` antes de intentar leer el archivo de configuración en `_read_and_parse_json` para robustecer la resiliencia ante condiciones de carrera donde el archivo pueda desaparecer o ser reemplazado por un directorio entre la comprobación inicial y la apertura.
 - `2026-11-07T04:34:48` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `_is_readable` y `_is_valid_file_path` agregando un manejo explícito de rutas que contienen caracteres nulos, evitando excepciones de bajo nivel en el sistema de archivos al interactuar con rutas malformadas.
 - `2026-11-07T04:25:13` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` al introducir un chequeo de concurrencia y atomicidad antes de iniciar la copia, y añadí una validación explícita para evitar que archivos con el atributo `Archive` (en Windows) o metadatos de sistema impidan una operación segura, reduciendo riesgos ante archivos de sistema bloqueados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T03:46:40` **memory.py** (rendimiento): Optimizado el rendimiento de `_iter_process_memory` al pre-asignar el búfer de ruta y evitar llamadas redundantes de `Path.resolve()` dentro del ciclo, reduciendo la carga de I/O en sistemas con gran cantidad de procesos.
 - `2026-11-07T03:42:18` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación reemplazando la lógica de renderizado visual recursiva por una implementación iterativa (bucle simple), eliminando la necesidad de `lru_cache` y recursión para una operación de bajo costo computacional, y consolidando la validación del pipeline para evitar verificaciones redundantes en cada ciclo de ejecución.
 - `2026-11-07T03:22:55` **settings.py** (legibilidad y documentación): Mejoré la legibilidad del código introduciendo Type Hints específicos para los validadores en `_VALIDATOR_MAP`, y documenté la lógica de la escritura atómica mediante un docstring detallado en `_SettingsManager`, facilitando el mantenimiento de las operaciones críticas sobre disco.
-- `2026-11-07T03:14:47` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en las funciones de validación de bajo nivel, clarificando los mecanismos de seguridad (Kernel API, validación de integridad y TOCTOU) para asegurar la mantenibilidad del proyecto.
-- `2026-11-07T03:13:55` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_safe_unlink` para extraer la lógica de sincronización de directorios a un método privado reutilizable, y añadí docstrings descriptivos con el propósito de las operaciones de E/S atómicas.

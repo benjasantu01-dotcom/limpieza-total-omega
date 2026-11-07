@@ -1262,3 +1262,41 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-11-07T04:35:35` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se añadió una validación explícita de `path.exists()` y `path.is_dir()` antes de intentar leer el archivo de configuración en `_read_and_parse_json` para robustecer la resiliencia ante condiciones de carrera donde el archivo pueda desaparecer o ser reemplazado por un directorio entre la comprobación inicial y la apertura.
 - `2026-11-07T04:35:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T04:35:35` Corrida terminada. Total usado hoy: 108.
+- `2026-11-07T04:42:51` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-11-07T04:43:31` Tests FALLARON:
+```
+ted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:159
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:159: SyntaxWarning: invalid escape sequence '\A'
+    de sus argumentos en líneas de comandos de registro del tipo `"C:\App\app.exe" /flag`.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.20s
+
+```
+- `2026-11-07T04:43:31` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la resiliencia en la resolución de rutas mediante la implementación de `Path.expanduser()` y un manejo de errores más exhaustivo en `_resolve_and_cache_path`, evitando que rutas malformadas o entornos con variables de usuario no resueltas aborten el escaneo o causen comportamientos inesperados.
+- `2026-11-07T04:44:22` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad en la ingesta de datos externos añadiendo una validación explícita para asegurar que los datos fuente no contengan objetos `pathlib.Path` o tipos complejos inusuales, previniendo así posibles ataques de inyección de objetos o manipulación de rutas a través de diccionarios malformados.
+- `2026-11-07T04:45:08` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-07T04:45:18` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_is_target_valid` integrando `os.path.realpath` con `os.path.commonpath` para garantizar una comparación de rutas canónica y robusta contra ataques de escape de directorio (directory traversal), asegurando que los objetivos siempre residan estrictamente dentro del sandbox definido.
+- `2026-11-07T04:45:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T04:45:18` Corrida terminada. Total usado hoy: 112.

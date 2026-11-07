@@ -134,7 +134,7 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     
     Returns: Valor validado o None si la entrada no cumple las reglas de seguridad.
     """
-    if val is None or isinstance(val, (bool, dict, list, tuple)):
+    if val is None or isinstance(val, (bool, dict, list, tuple, Path)):
         return None
     try:
         f: float = float(val)
@@ -149,7 +149,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     if obj is None or not _is_safe_key(name): return default
     try:
         val: Any = getattr(obj, name, default)
-        return val if not callable(val) else default
+        return val if not callable(val) and not isinstance(val, Path) else default
     except (AttributeError, Exception):
         return default
 
@@ -380,12 +380,13 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """Detecta estructuras de datos excesivamente complejas (protección DoS)."""
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
+    if isinstance(val, Path): return True
     if isinstance(val, (list, tuple)):
         if len(val) > _MAX_COLLECTION_SIZE: return True
-        return any(isinstance(i, (list, tuple, dict)) and _is_input_too_deep_or_complex(i, depth + 1) for i in val)
+        return any(isinstance(i, (list, tuple, dict)) or isinstance(i, Path) and _is_input_too_deep_or_complex(i, depth + 1) for i in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return True
-        return any(isinstance(v, (list, tuple, dict)) and _is_input_too_deep_or_complex(v, depth + 1) for v in val.values())
+        return any(isinstance(v, (list, tuple, dict)) or isinstance(v, Path) and _is_input_too_deep_or_complex(v, depth + 1) for v in val.values())
     return True
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
@@ -470,7 +471,7 @@ class SystemContext:
             else:
                 val = _get_safe_attr(source, key)
             
-            if val is None or isinstance(val, (bool, dict, list, tuple)) or callable(val):
+            if val is None or isinstance(val, (bool, dict, list, tuple, Path)) or callable(val):
                 return None
             
             valid_val = _is_valid_numeric_update(val, spec)
@@ -504,7 +505,7 @@ class SystemContext:
     def _extract_grade(self, source: Any) -> str:
         """Extrae el campo 'grade' de una fuente de datos dict u objeto."""
         grade_raw = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
-        if grade_raw is not None and not isinstance(grade_raw, (dict, list, tuple)):
+        if grade_raw is not None and not isinstance(grade_raw, (dict, list, tuple, Path)):
             return self._clean_grade(grade_raw)
         return ""
 
@@ -529,6 +530,7 @@ class SystemContext:
         """Verifica que la fuente de datos sea segura y apta para ingestión."""
         if source is None or callable(source) or not isinstance(source, (dict, object)): 
             return False
+        if isinstance(source, Path): return False
         if isinstance(source, (dict, list, tuple)):
             if isinstance(source, dict):
                 for k in source.keys():

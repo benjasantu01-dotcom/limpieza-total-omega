@@ -107,8 +107,8 @@ class DirectoryScanner:
             if not path_obj.exists() or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return False
             
-            real_path = os.path.normcase(os.path.realpath(path_str))
-            return real_path.startswith(self.ctx.sandbox_base_norm)
+            real_path = os.path.realpath(path_str)
+            return os.path.commonpath([real_path, self.ctx.sandbox_base_norm]) == self.ctx.sandbox_base_norm
         except (OSError, RuntimeError, ValueError):
             return False
 
@@ -297,7 +297,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     
     try:
         abs_p = p.resolve(strict=True)
-        root_norm = os.path.normcase(str(abs_p))
+        root_norm = str(abs_p)
     except (OSError, RuntimeError):
         return 0
 
@@ -326,8 +326,8 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
             return False
         
         # Validación crítica: resolver la ruta real para prevenir escape del sandbox
-        target_norm = os.path.normcase(os.path.realpath(str(target)))
-        return target_norm.startswith(base_norm)
+        target_norm = os.path.realpath(str(target))
+        return os.path.commonpath([target_norm, base_norm]) == base_norm
     except (OSError, PermissionError, RuntimeError):
         return False
 
@@ -346,7 +346,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         
         try:
             if not base.exists(): continue
-            base_norm = os.path.normcase(os.path.realpath(str(base)))
+            base_norm = os.path.realpath(str(base))
             
             ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
             scanner = DirectoryScanner(ctx)
