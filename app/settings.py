@@ -389,6 +389,8 @@ def _is_structure_valid(data: Any) -> bool:
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """Ejecuta el ciclo de lectura y parsing: verifica seguridad, abre archivo y valida estructura JSON."""
     try:
+        # Pre-check: el archivo debe existir y ser un archivo regular antes de proceder
+        if not file_path.exists() or not file_path.is_file(): return None
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
         

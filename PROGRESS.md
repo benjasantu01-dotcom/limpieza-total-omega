@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-05 | 14 | 0 | 2 | 1 | 33 |
+| 2026-11-05 | 14 | 0 | 2 | 1 | 29 |
 | 2026-11-06 | 132 | 13 | 54 | 14 | 137 |
-| 2026-11-07 | 32 | 4 | 10 | 2 | 56 |
+| 2026-11-07 | 34 | 4 | 11 | 2 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
 - rendimiento: **31**
 - seguridad defensiva: **27**
 
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `diskreport.py`: **18**
 - `safety.py`: **16**
-- `settings.py`: **14**
-- `scanner.py`: **14**
+- `settings.py`: **15**
+- `scanner.py`: **15**
 - `assistant.py`: **13**
 - `browser.py`: **12**
 - `branding.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T04:35:35` **settings.py** (robustez ante casos límite): Se añadió una validación explícita de `path.exists()` y `path.is_dir()` antes de intentar leer el archivo de configuración en `_read_and_parse_json` para robustecer la resiliencia ante condiciones de carrera donde el archivo pueda desaparecer o ser reemplazado por un directorio entre la comprobación inicial y la apertura.
+- `2026-11-07T04:34:48` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `_is_readable` y `_is_valid_file_path` agregando un manejo explícito de rutas que contienen caracteres nulos, evitando excepciones de bajo nivel en el sistema de archivos al interactuar con rutas malformadas.
 - `2026-11-07T04:25:13` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` al introducir un chequeo de concurrencia y atomicidad antes de iniciar la copia, y añadí una validación explícita para evitar que archivos con el atributo `Archive` (en Windows) o metadatos de sistema impidan una operación segura, reduciendo riesgos ante archivos de sistema bloqueados.
 - `2026-11-07T04:24:08` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_safe_int_conversion` ante valores inesperados (como `float('inf')` o `nan`) y se refina el manejo de handles en `trim_working_set` para asegurar que el proceso de validación no deje handles abiertos ante errores de resolución de ruta o cambios de estado del proceso.
 - `2026-11-07T04:13:51` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores NaN/infinitos y tipos inesperados en los constructores y métodos de acceso de `SystemMetrics` para garantizar que el pipeline de análisis nunca falle silenciosamente o produzca puntuaciones inválidas ante datos corruptos o de red/disco inesperados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T03:22:55` **settings.py** (legibilidad y documentación): Mejoré la legibilidad del código introduciendo Type Hints específicos para los validadores en `_VALIDATOR_MAP`, y documenté la lógica de la escritura atómica mediante un docstring detallado en `_SettingsManager`, facilitando el mantenimiento de las operaciones críticas sobre disco.
 - `2026-11-07T03:14:47` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en las funciones de validación de bajo nivel, clarificando los mecanismos de seguridad (Kernel API, validación de integridad y TOCTOU) para asegurar la mantenibilidad del proyecto.
 - `2026-11-07T03:13:55` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_safe_unlink` para extraer la lógica de sincronización de directorios a un método privado reutilizable, y añadí docstrings descriptivos con el propósito de las operaciones de E/S atómicas.
-- `2026-11-07T03:03:12` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, se han tipado parámetros ausentes y se ha estructurado la lógica de validación en `_extract_process_info` para mayor claridad y mantenibilidad, manteniendo la integridad del código original.
-- `2026-11-07T03:01:57` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad del código centralizando la lógica de validación de entradas mediante un nuevo método `get_clamped_metric` y unificando el acceso a `PipelineEntry`, reduciendo la duplicación y mejorando la robustez ante datos inesperados.

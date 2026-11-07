@@ -283,7 +283,7 @@ class Scanner:
         """
         try:
             path_str = getattr(entry, 'path', None)
-            if not path_str or not isinstance(path_str, str): return False
+            if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
             
             if path_str in self.safe_cache: return True
             

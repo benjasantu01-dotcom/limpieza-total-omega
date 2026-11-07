@@ -1255,3 +1255,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-11-07T04:25:13` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` al introducir un chequeo de concurrencia y atomicidad antes de iniciar la copia, y añadí una validación explícita para evitar que archivos con el atributo `Archive` (en Windows) o metadatos de sistema impidan una operación segura, reduciendo riesgos ante archivos de sistema bloqueados.
 - `2026-11-07T04:25:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T04:25:13` Corrida terminada. Total usado hoy: 104.
+- `2026-11-07T04:32:43` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-11-07T04:33:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 114): unterminated string literal (detected at line 114)
+- `2026-11-07T04:34:02` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-11-07T04:34:48` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_readable` y `_is_valid_file_path` agregando un manejo explícito de rutas que contienen caracteres nulos, evitando excepciones de bajo nivel en el sistema de archivos al interactuar con rutas malformadas.
+- `2026-11-07T04:35:35` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se añadió una validación explícita de `path.exists()` y `path.is_dir()` antes de intentar leer el archivo de configuración en `_read_and_parse_json` para robustecer la resiliencia ante condiciones de carrera donde el archivo pueda desaparecer o ser reemplazado por un directorio entre la comprobación inicial y la apertura.
+- `2026-11-07T04:35:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T04:35:35` Corrida terminada. Total usado hoy: 108.
