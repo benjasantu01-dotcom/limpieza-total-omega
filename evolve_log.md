@@ -960,3 +960,63 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-07T13:25:57` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la detección de archivos en uso, integrando una verificación de "compartición de acceso" mediante la API de Windows (`CreateFileW` con flags de acceso nulo y `FILE_SHARE_NONE`), asegurando que archivos abiertos exclusivamente por otros procesos sean detectados antes de intentar cualquier operación.
 - `2026-11-07T13:25:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T13:25:57` Corrida terminada. Total usado hoy: 316.
+- `2026-11-07T13:32:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-07T13:33:19` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de sistema en `process_entry` y `scan_directory` mediante el uso de `os.scandir` seguro y un control de errores más granular, asegurando que el escáner no se detenga ante archivos con nombres inválidos, bloqueados o inaccesibles, mejorando la resiliencia ante el entorno real de Windows.
+- `2026-11-07T13:34:07` Tests FALLARON:
+```
+........................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________________ test_save_creates_the_folder _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0')
+
+    def test_save_creates_the_folder(tmp_path):
+        destino = tmp_path / "sub" / "carpeta"
+        assert settings.save(settings.DEFAULTS, destino) is not None
+>       assert (destino / settings.SETTINGS_FILE).is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+E        +      where 'config.json' = settings.SETTINGS_FILE
+
+evolve/tests/test_assistant.py:61: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+1 failed, 298 passed in 1.05s
+
+```
+- `2026-11-07T13:34:07` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha añadido una validación de `path.exists()` y `path.is_dir()` en la función `settings_path` para prevenir que `Path.resolve()` intente resolver rutas malformadas o inexistentes, mejorando la resiliencia ante condiciones de carrera o entornos donde el directorio de configuración podría haber sido eliminado externamente.
+- `2026-11-07T13:35:00` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.00s
+
+```
+- `2026-11-07T13:35:00` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha implementado una protección robusta contra rutas de sistema inexistentes y "permisos denegados" en `_resolve_and_cache_path`, evitando que llamadas recursivas a `.resolve()` o `Path` detengan el escaneo ante errores de E/S o rutas mal formadas.
+- `2026-11-07T13:35:28` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad de `_is_safe_payload_structure` para asegurar que el contenido enviado a la API de Gemini (que viaja fuera del equipo) nunca contenga estructuras potencialmente maliciosas o inesperadas, añadiendo una verificación explícita de tipos permitidos en el nivel de los valores del diccionario.
+- `2026-11-07T13:35:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T13:35:28` Corrida terminada. Total usado hoy: 320.

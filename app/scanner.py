@@ -306,7 +306,7 @@ class Scanner:
                         self.seen_normcase.add(path_norm)
                         self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError):
-            return
+            pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta la suite de heurísticas sobre un archivo identificado."""
@@ -362,7 +362,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    scanner.process_entry(entry, stack, depth, visited)
+                    try:
+                        scanner.process_entry(entry, stack, depth, visited)
+                    except (PermissionError, OSError):
+                        continue
         except (PermissionError, OSError):
             continue
     return scanner.results
