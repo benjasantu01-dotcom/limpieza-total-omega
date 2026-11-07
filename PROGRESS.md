@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 107 | 10 | 43 | 9 | 107 |
-| 2026-11-07 | 70 | 8 | 27 | 3 | 120 |
+| 2026-11-06 | 107 | 10 | 43 | 9 | 103 |
+| 2026-11-07 | 71 | 8 | 27 | 3 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **37**
-- seguridad defensiva: **32**
+- seguridad defensiva: **33**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
@@ -41,10 +41,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **11**
 - `duplicates.py`: **8**
 - `organizer.py`: **8**
-- `startup.py`: **7**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T09:48:49` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva al añadir una validación de puntos de reparse (junctions y symlinks) en `_is_valid_registry_path` y `_is_registry_entry_safe`, evitando que el escáner del registro siga referencias externas que podrían causar bucles infinitos o fugas fuera del scope de seguridad.
 - `2026-11-07T09:42:44` **scanner.py** (seguridad defensiva): Se mejora la seguridad defensiva mediante la validación explícita de rutas de destino en `_is_inside_base_root` y la adición de `os.path.realpath` en la inicialización del `Scanner` para garantizar que el análisis heurístico no escape de la raíz permitida mediante enlaces simbólicos o rutas relativas complejas.
 - `2026-11-07T09:31:24` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `quarantine.py` integrando `ensure_safe_to_modify` en `_safe_unlink` de forma directa, eliminando la dependencia implícita de que el llamador realice todas las verificaciones, y protegiendo el manifiesto contra escrituras parciales mediante una validación estricta de atomicidad en `save_manifest`.
 - `2026-11-07T09:20:21` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita con `is_safe_to_modify` antes de iterar cualquier directorio, protegiendo contra manipulaciones de rutas maliciosas durante el recorrido del sistema de archivos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T08:37:36` **branding.py** (robustez ante casos límite): Se ha añadido validación de tipo y valor en `save_logo_svg` para prevenir comportamientos inesperados ante parámetros inválidos, además de encapsular la conversión de `size` en un bloque de control robusto que asegura que `logo_svg` siempre reciba un entero válido dentro del rango permitido, evitando excepciones de formato en tiempo de ejecución.
 - `2026-11-07T08:28:41` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` reduciendo la complejidad del script de PowerShell y minimizando las llamadas innecesarias al sistema mediante un filtrado previo de las claves del registro, evitando procesar exhaustivamente propiedades que no contienen ejecutables (como las de metadatos de PSObject).
 - `2026-11-07T07:48:04` **startup.py** (legibilidad y documentación): Documenté el propósito de los métodos privados y las propiedades de la clase `StartupEntry` utilizando docstrings más descriptivos, clarificando la distinción entre las tareas de limpieza, resolución de rutas y validación de seguridad para mejorar la mantenibilidad del código.
-- `2026-11-07T07:47:53` **settings.py** (legibilidad y documentación): He mejorado la documentación del sistema de validación añadiendo docstrings que explican el propósito de cada método de `_Validators`, eliminando la ambigüedad sobre qué hace cada normalizador y fortaleciendo la legibilidad técnica sin alterar el comportamiento.

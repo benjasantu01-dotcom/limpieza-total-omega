@@ -226,7 +226,7 @@ class StartupEntry:
                 return ""
             
             resolved: Path = p.resolve(strict=False)
-            if len(resolved.parts) > 64:
+            if len(resolved.parts) > 64 or resolved.is_symlink():
                 return ""
 
             if not self._validate_file_access(resolved):
@@ -393,12 +393,13 @@ def _is_valid_registry_path(path_str: str) -> bool:
             return False
         
         target: Path = Path(clean_path)
+        # Rechazar reparse points para evitar escapes o bucles
         if target.is_symlink(): return False
         
         if is_protected_path(target): return False
         
         target_res: Path = target.resolve(strict=False)
-        if is_protected_path(target_res): return False
+        if is_protected_path(target_res) or target_res.is_symlink(): return False
         
         if any(c in str(target) for c in SUSPICIOUS_CHARS): return False
         
