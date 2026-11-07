@@ -317,8 +317,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         # Usamos follow_symlinks=False para evitar recursión circular externa
                         st = entry.stat(follow_symlinks=False)
+                        entry_path = Path(entry.path).resolve()
                         
-                        if skip_protected and is_protected_path(Path(entry.path)):
+                        if skip_protected and is_protected_path(entry_path):
                             continue
 
                         if entry.is_dir(follow_symlinks=False):
@@ -332,7 +333,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             size = getattr(st, 'st_size', 0)
-                            yield Path(entry.path), (size if isinstance(size, int) else 0)
+                            yield entry_path, (size if isinstance(size, int) else 0)
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError, ValueError):
@@ -366,11 +367,13 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         # Encontrar la carpeta de primer nivel relativa a root
         try:
+            # Aseguramos que la comparación es sobre rutas resueltas
             parts = path.relative_to(root).parts
             if parts:
                 top_level = root / parts[0]
-                stats[top_level].size += size
-                stats[top_level].file_count += 1
+                if not is_protected_path(top_level):
+                    stats[top_level].size += size
+                    stats[top_level].file_count += 1
         except ValueError:
             continue
             
