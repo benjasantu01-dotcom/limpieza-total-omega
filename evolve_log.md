@@ -938,3 +938,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-07T12:54:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-11-07T12:54:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-07T12:54:19` Corrida terminada. Total usado hoy: 304.
+- `2026-11-07T13:01:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-07T13:02:42` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `SystemContext.ingest` y `build_context` para manejar casos límite de datos de entrada mal formados, garantizando que si una fuente (como una configuración corrupta) intenta inyectar tipos de datos inesperados (listas, diccionarios profundos o rutas), el asistente ignore esos campos en lugar de propagar errores o bloquear la operación.
+- `2026-11-07T13:03:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-07T13:03:39` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha añadido una validación estricta en `_is_target_valid` para detectar si el directorio objetivo de caché es un archivo (o un punto de reparse que apunte a un archivo) en lugar de un directorio, evitando así posibles errores de manipulación de rutas en sistemas con estructuras de perfiles dañadas o redirecciones inesperadas.
+- `2026-11-07T13:03:53` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la resiliencia ante errores de lectura en el escaneo profundo mediante la captura de excepciones específicas en `_safe_stat`, evitando que fallos transitorios en atributos de metadatos detengan el proceso de recolección de métricas.
+- `2026-11-07T13:03:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-07T13:03:53` Corrida terminada. Total usado hoy: 308.

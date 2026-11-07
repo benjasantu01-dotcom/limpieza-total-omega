@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **167** (33.1% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 251
+- Sin respuesta de la IA (error o límite): 252
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 74 | 6 | 29 | 4 | 87 |
-| 2026-11-07 | 93 | 8 | 34 | 5 | 164 |
+| 2026-11-06 | 71 | 6 | 28 | 4 | 87 |
+| 2026-11-07 | 96 | 8 | 34 | 5 | 165 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **32**
-- seguridad defensiva: **31**
-- robustez ante casos límite: **29**
+- robustez ante casos límite: **32**
+- seguridad defensiva: **28**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
-- `diskreport.py`: **17**
-- `memory.py`: **15**
+- `quarantine.py`: **17**
 - `scanner.py`: **15**
+- `memory.py`: **14**
 - `safety.py`: **14**
 - `settings.py`: **13**
-- `assistant.py`: **12**
-- `browser.py`: **11**
+- `assistant.py`: **13**
+- `browser.py`: **12**
 - `branding.py`: **10**
 - `startup.py`: **9**
-- `organizer.py`: **8**
 - `duplicates.py`: **7**
+- `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T13:03:53` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de lectura en el escaneo profundo mediante la captura de excepciones específicas en `_safe_stat`, evitando que fallos transitorios en atributos de metadatos detengan el proceso de recolección de métricas.
+- `2026-11-07T13:03:39` **browser.py** (robustez ante casos límite): Se ha añadido una validación estricta en `_is_target_valid` para detectar si el directorio objetivo de caché es un archivo (o un punto de reparse que apunte a un archivo) en lugar de un directorio, evitando así posibles errores de manipulación de rutas en sistemas con estructuras de perfiles dañadas o redirecciones inesperadas.
+- `2026-11-07T13:02:42` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemContext.ingest` y `build_context` para manejar casos límite de datos de entrada mal formados, garantizando que si una fuente (como una configuración corrupta) intenta inyectar tipos de datos inesperados (listas, diccionarios profundos o rutas), el asistente ignore esos campos en lugar de propagar errores o bloquear la operación.
 - `2026-11-07T12:54:08` **settings.py** (rendimiento): Optimicé el rendimiento de `_Validators._is_safe_path` y `_Validators._run_safety_checks` añadiendo un cache `lru_cache` al primero y reutilizando el chequeo de la cadena de padres en el segundo, reduciendo significativamente las llamadas al sistema de archivos en operaciones repetidas.
 - `2026-11-07T12:53:29` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la normalización de rutas fuera del bucle de heurísticas mediante el uso de `seen_normcase` en `Scanner.process_entry` y consolidando las comprobaciones de extensión para evitar múltiples llamadas a `os.path.splitext` y accesos innecesarios al sistema de archivos.
 - `2026-11-07T12:53:02` **safety.py** (rendimiento): Se implementó un sistema de "Short-Circuit Caching" en `_validate_security_rules` y `_check_file_integrity` mediante un nuevo caché `_NEGATIVE_SECURITY_CACHE`, evitando la ejecución costosa de múltiples verificaciones de estado (IO calls y kernel calls) para archivos que ya han sido identificados como inseguros en la misma sesión, mejorando significativamente el rendimiento en escaneos profundos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T12:12:57` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones internas críticas (`_is_file_secure_to_read`, `_is_structure_valid`, `_read_and_parse_json`) y se refinó el docstring de `save` para clarificar su flujo de ejecución, mejorando la legibilidad técnica para futuros colaboradores.
 - `2026-11-07T12:12:43` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que aclaran el rol de cada componente en el pipeline de escaneo, permitiendo a otros desarrolladores entender el flujo de datos sin necesidad de descifrar la implementación.
 - `2026-11-07T12:12:15` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_drive_restrictions`, extrayendo la lógica de validación de unidades a una estructura de datos declarativa (una lista de tuplas con mensajes de error y códigos asociados), lo cual facilita futuras ampliaciones y mejora la claridad del flujo de control.
-- `2026-11-07T12:02:58` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados en funciones críticas de E/S, aclarando el propósito y los riesgos de las validaciones de seguridad de bajo nivel, además de estandarizar el uso de type hints en `_process_directory`.
-- `2026-11-07T12:02:29` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la API de bajo nivel envolviendo las constantes y funciones de Win32 en una clase `WindowsAPI` más robusta y añadiendo docstrings descriptivos a los tipos de datos complejos para clarificar su propósito.
-- `2026-11-07T11:53:03` **healthscore.py** (legibilidad y documentación): Documenté el propósito de los decoradores y las funciones de validación crítica en `healthscore.py` para clarificar la arquitectura del pipeline y mejorar la mantenibilidad técnica del módulo.

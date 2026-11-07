@@ -305,6 +305,10 @@ def _is_target_valid(target: Optional[Path], base_norm: str, kernel: Optional[ct
     if not isinstance(target, Path) or not target.exists() or not target.is_dir(): 
         return False
     try:
+        # Validación extra: asegurarse de que no sea un archivo confundido con directorio
+        if not target.is_dir() or target.is_file():
+            return False
+
         if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): 
             return False
         

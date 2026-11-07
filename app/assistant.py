@@ -513,9 +513,9 @@ class SystemContext:
 
     def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
         """Procesa y sanitiza todas las métricas recibidas de una fuente externa."""
-        if isinstance(source, dict) and not self._validate_keys_safe(source):
-            return {}
-
+        if isinstance(source, dict):
+            if not self._validate_keys_safe(source): return {}
+        
         updates = {
             k: val for k in _VALID_METRIC_KEYS 
             if (val := self._apply_field(source, k, _VALIDATORS[k])) is not None
@@ -528,9 +528,7 @@ class SystemContext:
 
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Verifica que la fuente de datos sea segura y apta para ingestión."""
-        if source is None or callable(source) or not isinstance(source, (dict, object)): 
-            return False
-        if isinstance(source, Path): return False
+        if source is None or callable(source) or isinstance(source, Path): return False
         if isinstance(source, (dict, list, tuple)):
             if isinstance(source, dict):
                 if not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
@@ -545,21 +543,21 @@ class SystemContext:
                 setattr(self, key, value)
         
         self.analyzed = True
-        for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
-            self.__dict__.pop(attr, None)
+        self.__dict__.pop("metrics_snapshot", None)
+        self.__dict__.pop("_cached_active_problems", None)
+        self.__dict__.pop("_hash_tuple", None)
 
     def ingest(self, source: Any) -> bool:
         """Ingiere y valida datos externos para actualizar el estado de SystemContext."""
         if not self._validate_ingestion_source(source): 
-            logging.warning("Intento de ingesta con fuente insegura bloqueado.")
             return False
         try:
             updates = self._validate_and_sanitize_data(source)
             if updates:
                 self._apply_updates(updates)
                 return True
-        except (AttributeError, TypeError, ValueError, Exception) as e:
-            logging.error(f"Error procesando ingesta de contexto: {e}")
+        except (AttributeError, TypeError, ValueError, Exception):
+            pass
         return False
 
 @dataclass
@@ -607,8 +605,7 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
     ctx: SystemContext = SystemContext()
     for s in (metrics, health, extra):
         if s is not None:
-            try: ctx.ingest(s)
-            except Exception: continue
+            ctx.ingest(s)
     return ctx
 
 def context_as_text(context: SystemContext) -> str:
