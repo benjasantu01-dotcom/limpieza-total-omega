@@ -611,13 +611,14 @@ def _validate_junction_depth(path: Path) -> None:
             break
 
 def _validate_drive_restrictions(target_path: Path) -> None:
-    """Aplica validaciones sobre volúmenes restringidos."""
+    """Aplica validaciones sobre volúmenes restringidos usando una lógica declarativa."""
     path_s = str(target_path)
     anchor = target_path.anchor
     if not anchor: return
 
     is_unc = _is_unc_path(path_s)
     
+    # Lista de reglas: (Condición, Mensaje, CódigoError)
     restrictions = [
         (_is_volume_shadow_copy(path_s), "Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
         (_is_volume_busy_or_invalid(path_s), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),

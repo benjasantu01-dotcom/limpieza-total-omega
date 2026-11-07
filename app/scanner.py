@@ -54,6 +54,8 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Define el contrato para funciones de inspección heurística.
+    Las implementaciones deben ser puras respecto al estado del escáner y devolver 
+    un objeto Suspicion si se detecta una amenaza, o None en caso contrario.
     """
     def __call__(
         self, 
@@ -227,6 +229,11 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 )
 
 class Scanner:
+    """
+    Motor principal de escaneo encargado de la traversal del sistema de archivos.
+    Utiliza una pila para el recorrido recursivo controlado y mantiene caches 
+    locales para optimizar la performance durante el análisis masivo.
+    """
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
@@ -316,6 +323,7 @@ class Scanner:
                 logger.debug(f"Heurística {check_fn.__name__} omitida por error: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
+    """Escanea un único archivo específico aplicando la suite de heurísticas."""
     if not isinstance(path, Path) or not _is_valid_path_structure(str(path)) or not _is_readable(path):
         return []
     try:
@@ -334,6 +342,10 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
+    """
+    Inicia un recorrido de escaneo recursivo desde una ruta raíz.
+    Retorna la lista agregada de todos los hallazgos encontrados.
+    """
     if directory is None: return []
     try:
         base_path = Path(directory).resolve()
@@ -357,6 +369,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     return scanner.results
 
 def run_windows_defender_quick_scan() -> str:
+    """
+    Interfase con el motor de Windows Defender para ejecutar un escaneo rápido.
+    Solo invoca el comando si la protección en tiempo real está activa.
+    """
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

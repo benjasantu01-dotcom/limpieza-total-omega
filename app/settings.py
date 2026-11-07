@@ -466,7 +466,10 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Serializa y guarda la configuración tras validar su integridad y realizar escritura atómica."""
+    """
+    Serializa la configuración, la valida, realiza una escritura atómica para evitar 
+    corrupción y actualiza la caché interna de datos.
+    """
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
     try:
