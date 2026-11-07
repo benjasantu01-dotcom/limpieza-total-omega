@@ -451,36 +451,18 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida o no disponible."
         
     path_buf = ctypes.create_unicode_buffer(1024)
-    # Validar acceso y seguridad antes de cualquier operación de trim
+    # Validar acceso y seguridad antes de cualquier operación
     handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if handle is None:
         return False, "Acceso denegado o proceso en zona restringida."
 
     try:
-        # Validación final de seguridad sobre la ruta resuelta
-        p = Path(path_buf.value).resolve()
-        if is_protected_path(p):
-            return False, "Acción bloqueada por seguridad sobre proceso protegido."
-    except Exception:
-        return False, "Error al validar la seguridad del proceso."
-    finally:
-        WindowsAPI.kernel32.CloseHandle(handle)
-
-    # Re-abrir handle para la acción final
-    final_handle = _get_process_handle(target_pid, WindowsAPI.TRIM_ACCESS)
-    if not final_handle or final_handle == INVALID_HANDLE_VALUE:
-        return False, "No se pudo re-abrir el proceso para la acción."
-
-    try:
-        process_exit_code = wintypes.DWORD()
-        if WindowsAPI.kernel32.GetExitCodeProcess(final_handle, ctypes.byref(process_exit_code)) == 0 or process_exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            return False, "El proceso ya ha finalizado o no responde."
-            
-        if WindowsAPI.psapi.EmptyWorkingSet(final_handle) != 0:
+        # La validación ya fue realizada en _get_handle_for_safe_proc mediante _is_process_executable_safe
+        if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la operación."
     except Exception:
         return False, "Error inesperado al intentar liberar memoria."
     finally:
-        WindowsAPI.kernel32.CloseHandle(final_handle)
+        WindowsAPI.kernel32.CloseHandle(handle)

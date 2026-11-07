@@ -377,19 +377,17 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
         
-        if not is_safe_to_modify(dest_base): return None
+        ensure_safe_to_modify(dest_base)
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
             
-            # Validación de estado previo al movimiento (evitar TOCTOU)
             if not _validate_file_identity(junk_file, junk_file.path) or _is_file_locked(junk_file.path):
                 continue
                 
             if not _is_safe_for_disk_op(junk_file, dest_base): continue
             
             target_path = _can_move_file(junk_file, dest_base)
-            # Doble confirmación de bloqueo antes del reemplazo final
             if target_path and junk_file.path.exists() and not _is_file_locked(junk_file.path): 
                 os.replace(str(junk_file.path), str(target_path))
         return dest_base
@@ -412,7 +410,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest): return 0
+        if not dest.exists() or not dest.is_dir(): return 0
+        ensure_safe_to_modify(dest)
         
         count = 0
         for item in dest.iterdir():

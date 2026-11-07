@@ -56,6 +56,12 @@ _ALL_METRICS: Final[Tuple[str, ...]] = _VALIDATION_KEYS + ("quarantined_count",)
 
 # --- Decoradores y Utilidades de Seguridad ---
 
+def _is_finite_numeric(val: Any) -> bool:
+    """Valida que un valor sea numérico, finito y no sea booleano."""
+    if isinstance(val, bool) or not isinstance(val, (int, float)):
+        return False
+    return math.isfinite(float(val))
+
 def _guard_metric_access(func: Callable[[Any, str, Any], Any]) -> Callable[[Any, str, Any], Any]:
     """
     Decorador de acceso: Valida que el campo consultado en SystemMetrics sea una métrica 
@@ -111,13 +117,9 @@ class Grade(Enum):
     @classmethod
     def from_score(cls, score: float | int | None) -> str:
         """Convierte una puntuación numérica a su categoría de salud correspondiente."""
-        if score is None:
+        if score is None or not _is_finite_numeric(score):
             return cls.F.value
-        try:
-            val = float(score)
-            if not math.isfinite(val): return cls.F.value
-        except (TypeError, ValueError):
-            return cls.F.value
+        val = float(score)
         if val >= 90: return cls.A.value
         if val >= 80: return cls.B.value
         if val >= 65: return cls.C.value
@@ -163,18 +165,14 @@ _LIMIT_DISK_PERCENT: Final[float] = 25.0
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Asegura que un valor sea numérico y se mantenga en el rango [min, max]."""
-    try:
-        val = float(value)
-        if not math.isfinite(val): return min_val
-        return max(min_val, min(max_val, val))
-    except (TypeError, ValueError):
-        return min_val
+    if not _is_finite_numeric(value): return min_val
+    return max(min_val, min(max_val, float(value)))
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """Generador: crea funciones de normalización lineal para métricas de volumen."""
     @lru_cache(maxsize=32)
     def scorer(val: float) -> NormalizedRatio:
-        if limit <= 0.0 or not math.isfinite(val): return 0.0
+        if limit <= 0.0 or not _is_finite_numeric(val): return 0.0
         try:
             ratio = val / limit
             return _clamp(1.0 - ratio if inverse else ratio)
@@ -236,7 +234,7 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud de memoria RAM basado en porcentaje disponible."""
     val = float(available_percent)
-    if _LIMIT_RAM_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
+    if _LIMIT_RAM_PERCENT <= 0.0 or not _is_finite_numeric(val): return 0.0
     try:
         return _clamp(val / _LIMIT_RAM_PERCENT)
     except ZeroDivisionError:
@@ -246,7 +244,7 @@ def score_memory(available_percent: float | int) -> NormalizedRatio:
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud de almacenamiento libre basado en porcentaje total."""
     val = float(free_percent)
-    if _LIMIT_DISK_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
+    if _LIMIT_DISK_PERCENT <= 0.0 or not _is_finite_numeric(val): return 0.0
     try:
         return _clamp(val / _LIMIT_DISK_PERCENT)
     except ZeroDivisionError:
@@ -264,15 +262,9 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 
 def _validate_numeric(value: Any, default: float, min_val: float, max_val: float) -> float:
     """Sanitiza entradas para asegurar que sean numéricas y finitas."""
-    try:
-        if value is None or not isinstance(value, (int, float)) or isinstance(value, bool):
-            return default
-        val = float(value)
-        if not math.isfinite(val):
-            return default
-        return float(max(min_val, min(max_val, val)))
-    except (ValueError, TypeError):
+    if not _is_finite_numeric(value):
         return default
+    return float(max(min_val, min(max_val, float(value))))
 
 # --- Modelos de Datos ---
 
@@ -319,7 +311,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica la integridad numérica (finitud) de todas las métricas."""
-        return all(math.isfinite(float(self.safe_get(f, 0.0))) for f in _ALL_METRICS)
+        return all(_is_finite_numeric(self.safe_get(f, 0.0)) for f in _ALL_METRICS)
 
 @dataclass
 class HealthResult:
@@ -342,7 +334,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     """Evalúa reglas reactivas según la métrica y retorna mensajes de diagnóstico."""
     if not isinstance(rules, tuple) or not isinstance(metrics, SystemMetrics):
         return []
-    if not isinstance(normalized_ratio, (float, int)) or not math.isfinite(normalized_ratio):
+    if not _is_finite_numeric(normalized_ratio):
         return []
     results = []
     for rule in rules:

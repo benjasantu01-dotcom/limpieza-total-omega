@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 62
+- Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 245
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 70 | 4 | 26 | 4 | 76 |
-| 2026-11-07 | 103 | 10 | 36 | 6 | 169 |
+| 2026-11-06 | 70 | 4 | 26 | 4 | 72 |
+| 2026-11-07 | 106 | 10 | 37 | 6 | 169 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **32**
-- seguridad defensiva: **28**
+- seguridad defensiva: **31**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **20**
 - `diskreport.py`: **19**
-- `healthscore.py`: **19**
 - `quarantine.py`: **18**
+- `memory.py`: **15**
 - `safety.py`: **15**
 - `scanner.py`: **15**
-- `memory.py`: **14**
 - `settings.py`: **13**
 - `assistant.py`: **13**
 - `browser.py`: **12**
 - `branding.py`: **10**
+- `organizer.py`: **9**
 - `startup.py`: **9**
 - `duplicates.py`: **8**
-- `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-07T13:55:14` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva de `organizer.py` implementando una validación estricta de la ruta destino en `stage_for_review` y `delete_reviewed`, asegurando mediante `ensure_safe_to_modify` que cualquier operación de escritura sea validada por el módulo de seguridad central, evitando el uso de condiciones booleanas que podrían ocultar errores de permisos.
+- `2026-11-07T13:54:58` **memory.py** (seguridad defensiva): Se ha centralizado y robustecido la validación de seguridad en `trim_working_set` eliminando la duplicación de lógica de resolución de rutas y aplicando una validación más estricta sobre la integridad del proceso antes de intentar cualquier operación de sistema, utilizando `is_protected_path` de forma consistente con las reglas de seguridad.
+- `2026-11-07T13:53:17` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo mediante la implementación de `_is_finite_numeric` para centralizar la validación de integridad numérica y prevenir errores de lógica en el pipeline, además de blindar la inicialización del objeto `SystemMetrics` mediante una validación estricta de tipos antes de invocar `__post_init__`.
 - `2026-11-07T13:45:02` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre el resultado de `path.resolve()` antes de realizar operaciones de sistema, asegurando que la normalización de rutas no eluda protecciones mediante enlaces simbólicos o rutas relativas.
 - `2026-11-07T13:33:19` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de sistema en `process_entry` y `scan_directory` mediante el uso de `os.scandir` seguro y un control de errores más granular, asegurando que el escáner no se detenga ante archivos con nombres inválidos, bloqueados o inaccesibles, mejorando la resiliencia ante el entorno real de Windows.
 - `2026-11-07T13:25:57` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de archivos en uso, integrando una verificación de "compartición de acceso" mediante la API de Windows (`CreateFileW` con flags de acceso nulo y `FILE_SHARE_NONE`), asegurando que archivos abiertos exclusivamente por otros procesos sean detectados antes de intentar cualquier operación.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T13:02:42` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemContext.ingest` y `build_context` para manejar casos límite de datos de entrada mal formados, garantizando que si una fuente (como una configuración corrupta) intenta inyectar tipos de datos inesperados (listas, diccionarios profundos o rutas), el asistente ignore esos campos en lugar de propagar errores o bloquear la operación.
 - `2026-11-07T12:54:08` **settings.py** (rendimiento): Optimicé el rendimiento de `_Validators._is_safe_path` y `_Validators._run_safety_checks` añadiendo un cache `lru_cache` al primero y reutilizando el chequeo de la cadena de padres en el segundo, reduciendo significativamente las llamadas al sistema de archivos en operaciones repetidas.
 - `2026-11-07T12:53:29` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la normalización de rutas fuera del bucle de heurísticas mediante el uso de `seen_normcase` en `Scanner.process_entry` y consolidando las comprobaciones de extensión para evitar múltiples llamadas a `os.path.splitext` y accesos innecesarios al sistema de archivos.
-- `2026-11-07T12:53:02` **safety.py** (rendimiento): Se implementó un sistema de "Short-Circuit Caching" en `_validate_security_rules` y `_check_file_integrity` mediante un nuevo caché `_NEGATIVE_SECURITY_CACHE`, evitando la ejecución costosa de múltiples verificaciones de estado (IO calls y kernel calls) para archivos que ya han sido identificados como inseguros en la misma sesión, mejorando significativamente el rendimiento en escaneos profundos.
-- `2026-11-07T12:41:57` **memory.py** (rendimiento): Optimizé `_iter_process_memory` sustituyendo el buffer de nombres `path_buf` compartido por un acceso local más eficiente y mejoré el rendimiento del filtrado de procesos evitando llamadas redundantes a `is_protected_path` al validar la existencia del handle antes de la resolución de nombre.
-- `2026-11-07T12:32:29` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación aplicando `lru_cache` a `create_linear_scorer` y a las funciones de cálculo individuales, evitando cálculos redundantes de división y normalización en cada iteración del bucle principal para las mismas entradas de métricas.
