@@ -442,6 +442,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         f: io.StringIO = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         
+        # Validación de integridad de la estructura del CSV recibido
         if not reader.fieldnames or "Name" not in reader.fieldnames or "Value" not in reader.fieldnames:
             return []
         
@@ -452,6 +453,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             raw_name = row.get("Name")
             raw_cmd = row.get("Value")
             
+            # Sanitización de tipos y control de datos potencialmente corrompidos
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
             

@@ -137,9 +137,9 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     if val is None or isinstance(val, (bool, dict, list, tuple, Path)):
         return None
     try:
-        f: float = float(val)
-        if _is_safe_numeric_context(f) and spec.is_valid_type(f) and _is_metric_within_bounds(f, spec):
-            return f
+        metric_val: float = float(val)
+        if _is_safe_numeric_context(metric_val) and spec.is_valid_type(metric_val) and _is_metric_within_bounds(metric_val, spec):
+            return metric_val
     except (ValueError, TypeError, OverflowError):
         pass
     return None
@@ -192,7 +192,7 @@ class AssistantConfig:
 
 @dataclass(frozen=True)
 class MetricSpec:
-    """Especificación de restricciones para validación de métricas."""
+    """Especificación de restricciones para validación de métricas numéricas."""
     type_hint: type
     min_val: float
     max_val: float
@@ -245,8 +245,8 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
 
 # Mapa para acceso eficiente a criterios por clave de métrica
 _CRITERIOS_MAP: Final[dict[str, tuple[ProblemCriterion, ...]]] = {}
-for c in _CRITERIOS_SALUD:
-    _CRITERIOS_MAP.setdefault(c.metric_key, []).append(c)
+for criterion in _CRITERIOS_SALUD:
+    _CRITERIOS_MAP.setdefault(criterion.metric_key, []).append(criterion)
 _CRITERIOS_MAP: Final[dict[str, tuple[ProblemCriterion, ...]]] = {k: tuple(v) for k, v in _CRITERIOS_MAP.items()}
 
 class AreaExplanation(NamedTuple):
@@ -357,8 +357,8 @@ def _safe_float(val: Any, default: float = 0.0) -> float:
     try:
         if not _is_safe_numeric_context(val):
             return default
-        f: float = float(val)
-        return f if f >= 0.0 else default
+        metric_val: float = float(val)
+        return metric_val if metric_val >= 0.0 else default
     except (TypeError, ValueError):
         return default
 
@@ -400,7 +400,7 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 @lru_cache(maxsize=128)
 def _evaluate_active_problems(metrics_items: frozenset[tuple[str, float]]) -> tuple[str, ...]:
     """
-    Evalúa el estado de salud basado en métricas.
+    Evalúa el estado de salud basado en métricas utilizando los criterios configurados.
     """
     return tuple(
         msg for key, val in metrics_items 

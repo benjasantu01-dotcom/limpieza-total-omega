@@ -32,7 +32,7 @@ _MIN_SCALE: Final[float] = 0.1
 _MAX_SCALE: Final[float] = 10.0
 _DEFAULT_SVG_SIZE: Final[int] = 128
 
-# Factores de conversión para renderizado geométrico del escudo base
+# Factores de conversión para renderizado geométrico del escudo base (coordenadas locales 128x128)
 SHIELD_WIDTH: Final[float] = 128.0
 SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
@@ -391,7 +391,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza franjas usando parámetros cacheados."""
+    """Renderiza franjas decorativas en un Canvas dado usando parámetros cacheados."""
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
@@ -403,7 +403,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Dibuja elementos ornamentales (glifo Omega) sobre el escudo."""
+    """Dibuja elementos ornamentales (glifo Omega) sobre el escudo usando coordenadas escaladas."""
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
         canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
@@ -412,7 +412,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza la estructura vectorial compleja del escudo en un Canvas dado."""
+    """Renderiza la estructura vectorial compleja del escudo en un Canvas dado, normalizando el tamaño base."""
     if canvas is None: return
     try:
         s = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
@@ -425,7 +425,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja barras decorativas graduadas."""
+    """Dibuja barras decorativas graduadas para indicadores horizontales."""
     if canvas is None or not isinstance(width, int): return
     try:
         for s in get_gradient_segments(max(1, width), stops):
@@ -433,7 +433,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Renderiza indicadores circulares de salud."""
+    """Renderiza indicadores circulares de salud basados en arcos vectoriales."""
     if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))
