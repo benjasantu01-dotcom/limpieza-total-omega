@@ -118,12 +118,12 @@ class DirectoryScanner:
             return False
         
         try:
-            # Uso local del path para validaciones iniciales
-            p = Path(path_str)
-            if not p.exists() or not is_safe_to_modify(p) or is_protected_path(p):
+            abs_p = os.path.abspath(path_str)
+            p = Path(abs_p)
+            if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p):
                 return False
             
-            real_path = os.path.realpath(path_str)
+            real_path = os.path.realpath(abs_p)
             return os.path.commonpath([real_path, self.ctx.sandbox_base_norm]) == self.ctx.sandbox_base_norm
         except (OSError, RuntimeError, ValueError):
             return False

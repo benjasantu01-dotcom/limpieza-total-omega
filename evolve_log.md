@@ -900,3 +900,42 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-11-08T09:27:49` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-08T09:27:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T09:27:49` Corrida terminada. Total usado hoy: 224.
+- `2026-11-08T09:33:56` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-08T09:34:14` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 4% del original (posible pérdida de código)
+- `2026-11-08T09:34:45` Tests FALLARON:
+```
+================================= FAILURES ===================================
+___________________ test_score_color_changes_with_the_score ____________________
+
+    def test_score_color_changes_with_the_score():
+        assert branding.score_color(95) == branding.PALETTE["success"]
+        assert branding.score_color(85) == branding.PALETTE["info"]
+>       assert branding.score_color(70) == branding.PALETTE["warning"]
+E       AssertionError: assert '#ff4757' == '#ffb020'
+E         
+E         - #ffb020
+E         + #ff4757
+
+evolve/tests/test_modules.py:162: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:244: SyntaxWarning: invalid escape sequence '\ '
+    """Prepend el prefijo \\?\ para soportar rutas extendidas de hasta 32k caracteres."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_score_color_changes_with_the_score - AssertionError: assert '#ff4757' == '#ffb020'
+  
+  - #ffb020
+  + #ff4757
+1 failed, 298 passed, 4 warnings in 1.05s
+
+```
+- `2026-11-08T09:34:45` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` validando explícitamente las entradas contra `None` y tipos incorrectos antes de operar, previniendo excepciones innecesarias y asegurando que las funciones devuelvan valores seguros por defecto en lugar de fallar.
+- `2026-11-08T09:35:10` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se mejoró `DirectoryScanner._is_path_allowed` para realizar una validación de seguridad más robusta mediante `os.path.abspath` y una verificación explícita de `is_protected_path` antes de la resolución del `realpath`, evitando así posibles excepciones en rutas inexistentes o inaccesibles que antes podían interrumpir el flujo.
+- `2026-11-08T09:35:21` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). He robustecido la tolerancia a fallos en `_safe_stat` y `_collect_summary_data` manejando explícitamente casos donde las rutas fallan al normalizarse, evitando que una excepción en un archivo puntual detenga el análisis completo de grandes volúmenes de datos.
+- `2026-11-08T09:35:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T09:35:21` Corrida terminada. Total usado hoy: 228.

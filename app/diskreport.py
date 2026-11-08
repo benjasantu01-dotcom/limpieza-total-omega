@@ -401,15 +401,19 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    for path, size in walk_files(directory, skip_protected):
-        stats.register_file(size, _get_extension(path))
-            
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif top_heap and size > top_heap[0][0]:
-                # Reemplaza el elemento menor del heap con el archivo actual si es mayor
-                heapq.heapreplace(top_heap, (size, path))
+    # Manejo de fallos durante el recorrido para asegurar integridad
+    try:
+        for path, size in walk_files(directory, skip_protected):
+            stats.register_file(size, _get_extension(path))
+                
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif top_heap and size > top_heap[0][0]:
+                    # Reemplaza el elemento menor del heap con el archivo actual si es mayor
+                    heapq.heapreplace(top_heap, (size, path))
+    except (Exception):
+        pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

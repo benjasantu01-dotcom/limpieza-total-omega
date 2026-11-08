@@ -7,36 +7,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **176** (34.9% de aceptación)
-- Rechazadas por tests: 11
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 92 | 7 | 34 | 5 | 142 |
-| 2026-11-08 | 84 | 4 | 30 | 5 | 101 |
+| 2026-11-07 | 90 | 7 | 33 | 5 | 141 |
+| 2026-11-08 | 86 | 5 | 31 | 5 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **45**
 - robustez ante casos límite: **41**
 - seguridad defensiva: **36**
+- manejo de errores y validación de entradas: **28**
 - rendimiento: **26**
-- manejo de errores y validación de entradas: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `quarantine.py`: **19**
+- `diskreport.py`: **18**
 - `healthscore.py`: **17**
-- `diskreport.py`: **17**
-- `memory.py`: **16**
 - `safety.py`: **15**
+- `memory.py`: **15**
 - `scanner.py`: **15**
 - `settings.py`: **14**
-- `browser.py`: **12**
+- `browser.py`: **13**
 - `assistant.py`: **11**
 - `startup.py`: **11**
 - `duplicates.py`: **10**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T09:35:21` **diskreport.py** (manejo de errores y validación de entradas): He robustecido la tolerancia a fallos en `_safe_stat` y `_collect_summary_data` manejando explícitamente casos donde las rutas fallan al normalizarse, evitando que una excepción en un archivo puntual detenga el análisis completo de grandes volúmenes de datos.
+- `2026-11-08T09:35:10` **browser.py** (manejo de errores y validación de entradas): Se mejoró `DirectoryScanner._is_path_allowed` para realizar una validación de seguridad más robusta mediante `os.path.abspath` y una verificación explícita de `is_protected_path` antes de la resolución del `realpath`, evitando así posibles excepciones en rutas inexistentes o inaccesibles que antes podían interrumpir el flujo.
 - `2026-11-08T08:04:11` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la robustez de `is_protected_path` al utilizar `pathlib.Path.parts` con una comparación de cadenas normalizadas que evita errores de coincidencia parcial en nombres de directorios (por ejemplo, evitar que "bin" coincida con "binary"), garantizando que solo se bloqueen los directorios exactos definidos en `PROTECTED_DIR_NAMES`.
 - `2026-11-08T08:02:52` **quarantine.py** (seguridad defensiva): Se ha mejorado `_perform_secure_copy` agregando una validación estricta del espacio libre justo antes de realizar la escritura, para evitar que una interrupción de I/O por disco lleno deje archivos temporales huérfanos o corrompidos en el sistema.
 - `2026-11-08T07:56:43` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_iter_process_memory` y `trim_working_set` asegurando que los handles de procesos se cierren correctamente ante cualquier excepción durante la ejecución, y se añadió una validación de longitud para `path_buf` antes de su uso para prevenir posibles desbordamientos en la comunicación con la API Win32.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T07:22:37` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de E/S y condiciones de carrera al implementar un mecanismo de reintento con *backoff* exponencial en la función `_safe_unlink`, asegurando que operaciones fallidas transitoriamente (como bloqueos temporales por antivirus o indexadores de Windows) no aborten la limpieza de la cuarentena.
 - `2026-11-08T07:21:55` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_can_move_file` añadiendo una validación explícita sobre caracteres prohibidos en el nombre del archivo resultante y verificando la longitud de la ruta completa, evitando así excepciones críticas de `OSError` al intentar realizar el movimiento en el sistema de archivos de Windows.
 - `2026-11-08T07:13:41` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_safe_int_conversion` ante valores de tipo `float` muy grandes o "infinitos" que podrían causar errores de redondeo o desbordamientos al ser tratados como bytes, asegurando que cualquier entrada numérica extrema retorne un valor seguro (0 B) en lugar de propagar un valor corrupto.
-- `2026-11-08T07:12:19` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemMetrics` mediante la adición de una comprobación de tipo y valor en el método `__setattr__`, asegurando que cualquier asignación de datos sea procesada antes de ser aceptada por la instancia, previniendo estados inconsistentes.
-- `2026-11-08T07:03:49` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de sistema de archivos en `walk_files` y `largest_folders` añadiendo bloques `try-except` granulares en los puntos donde el acceso a metadatos (como `stat` o `scandir`) suele fallar por bloqueos de E/S o cambios concurrentes de estado.
