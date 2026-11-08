@@ -187,7 +187,10 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
-    """Valida y convierte entradas crudas a BytesValue garantizando integridad."""
+    """
+    Valida entradas (string, int, float) y las convierte a BytesValue.
+    Se asegura de evitar desbordamientos y valores negativos o inválidos.
+    """
     if value is None: return BytesValue(0)
     
     try:
@@ -211,7 +214,10 @@ _CACHE_TOP_PROC: CacheEntry = CacheEntry(0.0, [])
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """Interpreta /proc/meminfo de Linux convirtiendo KB a bytes."""
+    """
+    Interpreta /proc/meminfo de Linux.
+    Calcula el total, disponible y caché basándose en las etiquetas de texto del kernel.
+    """
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return _EMPTY_SNAPSHOT
         
@@ -331,7 +337,10 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
 GetModNameFunc = Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]
 
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
-    """Verifica que el ejecutable del proceso no se encuentre en ruta protegida."""
+    """
+    Verifica que el ejecutable del proceso no se encuentre en ruta protegida.
+    Utiliza el callback `get_mod_name_func` para resolver la ruta real del ejecutable.
+    """
     if handle is None or get_mod_name_func is None: return False
     try:
         length = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
@@ -344,8 +353,8 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: GetModNameFunc) -> Optional[wintypes.HANDLE]:
     """
-    Obtiene un handle validado para un proceso, asegurando que se libere si la
-    validación de seguridad falla o el proceso no está activo.
+    Helper que abre, valida y cierra el handle de un proceso.
+    Si el proceso está en zona protegida o ha finalizado, devuelve None y asegura la limpieza.
     """
     handle = _get_process_handle(pid, access)
     if not handle or handle == INVALID_HANDLE_VALUE: return None
@@ -363,8 +372,8 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     """
-    Generador que enumera procesos del sistema, calcula su consumo de memoria,
-    y filtra mediante validaciones de seguridad para excluir procesos protegidos.
+    Generador de procesos del sistema que filtra por uso de RAM y seguridad.
+    Pre-aloca buffers compartidos para minimizar el overhead en el escaneo.
     """
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     
@@ -440,7 +449,10 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita a Windows liberar el Working Set del proceso (Acción manual)."""
+    """
+    Solicita al sistema liberar páginas del Working Set de un proceso.
+    Acción manual que requiere privilegios y validación previa de seguridad.
+    """
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
     

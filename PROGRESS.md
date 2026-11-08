@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 60
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 9
 - Sin respuesta de la IA (error o límite): 248
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 6 | 0 | 3 | 0 | 5 |
+| 2026-11-06 | 4 | 0 | 1 | 0 | 5 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 57 | 4 | 19 | 3 | 57 |
+| 2026-11-08 | 60 | 4 | 20 | 3 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
-- robustez ante casos límite: **40**
+- legibilidad y documentación: **49**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **35**
 - manejo de errores y validación de entradas: **30**
-- rendimiento: **22**
+- rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
+- `memory.py`: **16**
 - `diskreport.py`: **16**
-- `scanner.py`: **15**
-- `memory.py`: **15**
+- `scanner.py`: **14**
 - `settings.py`: **14**
 - `safety.py`: **13**
 - `browser.py`: **12**
 - `startup.py`: **12**
-- `assistant.py`: **11**
+- `assistant.py`: **10**
 - `duplicates.py`: **10**
+- `organizer.py`: **9**
 - `branding.py`: **8**
-- `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T06:02:35` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_check_isolation_safety` para utilizar nombres de variables más descriptivos y eliminar la ambigüedad en las validaciones de persistencia de metadatos, facilitando la auditoría de seguridad del proceso de aislamiento.
+- `2026-11-08T06:02:07` **organizer.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados (como `PathLike` y `Iterable`) y docstrings explicativos en las funciones críticas de validación y recorrido, aclarando el propósito y las restricciones de seguridad de cada lógica.
+- `2026-11-08T06:01:40` **memory.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de los helpers de bajo nivel en `memory.py` y renombré variables internas para clarificar su intención, facilitando la comprensión del flujo de datos en un módulo complejo que interactúa directamente con la API de Windows.
 - `2026-11-08T05:51:41` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings explicativos en las constantes globales y funciones de orquestación, además de añadir type hints explícitos y clarificar la lógica de validación numérica para hacer más evidente el "porqué" detrás de las restricciones de seguridad.
 - `2026-11-08T05:51:21` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de filtrado, agregando type hints y docstrings precisos que explican el "porqué" detrás de las verificaciones de seguridad (`_safe_path_check` y `_is_valid_candidate`) para evitar que futuros colaboradores rompan la lógica de validación.
 - `2026-11-08T05:50:51` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos con parámetros y retornos claros en funciones críticas, y se ha reemplazado la lógica de validación de extensiones en `_collect_summary_data` por una función interna `_get_extension` para mejorar la legibilidad y mantenibilidad del flujo de datos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T05:30:09` **quarantine.py** (manejo de errores y validación de entradas): He mejorado `quarantine_dir` para capturar explícitamente excepciones de permisos específicas (como `PermissionError`) durante la creación del directorio de prueba efímero, evitando que errores genéricos de sistema enmascaren problemas de acceso al disco del usuario y permitiendo mensajes de error más informativos.
 - `2026-11-08T05:21:24` **organizer.py** (manejo de errores y validación de entradas): Mejoré el robustecimiento del módulo `organizer.py` mediante la validación proactiva de parámetros de entrada en `stage_for_review` y `delete_reviewed`, reemplazando el uso de `ensure_safe_to_modify` por chequeos seguros (`is_safe_to_modify`) dentro de la lógica crítica para evitar excepciones inesperadas, y refiné la captura de errores en `delete_reviewed` para asegurar que operaciones fallidas no bloqueen el proceso completo de limpieza.
 - `2026-11-08T05:21:12` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` agregando validaciones de entrada más estrictas y manejo de excepciones específicas para evitar que datos corruptos en el CSV o valores inesperados causen comportamientos erróneos.
-- `2026-11-08T05:19:50` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_process_pipeline_entry` y `_evaluate_rules` mediante la sustitución de capturas de excepción genéricas por validaciones proactivas y manejo de estados nulos o incorrectos, asegurando que el pipeline de cálculo sea resiliente ante datos inesperados sin ocultar fallos lógicos.
-- `2026-11-08T05:10:03` **browser.py** (manejo de errores y validación de entradas): Mejoré `_is_target_valid` para capturar explícitamente excepciones de `pathlib` (como `pathlib.Path.parts` lanzando errores en rutas malformadas) y añadí una validación de tipo `None` en `total_cache_bytes` para garantizar que la iteración sea robusta ante datos corruptos.
-- `2026-11-08T03:48:02` **startup.py** (seguridad defensiva): Se reforzó `StartupEntry._is_valid_executable` para validar la existencia real del archivo y evitar la manipulación de enlaces simbólicos mediante `resolve(strict=False)` antes de la comprobación, asegurando que no se sigan rutas fuera de las carpetas permitidas.

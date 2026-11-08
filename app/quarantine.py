@@ -454,18 +454,21 @@ def _verify_quarantine_preconditions(source_path: Path, target_directory: Path) 
 
 def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
     """Valida estado físico del archivo previo a iniciar el aislamiento."""
-    resolved_source: Path = _is_path_canonical(source_path)
-    resolved_dest_dir: Path = _is_path_canonical(target_directory)
-    _check_for_reparse_points(resolved_source)
-    if not resolved_source.is_file(): raise UnsafePathError("Solo se permiten archivos regulares.")
-    if resolved_source.stat().st_size == 0: raise UnsafePathError("Archivos vacíos prohibidos.")
-    if _is_filesystem_read_only(target_directory): raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
+    source_abs: Path = _is_path_canonical(source_path)
+    target_abs: Path = _is_path_canonical(target_directory)
+    
+    _check_for_reparse_points(source_abs)
+    if not source_abs.is_file(): raise UnsafePathError("Solo se permiten archivos regulares.")
+    if source_abs.stat().st_size == 0: raise UnsafePathError("Archivos vacíos prohibidos.")
+    if _is_filesystem_read_only(target_abs): raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
+    
     if hasattr(os, 'getuid'):
-        if resolved_source.stat().st_uid != os.getuid(): raise UnsafePathError("Aislamiento denegado: propiedad incorrecta.")
-    _check_device_consistency(resolved_source, resolved_dest_dir)
-    _verify_quarantine_preconditions(resolved_source, resolved_dest_dir)
-    ensure_safe_to_modify(resolved_source, allow_sensitive=True)
-    if not _is_file_exclusive(resolved_source): raise IOError("Archivo origen bloqueado por otro proceso.")
+        if source_abs.stat().st_uid != os.getuid(): raise UnsafePathError("Aislamiento denegado: propiedad incorrecta.")
+        
+    _check_device_consistency(source_abs, target_abs)
+    _verify_quarantine_preconditions(source_abs, target_abs)
+    ensure_safe_to_modify(source_abs, allow_sensitive=True)
+    if not _is_file_exclusive(source_abs): raise IOError("Archivo origen bloqueado por otro proceso.")
 
 def _validate_isolation_request(source_path: Path, target_directory: Path) -> None:
     """Coordina las validaciones previas al aislamiento (Sandbox)."""
