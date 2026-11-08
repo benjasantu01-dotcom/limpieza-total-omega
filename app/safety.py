@@ -506,7 +506,7 @@ def _is_system_directory_junction(path_str: str) -> bool:
     """Verifica si una ruta es un punto de unión NTFS (reparse point)."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     attrs = _get_file_attrs(path_str)
-    if attrs == INVALID_FILE_ATTRIBUTES: return False
+    if attrs == INVALID_FILE_ATTRIBUTES: return True # Bloquear por seguridad ante fallo de acceso
     return bool(attrs & Win32Attr.REPARSE_POINT)
 
 def _is_file_in_use_by_system(path_str: str) -> bool:

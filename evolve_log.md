@@ -1167,3 +1167,45 @@ ERROR evolve/tests/test_modules.py
 - `2026-11-08T12:22:14` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-11-08T12:22:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T12:22:14` Corrida terminada. Total usado hoy: 292.
+- `2026-11-08T12:27:04` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-08T12:27:32` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-08T12:28:16` Tests FALLARON:
+```
+[ 72%]
+.......................................................................F [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_purge_item_cannot_delete_outside_the_quarantine _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_purge_item_cannot_delete_0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-1/test_purge_item_cannot_delete_0/_Cuarentena')
+
+    def test_purge_item_cannot_delete_outside_the_quarantine(tmp_path, cuarentena):
+        victima = tmp_path / "no-tocar.txt"
+        victima.write_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed in 1.25s
+
+```
+- `2026-11-08T12:28:16` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `quarantine.py` integrando una verificación de integridad de inodos y dispositivos justo antes de realizar cualquier operación de borrado (`_safe_unlink`), evitando condiciones de carrera TOCTOU al asegurar que el archivo que se va a eliminar es idéntico al que fue registrado originalmente en el manifiesto.
+- `2026-11-08T12:28:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-08T12:29:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-08T12:30:13` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado una mejora en la detección de puntos de reparse (junctions) en `_is_system_directory_junction` para ser más robusta, asegurando que si la API falla o devuelve un estado inválido, la ruta sea tratada como protegida por defecto, mejorando la seguridad defensiva frente a manipulaciones de estructura de archivos.
+- `2026-11-08T12:30:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T12:30:13` Corrida terminada. Total usado hoy: 296.
