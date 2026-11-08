@@ -754,7 +754,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     if not q: return None
     
     # Construcción de estructura segura antes de serializar
-    content_payload = {
+    content_payload: dict[str, Any] = {
         "contents": [{
             "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]
         }]

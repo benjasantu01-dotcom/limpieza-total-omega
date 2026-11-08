@@ -207,7 +207,10 @@ class _SettingsManager:
                         msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
                     f.write(serialized_bytes)
                     f.flush()
-                    os.fsync(f.fileno())
+                    try:
+                        os.fsync(f.fileno())
+                    except OSError:
+                        return False
                 os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
                 os.replace(temp_path, resolved_path)
                 self.clear(resolved_str)

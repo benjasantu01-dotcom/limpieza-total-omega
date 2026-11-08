@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 239
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 101 | 8 | 36 | 6 | 177 |
-| 2026-11-08 | 75 | 4 | 27 | 5 | 65 |
+| 2026-11-07 | 101 | 8 | 36 | 6 | 173 |
+| 2026-11-08 | 78 | 4 | 27 | 5 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **30**
-- seguridad defensiva: **29**
+- seguridad defensiva: **30**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
@@ -33,18 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `diskreport.py`: **17**
 - `memory.py`: **16**
+- `scanner.py`: **15**
 - `safety.py`: **14**
-- `scanner.py`: **14**
-- `settings.py`: **13**
+- `settings.py`: **14**
 - `startup.py`: **12**
+- `assistant.py`: **12**
 - `browser.py`: **12**
-- `assistant.py`: **11**
 - `duplicates.py`: **10**
 - `organizer.py`: **10**
 - `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T07:34:03` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la función `_build_payload` implementando una validación estricta de la estructura del diccionario `content_payload` mediante una copia profunda superficial para asegurar que no se filtren tipos no deseados y validando la integridad del contenido generado antes de la serialización, alineándome con las mejores prácticas de defensa en profundidad del proyecto.
+- `2026-11-08T07:32:37` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `perform_atomic_write` añadiendo un manejo explícito de `OSError` durante la operación de `os.fsync`, garantizando que fallos intermitentes de I/O no dejen el archivo de configuración en un estado inconsistente o bloqueado.
+- `2026-11-08T07:32:05` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `_get_canonical_path` y `_is_valid_path_structure` para manejar correctamente rutas con caracteres Unicode, espacios en blanco o terminaciones inválidas al nivel de la API de Windows, evitando posibles excepciones de `pathlib` en entornos con configuraciones regionales restrictivas.
 - `2026-11-08T07:23:30` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para archivos de longitud cero en `_validate_file_operations_security` y `_evaluate_security_rules` para prevenir la eliminación accidental de archivos de configuración vacíos o marcadores de sistema, reforzando la robustez ante casos límite.
 - `2026-11-08T07:22:37` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de E/S y condiciones de carrera al implementar un mecanismo de reintento con *backoff* exponencial en la función `_safe_unlink`, asegurando que operaciones fallidas transitoriamente (como bloqueos temporales por antivirus o indexadores de Windows) no aborten la limpieza de la cuarentena.
 - `2026-11-08T07:21:55` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_can_move_file` añadiendo una validación explícita sobre caracteres prohibidos en el nombre del archivo resultante y verificando la longitud de la ruta completa, evitando así excepciones críticas de `OSError` al intentar realizar el movimiento en el sistema de archivos de Windows.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T06:41:09` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria eliminando la creación repetitiva de buffers y estructuras dentro del loop principal, utilizando un buffer persistente y reduciendo el número de llamadas a la API mediante una validación de acceso más eficiente.
 - `2026-11-08T06:22:22` **browser.py** (rendimiento): Se optimizó el escaneo del directorio de caché evitando el cálculo de `os.path.realpath` y la creación de objetos `Path` dentro del bucle de `_process_entry`, utilizando en su lugar `os.scandir` de forma más directa y aprovechando las rutas ya normalizadas en el contexto.
 - `2026-11-08T06:22:11` **branding.py** (rendimiento): Se optimizó el acceso a las propiedades de la paleta y los colores de severidad reemplazando múltiples llamadas a funciones (que implican validación de tipos y lógica de fallback) por pre-cálculos cacheados o accesos directos a `MappingProxyType`, reduciendo la carga de CPU en el redibujado de la interfaz.
-- `2026-11-08T06:12:08` **settings.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando las funciones internas con docstrings de estilo Google que explican el "porqué" de las decisiones de seguridad, y añadiendo type hints faltantes en funciones críticas para clarificar el flujo de datos.
-- `2026-11-08T06:11:51` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en funciones clave y tipado más preciso en la clase `Scanner`, aclarando la intención operativa y el flujo de los datos sin alterar la lógica.
-- `2026-11-08T06:11:25` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings descriptivos a las funciones de validación, clarificando la jerarquía de chequeos y centralizando la lógica de errores en las clases de soporte, facilitando el mantenimiento técnico de la capa de seguridad.

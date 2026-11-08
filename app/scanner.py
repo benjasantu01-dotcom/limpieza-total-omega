@@ -105,9 +105,11 @@ def _get_canonical_path(path_str: str) -> str:
     """Normaliza y resuelve la ruta de forma segura para evitar traversal."""
     try:
         if not path_str or "\0" in path_str: return ""
-        norm = os.path.normcase(os.path.abspath(path_str))
+        # Normalizar espacios y eliminar caracteres potencialmente inválidos
+        clean_path = os.path.normpath(path_str.strip())
+        norm = os.path.normcase(os.path.abspath(clean_path))
         return norm if len(norm) <= SCAN_LIMITS.path_length_limit else ""
-    except (OSError, ValueError, TypeError):
+    except (OSError, ValueError, TypeError, AttributeError):
         return ""
 
 def _is_safe_by_attributes(path: Path) -> bool:
@@ -184,10 +186,11 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
         abs_path = _get_canonical_path(path_str)
         if not abs_path or _cached_is_protected(abs_path):
             return False
-        if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(abs_path):
+        # Validar caracteres prohibidos que podrían evadir chequeos de nombres simples
+        if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(os.path.basename(abs_path)):
             return False
         return True
-    except (OSError, ValueError, TypeError):
+    except (OSError, ValueError, TypeError, AttributeError):
         return False
 
 # --- Suite de Heurísticas ---
@@ -250,7 +253,7 @@ class Scanner:
             if not norm_entry or not self.base_root_real:
                 return False
             return os.path.commonpath([self.base_root_real, norm_entry]) == self.base_root_real
-        except (ValueError, OSError):
+        except (ValueError, OSError, ValueError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
