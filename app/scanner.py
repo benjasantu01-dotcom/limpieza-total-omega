@@ -263,7 +263,7 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida si una entrada es apta para ser procesada durante el escaneo."""
+        """Valida recursivamente si una entrada es apta para ser procesada."""
         try:
             path_str = getattr(entry, 'path', None)
             if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
@@ -294,7 +294,9 @@ class Scanner:
         return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
-        """Procesa una entrada del directorio, decidiendo si explorar o analizar."""
+        """
+        Analiza una entrada: si es directorio, lo encola; si es archivo, ejecuta heurísticas.
+        """
         if not self._is_safe_entry(entry):
             return
         try:
@@ -310,7 +312,9 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta la suite de heurísticas sobre un archivo identificado."""
+        """
+        Ejecuta todas las heurísticas registradas en ALL_CHECKS sobre un archivo validado.
+        """
         stats = _safe_stat(entry)
         if stats is None:
             return

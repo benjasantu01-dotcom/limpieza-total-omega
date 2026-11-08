@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 59
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 248
+- Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 4 | 0 | 1 | 0 | 5 |
+| 2026-11-06 | 3 | 0 | 1 | 0 | 2 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 60 | 4 | 20 | 3 | 57 |
+| 2026-11-08 | 63 | 4 | 21 | 3 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
-- robustez ante casos límite: **39**
+- legibilidad y documentación: **52**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **35**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **21**
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `memory.py`: **16**
 - `diskreport.py`: **16**
-- `scanner.py`: **14**
-- `settings.py`: **14**
-- `safety.py`: **13**
+- `scanner.py`: **15**
+- `settings.py`: **15**
+- `safety.py`: **14**
 - `browser.py`: **12**
 - `startup.py`: **12**
 - `assistant.py`: **10**
 - `duplicates.py`: **10**
 - `organizer.py`: **9**
-- `branding.py`: **8**
+- `branding.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T06:12:08` **settings.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando las funciones internas con docstrings de estilo Google que explican el "porqué" de las decisiones de seguridad, y añadiendo type hints faltantes en funciones críticas para clarificar el flujo de datos.
+- `2026-11-08T06:11:51` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en funciones clave y tipado más preciso en la clase `Scanner`, aclarando la intención operativa y el flujo de los datos sin alterar la lógica.
+- `2026-11-08T06:11:25` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings descriptivos a las funciones de validación, clarificando la jerarquía de chequeos y centralizando la lógica de errores en las clases de soporte, facilitando el mantenimiento técnico de la capa de seguridad.
 - `2026-11-08T06:02:35` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_check_isolation_safety` para utilizar nombres de variables más descriptivos y eliminar la ambigüedad en las validaciones de persistencia de metadatos, facilitando la auditoría de seguridad del proceso de aislamiento.
 - `2026-11-08T06:02:07` **organizer.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados (como `PathLike` y `Iterable`) y docstrings explicativos en las funciones críticas de validación y recorrido, aclarando el propósito y las restricciones de seguridad de cada lógica.
 - `2026-11-08T06:01:40` **memory.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de los helpers de bajo nivel en `memory.py` y renombré variables internas para clarificar su intención, facilitando la comprensión del flujo de datos en un módulo complejo que interactúa directamente con la API de Windows.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T05:40:41` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila procesada contenga las claves requeridas y no sea `None`, previniendo errores de ejecución ante entradas mal formadas o vacías del registro.
 - `2026-11-08T05:31:31` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de las heurísticas mediante una validación defensiva estricta de `os.stat_result`, asegurando que los valores de metadatos (como `st_mtime` y `st_size`) sean consistentes y válidos antes de procesarlos, evitando errores por desreferenciación o datos malformados.
 - `2026-11-08T05:31:19` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de excepciones en las validaciones de `_validate_drive_restrictions` y `_is_volume_readonly` para evitar que errores inesperados de API de Windows (como `ctypes.ArgumentError` o `OSError` por dispositivos retirados súbitamente) detengan el flujo principal del programa, devolviendo resultados seguros (bloqueo) en lugar de excepciones no manejadas.
-- `2026-11-08T05:30:09` **quarantine.py** (manejo de errores y validación de entradas): He mejorado `quarantine_dir` para capturar explícitamente excepciones de permisos específicas (como `PermissionError`) durante la creación del directorio de prueba efímero, evitando que errores genéricos de sistema enmascaren problemas de acceso al disco del usuario y permitiendo mensajes de error más informativos.
-- `2026-11-08T05:21:24` **organizer.py** (manejo de errores y validación de entradas): Mejoré el robustecimiento del módulo `organizer.py` mediante la validación proactiva de parámetros de entrada en `stage_for_review` y `delete_reviewed`, reemplazando el uso de `ensure_safe_to_modify` por chequeos seguros (`is_safe_to_modify`) dentro de la lógica crítica para evitar excepciones inesperadas, y refiné la captura de errores en `delete_reviewed` para asegurar que operaciones fallidas no bloqueen el proceso completo de limpieza.
-- `2026-11-08T05:21:12` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` agregando validaciones de entrada más estrictas y manejo de excepciones específicas para evitar que datos corruptos en el CSV o valores inesperados causen comportamientos erróneos.

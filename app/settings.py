@@ -172,10 +172,11 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Garantiza la persistencia de datos mediante una operación de escritura transaccional.
-        1. Crea un archivo temporal en el mismo directorio.
-        2. Escribe el contenido y fuerza el vaciado a disco (fsync) para evitar pérdida de datos ante fallos.
-        3. Realiza un reemplazo atómico a nivel de SO (os.replace).
+        Escribe la configuración de forma atómica.
+        
+        Utiliza un archivo temporal y os.replace para garantizar que el archivo final 
+        nunca quede en estado parcial. Valida la seguridad de la ruta antes de actuar 
+        y fuerza el fsync para evitar pérdida ante fallos de energía.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 16: return False
@@ -244,7 +245,11 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=32)
     def _is_reparse_point(path_str: str) -> bool:
-        """Determina si una ruta es un junction o symlink para evitar recursión peligrosa."""
+        """
+        Determina si una ruta es un junction o symlink.
+        Se bloquea el seguimiento de estos puntos para prevenir bucles infinitos
+        durante la navegación del disco y ataques de redirección.
+        """
         try:
             st = os.lstat(path_str)
             if stat.S_ISLNK(st.st_mode): return True
@@ -255,7 +260,11 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """Valida que la cadena de padres de la ruta no contenga puntos de reparse ni sea protegida."""
+        """
+        Valida que la cadena de padres de la ruta sea segura.
+        Recorre recursivamente los padres hasta la raíz para asegurar que no existan
+        puntos de reparse en ninguna parte de la jerarquía.
+        """
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
@@ -366,7 +375,12 @@ def validate(raw_values: Any) -> AppSettings:
     return config 
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
-    """Verifica que el archivo de configuración sea legible, no alterado y propiedad del usuario."""
+    """
+    Verifica seguridad de lectura del archivo de configuración.
+    Asegura que el archivo sea un archivo regular, propiedad del usuario, sin excesos
+    de permisos (no world-writable) y que no sea un enlace simbólico, previniendo
+    ataques de archivos sustituidos o TOCTOU.
+    """
     try:
         resolved_path = file_path.resolve()
         resolved_str = str(resolved_path)
