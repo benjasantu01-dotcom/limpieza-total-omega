@@ -1133,3 +1133,37 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-08T12:08:26` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-11-08T12:08:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T12:08:26` Corrida terminada. Total usado hoy: 288.
+- `2026-11-08T12:16:51` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-11-08T12:17:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-08T12:17:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-08T12:17:24` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-08T12:18:51` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+ImportError while importing test module '/home/runner/work/limpieza-total-omega/limpieza-total-omega/evolve/tests/test_modules.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+evolve/tests/test_modules.py:24: in <module>
+    import duplicates  # noqa: E402
+    ^^^^^^^^^^^^^^^^^
+app/duplicates.py:22: in <module>
+    import msvcrt
+E   ModuleNotFoundError: No module named 'msvcrt'
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.16s
+
+```
+- `2026-11-08T12:18:51` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad en el escaneo de archivos agregando una verificación de "archivo bloqueado" (mediante `msvcrt.locking` en modo solo lectura) para evitar que el escáner intente procesar archivos que están siendo escritos o bloqueados exclusivamente por el sistema, previniendo errores de acceso y mejorando la robustez frente a bloqueos transitorios.
+- `2026-11-08T12:19:45` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `SystemMetrics` eliminando el uso de `super().__setattr__` dentro de `__setattr__` (que es una práctica propensa a errores que puede bypassar validaciones en herencia compleja) y reemplazándolo por el método estándar `object.__setattr__` para asegurar que las restricciones de validación siempre se apliquen correctamente a cualquier valor asignado al objeto.
+- `2026-11-08T12:20:45` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-08T12:21:59` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-08T12:22:14` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-08T12:22:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T12:22:14` Corrida terminada. Total usado hoy: 292.

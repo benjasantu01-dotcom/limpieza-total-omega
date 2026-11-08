@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 68
+- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 69 | 4 | 24 | 4 | 115 |
-| 2026-11-08 | 116 | 8 | 44 | 12 | 108 |
+| 2026-11-07 | 69 | 4 | 24 | 4 | 111 |
+| 2026-11-08 | 117 | 9 | 45 | 12 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **34**
-- seguridad defensiva: **30**
+- seguridad defensiva: **31**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
-- `healthscore.py`: **17**
 - `scanner.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **15**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T12:19:45` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `SystemMetrics` eliminando el uso de `super().__setattr__` dentro de `__setattr__` (que es una práctica propensa a errores que puede bypassar validaciones en herencia compleja) y reemplazándolo por el método estándar `object.__setattr__` para asegurar que las restricciones de validación siempre se apliquen correctamente a cualquier valor asignado al objeto.
 - `2026-11-08T12:07:51` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` utilizando `ensure_safe_to_modify` dentro de una estructura `try/except` robusta, asegurando que la ruta destino sea validada explícitamente antes de intentar cualquier operación de escritura, siguiendo el patrón de seguridad exigido para evitar escrituras en rutas prohibidas o fuera del alcance permitido.
 - `2026-11-08T11:57:57` **startup.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas de red (UNC) en el método `_resolve_and_cache_path` mediante la verificación explícita de `path_raw.startswith(r"\\")` y el uso de `Path.anchor` para asegurar que el ejecutable esté localizado en una unidad de disco local, evitando bloqueos de I/O al intentar resolver recursos de red o dispositivos remotos.
 - `2026-11-08T11:57:43` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos corruptos o parcialmente escritos añadiendo un chequeo de integridad JSON previo a la deserialización completa y protegiendo la carga ante posibles excepciones de I/O mediante un bloque de seguridad adicional en `_read_and_parse_json`.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T11:08:04` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño del manifiesto (`total_quarantined_bytes`) eliminando la deserialización completa de objetos `QuarantineItem` mediante el uso de un generador que suma directamente `size_bytes` de los diccionarios crudos cargados, reduciendo drásticamente la carga en memoria y CPU durante consultas frecuentes de la UI.
 - `2026-11-08T10:56:49` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline eliminando la recálculo constante de etiquetas en la función `summarize` y mejorando la eficiencia de `_render_bar` al evitar llamadas redundantes a `max` y `min` dentro de un bucle, además de pre-cachear el formato de los nombres de las áreas.
 - `2026-11-08T10:56:38` **duplicates.py** (rendimiento): Optimizado el rendimiento del proceso de recolección de candidatos utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `stat()` mediante el uso de los datos ya obtenidos en el escaneo del directorio.
-- `2026-11-08T10:46:08` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y la normalización de la terminología en los comentarios internos, facilitando la comprensión de las heurísticas de seguridad aplicadas.
