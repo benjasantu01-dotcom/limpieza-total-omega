@@ -608,3 +608,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-11-08T06:12:08` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo documentando las funciones internas con docstrings de estilo Google que explican el "porqué" de las decisiones de seguridad, y añadiendo type hints faltantes en funciones críticas para clarificar el flujo de datos.
 - `2026-11-08T06:12:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T06:12:08` Corrida terminada. Total usado hoy: 148.
+- `2026-11-08T06:20:21` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-08T06:20:49` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-11-08T06:21:34` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimizé `_evaluate_active_problems` reemplazando la construcción de tuplas por un `generator expression` dentro de un constructor `tuple` y mejoré la eficiencia del `_CRITERIOS_MAP` pre-filtrando las métricas en `SystemContext` para evitar iteraciones innecesarias sobre métricas sin criterios asociados.
+- `2026-11-08T06:22:11` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el acceso a las propiedades de la paleta y los colores de severidad reemplazando múltiples llamadas a funciones (que implican validación de tipos y lógica de fallback) por pre-cálculos cacheados o accesos directos a `MappingProxyType`, reduciendo la carga de CPU en el redibujado de la interfaz.
+- `2026-11-08T06:22:22` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el escaneo del directorio de caché evitando el cálculo de `os.path.realpath` y la creación de objetos `Path` dentro del bucle de `_process_entry`, utilizando en su lugar `os.scandir` de forma más directa y aprovechando las rutas ya normalizadas en el contexto.
+- `2026-11-08T06:22:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T06:22:22` Corrida terminada. Total usado hoy: 152.

@@ -118,8 +118,9 @@ class DirectoryScanner:
             return False
         
         try:
-            path_obj = Path(path_str)
-            if not path_obj.exists() or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+            # Uso local del path para validaciones iniciales
+            p = Path(path_str)
+            if not p.exists() or not is_safe_to_modify(p) or is_protected_path(p):
                 return False
             
             real_path = os.path.realpath(path_str)
@@ -129,7 +130,7 @@ class DirectoryScanner:
 
     def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
         """Gestiona la entrada a un subdirectorio, validando que no sea un enlace simbólico o junction."""
-        if not self.ctx.is_junction(entry.path) and self._is_path_allowed(entry.path):
+        if not self.ctx.is_junction(entry.path):
             return self.get_size(entry.path, depth + 1).bytes_found
         return 0
 
@@ -165,15 +166,11 @@ class DirectoryScanner:
         Punto de entrada recursivo para el cálculo de espacio ocupado.
         Verifica el estado del directorio contra ciclos y protecciones del sistema.
         """
-        if not isinstance(root_path, str) or not root_path or not self._is_path_allowed(root_path):
-            return ScanResult(0, False)
-            
         if depth > self.ctx.max_depth:
             return ScanResult(0, True)
 
         try:
             st = os.lstat(root_path)
-            # Detección explícita de puntos de reparse mediante atributos nativos
             attrs = getattr(st, 'st_file_attributes', 0)
             if self.ctx.is_junction(root_path) or (attrs & FileAttributes.REPARSE_POINT) or os.path.islink(root_path):
                 return ScanResult(0, True)
@@ -303,41 +300,28 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el tamaño total en bytes de un directorio mediante recursión controlada."""
     if path is None: return 0
-    p = Path(path)
-    if not p.exists() or not p.is_dir() or not os.access(p, os.R_OK): return 0
+    abs_p = os.path.abspath(path)
+    if not os.path.exists(abs_p) or not os.path.isdir(abs_p) or not os.access(abs_p, os.R_OK): return 0
     
-    try:
-        abs_p = p.resolve(strict=True)
-        root_norm = str(abs_p)
-    except (OSError, RuntimeError):
-        return 0
+    ctx = ScanContext(abs_p, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
+    return DirectoryScanner(ctx).get_size(abs_p).bytes_found
 
-    ctx = ScanContext(root_norm, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
-    return DirectoryScanner(ctx).get_size(root_norm).bytes_found
-
-def _is_target_valid(target: Optional[Path], base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
+def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """Realiza validaciones de integridad sobre la ruta candidata antes de iniciar el escaneo."""
-    if not isinstance(target, Path) or not target.exists() or not target.is_dir(): 
+    if not target.exists() or not target.is_dir(): 
         return False
     try:
-        # Validar reparse points y enlaces simbólicos desde el inicio
-        if _IS_JUNCTION_FN(str(target)) or target.is_symlink() or os.path.islink(target):
+        if _IS_JUNCTION_FN(str(target)) or target.is_symlink():
             return False
-            
         if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): 
             return False
-        
         if _is_system_hidden(str(target), kernel): return False
         
-        # Uso de .parts puede fallar si la ruta está corrompida o tiene caracteres ilegales
         parts = [p.lower() for p in target.parts]
         if any(part in NEVER_TOUCH for part in parts):
             return False
         
         if any(c in target.name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target.name):
-            return False
-        
-        if not os.path.exists(base_norm):
             return False
             
         target_norm = os.path.realpath(str(target))
@@ -362,8 +346,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             if not base.exists(): continue
             base_norm = os.path.realpath(str(base))
             
-            ctx = ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
-            scanner = DirectoryScanner(ctx)
+            scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH))
             
             for browser_key, relative_path in browser_map.items():
                 if not _is_valid_rel_path(relative_path): continue
