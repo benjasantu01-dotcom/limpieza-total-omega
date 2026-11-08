@@ -156,7 +156,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Obtiene metadatos asegurando que el archivo no esté en uso."""
+    """Obtiene metadatos asegurando que el archivo no esté en uso y los datos sean coherentes."""
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
         return None
         
@@ -165,7 +165,10 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         
     try:
         stats = entry.stat(follow_symlinks=False)
-        if stats.st_size < 0:
+        # Validación defensiva estricta de metadatos
+        if not hasattr(stats, 'st_size') or stats.st_size < 0:
+            return None
+        if not hasattr(stats, 'st_mtime') or stats.st_mtime < 0:
             return None
         return stats
     except OSError as e:
@@ -213,10 +216,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     try:
         if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
-            mtime = getattr(stats, "st_mtime", None)
-            if isinstance(mtime, (int, float)) and mtime > 0:
-                if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
-                    return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
+            mtime = getattr(stats, "st_mtime", 0.0)
+            if mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
+                return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
     except (AttributeError, ValueError, TypeError) as e:
         logger.debug(f"Error procesando metadatos temporales para {path}: {e}")
     return None
