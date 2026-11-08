@@ -215,7 +215,7 @@ class _SettingsManager:
                 if temp_path.exists():
                     try: os.remove(temp_path)
                     except OSError: pass
-        except (OSError, IOError, PermissionError, ValueError, RuntimeError):
+        except (OSError, IOError, PermissionError, ValueError, RuntimeError, TypeError):
             return False
 
 _MANAGER = _SettingsManager()
@@ -373,15 +373,12 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
         resolved_str = str(resolved_path)
         if is_protected_path(resolved_str): return False
         
-        # Validación de seguridad contra enlaces y manipulación de estructura
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         
-        # Verificar que el usuario sea el dueño exclusivo
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if (st.st_mode & 0o077) != 0: return False
         
-        # Verificación final de integridad de tamaño y seguridad lógica
         if st.st_size < 16 or st.st_size > MAX_SETTINGS_SIZE: return False
         return is_safe_to_modify(resolved_str)
     except (OSError, PermissionError, AttributeError, ValueError): return False
@@ -401,20 +398,18 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         st = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st): return None
         
-        flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0)
-        fd = os.open(file_path, flags)
+        fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
             st_post = os.fstat(fd)
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or st_post.st_size == 0:
                 return None
-            # Verificación de identidad para evitar TOCTOU
             if st_post.st_ino != st.st_ino or st_post.st_dev != st.st_dev:
                 return None
             with os.fdopen(fd, "r", encoding="utf-8") as f: 
                 data = json.load(f)
             if not isinstance(data, dict): return None
             return data, st_post
-        except (json.JSONDecodeError, OSError, ValueError):
+        except (json.JSONDecodeError, OSError, ValueError, TypeError):
             os.close(fd)
             return None
         except:

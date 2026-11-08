@@ -1325,3 +1325,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-08T00:56:57` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` al implementar una validación de tipo más estricta durante la deserialización JSON y agregué un manejo de excepciones específico para evitar que un manifiesto corrupto o mal formado detenga la ejecución de la aplicación, garantizando que el sistema falle de forma controlada y segura devolviendo una lista vacía.
 - `2026-11-08T00:56:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T00:56:57` Corrida terminada. Total usado hoy: 24.
+- `2026-11-08T01:04:37` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-11-08T01:04:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-08T01:05:27` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 24% del original (posible pérdida de código)
+- `2026-11-08T01:05:56` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas agregando validaciones de entrada (`None`/vacío) en `check_system_lookalike` y `check_double_extension`, asegurando que el motor de escaneo no falle ante nombres de archivo malformados o inesperados durante el procesamiento.
+- `2026-11-08T01:06:11` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_read_and_parse_json` y `save` mediante una validación más estricta del estado del descriptor de archivo, evitando riesgos de corrupción al capturar excepciones críticas durante la serialización y el manejo de archivos abiertos.
+- `2026-11-08T01:06:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T01:06:11` Corrida terminada. Total usado hoy: 28.
