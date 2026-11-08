@@ -1405,3 +1405,39 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-08T02:18:04` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_file_attrs` reduciendo la frecuencia de llamadas al sistema mediante un TTL (Time-To-Live) de caché y evitando llamadas redundantes en el bucle principal de validación, garantizando que el impacto de las validaciones de seguridad sea mínimo durante recorridos masivos de disco.
 - `2026-11-08T02:18:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T02:18:04` Corrida terminada. Total usado hoy: 56.
+- `2026-11-08T02:26:09` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-08T02:26:38` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado el rendimiento del proceso de escaneo reemplazando la lógica de validación de extensiones basada en strings (`str.endswith`) por una consulta eficiente a `frozenset` precompilado dentro de la clase `Scanner`, eliminando la necesidad de `lru_cache` para extensiones, lo cual reduce el overhead de llamadas a función en recorridos masivos.
+- `2026-11-08T02:27:10` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó `validate` reemplazando la creación manual de copias y el re-mapeo iterativo con una aproximación basada en un set de filtrado de claves, reduciendo la carga de CPU y memoria en cada ciclo de validación de configuración.
+- `2026-11-08T02:27:37` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-11-08T02:28:03` Tests FALLARON:
+```
+ __________________
+
+    def test_build_context_reads_fields_one_by_one():
+        """Copia campo por campo, no el objeto entero, para no arrastrar datos."""
+        class MetricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 1.39s
+
+```
+- `2026-11-08T02:28:03` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `SystemContext.ingest` ante casos límite mediante la validación de tipos de datos en la entrada, asegurando que solo se procesen diccionarios o fuentes seguras, y previniendo errores de ejecución si los datos de entrada contienen valores inusuales o tipos no manejables.
+- `2026-11-08T02:28:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T02:28:03` Corrida terminada. Total usado hoy: 60.

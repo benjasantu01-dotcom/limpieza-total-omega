@@ -286,7 +286,6 @@ class Scanner:
         visited.add(norm_path)
         stack.append((entry.path, depth + 1))
 
-    @lru_cache(maxsize=128)
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos de interés según extensiones configuradas."""
         _, ext = os.path.splitext(name)

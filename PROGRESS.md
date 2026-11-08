@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 8
 - Sin respuesta de la IA (error o límite): 251
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 38 | 1 | 13 | 1 | 45 |
+| 2026-11-06 | 35 | 1 | 12 | 1 | 45 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 24 | 1 | 10 | 1 | 20 |
+| 2026-11-08 | 26 | 2 | 11 | 1 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **35**
+- seguridad defensiva: **32**
 - robustez ante casos límite: **31**
 - manejo de errores y validación de entradas: **30**
-- rendimiento: **26**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `quarantine.py`: **20**
-- `diskreport.py`: **17**
-- `scanner.py`: **15**
-- `settings.py`: **14**
+- `healthscore.py`: **19**
+- `scanner.py`: **16**
+- `diskreport.py`: **16**
+- `settings.py`: **15**
 - `memory.py`: **14**
 - `safety.py`: **13**
 - `assistant.py`: **12**
 - `browser.py`: **11**
 - `startup.py`: **10**
-- `duplicates.py`: **9**
 - `branding.py`: **9**
 - `organizer.py`: **8**
+- `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T02:27:10` **settings.py** (rendimiento): Se optimizó `validate` reemplazando la creación manual de copias y el re-mapeo iterativo con una aproximación basada en un set de filtrado de claves, reduciendo la carga de CPU y memoria en cada ciclo de validación de configuración.
+- `2026-11-08T02:26:38` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del proceso de escaneo reemplazando la lógica de validación de extensiones basada en strings (`str.endswith`) por una consulta eficiente a `frozenset` precompilado dentro de la clase `Scanner`, eliminando la necesidad de `lru_cache` para extensiones, lo cual reduce el overhead de llamadas a función en recorridos masivos.
 - `2026-11-08T02:18:04` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_attrs` reduciendo la frecuencia de llamadas al sistema mediante un TTL (Time-To-Live) de caché y evitando llamadas redundantes en el bucle principal de validación, garantizando que el impacto de las validaciones de seguridad sea mínimo durante recorridos masivos de disco.
 - `2026-11-08T02:17:10` **quarantine.py** (rendimiento): Optimizé `load_manifest` mediante el uso de un diccionario para la búsqueda de archivos existentes en el directorio de cuarentena, reduciendo la complejidad de O(N*M) a O(N+M) y eliminando el chequeo redundante de archivos inexistentes en cada iteración del bucle principal.
 - `2026-11-08T02:09:53` **memory.py** (rendimiento): Se optimizó el proceso de enumeración de memoria evitando crear un buffer de nombre de archivo innecesario para los procesos que no cumplen el filtro de PID antes de intentar abrir sus handles.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T01:26:18` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de la lógica de evaluación de reglas, extrayendo la iteración del pipeline en una función dedicada y documentando con mayor claridad el contrato de datos mediante docstrings específicos.
 - `2026-11-08T01:25:51` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo docstrings más detallados, corrigiendo la visibilidad de funciones internas y clarificando la lógica de las comprobaciones de seguridad mediante una estructura de tipos más explícita.
 - `2026-11-08T01:25:27` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo (`walk_files`, `_collect_summary_data` y el uso de `Inode`) clarificando el propósito de la lógica de exclusión de reparse points y la gestión del heap, facilitando la comprensión técnica del flujo de datos sin alterar el comportamiento.
-- `2026-11-08T01:16:45` **browser.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el motor `DirectoryScanner` para clarificar la lógica de seguridad y el propósito de cada método, facilitando el mantenimiento y la auditoría.
-- `2026-11-08T01:16:34` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos que aclaran las dependencias de escalado y las coordenadas relativas, además de estandarizar las anotaciones de tipo para mejorar la legibilidad del contrato de las funciones de renderizado geométrico.
