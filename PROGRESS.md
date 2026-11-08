@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 69 | 4 | 24 | 4 | 107 |
-| 2026-11-08 | 118 | 10 | 46 | 12 | 110 |
+| 2026-11-07 | 69 | 4 | 24 | 4 | 103 |
+| 2026-11-08 | 120 | 10 | 46 | 12 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **34**
-- seguridad defensiva: **32**
+- seguridad defensiva: **34**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
@@ -32,12 +32,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
+- `scanner.py`: **17**
 - `safety.py`: **16**
-- `scanner.py`: **16**
 - `memory.py`: **16**
+- `settings.py`: **15**
 - `duplicates.py`: **14**
 - `startup.py`: **14**
-- `settings.py`: **14**
 - `browser.py`: **12**
 - `assistant.py`: **12**
 - `branding.py`: **10**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T12:38:17` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para prevenir ataques de desbordamiento de pila y acceso no autorizado mediante la resolución de rutas relativas peligrosas, añadiendo una verificación explícita de `is_absolute()` y limitando la recursión de `parents` antes de cualquier operación de resolución.
+- `2026-11-08T12:37:43` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_valid_path_structure` y `_is_valid_file_path` al incluir una validación explícita mediante `os.path.commonpath` para asegurar que, incluso ante resoluciones de enlaces o rutas ambiguas, no se procesen rutas fuera de los límites esperados ni accesos a nombres de dispositivos críticos de Windows.
 - `2026-11-08T12:30:13` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la detección de puntos de reparse (junctions) en `_is_system_directory_junction` para ser más robusta, asegurando que si la API falla o devuelve un estado inválido, la ruta sea tratada como protegida por defecto, mejorando la seguridad defensiva frente a manipulaciones de estructura de archivos.
 - `2026-11-08T12:19:45` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `SystemMetrics` eliminando el uso de `super().__setattr__` dentro de `__setattr__` (que es una práctica propensa a errores que puede bypassar validaciones en herencia compleja) y reemplazándolo por el método estándar `object.__setattr__` para asegurar que las restricciones de validación siempre se apliquen correctamente a cualquier valor asignado al objeto.
 - `2026-11-08T12:07:51` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` utilizando `ensure_safe_to_modify` dentro de una estructura `try/except` robusta, asegurando que la ruta destino sea validada explícitamente antes de intentar cualquier operación de escritura, siguiendo el patrón de seguridad exigido para evitar escrituras en rutas prohibidas o fuera del alcance permitido.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T11:27:07` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `AssistantConfig` y `_parse_config` agregando validaciones explícitas para evitar fallos por valores `None` o tipos inesperados en el archivo de configuración, asegurando que la aplicación siempre mantenga un estado operativo y seguro ante configuraciones corruptas.
 - `2026-11-08T11:18:35` **settings.py** (rendimiento): Se optimizó la gestión de la caché en `_SettingsManager` reemplazando los diccionarios por estructuras más eficientes y reduciendo la redundancia en `load` para evitar el cálculo innecesario de `resolved_str` y la verificación redundante de estados.
 - `2026-11-08T11:16:51` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` integrando la verificación de `PROTECTED_DIR_NAMES` mediante `any()` directo sobre un set normalizado, evitando la creación costosa de una lista de nombres de partes en cada llamada y reduciendo la presión sobre el recolector de basura.
-- `2026-11-08T11:08:04` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño del manifiesto (`total_quarantined_bytes`) eliminando la deserialización completa de objetos `QuarantineItem` mediante el uso de un generador que suma directamente `size_bytes` de los diccionarios crudos cargados, reduciendo drásticamente la carga en memoria y CPU durante consultas frecuentes de la UI.
-- `2026-11-08T10:56:49` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline eliminando la recálculo constante de etiquetas en la función `summarize` y mejorando la eficiencia de `_render_bar` al evitar llamadas redundantes a `max` y `min` dentro de un bucle, además de pre-cachear el formato de los nombres de las áreas.

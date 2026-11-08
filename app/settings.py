@@ -253,16 +253,17 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """Valida que la cadena de padres de la ruta sea segura."""
+        """Valida que la cadena de padres de la ruta sea segura y absoluta."""
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
             current = p.resolve()
-            depth = 0
-            for parent in current.parents:
-                depth += 1
-                if depth > 128: return False
+            
+            # Limitar profundidad de recursión para evitar ataques de desbordamiento
+            for depth, parent in enumerate(current.parents):
+                if depth > 32: return False
                 if _Validators._is_reparse_point(str(parent)): return False
+            
             if current.exists():
                 return not is_protected_path(str(current)) and is_safe_to_modify(str(current))
             return not is_protected_path(str(p)) and is_safe_to_modify(str(p))

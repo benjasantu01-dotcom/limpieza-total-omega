@@ -82,7 +82,6 @@ PathInput: TypeAlias = Union[Path, str, None]
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d\u202b\u200b\u00a0\ufeff]")
 RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
-INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[\. ]$")
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 
 # Listas de configuración para filtros
@@ -129,6 +128,8 @@ def _is_valid_file_path(path: PathInput) -> bool:
         abs_path = _get_canonical_path(path_str)
         if not abs_path: return False
         target_path = Path(abs_path)
+        # Verificación de integridad: la ruta no debe ser un dispositivo especial (ej NUL)
+        if RESERVED_NAMES_RE.match(target_path.name): return False
         return target_path.exists() and not _cached_is_protected(abs_path) and target_path.is_file() and _is_safe_by_attributes(target_path)
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
         return False
@@ -186,8 +187,11 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
         abs_path = _get_canonical_path(path_str)
         if not abs_path or _cached_is_protected(abs_path):
             return False
-        # Validar caracteres prohibidos que podrían evadir chequeos de nombres simples
+        # Validar caracteres prohibidos y estructuras UNC peligrosas
         if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(os.path.basename(abs_path)):
+            return False
+        # Bloquear nombres de dispositivos Windows (ej: COM1, LPT1)
+        if RESERVED_NAMES_RE.match(os.path.basename(abs_path)):
             return False
         return True
     except (OSError, ValueError, TypeError, AttributeError):
