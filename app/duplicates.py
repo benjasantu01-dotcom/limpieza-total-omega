@@ -98,12 +98,11 @@ class DuplicateGroup:
 def _safe_path_check(path: Path) -> bool:
     """
     Valida si un path es apto para lectura intensiva (hashing).
-    
-    El chequeo es estricto: requiere que el path no sea de sistema, no sea una ruta 
-    crítica protegida, no sea un punto de reanálisis y que el sistema permita su modificación.
     """
     if not isinstance(path, Path): return False
     try:
+        # Validación de existencia previa para evitar excepciones en resolución
+        if not path.exists(): return False
         abs_path = path.resolve(strict=True)
         if not abs_path.is_file() or not is_safe_to_modify(abs_path):
             return False
@@ -115,9 +114,6 @@ def _safe_path_check(path: Path) -> bool:
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """
     Filtro de pre-selección para archivos candidatos a duplicados.
-    
-    Ignora archivos vacíos (0 bytes) y archivos marcados por el SO como Ocultos o de Sistema
-    para prevenir accesos denegados por privilegios elevados.
     """
     return st_size > 0 and not is_system_or_hidden(path) and _safe_path_check(path)
 
@@ -125,7 +121,6 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo. 
-    Usa `_full_hash_cache` para persistir resultados durante la sesión actual.
     """
     if not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache.get(path)
@@ -145,8 +140,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula un fingerprint (SHA256) de los primeros 64KB (Paso 2 del algoritmo).
-    Permite descartar rápidamente archivos con encabezados distintos.
+    Calcula un fingerprint (SHA256) de los primeros 64KB.
     """
     if not isinstance(path, Path): return None
     if path in _partial_cache: return _partial_cache.get(path)
@@ -170,9 +164,10 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if p is None: continue
         item = Path(p)
         try:
-            st = item.stat()
-            if _is_valid_candidate(item, st.st_size):
-                groups_by_size[st.st_size].append(item)
+            if item.exists():
+                st = item.stat()
+                if _is_valid_candidate(item, st.st_size):
+                    groups_by_size[st.st_size].append(item)
         except (OSError, PermissionError, TypeError): 
             continue
     return dict(groups_by_size)
@@ -272,8 +267,7 @@ def _get_mtime(path: Path) -> Optional[float]:
 
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
-    Selecciona la ruta del archivo más antiguo (mtime) en el grupo,
-    tomándolo como 'archivo original' a conservar.
+    Selecciona la ruta del archivo más antiguo (mtime) en el grupo.
     """
     if not group.paths: return None
     candidates = [(m, p) for p in group.paths if (m := _get_mtime(p)) is not None]

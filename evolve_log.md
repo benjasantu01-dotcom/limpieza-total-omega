@@ -1105,3 +1105,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-08T11:27:48` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-08T11:27:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T11:27:48` Corrida terminada. Total usado hoy: 272.
+- `2026-11-08T11:36:05` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-11-08T11:36:32` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-11-08T11:36:55` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). He mejorado la robustez de `_safe_path_check` y `_collect_candidates` añadiendo una validación explícita de `path.exists()` antes de procesar cada entrada, evitando que archivos bloqueados o borrados durante la ejecución del bucle causen `OSError` inesperados, y asegurando que las rutas simbólicas rotas no entren en el flujo de hashing.
+- `2026-11-08T11:37:21` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemMetrics` ante valores `NaN` o `inf` durante la inicialización, asegurando que `__post_init__` y `__setattr__` validen la finitud antes de asignar valores, evitando que estados inválidos se propaguen al pipeline de scoring.
+- `2026-11-08T11:38:18` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-08T11:38:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T11:38:18` Corrida terminada. Total usado hoy: 276.

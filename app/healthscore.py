@@ -222,6 +222,9 @@ class SystemMetrics:
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name in _ALL_METRICS:
+            # Asegurar que el valor es finito antes de validar y asignar
+            if not _is_finite_numeric(value):
+                value = 0.0
             v = _validate_numeric(value, 0.0, *_METRIC_LIMITS.get(name, (0.0, 1e9)))
             super().__setattr__(name, v)
         else: super().__setattr__(name, value)
@@ -231,13 +234,16 @@ class SystemMetrics:
 
     def get_clamped_metric(self, field_name: str) -> float:
         min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
-        return _validate_numeric(self.safe_get(field_name, 0.0), 0.0, min_v, max_v)
+        val = self.safe_get(field_name, 0.0)
+        return _validate_numeric(val, 0.0, min_v, max_v)
 
     def validate(self) -> None:
-        for f in _ALL_METRICS: super().__setattr__(f, self.get_clamped_metric(f))
+        for f in _ALL_METRICS:
+            val = getattr(self, f, 0.0)
+            super().__setattr__(f, self.get_clamped_metric(f))
 
     @property
-    def is_finite(self) -> bool: return all(_is_finite_numeric(self.safe_get(f, 0.0)) for f in _ALL_METRICS)
+    def is_finite(self) -> bool: return all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
 
 @dataclass
 class HealthResult:
