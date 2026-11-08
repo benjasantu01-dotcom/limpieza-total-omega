@@ -335,7 +335,7 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
     if WindowsAPI.kernel32 is None: return None
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-        if not handle:
+        if not handle or handle == INVALID_HANDLE_VALUE:
             return None
         return wintypes.HANDLE(handle)
     except (ctypes.WinError, OSError):
@@ -365,9 +365,9 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
     Si el proceso está en zona protegida o ha finalizado, devuelve None y asegura la limpieza.
     """
     handle = _get_process_handle(pid, access)
-    if not handle or handle == INVALID_HANDLE_VALUE: return None
+    if not handle: return None
     
-    # Verificación temprana de estado sin cerrar handle aún
+    # Verificación de estado vivo sin cerrar handle aún
     exit_code = wintypes.DWORD()
     if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
         WindowsAPI.kernel32.CloseHandle(handle)
@@ -479,7 +479,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida para este PID o no disponible."
         
     path_buf = ctypes.create_unicode_buffer(512)
-    # Validar acceso y seguridad antes de cualquier operación. El helper ya verifica is_protected_path.
     handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if handle is None:

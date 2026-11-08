@@ -1112,3 +1112,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-08T11:38:18` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-08T11:38:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T11:38:18` Corrida terminada. Total usado hoy: 276.
+- `2026-11-08T11:46:19` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-08T11:46:56` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez ante errores de acceso a procesos en `_iter_process_memory` y `trim_working_set`, asegurando que `GetExitCodeProcess` y `CloseHandle` se utilicen correctamente para evitar fugas de recursos o intentos de manipulación sobre procesos que terminaron inesperadamente durante la ejecución.
+- `2026-11-08T11:47:26` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-08T11:48:15` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejoró `_is_file_exclusive` para manejar casos donde el archivo, aunque existente, tiene permisos restringidos o bloqueos de acceso que impedían abrir el manejador, añadiendo un manejo de excepciones más robusto ante estados de carrera (`PermissionError` o `OSError` inesperados) durante la verificación de exclusividad.
+- `2026-11-08T11:48:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-08T11:48:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T11:48:18` Corrida terminada. Total usado hoy: 280.

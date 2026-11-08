@@ -170,11 +170,12 @@ def _is_file_exclusive(path: Path) -> bool:
     if os.name == 'nt':
         try:
             # CreateFile con dwShareMode=0 garantiza exclusividad total
-            handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
+            # dwDesiredAccess: 0, dwShareMode: 0, dwCreationDisposition: OPEN_EXISTING
+            handle = ctypes.windll.kernel32.CreateFileW(str(path), 0, 0, None, 3, 0x80, None)
             if handle == -1 or handle == 0: return False
             ctypes.windll.kernel32.CloseHandle(handle)
             return True
-        except (OSError, AttributeError):
+        except (OSError, AttributeError, PermissionError):
             return False
     
     try:
