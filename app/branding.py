@@ -297,7 +297,7 @@ def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
 def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
     if destination is None: return None
     try:
-        dest_path = Path(destination).resolve()
+        dest_path = Path(destination).absolute()
         if not is_safe_to_modify(dest_path): return None
         parent = dest_path.parent
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)

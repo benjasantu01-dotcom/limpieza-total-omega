@@ -374,6 +374,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             rel = path.relative_to(root)
             if rel.parts:
                 top_level = root / rel.parts[0]
+                # Verificación defensiva: validar que exista y sea un directorio antes de procesar
                 if top_level.is_dir() and not is_protected_path(top_level):
                     stats[top_level].size += size
                     stats[top_level].file_count += 1
