@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **168** (33.3% de aceptación)
+- Mejoras aceptadas: **169** (33.5% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 62
-- Sin cambios (nada sustancial que mejorar): 9
+- Sin cambios (nada sustancial que mejorar): 8
 - Sin respuesta de la IA (error o límite): 250
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 14 | 1 | 7 | 1 | 7 |
+| 2026-11-06 | 12 | 1 | 6 | 0 | 7 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 44 | 4 | 17 | 2 | 57 |
+| 2026-11-08 | 47 | 4 | 18 | 2 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
 - robustez ante casos límite: **40**
+- legibilidad y documentación: **40**
 - seguridad defensiva: **35**
 - rendimiento: **28**
-- manejo de errores y validación de entradas: **23**
+- manejo de errores y validación de entradas: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
 - `quarantine.py`: **19**
 - `diskreport.py`: **16**
-- `scanner.py`: **15**
-- `memory.py`: **15**
+- `memory.py`: **16**
+- `scanner.py`: **14**
 - `settings.py`: **14**
-- `startup.py`: **12**
 - `safety.py`: **12**
 - `assistant.py`: **11**
 - `browser.py`: **11**
+- `startup.py`: **11**
 - `duplicates.py`: **9**
 - `branding.py`: **8**
-- `organizer.py`: **7**
+- `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T05:21:24` **organizer.py** (manejo de errores y validación de entradas): Mejoré el robustecimiento del módulo `organizer.py` mediante la validación proactiva de parámetros de entrada en `stage_for_review` y `delete_reviewed`, reemplazando el uso de `ensure_safe_to_modify` por chequeos seguros (`is_safe_to_modify`) dentro de la lógica crítica para evitar excepciones inesperadas, y refiné la captura de errores en `delete_reviewed` para asegurar que operaciones fallidas no bloqueen el proceso completo de limpieza.
+- `2026-11-08T05:21:12` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_int_conversion` y `_extract_process_info` agregando validaciones de entrada más estrictas y manejo de excepciones específicas para evitar que datos corruptos en el CSV o valores inesperados causen comportamientos erróneos.
+- `2026-11-08T05:19:50` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_process_pipeline_entry` y `_evaluate_rules` mediante la sustitución de capturas de excepción genéricas por validaciones proactivas y manejo de estados nulos o incorrectos, asegurando que el pipeline de cálculo sea resiliente ante datos inesperados sin ocultar fallos lógicos.
 - `2026-11-08T05:10:03` **browser.py** (manejo de errores y validación de entradas): Mejoré `_is_target_valid` para capturar explícitamente excepciones de `pathlib` (como `pathlib.Path.parts` lanzando errores en rutas malformadas) y añadí una validación de tipo `None` en `total_cache_bytes` para garantizar que la iteración sea robusta ante datos corruptos.
 - `2026-11-08T03:48:02` **startup.py** (seguridad defensiva): Se reforzó `StartupEntry._is_valid_executable` para validar la existencia real del archivo y evitar la manipulación de enlaces simbólicos mediante `resolve(strict=False)` antes de la comprobación, asegurando que no se sigan rutas fuera de las carpetas permitidas.
 - `2026-11-08T03:29:11` **quarantine.py** (seguridad defensiva): Se ha reforzado `_is_file_exclusive` para evitar condiciones de carrera (TOCTOU) al abrir el archivo, utilizando `os.open` con flags de acceso exclusivo (`O_EXCL`) y garantizando que el descriptor de archivo sea cerrado inmediatamente bajo cualquier circunstancia mediante bloques `try/finally` explícitos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T03:07:53` **startup.py** (robustez ante casos límite): Introduje una validación robusta de permisos de acceso (`os.access` con `os.X_OK`) en el método `_validate_file_access` para asegurar que las entradas de registro no apunten a archivos sin permisos de ejecución, evitando errores de sistema en rutas denegadas.
 - `2026-11-08T03:07:25` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `_read_and_parse_json` ante condiciones de carrera y archivos inconsistentes, añadiendo una validación explícita de tamaño tras la apertura (`fstat` vs `lstat`) y asegurando que la lectura sea efectivamente exitosa antes de procesar el contenido JSON, previniendo errores de puntero o corrupción silenciosa durante el acceso concurrente al disco.
 - `2026-11-08T02:58:53` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `_get_canonical_path` y `_is_valid_path_structure` para manejar casos donde `os.path.realpath` podría fallar o retornar rutas malformadas ante nombres de archivo reservados o dispositivos de hardware en Windows, mitigando posibles errores de sistema durante el recorrido.
-- `2026-11-08T02:58:41` **safety.py** (robustez ante casos límite): Se ha añadido una validación de concurrencia en la función `_get_path_stat_robust` mediante el manejo explícito de errores de `Sharing Violation` (código 32 de Win32), asegurando que el sistema sea más resiliente cuando archivos temporales o del sistema estén siendo procesados por otros procesos.
-- `2026-11-08T02:57:31` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y estado del sistema de archivos en `quarantine_dir` mediante un chequeo de disponibilidad (espacio en disco) y validación de permisos de escritura mediante un intento de creación de archivo temporal, mitigando fallos silenciosos en entornos donde el acceso a disco puede ser restrictivo o transitorio.
-- `2026-11-08T02:48:28` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y limpieza de recursos en `_iter_process_memory` mediante el uso de bloques `try...finally` asegurando que los handles de procesos sean cerrados incluso si ocurren excepciones durante la obtención de contadores de memoria.

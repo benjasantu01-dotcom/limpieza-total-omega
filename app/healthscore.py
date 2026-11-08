@@ -336,30 +336,25 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         return []
     if not _is_finite_numeric(normalized_ratio):
         return []
+    
     results = []
     for rule in rules:
-        if not isinstance(rule, RecommendationRule):
-            continue
-        try:
+        if isinstance(rule, RecommendationRule):
             if rule.check(metrics, normalized_ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg: 
                     results.append(msg)
-        except Exception:
-            continue
     return results
 
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Calcula el score parcial y extrae recomendaciones para una única área del pipeline."""
     if not isinstance(entry, PipelineEntry):
         return 0, []
-    try:
-        ratio = _clamp(entry.scorer(metrics))
-        points = int(ratio * float(entry.weight))
-        recs = _evaluate_rules(metrics, entry.rules, ratio)
-        return (points if _is_finite_numeric(points) else 0), recs
-    except Exception:
-        return 0, []
+    
+    ratio = _clamp(entry.scorer(metrics))
+    points = int(ratio * float(entry.weight))
+    recs = _evaluate_rules(metrics, entry.rules, ratio)
+    return (points if _is_finite_numeric(points) else 0), recs
 
 # --- Orquestación Principal ---
 

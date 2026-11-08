@@ -383,7 +383,7 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Mueve los archivos basura a un directorio de revisión.
-    Garantiza que el destino sea seguro mediante `ensure_safe_to_modify`.
+    Garantiza que el destino sea seguro mediante validaciones de seguridad.
     """
     if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
         return None
@@ -392,7 +392,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
         
-        ensure_safe_to_modify(dest_base)
+        if not is_safe_to_modify(dest_base):
+            return None
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
@@ -425,12 +426,13 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir(): return 0
-        ensure_safe_to_modify(dest)
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
+            return 0
         
         count = 0
         for item in dest.iterdir():
             try:
+                # Se utiliza el chequeo booleano para mayor seguridad en iteración
                 if item.is_file() and not item.is_symlink() and not _is_junction(item):
                     if is_valid_junk_extension(item.name) and is_safe_to_modify(item) and not _is_file_locked(item):
                         item.unlink()

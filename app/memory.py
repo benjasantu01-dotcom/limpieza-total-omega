@@ -193,9 +193,9 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
     try:
         if isinstance(value, (int, float)):
             if math.isnan(value) or math.isinf(value): return BytesValue(0)
-            val = int(value * multiplier)
+            val = int(float(value) * multiplier)
         elif isinstance(value, str):
-            clean_val = "".join(filter(str.isdigit, value))
+            clean_val = "".join(filter(str.isdigit, value.split(".")[0]))
             val = int(clean_val) * multiplier if clean_val else 0
         else:
             return BytesValue(0)
@@ -252,16 +252,16 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     un objeto de proceso validado si la línea es íntegra y segura.
     """
     if not isinstance(line, str): return None
-    parts = [p.strip().strip("'\"") for p in line.split(",")]
-    if len(parts) < 3: return None
-    
     try:
+        parts = [p.strip().strip("'\"") for p in line.split(",")]
+        if len(parts) < 3: return None
+        
         proc_name = str(parts[0]).strip()
         pid_val = int(parts[1])
         ws_val = _safe_int_conversion(parts[2])
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, IndexError, AttributeError):
         pass
     return None
 
