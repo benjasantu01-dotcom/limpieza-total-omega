@@ -196,16 +196,19 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 # --- Suite de Heurísticas ---
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
+    """Detecta archivos de tamaño 0 bytes que pueden actuar como marcadores o bloqueos."""
     if stats is not None and getattr(stats, "st_size", -1) == 0:
         return Suspicion(path, "Archivo vacío detectado (posible marcador de relleno)", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
+    """Identifica patrones de doble extensión utilizados para engañar al usuario final."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de ofuscación", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
+    """Comprueba si un archivo utiliza nombres de procesos del sistema en carpetas no autorizadas."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -215,6 +218,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
+    """Marca ejecutables nuevos encontrados en carpetas temporales o de descarga comunes."""
     if path is None or path.parent is None or stats is None: 
         return None
     try:
@@ -318,12 +322,12 @@ class Scanner:
         """
         Ejecuta todas las heurísticas registradas en ALL_CHECKS sobre un archivo validado.
         """
-        stats = _safe_stat(entry)
+        stats: Optional[os.stat_result] = _safe_stat(entry)
         if stats is None:
             return
         for check_fn in ALL_CHECKS:
             try:
-                finding = check_fn(path, entry, self.now_ts, stats)
+                finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts, stats)
                 if finding:
                     self.results.append(finding)
             except Exception as e:
@@ -335,13 +339,13 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
         return []
     try:
         if not path.is_file(): return []
-        stats = entry.stat(follow_symlinks=False) if entry else path.stat()
+        stats: os.stat_result = entry.stat(follow_symlinks=False) if entry else path.stat()
     except (OSError, PermissionError):
         return []
     findings: ScanResult = []
     for check_fn in ALL_CHECKS:
         try:
-            res = check_fn(path, entry, now_ts, stats)
+            res: Optional[Suspicion] = check_fn(path, entry, now_ts, stats)
             if res:
                 findings.append(res)
         except Exception as e:
