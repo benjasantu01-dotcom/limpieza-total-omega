@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 67
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 226
+- Rechazadas por guardia de seguridad: 68
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 69 | 4 | 24 | 4 | 119 |
-| 2026-11-08 | 115 | 8 | 43 | 11 | 107 |
+| 2026-11-07 | 69 | 4 | 24 | 4 | 115 |
+| 2026-11-08 | 116 | 8 | 44 | 12 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **34**
-- seguridad defensiva: **29**
+- seguridad defensiva: **30**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
@@ -40,11 +40,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **14**
 - `browser.py`: **12**
 - `assistant.py`: **12**
+- `branding.py`: **10**
 - `organizer.py`: **10**
-- `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T12:07:51` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` utilizando `ensure_safe_to_modify` dentro de una estructura `try/except` robusta, asegurando que la ruta destino sea validada explícitamente antes de intentar cualquier operación de escritura, siguiendo el patrón de seguridad exigido para evitar escrituras en rutas prohibidas o fuera del alcance permitido.
 - `2026-11-08T11:57:57` **startup.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas de red (UNC) en el método `_resolve_and_cache_path` mediante la verificación explícita de `path_raw.startswith(r"\\")` y el uso de `Path.anchor` para asegurar que el ejecutable esté localizado en una unidad de disco local, evitando bloqueos de I/O al intentar resolver recursos de red o dispositivos remotos.
 - `2026-11-08T11:57:43` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos corruptos o parcialmente escritos añadiendo un chequeo de integridad JSON previo a la deserialización completa y protegiendo la carga ante posibles excepciones de I/O mediante un bloque de seguridad adicional en `_read_and_parse_json`.
 - `2026-11-08T11:57:13` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes o inaccesibles dentro de `_is_valid_file_path` y `scan_directory` al centralizar la resolución de rutas mediante un manejo de excepciones más granular, evitando el colapso del escaneo por errores de acceso parciales en el sistema de archivos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T10:56:49` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline eliminando la recálculo constante de etiquetas en la función `summarize` y mejorando la eficiencia de `_render_bar` al evitar llamadas redundantes a `max` y `min` dentro de un bucle, además de pre-cachear el formato de los nombres de las áreas.
 - `2026-11-08T10:56:38` **duplicates.py** (rendimiento): Optimizado el rendimiento del proceso de recolección de candidatos utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `stat()` mediante el uso de los datos ya obtenidos en el escaneo del directorio.
 - `2026-11-08T10:46:08` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y la normalización de la terminología en los comentarios internos, facilitando la comprensión de las heurísticas de seguridad aplicadas.
-- `2026-11-08T10:45:40` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos explícitos a las funciones críticas (`_coerce_and_verify`, `_read_and_parse_json`, `perform_atomic_write`), clarificando las responsabilidades de cada paso en el ciclo de validación de datos.
