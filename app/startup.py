@@ -145,7 +145,9 @@ class StartupEntry:
         ignorando enlaces simbólicos para prevenir ataques de redirección.
         """
         try:
-            return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
+            # Resolvemos primero para verificar el destino real antes de validar extensión/tipo
+            resolved = path.resolve(strict=False)
+            return resolved.is_file() and not resolved.is_symlink() and resolved.suffix.lower() in EXECUTABLE_EXTS
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
@@ -193,7 +195,7 @@ class StartupEntry:
             if is_protected_path(p) or not is_safe_to_modify(p):
                 _VALIDATION_CACHE[p_str] = False
                 return False
-            if not p.is_file() or p.is_symlink():
+            if not self._is_valid_executable(p):
                 _VALIDATION_CACHE[p_str] = False
                 return False
             # Se requiere permiso de lectura Y ejecución para considerar un binario válido

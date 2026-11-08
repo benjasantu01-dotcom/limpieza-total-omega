@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 30 | 1 | 11 | 1 | 23 |
+| 2026-11-06 | 30 | 1 | 11 | 1 | 19 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 42 | 4 | 16 | 2 | 24 |
+| 2026-11-08 | 43 | 4 | 16 | 2 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **34**
+- seguridad defensiva: **35**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **28**
 
@@ -39,13 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **13**
 - `safety.py`: **13**
 - `browser.py`: **12**
-- `startup.py`: **11**
+- `startup.py`: **12**
 - `branding.py`: **9**
 - `duplicates.py`: **9**
 - `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T03:48:02` **startup.py** (seguridad defensiva): Se reforzó `StartupEntry._is_valid_executable` para validar la existencia real del archivo y evitar la manipulación de enlaces simbólicos mediante `resolve(strict=False)` antes de la comprobación, asegurando que no se sigan rutas fuera de las carpetas permitidas.
 - `2026-11-08T03:29:11` **quarantine.py** (seguridad defensiva): Se ha reforzado `_is_file_exclusive` para evitar condiciones de carrera (TOCTOU) al abrir el archivo, utilizando `os.open` con flags de acceso exclusivo (`O_EXCL`) y garantizando que el descriptor de archivo sea cerrado inmediatamente bajo cualquier circunstancia mediante bloques `try/finally` explícitos.
 - `2026-11-08T03:28:36` **organizer.py** (seguridad defensiva): Mejoré `_validate_path_security` para incluir una validación estricta del directorio de destino mediante `is_safe_to_modify`, asegurando que el destino no solo exista y sea escribible, sino que sea una ruta validada por los mecanismos de seguridad centralizados antes de intentar cualquier operación.
 - `2026-11-08T03:28:09` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` al aplicar una validación de ruta estricta utilizando `is_protected_path` sobre el proceso destino antes de cualquier operación de `EmptyWorkingSet`, previniendo así intentos de manipulación sobre procesos del sistema incluso si se posee un handle válido.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T02:57:31` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y estado del sistema de archivos en `quarantine_dir` mediante un chequeo de disponibilidad (espacio en disco) y validación de permisos de escritura mediante un intento de creación de archivo temporal, mitigando fallos silenciosos en entornos donde el acceso a disco puede ser restrictivo o transitorio.
 - `2026-11-08T02:48:28` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y limpieza de recursos en `_iter_process_memory` mediante el uso de bloques `try...finally` asegurando que los handles de procesos sean cerrados incluso si ocurren excepciones durante la obtención de contadores de memoria.
 - `2026-11-08T02:46:54` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores `None` o estructuras malformadas en `_evaluate_rules` y `_process_pipeline_entry`, previniendo errores de ejecución ante entradas inesperadas durante el procesamiento del pipeline.
-- `2026-11-08T02:37:36` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` implementando un chequeo preventivo de errores para manejar archivos bloqueados o con permisos denegados que interrumpían prematuramente el flujo del iterador `os.scandir`, garantizando que el escaneo continúe aunque fallen accesos individuales.
