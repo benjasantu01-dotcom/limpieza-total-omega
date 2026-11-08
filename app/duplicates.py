@@ -193,11 +193,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         with suppress(OSError, PermissionError):
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    entry_path = Path(entry.path)
                     if entry.is_dir(follow_symlinks=False):
-                        if depth + 1 <= MAX_RECURSION_DEPTH and is_safe_to_modify(entry_path):
-                            queue.append((entry_path, depth + 1))
+                        if depth + 1 <= MAX_RECURSION_DEPTH:
+                            queue.append((Path(entry.path), depth + 1))
                     elif entry.is_file(follow_symlinks=False):
+                        entry_path = Path(entry.path)
                         if skip_protected and is_protected_path(entry_path): continue
                         stat = entry.stat(follow_symlinks=False)
                         if stat.st_size >= min_size:

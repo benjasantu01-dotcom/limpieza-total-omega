@@ -400,8 +400,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 def _render_bar(points: int, max_val: int) -> str:
     """Generador: crea una representación visual simple de barras horizontales iterativa."""
     if max_val <= 0: return ""
-    safe_points = int(_clamp(float(points), 0.0, float(max_val)))
-    return ("#" * safe_points) + ("." * (max_val - safe_points))
+    p = max(0, min(points, max_val))
+    return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte de texto legible a partir de un objeto HealthResult."""

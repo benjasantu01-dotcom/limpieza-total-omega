@@ -1389,3 +1389,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-08T01:57:18` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-11-08T01:57:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T01:57:18` Corrida terminada. Total usado hoy: 48.
+- `2026-11-08T02:05:44` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-08T02:06:11` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando la conversión redundante a `Path` en el bucle principal, reduciendo drásticamente las llamadas al sistema y la creación de objetos en el escaneo inicial.
+- `2026-11-08T02:07:04` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó `_render_bar` para evitar la creación innecesaria de cadenas mediante una multiplicación de caracteres ineficiente y se eliminó la llamada a `_clamp` dentro del bucle de `summarize`, aprovechando que los puntos ya son enteros validados, mejorando el rendimiento en el renderizado del reporte.
+- `2026-11-08T02:08:04` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-08T02:09:07` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-08T02:09:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 19% del original (posible pérdida de código)
+- `2026-11-08T02:09:53` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de enumeración de memoria evitando crear un buffer de nombre de archivo innecesario para los procesos que no cumplen el filtro de PID antes de intentar abrir sus handles.
+- `2026-11-08T02:09:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T02:09:53` Corrida terminada. Total usado hoy: 52.

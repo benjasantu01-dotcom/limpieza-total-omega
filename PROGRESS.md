@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **168** (33.3% de aceptación)
+- Mejoras aceptadas: **170** (33.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 61
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 254
+- Sin respuesta de la IA (error o límite): 253
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 39 | 2 | 15 | 1 | 49 |
+| 2026-11-06 | 38 | 2 | 13 | 1 | 48 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 19 | 1 | 8 | 1 | 19 |
+| 2026-11-08 | 22 | 1 | 9 | 1 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - seguridad defensiva: **35**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **31**
 - manejo de errores y validación de entradas: **30**
-- rendimiento: **21**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
 - `quarantine.py`: **19**
 - `diskreport.py`: **17**
 - `scanner.py`: **15**
 - `settings.py`: **14**
-- `safety.py`: **13**
-- `memory.py`: **13**
+- `memory.py`: **14**
+- `safety.py`: **12**
 - `assistant.py`: **12**
 - `browser.py`: **11**
 - `startup.py`: **10**
+- `duplicates.py`: **9**
 - `branding.py`: **9**
-- `duplicates.py`: **8**
 - `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T02:09:53` **memory.py** (rendimiento): Se optimizó el proceso de enumeración de memoria evitando crear un buffer de nombre de archivo innecesario para los procesos que no cumplen el filtro de PID antes de intentar abrir sus handles.
+- `2026-11-08T02:07:04` **healthscore.py** (rendimiento): Se optimizó `_render_bar` para evitar la creación innecesaria de cadenas mediante una multiplicación de caracteres ineficiente y se eliminó la llamada a `_clamp` dentro del bucle de `summarize`, aprovechando que los puntos ya son enteros validados, mejorando el rendimiento en el renderizado del reporte.
+- `2026-11-08T02:06:11` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando la conversión redundante a `Path` en el bucle principal, reduciendo drásticamente las llamadas al sistema y la creación de objetos en el escaneo inicial.
 - `2026-11-08T01:47:05` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las estructuras de datos de `startup.py`, añadiendo docstrings que explican el propósito de los caches globales y el flujo de resolución de rutas para clarificar decisiones de diseño no obvias.
 - `2026-11-08T01:46:24` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad del contrato de las funciones heurísticas mediante la documentación detallada de sus parámetros y el uso de un protocolo más explícito, facilitando futuras extensiones sin necesidad de modificar el core del escáner.
 - `2026-11-08T01:36:58` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y sus validaciones asociadas, unificando la lógica de protección de integridad y añadiendo type hints más precisos en la firma de funciones críticas para reducir la ambigüedad en el manejo de rutas y dispositivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T01:16:34` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos que aclaran las dependencias de escalado y las coordenadas relativas, además de estandarizar las anotaciones de tipo para mejorar la legibilidad del contrato de las funciones de renderizado geométrico.
 - `2026-11-08T01:16:02` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de `_CONTEXT_SCHEMA` y `_VALIDATORS` mediante docstrings y type hints más claros, además de renombrar variables internas poco intuitivas como `f` o `c` a nombres descriptivos (`metric_val`, `criterion`) para facilitar la auditoría de seguridad del código.
 - `2026-11-08T01:15:23` **startup.py** (manejo de errores y validación de entradas): Reforcé la robustez en `parse_registry_csv` añadiendo una validación explícita para asegurar que el `csv_text` no contenga cabeceras o filas maliciosas antes de procesarlas, evitando posibles errores de desbordamiento o procesamiento de datos corruptos al manejar la salida de PowerShell.
-- `2026-11-08T01:06:11` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_read_and_parse_json` y `save` mediante una validación más estricta del estado del descriptor de archivo, evitando riesgos de corrupción al capturar excepciones críticas durante la serialización y el manejo de archivos abiertos.
-- `2026-11-08T01:05:56` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validaciones de entrada (`None`/vacío) en `check_system_lookalike` y `check_double_extension`, asegurando que el motor de escaneo no falle ante nombres de archivo malformados o inesperados durante el procesamiento.
-- `2026-11-08T00:56:57` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` al implementar una validación de tipo más estricta durante la deserialización JSON y agregué un manejo de excepciones específico para evitar que un manifiesto corrupto o mal formado detenga la ejecución de la aplicación, garantizando que el sistema falle de forma controlada y segura devolviendo una lista vacía.

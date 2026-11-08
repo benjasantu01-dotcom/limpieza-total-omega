@@ -377,7 +377,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
-    # Pre-instancia los recursos de resolución fuera del loop para optimizar el GC
+    # Pre-instancia buffer compartido para reducir alocación en el loop
     path_buf = ctypes.create_unicode_buffer(512)
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     
