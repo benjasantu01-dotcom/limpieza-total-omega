@@ -409,7 +409,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
             
             with os.fdopen(fd, "r", encoding="utf-8") as f:
                 content = f.read(MAX_SETTINGS_SIZE + 1)
-                if len(content) > MAX_SETTINGS_SIZE: return None
+                if not content or len(content) > MAX_SETTINGS_SIZE: return None
                 data = json.loads(content)
                 
             if not isinstance(data, dict) or not _is_structure_valid(data): return None

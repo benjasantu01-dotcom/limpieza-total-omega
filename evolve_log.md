@@ -1439,3 +1439,25 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-08T14:21:49` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-08T14:21:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T14:21:49` Corrida terminada. Total usado hoy: 340.
+- `2026-11-08T14:29:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-08T14:29:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-08T14:29:21` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-08T14:29:27` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-08T14:30:56` Tests FALLARON:
+```
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+32 failed, 267 passed in 2.20s
+
+```
+- `2026-11-08T14:30:56` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejora el manejo de errores en `_get_file_attrs` al estandarizar la captura de excepciones y asegurar que retorne explícitamente `INVALID_FILE_ATTRIBUTES` ante cualquier falla inesperada, evitando estados de error ambiguos o silenciosos.
+- `2026-11-08T14:31:25` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se corrigió una variable global faltante (`INVALID_TRAILING_CHARS_RE`) en el método `_has_invalid_name` de la clase `Scanner` que provocaba un `NameError` al ejecutarse, y se endureció la validación de la entrada `entry.name` mediante un chequeo preventivo de `None` para evitar errores en las heurísticas.
+- `2026-11-08T14:31:55` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la deserialización en `_read_and_parse_json` al manejar explícitamente el caso de archivos vacíos o con formato inválido, además de fortalecer la validación de integridad en `_is_structure_valid` para evitar inyecciones de claves no esperadas mediante una comprobación estricta de los tipos de datos.
+- `2026-11-08T14:32:09` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `parse_registry_csv` y `_process_folder_entry` mediante la captura explícita de excepciones al interactuar con objetos del sistema de archivos, asegurando que el bucle de procesamiento sea resiliente ante entradas malformadas o permisos denegados sin interrumpir la ejecución.
+- `2026-11-08T14:32:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T14:32:09` Corrida terminada. Total usado hoy: 344.

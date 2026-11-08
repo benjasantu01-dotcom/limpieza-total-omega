@@ -82,6 +82,7 @@ PathInput: TypeAlias = Union[Path, str, None]
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d\u202b\u200b\u00a0\ufeff]")
 RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
+INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[<>:\"|?*]")
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 
 # Listas de configuración para filtros
@@ -314,7 +315,7 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack, depth, visited)
             elif entry.is_file(follow_symlinks=False):
-                if self._is_relevant_extension(entry.name):
+                if entry.name and self._is_relevant_extension(entry.name):
                     path_norm = _get_canonical_path(entry.path)
                     if path_norm and path_norm not in self.seen_normcase:
                         self.seen_normcase.add(path_norm)
