@@ -615,6 +615,10 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         if not (st.st_mode & 0o100000): raise OSError("El origen no es un archivo regular.")
         _check_for_reparse_points(source)
         if st.st_nlink > 1: raise UnsafePathError("Archivo origen con enlaces múltiples.")
+        
+        # Validar espacio crítico antes de iniciar la copia larga
+        _ensure_disk_space(temp_dest.parent, st.st_size)
+        
         ensure_safe_to_modify(temp_dest.parent)
         
         def _copy():

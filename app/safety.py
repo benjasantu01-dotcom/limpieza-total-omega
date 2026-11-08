@@ -859,22 +859,22 @@ def is_protected_path(path: PathLike) -> bool:
 
     try:
         norm_p = _normalize_resolved(path_str)
-        norm_str = os.path.normcase(str(norm_p))
         root_paths = _get_system_root_paths()
         
         # Check against cached roots directly
+        norm_str = os.path.normcase(str(norm_p))
         if any(norm_str.startswith(r) for r in root_paths):
             _PROTECTION_CACHE[path_str] = True
             return True
         
-        # Check part intersection
-        path_parts = norm_p.parts
-        if not PROTECTED_DIR_NAMES.isdisjoint(p.lower() for p in path_parts):
+        # Check path parts exactly against PROTECTED_DIR_NAMES
+        path_parts = {p.lower() for p in norm_p.parts}
+        if not PROTECTED_DIR_NAMES.isdisjoint(path_parts):
             _PROTECTION_CACHE[path_str] = True
             return True
         
         attrs = _get_file_attrs(norm_str)
-        is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(path_parts) <= 1
+        is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(norm_p.parts) <= 1
         
         if len(_PROTECTION_CACHE) > 2048: _PROTECTION_CACHE.clear()
         _PROTECTION_CACHE[path_str] = is_protected
@@ -1083,7 +1083,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError): pass
     if is_drive_root(target_path):
-        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.STRUCTURE)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Verifica recursivamente reparse points para evitar redirecciones fuera del scope."""

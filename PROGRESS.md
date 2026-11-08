@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 101 | 8 | 36 | 6 | 165 |
-| 2026-11-08 | 82 | 4 | 29 | 5 | 68 |
+| 2026-11-07 | 101 | 8 | 36 | 6 | 161 |
+| 2026-11-08 | 84 | 4 | 30 | 5 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **34**
+- seguridad defensiva: **36**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `healthscore.py`: **19**
 - `diskreport.py`: **18**
 - `memory.py`: **17**
+- `safety.py`: **15**
 - `scanner.py`: **15**
-- `safety.py`: **14**
 - `settings.py`: **14**
 - `startup.py`: **12**
 - `assistant.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T08:04:11` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la robustez de `is_protected_path` al utilizar `pathlib.Path.parts` con una comparación de cadenas normalizadas que evita errores de coincidencia parcial en nombres de directorios (por ejemplo, evitar que "bin" coincida con "binary"), garantizando que solo se bloqueen los directorios exactos definidos en `PROTECTED_DIR_NAMES`.
+- `2026-11-08T08:02:52` **quarantine.py** (seguridad defensiva): Se ha mejorado `_perform_secure_copy` agregando una validación estricta del espacio libre justo antes de realizar la escritura, para evitar que una interrupción de I/O por disco lleno deje archivos temporales huérfanos o corrompidos en el sistema.
 - `2026-11-08T07:56:43` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_iter_process_memory` y `trim_working_set` asegurando que los handles de procesos se cierren correctamente ante cualquier excepción durante la ejecución, y se añadió una validación de longitud para `path_buf` antes de su uso para prevenir posibles desbordamientos en la comunicación con la API Win32.
 - `2026-11-08T07:43:33` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_safe_path_check` añadiendo una resolución absoluta de ruta mediante `resolve()` antes de realizar chequeos de seguridad, evitando así posibles técnicas de evasión mediante rutas relativas o atajos maliciosos, y se integró un manejo de errores más específico para los casos donde el sistema de archivos deniega el acceso a metadatos.
 - `2026-11-08T07:43:24` **diskreport.py** (seguridad defensiva): Se ha mejorado `diskreport.py` para aplicar un chequeo de seguridad defensiva explícito en `largest_folders` al verificar que `top_level` sea un directorio real antes de intentar acceder a sus propiedades, previniendo errores en caso de archivos que puedan haber sido eliminados durante el recorrido y reforzando la integridad del bucle de agregación.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T07:13:41` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_safe_int_conversion` ante valores de tipo `float` muy grandes o "infinitos" que podrían causar errores de redondeo o desbordamientos al ser tratados como bytes, asegurando que cualquier entrada numérica extrema retorne un valor seguro (0 B) en lugar de propagar un valor corrupto.
 - `2026-11-08T07:12:19` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `SystemMetrics` mediante la adición de una comprobación de tipo y valor en el método `__setattr__`, asegurando que cualquier asignación de datos sea procesada antes de ser aceptada por la instancia, previniendo estados inconsistentes.
 - `2026-11-08T07:03:49` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de sistema de archivos en `walk_files` y `largest_folders` añadiendo bloques `try-except` granulares en los puntos donde el acceso a metadatos (como `stat` o `scandir`) suele fallar por bloqueos de E/S o cambios concurrentes de estado.
-- `2026-11-08T07:01:37` **assistant.py** (robustez ante casos límite): Se introdujo una comprobación de tipo más estricta y segura en `_is_safe_numeric_context` y `_apply_field` para evitar que objetos complejos o tipos inesperados (como `Path` u objetos `callable`) sean procesados silenciosamente, reforzando la robustez ante datos malformados inyectados en la fase de ingesta.
-- `2026-11-08T06:52:05` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` centralizando la normalización de la ruta mediante el caché `_normalize_resolved` y refactorizando el chequeo de prefijos para evitar redundancias, reduciendo la carga de CPU en bucles de escaneo extensos.

@@ -686,3 +686,11 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-11-08T07:56:54` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-11-08T07:56:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T07:56:54` Corrida terminada. Total usado hoy: 188.
+- `2026-11-08T08:02:05` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-08T08:02:52` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado `_perform_secure_copy` agregando una validación estricta del espacio libre justo antes de realizar la escritura, para evitar que una interrupción de I/O por disco lleno deje archivos temporales huérfanos o corrompidos en el sistema.
+- `2026-11-08T08:03:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-08T08:04:11` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado una mejora en la robustez de `is_protected_path` al utilizar `pathlib.Path.parts` con una comparación de cadenas normalizadas que evita errores de coincidencia parcial en nombres de directorios (por ejemplo, evitar que "bin" coincida con "binary"), garantizando que solo se bloqueen los directorios exactos definidos en `PROTECTED_DIR_NAMES`.
+- `2026-11-08T08:05:11` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-08T08:05:32` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-08T08:05:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T08:05:32` Corrida terminada. Total usado hoy: 192.
