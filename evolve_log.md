@@ -1119,3 +1119,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-08T11:48:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-08T11:48:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T11:48:18` Corrida terminada. Total usado hoy: 280.
+- `2026-11-08T11:56:26` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-11-08T11:56:46` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: robustez ante casos límite): el archivo se encogió al 4% del original (posible pérdida de código)
+- `2026-11-08T11:57:13` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas inexistentes o inaccesibles dentro de `_is_valid_file_path` y `scan_directory` al centralizar la resolución de rutas mediante un manejo de excepciones más granular, evitando el colapso del escaneo por errores de acceso parciales en el sistema de archivos.
+- `2026-11-08T11:57:43` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante archivos corruptos o parcialmente escritos añadiendo un chequeo de integridad JSON previo a la deserialización completa y protegiendo la carga ante posibles excepciones de I/O mediante un bloque de seguridad adicional en `_read_and_parse_json`.
+- `2026-11-08T11:57:57` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra rutas de red (UNC) en el método `_resolve_and_cache_path` mediante la verificación explícita de `path_raw.startswith(r"\\")` y el uso de `Path.anchor` para asegurar que el ejecutable esté localizado en una unidad de disco local, evitando bloqueos de I/O al intentar resolver recursos de red o dispositivos remotos.
+- `2026-11-08T11:57:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T11:57:57` Corrida terminada. Total usado hoy: 284.

@@ -338,7 +338,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     if not isinstance(path, Path) or not _is_valid_path_structure(str(path)) or not _is_readable(path):
         return []
     try:
-        if not path.is_file(): return []
+        if not path.exists() or not path.is_file(): return []
         stats: os.stat_result = entry.stat(follow_symlinks=False) if entry else path.stat()
     except (OSError, PermissionError):
         return []
@@ -359,15 +359,17 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     if directory is None: return []
     try:
-        base_path = Path(directory).resolve()
-        if not base_path.exists() or not base_path.is_dir() or not _is_readable(str(base_path)):
+        abs_path_str = _get_canonical_path(str(directory))
+        if not abs_path_str: return []
+        base_path = Path(abs_path_str)
+        if not base_path.exists() or not base_path.is_dir() or not _is_readable(abs_path_str):
             return []
         scanner: Scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return []
     
     stack: TraversalStack = [(str(base_path), 0)]
-    visited: set[str] = {_get_canonical_path(str(base_path))}
+    visited: set[str] = {abs_path_str}
     
     while stack:
         current_dir, depth = stack.pop()
