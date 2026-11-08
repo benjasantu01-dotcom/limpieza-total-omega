@@ -1461,3 +1461,47 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-08T14:32:09` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `parse_registry_csv` y `_process_folder_entry` mediante la captura explícita de excepciones al interactuar con objetos del sistema de archivos, asegurando que el bucle de procesamiento sea resiliente ante entradas malformadas o permisos denegados sin interrumpir la ejecución.
 - `2026-11-08T14:32:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T14:32:09` Corrida terminada. Total usado hoy: 344.
+- `2026-11-08T14:39:18` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-08T14:40:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-08T14:40:16` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-08T14:41:22` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-08T14:41:35` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-08T14:41:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-08T14:41:55` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-08T14:42:01` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-08T14:43:03` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-08T14:43:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-08T14:43:26` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-08T14:44:23` Tests FALLARON:
+```
+er.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:374: in summarize
+    total_bytes = total_cache_bytes(current_caches)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:367: in total_cache_bytes
+    return sum(c.bytes_found for c in caches if isinstance(c, BrowserCache) and c.bytes_found > 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7f6b4344f550>
+
+>   return sum(c.bytes_found for c in caches if isinstance(c, BrowserCache) and c.bytes_found > 0)
+                                                                                ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:367: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.39s
+
+```
+- `2026-11-08T14:44:23` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación técnica del motor de escaneo (`DirectoryScanner`) y sus métodos auxiliares mediante el uso de docstrings estandarizados que clarifican la lógica de seguridad y el manejo de excepciones, facilitando la comprensión del flujo de control para futuras auditorías.
+- `2026-11-08T14:44:34` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenibilidad mediante la adición de Type Hints en la lógica de agregación y la centralización de los métodos de cálculo de tamaño en `FolderMetrics`, eliminando redundancias en la lógica de las funciones principales.
+- `2026-11-08T14:44:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T14:44:34` Corrida terminada. Total usado hoy: 348.
