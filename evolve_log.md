@@ -1505,3 +1505,38 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-08T03:29:11` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha reforzado `_is_file_exclusive` para evitar condiciones de carrera (TOCTOU) al abrir el archivo, utilizando `os.open` con flags de acceso exclusivo (`O_EXCL`) y garantizando que el descriptor de archivo sea cerrado inmediatamente bajo cualquier circunstancia mediante bloques `try/finally` explícitos.
 - `2026-11-08T03:29:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T03:29:11` Corrida terminada. Total usado hoy: 84.
+- `2026-11-08T03:37:22` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-08T03:37:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-08T03:37:59` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): el archivo se encogió al 2% del original (posible pérdida de código)
+- `2026-11-08T03:38:25` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-08T03:38:38` Tests FALLARON:
+```
+ue, ...} = settings.DEFAULTS
+
+evolve/tests/test_assistant.py:60: AssertionError
+______________________ test_a_normal_folder_is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert None is not None
+ +  where None = <function save at 0x7f1949a8c540>({'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}, PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_creates_the_folder0/sub/carpeta'))
+ +    where <function save at 0x7f1949a8c540> = settings.save
+ +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-1/test_a_normal_folder_is_rememb0/Descargas
+2 failed, 297 passed in 1.51s
+
+```
+- `2026-11-08T03:38:38` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se endurece la seguridad en la escritura atómica mediante la validación explícita del estado de exclusividad del archivo (usando `os.O_EXCL`) y asegurando que no se sigan enlaces simbólicos en directorios de configuración, previniendo ataques de tipo "Time-of-Check to Time-of-Use" (TOCTOU).
+- `2026-11-08T03:38:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T03:38:38` Corrida terminada. Total usado hoy: 88.
