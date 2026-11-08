@@ -1318,3 +1318,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-08T00:45:44` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo de `total_score_sum` en `compute_score` validando explícitamente que cada componente del desglose sea un número finito antes de sumarlo, evitando la propagación de valores `NaN` o `inf` que podrían corromper el puntaje final.
 - `2026-11-08T00:45:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T00:45:44` Corrida terminada. Total usado hoy: 20.
+- `2026-11-08T00:54:26` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-11-08T00:55:36` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-08T00:56:05` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` capturando excepciones específicas en la llamada a `EmptyWorkingSet` y validando la integridad del handle devuelto, además de sanitizar la entrada de `pid` para evitar errores de tipo antes de interactuar con la API.
+- `2026-11-08T00:56:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-08T00:56:57` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` al implementar una validación de tipo más estricta durante la deserialización JSON y agregué un manejo de excepciones específico para evitar que un manifiesto corrupto o mal formado detenga la ejecución de la aplicación, garantizando que el sistema falle de forma controlada y segura devolviendo una lista vacía.
+- `2026-11-08T00:56:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T00:56:57` Corrida terminada. Total usado hoy: 24.

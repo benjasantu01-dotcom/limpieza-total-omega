@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **167** (33.1% de aceptación)
+- Mejoras aceptadas: **165** (32.7% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 57
+- Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 259
+- Sin respuesta de la IA (error o límite): 260
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 54 | 2 | 19 | 3 | 56 |
+| 2026-11-06 | 50 | 2 | 19 | 3 | 56 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 3 | 0 | 0 | 0 | 17 |
+| 2026-11-08 | 5 | 0 | 1 | 0 | 18 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **38**
 - seguridad defensiva: **35**
-- rendimiento: **27**
-- manejo de errores y validación de entradas: **25**
+- manejo de errores y validación de entradas: **27**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `diskreport.py`: **18**
-- `scanner.py`: **14**
-- `settings.py`: **14**
+- `memory.py`: **14**
 - `safety.py`: **14**
-- `assistant.py`: **13**
-- `memory.py`: **13**
+- `scanner.py`: **13**
+- `settings.py`: **13**
+- `assistant.py`: **12**
 - `browser.py`: **10**
-- `startup.py`: **9**
 - `organizer.py`: **8**
 - `branding.py`: **8**
+- `startup.py`: **8**
 - `duplicates.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T00:56:57` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` al implementar una validación de tipo más estricta durante la deserialización JSON y agregué un manejo de excepciones específico para evitar que un manifiesto corrupto o mal formado detenga la ejecución de la aplicación, garantizando que el sistema falle de forma controlada y segura devolviendo una lista vacía.
+- `2026-11-08T00:56:05` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` capturando excepciones específicas en la llamada a `EmptyWorkingSet` y validando la integridad del handle devuelto, además de sanitizar la entrada de `pid` para evitar errores de tipo antes de interactuar con la API.
 - `2026-11-08T00:45:44` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de `total_score_sum` en `compute_score` validando explícitamente que cada componente del desglose sea un número finito antes de sumarlo, evitando la propagación de valores `NaN` o `inf` que podrían corromper el puntaje final.
 - `2026-11-08T00:45:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_candidates` mediante la validación proactiva de los parámetros `directories` y `min_size`, asegurando que el bucle de recolección no intente operar sobre entradas `None` o tamaños inválidos, previniendo excepciones innecesarias.
 - `2026-11-08T00:45:08` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez en `walk_files` y `largest_folders` validando explícitamente el resultado de `os.scandir` y `relative_to` para evitar excepciones no controladas durante el escaneo de directorios con permisos cambiantes o rutas mal formadas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-07T13:45:02` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre el resultado de `path.resolve()` antes de realizar operaciones de sistema, asegurando que la normalización de rutas no eluda protecciones mediante enlaces simbólicos o rutas relativas.
 - `2026-11-07T13:33:19` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de sistema en `process_entry` y `scan_directory` mediante el uso de `os.scandir` seguro y un control de errores más granular, asegurando que el escáner no se detenga ante archivos con nombres inválidos, bloqueados o inaccesibles, mejorando la resiliencia ante el entorno real de Windows.
 - `2026-11-07T13:25:57` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de archivos en uso, integrando una verificación de "compartición de acceso" mediante la API de Windows (`CreateFileW` con flags de acceso nulo y `FILE_SHARE_NONE`), asegurando que archivos abiertos exclusivamente por otros procesos sean detectados antes de intentar cualquier operación.
-- `2026-11-07T13:23:46` **quarantine.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de estado en `_perform_secure_copy` para prevenir estados inconsistentes del sistema de archivos cuando ocurre un error parcial durante la escritura o sincronización, asegurando que el descriptor de archivo se cierre correctamente en caso de error I/O.
-- `2026-11-07T13:22:42` **organizer.py** (robustez ante casos límite): Mejora la robustez en `stage_for_review` al implementar un chequeo explícito de integridad antes de la operación de movimiento, evitando condiciones de carrera (TOCTOU) y verificando nuevamente el estado de bloqueo inmediatamente antes de `os.replace`.

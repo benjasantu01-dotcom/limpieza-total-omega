@@ -504,22 +504,25 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         existing_names = {entry.name for entry in os.scandir(base_dir) if entry.is_file()}
         
         with open(m_path, "r", encoding="utf-8") as f: 
-            data: Any = json.load(f)
+            data = json.load(f)
             
         if not isinstance(data, list): 
-            raise ValueError("Formato de manifiesto inválido.")
+            raise ValueError("El manifiesto no es una lista válida.")
             
-        items = [i for i in (QuarantineItem.from_dict(d) for d in data if isinstance(d, dict)) 
-                 if i and i.stored_name in existing_names]
+        valid_items: List[QuarantineItem] = []
+        for entry in data:
+            item = QuarantineItem.from_dict(entry)
+            if item and item.stored_name in existing_names:
+                valid_items.append(item)
         
-        if len(items) < len(data):
-            save_manifest(items, base)
+        if len(valid_items) < len(data):
+            save_manifest(valid_items, base)
             
         st = m_path.stat()
-        _MANIFEST_CACHE[base_dir] = (items, st.st_mtime, st.st_size)
-        return items
+        _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
+        return valid_items
         
-    except (OSError, json.JSONDecodeError, ValueError):
+    except (OSError, json.JSONDecodeError, ValueError, TypeError):
         _MANIFEST_CACHE[base_dir] = ([], 0.0, 0)
         return []
 

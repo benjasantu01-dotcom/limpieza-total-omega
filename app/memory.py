@@ -458,11 +458,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso en zona restringida."
 
     try:
-        # La validación ya fue realizada en _get_handle_for_safe_proc mediante _is_process_executable_safe
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la operación."
-    except Exception:
+    except (ctypes.ArgumentError, OSError, Exception):
         return False, "Error inesperado al intentar liberar memoria."
     finally:
         WindowsAPI.kernel32.CloseHandle(handle)
