@@ -54,8 +54,15 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Define el contrato para funciones de inspección heurística.
-    Las implementaciones deben ser puras respecto al estado del escáner y devolver 
-    un objeto Suspicion si se detecta una amenaza, o None en caso contrario.
+    
+    Args:
+        path: Objeto Path del archivo a inspeccionar.
+        entry: Objeto os.DirEntry opcional (útil si ya se escaneó el directorio).
+        now_ts: Timestamp actual para cálculos de antiguedad.
+        stats: Metadatos del archivo (os.stat_result) para evitar llamadas extras.
+        
+    Returns:
+        Un objeto Suspicion si se detecta una amenaza, o None si el archivo es benigno.
     """
     def __call__(
         self, 
@@ -102,9 +109,7 @@ def _get_canonical_path(path_str: str) -> str:
         return ""
 
 def _is_safe_by_attributes(path: Path) -> bool:
-    """
-    Valida mediante atributos de archivo que la ruta no sea un reparse point.
-    """
+    """Valida mediante atributos de archivo que la ruta no sea un reparse point."""
     try:
         attrs = path.stat().st_file_attributes
         return not (attrs & SCAN_LIMITS.reparse_point_mask)
@@ -112,9 +117,7 @@ def _is_safe_by_attributes(path: Path) -> bool:
         return True
 
 def _is_valid_file_path(path: PathInput) -> bool:
-    """
-    Valida si un path es un archivo real, no protegido y físicamente accesible.
-    """
+    """Valida si un path es un archivo real, no protegido y físicamente accesible."""
     if path is None:
         return False
     try:
@@ -143,9 +146,7 @@ def _is_readable(path: PathInput) -> bool:
         return False
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
-    """
-    Obtiene atributos de Win32 sin resolver el enlace.
-    """
+    """Obtiene atributos de Win32 sin resolver el enlace."""
     if not isinstance(entry, os.DirEntry) or not entry.path:
         return 0
     try:
@@ -155,9 +156,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """
-    Obtiene metadatos asegurando que el archivo no esté en uso.
-    """
+    """Obtiene metadatos asegurando que el archivo no esté en uso."""
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
         return None
         
@@ -175,9 +174,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
-    """
-    Valida la integridad del string del path.
-    """
+    """Valida la integridad del string del path."""
     if not isinstance(path_str, str) or not path_str.strip() or "\0" in path_str:
         return False
     try:

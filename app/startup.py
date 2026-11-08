@@ -63,13 +63,15 @@ RESERVED_DEVICE_NAMES: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "
 # Límite máximo estándar para rutas en el sistema de archivos de Windows.
 MAX_PATH_LEN: int = 260
 
-# Cachés globales: evitan consultas repetitivas al sistema de archivos o al registro.
-_EXISTS_CACHE: Dict[str, bool] = {}
-_COMMAND_CACHE: Dict[str, str] = {}
-_FULL_SCAN_CACHE: Optional[StartupEntries] = None
-_FOLDERS_CACHE: Optional[List[Path]] = None
-_VALIDATION_CACHE: Dict[str, bool] = {}
-_PROCESS_CACHE: Dict[str, bool] = {}
+# --- Cachés globales ---
+# Optimizan el rendimiento evitando llamadas recurrentes al sistema operativo
+# o re-validaciones costosas de rutas ya procesadas.
+_EXISTS_CACHE: Dict[str, bool] = {}     # Cache de existencia de archivos resueltos
+_COMMAND_CACHE: Dict[str, str] = {}     # Cache de comandos crudos a rutas normalizadas
+_FULL_SCAN_CACHE: Optional[StartupEntries] = None # Almacena el resultado del escaneo consolidado
+_FOLDERS_CACHE: Optional[List[Path]] = None       # Rutas de carpetas de inicio identificadas
+_VALIDATION_CACHE: Dict[str, bool] = {} # Resultado de la validación de seguridad (safety.py)
+_PROCESS_CACHE: Dict[str, bool] = {}    # Flags de procesamiento para entradas de carpetas
 
 # Mensaje orientativo para el usuario final sobre la gestión de persistencia.
 HOW_TO_DISABLE: str = (

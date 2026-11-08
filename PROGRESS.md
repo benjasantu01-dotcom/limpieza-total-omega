@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 59
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 7
-- Sin respuesta de la IA (error o límite): 255
+- Sin respuesta de la IA (error o límite): 253
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 44 | 2 | 16 | 1 | 51 |
+| 2026-11-06 | 42 | 2 | 16 | 1 | 49 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 17 | 0 | 5 | 0 | 18 |
+| 2026-11-08 | 19 | 0 | 7 | 0 | 18 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
-- robustez ante casos límite: **37**
+- legibilidad y documentación: **50**
+- robustez ante casos límite: **35**
 - seguridad defensiva: **35**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `quarantine.py`: **20**
-- `diskreport.py`: **18**
+- `healthscore.py`: **19**
+- `diskreport.py`: **17**
+- `scanner.py`: **15**
 - `memory.py`: **14**
-- `scanner.py`: **14**
 - `settings.py`: **14**
 - `safety.py`: **13**
 - `assistant.py`: **12**
 - `browser.py`: **11**
+- `startup.py`: **10**
 - `organizer.py`: **9**
 - `branding.py`: **9**
-- `startup.py`: **9**
 - `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T01:47:05` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las estructuras de datos de `startup.py`, añadiendo docstrings que explican el propósito de los caches globales y el flujo de resolución de rutas para clarificar decisiones de diseño no obvias.
+- `2026-11-08T01:46:24` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad del contrato de las funciones heurísticas mediante la documentación detallada de sus parámetros y el uso de un protocolo más explícito, facilitando futuras extensiones sin necesidad de modificar el core del escáner.
 - `2026-11-08T01:36:58` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y sus validaciones asociadas, unificando la lógica de protección de integridad y añadiendo type hints más precisos en la firma de funciones críticas para reducir la ambigüedad en el manejo de rutas y dispositivos.
 - `2026-11-08T01:36:18` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings estructuradas que clarifican el propósito, las excepciones manejadas y los parámetros de las funciones, facilitando el mantenimiento y la comprensión de las salvaguardas de seguridad.
 - `2026-11-08T01:35:42` **memory.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el namespace `WindowsAPI` y en las estructuras de datos de la API Win32 para documentar el propósito de los flags y campos de bajo nivel, facilitando la auditoría de seguridad y comprensión del código.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T01:06:11` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_read_and_parse_json` y `save` mediante una validación más estricta del estado del descriptor de archivo, evitando riesgos de corrupción al capturar excepciones críticas durante la serialización y el manejo de archivos abiertos.
 - `2026-11-08T01:05:56` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validaciones de entrada (`None`/vacío) en `check_system_lookalike` y `check_double_extension`, asegurando que el motor de escaneo no falle ante nombres de archivo malformados o inesperados durante el procesamiento.
 - `2026-11-08T00:56:57` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` al implementar una validación de tipo más estricta durante la deserialización JSON y agregué un manejo de excepciones específico para evitar que un manifiesto corrupto o mal formado detenga la ejecución de la aplicación, garantizando que el sistema falle de forma controlada y segura devolviendo una lista vacía.
-- `2026-11-08T00:56:05` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` capturando excepciones específicas en la llamada a `EmptyWorkingSet` y validando la integridad del handle devuelto, además de sanitizar la entrada de `pid` para evitar errores de tipo antes de interactuar con la API.
-- `2026-11-08T00:45:44` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de `total_score_sum` en `compute_score` validando explícitamente que cada componente del desglose sea un número finito antes de sumarlo, evitando la propagación de valores `NaN` o `inf` que podrían corromper el puntaje final.

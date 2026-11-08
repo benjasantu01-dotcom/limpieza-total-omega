@@ -1353,3 +1353,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-08T01:37:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-11-08T01:37:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T01:37:00` Corrida terminada. Total usado hoy: 40.
+- `2026-11-08T01:45:25` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-11-08T01:45:57` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 37% del original (posible pérdida de código)
+- `2026-11-08T01:46:24` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del contrato de las funciones heurísticas mediante la documentación detallada de sus parámetros y el uso de un protocolo más explícito, facilitando futuras extensiones sin necesidad de modificar el core del escáner.
+- `2026-11-08T01:46:51` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _ValidatorEntry, _ValidatorEntry.__init__, _Validators._check_path_safety, _Validators._parse_as_type, _Validators._validate_enum_str
+- `2026-11-08T01:47:05` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de las estructuras de datos de `startup.py`, añadiendo docstrings que explican el propósito de los caches globales y el flujo de resolución de rutas para clarificar decisiones de diseño no obvias.
+- `2026-11-08T01:47:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T01:47:05` Corrida terminada. Total usado hoy: 44.
