@@ -1049,3 +1049,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-08T10:56:49` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del pipeline eliminando la recálculo constante de etiquetas en la función `summarize` y mejorando la eficiencia de `_render_bar` al evitar llamadas redundantes a `max` y `min` dentro de un bucle, además de pre-cachear el formato de los nombres de las áreas.
 - `2026-11-08T10:56:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T10:56:49` Corrida terminada. Total usado hoy: 260.
+- `2026-11-08T11:05:31` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-08T11:06:42` Gemini no devolvió un bloque de archivo válido para main.py (enfoque: rendimiento).
+- `2026-11-08T11:07:09` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Se optimizó el escaneo de procesos mediante la eliminación de la creación innecesaria de objetos `ProcessMemory` para procesos que no cumplen con los criterios de filtrado, evitando así el overhead de alocación en el bucle principal.
+- `2026-11-08T11:07:35` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-08T11:08:04` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño del manifiesto (`total_quarantined_bytes`) eliminando la deserialización completa de objetos `QuarantineItem` mediante el uso de un generador que suma directamente `size_bytes` de los diccionarios crudos cargados, reduciendo drásticamente la carga en memoria y CPU durante consultas frecuentes de la UI.
+- `2026-11-08T11:08:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T11:08:04` Corrida terminada. Total usado hoy: 264.

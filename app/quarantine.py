@@ -908,8 +908,16 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     except (OSError, PermissionError, UnsafePathError, RuntimeError): return 0
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Retorna el peso total ocupado por los archivos en cuarentena."""
-    return sum(item.size_bytes for item in load_manifest(base))
+    """Retorna el peso total ocupado por los archivos en cuarentena sin recrear instancias de objetos."""
+    try:
+        base_dir = quarantine_dir(base)
+        m_path = _manifest_path(base_dir)
+        if not m_path.exists(): return 0
+        with open(m_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return sum(item.get("size_bytes", 0) for item in data if isinstance(item, dict))
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        return 0
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:
     """Genera reporte legible de la cuarentena para la interfaz de usuario."""
