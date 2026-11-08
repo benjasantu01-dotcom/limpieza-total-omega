@@ -349,6 +349,16 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
     return results
 
+def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
+    """Calcula el score parcial y extrae recomendaciones para una única área del pipeline."""
+    try:
+        ratio = _clamp(entry.scorer(metrics))
+        points = int(ratio * float(entry.weight))
+        recs = _evaluate_rules(metrics, entry.rules, ratio)
+        return (points if _is_finite_numeric(points) else 0), recs
+    except Exception:
+        return 0, []
+
 # --- Orquestación Principal ---
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -366,22 +376,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         recommendations = []
         
         for entry in PIPELINE_DEFINITIONS:
-            try:
-                ratio = entry.scorer(metrics)
-            except Exception:
-                ratio = 0.0
-            
-            # Validación: ratio debe ser un valor finito en [0,1]
-            ratio = _clamp(ratio)
-            
-            val = int(ratio * float(entry.weight))
-            if _is_finite_numeric(val):
-                metric_breakdown[entry.area] = val
-                total_score_sum += val
-            else:
-                metric_breakdown[entry.area] = 0
-            
-            recommendations.extend(_evaluate_rules(metrics, entry.rules, ratio))
+            points, recs = _process_pipeline_entry(metrics, entry)
+            metric_breakdown[entry.area] = points
+            total_score_sum += points
+            recommendations.extend(recs)
         
         if metrics.safe_get("quarantined_count") > 0:
             msg = _sanitize_msg("Existen elementos en cuarentena.")

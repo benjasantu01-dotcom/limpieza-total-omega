@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **168** (33.3% de aceptación)
+- Mejoras aceptadas: **169** (33.5% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 59
-- Sin cambios (nada sustancial que mejorar): 8
+- Sin cambios (nada sustancial que mejorar): 7
 - Sin respuesta de la IA (error o límite): 257
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 47 | 2 | 18 | 2 | 53 |
+| 2026-11-06 | 45 | 2 | 17 | 1 | 53 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 11 | 0 | 3 | 0 | 18 |
+| 2026-11-08 | 14 | 0 | 4 | 0 | 18 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **45**
 - robustez ante casos límite: **38**
 - seguridad defensiva: **35**
 - manejo de errores y validación de entradas: **30**
-- rendimiento: **23**
+- rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `healthscore.py`: **19**
-- `diskreport.py`: **17**
-- `safety.py`: **14**
+- `healthscore.py`: **20**
+- `quarantine.py`: **19**
+- `diskreport.py`: **18**
 - `scanner.py`: **14**
 - `settings.py`: **14**
 - `assistant.py`: **13**
 - `memory.py`: **13**
+- `safety.py`: **13**
 - `browser.py`: **11**
 - `branding.py`: **9**
 - `startup.py`: **9**
 - `organizer.py`: **8**
-- `duplicates.py`: **7**
+- `duplicates.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T01:26:18` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de la lógica de evaluación de reglas, extrayendo la iteración del pipeline en una función dedicada y documentando con mayor claridad el contrato de datos mediante docstrings específicos.
+- `2026-11-08T01:25:51` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo docstrings más detallados, corrigiendo la visibilidad de funciones internas y clarificando la lógica de las comprobaciones de seguridad mediante una estructura de tipos más explícita.
+- `2026-11-08T01:25:27` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo (`walk_files`, `_collect_summary_data` y el uso de `Inode`) clarificando el propósito de la lógica de exclusión de reparse points y la gestión del heap, facilitando la comprensión técnica del flujo de datos sin alterar el comportamiento.
 - `2026-11-08T01:16:45` **browser.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el motor `DirectoryScanner` para clarificar la lógica de seguridad y el propósito de cada método, facilitando el mantenimiento y la auditoría.
 - `2026-11-08T01:16:34` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos que aclaran las dependencias de escalado y las coordenadas relativas, además de estandarizar las anotaciones de tipo para mejorar la legibilidad del contrato de las funciones de renderizado geométrico.
 - `2026-11-08T01:16:02` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de validación de `_CONTEXT_SCHEMA` y `_VALIDATORS` mediante docstrings y type hints más claros, además de renombrar variables internas poco intuitivas como `f` o `c` a nombres descriptivos (`metric_val`, `criterion`) para facilitar la auditoría de seguridad del código.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T00:45:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_candidates` mediante la validación proactiva de los parámetros `directories` y `min_size`, asegurando que el bucle de recolección no intente operar sobre entradas `None` o tamaños inválidos, previniendo excepciones innecesarias.
 - `2026-11-08T00:45:08` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez en `walk_files` y `largest_folders` validando explícitamente el resultado de `os.scandir` y `relative_to` para evitar excepciones no controladas durante el escaneo de directorios con permisos cambiantes o rutas mal formadas.
 - `2026-11-07T14:15:11` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_process_folder_entry` mediante la verificación estricta de que el archivo no sea un punto de reparse (reparse point), previniendo que la aplicación siga enlaces simbólicos o junctions que podrían apuntar a áreas críticas fuera del directorio de inicio escaneado.
-- `2026-11-07T14:14:36` **settings.py** (seguridad defensiva): Se reforzó `_is_file_secure_to_read` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y asegurar que el archivo de configuración sea un archivo regular, sin enlaces simbólicos ni propietarios sospechosos, antes de ser procesado por el parser JSON.
-- `2026-11-07T14:05:01` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_within_directory` incorporando la resolución del `parent` mediante `_get_final_path_normalized` para asegurar que la relación de parentesco se valide sobre las rutas físicas reales, evitando que el uso de enlaces simbólicos o junctions en el directorio base permita evadir las restricciones de alcance.
-- `2026-11-07T14:03:39` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita para evitar colisiones de rutas fuera de la carpeta designada (usando `is_within_directory` sobre la ruta resuelta) y se centralizó el chequeo de exclusividad antes de la apertura del archivo para prevenir el acceso a archivos en uso que no fueron correctamente bloqueados por el chequeo previo.

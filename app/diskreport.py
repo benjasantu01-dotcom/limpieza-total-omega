@@ -72,12 +72,7 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
 def _is_reparse_point(stat: os.stat_result) -> bool:
     """
     Determina si la ruta es un punto de reanálisis (Windows) o enlace.
-
-    Args:
-        stat: Resultado de os.lstat del archivo.
-
-    Returns:
-        True si es un punto de reanálisis, False en caso contrario.
+    Evita la entrada en directorios que redirigen a otras ubicaciones del sistema de archivos.
     """
     try:
         if os.name == 'nt':
@@ -90,7 +85,7 @@ def _is_reparse_point(stat: os.stat_result) -> bool:
 class ExtStats:
     """
     Acumulador para métricas de una extensión de archivo particular.
-    Usa __slots__ para optimizar memoria durante el recorrido del disco.
+    Usa __slots__ para optimizar el consumo de memoria durante escaneos masivos.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -99,12 +94,7 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """
-        Suma bytes al acumulador y cuenta un nuevo archivo procesado.
-        
-        Args:
-            size: Tamaño del archivo en bytes.
-        """
+        """Suma bytes al acumulador y cuenta un nuevo archivo procesado."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -113,7 +103,7 @@ class ExtStats:
 class GlobalStats:
     """
     Gestor del estado de agregación durante el escaneo.
-    Centraliza las estadísticas de archivos y extensiones encontrados.
+    Centraliza las estadísticas globales de archivos encontrados.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -260,7 +250,7 @@ class DriveUsage:
 
 
 def format_size(num: Union[int, float, None]) -> str:
-    """Convierte bytes a formato humano (ej: 1.2 MB)."""
+    """Convierte bytes a formato legible para humanos (B, KB, MB, GB, TB)."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     value = float(num)
@@ -294,8 +284,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que realiza un recorrido profundo (DFS) sobre los archivos del directorio.
-    Evita ciclos de directorios usando inodos y saltea rutas protegidas o reparse points.
+    Generador que realiza un recorrido profundo (DFS) sobre los archivos.
+    
+    Evita ciclos de directorios usando inodos (st_dev + st_ino) y saltea rutas
+    protegidas o puntos de reanálisis (reparse points) para garantizar seguridad.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -340,7 +332,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Retorna los archivos de mayor tamaño según un límite definido."""
+    """Retorna los archivos de mayor tamaño utilizando `_collect_summary_data`."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
@@ -388,8 +380,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Función interna: escanea el árbol, acumula métricas y mantiene un min-heap
-    de los archivos más grandes encontrados.
+    Función interna que coordina el escaneo, agrega estadísticas globales y
+    mantiene un heap de tamaño `limit` con los archivos más pesados encontrados.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -402,6 +394,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))
             elif top_heap and size > top_heap[0][0]:
+                # Reemplaza el elemento menor del heap con el archivo actual si es mayor
                 heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
