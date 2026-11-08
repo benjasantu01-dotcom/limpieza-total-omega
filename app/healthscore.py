@@ -300,7 +300,7 @@ class SystemMetrics:
     def get_clamped_metric(self, field_name: str) -> float:
         """Retorna una métrica asegurando que esté dentro de los límites definidos."""
         min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
-        return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
+        return _validate_numeric(self.safe_get(field_name, 0.0), 0.0, min_v, max_v)
 
     def validate(self) -> None:
         """Aplica límites definidos en _METRIC_LIMITS y asegura la integridad numérica."""

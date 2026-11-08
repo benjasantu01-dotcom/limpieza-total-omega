@@ -187,7 +187,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     while queue:
         current_dir, depth = queue.popleft()
-        if depth > MAX_RECURSION_DEPTH or not is_safe_to_modify(current_dir): 
+        if depth > MAX_RECURSION_DEPTH or not is_safe_to_modify(current_dir) or is_junction(current_dir): 
             continue
             
         with suppress(OSError, PermissionError):

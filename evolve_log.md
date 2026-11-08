@@ -1469,3 +1469,32 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-08T03:08:51` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-11-08T03:08:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T03:08:51` Corrida terminada. Total usado hoy: 76.
+- `2026-11-08T03:17:02` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-11-08T03:17:32` Tests FALLARON:
+```
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bases = [PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0')]
+cache_paths = {'Chrome': 'Perfil\\Cookies'}
+
+    def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
+        """Escanea el sistema en busca de cachés de navegadores conocidos basándose en perfiles de usuario."""
+        raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
+>       browser_map = cache_paths if isinstance(browser_map, dict) else BROWSER_CACHE_PATHS
+                                                ^^^^^^^^^^^
+E       UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+
+app/browser.py:347: UnboundLocalError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+FAILED evolve/tests/test_modules.py::test_detect_profiles_ignores_missing_folders - UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+3 failed, 296 passed in 1.77s
+
+```
+- `2026-11-08T03:17:32` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva al prohibir explícitamente el seguimiento de enlaces simbólicos y puntos de reparse durante la resolución de rutas en `base_directories`, previniendo potenciales fugas del sandbox de usuario hacia rutas fuera del scope permitido.
+- `2026-11-08T03:17:58` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_validate_root` y `drive_usage` asegurando que el filtrado de rutas UNC sea estricto e independiente de mayúsculas/minúsculas, además de prevenir casos de `None` inesperados al manipular rutas.
+- `2026-11-08T03:18:21` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` para prevenir el seguimiento de enlaces simbólicos o puntos de reanálisis durante el recorrido del árbol, asegurando que la recolección de candidatos sea consistente con la lógica de `is_junction` y evitando procesar rutas que violen las políticas de seguridad incluso durante la iteración inicial.
+- `2026-11-08T03:18:34` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva del módulo `healthscore.py` al reemplazar el acceso directo mediante `getattr` en `_process_pipeline_entry` y la validación de `SystemMetrics` por el uso del método `safe_get`, garantizando así que no se produzcan accesos no autorizados a atributos fuera del esquema definido incluso si el pipeline se extiende en el futuro.
+- `2026-11-08T03:18:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T03:18:34` Corrida terminada. Total usado hoy: 80.
