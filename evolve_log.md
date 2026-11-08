@@ -1455,3 +1455,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-08T02:48:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-11-08T02:48:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T02:48:39` Corrida terminada. Total usado hoy: 68.
+- `2026-11-08T02:56:44` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-11-08T02:57:31` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de concurrencia y estado del sistema de archivos en `quarantine_dir` mediante un chequeo de disponibilidad (espacio en disco) y validación de permisos de escritura mediante un intento de creación de archivo temporal, mitigando fallos silenciosos en entornos donde el acceso a disco puede ser restrictivo o transitorio.
+- `2026-11-08T02:57:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-08T02:58:41` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación de concurrencia en la función `_get_path_stat_robust` mediante el manejo explícito de errores de `Sharing Violation` (código 32 de Win32), asegurando que el sistema sea más resiliente cuando archivos temporales o del sistema estén siendo procesados por otros procesos.
+- `2026-11-08T02:58:53` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_get_canonical_path` y `_is_valid_path_structure` para manejar casos donde `os.path.realpath` podría fallar o retornar rutas malformadas ante nombres de archivo reservados o dispositivos de hardware en Windows, mitigando posibles errores de sistema durante el recorrido.
+- `2026-11-08T02:58:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T02:58:53` Corrida terminada. Total usado hoy: 72.

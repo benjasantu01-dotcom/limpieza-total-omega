@@ -681,7 +681,9 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                  raise OSError(errno.EAGAIN, "Metadatos corruptos")
             return st
         except (PermissionError, OSError) as e:
-            if isinstance(e, OSError) and e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN):
+            # Capturar Violation de compartición (código 32) en Windows
+            err_code = getattr(e, 'winerror', None)
+            if isinstance(e, OSError) and (e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or err_code == ERROR_SHARING_VIOLATION):
                 if attempt < max_retries - 1:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
@@ -897,7 +899,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
         raise UnsafePathError("Acceso a Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
     if _is_unc_path(path_string) and not _is_unc_path_accessible(path_string):
-        raise UnsafePathError("Rutas UNC/Red bloqueadas o inaccesibles.", SafetyValidationErrorCode.UNC_PATH, SafetyValidationCategory.ENVIRONMENT)
+        raise UnsafePathError("Rutas UNC/Red bloqueadas o inaccesibles.", SafetyValidationErrorCode.UNC_PATH, SafetyValidationErrorCode.ENVIRONMENT)
     if ".." in path_string.split(os.sep):
         raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
     if _is_path_too_long(path_string):

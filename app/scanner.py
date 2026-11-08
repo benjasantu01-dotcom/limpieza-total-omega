@@ -104,8 +104,10 @@ def _cached_is_protected(path_str: str) -> bool:
 def _get_canonical_path(path_str: str) -> str:
     """Normaliza y resuelve la ruta de forma segura para evitar traversal."""
     try:
-        return os.path.normcase(os.path.realpath(path_str))
-    except (OSError, ValueError):
+        if not path_str or "\0" in path_str: return ""
+        norm = os.path.normcase(os.path.abspath(path_str))
+        return norm if len(norm) <= SCAN_LIMITS.path_length_limit else ""
+    except (OSError, ValueError, TypeError):
         return ""
 
 def _is_safe_by_attributes(path: Path) -> bool:
@@ -122,8 +124,6 @@ def _is_valid_file_path(path: PathInput) -> bool:
         return False
     try:
         path_str = str(path)
-        if not path_str or "\0" in path_str or len(path_str) > SCAN_LIMITS.path_length_limit:
-            return False
         abs_path = _get_canonical_path(path_str)
         if not abs_path: return False
         target_path = Path(abs_path)
@@ -179,7 +179,7 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
         return False
     try:
         abs_path = _get_canonical_path(path_str)
-        if not abs_path or _cached_is_protected(abs_path) or len(abs_path) > SCAN_LIMITS.path_length_limit:
+        if not abs_path or _cached_is_protected(abs_path):
             return False
         if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(abs_path):
             return False
