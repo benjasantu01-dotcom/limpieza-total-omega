@@ -559,3 +559,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-11-08T05:02:14` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 3% del original (posible pérdida de código)
 - `2026-11-08T05:02:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T05:02:14` Corrida terminada. Total usado hoy: 120.
+- `2026-11-08T05:09:04` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-08T05:09:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-08T05:10:03` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré `_is_target_valid` para capturar explícitamente excepciones de `pathlib` (como `pathlib.Path.parts` lanzando errores en rutas malformadas) y añadí una validación de tipo `None` en `total_cache_bytes` para garantizar que la iteración sea robusta ante datos corruptos.
+- `2026-11-08T05:10:28` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-08T05:11:02` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-08T05:11:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T05:11:02` Corrida terminada. Total usado hoy: 124.

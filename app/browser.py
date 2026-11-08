@@ -310,18 +310,16 @@ def _is_target_valid(target: Optional[Path], base_norm: str, kernel: Optional[ct
     if not isinstance(target, Path) or not target.exists() or not target.is_dir(): 
         return False
     try:
-        if not target.is_dir() or target.is_file():
-            return False
-
-        if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): 
-            return False
-        
         # Validar reparse points y enlaces simbólicos desde el inicio
         if _IS_JUNCTION_FN(str(target)) or target.is_symlink() or os.path.islink(target):
             return False
             
+        if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): 
+            return False
+        
         if _is_system_hidden(str(target), kernel): return False
         
+        # Uso de .parts puede fallar si la ruta está corrompida o tiene caracteres ilegales
         parts = [p.lower() for p in target.parts]
         if any(part in NEVER_TOUCH for part in parts):
             return False
@@ -334,7 +332,7 @@ def _is_target_valid(target: Optional[Path], base_norm: str, kernel: Optional[ct
             
         target_norm = os.path.realpath(str(target))
         return os.path.commonpath([target_norm, base_norm]) == base_norm
-    except (OSError, PermissionError, RuntimeError, ValueError):
+    except (OSError, PermissionError, RuntimeError, ValueError, AttributeError):
         return False
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
@@ -374,7 +372,8 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
     """Calcula la suma acumulada de bytes para todos los hallazgos."""
-    return sum(c.size_bytes for c in caches if isinstance(c, BrowserCache)) if caches else 0
+    if caches is None: return 0
+    return sum(c.size_bytes for c in caches if isinstance(c, BrowserCache) and c.size_bytes > 0)
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """Genera un reporte textual resumido de los hallazgos de caché para la interfaz."""

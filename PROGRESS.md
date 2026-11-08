@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **168** (33.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 247
+- Sin respuesta de la IA (error o límite): 250
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 17 | 1 | 8 | 1 | 7 |
+| 2026-11-06 | 14 | 1 | 7 | 1 | 7 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 43 | 4 | 17 | 2 | 54 |
+| 2026-11-08 | 44 | 4 | 17 | 2 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **40**
 - seguridad defensiva: **35**
 - rendimiento: **28**
-- manejo de errores y validación de entradas: **22**
+- manejo de errores y validación de entradas: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `healthscore.py`: **19**
-- `memory.py`: **16**
+- `quarantine.py`: **19**
 - `diskreport.py`: **16**
 - `scanner.py`: **15**
+- `memory.py`: **15**
 - `settings.py`: **14**
 - `startup.py`: **12**
 - `safety.py`: **12**
 - `assistant.py`: **11**
-- `browser.py`: **10**
+- `browser.py`: **11**
 - `duplicates.py`: **9**
-- `organizer.py`: **8**
 - `branding.py`: **8**
+- `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T05:10:03` **browser.py** (manejo de errores y validación de entradas): Mejoré `_is_target_valid` para capturar explícitamente excepciones de `pathlib` (como `pathlib.Path.parts` lanzando errores en rutas malformadas) y añadí una validación de tipo `None` en `total_cache_bytes` para garantizar que la iteración sea robusta ante datos corruptos.
 - `2026-11-08T03:48:02` **startup.py** (seguridad defensiva): Se reforzó `StartupEntry._is_valid_executable` para validar la existencia real del archivo y evitar la manipulación de enlaces simbólicos mediante `resolve(strict=False)` antes de la comprobación, asegurando que no se sigan rutas fuera de las carpetas permitidas.
 - `2026-11-08T03:29:11` **quarantine.py** (seguridad defensiva): Se ha reforzado `_is_file_exclusive` para evitar condiciones de carrera (TOCTOU) al abrir el archivo, utilizando `os.open` con flags de acceso exclusivo (`O_EXCL`) y garantizando que el descriptor de archivo sea cerrado inmediatamente bajo cualquier circunstancia mediante bloques `try/finally` explícitos.
 - `2026-11-08T03:28:36` **organizer.py** (seguridad defensiva): Mejoré `_validate_path_security` para incluir una validación estricta del directorio de destino mediante `is_safe_to_modify`, asegurando que el destino no solo exista y sea escribible, sino que sea una ruta validada por los mecanismos de seguridad centralizados antes de intentar cualquier operación.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T02:58:41` **safety.py** (robustez ante casos límite): Se ha añadido una validación de concurrencia en la función `_get_path_stat_robust` mediante el manejo explícito de errores de `Sharing Violation` (código 32 de Win32), asegurando que el sistema sea más resiliente cuando archivos temporales o del sistema estén siendo procesados por otros procesos.
 - `2026-11-08T02:57:31` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y estado del sistema de archivos en `quarantine_dir` mediante un chequeo de disponibilidad (espacio en disco) y validación de permisos de escritura mediante un intento de creación de archivo temporal, mitigando fallos silenciosos en entornos donde el acceso a disco puede ser restrictivo o transitorio.
 - `2026-11-08T02:48:28` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y limpieza de recursos en `_iter_process_memory` mediante el uso de bloques `try...finally` asegurando que los handles de procesos sean cerrados incluso si ocurren excepciones durante la obtención de contadores de memoria.
-- `2026-11-08T02:46:54` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores `None` o estructuras malformadas en `_evaluate_rules` y `_process_pipeline_entry`, previniendo errores de ejecución ante entradas inesperadas durante el procesamiento del pipeline.
