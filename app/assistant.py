@@ -124,8 +124,10 @@ def _check_metric_integrity(val: Any) -> bool:
     return isinstance(val, (int, float)) and not isinstance(val, bool) and not _is_nan_or_inf(val)
 
 def _is_safe_numeric_context(val: Any) -> bool:
-    """Valida rango de seguridad para prevenir desbordamientos numéricos."""
+    """Valida rango de seguridad para prevenir desbordamientos numéricos y tipos incorrectos."""
     if not _check_metric_integrity(val): return False
+    # Evita pasar objetos que no sean números simples (ej: clases, funciones o tipos complejos)
+    if isinstance(val, (Path, type, Callable)): return False
     return -1e12 < float(val) < 1e12
 
 def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
@@ -474,7 +476,7 @@ class SystemContext:
         try:
             val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
             
-            # Validación estricta para evitar objetos complejos o tipos no permitidos
+            # Validación estricta para evitar objetos complejos, tipos no permitidos o callables
             if val is None or isinstance(val, (bool, dict, list, tuple, Path)) or callable(val):
                 return None
             

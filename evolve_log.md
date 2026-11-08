@@ -637,3 +637,11 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-11-08T06:53:20` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-11-08T06:53:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T06:53:20` Corrida terminada. Total usado hoy: 164.
+- `2026-11-08T07:00:59` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-11-08T07:01:37` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de tipo más estricta y segura en `_is_safe_numeric_context` y `_apply_field` para evitar que objetos complejos o tipos inesperados (como `Path` u objetos `callable`) sean procesados silenciosamente, reforzando la robustez ante datos malformados inyectados en la fase de ingesta.
+- `2026-11-08T07:02:04` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-08T07:03:04` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-08T07:03:37` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-08T07:03:49` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la resiliencia ante errores de sistema de archivos en `walk_files` y `largest_folders` añadiendo bloques `try-except` granulares en los puntos donde el acceso a metadatos (como `stat` o `scandir`) suele fallar por bloqueos de E/S o cambios concurrentes de estado.
+- `2026-11-08T07:03:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T07:03:49` Corrida terminada. Total usado hoy: 168.
