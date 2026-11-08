@@ -98,14 +98,24 @@ class DirectoryScanner:
         """Determina si un nombre de archivo o carpeta está prohibido por política de seguridad."""
         return any(ord(c) < 32 for c in name) or name.lower() in self.ctx.never_touch_lower
 
+    def _is_entry_valid(self, entry: os.DirEntry) -> bool:
+        """
+        Valida que una entrada sea apta para inspección. 
+        Evita seguir enlaces simbólicos/junctions por seguridad y previene 
+        la salida del sandbox mediante recursión lógica.
+        """
+        if not entry.name or self._is_restricted_name(entry.name):
+            return False
+        # No seguir enlaces para evitar ataques de redirección o bucles infinitos en el FS
+        if entry.is_symlink() or self.ctx.is_junction(entry.path):
+            return False
+        return True
+
     def _should_stop_traversal(self, entry: os.DirEntry, depth: int) -> bool:
         """Determina si el escáner debe abortar el procesamiento de una rama específica."""
-        if not entry.name or self._is_restricted_name(entry.name):
+        if not self._is_entry_valid(entry):
             return True
         if depth > self.ctx.max_depth:
-            return True
-        # Verificar si es enlace simbólico o junction antes de entrar
-        if entry.is_symlink() or self.ctx.is_junction(entry.path):
             return True
         return False
 

@@ -214,6 +214,7 @@ def grade_color(grade: Optional[str]) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
+    """Retorna el color asociado a un puntaje numérico basado en los umbrales definidos."""
     if score is None: return C_TEXT_MUTED
     try:
         valor = float(score)
@@ -225,6 +226,7 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
 
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588", empty: str = "\u2591") -> str:
+    """Genera una representación visual de barra de progreso basada en caracteres Unicode."""
     try:
         valor = float(percent) if percent is not None else 0.0
         ancho = max(1, int(width))
@@ -235,6 +237,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
+    """Convierte un string hexadecimal CSS (formato #RRGGBB) a una tupla RGB."""
     if not isinstance(value, str) or not value.startswith('#') or len(value) != 7: return (0, 0, 0)
     try:
         val = int(value.lstrip('#'), 16)
@@ -243,9 +246,11 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
+    """Convierte una tupla RGB a su representación en string hexadecimal CSS."""
     return f"#{max(0, min(255, int(rgb[0]))):02x}{max(0, min(255, int(rgb[1]))):02x}{max(0, min(255, int(rgb[2]))):02x}"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
+    """Realiza una interpolación lineal entre dos colores hexadecimales."""
     try:
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)
@@ -255,6 +260,7 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
 
 @lru_cache(maxsize=64)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
+    """Genera una secuencia de colores resultante de interpolar a través de varios stops."""
     n = max(1, int(steps))
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
@@ -270,6 +276,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=64)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
+    """Agrupa colores contiguos en segmentos para optimizar llamadas al motor de dibujo."""
     colors = gradient_colors(steps, stops)
     if not colors: return ()
     segments: List[ColorSegment] = []

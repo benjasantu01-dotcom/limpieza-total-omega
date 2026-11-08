@@ -89,8 +89,11 @@ def _get_extension(path: Path) -> str:
 
 class ExtStats:
     """
-    Acumulador para métricas de una extensión de archivo particular.
-    Usa __slots__ para optimizar el consumo de memoria durante escaneos masivos.
+    Acumulador para métricas agregadas de una extensión de archivo particular.
+    
+    Attributes:
+        total_bytes: Suma total en bytes de todos los archivos de esta extensión.
+        count: Cantidad total de archivos encontrados con esta extensión.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -107,8 +110,12 @@ class ExtStats:
 
 class GlobalStats:
     """
-    Gestor del estado de agregación durante el escaneo.
-    Centraliza las estadísticas globales de archivos encontrados.
+    Gestor del estado de agregación durante el escaneo de una estructura de archivos.
+    
+    Attributes:
+        total_bytes: Espacio total acumulado en bytes.
+        total_files: Cantidad total de archivos registrados.
+        ext_stats: Diccionario que mapea extensiones a objetos ExtStats.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -126,6 +133,10 @@ class GlobalStats:
 class FolderMetrics:
     """
     Métrica temporal para calcular el tamaño de subcarpetas durante el recorrido.
+    
+    Attributes:
+        size: Tamaño acumulado en bytes dentro de esta carpeta.
+        file_count: Cantidad de archivos contenidos en esta carpeta.
     """
     __slots__ = ('size', 'file_count')
     
@@ -395,17 +406,22 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Función interna que coordina el escaneo, agrega estadísticas globales y
-    mantiene un heap de tamaño `limit` con los archivos más pesados encontrados.
+    Coordina el escaneo de archivos, agrega métricas globales y mantiene un 
+    heap de tamaño máximo `limit` para trackear los archivos más pesados.
+    
+    Args:
+        directory: Path base para el escaneo.
+        skip_protected: Si debe ignorar rutas bloqueadas.
+        limit: Capacidad del heap para almacenar registros de archivos grandes.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    # Manejo de fallos durante el recorrido para asegurar integridad
     try:
         for path, size in walk_files(directory, skip_protected):
             stats.register_file(size, _get_extension(path))
                 
+            # Mantenimiento de heap: permite mantener N archivos más grandes con O(log N)
             if limit > 0:
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, (size, path))

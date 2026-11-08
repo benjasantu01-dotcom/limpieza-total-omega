@@ -128,8 +128,8 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo. 
-    Usa el caché `_full_hash_cache` para optimizar lecturas repetidas.
+    Calcula el hash SHA256 completo del archivo. 
+    Usa `_full_hash_cache` para persistir resultados durante la sesión actual.
     """
     if not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache.get(path)
@@ -149,8 +149,8 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Genera un fingerprint rápido (SHA256 de los primeros 64KB).
-    Acelera el descarte de archivos disímiles antes del cálculo completo.
+    Calcula un fingerprint (SHA256) de los primeros 64KB (Paso 2 del algoritmo).
+    Permite descartar rápidamente archivos con encabezados distintos.
     """
     if not isinstance(path, Path): return None
     if path in _partial_cache: return _partial_cache.get(path)
@@ -234,7 +234,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """Refina subgrupos inicialmente clasificados por tamaño usando hash parcial y completo."""
-    partial_groups = _group_paths_by_hash(paths, partial_hash)
+    partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
         final.update(_group_paths_by_hash(subset, hash_file))
@@ -244,9 +244,9 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona la estrategia de cómputo de hash basada en si el tamaño del archivo es despreciable."""
     if size <= PARTIAL_READ_BYTES:
-        results = _group_paths_by_hash(paths, hash_file)
+        results: Dict[str, List[Path]] = _group_paths_by_hash(paths, hash_file)
     else:
-        results = _process_large_file_subset(paths)
+        results: Dict[str, List[Path]] = _process_large_file_subset(paths)
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
 
 
