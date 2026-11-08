@@ -160,6 +160,7 @@ class _SettingsManager:
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
+        # Almacena: (datos_mapeados, mtime, size)
         self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
 
     def clear(self, resolved_path_str: str) -> None:
@@ -435,19 +436,22 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Retorna los settings actuales con lógica de caché."""
     primary_path = settings_path(custom_base)
+    if not primary_path.exists() or not primary_path.is_file():
+        return DEFAULTS.copy()
+
     resolved_str = str(primary_path.resolve())
     try:
-        if primary_path.exists() and primary_path.is_file():
-            st = primary_path.lstat()
-            cached = _MANAGER.data_cache.get(resolved_str)
-            if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
-                return dict(cached[0])
-            result = _read_and_parse_json(primary_path)
-            if result is not None:
-                data, st = result
-                settings = _coerce_and_verify(validate(data))
-                _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
-                return settings
+        st = primary_path.lstat()
+        cached = _MANAGER.data_cache.get(resolved_str)
+        if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
+            return dict(cached[0])
+        
+        result = _read_and_parse_json(primary_path)
+        if result is not None:
+            data, st = result
+            settings = _coerce_and_verify(validate(data))
+            _MANAGER.data_cache[resolved_str] = (MappingProxyType(settings), st.st_mtime, st.st_size)
+            return settings
     except (OSError, PermissionError): pass
     return DEFAULTS.copy()
 

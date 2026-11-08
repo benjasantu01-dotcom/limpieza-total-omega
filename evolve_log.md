@@ -1056,3 +1056,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-08T11:08:04` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño del manifiesto (`total_quarantined_bytes`) eliminando la deserialización completa de objetos `QuarantineItem` mediante el uso de un generador que suma directamente `size_bytes` de los diccionarios crudos cargados, reduciendo drásticamente la carga en memoria y CPU durante consultas frecuentes de la UI.
 - `2026-11-08T11:08:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T11:08:04` Corrida terminada. Total usado hoy: 264.
+- `2026-11-08T11:15:41` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-08T11:16:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-08T11:16:51` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` integrando la verificación de `PROTECTED_DIR_NAMES` mediante `any()` directo sobre un set normalizado, evitando la creación costosa de una lista de nombres de partes en cada llamada y reduciendo la presión sobre el recolector de basura.
+- `2026-11-08T11:17:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-08T11:18:18` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-11-08T11:18:35` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó la gestión de la caché en `_SettingsManager` reemplazando los diccionarios por estructuras más eficientes y reduciendo la redundancia en `load` para evitar el cálculo innecesario de `resolved_str` y la verificación redundante de estados.
+- `2026-11-08T11:18:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T11:18:35` Corrida terminada. Total usado hoy: 268.

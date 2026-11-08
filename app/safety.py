@@ -873,15 +873,13 @@ def is_protected_path(path: PathLike) -> bool:
 
     try:
         norm_p = _normalize_resolved(path_str)
-        root_paths = _get_system_root_paths()
-        
         norm_str = os.path.normcase(str(norm_p))
-        if any(norm_str.startswith(r) for r in root_paths):
+        
+        if any(norm_str.startswith(r) for r in _get_system_root_paths()):
             _PROTECTION_CACHE[path_str] = True
             return True
         
-        path_parts = {p.lower() for p in norm_p.parts}
-        if not PROTECTED_DIR_NAMES.isdisjoint(path_parts):
+        if any(part.lower() in PROTECTED_DIR_NAMES for part in norm_p.parts):
             _PROTECTION_CACHE[path_str] = True
             return True
         
