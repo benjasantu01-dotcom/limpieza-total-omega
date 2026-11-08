@@ -753,15 +753,18 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     if not context_text or not _ensure_safe_text(context_text): return None
     q = _sanitize_query(question)
     if not q: return None
-    full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
-    if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): return None
     
-    if _contains_forbidden_patterns(full_prompt): return None
+    # Construcción de estructura segura antes de serializar
+    content_payload = {
+        "contents": [{
+            "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]
+        }]
+    }
     
-    payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
-    if not _is_safe_payload_structure(payload_data): return None
+    if not _is_safe_payload_structure(content_payload): return None
+    
     try:
-        encoded = json.dumps(payload_data).encode("utf-8")
+        encoded = json.dumps(content_payload).encode("utf-8")
         return encoded if len(encoded) <= _MAX_RESPONSE_BYTES else None
     except (TypeError, ValueError): return None
 

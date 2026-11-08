@@ -400,7 +400,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
             st_post = os.fstat(fd)
-            if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or st_post.st_size == 0:
+            if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or st_post.st_size == 0 or st_post.st_size > MAX_SETTINGS_SIZE:
                 return None
             if st_post.st_ino != st.st_ino or st_post.st_dev != st.st_dev:
                 return None

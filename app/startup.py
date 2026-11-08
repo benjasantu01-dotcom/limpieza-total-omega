@@ -196,7 +196,8 @@ class StartupEntry:
             if not p.is_file() or p.is_symlink():
                 _VALIDATION_CACHE[p_str] = False
                 return False
-            if not os.access(p, os.R_OK):
+            # Se requiere permiso de lectura Y ejecución para considerar un binario válido
+            if not os.access(p, os.R_OK | os.X_OK):
                 _VALIDATION_CACHE[p_str] = False
                 return False
                 
