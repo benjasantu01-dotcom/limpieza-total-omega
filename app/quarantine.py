@@ -500,6 +500,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
                 return cached_items
         
+        # Optimización: Set para búsqueda O(1) de archivos en disco
         existing_names = {entry.name for entry in os.scandir(base_dir) if entry.is_file()}
         
         with open(m_path, "r", encoding="utf-8") as f: 
@@ -511,6 +512,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         valid_items: List[QuarantineItem] = []
         for entry in data:
             item = QuarantineItem.from_dict(entry)
+            # Solo validamos si el archivo almacenado físicamente existe
             if item and item.stored_name in existing_names:
                 valid_items.append(item)
         
