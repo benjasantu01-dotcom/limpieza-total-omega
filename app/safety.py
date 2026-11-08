@@ -859,10 +859,13 @@ def is_protected_path(path: PathLike) -> bool:
         norm_p = _normalize_resolved(path_str)
         norm_str = os.path.normcase(str(norm_p))
         root_paths = _get_system_root_paths()
+        
+        # Check against cached roots directly
         if any(norm_str.startswith(r) for r in root_paths):
             _PROTECTION_CACHE[path_str] = True
             return True
         
+        # Check part intersection
         path_parts = norm_p.parts
         if not PROTECTED_DIR_NAMES.isdisjoint(p.lower() for p in path_parts):
             _PROTECTION_CACHE[path_str] = True

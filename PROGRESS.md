@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 62
-- Sin cambios (nada sustancial que mejorar): 10
+- Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 107 | 9 | 38 | 6 | 184 |
-| 2026-11-08 | 67 | 4 | 24 | 4 | 61 |
+| 2026-11-07 | 105 | 9 | 38 | 6 | 182 |
+| 2026-11-08 | 68 | 4 | 24 | 5 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- seguridad defensiva: **35**
+- seguridad defensiva: **33**
 - robustez ante casos límite: **32**
 - manejo de errores y validación de entradas: **30**
-- rendimiento: **25**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `healthscore.py`: **19**
+- `healthscore.py`: **18**
 - `memory.py`: **16**
 - `diskreport.py`: **16**
+- `safety.py`: **14**
 - `settings.py`: **14**
 - `scanner.py`: **14**
-- `browser.py`: **13**
-- `safety.py`: **13**
 - `startup.py`: **12**
+- `browser.py`: **12**
 - `assistant.py`: **10**
 - `duplicates.py`: **10**
 - `organizer.py`: **9**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T06:52:05` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` centralizando la normalización de la ruta mediante el caché `_normalize_resolved` y refactorizando el chequeo de prefijos para evitar redundancias, reduciendo la carga de CPU en bucles de escaneo extensos.
 - `2026-11-08T06:42:31` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` reemplazando llamadas redundantes a `Path.exists()` por el uso directo del objeto `os.DirEntry` (`entry.is_file()` y `entry.path`), evitando la recreación de objetos `Path` y syscalls innecesarias durante la iteración del directorio.
 - `2026-11-08T06:41:09` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria eliminando la creación repetitiva de buffers y estructuras dentro del loop principal, utilizando un buffer persistente y reduciendo el número de llamadas a la API mediante una validación de acceso más eficiente.
 - `2026-11-08T06:22:22` **browser.py** (rendimiento): Se optimizó el escaneo del directorio de caché evitando el cálculo de `os.path.realpath` y la creación de objetos `Path` dentro del bucle de `_process_entry`, utilizando en su lugar `os.scandir` de forma más directa y aprovechando las rutas ya normalizadas en el contexto.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T05:51:21` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de filtrado, agregando type hints y docstrings precisos que explican el "porqué" detrás de las verificaciones de seguridad (`_safe_path_check` y `_is_valid_candidate`) para evitar que futuros colaboradores rompan la lógica de validación.
 - `2026-11-08T05:50:51` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos con parámetros y retornos claros en funciones críticas, y se ha reemplazado la lógica de validación de extensiones en `_collect_summary_data` por una función interna `_get_extension` para mejorar la legibilidad y mantenibilidad del flujo de datos.
 - `2026-11-08T05:50:21` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de las responsabilidades de las clases `DirectoryScanner` y `ScanContext`, y se han añadido type hints en funciones clave para mejorar la legibilidad y el mantenimiento del código.
-- `2026-11-08T05:41:45` **branding.py** (legibilidad y documentación): Se introdujeron constantes con nombre para los valores mágicos en las funciones de renderizado geométrico (`draw_logo`, `draw_shield_icon_decorations`) y se reemplazaron los literales numéricos por cálculos auto-documentados, facilitando el mantenimiento y la legibilidad de la lógica visual.

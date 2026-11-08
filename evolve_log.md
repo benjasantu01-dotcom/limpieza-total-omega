@@ -630,3 +630,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-11-08T06:42:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-11-08T06:42:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T06:42:34` Corrida terminada. Total usado hoy: 160.
+- `2026-11-08T06:50:49` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-08T06:52:05` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` centralizando la normalización de la ruta mediante el caché `_normalize_resolved` y refactorizando el chequeo de prefijos para evitar redundancias, reduciendo la carga de CPU en bucles de escaneo extensos.
+- `2026-11-08T06:52:31` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-11-08T06:53:02` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de la persistencia evitando la serialización completa (json.dumps) y la escritura a disco cuando la configuración cargada en memoria ya coincide con los cambios solicitados en la función `update`.
+- `2026-11-08T06:53:20` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-08T06:53:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T06:53:20` Corrida terminada. Total usado hoy: 164.
