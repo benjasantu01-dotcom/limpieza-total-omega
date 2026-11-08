@@ -351,6 +351,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Calcula el score parcial y extrae recomendaciones para una única área del pipeline."""
+    if not isinstance(entry, PipelineEntry):
+        return 0, []
     try:
         ratio = _clamp(entry.scorer(metrics))
         points = int(ratio * float(entry.weight))

@@ -1448,3 +1448,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-08T02:38:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-11-08T02:38:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T02:38:11` Corrida terminada. Total usado hoy: 64.
+- `2026-11-08T02:46:25` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-11-08T02:46:54` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra valores `None` o estructuras malformadas en `_evaluate_rules` y `_process_pipeline_entry`, previniendo errores de ejecución ante entradas inesperadas durante el procesamiento del pipeline.
+- `2026-11-08T02:48:01` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-08T02:48:28` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de concurrencia y limpieza de recursos en `_iter_process_memory` mediante el uso de bloques `try...finally` asegurando que los handles de procesos sean cerrados incluso si ocurren excepciones durante la obtención de contadores de memoria.
+- `2026-11-08T02:48:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-08T02:48:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T02:48:39` Corrida terminada. Total usado hoy: 68.

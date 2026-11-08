@@ -391,6 +391,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
                     name = str(path_buf.value).split('\\')[-1]
                     yield ProcessMemory(name, pid, BytesValue(ws))
+        except (ctypes.ArgumentError, OSError):
+            continue
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 
