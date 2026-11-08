@@ -122,7 +122,7 @@ def _is_safe_by_attributes(path: Path) -> bool:
 
 def _is_valid_file_path(path: PathInput) -> bool:
     """Valida si un path es un archivo real, no protegido y físicamente accesible."""
-    if path is None:
+    if not isinstance(path, (Path, str)):
         return False
     try:
         path_str = str(path)
@@ -135,7 +135,7 @@ def _is_valid_file_path(path: PathInput) -> bool:
 
 def _is_readable(path: PathInput) -> bool:
     """Verifica permisos de lectura a nivel de sistema operativo para el proceso actual."""
-    if path is None:
+    if not isinstance(path, (Path, str)):
         return False
     try:
         path_str = str(path)
@@ -253,7 +253,7 @@ class Scanner:
             if not norm_entry or not self.base_root_real:
                 return False
             return os.path.commonpath([self.base_root_real, norm_entry]) == self.base_root_real
-        except (ValueError, OSError, ValueError):
+        except (ValueError, OSError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:

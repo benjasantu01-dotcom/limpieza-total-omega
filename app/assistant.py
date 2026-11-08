@@ -473,19 +473,17 @@ class SystemContext:
         Extrae, valida y convierte un valor específico desde una fuente externa (dict u objeto).
         Asegura que el tipo resultante coincida con la especificación esperada.
         """
-        try:
-            val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
-            
-            # Validación estricta para evitar objetos complejos, tipos no permitidos o callables
-            if val is None or isinstance(val, (bool, dict, list, tuple, Path)) or callable(val):
-                return None
-            
-            valid_val = _is_valid_numeric_update(val, spec)
-            if valid_val is None: return None
-            
-            return int(valid_val) if spec.type_hint is int else float(valid_val)
-        except (Exception, ValueError, TypeError):
+        val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
+        
+        # Validación de integridad de seguridad
+        if val is None or isinstance(val, (bool, dict, list, tuple, Path)) or callable(val):
             return None
+            
+        validated_val = _is_valid_numeric_update(val, spec)
+        if validated_val is None:
+            return None
+        
+        return int(validated_val) if spec.type_hint is int else float(validated_val)
 
     def _clean_grade(self, val: Any) -> str:
         """Desinfecta la calificación para asegurar que sea una cadena limpia."""
