@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 62
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 249
+- Sin respuesta de la IA (error o límite): 248
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 7 | 0 | 5 | 0 | 6 |
+| 2026-11-06 | 6 | 0 | 3 | 0 | 5 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 53 | 4 | 19 | 3 | 57 |
+| 2026-11-08 | 57 | 4 | 19 | 3 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **40**
 - seguridad defensiva: **35**
 - manejo de errores y validación de entradas: **30**
-- rendimiento: **23**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
+- `quarantine.py`: **19**
+- `diskreport.py`: **16**
 - `scanner.py`: **15**
 - `memory.py`: **15**
-- `diskreport.py`: **15**
 - `settings.py`: **14**
 - `safety.py`: **13**
+- `browser.py`: **12**
 - `startup.py`: **12**
 - `assistant.py`: **11**
-- `browser.py`: **11**
-- `duplicates.py`: **9**
+- `duplicates.py`: **10**
 - `branding.py`: **8**
 - `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T05:51:41` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de docstrings explicativos en las constantes globales y funciones de orquestación, además de añadir type hints explícitos y clarificar la lógica de validación numérica para hacer más evidente el "porqué" detrás de las restricciones de seguridad.
+- `2026-11-08T05:51:21` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de filtrado, agregando type hints y docstrings precisos que explican el "porqué" detrás de las verificaciones de seguridad (`_safe_path_check` y `_is_valid_candidate`) para evitar que futuros colaboradores rompan la lógica de validación.
+- `2026-11-08T05:50:51` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos con parámetros y retornos claros en funciones críticas, y se ha reemplazado la lógica de validación de extensiones en `_collect_summary_data` por una función interna `_get_extension` para mejorar la legibilidad y mantenibilidad del flujo de datos.
+- `2026-11-08T05:50:21` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de las responsabilidades de las clases `DirectoryScanner` y `ScanContext`, y se han añadido type hints en funciones clave para mejorar la legibilidad y el mantenimiento del código.
 - `2026-11-08T05:41:45` **branding.py** (legibilidad y documentación): Se introdujeron constantes con nombre para los valores mágicos en las funciones de renderizado geométrico (`draw_logo`, `draw_shield_icon_decorations`) y se reemplazaron los literales numéricos por cálculos auto-documentados, facilitando el mantenimiento y la legibilidad de la lógica visual.
 - `2026-11-08T05:41:25` **assistant.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de validación y los decoradores de seguridad para mejorar la legibilidad y facilitar el mantenimiento del motor de asistencia.
 - `2026-11-08T05:40:41` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila procesada contenga las claves requeridas y no sea `None`, previniendo errores de ejecución ante entradas mal formadas o vacías del registro.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T05:19:50` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_process_pipeline_entry` y `_evaluate_rules` mediante la sustitución de capturas de excepción genéricas por validaciones proactivas y manejo de estados nulos o incorrectos, asegurando que el pipeline de cálculo sea resiliente ante datos inesperados sin ocultar fallos lógicos.
 - `2026-11-08T05:10:03` **browser.py** (manejo de errores y validación de entradas): Mejoré `_is_target_valid` para capturar explícitamente excepciones de `pathlib` (como `pathlib.Path.parts` lanzando errores en rutas malformadas) y añadí una validación de tipo `None` en `total_cache_bytes` para garantizar que la iteración sea robusta ante datos corruptos.
 - `2026-11-08T03:48:02` **startup.py** (seguridad defensiva): Se reforzó `StartupEntry._is_valid_executable` para validar la existencia real del archivo y evitar la manipulación de enlaces simbólicos mediante `resolve(strict=False)` antes de la comprobación, asegurando que no se sigan rutas fuera de las carpetas permitidas.
-- `2026-11-08T03:29:11` **quarantine.py** (seguridad defensiva): Se ha reforzado `_is_file_exclusive` para evitar condiciones de carrera (TOCTOU) al abrir el archivo, utilizando `os.open` con flags de acceso exclusivo (`O_EXCL`) y garantizando que el descriptor de archivo sea cerrado inmediatamente bajo cualquier circunstancia mediante bloques `try/finally` explícitos.
-- `2026-11-08T03:28:36` **organizer.py** (seguridad defensiva): Mejoré `_validate_path_security` para incluir una validación estricta del directorio de destino mediante `is_safe_to_modify`, asegurando que el destino no solo exista y sea escribible, sino que sea una ruta validada por los mecanismos de seguridad centralizados antes de intentar cualquier operación.
-- `2026-11-08T03:28:09` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` al aplicar una validación de ruta estricta utilizando `is_protected_path` sobre el proceso destino antes de cualquier operación de `EmptyWorkingSet`, previniendo así intentos de manipulación sobre procesos del sistema incluso si se posee un handle válido.
-- `2026-11-08T03:18:34` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo `healthscore.py` al reemplazar el acceso directo mediante `getattr` en `_process_pipeline_entry` y la validación de `SystemMetrics` por el uso del método `safe_get`, garantizando así que no se produzcan accesos no autorizados a atributos fuera del esquema definido incluso si el pipeline se extiende en el futuro.

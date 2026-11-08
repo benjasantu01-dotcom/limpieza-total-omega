@@ -97,13 +97,17 @@ class DuplicateGroup:
 
 def _safe_path_check(path: Path) -> bool:
     """
-    Realiza una validación combinada de seguridad antes de acceder al contenido.
-    Combina validación de entorno (`is_safe_to_modify`), rutas protegidas (`is_protected_path`)
-    y detección de bucles recursivos (`is_junction`).
+    Valida si un path es apto para lectura intensiva (hashing).
+    
+    El chequeo es estricto: requiere que el path no sea de sistema, no sea una ruta 
+    crítica protegida, no sea un punto de reanálisis y que el sistema permita su modificación.
     """
     if not isinstance(path, Path): return False
     try:
-        # Validación secuencial: existencia -> permisos -> protección -> estructura
+        # Validación de seguridad:
+        # 1. is_safe_to_modify: Verifica si está dentro de la whitelist de áreas de usuario.
+        # 2. is_protected_path: Comprueba si es una ruta bloqueada explícitamente.
+        # 3. is_junction: Previene seguir punteros a otras unidades que causan bucles o excesos.
         if not path.is_file() or not is_safe_to_modify(path):
             return False
         return not is_protected_path(path.resolve(strict=True)) and not is_junction(path)
@@ -112,7 +116,12 @@ def _safe_path_check(path: Path) -> bool:
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
-    """Filtro de pre-selección: descarta archivos de tamaño cero, ocultos y rutas no permitidas."""
+    """
+    Filtro de pre-selección para archivos candidatos a duplicados.
+    
+    Ignora archivos vacíos (0 bytes) y archivos marcados por el SO como Ocultos o de Sistema
+    para prevenir accesos denegados por privilegios elevados.
+    """
     return st_size > 0 and not is_system_or_hidden(path) and _safe_path_check(path)
 
 

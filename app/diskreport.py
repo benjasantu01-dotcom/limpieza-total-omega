@@ -82,6 +82,11 @@ def _is_reparse_point(stat: os.stat_result) -> bool:
         return False
 
 
+def _get_extension(path: Path) -> str:
+    """Extrae y normaliza la extensión de un archivo, devolviendo un marcador por defecto si falta."""
+    return path.suffix.lower() or "(sin extensión)"
+
+
 class ExtStats:
     """
     Acumulador para métricas de una extensión de archivo particular.
@@ -393,8 +398,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        ext = path.suffix.lower() or "(sin extensión)"
-        stats.register_file(size, ext)
+        stats.register_file(size, _get_extension(path))
             
         if limit > 0:
             if len(top_heap) < limit:

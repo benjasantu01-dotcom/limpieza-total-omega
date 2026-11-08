@@ -64,8 +64,16 @@ SYSTEM_HIDDEN_FLAGS: int = (
 @dataclass
 class ScanContext:
     """
-    Estado inmutable compartido durante la recursión del escaneo de disco.
-    Define las restricciones de navegación para el DirectoryScanner.
+    Contenedor inmutable de configuración y estado para una operación de escaneo.
+    
+    Attributes:
+        sandbox_base_norm: Ruta base absoluta normalizada, límite del escaneo.
+        kernel32: Instancia opcional de kernel32.dll para llamadas al API de Win32.
+        is_junction: Callback para detectar puntos de reparse (junctions/links).
+        visited_files: Conjunto de identificadores (dev, ino) para evitar procesar el mismo archivo dos veces.
+        visited_dirs: Conjunto de identificadores de directorios para detectar ciclos.
+        never_touch_lower: Conjunto de nombres de directorios protegidos.
+        max_depth: Límite máximo de recursión para prevenir desbordamientos.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -77,9 +85,11 @@ class ScanContext:
 
 class DirectoryScanner:
     """
-    Motor de recorrido recursivo para el escaneo de directorios de caché.
-    Implementa validaciones de seguridad para evitar escapes del sandbox y
-    prevenir la entrada en puntos de reparse (junctions).
+    Motor recursivo para calcular el tamaño de directorios de caché.
+    
+    Aplica políticas estrictas de seguridad: no sigue enlaces simbólicos ni
+    junctions, respeta el sandbox definido en ScanContext y evita
+    directorios marcados como protegidos.
     """
     def __init__(self, context: ScanContext) -> None:
         self.ctx = context
