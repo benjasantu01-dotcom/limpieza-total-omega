@@ -470,12 +470,12 @@ class SystemContext:
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
         """
-        Extrae, valida y convierte un valor específico desde una fuente externa (dict u objeto).
-        Asegura que el tipo resultante coincida con la especificación esperada.
+        Extrae, valida y convierte un valor específico desde una fuente externa.
         """
+        if not isinstance(source, (dict, object)): return None
         val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
         
-        # Validación de integridad de seguridad
+        # Validación de tipos estrictos
         if val is None or isinstance(val, (bool, dict, list, tuple, Path)) or callable(val):
             return None
             
@@ -502,7 +502,8 @@ class SystemContext:
         return all(isinstance(k, str) and not is_protected_path(k) for k in source.keys())
 
     def _extract_grade(self, source: Any) -> str:
-        """Extrae el campo 'grade' de una fuente de datos dict u objeto."""
+        """Extrae el campo 'grade' de una fuente de datos."""
+        if not isinstance(source, (dict, object)): return ""
         grade_raw = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
         if grade_raw is not None and not isinstance(grade_raw, (dict, list, tuple, Path)):
             return self._clean_grade(grade_raw)
@@ -510,8 +511,8 @@ class SystemContext:
 
     def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
         """Procesa y sanitiza todas las métricas recibidas de una fuente externa."""
-        if isinstance(source, dict):
-            if not self._validate_keys_safe(source): return {}
+        if isinstance(source, dict) and not self._validate_keys_safe(source):
+            return {}
         
         updates = {
             k: val for k in _VALID_METRIC_KEYS 
@@ -526,10 +527,10 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Verifica que la fuente de datos sea segura y apta para ingestión."""
         if source is None or callable(source) or isinstance(source, Path): return False
+        if isinstance(source, dict):
+            if not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
+                return False
         if isinstance(source, (dict, list, tuple)):
-            if isinstance(source, dict):
-                if not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
-                    return False
             return not _is_input_too_deep_or_complex(source)
         return True
 
@@ -548,13 +549,10 @@ class SystemContext:
         """Ingiere y valida datos externos para actualizar el estado de SystemContext."""
         if not self._validate_ingestion_source(source): 
             return False
-        try:
-            updates = self._validate_and_sanitize_data(source)
-            if updates:
-                self._apply_updates(updates)
-                return True
-        except (AttributeError, TypeError, ValueError, Exception):
-            pass
+        updates = self._validate_and_sanitize_data(source)
+        if updates:
+            self._apply_updates(updates)
+            return True
         return False
 
 @dataclass

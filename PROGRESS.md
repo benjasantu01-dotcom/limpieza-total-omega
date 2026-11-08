@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 67
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 229
+- Rechazadas por guardia de seguridad: 65
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 59 | 3 | 21 | 4 | 89 |
-| 2026-11-08 | 120 | 10 | 46 | 12 | 140 |
+| 2026-11-07 | 58 | 3 | 19 | 3 | 89 |
+| 2026-11-08 | 122 | 10 | 46 | 12 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **50**
+- legibilidad y documentación: **49**
 - robustez ante casos límite: **42**
 - seguridad defensiva: **34**
-- manejo de errores y validación de entradas: **27**
+- manejo de errores y validación de entradas: **29**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
@@ -38,13 +38,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **15**
 - `startup.py`: **13**
 - `duplicates.py`: **13**
-- `assistant.py`: **11**
-- `organizer.py`: **10**
-- `browser.py`: **10**
+- `assistant.py`: **12**
+- `browser.py`: **11**
 - `branding.py`: **9**
+- `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T14:00:58` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `detect_profiles` añadiendo validaciones preventivas de tipos y estados para evitar excepciones por valores `None` o estructuras de datos malformadas, garantizando que el escaneo no aborte inesperadamente ante configuraciones inesperadas.
+- `2026-11-08T14:00:20` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext` al reemplazar el manejo genérico de excepciones por una validación explícita y preventiva de los datos de entrada, evitando que valores malformados o de tipos inesperados interrumpan el flujo de trabajo del asistente.
 - `2026-11-08T12:38:17` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para prevenir ataques de desbordamiento de pila y acceso no autorizado mediante la resolución de rutas relativas peligrosas, añadiendo una verificación explícita de `is_absolute()` y limitando la recursión de `parents` antes de cualquier operación de resolución.
 - `2026-11-08T12:37:43` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_valid_path_structure` y `_is_valid_file_path` al incluir una validación explícita mediante `os.path.commonpath` para asegurar que, incluso ante resoluciones de enlaces o rutas ambiguas, no se procesen rutas fuera de los límites esperados ni accesos a nombres de dispositivos críticos de Windows.
 - `2026-11-08T12:30:13` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la detección de puntos de reparse (junctions) en `_is_system_directory_junction` para ser más robusta, asegurando que si la API falla o devuelve un estado inválido, la ruta sea tratada como protegida por defecto, mejorando la seguridad defensiva frente a manipulaciones de estructura de archivos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T11:37:21` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante valores `NaN` o `inf` durante la inicialización, asegurando que `__post_init__` y `__setattr__` validen la finitud antes de asignar valores, evitando que estados inválidos se propaguen al pipeline de scoring.
 - `2026-11-08T11:36:55` **duplicates.py** (robustez ante casos límite): He mejorado la robustez de `_safe_path_check` y `_collect_candidates` añadiendo una validación explícita de `path.exists()` antes de procesar cada entrada, evitando que archivos bloqueados o borrados durante la ejecución del bucle causen `OSError` inesperados, y asegurando que las rutas simbólicas rotas no entren en el flujo de hashing.
 - `2026-11-08T11:27:07` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `AssistantConfig` y `_parse_config` agregando validaciones explícitas para evitar fallos por valores `None` o tipos inesperados en el archivo de configuración, asegurando que la aplicación siempre mantenga un estado operativo y seguro ante configuraciones corruptas.
-- `2026-11-08T11:18:35` **settings.py** (rendimiento): Se optimizó la gestión de la caché en `_SettingsManager` reemplazando los diccionarios por estructuras más eficientes y reduciendo la redundancia en `load` para evitar el cálculo innecesario de `resolved_str` y la verificación redundante de estados.
-- `2026-11-08T11:16:51` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` integrando la verificación de `PROTECTED_DIR_NAMES` mediante `any()` directo sobre un set normalizado, evitando la creación costosa de una lista de nombres de partes en cada llamada y reduciendo la presión sobre el recolector de basura.
