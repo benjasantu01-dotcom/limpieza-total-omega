@@ -615,3 +615,11 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-11-08T06:22:22` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el escaneo del directorio de caché evitando el cálculo de `os.path.realpath` y la creación de objetos `Path` dentro del bucle de `_process_entry`, utilizando en su lugar `os.scandir` de forma más directa y aprovechando las rutas ya normalizadas en el contexto.
 - `2026-11-08T06:22:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T06:22:22` Corrida terminada. Total usado hoy: 152.
+- `2026-11-08T06:30:29` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-11-08T06:31:00` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-08T06:31:26` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-08T06:31:49` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.get_clamped_metric, grade_for_score, score_duplicates, score_junk, score_startup
+- `2026-11-08T06:32:50` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-08T06:33:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-08T06:33:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T06:33:51` Corrida terminada. Total usado hoy: 156.
