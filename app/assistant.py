@@ -732,18 +732,22 @@ def available(base: str | Path | None = None) -> bool:
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
     """Parsea la configuración de usuario con valores por defecto seguros."""
-    if not isinstance(raw_cfg, dict): return AssistantConfig("", "gemini-3.1-flash-lite", True)
-    
-    api_key = os.environ.get("LTO_API_KEY", str(raw_cfg.get("asistente_api_key", "")))
+    default = AssistantConfig(api_key="", model="gemini-3.1-flash-lite", allow_metrics=True)
+    if not isinstance(raw_cfg, dict): 
+        return default
     
     try:
+        api_key = os.environ.get("LTO_API_KEY", str(raw_cfg.get("asistente_api_key", "")))
+        model_raw = raw_cfg.get("asistente_modelo")
+        allow_raw = raw_cfg.get("asistente_enviar_metricas")
+        
         return AssistantConfig(
-            api_key=api_key,
-            model=str(m) if isinstance(m := raw_cfg.get("asistente_modelo"), str) and _MODEL_NAME_REGEX.match(m) else "gemini-3.1-flash-lite",
-            allow_metrics=bool(raw_cfg.get("asistente_enviar_metricas", True))
+            api_key=str(api_key) if isinstance(api_key, str) else "",
+            model=str(model_raw) if isinstance(model_raw, str) and _MODEL_NAME_REGEX.match(model_raw) else "gemini-3.1-flash-lite",
+            allow_metrics=bool(allow_raw) if isinstance(allow_raw, bool) else True
         )
-    except (TypeError, ValueError):
-        return AssistantConfig("", "gemini-3.1-flash-lite", True)
+    except (TypeError, ValueError, AttributeError):
+        return default
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Prepara el cuerpo de la petición (JSON) para la API de Gemini."""

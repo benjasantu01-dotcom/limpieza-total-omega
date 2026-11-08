@@ -7,44 +7,45 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 12
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 66
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 232
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 73 | 5 | 27 | 4 | 127 |
-| 2026-11-08 | 107 | 7 | 39 | 10 | 105 |
+| 2026-11-07 | 72 | 5 | 26 | 4 | 125 |
+| 2026-11-08 | 108 | 8 | 40 | 11 | 105 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
+- robustez ante casos límite: **35**
 - manejo de errores y validación de entradas: **34**
-- robustez ante casos límite: **34**
-- seguridad defensiva: **33**
+- seguridad defensiva: **32**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
 - `diskreport.py`: **17**
 - `scanner.py`: **16**
+- `healthscore.py`: **16**
 - `safety.py`: **15**
 - `memory.py`: **15**
 - `settings.py`: **14**
 - `duplicates.py`: **13**
 - `startup.py`: **13**
 - `browser.py`: **12**
-- `assistant.py`: **11**
+- `assistant.py`: **12**
 - `organizer.py`: **10**
 - `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T11:27:07` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `AssistantConfig` y `_parse_config` agregando validaciones explícitas para evitar fallos por valores `None` o tipos inesperados en el archivo de configuración, asegurando que la aplicación siempre mantenga un estado operativo y seguro ante configuraciones corruptas.
 - `2026-11-08T11:18:35` **settings.py** (rendimiento): Se optimizó la gestión de la caché en `_SettingsManager` reemplazando los diccionarios por estructuras más eficientes y reduciendo la redundancia en `load` para evitar el cálculo innecesario de `resolved_str` y la verificación redundante de estados.
 - `2026-11-08T11:16:51` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` integrando la verificación de `PROTECTED_DIR_NAMES` mediante `any()` directo sobre un set normalizado, evitando la creación costosa de una lista de nombres de partes en cada llamada y reduciendo la presión sobre el recolector de basura.
 - `2026-11-08T11:08:04` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño del manifiesto (`total_quarantined_bytes`) eliminando la deserialización completa de objetos `QuarantineItem` mediante el uso de un generador que suma directamente `size_bytes` de los diccionarios crudos cargados, reduciendo drásticamente la carga en memoria y CPU durante consultas frecuentes de la UI.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T10:16:02` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en clases clave (`ExtStats`, `GlobalStats`, `FolderMetrics`), la estandarización de las anotaciones de tipo faltantes, y la clarificación de la lógica en `_collect_summary_data` para documentar explícitamente el uso del heap.
 - `2026-11-08T10:15:35` **browser.py** (legibilidad y documentación): Mejora la claridad del motor de escaneo extrayendo la lógica de validación de entradas de `DirectoryScanner._should_stop_traversal` hacia un método `_is_entry_valid` con documentación explícita, facilitando la comprensión del "porqué" de cada restricción de seguridad.
 - `2026-11-08T10:15:08` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas de renderizado y transformaciones de color, y se han añadido type hints en retornos de funciones complejas para clarificar la estructura de los datos tratados.
-- `2026-11-08T10:06:19` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y el mantenimiento de la lógica de validación de métricas mediante la adición de Type Hints explícitos, docstrings detallados y la simplificación de la estructura de `_apply_field`, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.

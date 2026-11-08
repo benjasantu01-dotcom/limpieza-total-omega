@@ -1064,3 +1064,44 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-11-08T11:18:35` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó la gestión de la caché en `_SettingsManager` reemplazando los diccionarios por estructuras más eficientes y reduciendo la redundancia en `load` para evitar el cálculo innecesario de `resolved_str` y la verificación redundante de estados.
 - `2026-11-08T11:18:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T11:18:35` Corrida terminada. Total usado hoy: 268.
+- `2026-11-08T11:25:54` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-08T11:26:24` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.32s
+
+```
+- `2026-11-08T11:26:24` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché persistente de resultados de validación de archivos mediante la función `_validate_file_access` en la clase `StartupEntry` para evitar llamadas redundantes a `os.access` y `path.resolve` dentro de las iteraciones de escaneo, optimizando el rendimiento en sistemas con muchos programas de inicio.
+- `2026-11-08T11:27:07` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `AssistantConfig` y `_parse_config` agregando validaciones explícitas para evitar fallos por valores `None` o tipos inesperados en el archivo de configuración, asegurando que la aplicación siempre mantenga un estado operativo y seguro ante configuraciones corruptas.
+- `2026-11-08T11:27:38` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo agregando validaciones de entrada más estrictas y garantizando que las operaciones de sistema de archivos sean seguras mediante el uso de `is_safe_to_modify` antes de cualquier interacción con el disco, evitando así excepciones no controladas.
+- `2026-11-08T11:27:48` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-08T11:27:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T11:27:48` Corrida terminada. Total usado hoy: 272.
