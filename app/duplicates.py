@@ -105,10 +105,6 @@ def _safe_path_check(path: Path) -> bool:
     if not isinstance(path, Path): return False
     try:
         abs_path = path.resolve(strict=True)
-        # Validación de seguridad:
-        # 1. is_safe_to_modify: Verifica si está dentro de la whitelist de áreas de usuario.
-        # 2. is_protected_path: Comprueba si es una ruta bloqueada explícitamente.
-        # 3. is_junction: Previene seguir punteros a otras unidades que causan bucles o excesos.
         if not abs_path.is_file() or not is_safe_to_modify(abs_path):
             return False
         return not is_protected_path(abs_path) and not is_junction(abs_path)

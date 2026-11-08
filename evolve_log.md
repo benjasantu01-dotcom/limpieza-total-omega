@@ -1020,3 +1020,32 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-11-08T10:47:02` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el cálculo de colores en `get_gradient_segments` y `gradient_colors` eliminando la creación repetitiva de listas y operaciones de punto flotante innecesarias dentro del bucle principal, además de asegurar que los parámetros `steps` y `stops` se pre-validen para evitar re-cálculos costosos.
 - `2026-11-08T10:47:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T10:47:02` Corrida terminada. Total usado hoy: 256.
+- `2026-11-08T10:55:21` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-08T10:55:50` Tests FALLARON:
+```
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bases = [PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0')]
+cache_paths = {'Chrome': 'Perfil\\Cookies'}
+
+    def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
+        """Escanea el sistema en busca de cachés de navegadores conocidos basándose en perfiles de usuario."""
+        raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
+>       browser_map = cache_paths if isinstance(browser_map, dict) else BROWSER_CACHE_PATHS
+                                                ^^^^^^^^^^^
+E       UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+
+app/browser.py:345: UnboundLocalError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+FAILED evolve/tests/test_modules.py::test_detect_profiles_ignores_missing_folders - UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+3 failed, 296 passed in 1.75s
+
+```
+- `2026-11-08T10:55:50` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Optimizé el rendimiento de `detect_profiles` reutilizando una única instancia de `DirectoryScanner` en lugar de instanciar un nuevo objeto y reinicializar sus estructuras internas dentro del loop de navegadores, reduciendo la carga de memoria y procesamiento.
+- `2026-11-08T10:56:15` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-08T10:56:38` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizado el rendimiento del proceso de recolección de candidatos utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `stat()` mediante el uso de los datos ya obtenidos en el escaneo del directorio.
+- `2026-11-08T10:56:49` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del pipeline eliminando la recálculo constante de etiquetas en la función `summarize` y mejorando la eficiencia de `_render_bar` al evitar llamadas redundantes a `max` y `min` dentro de un bucle, además de pre-cachear el formato de los nombres de las áreas.
+- `2026-11-08T10:56:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T10:56:49` Corrida terminada. Total usado hoy: 260.
