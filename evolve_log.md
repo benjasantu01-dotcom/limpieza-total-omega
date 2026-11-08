@@ -1422,3 +1422,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-08T14:00:58` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `detect_profiles` añadiendo validaciones preventivas de tipos y estados para evitar excepciones por valores `None` o estructuras de datos malformadas, garantizando que el escaneo no aborte inesperadamente ante configuraciones inesperadas.
 - `2026-11-08T14:00:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T14:00:58` Corrida terminada. Total usado hoy: 332.
+- `2026-11-08T14:08:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-08T14:09:25` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_summary_data` reemplazando la captura de excepción genérica `(Exception)` por un manejo de errores más específico y eliminando el uso de `getattr(st, 'st_size', 0)` en favor de una validación explícita para evitar registros corruptos, asegurando que el bucle no silencie errores críticos del sistema.
+- `2026-11-08T14:09:57` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_collect_candidates` y `_safe_path_check` añadiendo validaciones explícitas contra valores `None` y errores de acceso en `os.scandir` para evitar que una interrupción en el sistema de archivos detenga el escaneo completo.
+- `2026-11-08T14:10:21` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemMetrics.__post_init__, SystemMetrics.validate
+- `2026-11-08T14:11:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-08T14:11:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T14:11:13` Corrida terminada. Total usado hoy: 336.

@@ -348,8 +348,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                             stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            size = getattr(st, 'st_size', 0)
-                            yield entry_path, (size if isinstance(size, int) else 0)
+                            size = getattr(st, 'st_size', None)
+                            if isinstance(size, int) and size >= 0:
+                                yield entry_path, size
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError, ValueError):
@@ -428,7 +429,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                 elif top_heap and size > top_heap[0][0]:
                     # Reemplaza el elemento menor del heap con el archivo actual si es mayor
                     heapq.heapreplace(top_heap, (size, path))
-    except (Exception):
+    except (OSError, PermissionError):
+        # Fallo silencioso en el iterador de archivos durante el escaneo profundo
         pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)

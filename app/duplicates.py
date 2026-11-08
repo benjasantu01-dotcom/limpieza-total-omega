@@ -177,7 +177,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     """
     Recorrido BFS para recolectar candidatos con validación robusta de rutas y estados.
     """
-    if not directories or min_size < 0: return {}
+    if directories is None or min_size < 0: return {}
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[Tuple[int, int]] = set()
     queue: deque[Tuple[Path, int]] = deque()
@@ -198,6 +198,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        if entry is None: continue
                         if entry.is_dir(follow_symlinks=False):
                             if depth + 1 <= MAX_RECURSION_DEPTH:
                                 queue.append((Path(entry.path), depth + 1))
@@ -219,7 +220,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Agrupa una lista de rutas compartiendo el mismo hash según la función provista."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if (d := hash_func(path)): groups[d].append(path)
+        if path is not None and (d := hash_func(path)): groups[d].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
 
@@ -269,14 +270,14 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
     Selecciona la ruta del archivo más antiguo (mtime) en el grupo.
     """
-    if not group.paths: return None
+    if not group or not group.paths: return None
     candidates = [(m, p) for p in group.paths if (m := _get_mtime(p)) is not None]
     return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Formatea la información del grupo para su representación visual en la UI."""
-    if not group.paths: return []
+    if not group or not group.paths: return []
     keeper = suggest_keeper(group)
     mb, wasted = group.size_bytes / 1048576, group.wasted_bytes / 1048576
     lines = [f"{group.count} copias de {mb:.2f} MB (recuperable: {wasted:.2f} MB)"]
