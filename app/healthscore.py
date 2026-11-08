@@ -130,10 +130,16 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0     
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
+    """Asegura que un valor numérico permanezca dentro del rango [min_val, max_val]."""
     if not _is_finite_numeric(value): return min_val
     return max(min_val, min(max_val, float(value)))
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
+    """
+    Genera una función de scoring lineal. 
+    Si inverse=True, a mayor valor menor salud (ej. archivos basura).
+    Si inverse=False, a mayor valor mayor salud (ej. memoria libre).
+    """
     @lru_cache(maxsize=32)
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0 or not _is_finite_numeric(val): return 0.0
@@ -177,29 +183,41 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
 # --- Funciones de Cálculo de Salud ---
 
 @lru_cache(maxsize=16)
-def score_junk(junk_mb: float | int) -> NormalizedRatio: return _JUNK_SCORER(float(junk_mb))
+def score_junk(junk_mb: float | int) -> NormalizedRatio: 
+    """Calcula el ratio de salud según el tamaño de archivos basura encontrados."""
+    return _JUNK_SCORER(float(junk_mb))
 
 @lru_cache(maxsize=16)
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
+    """
+    Calcula el ratio de seguridad penalizando proporcionalmente por hallazgos 
+    sospechosos y advertencias de heurística.
+    """
     count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
     warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
     return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)))
 
 @lru_cache(maxsize=16)
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
+    """Calcula el ratio de salud de memoria basado en el umbral configurado."""
     val = float(available_percent)
     return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(val / _LIMIT_RAM_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
+    """Calcula el ratio de salud de disco basado en el porcentaje de espacio libre."""
     val = float(free_percent)
     return 0.0 if _LIMIT_DISK_PERCENT <= 0.0 else _clamp(val / _LIMIT_DISK_PERCENT)
 
 @lru_cache(maxsize=16)
-def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: return _DUP_SCORER(float(duplicate_mb))
+def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
+    """Calcula el ratio de salud según el impacto de archivos duplicados."""
+    return _DUP_SCORER(float(duplicate_mb))
 
 @lru_cache(maxsize=16)
-def score_startup(startup_count: int | float) -> NormalizedRatio: return _STARTUP_SCORER(float(startup_count))
+def score_startup(startup_count: int | float) -> NormalizedRatio: 
+    """Calcula el ratio de salud según el volumen de aplicaciones al arranque."""
+    return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_val: float, max_val: float) -> float:
     if not _is_finite_numeric(value): return default
@@ -258,6 +276,7 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
+    """Evalúa las reglas de recomendación según el ratio obtenido."""
     if not isinstance(rules, tuple) or not _is_finite_numeric(normalized_ratio): return []
     results = []
     for rule in rules:
@@ -267,6 +286,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     return results
 
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
+    """Procesa una entrada del pipeline: calcula puntuación y extrae advertencias."""
     try:
         ratio = _clamp(entry.scorer(metrics))
         points = int(ratio * float(entry.weight))

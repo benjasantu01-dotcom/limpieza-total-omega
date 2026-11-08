@@ -5,23 +5,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **185** (36.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 53 | 3 | 18 | 3 | 79 |
-| 2026-11-08 | 130 | 12 | 48 | 12 | 146 |
+| 2026-11-07 | 53 | 3 | 16 | 3 | 77 |
+| 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **47**
 - robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **36**
 - seguridad defensiva: **34**
@@ -29,14 +29,14 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **18**
 - `diskreport.py`: **17**
-- `healthscore.py`: **17**
 - `scanner.py`: **17**
 - `quarantine.py`: **17**
 - `memory.py`: **17**
 - `safety.py`: **15**
+- `duplicates.py`: **15**
 - `settings.py`: **15**
-- `duplicates.py`: **14**
 - `startup.py`: **13**
 - `assistant.py`: **12**
 - `browser.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T14:50:41` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de cálculo de salud y el pipeline de puntuación, aclarando el propósito y el comportamiento de las transformaciones matemáticas aplicadas.
+- `2026-11-08T14:50:10` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones internas y se han añadido type hints más precisos para clarificar el flujo de datos entre las etapas de filtrado y hashing.
 - `2026-11-08T14:44:34` **diskreport.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad mediante la adición de Type Hints en la lógica de agregación y la centralización de los métodos de cálculo de tamaño en `FolderMetrics`, eliminando redundancias en la lógica de las funciones principales.
 - `2026-11-08T14:32:09` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` y `_process_folder_entry` mediante la captura explícita de excepciones al interactuar con objetos del sistema de archivos, asegurando que el bucle de procesamiento sea resiliente ante entradas malformadas o permisos denegados sin interrumpir la ejecución.
 - `2026-11-08T14:31:55` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la deserialización en `_read_and_parse_json` al manejar explícitamente el caso de archivos vacíos o con formato inválido, además de fortalecer la validación de integridad en `_is_structure_valid` para evitar inyecciones de claves no esperadas mediante una comprobación estricta de los tipos de datos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T12:38:17` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_Validators._run_safety_checks` para prevenir ataques de desbordamiento de pila y acceso no autorizado mediante la resolución de rutas relativas peligrosas, añadiendo una verificación explícita de `is_absolute()` y limitando la recursión de `parents` antes de cualquier operación de resolución.
 - `2026-11-08T12:37:43` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_valid_path_structure` y `_is_valid_file_path` al incluir una validación explícita mediante `os.path.commonpath` para asegurar que, incluso ante resoluciones de enlaces o rutas ambiguas, no se procesen rutas fuera de los límites esperados ni accesos a nombres de dispositivos críticos de Windows.
 - `2026-11-08T12:30:13` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la detección de puntos de reparse (junctions) en `_is_system_directory_junction` para ser más robusta, asegurando que si la API falla o devuelve un estado inválido, la ruta sea tratada como protegida por defecto, mejorando la seguridad defensiva frente a manipulaciones de estructura de archivos.
-- `2026-11-08T12:19:45` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `SystemMetrics` eliminando el uso de `super().__setattr__` dentro de `__setattr__` (que es una práctica propensa a errores que puede bypassar validaciones en herencia compleja) y reemplazándolo por el método estándar `object.__setattr__` para asegurar que las restricciones de validación siempre se apliquen correctamente a cualquier valor asignado al objeto.
-- `2026-11-08T12:07:51` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` utilizando `ensure_safe_to_modify` dentro de una estructura `try/except` robusta, asegurando que la ruta destino sea validada explícitamente antes de intentar cualquier operación de escritura, siguiendo el patrón de seguridad exigido para evitar escrituras en rutas prohibidas o fuera del alcance permitido.
