@@ -94,6 +94,9 @@ class DirectoryScanner:
             return True
         if depth > self.ctx.max_depth:
             return True
+        # Verificar si es enlace simbólico o junction antes de entrar
+        if entry.is_symlink() or self.ctx.is_junction(entry.path):
+            return True
         return False
 
     def _is_path_allowed(self, path_str: str) -> bool:
@@ -160,8 +163,9 @@ class DirectoryScanner:
 
         try:
             st = os.lstat(root_path)
+            # Detección explícita de puntos de reparse mediante atributos nativos
             attrs = getattr(st, 'st_file_attributes', 0)
-            if self.ctx.is_junction(root_path) or (attrs & FileAttributes.REPARSE_POINT):
+            if self.ctx.is_junction(root_path) or (attrs & FileAttributes.REPARSE_POINT) or os.path.islink(root_path):
                 return ScanResult(0, True)
             dir_id = (st.st_dev, st.st_ino)
         except (OSError, PermissionError, FileNotFoundError):
@@ -312,6 +316,7 @@ def _is_target_valid(target: Optional[Path], base_norm: str, kernel: Optional[ct
         if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): 
             return False
         
+        # Validar reparse points y enlaces simbólicos desde el inicio
         if _IS_JUNCTION_FN(str(target)) or target.is_symlink() or os.path.islink(target):
             return False
             

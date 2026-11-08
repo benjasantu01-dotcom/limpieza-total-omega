@@ -303,10 +303,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
-                for entry in iterator:
-                    if _is_excluded_path(entry.name):
-                        continue
+                while True:
                     try:
+                        entry = next(iterator, None)
+                        if entry is None:
+                            break
+                        if _is_excluded_path(entry.name):
+                            continue
+                        
                         st = entry.stat(follow_symlinks=False)
                         entry_path = Path(entry.path)
                         
