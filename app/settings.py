@@ -168,7 +168,8 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Escribe la configuración de forma atómica.
+        Escribe la configuración usando un archivo temporal y os.replace para
+        garantizar que la operación sea atómica y no deje el archivo corrupto ante un crash.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 16: return False
@@ -387,7 +388,10 @@ def _is_structure_valid(data: Any) -> bool:
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
-    """Ejecuta el ciclo de lectura y parsing."""
+    """
+    Lee el archivo de configuración en disco, verificando metadatos para evitar
+    condiciones de carrera y asegurando que sea un archivo regular seguro.
+    """
     try:
         if not file_path.exists() or not file_path.is_file(): return None
         st = file_path.lstat()
@@ -414,7 +418,11 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Asegura que el objeto de configuración sea coherente."""
+    """
+    Asegura que el diccionario de configuración final contenga todos los campos
+    obligatorios, aplicando valores por defecto y forzando coherencia de lógica
+    de negocio (ej. deshabilitar asistente sin clave).
+    """
     coerced = DEFAULTS.copy()
     for key_name, value in settings.items():
         if key_name in DEFAULTS and value is not None and isinstance(value, type(DEFAULTS[key_name])):
