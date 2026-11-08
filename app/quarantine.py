@@ -24,7 +24,6 @@ import tempfile
 import ctypes
 import time
 import fcntl
-import sys
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -313,12 +312,12 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     
-    # Integración explícita de seguridad
     ensure_safe_to_modify(path)
     
     if is_protected_path(path.parent): raise UnsafePathError("Protección de jerarquía: directorio padre no seguro.")
     _check_for_reparse_points(path)
     if is_protected_path(path) or ":" in path.name: raise UnsafePathError("Ruta protegida o ADS detectado.")
+    
     st: os.stat_result = path.stat()
     if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode): raise UnsafePathError("Inconsistencia en inodo o enlaces.")
     if expected_device != 0 and st.st_dev != expected_device: raise UnsafePathError("Falla de consistencia de dispositivo.")
@@ -536,7 +535,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     except (TypeError, ValueError) as e: raise ValueError(f"Error al serializar metadatos: {e}")
     temp_name: Optional[str] = None
     try:
-        # Atomicidad garantizada: creamos el temp en el directorio destino
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             temp_name = tf.name
             tf.write(encoded_content)
@@ -681,7 +679,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if _win_has_system_attributes(source) or not source.is_file(): raise UnsafePathError("Aislamiento denegado: atributo de sistema o no regular.")
     ensure_safe_to_modify(destination.parent)
     
-    # Chequeo de exclusividad antes de abrir
     if not _is_file_exclusive(source): raise IOError("El archivo origen está bloqueado por otro proceso.")
     
     with open(source, "rb") as f:

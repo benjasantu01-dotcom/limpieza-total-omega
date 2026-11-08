@@ -65,9 +65,9 @@ class WindowsAPI:
     psapi = ctypes.windll.psapi if os.name == "nt" else None
     
     # Máscaras de acceso para OpenProcess
-    QUERY_LIMITED: Final[int] = 0x1000
-    QUERY_INFO: Final[int] = 0x0400
-    SET_QUOTA: Final[int] = 0x0100
+    QUERY_LIMITED: Final[int] = 0x1000  # Acceso restringido para solo lectura
+    QUERY_INFO: Final[int] = 0x0400     # Acceso a información del proceso
+    SET_QUOTA: Final[int] = 0x0100      # Requerido para modificar cuotas/trimming
     
     # Máscara combinada para operaciones de Trim
     TRIM_ACCESS: Final[int] = 0x00200000 | SET_QUOTA | QUERY_INFO
@@ -114,15 +114,15 @@ class MEMORYSTATUSEX(ctypes.Structure):
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
     """Contadores detallados de memoria de proceso usados por GetProcessMemoryInfo."""
     _fields_: List[Tuple[str, Any]] = [
-        ("cb", wintypes.DWORD),
-        ("PageFaultCount", wintypes.DWORD),
-        ("PeakWorkingSetSize", ctypes.c_size_t),
-        ("WorkingSetSize", ctypes.c_size_t),
+        ("cb", wintypes.DWORD),               # Tamaño de la estructura
+        ("PageFaultCount", wintypes.DWORD),   # Total de fallos de página
+        ("PeakWorkingSetSize", ctypes.c_size_t), # Tamaño máximo del set de trabajo
+        ("WorkingSetSize", ctypes.c_size_t),     # Tamaño actual del set de trabajo
         ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
         ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
-        ("PagefileUsage", ctypes.c_size_t),
+        ("PagefileUsage", ctypes.c_size_t),      # Uso del archivo de paginación
         ("PeakPagefileUsage", ctypes.c_size_t),
     ]
 
