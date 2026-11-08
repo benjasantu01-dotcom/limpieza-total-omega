@@ -284,6 +284,8 @@ class SystemMetrics:
     def __setattr__(self, name: str, value: Any) -> None:
         """Intercepta asignaciones para garantizar que cualquier métrica esté validada."""
         if name in _ALL_METRICS:
+            if not _is_finite_numeric(value):
+                value = 0.0
             limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
             val = _validate_numeric(value, 0.0, *limits)
             super().__setattr__(name, val)

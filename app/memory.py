@@ -196,14 +196,17 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
     try:
         if isinstance(value, (int, float)):
             if math.isnan(value) or math.isinf(value): return BytesValue(0)
-            val = int(float(value) * multiplier)
+            # Evitar desbordamiento al multiplicar por el factor
+            fval = float(value) * multiplier
+            if fval > 9223372036854775807: return BytesValue(0)
+            val = int(fval)
         elif isinstance(value, str):
             clean_val = "".join(filter(str.isdigit, value.split(".")[0]))
             val = int(clean_val) * multiplier if clean_val else 0
         else:
             return BytesValue(0)
             
-        return BytesValue(max(0, val)) if val < (2**63 - 1) else BytesValue(0)
+        return BytesValue(max(0, val))
     except (ValueError, OverflowError, TypeError):
         return BytesValue(0)
 

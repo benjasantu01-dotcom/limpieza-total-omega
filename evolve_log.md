@@ -645,3 +645,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-11-08T07:03:49` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la resiliencia ante errores de sistema de archivos en `walk_files` y `largest_folders` añadiendo bloques `try-except` granulares en los puntos donde el acceso a metadatos (como `stat` o `scandir`) suele fallar por bloqueos de E/S o cambios concurrentes de estado.
 - `2026-11-08T07:03:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T07:03:49` Corrida terminada. Total usado hoy: 168.
+- `2026-11-08T07:11:12` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-08T07:11:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-08T07:12:19` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `SystemMetrics` mediante la adición de una comprobación de tipo y valor en el método `__setattr__`, asegurando que cualquier asignación de datos sea procesada antes de ser aceptada por la instancia, previniendo estados inconsistentes.
+- `2026-11-08T07:13:27` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-08T07:13:41` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_safe_int_conversion` ante valores de tipo `float` muy grandes o "infinitos" que podrían causar errores de redondeo o desbordamientos al ser tratados como bytes, asegurando que cualquier entrada numérica extrema retorne un valor seguro (0 B) en lugar de propagar un valor corrupto.
+- `2026-11-08T07:13:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T07:13:41` Corrida terminada. Total usado hoy: 172.
