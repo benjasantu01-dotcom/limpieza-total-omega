@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 64
+- Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 235
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 101 | 8 | 36 | 6 | 169 |
-| 2026-11-08 | 81 | 4 | 28 | 5 | 66 |
+| 2026-11-07 | 101 | 8 | 36 | 6 | 165 |
+| 2026-11-08 | 82 | 4 | 29 | 5 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 - manejo de errores y validación de entradas: **30**
 - rendimiento: **26**
 
@@ -32,7 +32,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `healthscore.py`: **19**
 - `diskreport.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `scanner.py`: **15**
 - `safety.py`: **14**
 - `settings.py`: **14**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T07:56:43` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_iter_process_memory` y `trim_working_set` asegurando que los handles de procesos se cierren correctamente ante cualquier excepción durante la ejecución, y se añadió una validación de longitud para `path_buf` antes de su uso para prevenir posibles desbordamientos en la comunicación con la API Win32.
 - `2026-11-08T07:43:33` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_safe_path_check` añadiendo una resolución absoluta de ruta mediante `resolve()` antes de realizar chequeos de seguridad, evitando así posibles técnicas de evasión mediante rutas relativas o atajos maliciosos, y se integró un manejo de errores más específico para los casos donde el sistema de archivos deniega el acceso a metadatos.
 - `2026-11-08T07:43:24` **diskreport.py** (seguridad defensiva): Se ha mejorado `diskreport.py` para aplicar un chequeo de seguridad defensiva explícito en `largest_folders` al verificar que `top_level` sea un directorio real antes de intentar acceder a sus propiedades, previniendo errores en caso de archivos que puedan haber sido eliminados durante el recorrido y reforzando la integridad del bucle de agregación.
 - `2026-11-08T07:42:35` **branding.py** (seguridad defensiva): Se fortalece la seguridad defensiva en `save_logo_svg` al reemplazar el uso de `Path.resolve()` (que puede seguir enlaces simbólicos fuera de las rutas permitidas) por una validación estricta de la jerarquía de directorios utilizando `is_safe_to_modify` sobre la ruta resuelta, asegurando que ninguna operación de escritura escape de los límites permitidos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T07:03:49` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de sistema de archivos en `walk_files` y `largest_folders` añadiendo bloques `try-except` granulares en los puntos donde el acceso a metadatos (como `stat` o `scandir`) suele fallar por bloqueos de E/S o cambios concurrentes de estado.
 - `2026-11-08T07:01:37` **assistant.py** (robustez ante casos límite): Se introdujo una comprobación de tipo más estricta y segura en `_is_safe_numeric_context` y `_apply_field` para evitar que objetos complejos o tipos inesperados (como `Path` u objetos `callable`) sean procesados silenciosamente, reforzando la robustez ante datos malformados inyectados en la fase de ingesta.
 - `2026-11-08T06:52:05` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` centralizando la normalización de la ruta mediante el caché `_normalize_resolved` y refactorizando el chequeo de prefijos para evitar redundancias, reduciendo la carga de CPU en bucles de escaneo extensos.
-- `2026-11-08T06:42:31` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` reemplazando llamadas redundantes a `Path.exists()` por el uso directo del objeto `os.DirEntry` (`entry.is_file()` y `entry.path`), evitando la recreación de objetos `Path` y syscalls innecesarias durante la iteración del directorio.

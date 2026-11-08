@@ -468,7 +468,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if target_pid <= 0 or _is_system_process(target_pid) or not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
         return False, "Operación no permitida o no disponible."
         
-    path_buf = ctypes.create_unicode_buffer(1024)
+    path_buf = ctypes.create_unicode_buffer(512)
     # Validar acceso y seguridad antes de cualquier operación. El helper ya verifica is_protected_path.
     handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
