@@ -375,8 +375,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             ratio = _clamp(ratio)
             
             val = int(ratio * float(entry.weight))
-            metric_breakdown[entry.area] = val
-            total_score_sum += val
+            if _is_finite_numeric(val):
+                metric_breakdown[entry.area] = val
+                total_score_sum += val
+            else:
+                metric_breakdown[entry.area] = 0
+            
             recommendations.extend(_evaluate_rules(metrics, entry.rules, ratio))
         
         if metrics.safe_get("quarantined_count") > 0:

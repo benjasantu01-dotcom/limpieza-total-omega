@@ -301,7 +301,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[Path] = [root_path]
     
     root_stat = _safe_stat(root_path)
     if root_stat and hasattr(root_stat, 'st_ino') and hasattr(root_stat, 'st_dev'):
@@ -315,9 +315,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if _is_excluded_path(entry.name):
                         continue
                     try:
-                        # Usamos follow_symlinks=False para evitar recursión circular externa
                         st = entry.stat(follow_symlinks=False)
-                        entry_path = Path(entry.path).resolve()
+                        entry_path = Path(entry.path)
                         
                         if skip_protected and is_protected_path(entry_path):
                             continue
@@ -330,7 +329,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 if inode in visited_inodes:
                                     continue
                                 visited_inodes.add(inode)
-                            stack.append(entry.path)
+                            stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             size = getattr(st, 'st_size', 0)
                             yield entry_path, (size if isinstance(size, int) else 0)
@@ -365,16 +364,14 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
-        # Encontrar la carpeta de primer nivel relativa a root
         try:
-            # Aseguramos que la comparación es sobre rutas resueltas
-            parts = path.relative_to(root).parts
-            if parts:
-                top_level = root / parts[0]
-                if not is_protected_path(top_level):
+            rel = path.relative_to(root)
+            if rel.parts:
+                top_level = root / rel.parts[0]
+                if top_level.is_dir() and not is_protected_path(top_level):
                     stats[top_level].size += size
                     stats[top_level].file_count += 1
-        except ValueError:
+        except (ValueError, TypeError):
             continue
             
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items()]

@@ -127,7 +127,6 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         _full_hash_cache[path] = digest
         return digest
     except (OSError, PermissionError, IOError, ValueError):
-        # Manejo ante archivos bloqueados por el SO o procesos concurrentes
         return None
 
 
@@ -148,7 +147,6 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             _partial_cache[path] = digest_val
             return digest_val
     except (OSError, PermissionError, IOError, ValueError):
-        # El archivo puede estar bloqueado o inaccesible durante la lectura
         return None
 
 
@@ -172,9 +170,13 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     Recorrido BFS para recolectar archivos candidatos por tamaño.
     Evita procesar puntos de reanálisis y rutas protegidas (según safety.py).
     """
+    if not directories or min_size < 0: return {}
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[Tuple[int, int]] = set()
-    queue: deque[Tuple[Path, int]] = deque((Path(d), 0) for d in directories if d)
+    queue: deque[Tuple[Path, int]] = deque()
+    
+    for d in directories:
+        if d: queue.append((Path(d), 0))
     
     while queue:
         current_dir, depth = queue.popleft()

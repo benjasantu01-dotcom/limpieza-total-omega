@@ -1311,3 +1311,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-08T00:39:30` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-08T00:39:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T00:39:30` Corrida terminada. Total usado hoy: 16.
+- `2026-11-08T00:44:17` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-08T00:44:42` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-08T00:45:08` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez en `walk_files` y `largest_folders` validando explícitamente el resultado de `os.scandir` y `relative_to` para evitar excepciones no controladas durante el escaneo de directorios con permisos cambiantes o rutas mal formadas.
+- `2026-11-08T00:45:31` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_candidates` mediante la validación proactiva de los parámetros `directories` y `min_size`, asegurando que el bucle de recolección no intente operar sobre entradas `None` o tamaños inválidos, previniendo excepciones innecesarias.
+- `2026-11-08T00:45:44` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo de `total_score_sum` en `compute_score` validando explícitamente que cada componente del desglose sea un número finito antes de sumarlo, evitando la propagación de valores `NaN` o `inf` que podrían corromper el puntaje final.
+- `2026-11-08T00:45:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T00:45:44` Corrida terminada. Total usado hoy: 20.
