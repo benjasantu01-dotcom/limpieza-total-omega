@@ -266,11 +266,16 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         if len(parts) < 3: return None
         
         proc_name = str(parts[0]).strip()
-        pid_val = int(parts[1])
+        # Validación de tipo explícita antes de usar el valor
+        try:
+            pid_val = int(parts[1])
+        except (ValueError, TypeError):
+            return None
+        
         ws_val = _safe_int_conversion(parts[2])
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
-    except (ValueError, TypeError, IndexError, AttributeError):
+    except (AttributeError, IndexError):
         pass
     return None
 
@@ -465,8 +470,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError): 
         return False, "El PID debe ser numérico."
         
+    # Validación estricta de seguridad sobre el PID antes de operar
     if target_pid <= 0 or _is_system_process(target_pid) or not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
-        return False, "Operación no permitida o no disponible."
+        return False, "Operación no permitida para este PID o no disponible."
         
     path_buf = ctypes.create_unicode_buffer(512)
     # Validar acceso y seguridad antes de cualquier operación. El helper ya verifica is_protected_path.

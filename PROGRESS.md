@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 242
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 90 | 7 | 33 | 5 | 141 |
-| 2026-11-08 | 86 | 5 | 31 | 5 | 101 |
+| 2026-11-07 | 88 | 6 | 32 | 5 | 141 |
+| 2026-11-08 | 89 | 5 | 32 | 5 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **41**
 - seguridad defensiva: **36**
-- manejo de errores y validación de entradas: **28**
+- manejo de errores y validación de entradas: **31**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
+- `healthscore.py`: **18**
 - `diskreport.py`: **18**
-- `healthscore.py`: **17**
-- `safety.py`: **15**
-- `memory.py`: **15**
+- `memory.py`: **16**
 - `scanner.py`: **15**
-- `settings.py`: **14**
+- `safety.py`: **14**
+- `settings.py`: **13**
 - `browser.py`: **13**
 - `assistant.py`: **11**
+- `duplicates.py`: **11**
 - `startup.py`: **11**
-- `duplicates.py`: **10**
 - `organizer.py`: **10**
 - `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T09:46:20` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` capturando fallos de conversión de tipos de forma centralizada y añadiendo validaciones de entrada más estrictas para evitar comportamientos inesperados ante datos de proceso malformados.
+- `2026-11-08T09:44:58` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_process_pipeline_entry` y `_evaluate_rules` mediante la validación explícita de tipos y valores, evitando errores de ejecución si los datos de entrada en el pipeline están mal formados o si un `scorer` devuelve valores fuera de rango esperado.
+- `2026-11-08T09:44:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_candidates` mediante la validación proactiva de los parámetros de entrada y el manejo explícito de errores durante el escaneo de directorios, asegurando que `Path(entry.path)` no genere errores de tipo inesperados y que el bucle principal sea resistente a errores parciales de acceso al sistema de archivos.
 - `2026-11-08T09:35:21` **diskreport.py** (manejo de errores y validación de entradas): He robustecido la tolerancia a fallos en `_safe_stat` y `_collect_summary_data` manejando explícitamente casos donde las rutas fallan al normalizarse, evitando que una excepción en un archivo puntual detenga el análisis completo de grandes volúmenes de datos.
 - `2026-11-08T09:35:10` **browser.py** (manejo de errores y validación de entradas): Se mejoró `DirectoryScanner._is_path_allowed` para realizar una validación de seguridad más robusta mediante `os.path.abspath` y una verificación explícita de `is_protected_path` antes de la resolución del `realpath`, evitando así posibles excepciones en rutas inexistentes o inaccesibles que antes podían interrumpir el flujo.
 - `2026-11-08T08:04:11` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la robustez de `is_protected_path` al utilizar `pathlib.Path.parts` con una comparación de cadenas normalizadas que evita errores de coincidencia parcial en nombres de directorios (por ejemplo, evitar que "bin" coincida con "binary"), garantizando que solo se bloqueen los directorios exactos definidos en `PROTECTED_DIR_NAMES`.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T07:32:37` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `perform_atomic_write` añadiendo un manejo explícito de `OSError` durante la operación de `os.fsync`, garantizando que fallos intermitentes de I/O no dejen el archivo de configuración en un estado inconsistente o bloqueado.
 - `2026-11-08T07:32:05` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `_get_canonical_path` y `_is_valid_path_structure` para manejar correctamente rutas con caracteres Unicode, espacios en blanco o terminaciones inválidas al nivel de la API de Windows, evitando posibles excepciones de `pathlib` en entornos con configuraciones regionales restrictivas.
 - `2026-11-08T07:23:30` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para archivos de longitud cero en `_validate_file_operations_security` y `_evaluate_security_rules` para prevenir la eliminación accidental de archivos de configuración vacíos o marcadores de sistema, reforzando la robustez ante casos límite.
-- `2026-11-08T07:22:37` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de E/S y condiciones de carrera al implementar un mecanismo de reintento con *backoff* exponencial en la función `_safe_unlink`, asegurando que operaciones fallidas transitoriamente (como bloqueos temporales por antivirus o indexadores de Windows) no aborten la limpieza de la cuarentena.
-- `2026-11-08T07:21:55` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_can_move_file` añadiendo una validación explícita sobre caracteres prohibidos en el nombre del archivo resultante y verificando la longitud de la ruta completa, evitando así excepciones críticas de `OSError` al intentar realizar el movimiento en el sistema de archivos de Windows.
-- `2026-11-08T07:13:41` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_safe_int_conversion` ante valores de tipo `float` muy grandes o "infinitos" que podrían causar errores de redondeo o desbordamientos al ser tratados como bytes, asegurando que cualquier entrada numérica extrema retorne un valor seguro (0 B) en lugar de propagar un valor corrupto.

@@ -184,8 +184,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Recorrido BFS para recolectar candidatos.
-    Mantiene un set de `visited` (dev+inode) para evitar procesar archivos duplicados por hardlinks.
+    Recorrido BFS para recolectar candidatos con validación robusta de rutas y estados.
     """
     if not directories or min_size < 0: return {}
     size_map: Dict[int, List[Path]] = defaultdict(list)
@@ -193,7 +192,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
-        if d: queue.append((Path(d), 0))
+        if d: 
+            try:
+                p = Path(d)
+                if p.exists(): queue.append((p, 0))
+            except (OSError, TypeError): continue
     
     while queue:
         current_dir, depth = queue.popleft()
@@ -203,18 +206,21 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         with suppress(OSError, PermissionError):
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry.is_dir(follow_symlinks=False):
-                        if depth + 1 <= MAX_RECURSION_DEPTH:
-                            queue.append((Path(entry.path), depth + 1))
-                    elif entry.is_file(follow_symlinks=False):
-                        entry_path = Path(entry.path)
-                        if skip_protected and is_protected_path(entry_path): continue
-                        stat = entry.stat(follow_symlinks=False)
-                        if stat.st_size >= min_size:
-                            inode_id = (stat.st_dev, stat.st_ino)
-                            if inode_id not in visited and _is_valid_candidate(entry_path, stat.st_size):
-                                visited.add(inode_id)
-                                size_map[stat.st_size].append(entry_path)
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+                            if depth + 1 <= MAX_RECURSION_DEPTH:
+                                queue.append((Path(entry.path), depth + 1))
+                        elif entry.is_file(follow_symlinks=False):
+                            entry_path = Path(entry.path)
+                            if skip_protected and is_protected_path(entry_path): continue
+                            stat = entry.stat(follow_symlinks=False)
+                            if stat.st_size >= min_size:
+                                inode_id = (stat.st_dev, stat.st_ino)
+                                if inode_id not in visited and _is_valid_candidate(entry_path, stat.st_size):
+                                    visited.add(inode_id)
+                                    size_map[stat.st_size].append(entry_path)
+                    except (OSError, PermissionError):
+                        continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 

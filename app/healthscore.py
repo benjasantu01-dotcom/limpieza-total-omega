@@ -335,10 +335,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     results = []
     for rule in rules:
         if isinstance(rule, RecommendationRule):
-            if rule.check(metrics, normalized_ratio):
-                msg = rule.message_factory(metrics)
-                if isinstance(msg, str) and msg: 
-                    results.append(msg)
+            try:
+                if rule.check(metrics, normalized_ratio):
+                    msg = rule.message_factory(metrics)
+                    if isinstance(msg, str) and msg: 
+                        results.append(msg)
+            except Exception:
+                continue
     return results
 
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
@@ -346,10 +349,14 @@ def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tup
     if not isinstance(entry, PipelineEntry):
         return 0, []
     
-    ratio = _clamp(entry.scorer(metrics))
-    points = int(ratio * float(entry.weight))
-    recs = _evaluate_rules(metrics, entry.rules, ratio)
-    return (points if _is_finite_numeric(points) else 0), recs
+    try:
+        raw_ratio = entry.scorer(metrics)
+        ratio = _clamp(raw_ratio if _is_finite_numeric(raw_ratio) else 0.0)
+        points = int(ratio * float(entry.weight))
+        recs = _evaluate_rules(metrics, entry.rules, ratio)
+        return (points if _is_finite_numeric(points) else 0), recs
+    except Exception:
+        return 0, []
 
 # --- Orquestación Principal ---
 
