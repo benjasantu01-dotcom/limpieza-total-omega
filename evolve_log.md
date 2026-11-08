@@ -623,3 +623,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-11-08T06:33:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-08T06:33:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T06:33:51` Corrida terminada. Total usado hoy: 156.
+- `2026-11-08T06:40:39` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-08T06:41:09` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de memoria eliminando la creación repetitiva de buffers y estructuras dentro del loop principal, utilizando un buffer persistente y reduciendo el número de llamadas a la API mediante una validación de acceso más eficiente.
+- `2026-11-08T06:41:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-08T06:42:31` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al sistema de archivos en `purge_all` reemplazando llamadas redundantes a `Path.exists()` por el uso directo del objeto `os.DirEntry` (`entry.is_file()` y `entry.path`), evitando la recreación de objetos `Path` y syscalls innecesarias durante la iteración del directorio.
+- `2026-11-08T06:42:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-11-08T06:42:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T06:42:34` Corrida terminada. Total usado hoy: 160.

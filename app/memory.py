@@ -359,6 +359,7 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
     handle = _get_process_handle(pid, access)
     if not handle or handle == INVALID_HANDLE_VALUE: return None
     
+    # Verificación temprana de estado sin cerrar handle aún
     exit_code = wintypes.DWORD()
     if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
         WindowsAPI.kernel32.CloseHandle(handle)

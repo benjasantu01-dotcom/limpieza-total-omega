@@ -891,6 +891,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     continue
                 
                 try:
+                    # Usamos entry.path (str) y verificamos integridad via item
                     f = Path(entry.path)
                     if _is_item_purgable(f, item):
                         purgado_ids.add(item.item_id)
