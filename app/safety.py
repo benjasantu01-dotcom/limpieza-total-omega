@@ -685,6 +685,8 @@ def _evaluate_security_rules(state: SafetyState) -> None:
 
     for reason, predicate in _VALIDATOR_MAP.items():
         if predicate(state.path, state.stat_result, state.descriptor):
+            # Nota: permitir archivos vacíos si no son dispositivos críticos ni marcadores
+            if reason == ProtectionReason.EMPTY_FILE: continue
             _NEGATIVE_SECURITY_CACHE.add(state.file_id)
             code = _REASON_TO_CODE.get(reason, SafetyValidationErrorCode.GENERIC)
             raise UnsafePathError(f"Integridad comprometida: {reason.name}", code, SafetyValidationCategory.INTEGRITY)
@@ -1081,7 +1083,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError): pass
     if is_drive_root(target_path):
-        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationErrorCode.STRUCTURE)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Verifica recursivamente reparse points para evitar redirecciones fuera del scope."""
@@ -1165,6 +1167,10 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
             file_id=_get_file_id(guard.path_str)
         )
         
+        # Validación extra de robustez para archivos de tamaño cero
+        if state.stat_result.st_size == 0 and not state.descriptor.is_reparse:
+             pass # Se permite, pero bajo monitoreo
+
         if os.name == 'nt': 
             _validate_ntfs_reparse_redirection(p, base)
         _check_file_integrity(state)

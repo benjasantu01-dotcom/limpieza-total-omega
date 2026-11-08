@@ -336,7 +336,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         if parent.exists():
             _sync_directory(parent)
         return True
-    except (UnsafePathError, OSError, PermissionError):
+    except (UnsafePathError, OSError, PermissionError, RuntimeError):
         return False
 
 def _check_path_syntax_integrity(path: Path) -> None:
@@ -891,7 +891,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     continue
                 
                 try:
-                    # Usamos entry.path (str) y verificamos integridad via item
                     f = Path(entry.path)
                     if _is_item_purgable(f, item):
                         purgado_ids.add(item.item_id)

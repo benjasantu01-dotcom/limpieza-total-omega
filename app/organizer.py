@@ -404,7 +404,12 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     try:
         timestamp = int(junk_file.modified.timestamp())
         safe_name = f"{junk_file.path.stem}_{timestamp}{junk_file.path.suffix}"
-        return _generate_unique_target(dest_base / safe_name)
+        target = dest_base / safe_name
+        
+        if _has_forbidden_chars(target) or len(str(target)) > LIMITS.MAX_PATH_LENGTH:
+            return None
+            
+        return _generate_unique_target(target)
     except (OSError, AttributeError, ValueError, OverflowError): 
         return None
 
