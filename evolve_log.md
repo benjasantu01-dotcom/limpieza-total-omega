@@ -510,3 +510,30 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-11-08T04:42:42` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-08T04:42:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T04:42:42` Corrida terminada. Total usado hoy: 112.
+- `2026-11-08T04:48:43` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-08T04:48:46` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:48:46` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-08T04:49:06` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:49:06` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-08T04:49:36` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:49:36` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-08T04:49:52` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:49:52` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-08T04:50:12` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:50:12` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-08T04:50:42` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:50:42` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-08T04:50:57` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:50:57` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-08T04:51:18` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:51:18` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-08T04:51:48` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:51:48` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-08T04:52:03` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:52:03` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-08T04:52:23` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:52:23` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-08T04:52:54` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-08T04:52:54` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-08T04:52:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T04:52:54` Corrida terminada. Total usado hoy: 116.
