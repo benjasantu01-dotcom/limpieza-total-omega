@@ -414,6 +414,10 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
 
+def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
+    """Ejecuta el escaneo de procesos y retorna el top N ordenado."""
+    return heapq.nlargest(limit, _iter_process_memory())
+
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna los procesos de mayor consumo con caché de 60 segundos."""
     global _CACHE_TOP_PROC
@@ -421,7 +425,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
-        _CACHE_TOP_PROC = CacheEntry(now, heapq.nlargest(limit, _iter_process_memory()))
+        _CACHE_TOP_PROC = CacheEntry(now, _get_process_snapshot(limit))
             
     return _CACHE_TOP_PROC.data
 

@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 64
-- Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 237
+- Rechazadas por guardia de seguridad: 65
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 85 | 6 | 30 | 4 | 135 |
-| 2026-11-08 | 97 | 5 | 34 | 6 | 102 |
+| 2026-11-07 | 83 | 6 | 29 | 4 | 134 |
+| 2026-11-08 | 98 | 5 | 36 | 7 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **49**
 - robustez ante casos límite: **41**
 - seguridad defensiva: **36**
 - manejo de errores y validación de entradas: **34**
-- rendimiento: **23**
+- rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `quarantine.py`: **18**
 - `healthscore.py`: **17**
+- `memory.py`: **16**
 - `scanner.py`: **16**
-- `memory.py`: **15**
-- `safety.py`: **14**
-- `settings.py`: **14**
 - `browser.py`: **14**
+- `settings.py`: **13**
+- `safety.py`: **13**
 - `assistant.py`: **12**
 - `duplicates.py`: **12**
 - `startup.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T10:26:51` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se extrajo la lógica de ordenamiento y filtrado de `top_memory_processes` hacia una función interna `_get_process_snapshot`, mejorando la legibilidad del flujo de datos sin alterar la funcionalidad.
 - `2026-11-08T10:16:11` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando Type Hints explícitos en las funciones de procesamiento de hash y refinando los docstrings para clarificar el flujo lógico de la estrategia de duplicados (Paso 1, 2 y 3), facilitando el mantenimiento y la comprensión de las restricciones de seguridad aplicadas.
 - `2026-11-08T10:16:02` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en clases clave (`ExtStats`, `GlobalStats`, `FolderMetrics`), la estandarización de las anotaciones de tipo faltantes, y la clarificación de la lógica en `_collect_summary_data` para documentar explícitamente el uso del heap.
 - `2026-11-08T10:15:35` **browser.py** (legibilidad y documentación): Mejora la claridad del motor de escaneo extrayendo la lógica de validación de entradas de `DirectoryScanner._should_stop_traversal` hacia un método `_is_entry_valid` con documentación explícita, facilitando la comprensión del "porqué" de cada restricción de seguridad.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T09:35:21` **diskreport.py** (manejo de errores y validación de entradas): He robustecido la tolerancia a fallos en `_safe_stat` y `_collect_summary_data` manejando explícitamente casos donde las rutas fallan al normalizarse, evitando que una excepción en un archivo puntual detenga el análisis completo de grandes volúmenes de datos.
 - `2026-11-08T09:35:10` **browser.py** (manejo de errores y validación de entradas): Se mejoró `DirectoryScanner._is_path_allowed` para realizar una validación de seguridad más robusta mediante `os.path.abspath` y una verificación explícita de `is_protected_path` antes de la resolución del `realpath`, evitando así posibles excepciones en rutas inexistentes o inaccesibles que antes podían interrumpir el flujo.
 - `2026-11-08T08:04:11` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la robustez de `is_protected_path` al utilizar `pathlib.Path.parts` con una comparación de cadenas normalizadas que evita errores de coincidencia parcial en nombres de directorios (por ejemplo, evitar que "bin" coincida con "binary"), garantizando que solo se bloqueen los directorios exactos definidos en `PROTECTED_DIR_NAMES`.
-- `2026-11-08T08:02:52` **quarantine.py** (seguridad defensiva): Se ha mejorado `_perform_secure_copy` agregando una validación estricta del espacio libre justo antes de realizar la escritura, para evitar que una interrupción de I/O por disco lleno deje archivos temporales huérfanos o corrompidos en el sistema.
