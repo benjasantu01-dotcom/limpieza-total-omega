@@ -1360,3 +1360,32 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-08T01:47:05` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de las estructuras de datos de `startup.py`, añadiendo docstrings que explican el propósito de los caches globales y el flujo de resolución de rutas para clarificar decisiones de diseño no obvias.
 - `2026-11-08T01:47:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T01:47:05` Corrida terminada. Total usado hoy: 44.
+- `2026-11-08T01:55:36` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-08T01:56:16` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimicé el acceso a los criterios de salud utilizando un `frozenset` pre-calculado de métricas activas en `SystemContext.active_problems`, eliminando la re-iteración constante sobre todas las métricas en cada llamada.
+- `2026-11-08T01:56:43` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: FontSizesDict, PaletteDict
+- `2026-11-08T01:57:09` Tests FALLARON:
+```
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bases = [PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0')]
+cache_paths = {'Chrome': 'Perfil\\Cookies'}
+
+    def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
+        """Escanea el sistema en busca de cachés de navegadores conocidos basándose en perfiles de usuario."""
+        raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
+>       browser_map = cache_paths if isinstance(browser_map, dict) else BROWSER_CACHE_PATHS
+                                                ^^^^^^^^^^^
+E       UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+
+app/browser.py:332: UnboundLocalError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+FAILED evolve/tests/test_modules.py::test_detect_profiles_ignores_missing_folders - UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - UnboundLocalError: cannot access local variable 'browser_map' where it is not associated with a value
+3 failed, 296 passed in 1.48s
+
+```
+- `2026-11-08T01:57:09` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Optimizé el rendimiento de `detect_profiles` eliminando la creación redundante de objetos `ScanContext` y `DirectoryScanner` dentro del bucle de navegadores, reutilizando una única instancia por carpeta base y validando la existencia de la ruta de manera más eficiente.
+- `2026-11-08T01:57:18` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-08T01:57:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T01:57:18` Corrida terminada. Total usado hoy: 48.
