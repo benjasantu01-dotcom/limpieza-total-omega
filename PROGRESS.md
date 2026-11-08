@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **169** (33.5% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 63
-- Sin cambios (nada sustancial que mejorar): 8
+- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 62
+- Sin cambios (nada sustancial que mejorar): 9
 - Sin respuesta de la IA (error o límite): 249
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-06 | 9 | 1 | 6 | 0 | 6 |
+| 2026-11-06 | 7 | 0 | 5 | 0 | 6 |
 | 2026-11-07 | 110 | 10 | 38 | 6 | 186 |
-| 2026-11-08 | 50 | 4 | 19 | 2 | 57 |
+| 2026-11-08 | 53 | 4 | 19 | 3 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **40**
 - seguridad defensiva: **35**
-- manejo de errores y validación de entradas: **29**
-- rendimiento: **25**
+- manejo de errores y validación de entradas: **30**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `quarantine.py`: **20**
-- `memory.py`: **16**
+- `healthscore.py`: **19**
 - `scanner.py`: **15**
+- `memory.py`: **15**
 - `diskreport.py`: **15**
 - `settings.py`: **14**
 - `safety.py`: **13**
+- `startup.py`: **12**
+- `assistant.py`: **11**
 - `browser.py`: **11**
-- `startup.py`: **11**
-- `assistant.py`: **10**
 - `duplicates.py`: **9**
+- `branding.py`: **8**
 - `organizer.py`: **8**
-- `branding.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T05:41:45` **branding.py** (legibilidad y documentación): Se introdujeron constantes con nombre para los valores mágicos en las funciones de renderizado geométrico (`draw_logo`, `draw_shield_icon_decorations`) y se reemplazaron los literales numéricos por cálculos auto-documentados, facilitando el mantenimiento y la legibilidad de la lógica visual.
+- `2026-11-08T05:41:25` **assistant.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de validación y los decoradores de seguridad para mejorar la legibilidad y facilitar el mantenimiento del motor de asistencia.
+- `2026-11-08T05:40:41` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila procesada contenga las claves requeridas y no sea `None`, previniendo errores de ejecución ante entradas mal formadas o vacías del registro.
 - `2026-11-08T05:31:31` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de las heurísticas mediante una validación defensiva estricta de `os.stat_result`, asegurando que los valores de metadatos (como `st_mtime` y `st_size`) sean consistentes y válidos antes de procesarlos, evitando errores por desreferenciación o datos malformados.
 - `2026-11-08T05:31:19` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de excepciones en las validaciones de `_validate_drive_restrictions` y `_is_volume_readonly` para evitar que errores inesperados de API de Windows (como `ctypes.ArgumentError` o `OSError` por dispositivos retirados súbitamente) detengan el flujo principal del programa, devolviendo resultados seguros (bloqueo) en lugar de excepciones no manejadas.
 - `2026-11-08T05:30:09` **quarantine.py** (manejo de errores y validación de entradas): He mejorado `quarantine_dir` para capturar explícitamente excepciones de permisos específicas (como `PermissionError`) durante la creación del directorio de prueba efímero, evitando que errores genéricos de sistema enmascaren problemas de acceso al disco del usuario y permitiendo mensajes de error más informativos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T03:28:36` **organizer.py** (seguridad defensiva): Mejoré `_validate_path_security` para incluir una validación estricta del directorio de destino mediante `is_safe_to_modify`, asegurando que el destino no solo exista y sea escribible, sino que sea una ruta validada por los mecanismos de seguridad centralizados antes de intentar cualquier operación.
 - `2026-11-08T03:28:09` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` al aplicar una validación de ruta estricta utilizando `is_protected_path` sobre el proceso destino antes de cualquier operación de `EmptyWorkingSet`, previniendo así intentos de manipulación sobre procesos del sistema incluso si se posee un handle válido.
 - `2026-11-08T03:18:34` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo `healthscore.py` al reemplazar el acceso directo mediante `getattr` en `_process_pipeline_entry` y la validación de `SystemMetrics` por el uso del método `safe_get`, garantizando así que no se produzcan accesos no autorizados a atributos fuera del esquema definido incluso si el pipeline se extiende en el futuro.
-- `2026-11-08T03:18:21` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para prevenir el seguimiento de enlaces simbólicos o puntos de reanálisis durante el recorrido del árbol, asegurando que la recolección de candidatos sea consistente con la lógica de `is_junction` y evitando procesar rutas que violen las políticas de seguridad incluso durante la iteración inicial.
-- `2026-11-08T03:17:58` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_validate_root` y `drive_usage` asegurando que el filtrado de rutas UNC sea estricto e independiente de mayúsculas/minúsculas, además de prevenir casos de `None` inesperados al manipular rutas.
-- `2026-11-08T03:08:31` **assistant.py** (seguridad defensiva): Mejoré `_build_payload` para asegurar que el contexto del sistema se serialice mediante una estructura de datos controlada y validada explícitamente antes de convertirla a JSON, evitando que un fallo en la generación del string final escape a las verificaciones de seguridad.

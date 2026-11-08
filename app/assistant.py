@@ -154,7 +154,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
         return default
 
 def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """Decorador: Filtra consultas de usuario que contengan caracteres potencialmente maliciosos."""
+    """Decorador: Bloquea consultas si detecta caracteres maliciosos antes de procesarlas."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not _ensure_safe_text(q):
@@ -163,10 +163,7 @@ def _ensure_query_is_safe(func: Callable[[SystemContext, str], Answer]) -> Calla
     return wrapper
 
 def _ensure_handler_is_safe(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
-    """
-    Decorador: Garantiza que el contexto sea válido y gestiona excepciones 
-    para asegurar que la aplicación no colapse ante un fallo de lógica en el asistente.
-    """
+    """Decorador: Asegura la integridad del contexto y captura errores para prevenir caídas."""
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
         if not isinstance(ctx, SystemContext): 

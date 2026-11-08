@@ -41,6 +41,17 @@ SHIELD_RADIUS: Final[float] = 52.0
 # Vértices del polígono base del escudo (ordenados: superior, laterales, inferior)
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
+# Constantes para elementos decorativos (offsets y radios de escala)
+_DECOR_LINE_X1: Final[float] = 41.0
+_DECOR_LINE_Y1: Final[float] = 75.0
+_DECOR_LINE_X2: Final[float] = 75.0
+_DECOR_LINE_Y2: Final[float] = 41.0
+_DECOR_TRIANGLE_X3: Final[float] = 89.0
+_DECOR_TRIANGLE_Y3: Final[float] = 38.0
+_DECOR_TRIANGLE_X4: Final[float] = 92.0
+_DECOR_TRIANGLE_Y4: Final[float] = 52.0
+_DECOR_STROKE_WIDTH: Final[float] = 8.0
+
 class UIConfiguration(NamedTuple):
     """Configuración de parámetros globales para la interfaz gráfica."""
     font_family: str = "Segoe UI"
@@ -406,9 +417,22 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     """Dibuja elementos ornamentales (glifo Omega) sobre el escudo usando coordenadas escaladas."""
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
-        canvas.create_line(x+41*scale, y+75*scale, x+75*scale, y+41*scale, fill=C_BACKGROUND, width=max(2, int(8.0 * scale)), capstyle="round")
-        canvas.create_polygon(x+75*scale, y+41*scale, x+89*scale, y+38*scale, x+92*scale, y+52*scale, fill=C_BACKGROUND, outline="")
-        canvas.create_text(x+64*scale, y+96*scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center")
+        canvas.create_line(
+            x + _DECOR_LINE_X1 * scale, y + _DECOR_LINE_Y1 * scale,
+            x + _DECOR_LINE_X2 * scale, y + _DECOR_LINE_Y2 * scale,
+            fill=C_BACKGROUND, width=max(2, int(_DECOR_STROKE_WIDTH * scale)), capstyle="round"
+        )
+        canvas.create_polygon(
+            x + _DECOR_LINE_X2 * scale, y + _DECOR_LINE_Y2 * scale,
+            x + _DECOR_TRIANGLE_X3 * scale, y + _DECOR_TRIANGLE_Y3 * scale,
+            x + _DECOR_TRIANGLE_X4 * scale, y + _DECOR_TRIANGLE_Y4 * scale,
+            fill=C_BACKGROUND, outline=""
+        )
+        canvas.create_text(
+            x + SHIELD_CENTER_X * scale, y + (SHIELD_CENTER_Y + 40) * scale,
+            text="\u03a9", fill=C_BACKGROUND,
+            font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center"
+        )
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
@@ -418,7 +442,14 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         s = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
         poly = _get_scaled_poly(s, float(canvas_x), float(canvas_y))
         if not poly: return
-        canvas.create_oval(canvas_x+(SHIELD_CENTER_X-75)*s, canvas_y+(58-75)*s, canvas_x+(SHIELD_CENTER_X+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
+        
+        # Efecto de halo brillante debajo del escudo
+        offset = 75.0 * s
+        canvas.create_oval(
+            canvas_x + (SHIELD_CENTER_X * s) - offset, canvas_y + (SHIELD_CENTER_Y * s) - offset,
+            canvas_x + (SHIELD_CENTER_X * s) + offset, canvas_y + (SHIELD_CENTER_Y * s) + offset,
+            fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
+        )
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, s)
