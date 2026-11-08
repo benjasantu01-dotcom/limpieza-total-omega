@@ -235,6 +235,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     total: BytesValue = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
     
+    # MemAvailable es la métrica de referencia, si falta se estima con MemFree
     avail_raw = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
     available = BytesValue(max(0, min(total, avail_raw)))
     cached = BytesValue(max(0, metrics.get("Cached", BytesValue(0))))

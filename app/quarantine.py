@@ -524,6 +524,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             
         valid_items: List[QuarantineItem] = []
         for entry in data:
+            if not isinstance(entry, dict): continue
             item = QuarantineItem.from_dict(entry)
             # Solo validamos si el archivo almacenado físicamente existe
             if item and item.stored_name in existing_names:

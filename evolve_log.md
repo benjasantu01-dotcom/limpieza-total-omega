@@ -1429,3 +1429,13 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-11-08T14:11:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-08T14:11:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-08T14:11:13` Corrida terminada. Total usado hoy: 336.
+- `2026-11-08T14:18:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-08T14:20:08` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_linux_meminfo` mediante la validación proactiva de claves faltantes y la eliminación de comportamientos ambiguos ante datos parciales del kernel, garantizando que el snapshot siempre represente un estado coherente.
+- `2026-11-08T14:20:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-08T14:21:25` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` mediante la captura explícita de errores de deserialización y una validación defensiva del esquema JSON, garantizando que un manifiesto malformado no interrumpa el flujo de la aplicación.
+- `2026-11-08T14:21:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-08T14:21:29` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-08T14:21:36` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-08T14:21:49` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-08T14:21:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-08T14:21:49` Corrida terminada. Total usado hoy: 340.

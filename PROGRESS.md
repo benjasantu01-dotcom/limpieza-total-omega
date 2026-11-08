@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 55 | 3 | 18 | 3 | 89 |
-| 2026-11-08 | 124 | 10 | 48 | 12 | 142 |
+| 2026-11-07 | 53 | 3 | 18 | 3 | 87 |
+| 2026-11-08 | 126 | 10 | 48 | 12 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **44**
 - robustez ante casos límite: **42**
 - seguridad defensiva: **34**
-- manejo de errores y validación de entradas: **31**
+- manejo de errores y validación de entradas: **33**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **17**
+- `quarantine.py`: **17**
+- `memory.py`: **17**
 - `diskreport.py`: **16**
 - `scanner.py`: **16**
-- `quarantine.py`: **16**
-- `memory.py`: **16**
-- `settings.py`: **15**
 - `safety.py`: **15**
 - `duplicates.py`: **14**
-- `startup.py`: **13**
+- `settings.py`: **14**
+- `startup.py`: **12**
 - `assistant.py`: **12**
 - `browser.py`: **11**
 - `branding.py`: **9**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-08T14:21:25` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la captura explícita de errores de deserialización y una validación defensiva del esquema JSON, garantizando que un manifiesto malformado no interrumpa el flujo de la aplicación.
+- `2026-11-08T14:20:08` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_linux_meminfo` mediante la validación proactiva de claves faltantes y la eliminación de comportamientos ambiguos ante datos parciales del kernel, garantizando que el snapshot siempre represente un estado coherente.
 - `2026-11-08T14:09:57` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_collect_candidates` y `_safe_path_check` añadiendo validaciones explícitas contra valores `None` y errores de acceso en `os.scandir` para evitar que una interrupción en el sistema de archivos detenga el escaneo completo.
 - `2026-11-08T14:09:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` reemplazando la captura de excepción genérica `(Exception)` por un manejo de errores más específico y eliminando el uso de `getattr(st, 'st_size', 0)` en favor de una validación explícita para evitar registros corruptos, asegurando que el bucle no silencie errores críticos del sistema.
 - `2026-11-08T14:00:58` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `detect_profiles` añadiendo validaciones preventivas de tipos y estados para evitar excepciones por valores `None` o estructuras de datos malformadas, garantizando que el escaneo no aborte inesperadamente ante configuraciones inesperadas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T11:57:43` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos corruptos o parcialmente escritos añadiendo un chequeo de integridad JSON previo a la deserialización completa y protegiendo la carga ante posibles excepciones de I/O mediante un bloque de seguridad adicional en `_read_and_parse_json`.
 - `2026-11-08T11:57:13` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes o inaccesibles dentro de `_is_valid_file_path` y `scan_directory` al centralizar la resolución de rutas mediante un manejo de excepciones más granular, evitando el colapso del escaneo por errores de acceso parciales en el sistema de archivos.
 - `2026-11-08T11:48:15` **quarantine.py** (robustez ante casos límite): Se mejoró `_is_file_exclusive` para manejar casos donde el archivo, aunque existente, tiene permisos restringidos o bloqueos de acceso que impedían abrir el manejador, añadiendo un manejo de excepciones más robusto ante estados de carrera (`PermissionError` o `OSError` inesperados) durante la verificación de exclusividad.
-- `2026-11-08T11:46:56` **memory.py** (robustez ante casos límite): Se mejora la robustez ante errores de acceso a procesos en `_iter_process_memory` y `trim_working_set`, asegurando que `GetExitCodeProcess` y `CloseHandle` se utilicen correctamente para evitar fugas de recursos o intentos de manipulación sobre procesos que terminaron inesperadamente durante la ejecución.
-- `2026-11-08T11:37:21` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante valores `NaN` o `inf` durante la inicialización, asegurando que `__post_init__` y `__setattr__` validen la finitud antes de asignar valores, evitando que estados inválidos se propaguen al pipeline de scoring.
