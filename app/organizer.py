@@ -239,11 +239,12 @@ def _has_forbidden_chars(path: Path) -> bool:
         return True
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """Ejecuta chequeos de seguridad de bajo nivel (longitud de ruta, UNC, caracteres prohibidos)."""
+    """Ejecuta chequeos de seguridad de bajo nivel y valida que el destino sea una ruta segura."""
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > LIMITS.MAX_PATH_LENGTH or len(str(dest)) > LIMITS.MAX_PATH_LENGTH: return False
-    return not (is_protected_path(src) or is_protected_path(dest))
+    # Verificación estricta: ambos deben ser modificables y no protegidos
+    return is_safe_to_modify(dest) and not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
     """Verifica si el archivo está oculto o es de sistema mediante los atributos Win32."""
@@ -296,8 +297,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if not dest_real.exists() or not dest_real.is_dir(): return False
         if not os.access(dest_real, os.W_OK): return False
         
-        if is_protected_path(src_real) or is_protected_path(dest_real): return False
-        if not is_safe_to_modify(dest_real): return False
         if dest_real in src_real.parents or src_real == dest_real or src_real.parent == dest_real: return False
         
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False

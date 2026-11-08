@@ -164,21 +164,22 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
     raise RuntimeError("Fallo de E/S tras múltiples intentos.")
 
 def _is_file_exclusive(path: Path) -> bool:
-    """Verifica si el archivo puede abrirse con acceso exclusivo (sin compartir)."""
+    """Verifica si el archivo puede abrirse con acceso exclusivo y sin compartir."""
     if path is None or not path.exists():
         return False
     if os.name == 'nt':
         try:
-            k32 = ctypes.windll.kernel32
-            handle: int = k32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
+            # CreateFile con dwShareMode=0 garantiza exclusividad total
+            handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
             if handle == -1 or handle == 0: return False
-            k32.CloseHandle(handle)
+            ctypes.windll.kernel32.CloseHandle(handle)
             return True
         except (OSError, AttributeError):
             return False
     
     try:
-        fd: int = os.open(path, os.O_RDONLY) 
+        # Intento de lock exclusivo no bloqueante
+        fd = os.open(path, os.O_RDONLY)
         try:
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             fcntl.flock(fd, fcntl.LOCK_UN)
