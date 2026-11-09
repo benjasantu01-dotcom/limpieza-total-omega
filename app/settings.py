@@ -111,6 +111,7 @@ def _get_default_settings_dir() -> Path:
 SETTINGS_DIR: Final = _get_default_settings_dir()
 SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
+MIN_SETTINGS_SIZE: Final = 32
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
 _BOOL_TRUE_SET: Final[tuple[str, ...]] = ("1", "true", "si", "sí", "yes")
@@ -173,7 +174,7 @@ class _SettingsManager:
         garantizar que la operación sea atómica y no deje el archivo corrupto ante un crash.
         """
         serialized_bytes = serialized.encode("utf-8")
-        if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < 16: return False
+        if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
         if len(str(config_path)) > 260: return False
         
         try:
@@ -376,7 +377,7 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if (st.st_mode & 0o077) != 0: return False
         
-        if st.st_size < 16 or st.st_size > MAX_SETTINGS_SIZE: return False
+        if st.st_size < MIN_SETTINGS_SIZE or st.st_size > MAX_SETTINGS_SIZE: return False
         return is_safe_to_modify(resolved_str)
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
@@ -403,7 +404,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
             st_post = os.fstat(fd)
             # Validar consistencia tras abrir el descriptor
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or \
-               st_post.st_size == 0 or st_post.st_size > MAX_SETTINGS_SIZE or \
+               st_post.st_size < MIN_SETTINGS_SIZE or st_post.st_size > MAX_SETTINGS_SIZE or \
                st_post.st_mtime != st.st_mtime or st_post.st_ino != st.st_ino:
                 return None
             

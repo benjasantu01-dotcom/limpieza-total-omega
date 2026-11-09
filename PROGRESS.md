@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 39 | 2 | 11 | 3 | 47 |
+| 2026-11-07 | 39 | 2 | 11 | 3 | 43 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 30 | 0 | 11 | 2 | 9 |
+| 2026-11-09 | 31 | 1 | 11 | 2 | 11 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **45**
+- seguridad defensiva: **37**
 - manejo de errores y validación de entradas: **36**
-- seguridad defensiva: **36**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -33,8 +33,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **21**
 - `healthscore.py`: **20**
 - `quarantine.py`: **19**
+- `settings.py`: **18**
 - `safety.py`: **18**
-- `settings.py`: **17**
 - `diskreport.py`: **17**
 - `scanner.py`: **17**
 - `duplicates.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T02:18:00` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` al centralizar y endurecer la validación de la integridad del archivo antes de la carga, añadiendo una comprobación explícita de `st_size` contra un límite mínimo más estricto y un chequeo preventivo de `stat` antes de abrir el descriptor de archivo para evitar accesos innecesarios a rutas que no cumplan con el perfil de seguridad esperado.
 - `2026-11-09T02:07:57` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` implementando una validación explícita para evitar que `_to_long_path` procese rutas UNC de manera incorrecta, añadiendo una restricción estricta en `ensure_safe_to_modify` que impide el procesamiento si la ruta está dentro de un "junction" (punto de reparseo) incluso antes de intentar resolver metadatos, mitigando riesgos de redirección inesperada.
 - `2026-11-09T02:06:48` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `_safe_unlink` y `purge_all` para garantizar que, ante fallos de E/S o condiciones imprevistas, no se deje un manifiesto desincronizado del estado real del sistema de archivos, aplicando una limpieza de caché después de operaciones críticas.
 - `2026-11-09T01:57:58` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una comprobación explícita mediante `is_protected_path` sobre el ejecutable del proceso antes de aplicar cualquier operación, asegurando que no se pueda manipular el *working set* de binarios ubicados en rutas del sistema, incluso si el usuario tiene privilegios.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T01:26:56` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_get_sha256` y `_is_file_in_use_by_system` implementando un manejo de errores más específico para archivos bloqueados o inaccesibles, evitando que una excepción de E/S inesperada durante el escaneo de metadatos detenga el hilo principal de la aplicación.
 - `2026-11-09T01:25:52` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de seguridad atómicas previas a cada operación de E/S, asegurando que los archivos no sean enlaces simbólicos o puntos de reparse en el momento preciso de la ejecución, evitando así posibles escapes de la zona de cuarentena.
 - `2026-11-09T01:17:24` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de API nativa y casos límite de concurrencia en `_iter_process_memory` y `trim_working_set`, asegurando el cierre de recursos incluso si `GetModuleFileNameExW` falla o devuelve rutas vacías.
-- `2026-11-09T01:16:01` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores de entrada inesperados y estados inconsistentes dentro de `SystemMetrics` mediante la implementación de una validación explícita durante la asignación y un manejo defensivo de los límites de las métricas.
