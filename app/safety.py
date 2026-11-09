@@ -784,7 +784,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCATEGORY.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError) as e:
         raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 
@@ -965,7 +965,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
         raise UnsafePathError("Acceso a Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
     if _is_unc_path(path_string) and not _is_unc_path_accessible(path_string):
-        raise UnsafePathError("Rutas UNC/Red bloqueadas o inaccesibles.", SafetyValidationErrorCode.UNC_PATH, SafetyValidationENVIRONMENT)
+        raise UnsafePathError("Rutas UNC/Red bloqueadas o inaccesibles.", SafetyValidationErrorCode.UNC_PATH, SafetyValidationCategory.ENVIRONMENT)
     if ".." in path_string.split(os.sep):
         raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
     if _is_path_too_long(path_string):

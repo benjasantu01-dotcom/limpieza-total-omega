@@ -1153,3 +1153,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-09T08:24:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 115): unterminated string literal (detected at line 115)
 - `2026-11-09T08:24:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T08:24:38` Corrida terminada. Total usado hoy: 200.
+- `2026-11-09T08:32:59` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-09T08:33:58` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha corregido un error tipográfico en `_validate_structural_safety` donde la constante `SafetyValidationENVIRONMENT` (no definida) impedía que el manejo de errores en rutas UNC funcionara correctamente al lanzar una excepción `NameError`, sustituyéndola por la categoría correcta `SafetyValidationCategory.ENVIRONMENT`.
+- `2026-11-09T08:34:24` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_stat` al agregar una validación específica contra archivos cuyo tamaño o tiempo de modificación sean `None` o inconsistentes, evitando posibles errores de desreferenciación en las funciones heurísticas que consumen estos metadatos.
+- `2026-11-09T08:34:55` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_read_and_parse_json` y `_coerce_and_verify` añadiendo validaciones explícitas de integridad (longitud de claves, tipos, valores nulos y rangos) y capturando excepciones de forma más precisa para evitar que datos malformados o inesperados comprometan la carga de la aplicación.
+- `2026-11-09T08:35:11` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-09T08:35:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T08:35:11` Corrida terminada. Total usado hoy: 204.

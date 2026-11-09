@@ -168,9 +168,11 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         
     try:
         stats = entry.stat(follow_symlinks=False)
-        if not hasattr(stats, 'st_size') or stats.st_size < 0:
-            return None
-        if not hasattr(stats, 'st_mtime') or stats.st_mtime < 0:
+        # Validación estricta: verificar presencia y coherencia de campos críticos
+        st_size = getattr(stats, 'st_size', None)
+        st_mtime = getattr(stats, 'st_mtime', None)
+        
+        if st_size is None or st_size < 0 or st_mtime is None or st_mtime < 0:
             return None
         return stats
     except OSError as e:

@@ -389,7 +389,6 @@ def _is_structure_valid(data: Any) -> bool:
         for key in ConfigKey:
             val = data.get(key.value)
             if val is not None and not _is_valid_type(val, key): return False
-        # Validar que no contenga claves ajenas al esquema
         return all(key in _VALID_ENUM_KEYS for key in data.keys())
     except (TypeError, AttributeError):
         return False
@@ -407,7 +406,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
             st_post = os.fstat(fd)
-            # Validar consistencia tras abrir el descriptor
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or \
                st_post.st_size < MIN_SETTINGS_SIZE or st_post.st_size > MAX_SETTINGS_SIZE or \
                st_post.st_mtime != st.st_mtime or st_post.st_ino != st.st_ino:
