@@ -326,7 +326,16 @@ def _is_valid_junk_entry(entry: os.DirEntry) -> bool:
         return False
 
 def _process_directory(current_dir: Path, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
-    """Escaneo recursivo de directorios limitado por profundidad y detección de ciclos."""
+    """
+    Escaneo recursivo de directorios.
+    
+    Args:
+        current_dir: Directorio actual a procesar.
+        junk_candidates: Lista acumuladora de objetos JunkFile encontrados.
+        depth: Profundidad actual del árbol.
+        protected_cache: Rutas protegidas detectadas dinámicamente.
+        visited: Set de rutas resueltas ya visitadas para evitar ciclos.
+    """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
         
     try:
@@ -357,7 +366,12 @@ def _process_directory(current_dir: Path, junk_candidates: List[JunkFile], depth
         pass
 
 def scan_for_junk(directories: Optional[Iterable[PathLike]] = None) -> List[JunkFile]:
-    """Inicia el proceso de escaneo en las rutas proporcionadas."""
+    """
+    Inicia el proceso de escaneo recursivo en las rutas proporcionadas.
+    
+    Returns:
+        Lista de objetos JunkFile listos para evaluación de movimiento.
+    """
     junk_candidates: List[JunkFile] = []
     protected_cache: Set[str] = set()
     visited: Set[str] = set()
@@ -380,7 +394,13 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Mueve los archivos basura confirmados al directorio de revisión.
-    Realiza una validación de seguridad atómica antes de cada movimiento.
+    
+    Args:
+        files: Secuencia de archivos a procesar.
+        review_dir: Ruta de destino para la cuarentena.
+        
+    Returns:
+        Path del directorio de revisión o None en caso de error crítico.
     """
     if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
         return None
@@ -430,7 +450,9 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos en el directorio de revisión.
-    Aplica filtros de seguridad estrictos antes de invocar la operación de borrado.
+    
+    Returns:
+        Cantidad de archivos eliminados con éxito.
     """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:

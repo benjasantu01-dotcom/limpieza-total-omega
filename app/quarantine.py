@@ -76,7 +76,11 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
 }
 
 def _sync_directory(directory: Path) -> None:
-    """Asegura la persistencia física de los cambios en el directorio llamando a fsync."""
+    """
+    Fuerza la persistencia de cambios en el sistema de archivos (fsync).
+    Es crítico tras operaciones de renombrado o borrado para asegurar que el 
+    diario del sistema de archivos registre la operación.
+    """
     try:
         dir_abs = _is_path_canonical(directory)
         fd = os.open(str(dir_abs), os.O_RDONLY)
@@ -152,7 +156,11 @@ def _is_filesystem_read_only(path: Path) -> bool:
     return not os.access(path, os.W_OK)
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
-    """Wrapper con reintento exponencial para operaciones de E/S propensas a bloqueos."""
+    """
+    Wrapper con reintento exponencial para operaciones de E/S.
+    Útil para manejar bloqueos temporales por parte de indexadores o antivirus
+    en tiempo real que bloquean acceso a archivos recién creados.
+    """
     max_retries: int = 3
     for i in range(max_retries):
         try:
@@ -164,7 +172,11 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
     raise RuntimeError("Fallo de E/S tras múltiples intentos.")
 
 def _is_file_exclusive(path: Path) -> bool:
-    """Verifica si el archivo puede abrirse con acceso exclusivo y sin compartir."""
+    """
+    Verifica si un archivo puede abrirse en modo de acceso exclusivo.
+    Fundamental para asegurar que no estamos moviendo un archivo mientras otro
+    proceso (o malware en ejecución) está escribiendo activamente en él.
+    """
     if path is None or not path.exists():
         return False
     if os.name == 'nt':
