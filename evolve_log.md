@@ -610,3 +610,4 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-11-09T17:54:11` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-09T18:04:25` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-09T21:19:04` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-09T21:29:14` Presupuesto diario agotado (350 usados). Corte hasta mañana.
