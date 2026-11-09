@@ -590,3 +590,4 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-11-09T14:51:41` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-11-09T14:51:41` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T14:51:41` Corrida terminada. Total usado hoy: 350.
+- `2026-11-09T15:00:50` Presupuesto diario agotado (350 usados). Corte hasta mañana.
