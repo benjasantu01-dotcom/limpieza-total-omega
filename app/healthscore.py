@@ -220,7 +220,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
     return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_val: float, max_val: float) -> float:
-    if not _is_finite_numeric(value): return default
+    if value is None or not _is_finite_numeric(value): return default
     return float(max(min_val, min(max_val, float(value))))
 
 # --- Modelos de Datos ---

@@ -182,12 +182,17 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
-        if d and is_safe_to_modify(Path(d)): queue.append((Path(d), 0))
+        if d:
+            try:
+                p_dir = Path(d)
+                if p_dir.is_dir() and is_safe_to_modify(p_dir):
+                    queue.append((p_dir, 0))
+            except (OSError, PermissionError):
+                continue
     
     while queue:
         current_dir, depth = queue.popleft()
-            
-        with suppress(OSError, PermissionError):
+        try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
@@ -207,6 +212,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                     size_map[stat.st_size].append(p)
                     except (OSError, PermissionError):
                         continue
+        except (OSError, PermissionError):
+            continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 
