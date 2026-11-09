@@ -415,11 +415,12 @@ def _evaluate_active_problems(metrics_items: frozenset[tuple[str, float]]) -> tu
     """
     Evalúa el estado de salud basado en métricas utilizando los criterios configurados.
     """
-    return tuple(
-        msg for key, val in metrics_items 
-        for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()) 
-        if (msg := criterion.format_if_triggered(val)) is not None
-    )
+    results = []
+    for key, val in metrics_items:
+        for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()):
+            if (msg := criterion.format_if_triggered(val)) is not None:
+                results.append(msg)
+    return tuple(results)
 
 @dataclass
 class SystemContext:

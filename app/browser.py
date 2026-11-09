@@ -349,25 +349,21 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
-        if not isinstance(base, Path): continue
+        if not isinstance(base, Path) or not base.exists(): continue
+        base_norm = os.path.realpath(str(base))
         
-        try:
-            if not base.exists(): continue
-            base_norm = os.path.realpath(str(base))
+        # Reutilizamos el contexto y el scanner para optimizar el ciclo de escaneo
+        scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH))
+        
+        for browser_key, relative_path in browser_map.items():
+            if not _is_valid_rel_path(relative_path): continue
             
-            scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH))
+            target = base.joinpath(*relative_path.split("\\"))
+            if not _is_target_valid(target, base_norm, kernel): continue
             
-            for browser_key, relative_path in browser_map.items():
-                if not _is_valid_rel_path(relative_path): continue
-                
-                target = base.joinpath(*relative_path.split("\\"))
-                if not _is_target_valid(target, base_norm, kernel): continue
-                
-                scan_res = scanner.get_size(str(target))
-                if scan_res.success and scan_res.bytes_found > 0:
-                    found.append(BrowserCache(str(browser_key), target, scan_res.bytes_found))
-        except (OSError, RuntimeError, PermissionError, FileNotFoundError):
-            continue
+            scan_res = scanner.get_size(str(target))
+            if scan_res.success and scan_res.bytes_found > 0:
+                found.append(BrowserCache(str(browser_key), target, scan_res.bytes_found))
     
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found
