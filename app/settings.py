@@ -357,10 +357,11 @@ def validate(raw_values: Any) -> AppSettings:
     """Valida un diccionario de configuración arbitrario contra el esquema definido en DEFAULTS."""
     if not _is_dict(raw_values): return DEFAULTS.copy()
     config = DEFAULTS.copy()
+    val_map = _VALIDATOR_MAP
+    key_enum_map = _KEY_TO_ENUM
     for key_str in _VALID_ENUM_KEYS.intersection(raw_values.keys()):
-        key_enum = _KEY_TO_ENUM[key_str]
-        validator = _VALIDATOR_MAP[key_enum]
-        if (validated_val := validator.func(key_enum, raw_values[key_str])) is not None:
+        key_enum = key_enum_map[key_str]
+        if (validated_val := val_map[key_enum].func(key_enum, raw_values[key_str])) is not None:
             config[key_enum.value] = validated_val
     return config 
 

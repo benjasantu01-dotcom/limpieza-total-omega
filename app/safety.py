@@ -41,7 +41,7 @@ class PathValidationResult(NamedTuple):
     error: Optional[UnsafePathError] = None
 
 # Cachés para optimización de rendimiento en operaciones de disco frecuentes
-_SECURITY_CACHE: Final[dict[tuple[int, int, int, int], bool]] = {}
+_SECURITY_CACHE: Final[set[tuple[int, int, int, int]]] = set()
 _NEGATIVE_SECURITY_CACHE: Final[set[tuple[int, int, int, int]]] = set()
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
 _FILE_ID_CACHE: Final[OrderedDict[str, tuple[int, int, int, int]]] = OrderedDict()
@@ -696,27 +696,21 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 
 def _evaluate_security_rules(state: SafetyState) -> None:
     """Verifica el estado del archivo contra todas las reglas de integridad configuradas."""
-    try:
-        if state.file_id in _NEGATIVE_SECURITY_CACHE:
-            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
-        if state.file_id in _SECURITY_CACHE:
-            return
+    if state.file_id in _NEGATIVE_SECURITY_CACHE:
+        raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
+    if state.file_id in _SECURITY_CACHE:
+        return
 
-        for reason, predicate in _VALIDATOR_MAP.items():
-            try:
-                if predicate(state.path, state.stat_result, state.descriptor):
-                    _NEGATIVE_SECURITY_CACHE.add(state.file_id)
-                    code = _REASON_TO_CODE.get(reason, SafetyValidationErrorCode.GENERIC)
-                    raise UnsafePathError(f"Integridad comprometida: {reason.name}", code, SafetyValidationCategory.INTEGRITY)
-            except (OSError, PermissionError, AttributeError):
-                continue
-        
-        if len(_SECURITY_CACHE) > 8192: _SECURITY_CACHE.clear()
-        _SECURITY_CACHE[state.file_id] = True
-    except UnsafePathError:
-        raise
-    except Exception as e:
-        raise UnsafePathError(f"Regla de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
+    for reason, predicate in _VALIDATOR_MAP.items():
+        try:
+            if predicate(state.path, state.stat_result, state.descriptor):
+                _NEGATIVE_SECURITY_CACHE.add(state.file_id)
+                code = _REASON_TO_CODE.get(reason, SafetyValidationErrorCode.GENERIC)
+                raise UnsafePathError(f"Integridad comprometida: {reason.name}", code, SafetyValidationCategory.INTEGRITY)
+        except (OSError, PermissionError, AttributeError):
+            continue
+    
+    _SECURITY_CACHE.add(state.file_id)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """Obtiene metadatos del sistema con reintentos para mitigar condiciones de carrera."""

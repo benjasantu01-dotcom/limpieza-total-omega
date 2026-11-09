@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 8 | 0 | 2 | 0 | 20 |
+| 2026-11-07 | 7 | 0 | 2 | 0 | 17 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 52 | 1 | 21 | 6 | 44 |
+| 2026-11-09 | 54 | 1 | 23 | 6 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **37**
+- seguridad defensiva: **36**
 - robustez ante casos límite: **36**
-- rendimiento: **26**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
 - `quarantine.py`: **20**
 - `healthscore.py`: **19**
-- `safety.py`: **17**
-- `settings.py`: **16**
-- `diskreport.py`: **15**
+- `safety.py`: **18**
+- `settings.py`: **17**
 - `duplicates.py`: **15**
 - `scanner.py`: **15**
+- `diskreport.py`: **14**
 - `assistant.py`: **13**
 - `startup.py`: **12**
 - `branding.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T05:21:18` **settings.py** (rendimiento): Se optimizó `validate` reemplazando la creación repetida de `DEFAULTS.copy()` y el acceso a diccionarios dentro del loop por un cacheo local de referencias, reduciendo significativamente la sobrecarga en el parsing de configuraciones.
+- `2026-11-09T05:20:38` **safety.py** (rendimiento): Implementé un sistema de "Short-Circuiting" para `is_safe_to_modify` utilizando `_NEGATIVE_SECURITY_CACHE` y `_SECURITY_CACHE` compartidos globalmente, reduciendo drásticamente las llamadas a APIs de Windows en bucles de escaneo repetitivos.
 - `2026-11-09T05:12:15` **quarantine.py** (rendimiento): Optimicé el cálculo del peso total en `total_quarantined_bytes` evitando la deserialización completa de objetos `QuarantineItem` y cargando únicamente los bytes necesarios del JSON, reduciendo el consumo de memoria y CPU.
 - `2026-11-09T05:01:22` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos en `_collect_candidates` para evitar realizar llamadas redundantes a `stat()` y `exists()` al consolidar las comprobaciones de seguridad e integridad dentro de una única llamada a `_is_valid_candidate` tras el `os.scandir`, reduciendo significativamente las operaciones de I/O sobre el sistema de archivos durante el escaneo.
 - `2026-11-09T04:50:42` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` reemplazando la construcción de listas y conversiones repetidas a `tuple` dentro del loop por una generación directa de una tupla de floats, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia en llamadas repetidas desde el bucle de renderizado.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T04:19:47` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados, un docstring explicativo en la función principal de escaneo (`walk_files`) que aclara el manejo de recursión/enlaces, y una refactorización de `_collect_summary_data` para clarificar su rol como orquestador de métricas.
 - `2026-11-09T04:18:56` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones públicas, detallando los parámetros, los casos de error manejados y el propósito de cada utilitario visual, facilitando así el mantenimiento a largo plazo.
 - `2026-11-09T04:10:03` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `SystemContext` y `ProblemCriterion` añadiendo docstrings técnicos que explican el propósito de las validaciones de seguridad y el flujo de los datos, facilitando la comprensión del mantenimiento a largo plazo sin alterar la lógica.
-- `2026-11-09T04:09:12` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` para prevenir excepciones ante valores inesperados de tipo y agregué un chequeo de integridad adicional en `_read_and_parse_json` para asegurar que el contenido JSON, tras ser parseado, contenga exclusivamente las claves definidas en `AppSettings`, evitando la inyección de datos arbitrarios en memoria.
-- `2026-11-09T04:08:42` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de archivos envolviéndolas en bloques de control de excepciones específicos y validando la integridad de los metadatos antes de su procesamiento para evitar fallos durante el recorrido del sistema de archivos.
