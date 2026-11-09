@@ -240,10 +240,8 @@ class SystemMetrics:
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name in _ALL_METRICS:
-            if not _is_finite_numeric(value):
-                value = 0.0
-            v = _validate_numeric(value, 0.0, *_METRIC_LIMITS.get(name, (0.0, 1e9)))
-            object.__setattr__(self, name, v)
+            clean_val = _validate_numeric(value, 0.0, *_METRIC_LIMITS.get(name, (0.0, 1e9)))
+            object.__setattr__(self, name, clean_val)
         else:
             object.__setattr__(self, name, value)
 
@@ -252,12 +250,11 @@ class SystemMetrics:
 
     def get_clamped_metric(self, field_name: str) -> float:
         min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
-        val = self.safe_get(field_name, 0.0)
+        val = getattr(self, field_name, 0.0)
         return _validate_numeric(val, 0.0, min_v, max_v)
 
     def validate(self) -> None:
         for f in _ALL_METRICS:
-            val = getattr(self, f, 0.0)
             object.__setattr__(self, f, self.get_clamped_metric(f))
 
     @property

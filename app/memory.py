@@ -408,9 +408,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
                 ws = pmc.WorkingSetSize
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
-                    # Usar slicing del buffer sin split costoso para el nombre
                     raw_path = path_buf.value
-                    name = raw_path.split('\\')[-1]
+                    name = raw_path.split('\\')[-1] if '\\' in raw_path else raw_path
                     yield ProcessMemory(name, pid, BytesValue(ws))
         except (ctypes.ArgumentError, OSError):
             continue
@@ -482,6 +481,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida para este PID o no disponible."
         
     path_buf = ctypes.create_unicode_buffer(512)
+    # Reutilizamos el helper que garantiza la liberación del handle
     handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if handle is None:

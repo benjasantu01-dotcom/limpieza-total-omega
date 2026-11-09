@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 67
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 218
 
@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 41 | 2 | 13 | 3 | 67 |
+| 2026-11-07 | 40 | 2 | 11 | 3 | 66 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 15 | 0 | 6 | 2 | 5 |
+| 2026-11-09 | 17 | 0 | 7 | 2 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **36**
 - rendimiento: **31**
-- seguridad defensiva: **30**
+- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
-- `healthscore.py`: **18**
-- `scanner.py`: **17**
+- `memory.py`: **20**
+- `healthscore.py`: **19**
 - `quarantine.py`: **17**
 - `settings.py`: **16**
 - `diskreport.py`: **16**
 - `safety.py`: **16**
+- `scanner.py`: **16**
 - `duplicates.py`: **14**
 - `startup.py`: **13**
 - `assistant.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T01:17:24` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de API nativa y casos límite de concurrencia en `_iter_process_memory` y `trim_working_set`, asegurando el cierre de recursos incluso si `GetModuleFileNameExW` falla o devuelve rutas vacías.
+- `2026-11-09T01:16:01` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores de entrada inesperados y estados inconsistentes dentro de `SystemMetrics` mediante la implementación de una validación explícita durante la asignación y un manejo defensivo de los límites de las métricas.
 - `2026-11-09T01:06:56` **diskreport.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `walk_files` y `_safe_stat` al añadir un manejo explícito de rutas con longitud excesiva y fallos durante la iteración del `scandir`, asegurando que el escaneo no se interrumpa ante entradas corruptas del sistema de archivos.
 - `2026-11-09T01:06:18` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante valores inesperados de entrada y problemas de permisos, asegurando que las funciones no fallen silenciosamente con estados inválidos mediante chequeos explícitos y manejo de excepciones más granular.
 - `2026-11-09T01:05:49` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext` ante entradas inesperadas agregando validación de tipo estricta en el método `_apply_field`, evitando que valores no numéricos (como listas o diccionarios maliciosos) pasen el filtro antes de la conversión a float/int, y reforzando la limpieza de la propiedad `grade`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T00:16:09` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del archivo documentando las estrategias de validación en `_Validators` mediante docstrings detallados y refinando las anotaciones de tipos para mayor claridad técnica en un proyecto de nivel senior.
 - `2026-11-09T00:15:53` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos clave de la clase `Scanner` y funciones auxiliares, clarificando las precondiciones de seguridad y el flujo de los datos sin modificar la lógica existente.
 - `2026-11-09T00:15:25` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `_validate_security_descriptor_attributes` para separar las comprobaciones de estado de los mensajes de error, y la limpieza de los docstrings en las funciones críticas de validación para reflejar su comportamiento real.
-- `2026-11-09T00:05:58` **organizer.py** (legibilidad y documentación): Se introdujeron type hints en funciones clave que carecían de ellos y se documentaron las precondiciones de seguridad de las funciones de bajo nivel, mejorando la legibilidad técnica y la trazabilidad del código.
-- `2026-11-09T00:05:31` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `memory.py` incorporando Type Hints detallados en las estructuras de la API de Windows y clarificando la función de los `ctypes.Structure` mediante comentarios específicos que explican el rol de cada campo, mejorando así la mantenibilidad para futuros colaboradores.

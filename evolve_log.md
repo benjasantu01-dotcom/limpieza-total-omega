@@ -447,3 +447,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-09T01:06:56` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejora la robustez ante casos límite en `walk_files` y `_safe_stat` al añadir un manejo explícito de rutas con longitud excesiva y fallos durante la iteración del `scandir`, asegurando que el escaneo no se interrumpa ante entradas corruptas del sistema de archivos.
 - `2026-11-09T01:06:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T01:06:56` Corrida terminada. Total usado hoy: 28.
+- `2026-11-09T01:15:07` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-11-09T01:15:34` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-09T01:16:01` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del sistema ante valores de entrada inesperados y estados inconsistentes dentro de `SystemMetrics` mediante la implementación de una validación explícita durante la asignación y un manejo defensivo de los límites de las métricas.
+- `2026-11-09T01:17:10` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-09T01:17:24` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de API nativa y casos límite de concurrencia en `_iter_process_memory` y `trim_working_set`, asegurando el cierre de recursos incluso si `GetModuleFileNameExW` falla o devuelve rutas vacías.
+- `2026-11-09T01:17:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T01:17:24` Corrida terminada. Total usado hoy: 32.
