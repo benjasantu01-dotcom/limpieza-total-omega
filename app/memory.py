@@ -481,7 +481,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida para este PID o no disponible."
         
     path_buf = ctypes.create_unicode_buffer(512)
-    # Reutilizamos el helper que garantiza la liberación del handle
+    # Reutilizamos el helper que garantiza la liberación del handle y la validación de seguridad (is_protected_path)
     handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if handle is None:

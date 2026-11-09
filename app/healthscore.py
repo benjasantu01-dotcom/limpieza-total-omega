@@ -243,7 +243,7 @@ class SystemMetrics:
             clean_val = _validate_numeric(value, 0.0, *_METRIC_LIMITS.get(name, (0.0, 1e9)))
             object.__setattr__(self, name, clean_val)
         else:
-            object.__setattr__(self, name, value)
+            raise AttributeError(f"Campo no permitido: {name}")
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: return getattr(self, field_name, default)

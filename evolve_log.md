@@ -475,3 +475,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-09T01:47:08` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se mejoró la robustez del chequeo de seguridad en `_collect_candidates` integrando `is_safe_to_modify` antes de procesar cada entrada del sistema de archivos, asegurando que no se sigan rutas protegidas o inseguras durante el recorrido.
 - `2026-11-09T01:47:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T01:47:08` Corrida terminada. Total usado hoy: 44.
+- `2026-11-09T01:55:50` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-09T01:56:18` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `SystemMetrics` evitando la manipulación directa de atributos mediante una validación estricta y delegando la protección de datos sensibles al método `safe_get` en el pipeline, asegurando que la lógica de cálculo sea robusta ante entradas malintencionadas.
+- `2026-11-09T01:57:30` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-09T01:57:58` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una comprobación explícita mediante `is_protected_path` sobre el ejecutable del proceso antes de aplicar cualquier operación, asegurando que no se pueda manipular el *working set* de binarios ubicados en rutas del sistema, incluso si el usuario tiene privilegios.
+- `2026-11-09T01:58:10` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-09T01:58:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T01:58:10` Corrida terminada. Total usado hoy: 48.

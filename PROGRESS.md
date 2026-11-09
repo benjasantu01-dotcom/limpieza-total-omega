@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 39 | 2 | 11 | 3 | 55 |
+| 2026-11-07 | 39 | 2 | 11 | 3 | 51 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 26 | 0 | 9 | 2 | 7 |
+| 2026-11-09 | 28 | 0 | 10 | 2 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **45**
 - manejo de errores y validación de entradas: **36**
-- seguridad defensiva: **32**
+- seguridad defensiva: **34**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
-- `healthscore.py`: **19**
+- `memory.py`: **21**
+- `healthscore.py`: **20**
 - `quarantine.py`: **18**
 - `settings.py`: **17**
 - `diskreport.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T01:57:58` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una comprobación explícita mediante `is_protected_path` sobre el ejecutable del proceso antes de aplicar cualquier operación, asegurando que no se pueda manipular el *working set* de binarios ubicados en rutas del sistema, incluso si el usuario tiene privilegios.
+- `2026-11-09T01:56:18` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `SystemMetrics` evitando la manipulación directa de atributos mediante una validación estricta y delegando la protección de datos sensibles al método `safe_get` en el pipeline, asegurando que la lógica de cálculo sea robusta ante entradas malintencionadas.
 - `2026-11-09T01:47:08` **duplicates.py** (seguridad defensiva): Se mejoró la robustez del chequeo de seguridad en `_collect_candidates` integrando `is_safe_to_modify` antes de procesar cada entrada del sistema de archivos, asegurando que no se sigan rutas protegidas o inseguras durante el recorrido.
 - `2026-11-09T01:46:59` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` para prevenir la resolución de rutas fuera del alcance deseado mediante el uso de `resolve()` antes de realizar chequeos de seguridad, evitando ataques de tipo "path traversal" o resolución maliciosa de enlaces simbólicos.
 - `2026-11-09T01:46:10` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia y el tipo de la ruta antes de intentar cualquier operación de escritura, asegurando que la ruta no solo sea segura según `safety.py` sino que su estructura sea consistente con un destino de archivo válido.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T01:16:01` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores de entrada inesperados y estados inconsistentes dentro de `SystemMetrics` mediante la implementación de una validación explícita durante la asignación y un manejo defensivo de los límites de las métricas.
 - `2026-11-09T01:06:56` **diskreport.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `walk_files` y `_safe_stat` al añadir un manejo explícito de rutas con longitud excesiva y fallos durante la iteración del `scandir`, asegurando que el escaneo no se interrumpa ante entradas corruptas del sistema de archivos.
 - `2026-11-09T01:06:18` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante valores inesperados de entrada y problemas de permisos, asegurando que las funciones no fallen silenciosamente con estados inválidos mediante chequeos explícitos y manejo de excepciones más granular.
-- `2026-11-09T01:05:49` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext` ante entradas inesperadas agregando validación de tipo estricta en el método `_apply_field`, evitando que valores no numéricos (como listas o diccionarios maliciosos) pasen el filtro antes de la conversión a float/int, y reforzando la limpieza de la propiedad `grade`.
-- `2026-11-09T00:55:47` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_attrs` y `_get_file_id` reemplazando los chequeos lineales de `len()` en cachés globales por un mecanismo más eficiente (`popitem(last=False)` usando `collections.OrderedDict`), reduciendo la complejidad de limpieza de $O(N)$ a $O(1)$.
