@@ -75,16 +75,18 @@ def _is_sensitive_input(data: Any) -> bool:
     return any(term in d_low for term in _BLOCKED_TERMS)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    if not isinstance(msg, str) or len(msg) > (_MAX_MSG_LEN * 4) or _is_sensitive_input(msg): 
-        return ""
+    """Valida y limpia mensajes de texto contra inyecciones y caracteres inseguros."""
+    if not isinstance(msg, str): return ""
+    if len(msg) > _MAX_MSG_LEN: msg = msg[:_MAX_MSG_LEN]
+    if _is_sensitive_input(msg): return ""
+    
     clean = "".join(char for char in msg if char in _ALLOWED_CHARS)
-    return clean.strip()[:_MAX_MSG_LEN]
+    return clean.strip()
 
 def _safe_factory(factory: Callable[[SystemMetrics], str]) -> Callable[[SystemMetrics], str]:
     def wrapper(metrics: SystemMetrics) -> str:
         try:
-            msg = factory(metrics)
-            return _sanitize_msg(msg)
+            return _sanitize_msg(factory(metrics))
         except Exception:
             return ""
     return wrapper

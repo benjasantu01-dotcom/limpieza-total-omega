@@ -1410,3 +1410,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-09T10:37:21` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
 - `2026-11-09T10:37:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T10:37:21` Corrida terminada. Total usado hoy: 252.
+- `2026-11-09T10:45:38` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-09T10:46:05` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_get_local_windows_drives` incluyendo un chequeo explícito de `is_protected_path` antes de intentar acceder a unidades extraíbles o de red y una verificación de estado de disco mediante `shutil.disk_usage` para asegurar que la unidad esté realmente montada y accesible antes de incluirla en el reporte.
+- `2026-11-09T10:46:28` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la incorporación de `is_safe_to_modify` en el acceso a metadatos dentro de `_collect_candidates`, garantizando que el escaneo no acceda a rutas que violen las políticas de seguridad antes de procesar su tamaño o inodo.
+- `2026-11-09T10:46:53` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva del motor de scoring implementando una validación estricta y explícita en `_sanitize_msg` para evitar que datos malformados o potencialmente peligrosos (incluyendo intentos de inyección de cadenas con caracteres de control o rutas sospechosas) escapen del proceso de generación de reportes, utilizando `_BLOCKED_TERMS` como barrera de entrada.
+- `2026-11-09T10:47:44` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-09T10:47:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T10:47:44` Corrida terminada. Total usado hoy: 256.

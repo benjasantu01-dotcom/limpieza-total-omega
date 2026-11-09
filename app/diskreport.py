@@ -198,9 +198,11 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         try:
-            # Usamos existencias básicas y verificamos acceso mínimo
-            if os.path.exists(drive):
-                if not is_protected_path(Path(drive)) and os.access(drive, os.R_OK):
+            # Primero validamos seguridad y existencia básica
+            if os.path.exists(drive) and not is_protected_path(Path(drive)):
+                # Verificamos acceso y que sea una unidad montada con espacio
+                shutil.disk_usage(drive)
+                if os.access(drive, os.R_OK):
                     drives.append(drive)
         except (OSError, PermissionError, TypeError, RuntimeError):
             continue
