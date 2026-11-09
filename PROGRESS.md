@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 89 | 8 | 32 | 10 | 117 |
-| 2026-11-09 | 102 | 6 | 39 | 9 | 92 |
+| 2026-11-08 | 89 | 8 | 32 | 10 | 113 |
+| 2026-11-09 | 104 | 7 | 39 | 9 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **44**
 - rendimiento: **29**
-- seguridad defensiva: **27**
+- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `duplicates.py`: **16**
-- `assistant.py`: **14**
-- `branding.py`: **14**
+- `assistant.py`: **15**
+- `branding.py`: **15**
 - `diskreport.py`: **12**
 - `browser.py`: **9**
 - `organizer.py`: **9**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T10:37:11` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` al verificar la existencia y el estado de la ruta destino mediante `is_safe_to_modify` antes de proceder con cualquier operación de escritura, garantizando que no se intenten modificar rutas protegidas o fuera de los límites permitidos, manteniendo la consistencia con las reglas de seguridad defensiva del proyecto.
+- `2026-11-09T10:36:39` **assistant.py** (seguridad defensiva): Reforcé la integridad del flujo de datos en `assistant.py` añadiendo una validación explícita en `_apply_updates` para evitar inyecciones de atributos arbitrarios, asegurando que `SystemContext` sea estrictamente inmutable en su estructura de clase tras la validación inicial.
 - `2026-11-09T10:27:14` **settings.py** (robustez ante casos límite): Mejoré `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo un manejo de excepciones más granular y verificaciones de integridad ante condiciones de carrera y fallos de E/S en disco, asegurando que la configuración nunca quede en estado corrupto durante lecturas o escrituras simultáneas.
 - `2026-11-09T10:26:58` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `_is_safe_entry` y `process_entry` al manejar explícitamente errores de acceso (`OSError`, `PermissionError`) durante la inspección de metadatos y atributos de archivos, evitando que el escaneo se detenga o ignore entradas potencialmente críticas por fallos transitorios en el sistema de archivos.
 - `2026-11-09T10:26:31` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `SafetyGuard.is_locked` y las validaciones de acceso al incluir un manejo explícito de `FileNotFoundError` durante las operaciones de lectura de metadatos, evitando que la app aborte cuando un archivo desaparece justo antes de ser validado.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T09:55:12` **settings.py** (rendimiento): Optimicé el rendimiento de la validación reemplazando la lógica de bucles recursivos en `_is_structure_valid` por una validación O(1) directa basada en las claves del diccionario `DEFAULTS`, evitando iteraciones innecesarias sobre el enumerado completo.
 - `2026-11-09T09:46:36` **scanner.py** (rendimiento): Optimizé la heurística `check_recent_executable_in_downloads` para evitar el cálculo innecesario del nombre del padre mediante `path.parent.name` y comparaciones de strings en cada iteración del escaneo, sustituyéndolo por un chequeo directo de pertenencia en el `set` ya definido `TARGETED_DOWNLOAD_FOLDERS`.
 - `2026-11-09T09:36:37` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la pre-compilación de `JUNK_EXTENSIONS` en un conjunto de búsqueda directa y el uso de un cache de set `visited` que evita redundancias al evaluar rutas resueltas canónicamente, reduciendo llamadas innecesarias al sistema de archivos.
-- `2026-11-09T09:36:22` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` reemplazando la creación dinámica de buffers y la resolución redundante de nombres mediante técnicas de pre-alocación y acceso directo por índice, reduciendo la presión sobre el recolector de basura y el tiempo de CPU en ciclos de escaneo.
-- `2026-11-09T09:34:41` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` convirtiendo `PIPELINE_DEFINITIONS` a un objeto indexado y cacheando los resultados del pipeline mediante una clave calculada basada en los valores de las métricas, evitando así el re-cálculo de scores y reglas idénticas en ejecuciones rápidas del bucle principal.

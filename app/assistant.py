@@ -567,12 +567,11 @@ class SystemContext:
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
         if not isinstance(updates, dict): return
-        # Protección extra contra tipos inyectados por error
+        # Protección estricta: solo permitimos campos definidos en la clase
+        valid_keys = {k for k in self.__dataclass_fields__.keys()}
         for key, value in updates.items():
-            if not isinstance(key, str): continue
-            if self._is_valid_metric_key(key) or key == "grade":
-                if isinstance(value, (int, float, str)):
-                    setattr(self, key, value)
+            if key in valid_keys and isinstance(value, (int, float, str, bool)):
+                setattr(self, key, value)
         
         self.analyzed = True
         self.__dict__.pop("metrics_snapshot", None)

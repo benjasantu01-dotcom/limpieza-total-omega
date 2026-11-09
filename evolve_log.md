@@ -1352,3 +1352,61 @@ FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning 
 - `2026-11-09T10:27:14` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo un manejo de excepciones más granular y verificaciones de integridad ante condiciones de carrera y fallos de E/S en disco, asegurando que la configuración nunca quede en estado corrupto durante lecturas o escrituras simultáneas.
 - `2026-11-09T10:27:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T10:27:14` Corrida terminada. Total usado hoy: 248.
+- `2026-11-09T10:35:28` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-11-09T10:35:59` Tests FALLARON:
+```
+'MiApp'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.77s
+
+```
+- `2026-11-09T10:35:59` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_valid_registry_path` y `_is_registry_entry_safe` implementando una validación temprana de caracteres nulos (`\0`) y una comprobación explícita mediante `is_safe_to_modify` para asegurar que las rutas extraídas del registro no apunten a zonas protegidas del sistema antes de procesarlas.
+- `2026-11-09T10:36:39` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la integridad del flujo de datos en `assistant.py` añadiendo una validación explícita en `_apply_updates` para evitar inyecciones de atributos arbitrarios, asegurando que `SystemContext` sea estrictamente inmutable en su estructura de clase tras la validación inicial.
+- `2026-11-09T10:37:11` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` al verificar la existencia y el estado de la ruta destino mediante `is_safe_to_modify` antes de proceder con cualquier operación de escritura, garantizando que no se intenten modificar rutas protegidas o fuera de los límites permitidos, manteniendo la consistencia con las reglas de seguridad defensiva del proyecto.
+- `2026-11-09T10:37:21` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-09T10:37:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T10:37:21` Corrida terminada. Total usado hoy: 252.
