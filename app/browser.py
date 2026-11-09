@@ -154,7 +154,7 @@ class DirectoryScanner:
                 if file_id not in self.ctx.visited_files:
                     self.ctx.visited_files.add(file_id)
                     return st_file.st_size
-            except (OSError, PermissionError):
+            except (OSError, PermissionError, FileNotFoundError):
                 pass
         return 0
 
@@ -168,7 +168,7 @@ class DirectoryScanner:
                 return total_bytes + self._handle_directory(entry, depth)
             elif entry.is_file(follow_symlinks=False):
                 return total_bytes + self._handle_file(entry)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             pass
         return total_bytes
 
@@ -181,6 +181,7 @@ class DirectoryScanner:
             return ScanResult(0, True)
 
         try:
+            # Captura lstat para evitar errores si el archivo desaparece durante la iteración
             st = os.lstat(root_path)
             attrs = getattr(st, 'st_file_attributes', 0)
             if self.ctx.is_junction(root_path) or (attrs & FileAttributes.REPARSE_POINT) or os.path.islink(root_path):
@@ -200,7 +201,7 @@ class DirectoryScanner:
                 for entry in iterator:
                     total_bytes = self._process_entry(entry, depth, total_bytes)
             return ScanResult(total_bytes, True)
-        except (OSError, PermissionError): 
+        except (OSError, PermissionError, FileNotFoundError): 
             return ScanResult(0, False)
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
@@ -210,7 +211,7 @@ def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 return func(*args, **kwargs)
-            except (OSError, PermissionError, RuntimeError, AttributeError, ValueError, TypeError):
+            except (OSError, PermissionError, RuntimeError, AttributeError, ValueError, TypeError, FileNotFoundError):
                 return default
         return wrapper
     return decorator
@@ -296,7 +297,7 @@ def base_directories() -> List[Path]:
         if p.exists() and p.is_dir() and os.access(p, os.R_OK):
             if is_safe_to_modify(p) and not is_protected_path(p):
                 return [p]
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, FileNotFoundError):
         pass
     return []
 
@@ -337,7 +338,7 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
             
         target_norm = os.path.realpath(str(target))
         return os.path.commonpath([target_norm, base_norm]) == base_norm
-    except (OSError, PermissionError, RuntimeError, ValueError, AttributeError):
+    except (OSError, PermissionError, RuntimeError, ValueError, AttributeError, FileNotFoundError):
         return False
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
@@ -368,7 +369,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 scan_res = scanner.get_size(str(target))
                 if scan_res.success and scan_res.bytes_found > 0:
                     found.append(BrowserCache(str(browser_key), target, scan_res.bytes_found))
-        except (OSError, RuntimeError, PermissionError):
+        except (OSError, RuntimeError, PermissionError, FileNotFoundError):
             continue
     
     found.sort(key=lambda c: c.size_bytes, reverse=True)

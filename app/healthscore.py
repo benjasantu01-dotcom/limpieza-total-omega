@@ -201,13 +201,13 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud de memoria comparando disponibilidad actual vs umbral."""
     val = float(available_percent)
-    return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(val / _LIMIT_RAM_PERCENT)
+    return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 or not math.isfinite(val) else _clamp(val / _LIMIT_RAM_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Calcula el ratio de salud de disco basado en el porcentaje de espacio libre."""
     val = float(free_percent)
-    return 0.0 if _LIMIT_DISK_PERCENT <= 0.0 else _clamp(val / _LIMIT_DISK_PERCENT)
+    return 0.0 if _LIMIT_DISK_PERCENT <= 0.0 or not math.isfinite(val) else _clamp(val / _LIMIT_DISK_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
@@ -290,19 +290,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _get_pipeline_cache_key(metrics: SystemMetrics) -> Tuple[float, ...]:
     return tuple(getattr(metrics, f) for f in _ALL_METRICS)
 
-@lru_cache(maxsize=8)
-def _memoized_process_entry(metric_snapshot: Tuple[float, ...], entry_idx: int) -> Tuple[int, List[str]]:
-    """Capa de caché para evitar re-cálculos del pipeline ante métricas idénticas."""
-    # Nota: El objeto SystemMetrics se reconstruye desde el snapshot si fuera necesario, 
-    # pero aquí procesamos con las funciones puras directamente.
-    return (0, []) # Placeholder simplificado para mantener estructura
-
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Procesa una entrada del pipeline: calcula puntuación y extrae advertencias."""
     if not isinstance(metrics, SystemMetrics) or not isinstance(entry, PipelineEntry):
         return 0, []
     try:
         ratio = entry.scorer(metrics)
+        if not math.isfinite(ratio): ratio = 0.0
         points = int(ratio * entry.weight)
         return points, _evaluate_rules(metrics, entry.rules, ratio)
     except Exception: 

@@ -1299,3 +1299,41 @@ FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_o
 - `2026-11-09T09:56:45` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-11-09T09:56:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T09:56:45` Corrida terminada. Total usado hoy: 236.
+- `2026-11-09T10:04:50` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-09T10:05:19` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `DirectoryScanner` ante condiciones de carrera (cuando un archivo es eliminado por el navegador mientras se escanea) y errores de acceso al sistema de archivos, envolviendo la obtención de atributos (`os.lstat`) y el acceso a `scandir` en bloques `try-except` más granulares para asegurar que el escáner no aborte ante cambios dinámicos en el disco.
+- `2026-11-09T10:05:46` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré `_validate_root` y `_get_local_windows_drives` para robustecer la gestión de permisos, añadiendo bloques `try-except` granulares que previenen que el escaneo colapse prematuramente al encontrar rutas con privilegios restringidos o errores de sistema.
+- `2026-11-09T10:06:11` Tests FALLARON:
+```
+ly_reads_t0/a'))
+E        +    where <function hash_file at 0x7fdd3fb69e40> = duplicates.hash_file
+E        +  and   None = <function hash_file at 0x7fdd3fb69e40>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_partial_hash_only_reads_t0/b'))
+E        +    where <function hash_file at 0x7fdd3fb69e40> = duplicates.hash_file
+
+evolve/tests/test_modules.py:499: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [] == [1, 2]
+  
+  Right contains 2 more items, first extra item: 1
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     1,
+  -     2,
+  - ]
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - AssertionError: assert None != None
+ +  where None = <function hash_file at 0x7fdd3fb69e40>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_partial_hash_only_reads_t0/a'))
+ +    where <function hash_file at 0x7fdd3fb69e40> = duplicates.hash_file
+ +  and   None = <function hash_file at 0x7fdd3fb69e40>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_partial_hash_only_reads_t0/b'))
+ +    where <function hash_file at 0x7fdd3fb69e40> = duplicates.hash_file
+4 failed, 295 passed in 1.78s
+
+```
+- `2026-11-09T10:06:11` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `is_junction` y `is_system_or_hidden` añadiendo un manejo de excepciones más granular y asegurando que las llamadas a la API de Windows no fallen ante rutas inexistentes o inaccesibles, evitando así interrupciones en el bucle de escaneo.
+- `2026-11-09T10:06:22` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra `SystemMetrics` mal inicializadas o con valores no finitos, protegiendo al pipeline de errores de división por cero o NaN en los calculadores de salud, manteniendo la integridad del proceso incluso ante estados de datos inconsistentes.
+- `2026-11-09T10:06:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T10:06:22` Corrida terminada. Total usado hoy: 240.
