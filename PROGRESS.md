@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 69
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 39 | 2 | 11 | 3 | 51 |
+| 2026-11-07 | 39 | 2 | 11 | 3 | 47 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 28 | 0 | 10 | 2 | 8 |
+| 2026-11-09 | 30 | 0 | 11 | 2 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **45**
 - manejo de errores y validación de entradas: **36**
-- seguridad defensiva: **34**
+- seguridad defensiva: **36**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
 - `healthscore.py`: **20**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
+- `safety.py`: **18**
 - `settings.py`: **17**
 - `diskreport.py`: **17**
-- `safety.py`: **17**
 - `scanner.py`: **17**
 - `duplicates.py`: **15**
 - `assistant.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T02:07:57` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` implementando una validación explícita para evitar que `_to_long_path` procese rutas UNC de manera incorrecta, añadiendo una restricción estricta en `ensure_safe_to_modify` que impide el procesamiento si la ruta está dentro de un "junction" (punto de reparseo) incluso antes de intentar resolver metadatos, mitigando riesgos de redirección inesperada.
+- `2026-11-09T02:06:48` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `_safe_unlink` y `purge_all` para garantizar que, ante fallos de E/S o condiciones imprevistas, no se deje un manifiesto desincronizado del estado real del sistema de archivos, aplicando una limpieza de caché después de operaciones críticas.
 - `2026-11-09T01:57:58` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una comprobación explícita mediante `is_protected_path` sobre el ejecutable del proceso antes de aplicar cualquier operación, asegurando que no se pueda manipular el *working set* de binarios ubicados en rutas del sistema, incluso si el usuario tiene privilegios.
 - `2026-11-09T01:56:18` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `SystemMetrics` evitando la manipulación directa de atributos mediante una validación estricta y delegando la protección de datos sensibles al método `safe_get` en el pipeline, asegurando que la lógica de cálculo sea robusta ante entradas malintencionadas.
 - `2026-11-09T01:47:08` **duplicates.py** (seguridad defensiva): Se mejoró la robustez del chequeo de seguridad en `_collect_candidates` integrando `is_safe_to_modify` antes de procesar cada entrada del sistema de archivos, asegurando que no se sigan rutas protegidas o inseguras durante el recorrido.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T01:25:52` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de seguridad atómicas previas a cada operación de E/S, asegurando que los archivos no sean enlaces simbólicos o puntos de reparse en el momento preciso de la ejecución, evitando así posibles escapes de la zona de cuarentena.
 - `2026-11-09T01:17:24` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de API nativa y casos límite de concurrencia en `_iter_process_memory` y `trim_working_set`, asegurando el cierre de recursos incluso si `GetModuleFileNameExW` falla o devuelve rutas vacías.
 - `2026-11-09T01:16:01` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores de entrada inesperados y estados inconsistentes dentro de `SystemMetrics` mediante la implementación de una validación explícita durante la asignación y un manejo defensivo de los límites de las métricas.
-- `2026-11-09T01:06:56` **diskreport.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `walk_files` y `_safe_stat` al añadir un manejo explícito de rutas con longitud excesiva y fallos durante la iteración del `scandir`, asegurando que el escaneo no se interrumpa ante entradas corruptas del sistema de archivos.
-- `2026-11-09T01:06:18` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante valores inesperados de entrada y problemas de permisos, asegurando que las funciones no fallen silenciosamente con estados inválidos mediante chequeos explícitos y manejo de excepciones más granular.

@@ -243,6 +243,8 @@ def _to_long_path(path_str: str) -> str:
         if path_str.startswith(LONG_PATH_PREFIX):
             return path_str
         if path_str.startswith("\\\\"):
+            # Evitar doble UNC prefix si ya existe, forzando UNC explícito
+            if path_str.startswith("\\\\?\\"): return path_str
             return "\\\\?\\UNC" + path_str[1:]
         try:
             abs_path = os.path.abspath(path_str)
@@ -819,7 +821,7 @@ def normalize(path: PathLike) -> Path:
     
     if os.name == 'nt' and _is_path_too_long(path_str):
         if not path_str.startswith(LONG_PATH_PREFIX):
-             raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG, SafetyValidationSTRUCTURE)
+             raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG, SafetyValidationCategory.STRUCTURE)
 
     if _is_path_empty_or_whitespace(path_str): raise UnsafePathError("Entrada de ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     if unicodedata.normalize('NFKC', path_str) != path_str:

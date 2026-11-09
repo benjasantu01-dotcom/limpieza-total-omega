@@ -900,6 +900,9 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             new_items = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
             _sync_directory(root_path)
+        
+        # Forzar recarga de caché tras purga masiva
+        if root_path in _MANIFEST_CACHE: del _MANIFEST_CACHE[root_path]
         return len(purgado_ids)
     except (OSError, PermissionError, UnsafePathError, RuntimeError): return 0
 
