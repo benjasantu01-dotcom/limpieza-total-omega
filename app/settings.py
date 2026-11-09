@@ -387,7 +387,6 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
 def _is_structure_valid(data: Any) -> bool:
     """Verifica la integridad del diccionario JSON deserializado frente a tipos esperados."""
     if not isinstance(data, dict) or not data or len(data) > 64: return False
-    # Valida existencia de claves desconocidas O(1) y tipo de valores definidos en DEFAULTS
     if not all(k in _VALID_ENUM_KEYS for k in data): return False
     for k, v in data.items():
         if not _is_valid_type(v, k): return False
@@ -414,19 +413,14 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
             with os.fdopen(fd, "r", encoding="utf-8") as f:
                 content = f.read(MAX_SETTINGS_SIZE + 1)
                 if not content or len(content) > MAX_SETTINGS_SIZE: return None
-                try:
-                    data = json.loads(content)
-                except json.JSONDecodeError:
-                    return None
+                data = json.loads(content)
                 
             if not isinstance(data, dict) or not _is_structure_valid(data): return None
             return data, st_post
-        except (OSError, ValueError, TypeError):
-            os.close(fd)
+        except (OSError, ValueError, TypeError, json.JSONDecodeError):
             return None
-        except Exception:
-            os.close(fd)
-            return None
+        finally:
+            if 'fd' in locals(): os.close(fd)
     except (OSError, IOError, PermissionError, TypeError): 
         return None
 

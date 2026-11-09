@@ -267,7 +267,7 @@ class Scanner:
             if not os.access(path_str, os.R_OK): return False
             self.safe_cache.add(path_str)
             return True
-        except (OSError, AttributeError):
+        except (OSError, AttributeError, PermissionError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:

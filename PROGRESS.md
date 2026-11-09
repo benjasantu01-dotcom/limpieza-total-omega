@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 89 | 8 | 32 | 10 | 121 |
-| 2026-11-09 | 99 | 6 | 38 | 9 | 92 |
+| 2026-11-08 | 89 | 8 | 32 | 10 | 117 |
+| 2026-11-09 | 102 | 6 | 39 | 9 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **44**
 - rendimiento: **29**
 - seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
+- `safety.py`: **20**
 - `memory.py`: **19**
-- `safety.py`: **19**
 - `healthscore.py`: **18**
+- `settings.py`: **18**
 - `quarantine.py`: **17**
-- `settings.py`: **17**
-- `scanner.py`: **16**
+- `scanner.py`: **17**
 - `duplicates.py`: **16**
 - `assistant.py`: **14**
 - `branding.py`: **14**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T10:27:14` **settings.py** (robustez ante casos límite): Mejoré `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo un manejo de excepciones más granular y verificaciones de integridad ante condiciones de carrera y fallos de E/S en disco, asegurando que la configuración nunca quede en estado corrupto durante lecturas o escrituras simultáneas.
+- `2026-11-09T10:26:58` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `_is_safe_entry` y `process_entry` al manejar explícitamente errores de acceso (`OSError`, `PermissionError`) durante la inspección de metadatos y atributos de archivos, evitando que el escaneo se detenga o ignore entradas potencialmente críticas por fallos transitorios en el sistema de archivos.
+- `2026-11-09T10:26:31` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `SafetyGuard.is_locked` y las validaciones de acceso al incluir un manejo explícito de `FileNotFoundError` durante las operaciones de lectura de metadatos, evitando que la app aborte cuando un archivo desaparece justo antes de ser validado.
 - `2026-11-09T10:18:49` **quarantine.py** (robustez ante casos límite): Se implementa una validación adicional en `quarantine_file` para evitar colisiones de rutas mediante la verificación de la existencia del archivo de destino usando `exists()` y `samefile()`, mejorando la robustez ante condiciones de carrera entre la generación del nombre y la escritura física.
 - `2026-11-09T10:17:47` **memory.py** (robustez ante casos límite): Mejora la robustez en la resolución de rutas de procesos mediante la implementación de un buffer de tamaño dinámico para `GetModuleFileNameExW`, evitando el truncamiento silencioso de rutas largas y posibles errores de parsing que ocurren cuando los ejecutables tienen caminos profundos.
 - `2026-11-09T10:06:22` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra `SystemMetrics` mal inicializadas o con valores no finitos, protegiendo al pipeline de errores de división por cero o NaN en los calculadores de salud, manteniendo la integridad del proceso incluso ante estados de datos inconsistentes.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T09:36:37` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la pre-compilación de `JUNK_EXTENSIONS` en un conjunto de búsqueda directa y el uso de un cache de set `visited` que evita redundancias al evaluar rutas resueltas canónicamente, reduciendo llamadas innecesarias al sistema de archivos.
 - `2026-11-09T09:36:22` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` reemplazando la creación dinámica de buffers y la resolución redundante de nombres mediante técnicas de pre-alocación y acceso directo por índice, reduciendo la presión sobre el recolector de basura y el tiempo de CPU en ciclos de escaneo.
 - `2026-11-09T09:34:41` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` convirtiendo `PIPELINE_DEFINITIONS` a un objeto indexado y cacheando los resultados del pipeline mediante una clave calculada basada en los valores de las métricas, evitando así el re-cálculo de scores y reglas idénticas en ejecuciones rápidas del bucle principal.
-- `2026-11-09T09:25:57` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `path.exists()` dentro del bucle de recorrido, aprovechando la información ya validada por `entry.stat()` y moviendo las verificaciones de seguridad a un orden de costo ascendente.
-- `2026-11-09T09:24:37` **branding.py** (rendimiento): Se optimizó `_hex_to_rgb` y `_rgb_to_hex` reemplazando el acceso a listas y cálculos redundantes por operaciones bitwise directas y pre-cálculos, mejorando la eficiencia en las llamadas frecuentes de renderizado de gradientes.
-- `2026-11-09T09:14:46` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y persistencia (`_read_and_parse_json`, `_coerce_and_verify` y `_SettingsManager`), mejorando la claridad sobre el manejo de estados atómicos y la seguridad ante errores de entrada.

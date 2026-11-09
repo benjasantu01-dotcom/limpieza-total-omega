@@ -68,7 +68,10 @@ class SafetyGuard:
     def is_locked(self) -> bool:
         """Determina si el SO mantiene un bloqueo sobre la ruta (exclusivo o sistema)."""
         if not self.is_nt: return False
-        return _is_file_busy(self.path_str) or _is_file_in_use_by_system(self.path_str)
+        try:
+            return _is_file_busy(self.path_str) or _is_file_in_use_by_system(self.path_str)
+        except (OSError, FileNotFoundError):
+            return True
 
     def get_descriptor(self) -> SecurityDescriptor:
         """Crea una instantánea inmutable de las propiedades de seguridad de la ruta."""
@@ -730,7 +733,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                         raise UnsafePathError(f"Estructura no válida o corrupta: {path.name}", SafetyValidationErrorCode.INVALID_PATH_TYPE, SafetyValidationCategory.STRUCTURE)
             
             return st
-        except (PermissionError, OSError) as e:
+        except (PermissionError, OSError, FileNotFoundError) as e:
             err_code = getattr(e, 'winerror', None)
             if isinstance(e, OSError) and (e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or err_code == ERROR_SHARING_VIOLATION):
                 if attempt < max_retries - 1:
