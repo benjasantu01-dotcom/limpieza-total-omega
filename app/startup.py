@@ -404,15 +404,21 @@ def _is_valid_registry_path(path_str: str) -> bool:
         if not clean_path or "\0" in clean_path or ("\\" not in clean_path and "/" not in clean_path):
             return False
         
+        # Bloquear explícitamente rutas UNC (red) por seguridad
+        if clean_path.startswith(r"\\"):
+            return False
+
         target: Path = Path(clean_path)
-        if target.is_symlink(): return False
+        if target.is_symlink() or is_protected_path(target):
+            return False
         
-        if is_protected_path(target): return False
-        
+        # Validar ruta resuelta contra zonas protegidas
         target_res: Path = target.resolve(strict=False)
-        if not target_res or is_protected_path(target_res) or target_res.is_symlink(): return False
+        if not target_res or is_protected_path(target_res) or target_res.is_symlink():
+            return False
         
-        if any(c in str(target) for c in SUSPICIOUS_CHARS): return False
+        if any(c in str(target) for c in SUSPICIOUS_CHARS):
+            return False
         
         return True
     except (OSError, ValueError, RuntimeError, TypeError, AttributeError):
@@ -421,12 +427,19 @@ def _is_valid_registry_path(path_str: str) -> bool:
 
 def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     """Filtra entradas del registro, descartando duplicados y rutas peligrosas."""
-    if not isinstance(name, str) or not isinstance(command, str): return False
-    if len(command) > MAX_PATH_LEN or any(ord(c) < 32 for c in command) or "\0" in command: return False
+    if not isinstance(name, str) or not isinstance(command, str): 
+        return False
+    if len(command) > MAX_PATH_LEN or any(ord(c) < 32 for c in command) or "\0" in command: 
+        return False
         
     clean_name, clean_cmd = name.strip(), command.strip()
-    if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen: return False
+    if not clean_name or not clean_cmd or clean_cmd in seen: 
+        return False
     
+    # Pre-filtro básico contra inyección y validación rigurosa de ruta
+    if clean_cmd.startswith(r"\\") or any(c in clean_cmd for c in SUSPICIOUS_CHARS):
+        return False
+        
     return _is_valid_registry_path(clean_cmd)
 
 

@@ -1458,3 +1458,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-09T10:57:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-09T10:57:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T10:57:38` Corrida terminada. Total usado hoy: 260.
+- `2026-11-09T11:06:04` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-09T11:07:03` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-11-09T11:07:30` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha reforzado la seguridad defensiva en `_is_safe_entry` al agregar una verificación explícita mediante `is_protected_path` sobre la ruta real normalizada antes de cualquier procesamiento, garantizando que el escáner sea incapaz de seguir enlaces simbólicos o acceder a rutas prohibidas incluso si el sistema operativo los presenta como directorios navegables.
+- `2026-11-09T11:07:59` ➖ Sin cambios en settings.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad de `settings.py` limitando el alcance de `is_safe_to_modify` para que actúe solo como filtro booleano (evitando condiciones de error bloqueantes) y asegurando que `perform_atomic_write` valide la jerarquía de directorios sin riesgo de excepciones no controladas.
+- `2026-11-09T11:08:15` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_valid_registry_path` y `_is_registry_entry_safe` reforzando la validación contra ataques de inyección y rutas ambiguas (UNC), asegurando que cualquier entrada del registro sea explícitamente validada mediante `is_protected_path` antes de ser procesada.
+- `2026-11-09T11:08:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T11:08:15` Corrida terminada. Total usado hoy: 264.

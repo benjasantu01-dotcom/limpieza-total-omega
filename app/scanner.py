@@ -262,7 +262,11 @@ class Scanner:
             if path_str in self.safe_cache: return True
             if self._has_invalid_name(entry.name): return False
             if self._is_reparse_point(entry): return False
-            if _cached_is_protected(path_str): return False
+            
+            # Verificación de seguridad defensiva crítica
+            norm_path = _get_canonical_path(path_str)
+            if not norm_path or _cached_is_protected(norm_path): return False
+            
             if not self._is_inside_base_root(path_str): return False
             if not os.access(path_str, os.R_OK): return False
             self.safe_cache.add(path_str)
