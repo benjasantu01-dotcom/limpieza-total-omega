@@ -240,7 +240,8 @@ class SystemMetrics:
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name in _ALL_METRICS:
-            clean_val = _validate_numeric(value, 0.0, *_METRIC_LIMITS.get(name, (0.0, 1e9)))
+            limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
+            clean_val = _validate_numeric(value, 0.0, *limits)
             object.__setattr__(self, name, clean_val)
         else:
             raise AttributeError(f"Campo no permitido: {name}")

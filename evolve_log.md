@@ -911,3 +911,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-09T06:12:40` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-11-09T06:12:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T06:12:40` Corrida terminada. Total usado hoy: 148.
+- `2026-11-09T06:20:35` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-09T06:21:01` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` agregando una validación explícita mediante `is_safe_to_modify` antes de intentar acceder a los metadatos de los archivos, evitando así posibles errores o accesos no deseados en rutas restringidas.
+- `2026-11-09T06:21:31` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva del módulo encapsulando la mutación de atributos en `SystemMetrics` mediante la implementación de `__setattr__` bloqueado para tipos no permitidos, evitando la inyección de datos arbitrarios fuera de los límites definidos y asegurando que `_METRIC_LIMITS` siempre se consulte de manera segura.
+- `2026-11-09T06:22:42` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._validate_environment, wrapper
+- `2026-11-09T06:22:54` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-09T06:22:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T06:22:54` Corrida terminada. Total usado hoy: 152.

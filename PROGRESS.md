@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 0 | 0 | 0 | 0 | 6 |
+| 2026-11-07 | 0 | 0 | 0 | 0 | 2 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 63 | 3 | 26 | 7 | 49 |
+| 2026-11-09 | 65 | 3 | 27 | 7 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **30**
+- seguridad defensiva: **32**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **20**
 - `memory.py`: **20**
-- `healthscore.py`: **19**
 - `quarantine.py`: **19**
 - `safety.py`: **18**
+- `duplicates.py`: **17**
 - `settings.py`: **17**
-- `duplicates.py`: **16**
 - `scanner.py`: **16**
 - `diskreport.py`: **14**
 - `assistant.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T06:21:31` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo encapsulando la mutación de atributos en `SystemMetrics` mediante la implementación de `__setattr__` bloqueado para tipos no permitidos, evitando la inyección de datos arbitrarios fuera de los límites definidos y asegurando que `_METRIC_LIMITS` siempre se consulte de manera segura.
+- `2026-11-09T06:21:01` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` agregando una validación explícita mediante `is_safe_to_modify` antes de intentar acceder a los metadatos de los archivos, evitando así posibles errores o accesos no deseados en rutas restringidas.
 - `2026-11-09T06:11:50` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` reemplazando la validación manual por `ensure_safe_to_modify` (que lanza excepciones ante rutas inseguras) y envolviendo la operación en un bloque `try-except` robusto, eliminando el riesgo de silenciamiento de errores y asegurando que solo se escriba en ubicaciones autorizadas.
 - `2026-11-09T06:02:26` **settings.py** (robustez ante casos límite): Mejora la resiliencia ante errores de entrada durante la lectura y el parseo del archivo JSON, previniendo posibles estados inconsistentes si el archivo está vacío o contiene datos malformados pero técnicamente "legibles" por `json.loads`.
 - `2026-11-09T06:01:47` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `_get_canonical_path` y `_is_valid_path_structure` para manejar casos límite como rutas extremadamente largas (evitando `Path` excepciones al intentar instanciar objetos inválidos) y errores de acceso en sistemas de archivos con bloqueos, garantizando que el escáner no aborte ante rutas con caracteres inválidos o permisos denegados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T05:20:38` **safety.py** (rendimiento): Implementé un sistema de "Short-Circuiting" para `is_safe_to_modify` utilizando `_NEGATIVE_SECURITY_CACHE` y `_SECURITY_CACHE` compartidos globalmente, reduciendo drásticamente las llamadas a APIs de Windows en bucles de escaneo repetitivos.
 - `2026-11-09T05:12:15` **quarantine.py** (rendimiento): Optimicé el cálculo del peso total en `total_quarantined_bytes` evitando la deserialización completa de objetos `QuarantineItem` y cargando únicamente los bytes necesarios del JSON, reduciendo el consumo de memoria y CPU.
 - `2026-11-09T05:01:22` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos en `_collect_candidates` para evitar realizar llamadas redundantes a `stat()` y `exists()` al consolidar las comprobaciones de seguridad e integridad dentro de una única llamada a `_is_valid_candidate` tras el `os.scandir`, reduciendo significativamente las operaciones de I/O sobre el sistema de archivos durante el escaneo.
-- `2026-11-09T04:50:42` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` reemplazando la construcción de listas y conversiones repetidas a `tuple` dentro del loop por una generación directa de una tupla de floats, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia en llamadas repetidas desde el bucle de renderizado.
-- `2026-11-09T04:49:54` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adición de docstrings técnicos precisos que explican el "porqué" de las validaciones de seguridad y el uso de anotaciones para clarificar las intenciones en las funciones de resolución de rutas.

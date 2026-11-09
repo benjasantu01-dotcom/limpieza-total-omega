@@ -163,7 +163,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if p is None: continue
         item = Path(p)
         try:
-            if item.exists():
+            if item.exists() and is_safe_to_modify(item):
                 st = item.stat()
                 if _is_valid_candidate(item, st.st_size):
                     groups_by_size[st.st_size].append(item)
@@ -204,6 +204,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         elif entry.is_file(follow_symlinks=False):
                             p = Path(entry.path)
                             if skip_protected and is_protected_path(p): continue
+                            if not is_safe_to_modify(p): continue
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size >= min_size:
                                 inode_id: Tuple[int, int] = (stat.st_dev, stat.st_ino)
