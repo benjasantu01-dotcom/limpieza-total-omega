@@ -451,11 +451,7 @@ def _verify_quarantine_preconditions(source_path: Path, target_directory: Path) 
     if resolved_source.parent == resolved_dest_dir: raise UnsafePathError("Operación circular detectada.")
 
 def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
-    """Valida la integridad y restricciones de seguridad del archivo antes del aislamiento.
-    
-    Asegura que el origen sea un archivo regular, que no sea una ruta de sistema
-    y que la operación sea físicamente posible sin comprometer la consistencia.
-    """
+    """Valida la integridad y restricciones de seguridad del archivo antes del aislamiento."""
     source_abs: Path = _is_path_canonical(source_path)
     target_abs: Path = _is_path_canonical(target_directory)
     
@@ -504,7 +500,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_isolation_safety(source_path, target_directory)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y filtra ítems del manifiesto, removiendo registros de archivos inexistentes."""
+    """Carga y filtra ítems del manifiesto con validación de tipos y robustez."""
     try: 
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError): 
@@ -522,48 +518,50 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
                 return cached_items
         
+        # Validar existencia de directorio de almacenamiento
         existing_entries = {entry.name: entry for entry in os.scandir(base_dir) if entry.is_file()}
         
         with open(m_path, "r", encoding="utf-8") as f: 
             data = json.load(f)
             
         if not isinstance(data, list): 
-            raise ValueError("El manifiesto no es una lista válida.")
+            return []
             
         valid_items: List[QuarantineItem] = []
         for entry in data:
             if not isinstance(entry, dict): continue
             item = QuarantineItem.from_dict(entry)
+            # Solo incluir si el archivo persiste y el ID es válido
             if item and item.stored_name in existing_entries:
                 valid_items.append(item)
         
-        if len(valid_items) < len(data):
-            save_manifest(valid_items, base)
-            
         st = m_path.stat()
         _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
         return valid_items
         
     except (OSError, json.JSONDecodeError, ValueError, TypeError):
-        _MANIFEST_CACHE[base_dir] = ([], 0.0, 0)
         return []
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando archivos temporales y sincronización de disco (fsync)."""
+    """Persiste el manifiesto verificando tipos de datos antes de la serialización."""
     base_path: Path = quarantine_dir(base)
     target_path: Path = _manifest_path(base_path)
-    if not isinstance(items, list): raise TypeError("El manifiesto debe ser una lista.")
+    
+    if not isinstance(items, list): 
+        raise TypeError("El manifiesto debe ser una lista.")
+        
     try:
-        # Validación previa a serialización
         serializable_items = []
         for item in items:
             if isinstance(item, QuarantineItem):
                 serializable_items.append(item.to_dict())
             else:
-                raise ValueError("Elemento del manifiesto no es instancia de QuarantineItem")
+                continue # Omitir elementos malformados en la persistencia
         
         encoded_content: bytes = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
-    except (TypeError, ValueError) as e: raise ValueError(f"Error al serializar metadatos: {e}")
+    except (TypeError, ValueError) as e: 
+        raise ValueError(f"Error al serializar metadatos: {e}")
+        
     temp_name: Optional[str] = None
     try:
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:

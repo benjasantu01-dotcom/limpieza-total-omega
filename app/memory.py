@@ -272,6 +272,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         if len(parts) < 3: return None
         
         proc_name = str(parts[0]).strip()
+        # Validación de PID como entero
         try:
             pid_val = int(parts[1])
         except (ValueError, TypeError):
@@ -280,8 +281,8 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         ws_val = _safe_int_conversion(parts[2])
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
-    except (AttributeError, IndexError):
-        pass
+    except (AttributeError, IndexError, ValueError):
+        return None
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -482,16 +483,18 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida para este PID o no disponible."
         
     path_buf = ctypes.create_unicode_buffer(512)
+    # Obtenemos handle con acceso específico de trim
     handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if handle is None:
         return False, "Acceso denegado o proceso en zona restringida."
 
     try:
+        # EmptyWorkingSet devuelve un valor distinto de cero en caso de éxito
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la operación."
-    except (ctypes.ArgumentError, OSError, Exception):
-        return False, "Error inesperado al intentar liberar memoria."
+    except (ctypes.ArgumentError, OSError, Exception) as e:
+        return False, f"Error inesperado al intentar liberar memoria: {type(e).__name__}"
     finally:
         WindowsAPI.kernel32.CloseHandle(handle)

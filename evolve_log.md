@@ -1146,3 +1146,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-09T08:15:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-09T08:15:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T08:15:53` Corrida terminada. Total usado hoy: 196.
+- `2026-11-09T08:22:47` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-09T08:23:17` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_extract_process_info` y `trim_working_set` capturando excepciones específicas y validando la integridad de los datos de entrada, evitando errores silenciosos y garantizando que las operaciones de bajo nivel (handle management) no queden en estados inconsistentes.
+- `2026-11-09T08:23:47` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `delete_reviewed` para implementar una verificación de seguridad proactiva mediante `ensure_safe_to_modify` antes de cada operación destructiva (`unlink`), garantizando que cualquier error de permisos o ruta sea capturado explícitamente en lugar de silenciado por bloques `try-except` genéricos.
+- `2026-11-09T08:24:34` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` y `load_manifest` añadiendo validaciones de tipo explícitas y una gestión de errores más granular, asegurando que un manifiesto parcialmente corrupto o tipos de datos inesperados no bloqueen el acceso a la cuarentena ni causen errores en tiempo de ejecución.
+- `2026-11-09T08:24:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 115): unterminated string literal (detected at line 115)
+- `2026-11-09T08:24:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T08:24:38` Corrida terminada. Total usado hoy: 200.

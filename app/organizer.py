@@ -439,7 +439,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 # Validaciones estrictas antes de unlink()
                 if item.is_file() and not item.is_symlink() and not _is_junction(item):
-                    if is_valid_junk_extension(item.name) and is_safe_to_modify(item) and not _is_file_locked(item):
+                    if is_valid_junk_extension(item.name) and not _is_file_locked(item):
+                        ensure_safe_to_modify(item)
                         item.unlink()
                         count += 1
             except (OSError, PermissionError):
