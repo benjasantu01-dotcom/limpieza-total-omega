@@ -35,6 +35,11 @@ FILE_ID_INFO_LEVEL: Final[int] = 18
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
+class PathValidationResult(NamedTuple):
+    """Resultado estructurado de una validación de ruta."""
+    is_valid: bool
+    error: Optional[UnsafePathError] = None
+
 # Cachés para optimización de rendimiento en operaciones de disco frecuentes
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], bool]] = {}
 _NEGATIVE_SECURITY_CACHE: Final[set[tuple[int, int, int, int]]] = set()
@@ -1199,55 +1204,59 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     Valida que una ruta pueda ser modificada de forma segura.
     Lanza UnsafePathError en caso de riesgo de seguridad detectado.
     """
-    if path is None:
-        raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
+    result = _execute_safety_pipeline(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
+    if not result.is_valid:
+        raise result.error
+    return Path(path)
+
+def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:
+    """Ejecuta la lógica de validación interna devolviendo un resultado de estado."""
+    try:
+        if path is None:
+            return PathValidationResult(False, UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE))
         
-    p = normalize(str(path).strip())
-    guard = SafetyGuard(p)
-    
-    if _is_kernel_managed(guard.path_str):
-        raise UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationErrorCode.PERMISSION)
+        p = normalize(str(path).strip())
+        guard = SafetyGuard(p)
+        
+        if _is_kernel_managed(guard.path_str):
+            return PathValidationResult(False, UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
 
-    if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
-        raise UnsafePathError(f"Modificación denegada sobre punto de reparse: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+        if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
+            return PathValidationResult(False, UnsafePathError(f"Modificación denegada sobre punto de reparse: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
 
-    if p.exists() and not (p.is_file() or p.is_dir()):
-        raise UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE, SafetyValidationCategory.STRUCTURE)
-    
-    base = None
-    if base_dir:
-        try: base = _normalize_resolved(str(base_dir))
-        except (TypeError, ValueError, OSError) as e:
-            raise UnsafePathError(f"Directorio base inválido: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE)
-    
-    if os.name == 'nt': _validate_ntfs_reparse_redirection(p, base)
-    _validate_path_components(p)
-    _validate_structural_safety(p, guard.path_str)
-    
-    _validate_boundary_conditions(p, base_dir)
-    _validate_preconditions(p, base_dir)
-    
-    if not allow_sensitive and is_sensitive_file(p):
-        raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.STRUCTURE)
-            
-    if p.exists():
-        _validate_file_operations_security(p, allow_sensitive, base)
-    else:
-        try:
+        if p.exists() and not (p.is_file() or p.is_dir()):
+            return PathValidationResult(False, UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE, SafetyValidationCategory.STRUCTURE))
+        
+        base = None
+        if base_dir:
+            try: base = _normalize_resolved(str(base_dir))
+            except (TypeError, ValueError, OSError) as e:
+                return PathValidationResult(False, UnsafePathError(f"Directorio base inválido: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE))
+        
+        if os.name == 'nt': _validate_ntfs_reparse_redirection(p, base)
+        _validate_path_components(p)
+        _validate_structural_safety(p, guard.path_str)
+        _validate_boundary_conditions(p, base_dir)
+        _validate_preconditions(p, base_dir)
+        
+        if not allow_sensitive and is_sensitive_file(p):
+            return PathValidationResult(False, UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.STRUCTURE))
+                
+        if p.exists():
+            _validate_file_operations_security(p, allow_sensitive, base)
+        else:
             if p.parent.exists() and not os.access(p.parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
-        except (OSError, PermissionError):
-            pass
-    
-    return p
+                return PathValidationResult(False, UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION))
+        
+        return PathValidationResult(True)
+    except UnsafePathError as e:
+        return PathValidationResult(False, e)
+    except Exception as e:
+        return PathValidationResult(False, UnsafePathError(f"Falla inesperada: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY))
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
     """Booleano de conveniencia para validar seguridad sin lanzar excepciones."""
-    try:
-        ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
-        return True
-    except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, AttributeError):
-        return False
+    return _execute_safety_pipeline(path, allow_sensitive=allow_sensitive, base_dir=base_dir).is_valid
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
     """Filtra una lista de rutas, preservando solo las consideradas seguras."""

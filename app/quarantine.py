@@ -451,21 +451,30 @@ def _verify_quarantine_preconditions(source_path: Path, target_directory: Path) 
     if resolved_source.parent == resolved_dest_dir: raise UnsafePathError("Operación circular detectada.")
 
 def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
-    """Valida estado físico del archivo previo a iniciar el aislamiento."""
+    """Valida la integridad y restricciones de seguridad del archivo antes del aislamiento.
+    
+    Asegura que el origen sea un archivo regular, que no sea una ruta de sistema
+    y que la operación sea físicamente posible sin comprometer la consistencia.
+    """
     source_abs: Path = _is_path_canonical(source_path)
     target_abs: Path = _is_path_canonical(target_directory)
     
+    # 1. Validaciones físicas de seguridad
     _check_for_reparse_points(source_abs)
     if not source_abs.is_file(): raise UnsafePathError("Solo se permiten archivos regulares.")
     if source_abs.stat().st_size == 0: raise UnsafePathError("Archivos vacíos prohibidos.")
     if _is_filesystem_read_only(target_abs): raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
     
+    # 2. Validación de propiedad
     if hasattr(os, 'getuid'):
         if source_abs.stat().st_uid != os.getuid(): raise UnsafePathError("Aislamiento denegado: propiedad incorrecta.")
         
+    # 3. Consistencia y confinamiento
     _check_device_consistency(source_abs, target_abs)
     _verify_quarantine_preconditions(source_abs, target_abs)
     ensure_safe_to_modify(source_abs, allow_sensitive=True)
+    
+    # 4. Exclusividad para prevenir acceso concurrente durante la copia
     if not _is_file_exclusive(source_abs): raise IOError("Archivo origen bloqueado por otro proceso.")
 
 def _validate_isolation_request(source_path: Path, target_directory: Path) -> None:
