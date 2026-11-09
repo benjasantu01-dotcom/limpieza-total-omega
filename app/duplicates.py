@@ -175,12 +175,6 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido BFS para recolectar candidatos a duplicados.
-    
-    El proceso es seguro ya que:
-    1. Utiliza `is_safe_to_modify` antes de entrar a cada directorio.
-    2. Valida la integridad del archivo mediante `_is_valid_candidate` (incluye protección).
-    3. Usa un set `visited` de tuplas (dev, ino) para evitar ciclos y procesar hardlinks.
-    4. Implementa `MAX_RECURSION_DEPTH` para prevenir desbordamiento de pila.
     """
     if directories is None or min_size < 0: return {}
     size_map: Dict[int, List[Path]] = defaultdict(list)
@@ -188,36 +182,29 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
-        if d: 
-            try:
-                p = Path(d)
-                if p.exists() and is_safe_to_modify(p): queue.append((p, 0))
-            except (OSError, TypeError): continue
+        if d and is_safe_to_modify(Path(d)): queue.append((Path(d), 0))
     
     while queue:
         current_dir, depth = queue.popleft()
-        if depth > MAX_RECURSION_DEPTH or not is_safe_to_modify(current_dir) or is_junction(current_dir): 
-            continue
             
         with suppress(OSError, PermissionError):
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        if entry is None: continue
-                        entry_path = Path(entry.path)
-                        if not is_safe_to_modify(entry_path): continue
-                        
                         if entry.is_dir(follow_symlinks=False):
-                            if depth + 1 <= MAX_RECURSION_DEPTH and not is_junction(entry_path):
-                                queue.append((entry_path, depth + 1))
+                            if depth < MAX_RECURSION_DEPTH:
+                                p = Path(entry.path)
+                                if is_safe_to_modify(p) and not is_junction(p):
+                                    queue.append((p, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            if skip_protected and is_protected_path(entry_path): continue
+                            p = Path(entry.path)
+                            if skip_protected and is_protected_path(p): continue
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size >= min_size:
                                 inode_id: Tuple[int, int] = (stat.st_dev, stat.st_ino)
-                                if inode_id not in visited and _is_valid_candidate(entry_path, stat.st_size):
+                                if inode_id not in visited and _is_valid_candidate(p, stat.st_size):
                                     visited.add(inode_id)
-                                    size_map[stat.st_size].append(entry_path)
+                                    size_map[stat.st_size].append(p)
                     except (OSError, PermissionError):
                         continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}

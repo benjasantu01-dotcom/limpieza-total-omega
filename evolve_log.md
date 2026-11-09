@@ -779,3 +779,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T04:50:42` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `_get_scaled_poly` reemplazando la construcción de listas y conversiones repetidas a `tuple` dentro del loop por una generación directa de una tupla de floats, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia en llamadas repetidas desde el bucle de renderizado.
 - `2026-11-09T04:50:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T04:50:42` Corrida terminada. Total usado hoy: 116.
+- `2026-11-09T04:59:07` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-09T04:59:31` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-09T04:59:55` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-09T05:00:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-09T05:01:22` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de candidatos en `_collect_candidates` para evitar realizar llamadas redundantes a `stat()` y `exists()` al consolidar las comprobaciones de seguridad e integridad dentro de una única llamada a `_is_valid_candidate` tras el `os.scandir`, reduciendo significativamente las operaciones de I/O sobre el sistema de archivos durante el escaneo.
+- `2026-11-09T05:01:30` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, grade_for_score
+- `2026-11-09T05:01:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T05:01:30` Corrida terminada. Total usado hoy: 120.
