@@ -5,25 +5,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **190** (37.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 48 | 8 | 18 | 7 | 75 |
-| 2026-11-09 | 141 | 9 | 52 | 11 | 135 |
+| 2026-11-08 | 48 | 8 | 18 | 7 | 71 |
+| 2026-11-09 | 142 | 9 | 53 | 11 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **41**
 - rendimiento: **30**
 - seguridad defensiva: **28**
 
@@ -35,7 +35,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `safety.py`: **17**
 - `scanner.py`: **16**
-- `quarantine.py`: **15**
+- `quarantine.py`: **16**
 - `assistant.py`: **14**
 - `branding.py`: **14**
 - `diskreport.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T14:51:22` **quarantine.py** (robustez ante casos límite): Mejora la robustez de `quarantine.py` ante errores de E/S y corrupción de archivos al añadir una validación de existencia antes de intentar operaciones de lectura en `load_manifest`, evitando que un acceso denegado puntual durante el listado del directorio invalide todo el manifiesto.
 - `2026-11-09T14:43:29` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al implementar una validación de `ensure_safe_to_modify` antes de cualquier operación de disco (usando `is_safe_to_modify` para el filtrado previo y `ensure_safe_to_modify` para la validación crítica previa al `unlink`), protegiendo al sistema contra posibles inyecciones de rutas o manipulación de la estructura de archivos en tiempo de ejecución.
 - `2026-11-09T14:43:05` **memory.py** (robustez ante casos límite): Se añade una validación de longitud máxima al buffer de rutas en `_iter_process_memory` y se robustece la recuperación de nombres de proceso para evitar errores de acceso a memoria o cadenas mal formadas al tratar con procesos de sistema o nombres de ruta excesivamente largos.
 - `2026-11-09T14:41:28` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud integrando validaciones de punto flotante adicionales y protección contra estados inconsistentes en la inicialización del objeto `SystemMetrics` ante valores inesperados.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T13:41:38` **startup.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante tipos y docstrings las responsabilidades de cada método, además de extraer lógica de validación repetida en la clase `StartupEntry` hacia métodos privados mejor nombrados para clarificar el flujo de seguridad.
 - `2026-11-09T13:41:17` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos privados de `_SettingsManager` y se reemplazó una lógica de `if` redundante por una estructura `dict.get` más idiomática y clara, facilitando la legibilidad del flujo de validación.
 - `2026-11-09T13:40:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la adición de docstrings detallados en las funciones de heurística y métodos internos, especificando el propósito de cada chequeo, las restricciones de las constantes y clarificando el flujo de seguridad en la navegación del sistema.
-- `2026-11-09T13:40:15` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la lógica de validación de seguridad mediante la centralización de los `SafetyValidationErrorCode` dentro de `SecurityDescriptor` y la limpieza de los docstrings en las funciones críticas para aclarar su propósito y el "por qué" de las restricciones.

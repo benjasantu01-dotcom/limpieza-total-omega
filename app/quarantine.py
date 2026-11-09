@@ -531,8 +531,11 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
                 return cached_items
         
         # Validar existencia de directorio de almacenamiento
-        existing_entries = {entry.name: entry for entry in os.scandir(base_dir) if entry.is_file()}
-        
+        try:
+            existing_entries = {entry.name: entry for entry in os.scandir(base_dir) if entry.is_file()}
+        except OSError:
+            return []
+            
         with open(m_path, "r", encoding="utf-8") as f: 
             data = json.load(f)
             

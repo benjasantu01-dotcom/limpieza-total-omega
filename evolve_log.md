@@ -584,3 +584,9 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-11-09T14:43:29` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` y `delete_reviewed` al implementar una validación de `ensure_safe_to_modify` antes de cualquier operación de disco (usando `is_safe_to_modify` para el filtrado previo y `ensure_safe_to_modify` para la validación crítica previa al `unlink`), protegiendo al sistema contra posibles inyecciones de rutas o manipulación de la estructura de archivos en tiempo de ejecución.
 - `2026-11-09T14:43:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T14:43:29` Corrida terminada. Total usado hoy: 348.
+- `2026-11-09T14:50:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-09T14:51:22` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejora la robustez de `quarantine.py` ante errores de E/S y corrupción de archivos al añadir una validación de existencia antes de intentar operaciones de lectura en `load_manifest`, evitando que un acceso denegado puntual durante el listado del directorio invalide todo el manifiesto.
+- `2026-11-09T14:51:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-09T14:51:41` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-11-09T14:51:41` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T14:51:41` Corrida terminada. Total usado hoy: 350.
