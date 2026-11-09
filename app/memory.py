@@ -18,7 +18,7 @@ Así que este módulo hace lo que sí sirve:
     cuándo tiene sentido (casi nunca) y qué costo tiene.
 
 Diseño para que se pueda testear: las funciones que interpretan datos
-reciben el texto crudo por parámetro (`parse_*`, `_read_meminfo_text`), así
+reciben el texto crudo por parámetro (`parse_*`, `_read_meminfo_text`), así 
  la lógica se prueba en CI sobre Linux sin depender de Windows.
 """
 
@@ -100,29 +100,29 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """Estructura Win32 GlobalMemoryStatusEx para obtener estado global de RAM."""
     _fields_: List[Tuple[str, Any]] = [
-        ("dwLength", wintypes.DWORD),
-        ("dwMemoryLoad", wintypes.DWORD),
-        ("ullTotalPhys", ctypes.c_ulonglong),
-        ("ullAvailPhys", ctypes.c_ulonglong),
-        ("ullTotalPageFile", ctypes.c_ulonglong),
-        ("ullAvailPageFile", ctypes.c_ulonglong),
-        ("ullTotalVirtual", ctypes.c_ulonglong),
-        ("ullAvailVirtual", ctypes.c_ulonglong),
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ("dwLength", wintypes.DWORD),               # Tamaño de esta estructura
+        ("dwMemoryLoad", wintypes.DWORD),           # % de RAM en uso
+        ("ullTotalPhys", ctypes.c_ulonglong),       # RAM física total en bytes
+        ("ullAvailPhys", ctypes.c_ulonglong),       # RAM física libre
+        ("ullTotalPageFile", ctypes.c_ulonglong),   # Tamaño del archivo de paginación
+        ("ullAvailPageFile", ctypes.c_ulonglong),   # Espacio libre en archivo de paginación
+        ("ullTotalVirtual", ctypes.c_ulonglong),    # Espacio virtual total
+        ("ullAvailVirtual", ctypes.c_ulonglong),    # Espacio virtual libre
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Reservado
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
     """Contadores detallados de memoria de proceso usados por GetProcessMemoryInfo."""
     _fields_: List[Tuple[str, Any]] = [
-        ("cb", wintypes.DWORD),               # Tamaño de la estructura
-        ("PageFaultCount", wintypes.DWORD),   # Total de fallos de página
-        ("PeakWorkingSetSize", ctypes.c_size_t), # Tamaño máximo del set de trabajo
-        ("WorkingSetSize", ctypes.c_size_t),     # Tamaño actual del set de trabajo
+        ("cb", wintypes.DWORD),               # Tamaño de la estructura en bytes
+        ("PageFaultCount", wintypes.DWORD),   # Total de fallos de página del proceso
+        ("PeakWorkingSetSize", ctypes.c_size_t), # Tamaño máximo alcanzado del working set
+        ("WorkingSetSize", ctypes.c_size_t),     # Memoria física actualmente asignada (RSS)
         ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
         ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
-        ("PagefileUsage", ctypes.c_size_t),      # Uso del archivo de paginación
+        ("PagefileUsage", ctypes.c_size_t),      # Confirmación de commit del proceso
         ("PeakPagefileUsage", ctypes.c_size_t),
     ]
 

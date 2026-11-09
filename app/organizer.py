@@ -277,7 +277,13 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """Validador principal que encapsula todas las precondiciones de seguridad de E/S."""
+    """
+    Validador principal que encapsula todas las precondiciones de seguridad de E/S.
+    
+    Verifica: existencia, accesibilidad, jerarquía de rutas, protección de sistema,
+    bloqueos exclusivos y disponibilidad de espacio. Retorna False si cualquier
+    condición crítica de seguridad no se cumple.
+    """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
         return False
     try:
