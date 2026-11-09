@@ -159,6 +159,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa archivos por tamaño exacto para filtrar candidatos únicos."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
+    if paths is None: return {}
     for p in paths:
         if p is None: continue
         item = Path(p)
@@ -176,7 +177,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     """
     Realiza un recorrido BFS para recolectar candidatos a duplicados.
     """
-    if directories is None or min_size < 0: return {}
+    if directories is None or not isinstance(directories, Iterable) or min_size < 0: 
+        return {}
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited: set[Tuple[int, int]] = set()
     queue: deque[Tuple[Path, int]] = deque()
@@ -187,7 +189,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 p_dir = Path(d)
                 if p_dir.is_dir() and is_safe_to_modify(p_dir):
                     queue.append((p_dir, 0))
-            except (OSError, PermissionError):
+            except (OSError, PermissionError, TypeError):
                 continue
     
     while queue:

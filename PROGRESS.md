@@ -8,34 +8,34 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 116 | 12 | 44 | 12 | 128 |
-| 2026-11-09 | 71 | 3 | 28 | 7 | 83 |
+| 2026-11-08 | 114 | 12 | 42 | 12 | 128 |
+| 2026-11-09 | 73 | 3 | 29 | 7 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
 - robustez ante casos límite: **44**
-- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **42**
+- manejo de errores y validación de entradas: **38**
 - seguridad defensiva: **35**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `healthscore.py`: **19**
 - `safety.py`: **19**
-- `healthscore.py`: **18**
 - `memory.py`: **18**
-- `scanner.py`: **16**
+- `quarantine.py`: **18**
+- `duplicates.py`: **16**
 - `settings.py`: **16**
-- `duplicates.py`: **15**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
 - `branding.py`: **13**
 - `diskreport.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T08:13:59` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_process_pipeline_entry` añadiendo validaciones explícitas de tipos y estados, asegurando que los fallos en la ejecución de reglas no silencien errores críticos y que la instancia `metrics` se verifique antes de ser procesada.
+- `2026-11-09T08:13:32` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_candidates` mediante la validación proactiva de parámetros de entrada, evitando errores de ejecución si `directories` es `None` o contiene elementos no iterables, y garantizando que el estado interno no se corrompa por entradas mal formadas.
 - `2026-11-09T08:04:59` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_target_valid` añadiendo validaciones preventivas de tipos y estados para evitar excepciones innecesarias antes de operar, asegurando que las rutas (`None` o vacías) sean descartadas tempranamente sin disparar bloqueos en el escaneado.
 - `2026-11-09T08:04:49` **branding.py** (manejo de errores y validación de entradas): Mejora la robustez de las funciones de acceso a metadatos agregando validación de entrada explícita para evitar errores en tiempo de ejecución ante valores inesperados, alineado con el enfoque de manejo de errores y validación.
 - `2026-11-09T08:04:15` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la clase `SystemContext` implementando una validación explícita en `ingest` mediante un nuevo método `_has_circular_refs` y reforzando la sanitización de tipos al recibir fuentes externas, evitando que estructuras mal formadas comprometan el estado interno del asistente.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T06:01:47` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `_get_canonical_path` y `_is_valid_path_structure` para manejar casos límite como rutas extremadamente largas (evitando `Path` excepciones al intentar instanciar objetos inválidos) y errores de acceso en sistemas de archivos con bloqueos, garantizando que el escáner no aborte ante rutas con caracteres inválidos o permisos denegados.
 - `2026-11-09T06:01:17` **safety.py** (robustez ante casos límite): Se ha implementado un mecanismo de "tregua de tiempo" en `_get_path_stat_robust` para manejar casos donde el acceso al sistema de archivos es momentáneamente denegado por el SO (bloqueos temporales), mejorando la resiliencia ante errores de concurrencia sin cambiar la lógica de seguridad.
 - `2026-11-09T05:50:57` **organizer.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a disco en `_is_file_locked` y `_can_write_to_destination`, asegurando que problemas transitorios de permisos o rutas inaccesibles no detengan el flujo del programa, utilizando capturas de excepciones más granulares y validaciones de existencia previas.
-- `2026-11-09T05:41:11` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics.__setattr__` y `validate` al añadir un manejo explícito para valores `None`, evitando errores de ejecución (`TypeError`) al comparar tipos incompatibles durante la inicialización o asignación de métricas.
-- `2026-11-09T05:40:42` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante rutas con permisos denegados o errores de acceso durante la iteración BFS mediante el uso de `try-except` más granulares, evitando que una falla en una entrada de directorio interrumpa la búsqueda completa de duplicados.

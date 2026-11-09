@@ -1138,3 +1138,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-09T08:04:59` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_is_target_valid` añadiendo validaciones preventivas de tipos y estados para evitar excepciones innecesarias antes de operar, asegurando que las rutas (`None` o vacías) sean descartadas tempranamente sin disparar bloqueos en el escaneado.
 - `2026-11-09T08:04:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T08:04:59` Corrida terminada. Total usado hoy: 192.
+- `2026-11-09T08:12:36` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-11-09T08:13:08` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-09T08:13:32` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_candidates` mediante la validación proactiva de parámetros de entrada, evitando errores de ejecución si `directories` es `None` o contiene elementos no iterables, y garantizando que el estado interno no se corrompa por entradas mal formadas.
+- `2026-11-09T08:13:59` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `_process_pipeline_entry` añadiendo validaciones explícitas de tipos y estados, asegurando que los fallos en la ejecución de reglas no silencien errores críticos y que la instancia `metrics` se verifique antes de ser procesada.
+- `2026-11-09T08:14:59` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-09T08:15:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-09T08:15:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T08:15:53` Corrida terminada. Total usado hoy: 196.

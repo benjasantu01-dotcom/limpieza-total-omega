@@ -282,7 +282,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             if rule.check(metrics, normalized_ratio):
                 msg = rule.message_factory(metrics)
                 if msg: results.append(msg)
-        except Exception:
+        except (AttributeError, ValueError, TypeError, ZeroDivisionError):
             continue
     return results
 
@@ -308,10 +308,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
-        p, r = _process_pipeline_entry(metrics, entry)
-        metric_breakdown[entry.area] = p
-        total += p
-        recs.extend(r)
+        try:
+            p, r = _process_pipeline_entry(metrics, entry)
+            metric_breakdown[entry.area] = p
+            total += p
+            recs.extend(r)
+        except Exception:
+            continue
     
     if metrics.safe_get("quarantined_count") > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
