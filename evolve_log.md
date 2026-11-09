@@ -1126,3 +1126,15 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-09T07:56:20` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-09T07:56:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T07:56:20` Corrida terminada. Total usado hoy: 188.
+- `2026-11-09T08:02:24` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-09T08:02:26` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-09T08:02:26` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-09T08:02:46` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-09T08:02:46` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-09T08:03:16` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-09T08:03:16` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-09T08:04:15` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la clase `SystemContext` implementando una validación explícita en `ingest` mediante un nuevo método `_has_circular_refs` y reforzando la sanitización de tipos al recibir fuentes externas, evitando que estructuras mal formadas comprometan el estado interno del asistente.
+- `2026-11-09T08:04:49` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de las funciones de acceso a metadatos agregando validación de entrada explícita para evitar errores en tiempo de ejecución ante valores inesperados, alineado con el enfoque de manejo de errores y validación.
+- `2026-11-09T08:04:59` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_is_target_valid` añadiendo validaciones preventivas de tipos y estados para evitar excepciones innecesarias antes de operar, asegurando que las rutas (`None` o vacías) sean descartadas tempranamente sin disparar bloqueos en el escaneado.
+- `2026-11-09T08:04:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T08:04:59` Corrida terminada. Total usado hoy: 192.

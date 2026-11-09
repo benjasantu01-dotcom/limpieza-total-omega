@@ -310,7 +310,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el tamaño total en bytes de un directorio mediante recursión controlada."""
-    if path is None: return 0
+    if not path: return 0
     abs_p = os.path.abspath(str(path))
     if not os.path.exists(abs_p) or not os.path.isdir(abs_p) or not os.access(abs_p, os.R_OK): return 0
     
@@ -319,7 +319,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """Realiza validaciones de integridad sobre la ruta candidata antes de iniciar el escaneo."""
-    if not target.exists() or not target.is_dir(): 
+    if not isinstance(target, Path) or not target.exists() or not target.is_dir(): 
         return False
     try:
         if _IS_JUNCTION_FN(str(target)) or target.is_symlink():

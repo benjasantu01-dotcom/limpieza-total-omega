@@ -486,6 +486,17 @@ class SystemContext:
         """Verifica si la clave es una métrica válida del sistema."""
         return key in _VALID_METRIC_KEYS
 
+    def _has_circular_refs(self, source: Any, memo: set[int] | None = None) -> bool:
+        """Verifica recursivamente si la fuente contiene referencias circulares."""
+        if memo is None: memo = set()
+        if id(source) in memo: return True
+        if isinstance(source, (dict, list, tuple)):
+            memo.add(id(source))
+            if isinstance(source, dict):
+                return any(self._has_circular_refs(v, memo) for v in source.values())
+            return any(self._has_circular_refs(i, memo) for i in source)
+        return False
+
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
         """
         Extrae, valida y convierte un valor específico desde una fuente externa.
@@ -544,6 +555,7 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Verifica que la fuente de datos sea segura y apta para ingestión."""
         if source is None or callable(source) or isinstance(source, Path): return False
+        if self._has_circular_refs(source): return False
         if isinstance(source, dict):
             if not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
                 return False

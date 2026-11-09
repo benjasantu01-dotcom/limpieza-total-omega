@@ -181,15 +181,15 @@ def app_title() -> str:
 
 def color(name: Optional[str]) -> ColorHex: 
     """Obtiene un código de color hexadecimal por su nombre clave; retorna gris por defecto."""
-    return PALETTE.get(name, "#808080") if name else "#808080"
+    return PALETTE.get(str(name), "#808080") if name else "#808080"
 
 def font_size(name: Optional[str]) -> int: 
     """Retorna el tamaño de fuente definido para una categoría específica."""
-    return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size
+    return FONT_SIZES.get(str(name), UI_CONFIG.body_size) if name else UI_CONFIG.body_size
 
 def icon(section: Optional[str]) -> str: 
     """Devuelve el carácter Unicode representativo de una sección de la interfaz."""
-    return ICONS.get(section, "\u2022") if section else "\u2022"
+    return ICONS.get(str(section), "\u2022") if section else "\u2022"
 
 def tab_label(section: Optional[str]) -> str: 
     """Genera el texto formateado para etiquetas de pestañas (icono + nombre)."""
@@ -221,7 +221,8 @@ def severity_icon(severity: Optional[str]) -> str:
 
 def grade_color(grade: Optional[str]) -> ColorHex: 
     """Retorna el color asignado a una calificación (A-F)."""
-    return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED) if grade else C_TEXT_MUTED
+    if not isinstance(grade, str) or not grade: return C_TEXT_MUTED
+    return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED)
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
