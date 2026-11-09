@@ -931,6 +931,7 @@ def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if not m_path.exists(): return 0
         with open(m_path, "r", encoding="utf-8") as f:
             data = json.load(f)
+            if not isinstance(data, list): return 0
             return sum(item.get("size_bytes", 0) for item in data if isinstance(item, dict))
     except (OSError, json.JSONDecodeError, TypeError, ValueError):
         return 0

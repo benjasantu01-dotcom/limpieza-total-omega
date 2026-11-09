@@ -787,3 +787,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T05:01:30` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, grade_for_score
 - `2026-11-09T05:01:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T05:01:30` Corrida terminada. Total usado hoy: 120.
+- `2026-11-09T05:09:19` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-09T05:10:28` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, wrapper
+- `2026-11-09T05:11:10` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `_iter_process_memory` reemplazando la instanciación repetida de objetos `PROCESS_MEMORY_COUNTERS` dentro del bucle principal por una única instancia reutilizada, reduciendo significativamente la sobrecarga de asignación de memoria y llamadas a `ctypes` en sistemas con muchos procesos activos.
+- `2026-11-09T05:11:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-09T05:12:15` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del peso total en `total_quarantined_bytes` evitando la deserialización completa de objetos `QuarantineItem` y cargando únicamente los bytes necesarios del JSON, reduciendo el consumo de memoria y CPU.
+- `2026-11-09T05:12:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T05:12:15` Corrida terminada. Total usado hoy: 124.

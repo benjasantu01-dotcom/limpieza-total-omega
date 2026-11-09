@@ -7,37 +7,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 9 | 2 | 2 | 1 | 20 |
+| 2026-11-07 | 8 | 0 | 2 | 0 | 20 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 51 | 1 | 20 | 5 | 43 |
+| 2026-11-09 | 52 | 1 | 21 | 6 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **37**
 - seguridad defensiva: **37**
-- rendimiento: **25**
+- robustez ante casos límite: **36**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
+- `quarantine.py`: **20**
 - `healthscore.py`: **19**
-- `quarantine.py`: **19**
 - `safety.py`: **17**
-- `scanner.py`: **16**
 - `settings.py`: **16**
 - `diskreport.py`: **15**
 - `duplicates.py`: **15**
+- `scanner.py`: **15**
 - `assistant.py`: **13**
 - `startup.py`: **12**
 - `branding.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T05:12:15` **quarantine.py** (rendimiento): Optimicé el cálculo del peso total en `total_quarantined_bytes` evitando la deserialización completa de objetos `QuarantineItem` y cargando únicamente los bytes necesarios del JSON, reduciendo el consumo de memoria y CPU.
 - `2026-11-09T05:01:22` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos en `_collect_candidates` para evitar realizar llamadas redundantes a `stat()` y `exists()` al consolidar las comprobaciones de seguridad e integridad dentro de una única llamada a `_is_valid_candidate` tras el `os.scandir`, reduciendo significativamente las operaciones de I/O sobre el sistema de archivos durante el escaneo.
 - `2026-11-09T04:50:42` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` reemplazando la construcción de listas y conversiones repetidas a `tuple` dentro del loop por una generación directa de una tupla de floats, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia en llamadas repetidas desde el bucle de renderizado.
 - `2026-11-09T04:49:54` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adición de docstrings técnicos precisos que explican el "porqué" de las validaciones de seguridad y el uso de anotaciones para clarificar las intenciones en las funciones de resolución de rutas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T04:10:03` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `SystemContext` y `ProblemCriterion` añadiendo docstrings técnicos que explican el propósito de las validaciones de seguridad y el flujo de los datos, facilitando la comprensión del mantenimiento a largo plazo sin alterar la lógica.
 - `2026-11-09T04:09:12` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` para prevenir excepciones ante valores inesperados de tipo y agregué un chequeo de integridad adicional en `_read_and_parse_json` para asegurar que el contenido JSON, tras ser parseado, contenga exclusivamente las claves definidas en `AppSettings`, evitando la inyección de datos arbitrarios en memoria.
 - `2026-11-09T04:08:42` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de archivos envolviéndolas en bloques de control de excepciones específicos y validando la integridad de los metadatos antes de su procesamiento para evitar fallos durante el recorrido del sistema de archivos.
-- `2026-11-09T04:01:19` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `_get_path_stat_robust` y `_evaluate_security_rules` implementando un manejo de errores más específico y preventivo para evitar que excepciones no controladas interrumpan el proceso de escaneo.
