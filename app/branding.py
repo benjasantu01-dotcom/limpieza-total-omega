@@ -224,7 +224,7 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
         return C_DANGER
     except (TypeError, ValueError): return C_TEXT_MUTED
 
-@lru_cache(maxsize=64)
+@lru_cache(maxsize=128)
 def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588", empty: str = "\u2591") -> str:
     """Genera una representación visual de barra de progreso basada en caracteres Unicode."""
     try:
@@ -232,7 +232,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
         ancho = max(1, int(width))
         if not math.isfinite(valor): return empty * ancho
         llenos = int(round(max(0.0, min(100.0, valor)) / 100 * ancho))
-        return filled * llenos + empty * (ancho - llenos)
+        return (filled * llenos) + (empty * (ancho - llenos))
     except (TypeError, ValueError): return empty * max(1, int(width))
 
 @lru_cache(maxsize=256)

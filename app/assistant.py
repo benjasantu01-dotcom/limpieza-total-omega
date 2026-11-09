@@ -246,7 +246,8 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
 _CRITERIOS_MAP: Final[dict[str, tuple[ProblemCriterion, ...]]] = {}
 for criterion in _CRITERIOS_SALUD:
     _CRITERIOS_MAP.setdefault(criterion.metric_key, []).append(criterion)
-_CRITERIOS_MAP: Final[dict[str, tuple[ProblemCriterion, ...]]] = {k: tuple(v) for k, v in _CRITERIOS_MAP.items()}
+_CRITERIOS_MAP_IMMUTABLE: Final[dict[str, tuple[ProblemCriterion, ...]]] = {k: tuple(v) for k, v in _CRITERIOS_MAP.items()}
+_KEYS_WITH_CRITERIA: Final[frozenset[str]] = frozenset(_CRITERIOS_MAP_IMMUTABLE.keys())
 
 class AreaExplanation(NamedTuple):
     """Mapeo simple para descripciones pedagógicas de áreas de la aplicación."""
@@ -349,7 +350,6 @@ _VALIDATORS: Final[ValidationSpec] = {
 }
 
 _VALID_METRIC_KEYS: Final[set[str]] = set(_VALIDATORS.keys())
-_METRIC_KEYS_WITH_CRITERIA: Final[frozenset[str]] = frozenset(_CRITERIOS_MAP.keys())
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """Convierte a float asegurando que el resultado sea finito, real y no negativo."""
@@ -403,7 +403,7 @@ def _evaluate_active_problems(metrics_items: frozenset[tuple[str, float]]) -> tu
     """
     return tuple(
         msg for key, val in metrics_items 
-        for criterion in _CRITERIOS_MAP.get(key, ()) 
+        for criterion in _CRITERIOS_MAP_IMMUTABLE.get(key, ()) 
         if (msg := criterion.format_if_triggered(val)) is not None
     )
 
@@ -434,7 +434,7 @@ class SystemContext:
         """Recopila problemas detectados basándose en los criterios de salud."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
-        relevant = frozenset((k, snap[k]) for k in snap if k in _METRIC_KEYS_WITH_CRITERIA)
+        relevant = frozenset((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
         return _evaluate_active_problems(relevant)
 
     @property
