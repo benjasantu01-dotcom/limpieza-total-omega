@@ -171,11 +171,12 @@ def format_bytes(num: Optional[int | float]) -> str:
     """Convierte bytes a formato humano legible (ej. 1.5 GB)."""
     if not isinstance(num, (int, float)) or math.isnan(num) or math.isinf(num) or num < 0:
         return "0 B"
-    if num == 0:
+    num_f = float(num)
+    if num_f == 0:
         return "0 B"
     try:
-        idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
-        val: float = num / (1024 ** idx)
+        idx: int = min(int(math.log(num_f, 1024)), len(BYTE_UNITS) - 1)
+        val: float = num_f / (1024 ** idx)
         return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
     except (ValueError, ZeroDivisionError, OverflowError):
         return "0 B"
@@ -194,15 +195,16 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
     if value is None: return BytesValue(0)
     
     try:
+        val: int = 0
         if isinstance(value, (int, float)):
             if math.isnan(value) or math.isinf(value): return BytesValue(0)
-            # Evitar desbordamiento al multiplicar por el factor
             fval = float(value) * multiplier
-            if fval > 9223372036854775807: return BytesValue(0)
+            if fval > float(2**63 - 1): return BytesValue(0)
             val = int(fval)
         elif isinstance(value, str):
-            clean_val = "".join(filter(str.isdigit, value.split(".")[0]))
-            val = int(clean_val) * multiplier if clean_val else 0
+            clean_val = "".join(c for c in value if c.isdigit())
+            if not clean_val: return BytesValue(0)
+            val = int(clean_val) * multiplier
         else:
             return BytesValue(0)
             

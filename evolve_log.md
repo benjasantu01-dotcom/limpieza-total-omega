@@ -727,3 +727,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T03:39:26` ➖ Sin cambios en diskreport.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `walk_files` y las funciones de reporte capturando explícitamente errores de acceso al tratar con rutas inaccesibles o bloqueadas por el sistema operativo, garantizando que el proceso de escaneo no se interrumpa silenciosamente ante fallos de permisos al iterar sobre directorios profundos.
 - `2026-11-09T03:39:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T03:39:26` Corrida terminada. Total usado hoy: 88.
+- `2026-11-09T03:47:50` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-09T03:48:14` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-09T03:48:39` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_process_pipeline_entry` y `_evaluate_rules` mediante la validación explícita de entradas y el manejo defensivo de excepciones, asegurando que fallos en una regla individual no invaliden el cálculo de salud completo.
+- `2026-11-09T03:49:49` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-09T03:50:04` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `format_bytes` y `_safe_int_conversion` añadiendo validaciones de tipo explícitas y manejando casos de desbordamiento de forma más estricta para evitar errores silenciosos en la UI.
+- `2026-11-09T03:50:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T03:50:04` Corrida terminada. Total usado hoy: 92.

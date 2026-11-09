@@ -273,22 +273,28 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
-    """Evalúa las reglas de recomendación según el ratio obtenido."""
+    """Evalúa las reglas de recomendación según el ratio obtenido, capturando errores en el chequeo."""
     if not isinstance(rules, tuple): return []
     results = []
     for rule in rules:
-        if rule.check(metrics, normalized_ratio):
-            msg = rule.message_factory(metrics)
-            if msg: results.append(msg)
+        try:
+            if rule.check(metrics, normalized_ratio):
+                msg = rule.message_factory(metrics)
+                if msg: results.append(msg)
+        except Exception:
+            continue
     return results
 
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Procesa una entrada del pipeline: calcula puntuación y extrae advertencias."""
+    if not isinstance(metrics, SystemMetrics) or not isinstance(entry, PipelineEntry):
+        return 0, []
     try:
         ratio = entry.scorer(metrics)
         points = int(ratio * entry.weight)
         return points, _evaluate_rules(metrics, entry.rules, ratio)
-    except Exception: return 0, []
+    except Exception: 
+        return 0, []
 
 # --- Orquestación Principal ---
 
