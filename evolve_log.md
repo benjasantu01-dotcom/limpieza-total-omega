@@ -503,3 +503,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-09T13:51:09` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-11-09T13:51:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T13:51:09` Corrida terminada. Total usado hoy: 328.
+- `2026-11-09T13:59:30` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-09T13:59:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-09T14:00:20` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.get_clamped_metric
+- `2026-11-09T14:01:26` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-09T14:01:44` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el acceso a los procesos mediante la pre-declaración de estructuras y el uso de un buffer de memoria persistente durante la iteración, reduciendo drásticamente las asignaciones de memoria y llamadas al sistema innecesarias dentro del bucle de escaneo.
+- `2026-11-09T14:01:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T14:01:44` Corrida terminada. Total usado hoy: 332.

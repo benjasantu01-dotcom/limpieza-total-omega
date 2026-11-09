@@ -69,10 +69,10 @@ class WindowsAPI:
     # 0x0100 (PROCESS_SET_QUOTA) requerido para operaciones de ajuste de memoria (trimming).
     QUERY_LIMITED: Final[int] = 0x1000  # Acceso eficiente para lectura de info básica
     QUERY_INFO: Final[int] = 0x0400     # Acceso estándar a contadores
-    SET_QUOTA: Final[int] = 0x0100      # Permiso para modificar cuotas de memoria
+    SET_QUOTA: Final[int] = 0x1000      # Permiso para modificar cuotas de memoria
     
     # Combinación de flags necesaria para invocar EmptyWorkingSet con éxito.
-    TRIM_ACCESS: Final[int] = 0x00200000 | SET_QUOTA | QUERY_INFO
+    TRIM_ACCESS: Final[int] = 0x00200000 | 0x0100 | 0x0400
 
 class CacheEntry(NamedTuple):
     """Caché temporal con timestamp para evitar consultas frecuentes al sistema."""
@@ -471,14 +471,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida: PID protegido o función no disponible."
         
     path_buf = ctypes.create_unicode_buffer(1024)
-    # Obtenemos handle con acceso específico de trim, validando seguridad del ejecutable
     handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if handle is None:
         return False, "Acceso denegado o proceso en zona restringida."
 
     try:
-        # EmptyWorkingSet devuelve éxito si el sistema aceptó la petición
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud de liberación."
