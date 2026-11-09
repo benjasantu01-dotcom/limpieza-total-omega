@@ -169,8 +169,6 @@ def _is_file_exclusive(path: Path) -> bool:
         return False
     if os.name == 'nt':
         try:
-            # CreateFile con dwShareMode=0 garantiza exclusividad total
-            # dwDesiredAccess: 0, dwShareMode: 0, dwCreationDisposition: OPEN_EXISTING
             handle = ctypes.windll.kernel32.CreateFileW(str(path), 0, 0, None, 3, 0x80, None)
             if handle == -1 or handle == 0: return False
             ctypes.windll.kernel32.CloseHandle(handle)
@@ -179,7 +177,6 @@ def _is_file_exclusive(path: Path) -> bool:
             return False
     
     try:
-        # Intento de lock exclusivo no bloqueante
         fd = os.open(path, os.O_RDONLY)
         try:
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -288,10 +285,11 @@ def _get_sha256(path: Path, st: Optional[os.stat_result] = None) -> str:
         
         _HASH_CACHE[cache_key] = (res, now)
         return res
-    except (OSError, IOError, MemoryError): return ""
+    except (OSError, IOError, MemoryError, PermissionError): 
+        return ""
 
 def _is_file_in_use_by_system(path: Path) -> bool:
-    """Valida si el archivo está siendo usado o bloqueado por el sistema (caching 0.5s)."""
+    """Valida si el archivo está siendo usado o bloqueado por el sistema."""
     if path is None or not path.exists(): return False
     try:
         st = path.stat()
@@ -406,7 +404,6 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             _check_io_error_context(path_resolved.mkdir, parents=True, exist_ok=True)
             if not path_resolved.exists() or not path_resolved.is_dir(): raise OSError("Fallo al asegurar directorio de cuarentena.")
         
-        # Validar capacidad de escritura real creando un temporal efímero
         try:
             tmp_check = tempfile.NamedTemporaryFile(dir=path_resolved, delete=True)
             tmp_check.close()
@@ -513,7 +510,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
                 return cached_items
         
-        # Optimización: Set para búsqueda O(1)
         existing_entries = {entry.name: entry for entry in os.scandir(base_dir) if entry.is_file()}
         
         with open(m_path, "r", encoding="utf-8") as f: 
@@ -526,7 +522,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         for entry in data:
             if not isinstance(entry, dict): continue
             item = QuarantineItem.from_dict(entry)
-            # Solo validamos si el archivo almacenado físicamente existe
             if item and item.stored_name in existing_entries:
                 valid_items.append(item)
         
@@ -618,7 +613,6 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         _check_for_reparse_points(source)
         if st.st_nlink > 1: raise UnsafePathError("Archivo origen con enlaces múltiples.")
         
-        # Validar espacio crítico antes de iniciar la copia larga
         _ensure_disk_space(temp_dest.parent, st.st_size)
         
         ensure_safe_to_modify(temp_dest.parent)

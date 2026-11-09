@@ -279,10 +279,6 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Validador principal que encapsula todas las precondiciones de seguridad de E/S.
-    
-    Verifica: existencia, accesibilidad, jerarquía de rutas, protección de sistema,
-    bloqueos exclusivos y disponibilidad de espacio. Retorna False si cualquier
-    condición crítica de seguridad no se cumple.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
         return False
@@ -391,13 +387,14 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
             
-            if not _validate_file_identity(junk_file, junk_file.path) or _is_file_locked(junk_file.path):
+            # Re-validación atómica pre-operación
+            if not junk_file.path.exists() or junk_file.path.is_symlink() or _is_junction(junk_file.path):
                 continue
                 
             if not _is_safe_for_disk_op(junk_file, dest_base): continue
             
             target_path = _can_move_file(junk_file, dest_base)
-            if target_path and junk_file.path.exists() and not _is_file_locked(junk_file.path): 
+            if target_path and not target_path.exists(): 
                 os.replace(str(junk_file.path), str(target_path))
         return dest_base
     except (OSError, PermissionError) as e:
@@ -430,6 +427,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
+                # Validaciones estrictas antes de unlink()
                 if item.is_file() and not item.is_symlink() and not _is_junction(item):
                     if is_valid_junk_extension(item.name) and is_safe_to_modify(item) and not _is_file_locked(item):
                         item.unlink()

@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 40 | 2 | 11 | 3 | 66 |
+| 2026-11-07 | 39 | 2 | 11 | 3 | 63 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 17 | 0 | 7 | 2 | 6 |
+| 2026-11-09 | 20 | 0 | 8 | 2 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **36**
 - rendimiento: **31**
-- seguridad defensiva: **29**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **20**
 - `healthscore.py`: **19**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
+- `safety.py`: **17**
 - `settings.py`: **16**
 - `diskreport.py`: **16**
-- `safety.py`: **16**
 - `scanner.py`: **16**
 - `duplicates.py`: **14**
-- `startup.py`: **13**
 - `assistant.py`: **13**
+- `startup.py`: **12**
 - `branding.py`: **10**
 - `browser.py`: **10**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T01:27:54` **safety.py** (robustez ante casos límite): Se ha implementado un mecanismo de "cierre controlado" en `_get_path_stat_robust` mediante el uso de `contextlib.closing` implícito o `finally` para asegurar que los `handles` de archivos abiertos mediante Win32 API se liberen siempre, incluso cuando ocurren excepciones durante la lectura de metadatos, evitando así bloqueos persistentes en el sistema de archivos ante condiciones de error.
+- `2026-11-09T01:26:56` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_get_sha256` y `_is_file_in_use_by_system` implementando un manejo de errores más específico para archivos bloqueados o inaccesibles, evitando que una excepción de E/S inesperada durante el escaneo de metadatos detenga el hilo principal de la aplicación.
+- `2026-11-09T01:25:52` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de seguridad atómicas previas a cada operación de E/S, asegurando que los archivos no sean enlaces simbólicos o puntos de reparse en el momento preciso de la ejecución, evitando así posibles escapes de la zona de cuarentena.
 - `2026-11-09T01:17:24` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de API nativa y casos límite de concurrencia en `_iter_process_memory` y `trim_working_set`, asegurando el cierre de recursos incluso si `GetModuleFileNameExW` falla o devuelve rutas vacías.
 - `2026-11-09T01:16:01` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores de entrada inesperados y estados inconsistentes dentro de `SystemMetrics` mediante la implementación de una validación explícita durante la asignación y un manejo defensivo de los límites de las métricas.
 - `2026-11-09T01:06:56` **diskreport.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `walk_files` y `_safe_stat` al añadir un manejo explícito de rutas con longitud excesiva y fallos durante la iteración del `scandir`, asegurando que el escaneo no se interrumpa ante entradas corruptas del sistema de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T00:26:50` **branding.py** (rendimiento): Optimicé el renderizado de la barra de progreso textual mediante el uso de una caché pre-calculada de strings para evitar la concatenación repetitiva de caracteres en cada llamada a `bar()`.
 - `2026-11-09T00:26:17` **assistant.py** (rendimiento): Optimicé el acceso a criterios de salud y el filtrado de métricas mediante el uso de `frozenset` y pre-cálculos, evitando operaciones redundantes en el bucle principal de evaluación de problemas.
 - `2026-11-09T00:25:39` **startup.py** (legibilidad y documentación): He mejorado la documentación de la clase `StartupEntry` y sus métodos privados, añadiendo descripciones detalladas sobre las precondiciones y el propósito técnico de cada validación, asegurando que el código sea autodocumentado para futuros auditores técnicos.
-- `2026-11-09T00:16:09` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del archivo documentando las estrategias de validación en `_Validators` mediante docstrings detallados y refinando las anotaciones de tipos para mayor claridad técnica en un proyecto de nivel senior.
-- `2026-11-09T00:15:53` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos clave de la clase `Scanner` y funciones auxiliares, clarificando las precondiciones de seguridad y el flujo de los datos sin modificar la lógica existente.
-- `2026-11-09T00:15:25` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `_validate_security_descriptor_attributes` para separar las comprobaciones de estado de los mensajes de error, y la limpieza de los docstrings en las funciones críticas de validación para reflejar su comportamiento real.

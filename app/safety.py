@@ -819,7 +819,7 @@ def normalize(path: PathLike) -> Path:
     
     if os.name == 'nt' and _is_path_too_long(path_str):
         if not path_str.startswith(LONG_PATH_PREFIX):
-             raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG, SafetyValidationCategory.STRUCTURE)
+             raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG, SafetyValidationSTRUCTURE)
 
     if _is_path_empty_or_whitespace(path_str): raise UnsafePathError("Entrada de ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     if unicodedata.normalize('NFKC', path_str) != path_str:
