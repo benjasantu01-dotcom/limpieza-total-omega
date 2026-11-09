@@ -333,16 +333,19 @@ class Scanner:
         Ejecuta todas las heurísticas registradas en ALL_CHECKS sobre un archivo validado,
         obteniendo previamente sus metadatos de forma segura (sin seguir enlaces).
         """
-        stats: Optional[os.stat_result] = _safe_stat(entry)
-        if stats is None:
-            return
-        for check_fn in ALL_CHECKS:
-            try:
-                finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts, stats)
-                if finding:
-                    self.results.append(finding)
-            except Exception as e:
-                logger.debug(f"Heurística {check_fn.__name__} omitida por error: {e}")
+        try:
+            stats: Optional[os.stat_result] = _safe_stat(entry)
+            if stats is None:
+                return
+            for check_fn in ALL_CHECKS:
+                try:
+                    finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts, stats)
+                    if finding:
+                        self.results.append(finding)
+                except (OSError, PermissionError, Exception) as e:
+                    logger.debug(f"Heurística {check_fn.__name__} omitida por error en {path}: {e}")
+        except (OSError, PermissionError):
+            pass
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo específico aplicando la suite de heurísticas."""

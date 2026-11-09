@@ -706,6 +706,7 @@ def _sanitize_query(question: str) -> str:
     """Normaliza y limpia la consulta del usuario, eliminando caracteres de control."""
     if not isinstance(question, str): return ""
     clean: str = " ".join(_REGEX_CONTROL_CHARS.sub(' ', question).split())[:100]
+    if is_protected_path(clean): return ""
     return clean if _ensure_safe_text(clean) else ""
 
 def local_answer(question: str, context: SystemContext) -> Answer:
@@ -714,6 +715,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         return Answer("Todavía no corriste ningún análisis. Andá a la pestaña Salud y apretá 'Analizar el sistema': es de solo lectura.", notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
     q_sanitized: str = _sanitize_query(question)
     if not q_sanitized: return Answer("Entrada no válida.")
+    
+    # Verificación de integridad del contexto antes de procesar
+    if not isinstance(context, SystemContext):
+        return Answer("Contexto corrupto.")
     
     # Búsqueda optimizada por tokens
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
