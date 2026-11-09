@@ -305,7 +305,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         dest_path = Path(destination).absolute()
-        ensure_safe_to_modify(dest_path)
+        if not is_safe_to_modify(dest_path): return None
         parent = dest_path.parent
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         dest_path.write_text(logo_svg(size), encoding="utf-8")
@@ -345,8 +345,9 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + SHIELD_CENTER_X * scale
         for seg in get_gradient_segments(n):
             for i in range(seg.start_index, seg.end_index):
-                p = params[i]
-                canvas.create_rectangle(cx - p[0], by + p[1], cx + p[0], by + p[2], fill=seg.hex_color, outline="")
+                if i < len(params):
+                    p = params[i]
+                    canvas.create_rectangle(cx - p[0], by + p[1], cx + p[0], by + p[2], fill=seg.hex_color, outline="")
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
@@ -371,7 +372,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    if canvas is None: return
+    if canvas is None or not math.isfinite(size) or not math.isfinite(canvas_x) or not math.isfinite(canvas_y): return
     try:
         s = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
         poly = _get_scaled_poly(s, float(canvas_x), float(canvas_y))

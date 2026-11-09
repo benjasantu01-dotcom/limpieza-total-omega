@@ -440,3 +440,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-09T00:57:13` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-11-09T00:57:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T00:57:13` Corrida terminada. Total usado hoy: 24.
+- `2026-11-09T01:04:53` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-11-09T01:05:49` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext` ante entradas inesperadas agregando validación de tipo estricta en el método `_apply_field`, evitando que valores no numéricos (como listas o diccionarios maliciosos) pasen el filtro antes de la conversión a float/int, y reforzando la limpieza de la propiedad `grade`.
+- `2026-11-09T01:06:18` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y `draw_logo` ante valores inesperados de entrada y problemas de permisos, asegurando que las funciones no fallen silenciosamente con estados inválidos mediante chequeos explícitos y manejo de excepciones más granular.
+- `2026-11-09T01:06:46` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-09T01:06:56` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejora la robustez ante casos límite en `walk_files` y `_safe_stat` al añadir un manejo explícito de rutas con longitud excesiva y fallos durante la iteración del `scandir`, asegurando que el escaneo no se interrumpa ante entradas corruptas del sistema de archivos.
+- `2026-11-09T01:06:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T01:06:56` Corrida terminada. Total usado hoy: 28.

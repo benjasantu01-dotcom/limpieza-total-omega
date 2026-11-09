@@ -66,7 +66,7 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
         path: Ruta a inspeccionar.
 
     Returns:
-        os.stat_result si tiene éxito, None ante fallos de permiso o acceso.
+        os.stat_result si tiene éxito, None ante fallos de permiso, acceso o límites de ruta.
     """
     if path is None:
         return None
@@ -293,7 +293,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que realiza un recorrido profundo (DFS) sobre los archivos.
+    Generador que realiza un recorrido profundo (DFS) sobre los archivos manejando errores de acceso.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -317,10 +317,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
+                        st = None
                         try:
                             st = entry.stat(follow_symlinks=False)
                         except (PermissionError, FileNotFoundError, OSError):
                             continue
+                        
+                        if st is None: continue
                             
                         entry_path = Path(entry.path)
                         if skip_protected and is_protected_path(entry_path):
@@ -339,8 +342,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             size = getattr(st, 'st_size', None)
                             if isinstance(size, int) and size >= 0:
                                 yield entry_path, size
-                    except (PermissionError, FileNotFoundError, OSError):
-                        continue
+                    except (PermissionError, StopIteration, OSError):
+                        break
         except (PermissionError, FileNotFoundError, OSError, ValueError):
             continue
 

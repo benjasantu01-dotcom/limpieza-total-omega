@@ -473,13 +473,13 @@ class SystemContext:
         Extrae, valida y convierte un valor específico desde una fuente externa.
         """
         if not isinstance(source, (dict, object)): return None
-        val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
+        raw_val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
         
-        # Validación de tipos estrictos
-        if val is None or isinstance(val, (bool, dict, list, tuple, Path)) or callable(val):
+        # Validación estricta: solo tipos primitivos escalares permitidos
+        if not isinstance(raw_val, (int, float, str)) or isinstance(raw_val, bool):
             return None
             
-        validated_val = _is_valid_numeric_update(val, spec)
+        validated_val = _is_valid_numeric_update(raw_val, spec)
         if validated_val is None:
             return None
         
@@ -489,9 +489,10 @@ class SystemContext:
         """Desinfecta la calificación para asegurar que sea una cadena limpia."""
         if not isinstance(val, (str, int, float)) or isinstance(val, bool): return ""
         try:
-            clean: str = str(val)
-            clean = _REGEX_CONTROL_CHARS.sub(" ", clean)[:_MAX_GRADE_LEN].strip()
-            if not clean or (isinstance(clean, str) and is_protected_path(clean)) or not _ensure_safe_text(clean): 
+            clean: str = str(val).strip()
+            # Eliminar caracteres de control y truncar
+            clean = _REGEX_CONTROL_CHARS.sub(" ", clean)[:_MAX_GRADE_LEN]
+            if not clean or is_protected_path(clean) or not _ensure_safe_text(clean): 
                 return ""
             return clean
         except Exception:
@@ -504,10 +505,8 @@ class SystemContext:
     def _extract_grade(self, source: Any) -> str:
         """Extrae el campo 'grade' de una fuente de datos."""
         if not isinstance(source, (dict, object)): return ""
-        grade_raw = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
-        if grade_raw is not None and not isinstance(grade_raw, (dict, list, tuple, Path)):
-            return self._clean_grade(grade_raw)
-        return ""
+        val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
+        return self._clean_grade(val)
 
     def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
         """Procesa y sanitiza todas las métricas recibidas de una fuente externa."""
@@ -519,7 +518,7 @@ class SystemContext:
             if (val := self._apply_field(source, k, _VALIDATORS[k])) is not None
         }
         
-        if cleaned_grade := self._extract_grade(source):
+        if (cleaned_grade := self._extract_grade(source)):
             updates["grade"] = cleaned_grade
             
         return updates
