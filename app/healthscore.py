@@ -277,7 +277,7 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
     """Evalúa las reglas de recomendación según el ratio obtenido."""
-    if not isinstance(rules, tuple) or not _is_finite_numeric(normalized_ratio): return []
+    if not isinstance(rules, tuple): return []
     results = []
     for rule in rules:
         if rule.check(metrics, normalized_ratio):
@@ -288,8 +288,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Procesa una entrada del pipeline: calcula puntuación y extrae advertencias."""
     try:
-        ratio = _clamp(entry.scorer(metrics))
-        points = int(ratio * float(entry.weight))
+        ratio = entry.scorer(metrics)
+        points = int(ratio * entry.weight)
         return points, _evaluate_rules(metrics, entry.rules, ratio)
     except Exception: return 0, []
 
@@ -299,17 +299,21 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
     
-    metric_breakdown, total, recs = {}, 0.0, []
+    metric_breakdown: Dict[str, int] = {}
+    total = 0
+    recs: List[str] = []
+    
     for entry in PIPELINE_DEFINITIONS:
         p, r = _process_pipeline_entry(metrics, entry)
-        metric_breakdown[entry.area], total = p, total + p
+        metric_breakdown[entry.area] = p
+        total += p
         recs.extend(r)
     
     if metrics.safe_get("quarantined_count") > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
             
-    final_score = int(_clamp(total, 0.0, 100.0))
+    final_score = int(_clamp(float(total), 0.0, 100.0))
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:

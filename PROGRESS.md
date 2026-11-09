@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 65
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 47 | 3 | 14 | 3 | 75 |
+| 2026-11-07 | 45 | 3 | 13 | 3 | 74 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 8 | 0 | 3 | 1 | 0 |
+| 2026-11-09 | 9 | 0 | 4 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
-- robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **36**
+- robustez ante casos límite: **35**
 - seguridad defensiva: **34**
-- rendimiento: **27**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **18**
+- `healthscore.py`: **18**
 - `memory.py`: **18**
 - `quarantine.py`: **17**
-- `healthscore.py`: **17**
-- `safety.py`: **16**
+- `scanner.py`: **17**
 - `diskreport.py`: **16**
 - `settings.py`: **16**
 - `duplicates.py`: **15**
+- `safety.py`: **15**
 - `assistant.py`: **13**
 - `startup.py`: **13**
 - `browser.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T00:35:37` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación eliminando el cálculo redundante de `float()` y `_clamp()` dentro del bucle principal, y reemplacé la construcción dinámica de diccionarios por una pre-asignación eficiente.
 - `2026-11-09T00:26:50` **branding.py** (rendimiento): Optimicé el renderizado de la barra de progreso textual mediante el uso de una caché pre-calculada de strings para evitar la concatenación repetitiva de caracteres en cada llamada a `bar()`.
 - `2026-11-09T00:26:17` **assistant.py** (rendimiento): Optimicé el acceso a criterios de salud y el filtrado de métricas mediante el uso de `frozenset` y pre-cálculos, evitando operaciones redundantes en el bucle principal de evaluación de problemas.
 - `2026-11-09T00:25:39` **startup.py** (legibilidad y documentación): He mejorado la documentación de la clase `StartupEntry` y sus métodos privados, añadiendo descripciones detalladas sobre las precondiciones y el propósito técnico de cada validación, asegurando que el código sea autodocumentado para futuros auditores técnicos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T14:32:09` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` y `_process_folder_entry` mediante la captura explícita de excepciones al interactuar con objetos del sistema de archivos, asegurando que el bucle de procesamiento sea resiliente ante entradas malformadas o permisos denegados sin interrumpir la ejecución.
 - `2026-11-08T14:31:55` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la deserialización en `_read_and_parse_json` al manejar explícitamente el caso de archivos vacíos o con formato inválido, además de fortalecer la validación de integridad en `_is_structure_valid` para evitar inyecciones de claves no esperadas mediante una comprobación estricta de los tipos de datos.
 - `2026-11-08T14:31:25` **scanner.py** (manejo de errores y validación de entradas): Se corrigió una variable global faltante (`INVALID_TRAILING_CHARS_RE`) en el método `_has_invalid_name` de la clase `Scanner` que provocaba un `NameError` al ejecutarse, y se endureció la validación de la entrada `entry.name` mediante un chequeo preventivo de `None` para evitar errores en las heurísticas.
-- `2026-11-08T14:21:25` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la captura explícita de errores de deserialización y una validación defensiva del esquema JSON, garantizando que un manifiesto malformado no interrumpa el flujo de la aplicación.
