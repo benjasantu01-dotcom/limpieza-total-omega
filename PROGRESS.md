@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 72
+- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 89 | 8 | 32 | 10 | 109 |
-| 2026-11-09 | 107 | 7 | 40 | 9 | 93 |
+| 2026-11-08 | 89 | 8 | 32 | 10 | 105 |
+| 2026-11-09 | 108 | 8 | 41 | 9 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **44**
-- seguridad defensiva: **32**
+- seguridad defensiva: **33**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
@@ -39,12 +39,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **15**
 - `branding.py`: **15**
 - `diskreport.py`: **13**
+- `organizer.py`: **10**
 - `browser.py`: **9**
-- `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T10:56:50` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `delete_reviewed` implementando una validación de identidad del archivo mediante `stat()` antes del `unlink()` para mitigar ataques TOCTOU, asegurando que el archivo que se va a borrar es realmente el que el escáner identificó y no un reemplazo malicioso creado durante la espera.
 - `2026-11-09T10:46:53` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del motor de scoring implementando una validación estricta y explícita en `_sanitize_msg` para evitar que datos malformados o potencialmente peligrosos (incluyendo intentos de inyección de cadenas con caracteres de control o rutas sospechosas) escapen del proceso de generación de reportes, utilizando `_BLOCKED_TERMS` como barrera de entrada.
 - `2026-11-09T10:46:28` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la incorporación de `is_safe_to_modify` en el acceso a metadatos dentro de `_collect_candidates`, garantizando que el escaneo no acceda a rutas que violen las políticas de seguridad antes de procesar su tamaño o inodo.
 - `2026-11-09T10:46:05` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_local_windows_drives` incluyendo un chequeo explícito de `is_protected_path` antes de intentar acceder a unidades extraíbles o de red y una verificación de estado de disco mediante `shutil.disk_usage` para asegurar que la unidad esté realmente montada y accesible antes de incluirla en el reporte.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T10:05:46` **diskreport.py** (robustez ante casos límite): Mejoré `_validate_root` y `_get_local_windows_drives` para robustecer la gestión de permisos, añadiendo bloques `try-except` granulares que previenen que el escaneo colapse prematuramente al encontrar rutas con privilegios restringidos o errores de sistema.
 - `2026-11-09T10:05:19` **browser.py** (robustez ante casos límite): Mejoré la robustez de `DirectoryScanner` ante condiciones de carrera (cuando un archivo es eliminado por el navegador mientras se escanea) y errores de acceso al sistema de archivos, envolviendo la obtención de atributos (`os.lstat`) y el acceso a `scandir` en bloques `try-except` más granulares para asegurar que el escáner no aborte ante cambios dinámicos en el disco.
 - `2026-11-09T09:56:25` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` mediante la validación del tipo de dato `dict` recibido, evitando fallos ante entradas mal formadas o tipos inesperados que podrían romper el estado, asegurando que solo se apliquen valores si pasan las validaciones de tipo, rango y seguridad.
-- `2026-11-09T09:55:46` **startup.py** (rendimiento): Se ha optimizado `StartupEntry.executable` mediante la implementación de una caché de resolución de rutas (`_RESOLVED_PATH_CACHE`) que evita realizar múltiples llamadas costosas a `path.resolve()` para el mismo comando, reduciendo significativamente la carga de I/O en llamadas recurrentes.

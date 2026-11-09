@@ -1417,3 +1417,44 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-09T10:47:44` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-09T10:47:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T10:47:44` Corrida terminada. Total usado hoy: 256.
+- `2026-11-09T10:55:51` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-09T10:56:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-11-09T10:56:50` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad en `delete_reviewed` implementando una validación de identidad del archivo mediante `stat()` antes del `unlink()` para mitigar ataques TOCTOU, asegurando que el archivo que se va a borrar es realmente el que el escáner identificó y no un reemplazo malicioso creado durante la espera.
+- `2026-11-09T10:57:34` Tests FALLARON:
+```
+rantine_moves_the_file0/sospechoso.exe')
+reason = 'prueba'
+base = PosixPath('/tmp/pytest-of-runner/pytest-2/test_quarantine_moves_the_file0/_Cuarentena')
+
+    def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
+        """
+        Aísla un archivo en el sandbox de cuarentena.
+    
+        Args:
+            source: Ruta del archivo sospechoso.
+            reason: Motivo del aislamiento.
+            base: Directorio del sandbox de cuarentena.
+    
+        Returns:
+            Objeto QuarantineItem registrado.
+    
+        Raises:
+            RuntimeError: En caso de fallo crítico en E/S o seguridad.
+        """
+        p_source: Path = _validate_input_path(source)
+    
+        # Validar explícitamente la seguridad según la política de la aplicación
+        if not is_safe_to_modify(p_source):
+>           raise UnsafePathError("Operación denegada: ruta marcada como insegura por la política de seguridad.")
+E           safety.UnsafePathError: [STRUCTURE] [GENERIC] Operación denegada: ruta marcada como insegura por la política de seguridad.
+
+app/quarantine.py:788: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [STRUCTURE] [GENERIC] Operación denegada: ruta marcada como insegura por la política de seguridad.
+1 failed, 298 passed in 1.65s
+
+```
+- `2026-11-09T10:57:34` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita mediante `is_safe_to_modify(p_source)` antes de iniciar cualquier operación, garantizando que el archivo origen no solo pase los chequeos de sistema, sino que también cumpla con las políticas de seguridad de la aplicación.
+- `2026-11-09T10:57:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-09T10:57:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T10:57:38` Corrida terminada. Total usado hoy: 260.
