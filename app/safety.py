@@ -849,7 +849,7 @@ def normalize(path: PathLike) -> Path:
                 raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
         
         if _is_device_file(p): raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
-        if _has_alternate_data_stream(p.name): raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED, SafetyValidationSTRUCTURE)
+        if _has_alternate_data_stream(p.name): raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED, SafetyValidationCategory.STRUCTURE)
         
         resolved = _normalize_resolved(path_str)
         if ".." in parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
@@ -965,7 +965,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
         raise UnsafePathError("Acceso a Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
     if _is_unc_path(path_string) and not _is_unc_path_accessible(path_string):
-        raise UnsafePathError("Rutas UNC/Red bloqueadas o inaccesibles.", SafetyValidationErrorCode.UNC_PATH, SafetyValidationCategory.ENVIRONMENT)
+        raise UnsafePathError("Rutas UNC/Red bloqueadas o inaccesibles.", SafetyValidationErrorCode.UNC_PATH, SafetyValidationENVIRONMENT)
     if ".." in path_string.split(os.sep):
         raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
     if _is_path_too_long(path_string):
@@ -1212,11 +1212,12 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         p = normalize(str(path).strip())
         guard = SafetyGuard(p)
         
+        # Bloqueo adicional para Junctions NTFS de sistema
+        if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
+             return PathValidationResult(False, UnsafePathError(f"Protección: Modificación denegada sobre punto de unión NTFS: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
+        
         if _is_kernel_managed(guard.path_str):
             return PathValidationResult(False, UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
-
-        if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
-            return PathValidationResult(False, UnsafePathError(f"Modificación denegada sobre punto de reparse: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
 
         if p.exists() and not (p.is_file() or p.is_dir()):
             return PathValidationResult(False, UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE, SafetyValidationCategory.STRUCTURE))

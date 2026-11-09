@@ -483,6 +483,9 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
         raise UnsafePathError("Destino de cuarentena debe ser un directorio.")
     
     source_path = _is_path_canonical(source_path)
+    if not source_path.exists() or not source_path.is_file():
+        raise UnsafePathError("El origen debe ser un archivo existente.")
+
     _check_path_syntax_integrity(source_path)
     _verify_source_fs_permissions(source_path)
     _check_for_reparse_points(source_path)
