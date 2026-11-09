@@ -292,7 +292,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que realiza un recorrido profundo (DFS) sobre los archivos manejando errores de acceso.
+    Realiza un recorrido profundo (DFS) iterativo sobre el árbol de archivos.
+    
+    Implementa prevención de ciclos infinitos mediante el rastreo de inodes (dispositivo + identificador)
+    y respeta las políticas de seguridad (`safety.py`) para ignorar rutas protegidas y puntos de reanálisis.
+    
+    Yields:
+        Tuplas conteniendo la ruta absoluta (Path) y el tamaño del archivo en bytes (int).
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -339,7 +345,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Retorna los archivos de mayor tamaño."""
+    """Retorna los archivos de mayor tamaño encontrados en el directorio."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
@@ -385,7 +391,12 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Coordina el escaneo de archivos y agrega métricas globales."""
+    """
+    Orquesta el escaneo del directorio y la agregación de métricas de uso globales.
+    
+    Utiliza un heap de tamaño fijo para mantener eficientemente los 'limit' archivos más pesados 
+    sin almacenar toda la estructura de archivos en memoria.
+    """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
