@@ -403,7 +403,9 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     path_buf = ctypes.create_unicode_buffer(512)
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     
-    for pid in (p for p in pids[:count] if p > 0 and not _is_system_process(p)):
+    for pid in pids[:count]:
+        if pid <= 0 or _is_system_process(pid): continue
+        
         handle = _get_handle_for_safe_proc(pid, WindowsAPI.QUERY_LIMITED, path_buf, get_mod_name)
         if handle is None: continue
         
@@ -411,8 +413,11 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
                 ws = pmc.WorkingSetSize
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
+                    # Acceso directo al buffer ya poblado por _is_process_executable_safe
                     raw_path = path_buf.value
-                    name = raw_path.split('\\')[-1] if '\\' in raw_path else raw_path
+                    # Obtener nombre rápido mediante el último separador sin instanciar Path extra
+                    idx = raw_path.rfind('\\')
+                    name = raw_path[idx + 1:] if idx != -1 else raw_path
                     yield ProcessMemory(name, pid, BytesValue(ws))
         except (ctypes.ArgumentError, OSError):
             continue

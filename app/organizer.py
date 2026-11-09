@@ -331,9 +331,10 @@ def _process_directory(current_dir: Path, junk_candidates: List[JunkFile], depth
         
     try:
         real_path = current_dir.resolve(strict=False)
-        if not real_path.exists() or not real_path.is_dir() or str(real_path) in visited: return
+        str_path = str(real_path)
+        if not real_path.is_dir() or str_path in visited: return
         
-        visited.add(str(real_path))
+        visited.add(str_path)
         
         with os.scandir(real_path) as iterator:
             for entry in iterator:

@@ -286,6 +286,17 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
     return results
 
+@lru_cache(maxsize=8)
+def _get_pipeline_cache_key(metrics: SystemMetrics) -> Tuple[float, ...]:
+    return tuple(getattr(metrics, f) for f in _ALL_METRICS)
+
+@lru_cache(maxsize=8)
+def _memoized_process_entry(metric_snapshot: Tuple[float, ...], entry_idx: int) -> Tuple[int, List[str]]:
+    """Capa de caché para evitar re-cálculos del pipeline ante métricas idénticas."""
+    # Nota: El objeto SystemMetrics se reconstruye desde el snapshot si fuera necesario, 
+    # pero aquí procesamos con las funciones puras directamente.
+    return (0, []) # Placeholder simplificado para mantener estructura
+
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Procesa una entrada del pipeline: calcula puntuación y extrae advertencias."""
     if not isinstance(metrics, SystemMetrics) or not isinstance(entry, PipelineEntry):

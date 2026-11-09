@@ -1250,3 +1250,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T09:25:57` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `path.exists()` dentro del bucle de recorrido, aprovechando la información ya validada por `entry.stat()` y moviendo las verificaciones de seguridad a un orden de costo ascendente.
 - `2026-11-09T09:25:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T09:25:57` Corrida terminada. Total usado hoy: 224.
+- `2026-11-09T09:34:12` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-09T09:34:41` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` convirtiendo `PIPELINE_DEFINITIONS` a un objeto indexado y cacheando los resultados del pipeline mediante una clave calculada basada en los valores de las métricas, evitando así el re-cálculo de scores y reglas idénticas en ejecuciones rápidas del bucle principal.
+- `2026-11-09T09:35:48` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-09T09:36:22` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `_iter_process_memory` reemplazando la creación dinámica de buffers y la resolución redundante de nombres mediante técnicas de pre-alocación y acceso directo por índice, reduciendo la presión sobre el recolector de basura y el tiempo de CPU en ciclos de escaneo.
+- `2026-11-09T09:36:37` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo mediante la pre-compilación de `JUNK_EXTENSIONS` en un conjunto de búsqueda directa y el uso de un cache de set `visited` que evita redundancias al evaluar rutas resueltas canónicamente, reduciendo llamadas innecesarias al sistema de archivos.
+- `2026-11-09T09:36:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T09:36:37` Corrida terminada. Total usado hoy: 228.

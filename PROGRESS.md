@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 213
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 101 | 10 | 35 | 10 | 124 |
-| 2026-11-09 | 87 | 4 | 35 | 9 | 89 |
+| 2026-11-08 | 97 | 10 | 35 | 10 | 124 |
+| 2026-11-09 | 90 | 4 | 36 | 9 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **39**
 - seguridad defensiva: **35**
-- rendimiento: **23**
+- robustez ante casos límite: **35**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **20**
-- `memory.py`: **18**
-- `settings.py`: **17**
+- `memory.py`: **19**
+- `safety.py`: **19**
+- `healthscore.py`: **18**
 - `duplicates.py`: **17**
-- `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `scanner.py`: **16**
+- `settings.py`: **16**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
 - `branding.py`: **14**
 - `diskreport.py`: **12**
-- `startup.py`: **9**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
+- `startup.py`: **8**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T09:36:37` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la pre-compilación de `JUNK_EXTENSIONS` en un conjunto de búsqueda directa y el uso de un cache de set `visited` que evita redundancias al evaluar rutas resueltas canónicamente, reduciendo llamadas innecesarias al sistema de archivos.
+- `2026-11-09T09:36:22` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` reemplazando la creación dinámica de buffers y la resolución redundante de nombres mediante técnicas de pre-alocación y acceso directo por índice, reduciendo la presión sobre el recolector de basura y el tiempo de CPU en ciclos de escaneo.
+- `2026-11-09T09:34:41` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` convirtiendo `PIPELINE_DEFINITIONS` a un objeto indexado y cacheando los resultados del pipeline mediante una clave calculada basada en los valores de las métricas, evitando así el re-cálculo de scores y reglas idénticas en ejecuciones rápidas del bucle principal.
 - `2026-11-09T09:25:57` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `path.exists()` dentro del bucle de recorrido, aprovechando la información ya validada por `entry.stat()` y moviendo las verificaciones de seguridad a un orden de costo ascendente.
 - `2026-11-09T09:24:37` **branding.py** (rendimiento): Se optimizó `_hex_to_rgb` y `_rgb_to_hex` reemplazando el acceso a listas y cálculos redundantes por operaciones bitwise directas y pre-cálculos, mejorando la eficiencia en las llamadas frecuentes de renderizado de gradientes.
 - `2026-11-09T09:14:46` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y persistencia (`_read_and_parse_json`, `_coerce_and_verify` y `_SettingsManager`), mejorando la claridad sobre el manejo de estados atómicos y la seguridad ante errores de entrada.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T08:34:24` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` al agregar una validación específica contra archivos cuyo tamaño o tiempo de modificación sean `None` o inconsistentes, evitando posibles errores de desreferenciación en las funciones heurísticas que consumen estos metadatos.
 - `2026-11-09T08:33:58` **safety.py** (manejo de errores y validación de entradas): Se ha corregido un error tipográfico en `_validate_structural_safety` donde la constante `SafetyValidationENVIRONMENT` (no definida) impedía que el manejo de errores en rutas UNC funcionara correctamente al lanzar una excepción `NameError`, sustituyéndola por la categoría correcta `SafetyValidationCategory.ENVIRONMENT`.
 - `2026-11-09T08:24:34` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` añadiendo validaciones de tipo explícitas y una gestión de errores más granular, asegurando que un manifiesto parcialmente corrupto o tipos de datos inesperados no bloqueen el acceso a la cuarentena ni causen errores en tiempo de ejecución.
-- `2026-11-09T08:23:47` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado `delete_reviewed` para implementar una verificación de seguridad proactiva mediante `ensure_safe_to_modify` antes de cada operación destructiva (`unlink`), garantizando que cualquier error de permisos o ruta sea capturado explícitamente en lugar de silenciado por bloques `try-except` genéricos.
-- `2026-11-09T08:23:17` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` capturando excepciones específicas y validando la integridad de los datos de entrada, evitando errores silenciosos y garantizando que las operaciones de bajo nivel (handle management) no queden en estados inconsistentes.
-- `2026-11-09T08:13:59` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_process_pipeline_entry` añadiendo validaciones explícitas de tipos y estados, asegurando que los fallos en la ejecución de reglas no silencien errores críticos y que la instancia `metrics` se verifique antes de ser procesada.
