@@ -1337,3 +1337,11 @@ FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning 
 - `2026-11-09T10:06:22` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra `SystemMetrics` mal inicializadas o con valores no finitos, protegiendo al pipeline de errores de división por cero o NaN en los calculadores de salud, manteniendo la integridad del proceso incluso ante estados de datos inconsistentes.
 - `2026-11-09T10:06:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T10:06:22` Corrida terminada. Total usado hoy: 240.
+- `2026-11-09T10:15:02` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-11-09T10:16:04` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-09T10:17:17` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-09T10:17:47` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejora la robustez en la resolución de rutas de procesos mediante la implementación de un buffer de tamaño dinámico para `GetModuleFileNameExW`, evitando el truncamiento silencioso de rutas largas y posibles errores de parsing que ocurren cuando los ejecutables tienen caminos profundos.
+- `2026-11-09T10:18:17` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-09T10:18:49` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se implementa una validación adicional en `quarantine_file` para evitar colisiones de rutas mediante la verificación de la existencia del archivo de destino usando `exists()` y `samefile()`, mejorando la robustez ante condiciones de carrera entre la generación del nombre y la escritura física.
+- `2026-11-09T10:18:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T10:18:49` Corrida terminada. Total usado hoy: 244.

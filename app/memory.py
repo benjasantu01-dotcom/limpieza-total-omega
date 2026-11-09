@@ -387,7 +387,6 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     """
     Generador de procesos del sistema que filtra por uso de RAM y seguridad.
-    Pre-aloca buffers para minimizar el overhead de memoria durante el escaneo.
     """
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     
@@ -400,7 +399,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
-    path_buf = ctypes.create_unicode_buffer(512)
+    # Path buffer dinámico de 1024 caracteres para manejar rutas largas de Windows
+    path_buf = ctypes.create_unicode_buffer(1024)
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     
     for pid in pids[:count]:
@@ -413,9 +413,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
                 ws = pmc.WorkingSetSize
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
-                    # Acceso directo al buffer ya poblado por _is_process_executable_safe
                     raw_path = path_buf.value
-                    # Obtener nombre rápido mediante el último separador sin instanciar Path extra
                     idx = raw_path.rfind('\\')
                     name = raw_path[idx + 1:] if idx != -1 else raw_path
                     yield ProcessMemory(name, pid, BytesValue(ws))
@@ -487,7 +485,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if target_pid <= 0 or _is_system_process(target_pid) or not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
         return False, "Operación no permitida para este PID o no disponible."
         
-    path_buf = ctypes.create_unicode_buffer(512)
+    path_buf = ctypes.create_unicode_buffer(1024)
     # Obtenemos handle con acceso específico de trim
     handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     

@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 69
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 90 | 9 | 32 | 10 | 123 |
-| 2026-11-09 | 97 | 6 | 37 | 9 | 91 |
+| 2026-11-08 | 89 | 8 | 32 | 10 | 121 |
+| 2026-11-09 | 99 | 6 | 38 | 9 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **41**
 - rendimiento: **29**
-- seguridad defensiva: **28**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **19**
 - `safety.py`: **19**
 - `healthscore.py`: **18**
-- `memory.py`: **18**
+- `quarantine.py`: **17**
 - `settings.py`: **17**
-- `quarantine.py`: **16**
 - `scanner.py`: **16**
 - `duplicates.py`: **16**
 - `assistant.py`: **14**
 - `branding.py`: **14**
 - `diskreport.py`: **12**
-- `startup.py`: **9**
 - `browser.py`: **9**
 - `organizer.py`: **9**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T10:18:49` **quarantine.py** (robustez ante casos límite): Se implementa una validación adicional en `quarantine_file` para evitar colisiones de rutas mediante la verificación de la existencia del archivo de destino usando `exists()` y `samefile()`, mejorando la robustez ante condiciones de carrera entre la generación del nombre y la escritura física.
+- `2026-11-09T10:17:47` **memory.py** (robustez ante casos límite): Mejora la robustez en la resolución de rutas de procesos mediante la implementación de un buffer de tamaño dinámico para `GetModuleFileNameExW`, evitando el truncamiento silencioso de rutas largas y posibles errores de parsing que ocurren cuando los ejecutables tienen caminos profundos.
 - `2026-11-09T10:06:22` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra `SystemMetrics` mal inicializadas o con valores no finitos, protegiendo al pipeline de errores de división por cero o NaN en los calculadores de salud, manteniendo la integridad del proceso incluso ante estados de datos inconsistentes.
 - `2026-11-09T10:05:46` **diskreport.py** (robustez ante casos límite): Mejoré `_validate_root` y `_get_local_windows_drives` para robustecer la gestión de permisos, añadiendo bloques `try-except` granulares que previenen que el escaneo colapse prematuramente al encontrar rutas con privilegios restringidos o errores de sistema.
 - `2026-11-09T10:05:19` **browser.py** (robustez ante casos límite): Mejoré la robustez de `DirectoryScanner` ante condiciones de carrera (cuando un archivo es eliminado por el navegador mientras se escanea) y errores de acceso al sistema de archivos, envolviendo la obtención de atributos (`os.lstat`) y el acceso a `scandir` en bloques `try-except` más granulares para asegurar que el escáner no aborte ante cambios dinámicos en el disco.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T09:25:57` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `path.exists()` dentro del bucle de recorrido, aprovechando la información ya validada por `entry.stat()` y moviendo las verificaciones de seguridad a un orden de costo ascendente.
 - `2026-11-09T09:24:37` **branding.py** (rendimiento): Se optimizó `_hex_to_rgb` y `_rgb_to_hex` reemplazando el acceso a listas y cálculos redundantes por operaciones bitwise directas y pre-cálculos, mejorando la eficiencia en las llamadas frecuentes de renderizado de gradientes.
 - `2026-11-09T09:14:46` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y persistencia (`_read_and_parse_json`, `_coerce_and_verify` y `_SettingsManager`), mejorando la claridad sobre el manejo de estados atómicos y la seguridad ante errores de entrada.
-- `2026-11-09T09:14:15` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos en las funciones de la suite de heurísticas (`check_empty_file`, etc.) y se clarificaron los roles de las constantes de configuración, facilitando la comprensión del mantenimiento preventivo del módulo.
-- `2026-11-09T09:08:30` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad del código corrigiendo el error tipográfico en `_validate_access_permissions` (`SafetyValidationCATEGORY` por `SafetyValidationCategory`) y añadiendo `docstrings` explicativos en las funciones de validación crítica y estructuras de datos para clarificar el propósito de cada chequeo de seguridad, cumpliendo con el enfoque de legibilidad y documentación sin alterar el comportamiento.

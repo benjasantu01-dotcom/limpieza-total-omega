@@ -806,6 +806,12 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     
+    # Prevenir colisión de archivos existente antes de iniciar el aislamiento atómico
+    if destination.exists():
+        if os.path.samefile(p_source, destination):
+            raise UnsafePathError("Operación circular detectada: origen y destino iguales.")
+        raise FileExistsError(f"Colisión de destino en sandbox: {destination}")
+    
     try:
         file_hash, file_inode, dev_id, mtime = _atomic_isolate_file(p_source, destination, initial_stat.st_size)
         item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
