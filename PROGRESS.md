@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 73
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 7 | 0 | 2 | 0 | 17 |
+| 2026-11-07 | 4 | 0 | 1 | 0 | 17 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 54 | 1 | 23 | 6 | 44 |
+| 2026-11-09 | 56 | 1 | 23 | 6 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **36**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
+- seguridad defensiva: **33**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
 - `quarantine.py`: **20**
-- `healthscore.py`: **19**
+- `memory.py`: **20**
 - `safety.py`: **18**
+- `healthscore.py`: **18**
 - `settings.py`: **17**
 - `duplicates.py`: **15**
 - `scanner.py`: **15**
 - `diskreport.py`: **14**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
 - `startup.py`: **12**
 - `branding.py`: **12**
-- `organizer.py`: **9**
-- `browser.py`: **8**
+- `browser.py`: **9**
+- `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T05:32:02` **browser.py** (robustez ante casos límite): Mejoré la robustez de `DirectoryScanner` frente a archivos bloqueados por el sistema operativo o procesos externos, asegurando que `_handle_file` maneje explícitamente errores de acceso al intentar leer los metadatos del archivo (estat), evitando que una excepción interrumpa la recursión del escaneo de la caché.
+- `2026-11-09T05:30:55` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del manejo de datos externos en `SystemContext.ingest` y `_apply_updates` para prevenir fallas silenciosas cuando se reciben tipos de datos inesperados (ej. colecciones anidadas) que podrían corromper el estado interno o causar excepciones no atrapadas durante el acceso a atributos.
 - `2026-11-09T05:21:18` **settings.py** (rendimiento): Se optimizó `validate` reemplazando la creación repetida de `DEFAULTS.copy()` y el acceso a diccionarios dentro del loop por un cacheo local de referencias, reduciendo significativamente la sobrecarga en el parsing de configuraciones.
 - `2026-11-09T05:20:38` **safety.py** (rendimiento): Implementé un sistema de "Short-Circuiting" para `is_safe_to_modify` utilizando `_NEGATIVE_SECURITY_CACHE` y `_SECURITY_CACHE` compartidos globalmente, reduciendo drásticamente las llamadas a APIs de Windows en bucles de escaneo repetitivos.
 - `2026-11-09T05:12:15` **quarantine.py** (rendimiento): Optimicé el cálculo del peso total en `total_quarantined_bytes` evitando la deserialización completa de objetos `QuarantineItem` y cargando únicamente los bytes necesarios del JSON, reduciendo el consumo de memoria y CPU.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T04:29:15` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos en las funciones críticas y se han tipado explícitamente los retornos de las funciones de cálculo, facilitando la comprensión del flujo de datos en el pipeline.
 - `2026-11-09T04:19:55` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `Tuple` y `Dict`) y se añadió un docstring detallado en `_collect_candidates` para documentar la lógica de recorrido y los filtros de seguridad, mejorando la legibilidad técnica.
 - `2026-11-09T04:19:47` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados, un docstring explicativo en la función principal de escaneo (`walk_files`) que aclara el manejo de recursión/enlaces, y una refactorización de `_collect_summary_data` para clarificar su rol como orquestador de métricas.
-- `2026-11-09T04:18:56` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones públicas, detallando los parámetros, los casos de error manejados y el propósito de cada utilitario visual, facilitando así el mantenimiento a largo plazo.
-- `2026-11-09T04:10:03` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `SystemContext` y `ProblemCriterion` añadiendo docstrings técnicos que explican el propósito de las validaciones de seguridad y el flujo de los datos, facilitando la comprensión del mantenimiento a largo plazo sin alterar la lógica.

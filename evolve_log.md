@@ -801,3 +801,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T05:21:18` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó `validate` reemplazando la creación repetida de `DEFAULTS.copy()` y el acceso a diccionarios dentro del loop por un cacheo local de referencias, reduciendo significativamente la sobrecarga en el parsing de configuraciones.
 - `2026-11-09T05:21:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T05:21:18` Corrida terminada. Total usado hoy: 128.
+- `2026-11-09T05:29:44` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-11-09T05:30:14` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-09T05:30:55` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del manejo de datos externos en `SystemContext.ingest` y `_apply_updates` para prevenir fallas silenciosas cuando se reciben tipos de datos inesperados (ej. colecciones anidadas) que podrían corromper el estado interno o causar excepciones no atrapadas durante el acceso a atributos.
+- `2026-11-09T05:31:25` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-09T05:32:02` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `DirectoryScanner` frente a archivos bloqueados por el sistema operativo o procesos externos, asegurando que `_handle_file` maneje explícitamente errores de acceso al intentar leer los metadatos del archivo (estat), evitando que una excepción interrumpa la recursión del escaneo de la caché.
+- `2026-11-09T05:32:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T05:32:02` Corrida terminada. Total usado hoy: 132.

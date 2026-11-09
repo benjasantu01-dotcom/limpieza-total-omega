@@ -548,14 +548,18 @@ class SystemContext:
             if not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
                 return False
         if isinstance(source, (dict, list, tuple)):
+            # Fallo defensivo: las estructuras profundas se rechazan inmediatamente
             return not _is_input_too_deep_or_complex(source)
         return True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
+        # Protección extra contra tipos inyectados por error
         for key, value in updates.items():
+            if not isinstance(key, str): continue
             if self._is_valid_metric_key(key) or key == "grade":
-                setattr(self, key, value)
+                if isinstance(value, (int, float, str)):
+                    setattr(self, key, value)
         
         self.analyzed = True
         self.__dict__.pop("metrics_snapshot", None)
@@ -566,10 +570,13 @@ class SystemContext:
         """Ingiere y valida datos externos para actualizar el estado de SystemContext."""
         if not self._validate_ingestion_source(source): 
             return False
-        updates = self._validate_and_sanitize_data(source)
-        if updates:
-            self._apply_updates(updates)
-            return True
+        try:
+            updates = self._validate_and_sanitize_data(source)
+            if updates:
+                self._apply_updates(updates)
+                return True
+        except (AttributeError, TypeError, Exception):
+            pass
         return False
 
 @dataclass

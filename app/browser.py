@@ -148,6 +148,7 @@ class DirectoryScanner:
         """Calcula el tamaño de archivo asegurando la unicidad mediante identificadores de inodo/disco."""
         if not _is_system_hidden(entry.path, self.ctx.kernel32):
             try:
+                # El uso de entry.stat es necesario para capturar permisos denegados o archivos bloqueados
                 st_file = entry.stat(follow_symlinks=False)
                 file_id = (st_file.st_dev, st_file.st_ino)
                 if file_id not in self.ctx.visited_files:
