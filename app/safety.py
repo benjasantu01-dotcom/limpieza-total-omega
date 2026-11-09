@@ -864,7 +864,6 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Evalúa si la ruta está dentro de directorios del sistema protegidos o archivos críticos.
-    Esta función es una barrera de seguridad de alto nivel.
     """
     if path is None: return True
     path_str = str(path)
@@ -996,15 +995,15 @@ def _validate_path_depth_and_root_access(target_path: Path) -> None:
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
 
 def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
-    """Analiza el descriptor de seguridad para bloquear objetos del sistema o redirecciones."""
+    """Valida los atributos del descriptor de seguridad del objeto."""
     if sd.is_protected_system:
         raise UnsafePathError("Protección defensiva: Archivo de sistema oculto/protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)
     if sd.has_flag(Win32Attr.OFFLINE):
-        raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationCategory.INTEGRITY)
     if sd.is_reparse:
-        raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     if sd.has_flag(Win32Attr.SPARSE_FILE):
-        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationCategory.INTEGRITY)
 
 def _check_container_permissions(target_path: Path) -> None:
     """Verifica permisos de escritura en el directorio padre antes de realizar operaciones."""
@@ -1190,9 +1189,8 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
-    Punto de entrada principal para validar que un archivo/carpeta pueda ser modificado.
-    Realiza todas las comprobaciones de integridad y seguridad.
-    Lanza UnsafePathError ante cualquier irregularidad o riesgo detectado.
+    Valida que una ruta pueda ser modificada de forma segura.
+    Lanza UnsafePathError en caso de riesgo de seguridad detectado.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)

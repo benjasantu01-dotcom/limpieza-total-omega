@@ -232,7 +232,7 @@ class _Validators:
 
     @staticmethod
     def _parse_as_type(val: Any, target_type: type[T]) -> Optional[T]:
-        """Convierte valor bruto al tipo objetivo; retorna None si la conversión falla."""
+        """Intenta convertir un valor crudo al tipo esperado, capturando fallos de tipo."""
         try:
             converted = target_type(val)
             return converted if isinstance(converted, target_type) else None
@@ -242,7 +242,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=32)
     def _is_reparse_point(path_str: str) -> bool:
-        """Determina si una ruta es un junction o symlink."""
+        """Determina mediante lstat si la ruta es un punto de reanálisis (symlink/junction)."""
         try:
             st = os.lstat(path_str)
             if stat.S_ISLNK(st.st_mode): return True
@@ -253,13 +253,12 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """Valida que la cadena de padres de la ruta sea segura y absoluta."""
+        """Valida recursivamente la seguridad de la cadena de padres hasta la raíz."""
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
             current = p.resolve()
             
-            # Limitar profundidad de recursión para evitar ataques de desbordamiento
             for depth, parent in enumerate(current.parents):
                 if depth > 32: return False
                 if _Validators._is_reparse_point(str(parent)): return False
@@ -278,7 +277,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=64)
     def _is_safe_path(path_str: str) -> bool:
-        """Filtro primario de seguridad para rutas."""
+        """Filtro primario de seguridad que descarta rutas inseguras o malformadas."""
         if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         if ".." in path_str: return False
@@ -290,7 +289,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Normaliza booleanos aceptando representaciones textuales comunes."""
+        """Convierte inputs booleanos o strings (si/no/true/false) a un booleano real."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -301,7 +300,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Normaliza enteros y los recorta dentro de los límites definidos en _NUMERIC_LIMITS."""
+        """Convierte a entero y asegura que esté dentro del rango definido en _NUMERIC_LIMITS."""
         parsed_value = _Validators._parse_as_type(val, int)
         if parsed_value is None: return None
         limit = _NUMERIC_LIMITS.get(key)
@@ -310,7 +309,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida si un string de ruta es absoluto, seguro y sanitizado para ser guardado."""
+        """Valida que una ruta sea absoluta, segura y sanitizada."""
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
@@ -319,7 +318,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Valida que un string pertenezca a la lista de opciones permitidas (ENUM)."""
+        """Valida que el string coincida con una opción permitida de un ENUM."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -328,7 +327,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Sanitiza strings generales eliminando caracteres de control y verificando longitud."""
+        """Limpia strings generales, descartando caracteres de control e inválidos."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -365,7 +364,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config 
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
-    """Verifica seguridad de lectura del archivo de configuración."""
+    """Verifica seguridad de lectura del archivo de configuración (propiedad, modo y tipo)."""
     try:
         resolved_path = file_path.resolve()
         resolved_str = str(resolved_path)

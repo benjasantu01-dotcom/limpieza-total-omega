@@ -256,7 +256,7 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica que la ruta resuelta esté contenida bajo la jerarquía base."""
+        """Verifica que la ruta resuelta esté contenida bajo la jerarquía base (evita fugas hacia el sistema)."""
         try:
             norm_entry = _get_canonical_path(entry_path)
             if not norm_entry or not self.base_root_real:
@@ -266,16 +266,20 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida que el nombre de archivo no contenga caracteres o patrones prohibidos."""
+        """Valida mediante regex que el nombre no contenga caracteres o patrones prohibidos por el FS."""
         if not isinstance(name, str) or not name or "\0" in name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si la entrada es un punto de reanálisis (Junction/Symlink)."""
+        """Determina si la entrada es un punto de reanálisis (Junction/Symlink) para prevenir recursión infinita."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida recursivamente si una entrada es apta para ser procesada."""
+        """
+        Valida recursivamente si una entrada es apta para ser procesada.
+        Aplica filtros de seguridad: caché de rutas seguras, nombres válidos, 
+        puntos de reanálisis, protección de rutas y permisos de lectura.
+        """
         try:
             path_str = getattr(entry, 'path', None)
             if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
@@ -292,7 +296,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
-        """Gestiona la inserción de subdirectorios en la pila de recorrido con control de profundidad."""
+        """Gestiona la inserción de subdirectorios en la pila de recorrido, verificando la profundidad máxima."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = _get_canonical_path(entry.path)
         if not norm_path or norm_path in visited: return
@@ -308,6 +312,7 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
         """
         Analiza una entrada: si es directorio, lo encola; si es archivo, ejecuta heurísticas.
+        Mantiene un registro 'visited' para evitar ciclos durante la navegación.
         """
         if not self._is_safe_entry(entry):
             return
@@ -325,7 +330,8 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """
-        Ejecuta todas las heurísticas registradas en ALL_CHECKS sobre un archivo validado.
+        Ejecuta todas las heurísticas registradas en ALL_CHECKS sobre un archivo validado,
+        obteniendo previamente sus metadatos de forma segura (sin seguir enlaces).
         """
         stats: Optional[os.stat_result] = _safe_stat(entry)
         if stats is None:
