@@ -1191,3 +1191,55 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-09T09:08:30` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad del código corrigiendo el error tipográfico en `_validate_access_permissions` (`SafetyValidationCATEGORY` por `SafetyValidationCategory`) y añadiendo `docstrings` explicativos en las funciones de validación crítica y estructuras de datos para clarificar el propósito de cada chequeo de seguridad, cumpliendo con el enfoque de legibilidad y documentación sin alterar el comportamiento.
 - `2026-11-09T09:08:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T09:08:30` Corrida terminada. Total usado hoy: 216.
+- `2026-11-09T09:13:46` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-09T09:14:15` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna mediante la adición de docstrings técnicos en las funciones de la suite de heurísticas (`check_empty_file`, etc.) y se clarificaron los roles de las constantes de configuración, facilitando la comprensión del mantenimiento preventivo del módulo.
+- `2026-11-09T09:14:46` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y persistencia (`_read_and_parse_json`, `_coerce_and_verify` y `_SettingsManager`), mejorando la claridad sobre el manejo de estados atómicos y la seguridad ante errores de entrada.
+- `2026-11-09T09:15:11` Tests FALLARON:
+```
+app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+4 failed, 295 passed in 1.10s
+
+```
+- `2026-11-09T09:15:11` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `startup.py` consolidando la lógica de validación de rutas mediante un método privado `_is_path_safe` unificado, eliminando redundancias en las comprobaciones de seguridad y mejorando la claridad de las expresiones en los chequeos de archivos.
+- `2026-11-09T09:15:33` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Answer.is_online, SystemContext.__hash__, SystemContext._apply_updates, SystemContext._cached_active_problems, SystemContext._clean_grade, SystemContext._has_circular_refs, SystemContext._hash_tuple, SystemContext._is_valid_metric_key, SystemContext._validate_keys_safe, SystemContext.get_metric, SystemContext.is_valid_structure
+- `2026-11-09T09:15:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T09:15:33` Corrida terminada. Total usado hoy: 220.

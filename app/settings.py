@@ -161,17 +161,19 @@ class _SettingsManager:
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
-        # Almacena: (datos_mapeados, mtime, size)
+        # Cache de datos: mapea ruta resuelta a una tupla de (AppSettingsProxy, mtime, size)
         self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
 
     def clear(self, resolved_path_str: str) -> None:
-        """Elimina una entrada de la caché de datos basada en su ruta resuelta."""
+        """Invalidación manual de la caché ante cambios en el archivo físico."""
         self.data_cache.pop(resolved_path_str, None)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Escribe la configuración usando un archivo temporal y os.replace para
-        garantizar que la operación sea atómica y no deje el archivo corrupto ante un crash.
+        Escribe la configuración de forma atómica:
+        1. Escribe en un archivo temporal (.pid.tmp).
+        2. Sincroniza buffers a disco (fsync).
+        3. Realiza un reemplazo atómico (os.replace).
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
@@ -395,8 +397,8 @@ def _is_structure_valid(data: Any) -> bool:
 
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """
-    Lee el archivo de configuración en disco, verificando metadatos para evitar
-    condiciones de carrera y asegurando que sea un archivo regular seguro.
+    Lee y parsea el JSON validando metadatos para detectar condiciones de carrera.
+    Retorna (data, stat_result) si es seguro, None en caso contrario.
     """
     try:
         if not file_path.exists() or not file_path.is_file(): return None
@@ -406,6 +408,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
             st_post = os.fstat(fd)
+            # Verificación de integridad: el archivo no debe haber cambiado durante la apertura
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or \
                st_post.st_size < MIN_SETTINGS_SIZE or st_post.st_size > MAX_SETTINGS_SIZE or \
                st_post.st_mtime != st.st_mtime or st_post.st_ino != st.st_ino:
@@ -432,14 +435,15 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """
-    Asegura que el diccionario de configuración final contenga todos los campos
-    obligatorios, aplicando valores por defecto y forzando coherencia de lógica
-    de negocio (ej. deshabilitar asistente sin clave).
+    Aplica lógica de negocio necesaria sobre los datos validados.
+    Ejemplo: invalida el asistente si no hay credenciales presentes.
     """
     coerced = DEFAULTS.copy()
     for key_name, value in settings.items():
         if key_name in DEFAULTS and value is not None and isinstance(value, type(DEFAULTS[key_name])):
             coerced[key_name] = value # type: ignore
+    
+    # Regla de negocio: el asistente requiere obligatoriamente una clave API definida
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
     return coerced

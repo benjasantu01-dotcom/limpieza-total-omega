@@ -54,15 +54,6 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Define el contrato para funciones de inspección heurística.
-    
-    Args:
-        path: Objeto Path del archivo a inspeccionar.
-        entry: Objeto os.DirEntry opcional (útil si ya se escaneó el directorio).
-        now_ts: Timestamp actual para cálculos de antiguedad.
-        stats: Metadatos del archivo (os.stat_result) para evitar llamadas extras.
-        
-    Returns:
-        Un objeto Suspicion si se detecta una amenaza, o None si el archivo es benigno.
     """
     def __call__(
         self, 
@@ -78,7 +69,7 @@ TraversalStack: TypeAlias = List[Tuple[str, int]]
 Timestamp: TypeAlias = float
 PathInput: TypeAlias = Union[Path, str, None]
 
-# Expresiones regulares para detección de técnicas de evasión
+# Expresiones regulares para detección de técnicas de evasión y validación de nombres
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d\u202b\u200b\u00a0\ufeff]")
 RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
@@ -181,7 +172,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
-    """Valida la integridad del string del path."""
+    """Valida la integridad del string del path y filtra rutas UNC/caracteres reservados."""
     if not isinstance(path_str, str) or not path_str.strip() or "\0" in path_str:
         return False
     try:
@@ -199,19 +190,19 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 # --- Suite de Heurísticas ---
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Detecta archivos de tamaño 0 bytes que pueden actuar como marcadores o bloqueos."""
+    """Detecta archivos de tamaño 0 bytes; pueden ser marcadores de control maliciosos."""
     if stats is not None and getattr(stats, "st_size", -1) == 0:
         return Suspicion(path, "Archivo vacío detectado (posible marcador de relleno)", "warning")
     return None
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Identifica patrones de doble extensión utilizados para engañar al usuario final."""
+    """Detecta archivos con doble extensión (ej. .pdf.exe) para ocultar el tipo real al usuario."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de ofuscación", "warning")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Comprueba si un archivo utiliza nombres de procesos del sistema en carpetas no autorizadas."""
+    """Identifica ejecutables usando nombres de procesos críticos de Windows fuera de System32."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -221,7 +212,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
-    """Marca ejecutables nuevos encontrados en carpetas temporales o de descarga comunes."""
+    """Marca archivos ejecutables descargados recientemente, considerando la volatilidad de las carpetas temporales."""
     if path is None or stats is None: 
         return None
     try:
