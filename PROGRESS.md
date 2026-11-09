@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 66 | 8 | 25 | 8 | 85 |
-| 2026-11-09 | 120 | 8 | 45 | 10 | 129 |
+| 2026-11-08 | 64 | 8 | 24 | 8 | 84 |
+| 2026-11-09 | 123 | 8 | 46 | 10 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **40**
 - seguridad defensiva: **35**
-- rendimiento: **26**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
+- `healthscore.py`: **18**
+- `safety.py`: **18**
 - `settings.py`: **18**
-- `healthscore.py`: **17**
+- `duplicates.py`: **18**
 - `memory.py`: **17**
-- `duplicates.py`: **17**
-- `quarantine.py`: **16**
 - `scanner.py`: **16**
 - `assistant.py`: **15**
-- `diskreport.py`: **13**
+- `quarantine.py`: **15**
+- `diskreport.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **9**
 - `startup.py`: **9**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T13:20:05` **healthscore.py** (legibilidad y documentación): Mejoré la documentación interna del módulo `healthscore.py` añadiendo docstrings descriptivos a los protocolos y funciones clave, clarificando la intención del pipeline de puntuación y documentando el propósito de las funciones de soporte para facilitar el mantenimiento futuro.
+- `2026-11-09T13:19:35` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` mediante la normalización de la estructura de las funciones de hash, añadiendo docstrings descriptivos y type hints consistentes en los procesadores internos para facilitar la depuración y auditoría del proceso de filtrado.
+- `2026-11-09T13:19:06` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones principales y la clarificación de las responsabilidades de las clases auxiliares, facilitando el mantenimiento y la comprensión del flujo de datos en el análisis de disco.
 - `2026-11-09T13:10:57` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la inclusión de docstrings detallados en funciones clave y la estandarización de type hints, facilitando la comprensión del flujo de datos en el escaneo de directorios sin alterar la lógica de seguridad existente.
 - `2026-11-09T13:09:53` **assistant.py** (legibilidad y documentación): Mejoré la documentación de los criterios de salud (`_CRITERIOS_SALUD`) y los tipos de datos complejos en `assistant.py`, clarificando mediante docstrings la relación entre métricas y diagnósticos, facilitando el mantenimiento y la comprensión de las reglas de negocio sin alterar el comportamiento.
 - `2026-11-09T13:09:09` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry.executable` y `_resolve_path_from_command` mediante validación estricta de tipos y manejo explícito de errores, previniendo fallos ante entradas de registro malformadas o inesperadas que podrían comprometer la estabilidad del escaneo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T12:38:44` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando fallos en `os.scandir` y condiciones de borde en las rutas, asegurando que la app no aborte ante directorios inaccesibles o entradas corruptas.
 - `2026-11-09T11:08:15` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_valid_registry_path` y `_is_registry_entry_safe` reforzando la validación contra ataques de inyección y rutas ambiguas (UNC), asegurando que cualquier entrada del registro sea explícitamente validada mediante `is_protected_path` antes de ser procesada.
 - `2026-11-09T11:07:30` **scanner.py** (seguridad defensiva): Se ha reforzado la seguridad defensiva en `_is_safe_entry` al agregar una verificación explícita mediante `is_protected_path` sobre la ruta real normalizada antes de cualquier procesamiento, garantizando que el escáner sea incapaz de seguir enlaces simbólicos o acceder a rutas prohibidas incluso si el sistema operativo los presenta como directorios navegables.
-- `2026-11-09T10:56:50` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `delete_reviewed` implementando una validación de identidad del archivo mediante `stat()` antes del `unlink()` para mitigar ataques TOCTOU, asegurando que el archivo que se va a borrar es realmente el que el escáner identificó y no un reemplazo malicioso creado durante la espera.
-- `2026-11-09T10:46:53` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del motor de scoring implementando una validación estricta y explícita en `_sanitize_msg` para evitar que datos malformados o potencialmente peligrosos (incluyendo intentos de inyección de cadenas con caracteres de control o rutas sospechosas) escapen del proceso de generación de reportes, utilizando `_BLOCKED_TERMS` como barrera de entrada.
-- `2026-11-09T10:46:28` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la incorporación de `is_safe_to_modify` en el acceso a metadatos dentro de `_collect_candidates`, garantizando que el escaneo no acceda a rutas que violen las políticas de seguridad antes de procesar su tamaño o inodo.
