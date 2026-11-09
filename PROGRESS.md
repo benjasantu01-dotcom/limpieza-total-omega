@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 45 | 3 | 13 | 3 | 74 |
+| 2026-11-07 | 44 | 3 | 13 | 3 | 71 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 9 | 0 | 4 | 1 | 2 |
+| 2026-11-09 | 11 | 0 | 5 | 1 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **35**
-- seguridad defensiva: **34**
-- rendimiento: **28**
+- seguridad defensiva: **33**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **19**
+- `quarantine.py`: **18**
 - `healthscore.py`: **18**
-- `memory.py`: **18**
-- `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `diskreport.py`: **16**
 - `settings.py`: **16**
 - `duplicates.py`: **15**
 - `safety.py`: **15**
-- `assistant.py`: **13**
 - `startup.py`: **13**
+- `assistant.py`: **12**
 - `browser.py`: **10**
 - `branding.py`: **9**
 - `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T00:46:23` **quarantine.py** (rendimiento): Se implementó un cacheo más eficiente en `_is_file_in_use_by_system` y se introdujo un diccionario de pre-filtrado por inodo en `load_manifest` para evitar lecturas de metadatos redundantes y llamadas excesivas al sistema durante la carga masiva del manifiesto.
+- `2026-11-09T00:45:02` **memory.py** (rendimiento): Optimizé `_iter_process_memory` eliminando la recreación de objetos `ProcessMemory` y realizando llamadas redundantes a `split` y `str()` dentro del bucle principal, además de asegurar que el buffer de ruta se reutilice estrictamente para mejorar el rendimiento bajo carga.
 - `2026-11-09T00:35:37` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación eliminando el cálculo redundante de `float()` y `_clamp()` dentro del bucle principal, y reemplacé la construcción dinámica de diccionarios por una pre-asignación eficiente.
 - `2026-11-09T00:26:50` **branding.py** (rendimiento): Optimicé el renderizado de la barra de progreso textual mediante el uso de una caché pre-calculada de strings para evitar la concatenación repetitiva de caracteres en cada llamada a `bar()`.
 - `2026-11-09T00:26:17` **assistant.py** (rendimiento): Optimicé el acceso a criterios de salud y el filtrado de métricas mediante el uso de `frozenset` y pre-cálculos, evitando operaciones redundantes en el bucle principal de evaluación de problemas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T14:50:10` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones internas y se han añadido type hints más precisos para clarificar el flujo de datos entre las etapas de filtrado y hashing.
 - `2026-11-08T14:44:34` **diskreport.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad mediante la adición de Type Hints en la lógica de agregación y la centralización de los métodos de cálculo de tamaño en `FolderMetrics`, eliminando redundancias en la lógica de las funciones principales.
 - `2026-11-08T14:32:09` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` y `_process_folder_entry` mediante la captura explícita de excepciones al interactuar con objetos del sistema de archivos, asegurando que el bucle de procesamiento sea resiliente ante entradas malformadas o permisos denegados sin interrumpir la ejecución.
-- `2026-11-08T14:31:55` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la deserialización en `_read_and_parse_json` al manejar explícitamente el caso de archivos vacíos o con formato inválido, además de fortalecer la validación de integridad en `_is_structure_valid` para evitar inyecciones de claves no esperadas mediante una comprobación estricta de los tipos de datos.
-- `2026-11-08T14:31:25` **scanner.py** (manejo de errores y validación de entradas): Se corrigió una variable global faltante (`INVALID_TRAILING_CHARS_RE`) en el método `_has_invalid_name` de la clase `Scanner` que provocaba un `NameError` al ejecutarse, y se endureció la validación de la entrada `entry.name` mediante un chequeo preventivo de `None` para evitar errores en las heurísticas.

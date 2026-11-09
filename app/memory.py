@@ -354,9 +354,9 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
     try:
         length = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
         if length <= 0: return False 
-        raw_path = str(path_buffer.value)
+        raw_path = path_buffer.value
         if not raw_path: return False
-        return not is_protected_path(Path(raw_path))
+        return not is_protected_path(Path(raw_path.decode('utf-8', 'ignore')))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
@@ -408,7 +408,9 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
                 ws = pmc.WorkingSetSize
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
-                    name = str(path_buf.value).split('\\')[-1]
+                    # Usar slicing del buffer sin split costoso para el nombre
+                    raw_path = path_buf.value
+                    name = raw_path.split('\\')[-1]
                     yield ProcessMemory(name, pid, BytesValue(ws))
         except (ctypes.ArgumentError, OSError):
             continue

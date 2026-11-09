@@ -67,7 +67,7 @@ CHUNK_SIZE: int = 262144  # 256KB para streaming eficiente de archivos grandes
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
 _HASH_CACHE: Dict[Tuple[int, int, float, int], Tuple[str, float]] = {}
 _WIN_ATTR_CACHE: Dict[str, Tuple[int, float]] = {}
-_INODE_USE_CACHE: Dict[Tuple[int, int, float], Tuple[bool, float]] = {}
+_INODE_USE_CACHE: Dict[Tuple[int, int], Tuple[bool, float]] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -295,7 +295,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     if path is None or not path.exists(): return False
     try:
         st = path.stat()
-        cache_key = (st.st_dev, st.st_ino, st.st_mtime)
+        cache_key = (st.st_dev, st.st_ino)
         now = time.monotonic()
         
         if cache_key in _INODE_USE_CACHE:
@@ -513,8 +513,8 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
                 return cached_items
         
-        # Optimización: Set para búsqueda O(1) de archivos en disco
-        existing_names = {entry.name for entry in os.scandir(base_dir) if entry.is_file()}
+        # Optimización: Set para búsqueda O(1)
+        existing_entries = {entry.name: entry for entry in os.scandir(base_dir) if entry.is_file()}
         
         with open(m_path, "r", encoding="utf-8") as f: 
             data = json.load(f)
@@ -527,7 +527,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             if not isinstance(entry, dict): continue
             item = QuarantineItem.from_dict(entry)
             # Solo validamos si el archivo almacenado físicamente existe
-            if item and item.stored_name in existing_names:
+            if item and item.stored_name in existing_entries:
                 valid_items.append(item)
         
         if len(valid_items) < len(data):
