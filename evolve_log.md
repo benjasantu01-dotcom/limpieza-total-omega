@@ -1243,3 +1243,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T09:15:33` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Answer.is_online, SystemContext.__hash__, SystemContext._apply_updates, SystemContext._cached_active_problems, SystemContext._clean_grade, SystemContext._has_circular_refs, SystemContext._hash_tuple, SystemContext._is_valid_metric_key, SystemContext._validate_keys_safe, SystemContext.get_metric, SystemContext.is_valid_structure
 - `2026-11-09T09:15:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T09:15:33` Corrida terminada. Total usado hoy: 220.
+- `2026-11-09T09:24:01` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-09T09:24:37` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó `_hex_to_rgb` y `_rgb_to_hex` reemplazando el acceso a listas y cálculos redundantes por operaciones bitwise directas y pre-cálculos, mejorando la eficiencia en las llamadas frecuentes de renderizado de gradientes.
+- `2026-11-09T09:25:13` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-09T09:25:49` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-09T09:25:57` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `path.exists()` dentro del bucle de recorrido, aprovechando la información ya validada por `entry.stat()` y moviendo las verificaciones de seguridad a un orden de costo ascendente.
+- `2026-11-09T09:25:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T09:25:57` Corrida terminada. Total usado hoy: 224.

@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 103 | 10 | 36 | 10 | 125 |
-| 2026-11-09 | 85 | 4 | 34 | 9 | 88 |
+| 2026-11-08 | 101 | 10 | 35 | 10 | 124 |
+| 2026-11-09 | 87 | 4 | 35 | 9 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **35**
-- rendimiento: **21**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **20**
-- `memory.py`: **19**
-- `quarantine.py`: **18**
+- `memory.py`: **18**
 - `settings.py`: **17**
+- `duplicates.py`: **17**
 - `healthscore.py`: **17**
+- `quarantine.py`: **17**
 - `scanner.py`: **16**
-- `duplicates.py`: **16**
 - `assistant.py`: **14**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `diskreport.py`: **12**
 - `startup.py`: **9**
 - `organizer.py`: **9**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T09:25:57` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `path.exists()` dentro del bucle de recorrido, aprovechando la información ya validada por `entry.stat()` y moviendo las verificaciones de seguridad a un orden de costo ascendente.
+- `2026-11-09T09:24:37` **branding.py** (rendimiento): Se optimizó `_hex_to_rgb` y `_rgb_to_hex` reemplazando el acceso a listas y cálculos redundantes por operaciones bitwise directas y pre-cálculos, mejorando la eficiencia en las llamadas frecuentes de renderizado de gradientes.
 - `2026-11-09T09:14:46` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y persistencia (`_read_and_parse_json`, `_coerce_and_verify` y `_SettingsManager`), mejorando la claridad sobre el manejo de estados atómicos y la seguridad ante errores de entrada.
 - `2026-11-09T09:14:15` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos en las funciones de la suite de heurísticas (`check_empty_file`, etc.) y se clarificaron los roles de las constantes de configuración, facilitando la comprensión del mantenimiento preventivo del módulo.
 - `2026-11-09T09:08:30` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad del código corrigiendo el error tipográfico en `_validate_access_permissions` (`SafetyValidationCATEGORY` por `SafetyValidationCategory`) y añadiendo `docstrings` explicativos en las funciones de validación crítica y estructuras de datos para clarificar el propósito de cada chequeo de seguridad, cumpliendo con el enfoque de legibilidad y documentación sin alterar el comportamiento.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T08:23:47` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado `delete_reviewed` para implementar una verificación de seguridad proactiva mediante `ensure_safe_to_modify` antes de cada operación destructiva (`unlink`), garantizando que cualquier error de permisos o ruta sea capturado explícitamente en lugar de silenciado por bloques `try-except` genéricos.
 - `2026-11-09T08:23:17` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` capturando excepciones específicas y validando la integridad de los datos de entrada, evitando errores silenciosos y garantizando que las operaciones de bajo nivel (handle management) no queden en estados inconsistentes.
 - `2026-11-09T08:13:59` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `_process_pipeline_entry` añadiendo validaciones explícitas de tipos y estados, asegurando que los fallos en la ejecución de reglas no silencien errores críticos y que la instancia `metrics` se verifique antes de ser procesada.
-- `2026-11-09T08:13:32` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_candidates` mediante la validación proactiva de parámetros de entrada, evitando errores de ejecución si `directories` es `None` o contiene elementos no iterables, y garantizando que el estado interno no se corrompa por entradas mal formadas.
-- `2026-11-09T08:04:59` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_target_valid` añadiendo validaciones preventivas de tipos y estados para evitar excepciones innecesarias antes de operar, asegurando que las rutas (`None` o vacías) sean descartadas tempranamente sin disparar bloqueos en el escaneado.

@@ -250,16 +250,15 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     """Convierte un string hexadecimal CSS (formato #RRGGBB) a una tupla RGB."""
-    if not isinstance(value, str) or not value.startswith('#') or len(value) != 7: return (0, 0, 0)
     try:
         val = int(value.lstrip('#'), 16)
         return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
-    except (ValueError, TypeError): return (0, 0, 0)
+    except (ValueError, TypeError, AttributeError): return (0, 0, 0)
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     """Convierte una tupla RGB a su representación en string hexadecimal CSS."""
-    return f"#{max(0, min(255, int(rgb[0]))):02x}{max(0, min(255, int(rgb[1]))):02x}{max(0, min(255, int(rgb[2]))):02x}"
+    return f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}"
 
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """Realiza una interpolación lineal (mezcla) entre dos colores hexadecimales."""
@@ -321,7 +320,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         dest_path = Path(destination).resolve()
-        # Valida escritura forzando el check de seguridad mediante excepción
         ensure_safe_to_modify(dest_path)
         
         parent = dest_path.parent
@@ -329,7 +327,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
     except Exception:
-        # La seguridad es prioritaria; cualquier error impide la escritura
         return None
 
 _ASCII_LOGO: Final[str] = (
@@ -427,7 +424,6 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))
-        # Validar parámetros de tamaño y grosor
         if not math.isfinite(val): return
         d = max(20, min(2048, int(size)))
         thickness = max(1, int(thickness))
