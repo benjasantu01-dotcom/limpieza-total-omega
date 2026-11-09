@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional, TypedDict
 from functools import lru_cache
 import unicodedata
+from collections import OrderedDict
 
 # Constantes de error de Win32 API para llamadas nativas
 ERROR_SHARING_VIOLATION: Final[int] = 32
@@ -38,8 +39,8 @@ ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescrip
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], bool]] = {}
 _NEGATIVE_SECURITY_CACHE: Final[set[tuple[int, int, int, int]]] = set()
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
-_FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
-_ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
+_FILE_ID_CACHE: Final[OrderedDict[str, tuple[int, int, int, int]]] = OrderedDict()
+_ATTR_CACHE: Final[OrderedDict[str, tuple[int, float]]] = OrderedDict()
 _PROTECTION_CACHE: Final[dict[str, bool]] = {}
 
 class SafetyValidationCategory(Enum):
@@ -126,6 +127,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         return (0, 0, 0, 0)
     
     if path_str in _FILE_ID_CACHE:
+        _FILE_ID_CACHE.move_to_end(path_str)
         return _FILE_ID_CACHE[path_str]
     
     res = (0, 0, 0, 0)
@@ -147,7 +149,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     except (OSError, PermissionError, Exception):
         pass
                 
-    if len(_FILE_ID_CACHE) >= 4096: _FILE_ID_CACHE.clear()
+    if len(_FILE_ID_CACHE) >= 4096: _FILE_ID_CACHE.popitem(last=False)
     _FILE_ID_CACHE[path_str] = res
     return res
 
@@ -261,6 +263,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     if path_str in _ATTR_CACHE:
         val, ts = _ATTR_CACHE[path_str]
         if now - ts < 5.0:
+            _ATTR_CACHE.move_to_end(path_str)
             return val
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
@@ -270,7 +273,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 attrs = Win32Attr.SYSTEM
             else:
                 return INVALID_FILE_ATTRIBUTES
-        if len(_ATTR_CACHE) > 8192: _ATTR_CACHE.clear()
+        if len(_ATTR_CACHE) > 8192: _ATTR_CACHE.popitem(last=False)
         _ATTR_CACHE[path_str] = (attrs, now)
         return attrs
     except (AttributeError, ctypes.ArgumentError, OSError, ValueError, Exception):

@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 66
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 220
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 44 | 3 | 13 | 3 | 71 |
+| 2026-11-07 | 42 | 2 | 13 | 3 | 70 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 11 | 0 | 5 | 1 | 3 |
+| 2026-11-09 | 12 | 0 | 5 | 2 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **35**
-- seguridad defensiva: **33**
-- rendimiento: **30**
+- seguridad defensiva: **31**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **18**
 - `healthscore.py`: **18**
 - `scanner.py`: **17**
-- `diskreport.py`: **16**
 - `settings.py`: **16**
-- `duplicates.py`: **15**
-- `safety.py`: **15**
+- `safety.py`: **16**
+- `diskreport.py`: **15**
+- `duplicates.py`: **14**
 - `startup.py`: **13**
 - `assistant.py`: **12**
 - `browser.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T00:55:47` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_file_attrs` y `_get_file_id` reemplazando los chequeos lineales de `len()` en cachés globales por un mecanismo más eficiente (`popitem(last=False)` usando `collections.OrderedDict`), reduciendo la complejidad de limpieza de $O(N)$ a $O(1)$.
 - `2026-11-09T00:46:23` **quarantine.py** (rendimiento): Se implementó un cacheo más eficiente en `_is_file_in_use_by_system` y se introdujo un diccionario de pre-filtrado por inodo en `load_manifest` para evitar lecturas de metadatos redundantes y llamadas excesivas al sistema durante la carga masiva del manifiesto.
 - `2026-11-09T00:45:02` **memory.py** (rendimiento): Optimizé `_iter_process_memory` eliminando la recreación de objetos `ProcessMemory` y realizando llamadas redundantes a `split` y `str()` dentro del bucle principal, además de asegurar que el buffer de ruta se reutilice estrictamente para mejorar el rendimiento bajo carga.
 - `2026-11-09T00:35:37` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación eliminando el cálculo redundante de `float()` y `_clamp()` dentro del bucle principal, y reemplacé la construcción dinámica de diccionarios por una pre-asignación eficiente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-08T14:50:41` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de cálculo de salud y el pipeline de puntuación, aclarando el propósito y el comportamiento de las transformaciones matemáticas aplicadas.
 - `2026-11-08T14:50:10` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones internas y se han añadido type hints más precisos para clarificar el flujo de datos entre las etapas de filtrado y hashing.
 - `2026-11-08T14:44:34` **diskreport.py** (legibilidad y documentación): Mejora de la legibilidad y mantenibilidad mediante la adición de Type Hints en la lógica de agregación y la centralización de los métodos de cálculo de tamaño en `FolderMetrics`, eliminando redundancias en la lógica de las funciones principales.
-- `2026-11-08T14:32:09` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` y `_process_folder_entry` mediante la captura explícita de excepciones al interactuar con objetos del sistema de archivos, asegurando que el bucle de procesamiento sea resiliente ante entradas malformadas o permisos denegados sin interrumpir la ejecución.

@@ -433,3 +433,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-09T00:46:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-11-09T00:46:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T00:46:26` Corrida terminada. Total usado hoy: 20.
+- `2026-11-09T00:54:47` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-11-09T00:55:47` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_file_attrs` y `_get_file_id` reemplazando los chequeos lineales de `len()` en cachés globales por un mecanismo más eficiente (`popitem(last=False)` usando `collections.OrderedDict`), reduciendo la complejidad de limpieza de $O(N)$ a $O(1)$.
+- `2026-11-09T00:56:15` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-11-09T00:56:58` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó el acceso a los valores de configuración mediante la conversión de la caché de datos de `dict` a `MappingProxyType` dentro de `_MANAGER.data_cache`, evitando copias innecesarias en cada consulta y mejorando la eficiencia del manejo de memoria.
+- `2026-11-09T00:57:13` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-09T00:57:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T00:57:13` Corrida terminada. Total usado hoy: 24.
