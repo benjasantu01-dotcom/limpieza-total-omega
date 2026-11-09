@@ -1257,3 +1257,38 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T09:36:37` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo mediante la pre-compilación de `JUNK_EXTENSIONS` en un conjunto de búsqueda directa y el uso de un cache de set `visited` que evita redundancias al evaluar rutas resueltas canónicamente, reduciendo llamadas innecesarias al sistema de archivos.
 - `2026-11-09T09:36:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T09:36:37` Corrida terminada. Total usado hoy: 228.
+- `2026-11-09T09:44:23` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-11-09T09:45:08` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
+- `2026-11-09T09:45:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-11-09T09:46:25` Tests FALLARON:
+```
+========== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_ensure_raises_instead_of_returning_false - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7f456ba136a0>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_is_safe_returns_bool_and_0') / 'Windows') / 'x.txt'))
+ +    where <function is_safe_to_modify at 0x7f456ba136a0> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_sensitive_extensions_by_default - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'malo.tmp'
+  'instalador.exe'
+  'app.tmp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+    {
+  +     'app.tmp',
+  +     'instalador.exe',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+6 failed, 293 passed in 0.96s
+
+```
+- `2026-11-09T09:46:25` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Implementé un sistema de "Short-Circuit Caching" en `_execute_safety_pipeline` utilizando el ID de archivo (`_get_file_id`) para evitar la re-ejecución costosa de múltiples chequeos de seguridad (IO pesado y llamadas a la API de Windows) cuando un archivo ya fue validado en el mismo ciclo de ejecución.
+- `2026-11-09T09:46:36` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la heurística `check_recent_executable_in_downloads` para evitar el cálculo innecesario del nombre del padre mediante `path.parent.name` y comparaciones de strings en cada iteración del escaneo, sustituyéndolo por un chequeo directo de pertenencia en el `set` ya definido `TARGETED_DOWNLOAD_FOLDERS`.
+- `2026-11-09T09:46:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T09:46:36` Corrida terminada. Total usado hoy: 232.

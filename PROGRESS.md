@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 72
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 213
 
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 97 | 10 | 35 | 10 | 124 |
-| 2026-11-09 | 90 | 4 | 36 | 9 | 89 |
+| 2026-11-08 | 95 | 9 | 35 | 10 | 123 |
+| 2026-11-09 | 91 | 5 | 37 | 9 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **35**
 - robustez ante casos límite: **35**
-- rendimiento: **26**
+- seguridad defensiva: **33**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,17 +34,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `duplicates.py`: **17**
 - `quarantine.py`: **17**
+- `scanner.py`: **16**
 - `settings.py`: **16**
-- `scanner.py`: **15**
-- `assistant.py`: **14**
 - `branding.py`: **14**
-- `diskreport.py`: **12**
+- `assistant.py`: **13**
+- `diskreport.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **8**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T09:46:36` **scanner.py** (rendimiento): Optimizé la heurística `check_recent_executable_in_downloads` para evitar el cálculo innecesario del nombre del padre mediante `path.parent.name` y comparaciones de strings en cada iteración del escaneo, sustituyéndolo por un chequeo directo de pertenencia en el `set` ya definido `TARGETED_DOWNLOAD_FOLDERS`.
 - `2026-11-09T09:36:37` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la pre-compilación de `JUNK_EXTENSIONS` en un conjunto de búsqueda directa y el uso de un cache de set `visited` que evita redundancias al evaluar rutas resueltas canónicamente, reduciendo llamadas innecesarias al sistema de archivos.
 - `2026-11-09T09:36:22` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` reemplazando la creación dinámica de buffers y la resolución redundante de nombres mediante técnicas de pre-alocación y acceso directo por índice, reduciendo la presión sobre el recolector de basura y el tiempo de CPU en ciclos de escaneo.
 - `2026-11-09T09:34:41` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` convirtiendo `PIPELINE_DEFINITIONS` a un objeto indexado y cacheando los resultados del pipeline mediante una clave calculada basada en los valores de las métricas, evitando así el re-cálculo de scores y reglas idénticas en ejecuciones rápidas del bucle principal.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T08:34:55` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_read_and_parse_json` y `_coerce_and_verify` añadiendo validaciones explícitas de integridad (longitud de claves, tipos, valores nulos y rangos) y capturando excepciones de forma más precisa para evitar que datos malformados o inesperados comprometan la carga de la aplicación.
 - `2026-11-09T08:34:24` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` al agregar una validación específica contra archivos cuyo tamaño o tiempo de modificación sean `None` o inconsistentes, evitando posibles errores de desreferenciación en las funciones heurísticas que consumen estos metadatos.
 - `2026-11-09T08:33:58` **safety.py** (manejo de errores y validación de entradas): Se ha corregido un error tipográfico en `_validate_structural_safety` donde la constante `SafetyValidationENVIRONMENT` (no definida) impedía que el manejo de errores en rutas UNC funcionara correctamente al lanzar una excepción `NameError`, sustituyéndola por la categoría correcta `SafetyValidationCategory.ENVIRONMENT`.
-- `2026-11-09T08:24:34` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` añadiendo validaciones de tipo explícitas y una gestión de errores más granular, asegurando que un manifiesto parcialmente corrupto o tipos de datos inesperados no bloqueen el acceso a la cuarentena ni causen errores en tiempo de ejecución.

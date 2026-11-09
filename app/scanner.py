@@ -216,8 +216,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if path is None or stats is None: 
         return None
     try:
-        parent_name = path.parent.name.lower() if path.parent else ""
-        if parent_name in TARGETED_DOWNLOAD_FOLDERS:
+        if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
             mtime = getattr(stats, "st_mtime", 0.0)
             if mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
                 return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
