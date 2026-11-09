@@ -106,7 +106,6 @@ class DirectoryScanner:
         """
         if not entry.name or self._is_restricted_name(entry.name):
             return False
-        # No seguir enlaces para evitar ataques de redirección o bucles infinitos en el FS
         if entry.is_symlink() or self.ctx.is_junction(entry.path):
             return False
         return True
@@ -148,7 +147,6 @@ class DirectoryScanner:
         """Calcula el tamaño de archivo asegurando la unicidad mediante identificadores de inodo/disco."""
         if not _is_system_hidden(entry.path, self.ctx.kernel32):
             try:
-                # El uso de entry.stat es necesario para capturar permisos denegados o archivos bloqueados
                 st_file = entry.stat(follow_symlinks=False)
                 file_id = (st_file.st_dev, st_file.st_ino)
                 if file_id not in self.ctx.visited_files:
@@ -181,7 +179,6 @@ class DirectoryScanner:
             return ScanResult(0, True)
 
         try:
-            # Captura lstat para evitar errores si el archivo desaparece durante la iteración
             st = os.lstat(root_path)
             attrs = getattr(st, 'st_file_attributes', 0)
             if self.ctx.is_junction(root_path) or (attrs & FileAttributes.REPARSE_POINT) or os.path.islink(root_path):

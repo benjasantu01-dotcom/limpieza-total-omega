@@ -270,6 +270,7 @@ class StartupEntry:
             if cmd_line.startswith('"'):
                 result = self._extract_quoted_path(cmd_line)
             else:
+                # Se maneja split() de forma segura capturando el índice inicial
                 parts: List[str] = cmd_line.split()
                 if parts and isinstance(parts[0], str) and ( "\\" in parts[0] or "/" in parts[0] ):
                     result = self._resolve_and_cache_path(parts[0])
@@ -289,7 +290,7 @@ class StartupEntry:
             return self._exec_cache or ""
             
         self._checked_exists = True
-        if not self.command:
+        if not self.command or not isinstance(self.command, str):
             return ""
 
         cmd: str = self._sanitize_command(self.command)

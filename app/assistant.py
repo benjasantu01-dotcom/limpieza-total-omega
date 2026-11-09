@@ -209,13 +209,16 @@ class MetricSpec:
 
 class ProblemCriterion(NamedTuple):
     """
-    Regla de negocio que transforma métricas puras en diagnósticos.
-    Si el valor evaluado mediante el operador supera el umbral, se considera
-    un problema de salud reportable por el asistente.
+    Representa una regla de salud del sistema.
+    
+    - metric_key: Nombre de la métrica a evaluar.
+    - threshold: Punto de corte para determinar el problema.
+    - op_type: Operador lógico ('<' o '>') para comparar contra el umbral.
+    - message_format: Plantilla de texto para reportar el problema detectado.
     """
     metric_key: str
     threshold: float
-    op_type: str # "<" o ">"
+    op_type: str 
     message_format: str
 
     @property
