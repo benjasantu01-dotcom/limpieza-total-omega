@@ -776,7 +776,10 @@ def _is_readonly(path_str: str) -> bool:
         return True
 
 def _validate_access_permissions(path: Path) -> None:
-    """Valida si el proceso tiene permisos de lectura y escritura sobre el objeto."""
+    """
+    Valida si el proceso tiene permisos de lectura y escritura sobre el objeto.
+    Lanza UnsafePathError si los permisos son insuficientes.
+    """
     if not isinstance(path, Path): raise UnsafePathError("Tipo de ruta inválido", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
     try:
         if not path.exists():
@@ -784,7 +787,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCATEGORY.PERMISSION)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError) as e:
         raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 

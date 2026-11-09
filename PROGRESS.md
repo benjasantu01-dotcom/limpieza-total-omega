@@ -7,30 +7,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **188** (37.3% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 106 | 11 | 38 | 11 | 126 |
-| 2026-11-09 | 82 | 3 | 33 | 8 | 86 |
+| 2026-11-08 | 105 | 10 | 37 | 10 | 126 |
+| 2026-11-09 | 83 | 3 | 33 | 9 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **44**
+- legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **44**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **35**
 - rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
+- `safety.py`: **20**
 - `memory.py`: **19**
-- `safety.py`: **19**
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `settings.py`: **16**
@@ -39,12 +39,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **14**
 - `diskreport.py`: **13**
 - `branding.py`: **13**
-- `browser.py`: **9**
 - `startup.py`: **9**
 - `organizer.py`: **9**
+- `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T09:08:30` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad del código corrigiendo el error tipográfico en `_validate_access_permissions` (`SafetyValidationCATEGORY` por `SafetyValidationCategory`) y añadiendo `docstrings` explicativos en las funciones de validación crítica y estructuras de datos para clarificar el propósito de cada chequeo de seguridad, cumpliendo con el enfoque de legibilidad y documentación sin alterar el comportamiento.
 - `2026-11-09T08:55:51` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones clave y la sustitución de nombres de variables ambiguos por otros más descriptivos, facilitando la comprensión del flujo de datos en las operaciones de bajo nivel con la API de Windows.
 - `2026-11-09T08:53:56` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo Type Hints faltantes en funciones internas, convirtiendo los `if/else` complejos en estructuras más claras, y documentando la lógica de las funciones de filtrado para clarificar el flujo de seguridad.
 - `2026-11-09T08:45:03` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `walk_files` y `_collect_summary_data`, además de clarificar la intención de los bloques de lógica compleja mediante docstrings detallados, asegurando que el comportamiento siga siendo puramente informativo y seguro.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T08:04:59` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_target_valid` añadiendo validaciones preventivas de tipos y estados para evitar excepciones innecesarias antes de operar, asegurando que las rutas (`None` o vacías) sean descartadas tempranamente sin disparar bloqueos en el escaneado.
 - `2026-11-09T08:04:49` **branding.py** (manejo de errores y validación de entradas): Mejora la robustez de las funciones de acceso a metadatos agregando validación de entrada explícita para evitar errores en tiempo de ejecución ante valores inesperados, alineado con el enfoque de manejo de errores y validación.
 - `2026-11-09T08:04:15` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la clase `SystemContext` implementando una validación explícita en `ingest` mediante un nuevo método `_has_circular_refs` y reforzando la sanitización de tipos al recibir fuentes externas, evitando que estructuras mal formadas comprometan el estado interno del asistente.
-- `2026-11-09T06:41:31` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al reemplazar el uso de `os.scandir` por una estrategia de validación de rutas más estricta dentro del bucle de `scan_directory` y se añadieron checks de integridad para prevenir el acceso a archivos con nombres malformados o que contengan caracteres nulos que pudieran eludir filtros previos.
