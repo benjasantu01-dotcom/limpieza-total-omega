@@ -542,7 +542,15 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     target_path: Path = _manifest_path(base_path)
     if not isinstance(items, list): raise TypeError("El manifiesto debe ser una lista.")
     try:
-        encoded_content: bytes = json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False).encode('utf-8')
+        # Validación previa a serialización
+        serializable_items = []
+        for item in items:
+            if isinstance(item, QuarantineItem):
+                serializable_items.append(item.to_dict())
+            else:
+                raise ValueError("Elemento del manifiesto no es instancia de QuarantineItem")
+        
+        encoded_content: bytes = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
     except (TypeError, ValueError) as e: raise ValueError(f"Error al serializar metadatos: {e}")
     temp_name: Optional[str] = None
     try:

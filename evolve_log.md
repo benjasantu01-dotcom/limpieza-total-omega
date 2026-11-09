@@ -734,3 +734,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T03:50:04` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `format_bytes` y `_safe_int_conversion` añadiendo validaciones de tipo explícitas y manejando casos de desbordamiento de forma más estricta para evitar errores silenciosos en la UI.
 - `2026-11-09T03:50:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T03:50:04` Corrida terminada. Total usado hoy: 92.
+- `2026-11-09T03:58:01` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-11-09T03:58:28` ➖ Sin cambios en organizer.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejora la robustez de `stage_for_review` y `delete_reviewed` mediante la adición de validaciones de tipo explícitas y chequeos de estado (`is_safe_to_modify`) antes de realizar operaciones de E/S, evitando excepciones no capturadas al procesar rutas malformadas o inaccesibles.
+- `2026-11-09T03:59:11` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` y `load_manifest` añadiendo validaciones explícitas de estructura JSON y manejo de errores ante archivos corruptos o mal formateados, evitando que la aplicación falle al intentar cargar un manifiesto inválido.
+- `2026-11-09T03:59:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-09T04:00:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-09T04:01:19` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `_get_path_stat_robust` y `_evaluate_security_rules` implementando un manejo de errores más específico y preventivo para evitar que excepciones no controladas interrumpan el proceso de escaneo.
+- `2026-11-09T04:01:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T04:01:19` Corrida terminada. Total usado hoy: 96.

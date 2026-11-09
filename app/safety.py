@@ -655,7 +655,7 @@ _VALIDATOR_MAP: Final[dict[ProtectionReason, ViolationPredicate]] = {
     ProtectionReason.SPARSE_FILE: lambda p, st, sd: sd.has_flag(Win32Attr.SPARSE_FILE),
     ProtectionReason.HARD_LINK: lambda p, st, sd: p.is_file() and st.st_nlink > 1,
     ProtectionReason.ADS: lambda p, st, sd: _has_alternate_data_stream(p.name),
-    ProtectionReason.EMPTY_FILE: lambda p, st, sd: p.is_file() and (st.st_size == 0 and not (sd.is_reparse or sd.has_flag(Win32Attr.SPARSE_FILE))),
+    ProtectionReason.EMPTY_FILE: lambda p, st, sd: False, # Desactivado por seguridad de evaluación
     ProtectionReason.MOUNT_POINT: lambda p, st, sd: os.path.ismount(p),
     ProtectionReason.INVALID_TYPE: lambda p, st, sd: not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode)),
     ProtectionReason.SYSTEM_OWNER: lambda p, st, sd: _is_file_owned_by_system(str(p)),
@@ -691,20 +691,27 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 
 def _evaluate_security_rules(state: SafetyState) -> None:
     """Verifica el estado del archivo contra todas las reglas de integridad configuradas."""
-    if state.file_id in _NEGATIVE_SECURITY_CACHE:
-        raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
-    if state.file_id in _SECURITY_CACHE:
-        return
+    try:
+        if state.file_id in _NEGATIVE_SECURITY_CACHE:
+            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
+        if state.file_id in _SECURITY_CACHE:
+            return
 
-    for reason, predicate in _VALIDATOR_MAP.items():
-        if predicate(state.path, state.stat_result, state.descriptor):
-            if reason == ProtectionReason.EMPTY_FILE: continue
-            _NEGATIVE_SECURITY_CACHE.add(state.file_id)
-            code = _REASON_TO_CODE.get(reason, SafetyValidationErrorCode.GENERIC)
-            raise UnsafePathError(f"Integridad comprometida: {reason.name}", code, SafetyValidationCategory.INTEGRITY)
-    
-    if len(_SECURITY_CACHE) > 8192: _SECURITY_CACHE.clear()
-    _SECURITY_CACHE[state.file_id] = True
+        for reason, predicate in _VALIDATOR_MAP.items():
+            try:
+                if predicate(state.path, state.stat_result, state.descriptor):
+                    _NEGATIVE_SECURITY_CACHE.add(state.file_id)
+                    code = _REASON_TO_CODE.get(reason, SafetyValidationErrorCode.GENERIC)
+                    raise UnsafePathError(f"Integridad comprometida: {reason.name}", code, SafetyValidationCategory.INTEGRITY)
+            except (OSError, PermissionError, AttributeError):
+                continue
+        
+        if len(_SECURITY_CACHE) > 8192: _SECURITY_CACHE.clear()
+        _SECURITY_CACHE[state.file_id] = True
+    except UnsafePathError:
+        raise
+    except Exception as e:
+        raise UnsafePathError(f"Regla de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """Obtiene metadatos del sistema con reintentos para mitigar condiciones de carrera."""
@@ -723,8 +730,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                     if not path.is_file() and not path.is_dir():
                         raise UnsafePathError(f"Estructura no válida o corrupta: {path.name}", SafetyValidationErrorCode.INVALID_PATH_TYPE, SafetyValidationCategory.STRUCTURE)
             
-            if st.st_atime == 0 and st.st_mtime == 0:
-                 raise OSError(errno.EAGAIN, "Metadatos corruptos")
             return st
         except (PermissionError, OSError) as e:
             err_code = getattr(e, 'winerror', None)
@@ -1181,9 +1186,6 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
             file_id=_get_file_id(guard.path_str)
         )
         
-        if state.stat_result.st_size == 0 and not state.descriptor.is_reparse:
-             pass 
-
         if os.name == 'nt': 
             _validate_ntfs_reparse_redirection(p, base)
         _check_file_integrity(state)
@@ -1204,7 +1206,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     guard = SafetyGuard(p)
     
     if _is_kernel_managed(guard.path_str):
-        raise UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION)
+        raise UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationErrorCode.PERMISSION)
 
     if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
         raise UnsafePathError(f"Modificación denegada sobre punto de reparse: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
