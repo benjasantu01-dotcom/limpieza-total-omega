@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 132 | 12 | 48 | 12 | 144 |
-| 2026-11-09 | 67 | 3 | 28 | 7 | 51 |
+| 2026-11-08 | 132 | 12 | 48 | 12 | 140 |
+| 2026-11-09 | 68 | 3 | 28 | 7 | 54 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **34**
+- seguridad defensiva: **35**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
@@ -34,8 +34,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `safety.py`: **19**
 - `duplicates.py`: **17**
+- `scanner.py`: **17**
 - `settings.py`: **17**
-- `scanner.py`: **16**
 - `diskreport.py`: **14**
 - `assistant.py`: **14**
 - `branding.py`: **13**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T06:41:31` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al reemplazar el uso de `os.scandir` por una estrategia de validación de rutas más estricta dentro del bucle de `scan_directory` y se añadieron checks de integridad para prevenir el acceso a archivos con nombres malformados o que contengan caracteres nulos que pudieran eludir filtros previos.
 - `2026-11-09T06:32:56` **safety.py** (seguridad defensiva): Se añadió una validación específica en `ensure_safe_to_modify` para detectar si el archivo es un punto de unión NTFS ("Junction") de sistema, bloqueándolo explícitamente antes de procesar su contenido para evitar escapes de sandbox durante la recursión.
 - `2026-11-09T06:31:59` **quarantine.py** (seguridad defensiva): He mejorado `_validate_isolation_request` para incluir una verificación de existencia mediante `path.exists()` y `path.is_file()` antes de realizar operaciones de metadatos, evitando excepciones innecesarias y reforzando la seguridad al validar que el archivo fuente sigue siendo un archivo regular justo antes de la transferencia.
 - `2026-11-09T06:21:31` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo encapsulando la mutación de atributos en `SystemMetrics` mediante la implementación de `__setattr__` bloqueado para tipos no permitidos, evitando la inyección de datos arbitrarios fuera de los límites definidos y asegurando que `_METRIC_LIMITS` siempre se consulte de manera segura.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T05:32:02` **browser.py** (robustez ante casos límite): Mejoré la robustez de `DirectoryScanner` frente a archivos bloqueados por el sistema operativo o procesos externos, asegurando que `_handle_file` maneje explícitamente errores de acceso al intentar leer los metadatos del archivo (estat), evitando que una excepción interrumpa la recursión del escaneo de la caché.
 - `2026-11-09T05:30:55` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del manejo de datos externos en `SystemContext.ingest` y `_apply_updates` para prevenir fallas silenciosas cuando se reciben tipos de datos inesperados (ej. colecciones anidadas) que podrían corromper el estado interno o causar excepciones no atrapadas durante el acceso a atributos.
 - `2026-11-09T05:21:18` **settings.py** (rendimiento): Se optimizó `validate` reemplazando la creación repetida de `DEFAULTS.copy()` y el acceso a diccionarios dentro del loop por un cacheo local de referencias, reduciendo significativamente la sobrecarga en el parsing de configuraciones.
-- `2026-11-09T05:20:38` **safety.py** (rendimiento): Implementé un sistema de "Short-Circuiting" para `is_safe_to_modify` utilizando `_NEGATIVE_SECURITY_CACHE` y `_SECURITY_CACHE` compartidos globalmente, reduciendo drásticamente las llamadas a APIs de Windows en bucles de escaneo repetitivos.
