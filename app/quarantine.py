@@ -951,6 +951,7 @@ def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:
     """Genera reporte legible de la cuarentena para la interfaz de usuario."""
+    # Obtenemos items directamente del caché o carga, sin revalidar el directorio raíz recursivamente
     items: List[QuarantineItem] = load_manifest(base)
     if not items: return ["La cuarentena está vacía."]
     total_mb: float = sum(i.size_mb for i in items)

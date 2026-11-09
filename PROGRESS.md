@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 70
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 212
 
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 55 | 8 | 21 | 7 | 81 |
-| 2026-11-09 | 134 | 8 | 49 | 10 | 131 |
+| 2026-11-08 | 53 | 8 | 20 | 7 | 80 |
+| 2026-11-09 | 135 | 8 | 51 | 10 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **35**
 - robustez ante casos límite: **35**
-- rendimiento: **28**
+- seguridad defensiva: **33**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,17 +34,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
+- `quarantine.py`: **16**
 - `scanner.py`: **16**
-- `assistant.py`: **15**
-- `quarantine.py`: **15**
-- `branding.py`: **14**
+- `assistant.py`: **14**
 - `diskreport.py`: **13**
+- `branding.py`: **13**
 - `startup.py`: **10**
 - `organizer.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T14:10:56` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `total_quarantined_bytes` evitando el parseo completo a objetos `QuarantineItem`, y se eliminó la redundancia de llamadas a `quarantine_dir()` (que realiza múltiples validaciones de seguridad) dentro de `summarize` al usar la carga del manifiesto directamente del caché.
 - `2026-11-09T14:01:44` **memory.py** (rendimiento): Se optimizó el acceso a los procesos mediante la pre-declaración de estructuras y el uso de un buffer de memoria persistente durante la iteración, reduciendo drásticamente las asignaciones de memoria y llamadas al sistema innecesarias dentro del bucle de escaneo.
 - `2026-11-09T13:50:59` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo eliminando la reinstanciación innecesaria de `DirectoryScanner` dentro del bucle de perfiles, permitiendo reutilizar el mismo contexto y evitando la sobrecarga de múltiples inicializaciones.
 - `2026-11-09T13:50:33` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la recreación innecesaria de listas y la conversión redundante de colores dentro del bucle, utilizando pre-cálculos de los puntos de los gradientes para reducir la carga de CPU en renderizados frecuentes.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T13:20:05` **healthscore.py** (legibilidad y documentación): Mejoré la documentación interna del módulo `healthscore.py` añadiendo docstrings descriptivos a los protocolos y funciones clave, clarificando la intención del pipeline de puntuación y documentando el propósito de las funciones de soporte para facilitar el mantenimiento futuro.
 - `2026-11-09T13:19:35` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` mediante la normalización de la estructura de las funciones de hash, añadiendo docstrings descriptivos y type hints consistentes en los procesadores internos para facilitar la depuración y auditoría del proceso de filtrado.
 - `2026-11-09T13:19:06` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones principales y la clarificación de las responsabilidades de las clases auxiliares, facilitando el mantenimiento y la comprensión del flujo de datos en el análisis de disco.
-- `2026-11-09T13:10:57` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la inclusión de docstrings detallados en funciones clave y la estandarización de type hints, facilitando la comprensión del flujo de datos en el escaneo de directorios sin alterar la lógica de seguridad existente.

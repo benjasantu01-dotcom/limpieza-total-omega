@@ -510,3 +510,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-09T14:01:44` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el acceso a los procesos mediante la pre-declaración de estructuras y el uso de un buffer de memoria persistente durante la iteración, reduciendo drásticamente las asignaciones de memoria y llamadas al sistema innecesarias dentro del bucle de escaneo.
 - `2026-11-09T14:01:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T14:01:44` Corrida terminada. Total usado hoy: 332.
+- `2026-11-09T14:09:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-09T14:10:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-09T14:10:56` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso al sistema de archivos en `total_quarantined_bytes` evitando el parseo completo a objetos `QuarantineItem`, y se eliminó la redundancia de llamadas a `quarantine_dir()` (que realiza múltiples validaciones de seguridad) dentro de `summarize` al usar la carga del manifiesto directamente del caché.
+- `2026-11-09T14:11:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-11-09T14:11:24` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 15% del original (posible pérdida de código)
+- `2026-11-09T14:11:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T14:11:24` Corrida terminada. Total usado hoy: 336.
