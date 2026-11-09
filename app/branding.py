@@ -303,8 +303,9 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Escala las coordenadas base del escudo a una posición y tamaño dados."""
     if not math.isfinite(scale) or scale <= 0 or not math.isfinite(x) or not math.isfinite(y): return ()
-    res = [0.0] * len(SHIELD_BASE_COORDS)
-    for i in range(0, len(SHIELD_BASE_COORDS), 2):
+    n = len(SHIELD_BASE_COORDS)
+    res = [0.0] * n
+    for i in range(0, n, 2):
         res[i] = x + (SHIELD_BASE_COORDS[i] * scale)
         res[i+1] = y + (SHIELD_BASE_COORDS[i+1] * scale)
     return tuple(res)

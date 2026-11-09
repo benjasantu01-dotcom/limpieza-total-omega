@@ -9,43 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 69
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 14 | 2 | 4 | 1 | 21 |
+| 2026-11-07 | 12 | 2 | 3 | 1 | 20 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 48 | 1 | 17 | 4 | 42 |
+| 2026-11-09 | 50 | 1 | 18 | 5 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
-- robustez ante casos límite: **42**
+- legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **41**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **37**
-- rendimiento: **23**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `healthscore.py`: **20**
 - `quarantine.py`: **20**
+- `healthscore.py`: **19**
 - `safety.py`: **18**
 - `scanner.py`: **16**
 - `settings.py`: **16**
-- `duplicates.py`: **15**
 - `diskreport.py`: **15**
+- `duplicates.py`: **14**
 - `assistant.py`: **13**
-- `startup.py`: **11**
-- `branding.py`: **11**
+- `startup.py`: **12**
+- `branding.py`: **12**
 - `organizer.py`: **10**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T04:50:42` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` reemplazando la construcción de listas y conversiones repetidas a `tuple` dentro del loop por una generación directa de una tupla de floats, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia en llamadas repetidas desde el bucle de renderizado.
+- `2026-11-09T04:49:54` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adición de docstrings técnicos precisos que explican el "porqué" de las validaciones de seguridad y el uso de anotaciones para clarificar las intenciones en las funciones de resolución de rutas.
 - `2026-11-09T04:41:43` **safety.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `PathValidationResult` y se refactorizó `ensure_safe_to_modify` para separar la lógica de validación de la lógica de gestión de excepciones, facilitando la auditoría del código y mejorando la legibilidad mediante un retorno de estado explícito.
 - `2026-11-09T04:39:28` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la refactorización de `_check_isolation_safety` para clarificar la separación entre validación de estado físico y consistencia, agregando docstrings descriptivos que explican el "porqué" de las verificaciones de seguridad.
 - `2026-11-09T04:32:11` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `organizer.py` mediante docstrings detallados en funciones críticas, normalización de Type Hints y reemplazo de nombres de variables ambiguos (ej. `found` por `junk_candidates`) para facilitar el mantenimiento y la auditoría de seguridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T04:08:42` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de archivos envolviéndolas en bloques de control de excepciones específicos y validando la integridad de los metadatos antes de su procesamiento para evitar fallos durante el recorrido del sistema de archivos.
 - `2026-11-09T04:01:19` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `_get_path_stat_robust` y `_evaluate_security_rules` implementando un manejo de errores más específico y preventivo para evitar que excepciones no controladas interrumpan el proceso de escaneo.
 - `2026-11-09T03:59:11` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` añadiendo validaciones explícitas de estructura JSON y manejo de errores ante archivos corruptos o mal formateados, evitando que la aplicación falle al intentar cargar un manifiesto inválido.
-- `2026-11-09T03:50:04` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `format_bytes` y `_safe_int_conversion` añadiendo validaciones de tipo explícitas y manejando casos de desbordamiento de forma más estricta para evitar errores silenciosos en la UI.
-- `2026-11-09T03:48:39` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_process_pipeline_entry` y `_evaluate_rules` mediante la validación explícita de entradas y el manejo defensivo de excepciones, asegurando que fallos en una regla individual no invaliden el cálculo de salud completo.

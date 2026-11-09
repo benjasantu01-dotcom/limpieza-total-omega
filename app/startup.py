@@ -86,7 +86,7 @@ class StartupEntry:
     
     Gestiona la normalización de comandos, la resolución de rutas a archivos
     existentes en disco y garantiza que el acceso a rutas esté filtrado por
-    las directivas de `safety.py`.
+    las directivas de `safety.py` para evitar tocar zonas protegidas.
     """
     name: str
     command: str
@@ -183,7 +183,7 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """
         Verifica la seguridad de la ruta mediante `safety.py` y permisos
-        de lectura/ejecución del sistema operativo.
+        de lectura/ejecución del sistema operativo para evitar falsos positivos.
         """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
@@ -244,8 +244,8 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, cmd_line: str) -> str:
         """
-        Aísla la ruta ejecutable de una línea de comandos compleja (argumentos,
-        flags o comandos mal formados).
+        Aísla la ruta ejecutable de una línea de comandos compleja. 
+        Maneja tanto rutas entre comillas como comandos directos.
         """
         if not isinstance(cmd_line, str) or not cmd_line:
             return ""
@@ -322,7 +322,7 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
-    Valida un archivo individual en una carpeta de inicio.
+    Valida y convierte un archivo detectado en carpeta de inicio a `StartupEntry`.
     """
     if not hasattr(entry, "path") or not hasattr(entry, "name"):
         return None
@@ -383,7 +383,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 
 def _is_valid_registry_path(path_str: str) -> bool:
-    """Valida la integridad de una ruta leída desde el registro del sistema."""
+    """Valida la integridad de una ruta de archivo leída desde el registro."""
     if not isinstance(path_str, str):
         return False
         
@@ -514,7 +514,7 @@ def list_startup_entries() -> StartupEntries:
 
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:
-    """Estima el impacto en el rendimiento basándose en la cantidad de entradas."""
+    """Estima el impacto en el rendimiento basado en el volumen de entradas."""
     count: int = len(entries) if isinstance(entries, list) else sum(1 for _ in entries)
     if count <= 5: return "ok"
     if count <= 10: return "info"
@@ -523,7 +523,7 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera el reporte final de texto legible para el usuario."""
+    """Genera el reporte final legible sobre los programas de inicio."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         
