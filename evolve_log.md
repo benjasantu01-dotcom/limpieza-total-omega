@@ -742,3 +742,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T04:01:19` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `_get_path_stat_robust` y `_evaluate_security_rules` implementando un manejo de errores más específico y preventivo para evitar que excepciones no controladas interrumpan el proceso de escaneo.
 - `2026-11-09T04:01:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T04:01:19` Corrida terminada. Total usado hoy: 96.
+- `2026-11-09T04:08:12` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-11-09T04:08:42` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas de archivos envolviéndolas en bloques de control de excepciones específicos y validando la integridad de los metadatos antes de su procesamiento para evitar fallos durante el recorrido del sistema de archivos.
+- `2026-11-09T04:09:12` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` para prevenir excepciones ante valores inesperados de tipo y agregué un chequeo de integridad adicional en `_read_and_parse_json` para asegurar que el contenido JSON, tras ser parseado, contenga exclusivamente las claves definidas en `AppSettings`, evitando la inyección de datos arbitrarios en memoria.
+- `2026-11-09T04:09:39` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-09T04:10:03` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación de `SystemContext` y `ProblemCriterion` añadiendo docstrings técnicos que explican el propósito de las validaciones de seguridad y el flujo de los datos, facilitando la comprensión del mantenimiento a largo plazo sin alterar la lógica.
+- `2026-11-09T04:10:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T04:10:03` Corrida terminada. Total usado hoy: 100.

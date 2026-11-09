@@ -224,10 +224,11 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0, stats: Optional[os.stat_result] = None) -> Optional[Suspicion]:
     """Marca ejecutables nuevos encontrados en carpetas temporales o de descarga comunes."""
-    if path is None or path.parent is None or stats is None: 
+    if path is None or stats is None: 
         return None
     try:
-        if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
+        parent_name = path.parent.name.lower() if path.parent else ""
+        if parent_name in TARGETED_DOWNLOAD_FOLDERS:
             mtime = getattr(stats, "st_mtime", 0.0)
             if mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
                 return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
@@ -333,29 +334,27 @@ class Scanner:
         Ejecuta todas las heurísticas registradas en ALL_CHECKS sobre un archivo validado,
         obteniendo previamente sus metadatos de forma segura (sin seguir enlaces).
         """
-        try:
-            stats: Optional[os.stat_result] = _safe_stat(entry)
-            if stats is None:
-                return
-            for check_fn in ALL_CHECKS:
-                try:
-                    finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts, stats)
-                    if finding:
-                        self.results.append(finding)
-                except (OSError, PermissionError, Exception) as e:
-                    logger.debug(f"Heurística {check_fn.__name__} omitida por error en {path}: {e}")
-        except (OSError, PermissionError):
-            pass
+        stats: Optional[os.stat_result] = _safe_stat(entry)
+        if stats is None:
+            return
+            
+        for check_fn in ALL_CHECKS:
+            try:
+                finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts, stats)
+                if finding:
+                    self.results.append(finding)
+            except Exception as e:
+                logger.debug(f"Heurística {check_fn.__name__} omitida por error en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escanea un único archivo específico aplicando la suite de heurísticas."""
     if not isinstance(path, Path) or not _is_valid_path_structure(str(path)) or not _is_readable(path):
         return []
     try:
-        if not path.exists() or not path.is_file(): return []
         stats: os.stat_result = entry.stat(follow_symlinks=False) if entry else path.stat()
     except (OSError, PermissionError):
         return []
+        
     findings: ScanResult = []
     for check_fn in ALL_CHECKS:
         try:
@@ -363,7 +362,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
             if res:
                 findings.append(res)
         except Exception as e:
-            logger.debug(f"Heurística {check_fn.__name__} falló: {e}")
+            logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

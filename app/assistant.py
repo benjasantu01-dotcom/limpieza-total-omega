@@ -194,7 +194,11 @@ class AssistantConfig:
 
 @dataclass(frozen=True)
 class MetricSpec:
-    """Especificación de restricciones para validación de métricas numéricas."""
+    """
+    Define los límites y el tipo esperado para una métrica numérica.
+    Utilizado por SystemContext para asegurar que los datos ingresados
+    no sobrepasen valores lógicos para la app.
+    """
     type_hint: type
     min_val: float
     max_val: float
@@ -204,7 +208,11 @@ class MetricSpec:
         return isinstance(val, (int, float)) and not isinstance(val, bool) and _check_metric_integrity(val)
 
 class ProblemCriterion(NamedTuple):
-    """Regla lógica para evaluar si una métrica constituye un problema del sistema."""
+    """
+    Regla de negocio que transforma métricas puras en diagnósticos.
+    Si el valor evaluado mediante el operador supera el umbral, se considera
+    un problema de salud reportable por el asistente.
+    """
     metric_key: str
     threshold: float
     op_type: str # "<" o ">"
@@ -412,7 +420,14 @@ def _evaluate_active_problems(metrics_items: frozenset[tuple[str, float]]) -> tu
 
 @dataclass
 class SystemContext:
-    """Representa el estado consolidado de salud del sistema."""
+    """
+    Representa el estado consolidado de salud del sistema.
+    
+    Gestiona la ingestión y validación de métricas recolectadas por otros módulos.
+    Utiliza un diseño defensivo: cualquier entrada externa es sanitizada antes 
+    de ser almacenada para evitar que rutas o datos maliciosos contaminen el 
+    estado del asistente.
+    """
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0
