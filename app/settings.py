@@ -416,11 +416,14 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
             with os.fdopen(fd, "r", encoding="utf-8") as f:
                 content = f.read(MAX_SETTINGS_SIZE + 1)
                 if not content or len(content) > MAX_SETTINGS_SIZE: return None
-                data = json.loads(content)
+                try:
+                    data = json.loads(content)
+                except json.JSONDecodeError:
+                    return None
                 
             if not isinstance(data, dict) or not _is_structure_valid(data): return None
             return data, st_post
-        except (json.JSONDecodeError, OSError, ValueError, TypeError):
+        except (OSError, ValueError, TypeError):
             os.close(fd)
             return None
         except Exception:

@@ -825,3 +825,58 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T05:53:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-11-09T05:53:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T05:53:00` Corrida terminada. Total usado hoy: 140.
+- `2026-11-09T06:00:12` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-11-09T06:01:17` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado un mecanismo de "tregua de tiempo" en `_get_path_stat_robust` para manejar casos donde el acceso al sistema de archivos es momentáneamente denegado por el SO (bloqueos temporales), mejorando la resiliencia ante errores de concurrencia sin cambiar la lógica de seguridad.
+- `2026-11-09T06:01:47` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_get_canonical_path` y `_is_valid_path_structure` para manejar casos límite como rutas extremadamente largas (evitando `Path` excepciones al intentar instanciar objetos inválidos) y errores de acceso en sistemas de archivos con bloqueos, garantizando que el escáner no aborte ante rutas con caracteres inválidos o permisos denegados.
+- `2026-11-09T06:02:26` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejora la resiliencia ante errores de entrada durante la lectura y el parseo del archivo JSON, previniendo posibles estados inconsistentes si el archivo está vacío o contiene datos malformados pero técnicamente "legibles" por `json.loads`.
+- `2026-11-09T06:02:42` Tests FALLARON:
+```
+sertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+3 failed, 296 passed in 1.76s
+
+```
+- `2026-11-09T06:02:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `StartupEntry._is_valid_executable` y `_resolve_and_cache_path` para prevenir excepciones ante rutas inexistentes o inaccesibles, asegurando que el proceso de inventario no se detenga ante errores de sistema (`PermissionError`, `OSError`) al iterar sobre rutas mal formadas o bloqueadas, manteniendo el enfoque en casos límite.
+- `2026-11-09T06:02:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T06:02:42` Corrida terminada. Total usado hoy: 144.

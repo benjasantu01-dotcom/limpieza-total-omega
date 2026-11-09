@@ -107,6 +107,8 @@ def _get_canonical_path(path_str: str) -> str:
         if not path_str or "\0" in path_str: return ""
         # Normalizar espacios y eliminar caracteres potencialmente inválidos
         clean_path = os.path.normpath(path_str.strip())
+        # Evitar el uso de Path() directo si la ruta parece corrompida o excesivamente larga
+        if len(clean_path) > 32767: return ""
         norm = os.path.normcase(os.path.abspath(clean_path))
         return norm if len(norm) <= SCAN_LIMITS.path_length_limit else ""
     except (OSError, ValueError, TypeError, AttributeError):
