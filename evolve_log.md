@@ -570,3 +570,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-11-09T14:22:21` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para evitar que el asistente procese estructuras maliciosas o recursivas que podrían causar desbordamiento de pila o agotamiento de memoria, garantizando que solo escalares simples sean aceptados.
 - `2026-11-09T14:22:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T14:22:21` Corrida terminada. Total usado hoy: 340.
+- `2026-11-09T14:30:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-09T14:30:47` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo geométrico añadiendo validaciones estrictas ante estados inválidos o rutas inexistentes, asegurando que la app no falle ante valores de entrada corruptos o permisos denegados.
+- `2026-11-09T14:31:11` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-09T14:31:39` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_get_local_windows_drives` ante errores de acceso a disco (como unidades desconectadas, dispositivos extraíbles sin medio, o fallos de lectura en tiempo real) asegurando que el bucle de iteración capture excepciones `OSError` específicas durante el `scandir` y la consulta de atributos, evitando que el escáner se detenga prematuramente.
+- `2026-11-09T14:31:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-09T14:31:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T14:31:46` Corrida terminada. Total usado hoy: 344.

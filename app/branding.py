@@ -339,7 +339,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
-    except Exception:
+    except (OSError, PermissionError, IOError):
         return None
 
 _ASCII_LOGO: Final[str] = (
@@ -428,7 +428,8 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     """Renderiza una línea horizontal con un degradado lineal personalizado."""
     if canvas is None or not isinstance(width, int): return
     try:
-        for s in get_gradient_segments(max(1, width), stops):
+        w = max(1, int(width))
+        for s in get_gradient_segments(w, stops):
             canvas.create_line(canvas_x + s.start_index, canvas_y, canvas_x + s.end_index, canvas_y, fill=s.hex_color, width=height)
     except (AttributeError, TypeError, ValueError): pass
 

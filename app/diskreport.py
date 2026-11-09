@@ -202,9 +202,9 @@ def _get_local_windows_drives() -> List[str]:
         drive = f"{letter}:\\"
         try:
             if os.path.exists(drive) and not is_protected_path(Path(drive)):
+                # Verificar acceso básico de lectura
                 shutil.disk_usage(drive)
-                if os.access(drive, os.R_OK):
-                    drives.append(drive)
+                drives.append(drive)
         except (OSError, PermissionError, TypeError, RuntimeError):
             continue
     return drives
@@ -317,35 +317,42 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
-                for entry in iterator:
-                    if _is_excluded_path(entry.name):
-                        continue
-                    
+                while True:
                     try:
-                        st = entry.stat(follow_symlinks=False)
-                    except (PermissionError, FileNotFoundError, OSError):
-                        continue
+                        entry = next(iterator, None)
+                        if entry is None:
+                            break
                             
-                    entry_path = Path(entry.path)
-                    if skip_protected and is_protected_path(entry_path):
-                        continue
-
-                    # Manejo de directorios
-                    if entry.is_dir(follow_symlinks=False):
-                        if _is_reparse_point(st):
+                        if _is_excluded_path(entry.name):
                             continue
-                        if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
-                            inode = (st.st_dev, st.st_ino)
-                            if inode in visited_inodes:
+                        
+                        try:
+                            st = entry.stat(follow_symlinks=False)
+                        except (PermissionError, FileNotFoundError, OSError):
+                            continue
+                                
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
+                            continue
+
+                        # Manejo de directorios
+                        if entry.is_dir(follow_symlinks=False):
+                            if _is_reparse_point(st):
                                 continue
-                            visited_inodes.add(inode)
-                        stack.append(entry_path)
-                    
-                    # Manejo de archivos
-                    elif entry.is_file(follow_symlinks=False):
-                        size = getattr(st, 'st_size', None)
-                        if isinstance(size, int) and size >= 0:
-                            yield entry_path, size
+                            if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
+                                inode = (st.st_dev, st.st_ino)
+                                if inode in visited_inodes:
+                                    continue
+                                visited_inodes.add(inode)
+                            stack.append(entry_path)
+                        
+                        # Manejo de archivos
+                        elif entry.is_file(follow_symlinks=False):
+                            size = getattr(st, 'st_size', None)
+                            if isinstance(size, int) and size >= 0:
+                                yield entry_path, size
+                    except (StopIteration, OSError):
+                        break
         except (PermissionError, FileNotFoundError, OSError, ValueError):
             continue
 
