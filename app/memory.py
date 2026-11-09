@@ -255,11 +255,11 @@ def _is_invalid_process_name(name: str) -> bool:
     """Valida la sanidad del nombre del proceso evitando inyecciones de control."""
     return not name or any(ord(c) < 32 or ord(c) == 127 for c in name) or len(name) > 256
 
-def _is_valid_process(name: str, pid: int, ws: int) -> bool:
+def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
     """Verifica límites de seguridad y lógica de los datos de proceso."""
     if _is_system_process(pid) or pid <= 0 or _is_invalid_process_name(name):
         return False
-    return 0 < ws < MAX_VALID_PROCESS_MEM_BYTES
+    return 0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """
@@ -353,7 +353,7 @@ GetModNameFunc = Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
     """
     Valida la seguridad del proceso: resuelve la ruta de su ejecutable y 
-    verifica que no esté en una zona restringida.
+    verifica que no esté en una zona restringida del sistema.
     """
     if handle is None or get_mod_name_func is None: return False
     try:

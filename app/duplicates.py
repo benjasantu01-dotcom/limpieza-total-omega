@@ -98,6 +98,7 @@ class DuplicateGroup:
 def _safe_path_check(path: Path) -> bool:
     """
     Valida la seguridad de la ruta mediante el módulo safety antes de cualquier I/O.
+    Filtra archivos protegidos, junctions y rutas no legibles.
     """
     if not isinstance(path, Path): return False
     try:
@@ -112,14 +113,15 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """
-    Valida si un archivo es candidato apto según tamaño y atributos de sistema.
+    Determina si un archivo es candidato a duplicado: tamaño positivo,
+    no oculto y que pase los chequeos de seguridad.
     """
     return st_size > 0 and not is_system_or_hidden(path) and _safe_path_check(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo. Utiliza caché interna de sesión.
+    Calcula el hash SHA256 completo del archivo. Utiliza caché interna de sesión.
     """
     if not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache.get(path)
@@ -175,7 +177,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido BFS para recolectar candidatos a duplicados.
+    Realiza un recorrido BFS para recolectar candidatos a duplicados en los directorios dados.
     """
     if directories is None or not isinstance(directories, Iterable) or min_size < 0: 
         return {}
@@ -224,7 +226,10 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Agrupa una lista de rutas basándose en el resultado de la función de hash suministrada."""
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path is not None and (d := hash_func(path)): groups[d].append(path)
+        if path is not None:
+            digest = hash_func(path)
+            if digest:
+                groups[digest].append(path)
     return {d: p for d, p in groups.items() if len(p) > 1}
 
 
@@ -240,9 +245,9 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Determina si es necesario el hashing parcial según el tamaño del archivo."""
     if size <= PARTIAL_READ_BYTES:
-        results: Dict[str, List[Path]] = _group_paths_by_hash(paths, hash_file)
+        results = _group_paths_by_hash(paths, hash_file)
     else:
-        results: Dict[str, List[Path]] = _process_large_file_subset(paths)
+        results = _process_large_file_subset(paths)
     return [DuplicateGroup(d, size, sorted(p)) for d, p in results.items()]
 
 
