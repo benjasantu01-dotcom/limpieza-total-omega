@@ -102,7 +102,6 @@ def _safe_path_check(path: Path) -> bool:
     """
     if not isinstance(path, Path): return False
     try:
-        # Nota: path.exists() es costoso; se omite si ya se obtuvo el stat del entry
         abs_path = path.resolve(strict=True)
         if not abs_path.is_file() or not is_safe_to_modify(abs_path):
             return False
@@ -269,6 +268,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _get_mtime(path: Path) -> Optional[float]:
     """Obtiene el timestamp de modificación o retorna None si falla el acceso."""
+    if not isinstance(path, Path): return None
     try:
         return path.stat().st_mtime
     except (OSError, PermissionError):
@@ -279,14 +279,15 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
     Heurística: sugiere conservar el archivo más antiguo (menor mtime).
     """
-    if not group or not group.paths: return None
+    if group is None or not group.paths: return None
     candidates = [(m, p) for p in group.paths if (m := _get_mtime(p)) is not None]
-    return min(candidates, key=lambda x: x[0])[1] if candidates else group.paths[0]
+    if not candidates: return group.paths[0]
+    return min(candidates, key=lambda x: x[0])[1]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera una representación textual formateada de un grupo de duplicados para la UI."""
-    if not group or not group.paths: return []
+    if group is None or not group.paths: return []
     keeper = suggest_keeper(group)
     mb, wasted = group.size_bytes / 1048576, group.wasted_bytes / 1048576
     lines = [f"{group.count} copias de {mb:.2f} MB (recuperable: {wasted:.2f} MB)"]

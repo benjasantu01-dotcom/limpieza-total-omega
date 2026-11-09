@@ -446,3 +446,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-09T12:30:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-09T12:30:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T12:30:23` Corrida terminada. Total usado hoy: 296.
+- `2026-11-09T12:37:52` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-09T12:38:19` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-09T12:38:44` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando fallos en `os.scandir` y condiciones de borde en las rutas, asegurando que la app no aborte ante directorios inaccesibles o entradas corruptas.
+- `2026-11-09T12:39:07` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `suggest_keeper` y `_get_mtime` para manejar grupos vacíos o errores de acceso a disco mediante validaciones explícitas de `None`, evitando posibles excepciones que interrumpirían el flujo de la interfaz.
+- `2026-11-09T12:39:16` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-09T12:39:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T12:39:16` Corrida terminada. Total usado hoy: 300.
