@@ -184,14 +184,14 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
 
 @lru_cache(maxsize=16)
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Calcula el ratio de salud según el tamaño de archivos basura encontrados."""
+    """Calcula el ratio de salud (0.0 a 1.0) basado en el volumen de archivos temporales."""
     return _JUNK_SCORER(float(junk_mb))
 
 @lru_cache(maxsize=16)
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
     """
-    Calcula el ratio de seguridad penalizando proporcionalmente por hallazgos 
-    sospechosos y advertencias de heurística.
+    Calcula el ratio de seguridad (0.0 a 1.0) penalizando linealmente hallazgos 
+    sospechosos (peso 0.05 c/u) y advertencias heurísticas (peso 0.25 c/u).
     """
     count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
     warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
@@ -199,7 +199,7 @@ def score_security(suspicious_count: int | float, warnings: int | float = 0) -> 
 
 @lru_cache(maxsize=16)
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula el ratio de salud de memoria basado en el umbral configurado."""
+    """Calcula el ratio de salud de memoria comparando disponibilidad actual vs umbral."""
     val = float(available_percent)
     return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 else _clamp(val / _LIMIT_RAM_PERCENT)
 
@@ -211,12 +211,12 @@ def score_disk(free_percent: float | int) -> NormalizedRatio:
 
 @lru_cache(maxsize=16)
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula el ratio de salud según el impacto de archivos duplicados."""
+    """Calcula el ratio de salud según el impacto de espacio ocupado por duplicados."""
     return _DUP_SCORER(float(duplicate_mb))
 
 @lru_cache(maxsize=16)
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula el ratio de salud según el volumen de aplicaciones al arranque."""
+    """Calcula el ratio de salud según el volumen de aplicaciones de inicio."""
     return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_val: float, max_val: float) -> float:

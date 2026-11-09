@@ -100,29 +100,32 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """Estructura Win32 GlobalMemoryStatusEx para obtener estado global de RAM."""
     _fields_: List[Tuple[str, Any]] = [
-        ("dwLength", wintypes.DWORD),               # Tamaño de esta estructura
-        ("dwMemoryLoad", wintypes.DWORD),           # % de RAM en uso
-        ("ullTotalPhys", ctypes.c_ulonglong),       # RAM física total en bytes
-        ("ullAvailPhys", ctypes.c_ulonglong),       # RAM física libre
-        ("ullTotalPageFile", ctypes.c_ulonglong),   # Tamaño del archivo de paginación
-        ("ullAvailPageFile", ctypes.c_ulonglong),   # Espacio libre en archivo de paginación
-        ("ullTotalVirtual", ctypes.c_ulonglong),    # Espacio virtual total
-        ("ullAvailVirtual", ctypes.c_ulonglong),    # Espacio virtual libre
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Reservado
+        ("dwLength", wintypes.DWORD),
+        ("dwMemoryLoad", wintypes.DWORD),
+        ("ullTotalPhys", ctypes.c_ulonglong),
+        ("ullAvailPhys", ctypes.c_ulonglong),
+        ("ullTotalPageFile", ctypes.c_ulonglong),
+        ("ullAvailPageFile", ctypes.c_ulonglong),
+        ("ullTotalVirtual", ctypes.c_ulonglong),
+        ("ullAvailVirtual", ctypes.c_ulonglong),
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Contadores detallados de memoria de proceso usados por GetProcessMemoryInfo."""
+    """
+    Contadores de memoria de proceso.
+    WorkingSetSize representa la RAM física real (RSS) del proceso.
+    """
     _fields_: List[Tuple[str, Any]] = [
-        ("cb", wintypes.DWORD),               # Tamaño de la estructura en bytes
-        ("PageFaultCount", wintypes.DWORD),   # Total de fallos de página del proceso
-        ("PeakWorkingSetSize", ctypes.c_size_t), # Tamaño máximo alcanzado del working set
-        ("WorkingSetSize", ctypes.c_size_t),     # Memoria física actualmente asignada (RSS)
+        ("cb", wintypes.DWORD),
+        ("PageFaultCount", wintypes.DWORD),
+        ("PeakWorkingSetSize", ctypes.c_size_t),
+        ("WorkingSetSize", ctypes.c_size_t),
         ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
         ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
-        ("PagefileUsage", ctypes.c_size_t),      # Confirmación de commit del proceso
+        ("PagefileUsage", ctypes.c_size_t),
         ("PeakPagefileUsage", ctypes.c_size_t),
     ]
 
@@ -269,7 +272,6 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         if len(parts) < 3: return None
         
         proc_name = str(parts[0]).strip()
-        # Validación de tipo explícita antes de usar el valor
         try:
             pid_val = int(parts[1])
         except (ValueError, TypeError):
@@ -344,13 +346,13 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
     except (ctypes.WinError, OSError):
         return None
 
-# Definición de alias de tipo para callback de Windows: GetModuleFileNameEx
+# Alias para callback: GetModuleFileNameEx(hProcess, hModule, lpFilename, nSize)
 GetModNameFunc = Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]
 
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
     """
-    Verifica que el ejecutable del proceso no se encuentre en ruta protegida.
-    Utiliza el callback `get_mod_name_func` para resolver la ruta real del ejecutable.
+    Valida la seguridad del proceso: resuelve la ruta de su ejecutable y 
+    verifica que no esté en una zona restringida.
     """
     if handle is None or get_mod_name_func is None: return False
     try:
@@ -364,13 +366,12 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: GetModNameFunc) -> Optional[wintypes.HANDLE]:
     """
-    Helper que abre, valida y cierra el handle de un proceso.
-    Si el proceso está en zona protegida o ha finalizado, devuelve None y asegura la limpieza.
+    Helper para obtener un handle validado. Cierra el handle automáticamente 
+    si el proceso no está vivo o viola las reglas de seguridad.
     """
     handle = _get_process_handle(pid, access)
     if not handle: return None
     
-    # Verificación de estado vivo sin cerrar handle aún
     exit_code = wintypes.DWORD()
     if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
         WindowsAPI.kernel32.CloseHandle(handle)
@@ -385,7 +386,7 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
 def _iter_process_memory() -> Iterator[ProcessMemory]:
     """
     Generador de procesos del sistema que filtra por uso de RAM y seguridad.
-    Pre-aloca buffers compartidos para minimizar el overhead en el escaneo.
+    Pre-aloca buffers para minimizar el overhead de memoria durante el escaneo.
     """
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
     
@@ -398,7 +399,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
-    # Pre-instancia buffer compartido para reducir alocación en el loop
     path_buf = ctypes.create_unicode_buffer(512)
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     
@@ -478,12 +478,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError): 
         return False, "El PID debe ser numérico."
         
-    # Validación estricta de seguridad sobre el PID antes de operar
     if target_pid <= 0 or _is_system_process(target_pid) or not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
         return False, "Operación no permitida para este PID o no disponible."
         
     path_buf = ctypes.create_unicode_buffer(512)
-    # Reutilizamos el helper que garantiza la liberación del handle y la validación de seguridad (is_protected_path)
     handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if handle is None:
