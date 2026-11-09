@@ -294,9 +294,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Realiza un recorrido profundo (DFS) iterativo sobre el árbol de archivos.
     
-    Implementa prevención de ciclos infinitos mediante el rastreo de inodes (dispositivo + identificador)
-    y respeta las políticas de seguridad (`safety.py`) para ignorar rutas protegidas y puntos de reanálisis.
+    Previene ciclos infinitos mediante rastreo de inodes y respeta `safety.py`.
     
+    Args:
+        directory: Ruta raíz a explorar.
+        skip_protected: Si es True, ignora rutas marcadas en safety.py.
+
     Yields:
         Tuplas conteniendo la ruta absoluta (Path) y el tamaño del archivo en bytes (int).
     """
@@ -327,6 +330,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if skip_protected and is_protected_path(entry_path):
                         continue
 
+                    # Manejo de directorios: evita puntos de reanálisis y ciclos
                     if entry.is_dir(follow_symlinks=False):
                         if _is_reparse_point(st):
                             continue
@@ -336,6 +340,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 continue
                             visited_inodes.add(inode)
                         stack.append(entry_path)
+                    
+                    # Manejo de archivos: emisión de métricas
                     elif entry.is_file(follow_symlinks=False):
                         size = getattr(st, 'st_size', None)
                         if isinstance(size, int) and size >= 0:
@@ -394,14 +400,21 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Orquesta el escaneo del directorio y la agregación de métricas de uso globales.
     
-    Utiliza un heap de tamaño fijo para mantener eficientemente los 'limit' archivos más pesados 
-    sin almacenar toda la estructura de archivos en memoria.
+    Utiliza un heap de tamaño fijo (`top_heap`) para mantener eficientemente los 'limit' 
+    archivos más pesados, evitando almacenar todas las rutas en memoria.
+    
+    Args:
+        directory: Ruta raíz validada.
+        skip_protected: Filtro de seguridad.
+        limit: Cantidad de archivos top a rastrear.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
         stats.register_file(size, _get_extension(path))
+        
+        # Mantenimiento del heap para los N archivos más grandes encontrados
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))

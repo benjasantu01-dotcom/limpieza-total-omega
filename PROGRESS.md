@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 70
-- Sin cambios (nada sustancial que mejorar): 18
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 111 | 11 | 40 | 11 | 127 |
-| 2026-11-09 | 79 | 3 | 30 | 7 | 85 |
+| 2026-11-08 | 109 | 11 | 39 | 11 | 126 |
+| 2026-11-09 | 80 | 3 | 31 | 8 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **42**
 - seguridad defensiva: **35**
-- rendimiento: **26**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **20**
-- `memory.py`: **19**
-- `quarantine.py`: **19**
 - `healthscore.py`: **18**
+- `memory.py`: **18**
+- `quarantine.py`: **18**
 - `settings.py`: **17**
 - `scanner.py`: **16**
 - `duplicates.py`: **15**
 - `assistant.py`: **14**
+- `diskreport.py`: **13**
 - `branding.py`: **13**
-- `diskreport.py`: **12**
 - `browser.py`: **9**
 - `startup.py`: **9**
 - `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T08:45:03` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `walk_files` y `_collect_summary_data`, además de clarificar la intención de los bloques de lógica compleja mediante docstrings detallados, asegurando que el comportamiento siga siendo puramente informativo y seguro.
 - `2026-11-09T08:34:55` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_read_and_parse_json` y `_coerce_and_verify` añadiendo validaciones explícitas de integridad (longitud de claves, tipos, valores nulos y rangos) y capturando excepciones de forma más precisa para evitar que datos malformados o inesperados comprometan la carga de la aplicación.
 - `2026-11-09T08:34:24` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` al agregar una validación específica contra archivos cuyo tamaño o tiempo de modificación sean `None` o inconsistentes, evitando posibles errores de desreferenciación en las funciones heurísticas que consumen estos metadatos.
 - `2026-11-09T08:33:58` **safety.py** (manejo de errores y validación de entradas): Se ha corregido un error tipográfico en `_validate_structural_safety` donde la constante `SafetyValidationENVIRONMENT` (no definida) impedía que el manejo de errores en rutas UNC funcionara correctamente al lanzar una excepción `NameError`, sustituyéndola por la categoría correcta `SafetyValidationCategory.ENVIRONMENT`.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T06:41:31` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva al reemplazar el uso de `os.scandir` por una estrategia de validación de rutas más estricta dentro del bucle de `scan_directory` y se añadieron checks de integridad para prevenir el acceso a archivos con nombres malformados o que contengan caracteres nulos que pudieran eludir filtros previos.
 - `2026-11-09T06:32:56` **safety.py** (seguridad defensiva): Se añadió una validación específica en `ensure_safe_to_modify` para detectar si el archivo es un punto de unión NTFS ("Junction") de sistema, bloqueándolo explícitamente antes de procesar su contenido para evitar escapes de sandbox durante la recursión.
 - `2026-11-09T06:31:59` **quarantine.py** (seguridad defensiva): He mejorado `_validate_isolation_request` para incluir una verificación de existencia mediante `path.exists()` y `path.is_file()` antes de realizar operaciones de metadatos, evitando excepciones innecesarias y reforzando la seguridad al validar que el archivo fuente sigue siendo un archivo regular justo antes de la transferencia.
-- `2026-11-09T06:21:31` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del módulo encapsulando la mutación de atributos en `SystemMetrics` mediante la implementación de `__setattr__` bloqueado para tipos no permitidos, evitando la inyección de datos arbitrarios fuera de los límites definidos y asegurando que `_METRIC_LIMITS` siempre se consulte de manera segura.
