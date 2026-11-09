@@ -71,6 +71,7 @@ _FULL_SCAN_CACHE: Optional[StartupEntries] = None
 _FOLDERS_CACHE: Optional[List[Path]] = None
 _VALIDATION_CACHE: Dict[str, bool] = {}
 _PROCESS_CACHE: Dict[str, bool] = {}
+_REGISTRY_PATH_CACHE: Dict[str, bool] = {}
 
 # Mensaje orientativo para el usuario final sobre la gestión de persistencia.
 HOW_TO_DISABLE: str = (
@@ -371,30 +372,40 @@ def _is_valid_registry_path(path_str: str) -> bool:
     """Valida la integridad de una ruta de archivo leída desde el registro."""
     if not isinstance(path_str, str):
         return False
+    
+    if path_str in _REGISTRY_PATH_CACHE:
+        return _REGISTRY_PATH_CACHE[path_str]
         
     try:
         clean_path: str = path_str.strip(' "')
         if not clean_path or "\0" in clean_path or ("\\" not in clean_path and "/" not in clean_path):
+            _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
         # Bloquear explícitamente rutas UNC (red) por seguridad
         if clean_path.startswith(r"\\"):
+            _REGISTRY_PATH_CACHE[path_str] = False
             return False
 
         target: Path = Path(clean_path)
         if target.is_symlink() or is_protected_path(target):
+            _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
         # Validar ruta resuelta contra zonas protegidas
         target_res: Path = target.resolve(strict=False)
         if not target_res or is_protected_path(target_res) or target_res.is_symlink():
+            _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
         if any(c in str(target) for c in SUSPICIOUS_CHARS):
+            _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
+        _REGISTRY_PATH_CACHE[path_str] = True
         return True
     except (OSError, ValueError, RuntimeError, TypeError, AttributeError):
+        _REGISTRY_PATH_CACHE[path_str] = False
         return False
 
 

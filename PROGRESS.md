@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 71
-- Sin cambios (nada sustancial que mejorar): 17
+- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 70
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 53 | 8 | 20 | 7 | 80 |
-| 2026-11-09 | 135 | 8 | 51 | 10 | 132 |
+| 2026-11-08 | 51 | 8 | 19 | 7 | 79 |
+| 2026-11-09 | 136 | 9 | 51 | 11 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **35**
-- seguridad defensiva: **33**
-- rendimiento: **29**
+- seguridad defensiva: **31**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **18**
 - `memory.py`: **18**
 - `safety.py`: **18**
 - `settings.py`: **18**
+- `duplicates.py`: **17**
 - `healthscore.py`: **17**
 - `quarantine.py`: **16**
 - `scanner.py`: **16**
 - `assistant.py`: **14**
-- `diskreport.py`: **13**
 - `branding.py`: **13**
-- `startup.py`: **10**
+- `diskreport.py`: **12**
+- `startup.py`: **11**
 - `organizer.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T14:21:58` **startup.py** (rendimiento): Se introdujo una cache de resultados para `_is_valid_registry_path` y se consolidaron las comprobaciones de seguridad mediante `is_protected_path` para evitar llamadas redundantes al sistema de archivos y validaciones repetitivas durante el escaneo del registro.
 - `2026-11-09T14:10:56` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `total_quarantined_bytes` evitando el parseo completo a objetos `QuarantineItem`, y se eliminó la redundancia de llamadas a `quarantine_dir()` (que realiza múltiples validaciones de seguridad) dentro de `summarize` al usar la carga del manifiesto directamente del caché.
 - `2026-11-09T14:01:44` **memory.py** (rendimiento): Se optimizó el acceso a los procesos mediante la pre-declaración de estructuras y el uso de un buffer de memoria persistente durante la iteración, reduciendo drásticamente las asignaciones de memoria y llamadas al sistema innecesarias dentro del bucle de escaneo.
 - `2026-11-09T13:50:59` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo eliminando la reinstanciación innecesaria de `DirectoryScanner` dentro del bucle de perfiles, permitiendo reutilizar el mismo contexto y evitando la sobrecarga de múltiples inicializaciones.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T13:29:23` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos que explican el *porqué* de las decisiones de diseño (especialmente en la validación de procesos y las limitaciones de la API), se han añadido type hints en funciones que carecían de ellos y se ha clarificado el propósito de las máscaras de acceso Win32 para facilitar la auditoría de seguridad del código.
 - `2026-11-09T13:20:05` **healthscore.py** (legibilidad y documentación): Mejoré la documentación interna del módulo `healthscore.py` añadiendo docstrings descriptivos a los protocolos y funciones clave, clarificando la intención del pipeline de puntuación y documentando el propósito de las funciones de soporte para facilitar el mantenimiento futuro.
 - `2026-11-09T13:19:35` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` mediante la normalización de la estructura de las funciones de hash, añadiendo docstrings descriptivos y type hints consistentes en los procesadores internos para facilitar la depuración y auditoría del proceso de filtrado.
-- `2026-11-09T13:19:06` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones principales y la clarificación de las responsabilidades de las clases auxiliares, facilitando el mantenimiento y la comprensión del flujo de datos en el análisis de disco.

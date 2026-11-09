@@ -517,3 +517,56 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-09T14:11:24` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 15% del original (posible pérdida de código)
 - `2026-11-09T14:11:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T14:11:24` Corrida terminada. Total usado hoy: 336.
+- `2026-11-09T14:20:02` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-09T14:20:29` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-11-09T14:21:01` Tests FALLARON:
+```
+isis_en_paralelo': True,
+E               'asistente_activado': False,
+E               'asistente_clave_api': '',
+E               'asistente_enviar_metricas': True,
+E               'asistente_modelo': 'gemini-3.1-flash-lite',
+E           }
+
+evolve/tests/test_assistant.py:137: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - AssertionError: assert {'tema': 'cla...s': True, ...} == {'tema': 'osc...s': True, ...}
+  
+  Omitting 14 identical items, use -vv to show
+  Differing items:
+  {'top_archivos': 99} != {'top_archivos': 15}
+  {'tema': 'claro'} != {'tema': 'oscuro'}
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+    {
+  -     'tema': 'oscuro',
+  ?              -- ^
+  +     'tema': 'claro',
+  ?               ^^
+        'acento': 'menta',
+        'mostrar_barras': True,
+        'animaciones': True,
+        'confirmar_siempre': True,
+        'abrir_en': 'Salud',
+        'recordar_ultima_carpeta': True,
+        'ultima_carpeta': '',
+        'duplicados_tamano_minimo_kb': 64,
+  -     'top_archivos': 15,
+  ?                     ^^
+  +     'top_archivos': 99,
+  ?                     ^^
+        'top_procesos': 15,
+        'analisis_en_paralelo': True,
+        'asistente_activado': False,
+        'asistente_clave_api': '',
+        'asistente_enviar_metricas': True,
+        'asistente_modelo': 'gemini-3.1-flash-lite',
+    }
+1 failed, 298 passed in 1.66s
+
+```
+- `2026-11-09T14:21:01` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `settings.py` evitando múltiples llamadas costosas a `settings_path()` mediante la inyección del objeto `Path` ya resuelto en las funciones internas, y eliminé la recarga innecesaria de la configuración en `update()` si los datos no cambiaron, reduciendo la presión sobre el I/O y la memoria.
+- `2026-11-09T14:21:58` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se introdujo una cache de resultados para `_is_valid_registry_path` y se consolidaron las comprobaciones de seguridad mediante `is_protected_path` para evitar llamadas redundantes al sistema de archivos y validaciones repetitivas durante el escaneo del registro.
+- `2026-11-09T14:22:21` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para evitar que el asistente procese estructuras maliciosas o recursivas que podrían causar desbordamiento de pila o agotamiento de memoria, garantizando que solo escalares simples sean aceptados.
+- `2026-11-09T14:22:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T14:22:21` Corrida terminada. Total usado hoy: 340.
