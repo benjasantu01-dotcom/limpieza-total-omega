@@ -249,7 +249,8 @@ class SystemMetrics:
     startup_count: int = 0
     quarantined_count: int = 0
 
-    def __post_init__(self) -> None: self.validate()
+    def __post_init__(self) -> None: 
+        self.validate()
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name in _ALL_METRICS:
@@ -260,7 +261,8 @@ class SystemMetrics:
             raise AttributeError(f"Campo no permitido: {name}")
 
     @_guard_metric_access
-    def safe_get(self, field_name: str, default: Any = 0.0) -> Any: return getattr(self, field_name, default)
+    def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
+        return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
         """Devuelve el valor de una métrica restringido por sus límites definidos."""
@@ -271,10 +273,12 @@ class SystemMetrics:
     def validate(self) -> None:
         """Asegura que todas las métricas almacenadas estén dentro de límites seguros."""
         for f in _ALL_METRICS:
+            val = getattr(self, f, 0.0)
             object.__setattr__(self, f, self.get_clamped_metric(f))
 
     @property
-    def is_finite(self) -> bool: return all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
+    def is_finite(self) -> bool: 
+        return all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
 
 @dataclass
 class HealthResult:

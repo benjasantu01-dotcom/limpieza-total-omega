@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 69
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 49 | 8 | 18 | 7 | 78 |
-| 2026-11-09 | 138 | 9 | 51 | 11 | 135 |
+| 2026-11-08 | 48 | 8 | 18 | 7 | 75 |
+| 2026-11-09 | 141 | 9 | 52 | 11 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **40**
 - rendimiento: **30**
-- seguridad defensiva: **29**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
+- `healthscore.py`: **18**
+- `memory.py`: **18**
 - `settings.py`: **18**
 - `duplicates.py`: **17**
-- `healthscore.py`: **17**
-- `memory.py`: **17**
+- `safety.py`: **17**
 - `scanner.py`: **16**
 - `quarantine.py`: **15**
 - `assistant.py`: **14**
 - `branding.py`: **14**
 - `diskreport.py`: **13**
 - `startup.py`: **11**
-- `organizer.py`: **9**
+- `organizer.py`: **10**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T14:43:29` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al implementar una validación de `ensure_safe_to_modify` antes de cualquier operación de disco (usando `is_safe_to_modify` para el filtrado previo y `ensure_safe_to_modify` para la validación crítica previa al `unlink`), protegiendo al sistema contra posibles inyecciones de rutas o manipulación de la estructura de archivos en tiempo de ejecución.
+- `2026-11-09T14:43:05` **memory.py** (robustez ante casos límite): Se añade una validación de longitud máxima al buffer de rutas en `_iter_process_memory` y se robustece la recuperación de nombres de proceso para evitar errores de acceso a memoria o cadenas mal formadas al tratar con procesos de sistema o nombres de ruta excesivamente largos.
+- `2026-11-09T14:41:28` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud integrando validaciones de punto flotante adicionales y protección contra estados inconsistentes en la inicialización del objeto `SystemMetrics` ante valores inesperados.
 - `2026-11-09T14:31:39` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_get_local_windows_drives` ante errores de acceso a disco (como unidades desconectadas, dispositivos extraíbles sin medio, o fallos de lectura en tiempo real) asegurando que el bucle de iteración capture excepciones `OSError` específicas durante el `scandir` y la consulta de atributos, evitando que el escáner se detenga prematuramente.
 - `2026-11-09T14:30:47` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo geométrico añadiendo validaciones estrictas ante estados inválidos o rutas inexistentes, asegurando que la app no falle ante valores de entrada corruptos o permisos denegados.
 - `2026-11-09T14:21:58` **startup.py** (rendimiento): Se introdujo una cache de resultados para `_is_valid_registry_path` y se consolidaron las comprobaciones de seguridad mediante `is_protected_path` para evitar llamadas redundantes al sistema de archivos y validaciones repetitivas durante el escaneo del registro.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T13:41:17` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos privados de `_SettingsManager` y se reemplazó una lógica de `if` redundante por una estructura `dict.get` más idiomática y clara, facilitando la legibilidad del flujo de validación.
 - `2026-11-09T13:40:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la adición de docstrings detallados en las funciones de heurística y métodos internos, especificando el propósito de cada chequeo, las restricciones de las constantes y clarificando el flujo de seguridad en la navegación del sistema.
 - `2026-11-09T13:40:15` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la lógica de validación de seguridad mediante la centralización de los `SafetyValidationErrorCode` dentro de `SecurityDescriptor` y la limpieza de los docstrings en las funciones críticas para aclarar su propósito y el "por qué" de las restricciones.
-- `2026-11-09T13:30:33` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para reducir su complejidad ciclomática, extrayendo las validaciones críticas a un método de clase, y he añadido docstrings detallados en funciones de bajo nivel que anteriormente carecían de explicación sobre el "porqué" de sus medidas de seguridad.
-- `2026-11-09T13:29:50` **organizer.py** (legibilidad y documentación): He mejorado la legibilidad y la mantenibilidad del módulo mediante la adición de docstrings estructurados (con secciones Args y Returns) en funciones clave, la tipificación explícita de variables de estado complejas y la estandarización de la nomenclatura de parámetros en las funciones de escaneo para facilitar la auditoría de seguridad.
-- `2026-11-09T13:29:23` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos que explican el *porqué* de las decisiones de diseño (especialmente en la validación de procesos y las limitaciones de la API), se han añadido type hints en funciones que carecían de ellos y se ha clarificado el propósito de las máscaras de acceso Win32 para facilitar la auditoría de seguridad del código.

@@ -577,3 +577,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-11-09T14:31:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-11-09T14:31:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T14:31:46` Corrida terminada. Total usado hoy: 344.
+- `2026-11-09T14:40:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-09T14:41:28` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del cálculo de salud integrando validaciones de punto flotante adicionales y protección contra estados inconsistentes en la inicialización del objeto `SystemMetrics` ante valores inesperados.
+- `2026-11-09T14:42:36` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-09T14:43:05` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se añade una validación de longitud máxima al buffer de rutas en `_iter_process_memory` y se robustece la recuperación de nombres de proceso para evitar errores de acceso a memoria o cadenas mal formadas al tratar con procesos de sistema o nombres de ruta excesivamente largos.
+- `2026-11-09T14:43:29` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` y `delete_reviewed` al implementar una validación de `ensure_safe_to_modify` antes de cualquier operación de disco (usando `is_safe_to_modify` para el filtrado previo y `ensure_safe_to_modify` para la validación crítica previa al `unlink`), protegiendo al sistema contra posibles inyecciones de rutas o manipulación de la estructura de archivos en tiempo de ejecución.
+- `2026-11-09T14:43:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T14:43:29` Corrida terminada. Total usado hoy: 348.

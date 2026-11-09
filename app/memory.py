@@ -385,6 +385,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
+    # MAX_PATH en Windows es 260, usamos 1024 para evitar desbordamientos en casos raros
     path_buf = ctypes.create_unicode_buffer(1024)
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     
@@ -398,10 +399,11 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
                 ws = pmc.WorkingSetSize
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
+                    # Recuperación segura del nombre del proceso desde la ruta
                     raw_path = path_buf.value
-                    idx = raw_path.rfind('\\')
-                    name = raw_path[idx + 1:] if idx != -1 else raw_path
-                    yield ProcessMemory(name, pid, BytesValue(ws))
+                    name = Path(raw_path).name if raw_path else "Unknown"
+                    if not _is_invalid_process_name(name):
+                        yield ProcessMemory(name, pid, BytesValue(ws))
         except (ctypes.ArgumentError, OSError):
             continue
         finally:
