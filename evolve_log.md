@@ -815,3 +815,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T05:42:09` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-09T05:42:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T05:42:09` Corrida terminada. Total usado hoy: 136.
+- `2026-11-09T05:50:02` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-11-09T05:50:30` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-09T05:50:57` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de acceso a disco en `_is_file_locked` y `_can_write_to_destination`, asegurando que problemas transitorios de permisos o rutas inaccesibles no detengan el flujo del programa, utilizando capturas de excepciones más granulares y validaciones de existencia previas.
+- `2026-11-09T05:52:00` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-11-09T05:52:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-09T05:52:08` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-09T05:52:14` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-09T05:53:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-09T05:53:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T05:53:00` Corrida terminada. Total usado hoy: 140.

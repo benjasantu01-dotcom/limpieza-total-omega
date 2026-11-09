@@ -199,6 +199,7 @@ def _try_open_win_file(path: Path) -> bool:
     Retorna True si el archivo está libre; False si está bloqueado por otro proceso.
     """
     try:
+        if not path.exists(): return False
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0x00000001, None, 3, 0x00000080, None
         )
@@ -206,7 +207,7 @@ def _try_open_win_file(path: Path) -> bool:
             return False
         ctypes.windll.kernel32.CloseHandle(handle)
         return True
-    except (AttributeError, TypeError, OSError):
+    except (AttributeError, TypeError, OSError, ValueError):
         return False
 
 def _is_file_locked(path: Path) -> bool:
@@ -265,7 +266,7 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
     """Verifica si la unidad de destino tiene suficiente espacio libre para el archivo."""
     try:
         target_dir = dest_real.parent if dest_real.exists() else dest_real
-        if not target_dir.is_dir() or not os.access(target_dir, os.W_OK):
+        if not target_dir.exists() or not target_dir.is_dir() or not os.access(target_dir, os.W_OK):
             return False
         if os.name == 'nt':
             free_bytes = ctypes.c_ulonglong(0)
