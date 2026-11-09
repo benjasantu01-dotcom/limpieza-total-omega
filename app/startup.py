@@ -114,10 +114,7 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_raw: str) -> bool:
-        """
-        Verifica si la ruta corresponde a un dispositivo de hardware o alias
-        del sistema (ej. CON, NUL) que no debe ser tratado como archivo común.
-        """
+        """Verifica si la ruta utiliza nombres reservados por el kernel."""
         if not isinstance(path_raw, str) or "\0" in path_raw:
             return True
         try:
@@ -130,20 +127,13 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_raw: str) -> bool:
-        """
-        Analiza la cadena de comando en busca de caracteres de control,
-        redirección o rutas de red (UNC) que podrían ser usadas para desviar
-        la ejecución del programa de forma maliciosa.
-        """
+        """Analiza la cadena de comando en busca de caracteres de inyección o rutas UNC."""
         if not isinstance(path_raw, str):
             return True
         return any(c in path_raw for c in SUSPICIOUS_CHARS) or path_raw.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """
-        Confirma que el archivo existe físicamente, es un ejecutable permitido
-        y no es un enlace simbólico (evita ejecución dirigida por terceros).
-        """
+        """Verifica existencia, tipo de archivo (no symlink) y extensión ejecutable."""
         try:
             p_str = str(path)
             if p_str in _RESOLVED_PATH_CACHE:
@@ -163,10 +153,7 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """
-        Extrae y valida una ruta delimitada por comillas dobles, común en claves
-        Run del registro para manejar espacios en rutas de archivos.
-        """
+        """Extrae la ruta contenida entre comillas dobles, común en claves Run."""
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
         
@@ -188,10 +175,7 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """
-        Verifica la seguridad de la ruta mediante `safety.py` y permisos
-        de lectura/ejecución del sistema operativo para evitar falsos positivos.
-        """
+        """Verifica la seguridad mediante `safety.py` y permisos de ejecución."""
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
             return _VALIDATION_CACHE[p_str]
@@ -214,10 +198,7 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_raw: str) -> str:
-        """
-        Normaliza, resuelve y valida rutas absolutas, descartando rutas relativas
-        o sospechosas, manteniendo un estado en caché para optimizar rendimiento.
-        """
+        """Normaliza y resuelve una ruta absoluta, utilizando caché de validación."""
         if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or path_raw.startswith(r"\\"):
             return ""
         
@@ -255,10 +236,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, cmd_line: str) -> str:
-        """
-        Aísla la ruta ejecutable de una línea de comandos compleja. 
-        Maneja tanto rutas entre comillas como comandos directos.
-        """
+        """Divide una línea de comando para aislar y resolver el ejecutable."""
         if not isinstance(cmd_line, str) or not cmd_line:
             return ""
         
@@ -270,7 +248,6 @@ class StartupEntry:
             if cmd_line.startswith('"'):
                 result = self._extract_quoted_path(cmd_line)
             else:
-                # Se maneja split() de forma segura capturando el índice inicial
                 parts: List[str] = cmd_line.split()
                 if parts and isinstance(parts[0], str) and ( "\\" in parts[0] or "/" in parts[0] ):
                     result = self._resolve_and_cache_path(parts[0])
@@ -282,10 +259,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """
-        Retorna la ruta absoluta del ejecutable tras procesar y validar el
-        comando original. Cachea el resultado para llamadas recurrentes.
-        """
+        """Retorna la ruta absoluta del ejecutable tras procesar el comando."""
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -334,9 +308,7 @@ def startup_folders() -> List[Path]:
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
-    """
-    Valida y convierte un archivo detectado en carpeta de inicio a `StartupEntry`.
-    """
+    """Valida y convierte un archivo detectado en carpeta de inicio."""
     if not hasattr(entry, "path") or not hasattr(entry, "name"):
         return None
         
@@ -437,7 +409,6 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     if not clean_name or not clean_cmd or clean_cmd in seen: 
         return False
     
-    # Pre-filtro básico contra inyección y validación rigurosa de ruta
     if clean_cmd.startswith(r"\\") or any(c in clean_cmd for c in SUSPICIOUS_CHARS):
         return False
         
@@ -445,9 +416,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """
-    Transforma la salida CSV de PowerShell en una lista de objetos `StartupEntry`.
-    """
+    """Transforma la salida CSV de PowerShell en una lista de objetos `StartupEntry`."""
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -486,9 +455,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
-    """
-    Extrae configuraciones de inicio desde el registro mediante PowerShell.
-    """
+    """Extrae configuraciones de inicio desde el registro mediante PowerShell."""
     if os.name != "nt":
         return []
     

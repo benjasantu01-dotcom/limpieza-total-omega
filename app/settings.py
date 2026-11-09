@@ -170,10 +170,8 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Escribe la configuración de forma atómica:
-        1. Escribe en un archivo temporal (.pid.tmp).
-        2. Sincroniza buffers a disco (fsync).
-        3. Realiza un reemplazo atómico (os.replace).
+        Gestiona la escritura segura en disco mediante archivos temporales, 
+        asegurando que solo se sobrescriba la configuración si el proceso finaliza con éxito.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
@@ -504,11 +502,11 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     modified = False
     for key_str, value in changes.items():
         if key_str in _VALID_ENUM_KEYS:
-            key_enum = _KEY_TO_ENUM[key_str]
-            if (validator := _VALIDATOR_MAP.get(key_enum)):
-                if (val := validator.func(key_enum, value)) is not None and val != current.get(key_str):
-                    current[key_str] = val
-                    modified = True
+            validator = _VALIDATOR_MAP.get(_KEY_TO_ENUM[key_str])
+            val = validator.func(_KEY_TO_ENUM[key_str], value) if validator else None
+            if val is not None and val != current.get(key_str):
+                current[key_str] = val
+                modified = True
     if modified: save(current, custom_base)
     return current
 
