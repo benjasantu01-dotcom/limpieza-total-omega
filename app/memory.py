@@ -480,13 +480,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try: 
         target_pid = int(pid)
     except (ValueError, TypeError): 
-        return False, "El PID debe ser numérico."
+        return False, "El PID debe ser un valor numérico válido."
         
     if target_pid <= 0 or _is_system_process(target_pid) or not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
-        return False, "Operación no permitida para este PID o no disponible."
+        return False, "Operación no permitida: PID protegido o función no disponible."
         
     path_buf = ctypes.create_unicode_buffer(1024)
-    # Obtenemos handle con acceso específico de trim
+    # Obtenemos handle con acceso específico de trim, validando seguridad del ejecutable
     handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if handle is None:
@@ -496,8 +496,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         # EmptyWorkingSet devuelve un valor distinto de cero en caso de éxito
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
-        return False, "El sistema operativo rechazó la operación."
-    except (ctypes.ArgumentError, OSError, Exception) as e:
-        return False, f"Error inesperado al intentar liberar memoria: {type(e).__name__}"
+        return False, "El sistema operativo rechazó la solicitud de liberación."
+    except (ctypes.ArgumentError, OSError, Exception):
+        return False, "Error interno al intentar liberar memoria del proceso."
     finally:
         WindowsAPI.kernel32.CloseHandle(handle)

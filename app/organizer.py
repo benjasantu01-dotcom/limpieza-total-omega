@@ -403,10 +403,13 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             
             target_path = _can_move_file(junk_file, dest_base)
             if target_path and not target_path.exists(): 
-                os.replace(str(junk_file.path), str(target_path))
+                try:
+                    os.replace(str(junk_file.path), str(target_path))
+                except (OSError, PermissionError):
+                    continue
         return dest_base
     except (OSError, PermissionError) as e:
-        logger.error(f"Falla en stage_for_review: {e}")
+        logger.error(f"Falla crítica en stage_for_review: {e}")
         return None
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:

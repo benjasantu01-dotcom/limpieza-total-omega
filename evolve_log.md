@@ -453,3 +453,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-11-09T12:39:16` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-09T12:39:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T12:39:16` Corrida terminada. Total usado hoy: 300.
+- `2026-11-09T12:48:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-09T12:49:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-09T12:49:50` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se mejoró `trim_working_set` para manejar de forma robusta la validación de tipos y el estado del proceso, asegurando que la liberación de memoria falle silenciosa y seguramente si los parámetros son inválidos, evitando excepciones no capturadas.
+- `2026-11-09T12:50:19` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando un manejo de excepciones más granular y validaciones de tipos adicionales, evitando silenciamientos de errores inesperados y asegurando que las operaciones de E/S se realicen solo tras verificaciones explícitas de integridad del sistema de archivos.
+- `2026-11-09T12:50:49` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `save_manifest` para manejar explícitamente errores de serialización y E/S mediante bloques `try-except` granulares, evitando dejar el manifiesto en un estado corrupto o inconsistente al utilizar un archivo temporal que solo se mueve tras una escritura exitosa (`fsync` incluido).
+- `2026-11-09T12:50:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T12:50:49` Corrida terminada. Total usado hoy: 304.
