@@ -173,11 +173,11 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if not directory:
         return None
     try:
-        p = Path(directory).expanduser().resolve()
-        if not p.exists() or not p.is_dir():
+        # Resolvemos antes de validar para prevenir manipulaciones de ruta
+        p = Path(directory).expanduser().resolve(strict=True)
+        if not p.is_dir():
             return None
-        path_str = str(p)
-        if path_str.lower().startswith(r'\\') or is_protected_path(p):
+        if is_protected_path(p) or str(p).lower().startswith(r'\\'):
             return None
         if not os.access(p, os.R_OK):
             return None
@@ -276,11 +276,10 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None: return None
     try:
         p = Path(mount).expanduser().resolve()
-        path_str = str(p)
-        if not p.is_dir() or is_protected_path(p) or path_str.lower().startswith(r'\\'):
+        if not p.is_dir() or is_protected_path(p) or str(p).lower().startswith(r'\\'):
             return None
         usage = shutil.disk_usage(p)
-        return DriveUsage(path_str, usage.total, usage.used, usage.free)
+        return DriveUsage(str(p), usage.total, usage.used, usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
         return None
 
@@ -309,41 +308,32 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
-                while True:
+                for entry in iterator:
+                    if _is_excluded_path(entry.name):
+                        continue
+                    
                     try:
-                        entry = next(iterator, None)
-                        if entry is None:
-                            break
-                        if _is_excluded_path(entry.name):
-                            continue
-                        
-                        st = None
-                        try:
-                            st = entry.stat(follow_symlinks=False)
-                        except (PermissionError, FileNotFoundError, OSError):
-                            continue
-                        
-                        if st is None: continue
+                        st = entry.stat(follow_symlinks=False)
+                    except (PermissionError, FileNotFoundError, OSError):
+                        continue
                             
-                        entry_path = Path(entry.path)
-                        if skip_protected and is_protected_path(entry_path):
-                            continue
+                    entry_path = Path(entry.path).resolve()
+                    if skip_protected and is_protected_path(entry_path):
+                        continue
 
-                        if entry.is_dir(follow_symlinks=False):
-                            if _is_reparse_point(st):
+                    if entry.is_dir(follow_symlinks=False):
+                        if _is_reparse_point(st):
+                            continue
+                        if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
+                            inode = (st.st_dev, st.st_ino)
+                            if inode in visited_inodes:
                                 continue
-                            if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
-                                inode = (st.st_dev, st.st_ino)
-                                if inode in visited_inodes:
-                                    continue
-                                visited_inodes.add(inode)
-                            stack.append(entry_path)
-                        elif entry.is_file(follow_symlinks=False):
-                            size = getattr(st, 'st_size', None)
-                            if isinstance(size, int) and size >= 0:
-                                yield entry_path, size
-                    except (PermissionError, StopIteration, OSError):
-                        break
+                            visited_inodes.add(inode)
+                        stack.append(entry_path)
+                    elif entry.is_file(follow_symlinks=False):
+                        size = getattr(st, 'st_size', None)
+                        if isinstance(size, int) and size >= 0:
+                            yield entry_path, size
         except (PermissionError, FileNotFoundError, OSError, ValueError):
             continue
 
@@ -399,16 +389,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    try:
-        for path, size in walk_files(directory, skip_protected):
-            stats.register_file(size, _get_extension(path))
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif top_heap and size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-    except (OSError, PermissionError):
-        pass
+    for path, size in walk_files(directory, skip_protected):
+        stats.register_file(size, _get_extension(path))
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif top_heap and size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

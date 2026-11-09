@@ -186,7 +186,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         if d: 
             try:
                 p = Path(d)
-                if p.exists(): queue.append((p, 0))
+                if p.exists() and is_safe_to_modify(p): queue.append((p, 0))
             except (OSError, TypeError): continue
     
     while queue:
@@ -199,11 +199,13 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in it:
                     try:
                         if entry is None: continue
+                        entry_path = Path(entry.path)
+                        if not is_safe_to_modify(entry_path): continue
+                        
                         if entry.is_dir(follow_symlinks=False):
-                            if depth + 1 <= MAX_RECURSION_DEPTH:
-                                queue.append((Path(entry.path), depth + 1))
+                            if depth + 1 <= MAX_RECURSION_DEPTH and not is_junction(entry_path):
+                                queue.append((entry_path, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            entry_path = Path(entry.path)
                             if skip_protected and is_protected_path(entry_path): continue
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size >= min_size:
