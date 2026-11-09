@@ -566,6 +566,7 @@ class SystemContext:
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
+        if not isinstance(updates, dict): return
         # Protección extra contra tipos inyectados por error
         for key, value in updates.items():
             if not isinstance(key, str): continue

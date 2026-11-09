@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 95 | 9 | 35 | 10 | 123 |
-| 2026-11-09 | 91 | 5 | 37 | 9 | 90 |
+| 2026-11-08 | 92 | 9 | 34 | 10 | 123 |
+| 2026-11-09 | 94 | 5 | 37 | 9 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **35**
-- seguridad defensiva: **33**
-- rendimiento: **27**
+- robustez ante casos límite: **36**
+- seguridad defensiva: **30**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
 - `safety.py`: **19**
-- `healthscore.py`: **18**
-- `duplicates.py`: **17**
+- `memory.py`: **18**
 - `quarantine.py`: **17**
+- `healthscore.py`: **17**
+- `settings.py`: **17**
 - `scanner.py`: **16**
-- `settings.py`: **16**
+- `duplicates.py`: **16**
+- `assistant.py`: **14**
 - `branding.py`: **14**
-- `assistant.py`: **13**
 - `diskreport.py`: **11**
 - `organizer.py`: **10**
-- `startup.py`: **8**
+- `startup.py`: **9**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T09:56:25` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` mediante la validación del tipo de dato `dict` recibido, evitando fallos ante entradas mal formadas o tipos inesperados que podrían romper el estado, asegurando que solo se apliquen valores si pasan las validaciones de tipo, rango y seguridad.
+- `2026-11-09T09:55:46` **startup.py** (rendimiento): Se ha optimizado `StartupEntry.executable` mediante la implementación de una caché de resolución de rutas (`_RESOLVED_PATH_CACHE`) que evita realizar múltiples llamadas costosas a `path.resolve()` para el mismo comando, reduciendo significativamente la carga de I/O en llamadas recurrentes.
+- `2026-11-09T09:55:12` **settings.py** (rendimiento): Optimicé el rendimiento de la validación reemplazando la lógica de bucles recursivos en `_is_structure_valid` por una validación O(1) directa basada en las claves del diccionario `DEFAULTS`, evitando iteraciones innecesarias sobre el enumerado completo.
 - `2026-11-09T09:46:36` **scanner.py** (rendimiento): Optimizé la heurística `check_recent_executable_in_downloads` para evitar el cálculo innecesario del nombre del padre mediante `path.parent.name` y comparaciones de strings en cada iteración del escaneo, sustituyéndolo por un chequeo directo de pertenencia en el `set` ya definido `TARGETED_DOWNLOAD_FOLDERS`.
 - `2026-11-09T09:36:37` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la pre-compilación de `JUNK_EXTENSIONS` en un conjunto de búsqueda directa y el uso de un cache de set `visited` que evita redundancias al evaluar rutas resueltas canónicamente, reduciendo llamadas innecesarias al sistema de archivos.
 - `2026-11-09T09:36:22` **memory.py** (rendimiento): Se optimizó el rendimiento de `_iter_process_memory` reemplazando la creación dinámica de buffers y la resolución redundante de nombres mediante técnicas de pre-alocación y acceso directo por índice, reduciendo la presión sobre el recolector de basura y el tiempo de CPU en ciclos de escaneo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T08:55:51` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones clave y la sustitución de nombres de variables ambiguos por otros más descriptivos, facilitando la comprensión del flujo de datos en las operaciones de bajo nivel con la API de Windows.
 - `2026-11-09T08:53:56` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo Type Hints faltantes en funciones internas, convirtiendo los `if/else` complejos en estructuras más claras, y documentando la lógica de las funciones de filtrado para clarificar el flujo de seguridad.
 - `2026-11-09T08:45:03` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `walk_files` y `_collect_summary_data`, además de clarificar la intención de los bloques de lógica compleja mediante docstrings detallados, asegurando que el comportamiento siga siendo puramente informativo y seguro.
-- `2026-11-09T08:34:55` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_read_and_parse_json` y `_coerce_and_verify` añadiendo validaciones explícitas de integridad (longitud de claves, tipos, valores nulos y rangos) y capturando excepciones de forma más precisa para evitar que datos malformados o inesperados comprometan la carga de la aplicación.
-- `2026-11-09T08:34:24` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` al agregar una validación específica contra archivos cuyo tamaño o tiempo de modificación sean `None` o inconsistentes, evitando posibles errores de desreferenciación en las funciones heurísticas que consumen estos metadatos.
-- `2026-11-09T08:33:58` **safety.py** (manejo de errores y validación de entradas): Se ha corregido un error tipográfico en `_validate_structural_safety` donde la constante `SafetyValidationENVIRONMENT` (no definida) impedía que el manejo de errores en rutas UNC funcionara correctamente al lanzar una excepción `NameError`, sustituyéndola por la categoría correcta `SafetyValidationCategory.ENVIRONMENT`.

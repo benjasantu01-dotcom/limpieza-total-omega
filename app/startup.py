@@ -66,6 +66,7 @@ MAX_PATH_LEN: int = 260
 # --- Cachés globales ---
 _EXISTS_CACHE: Dict[str, bool] = {}
 _COMMAND_CACHE: Dict[str, str] = {}
+_RESOLVED_PATH_CACHE: Dict[str, str] = {}
 _FULL_SCAN_CACHE: Optional[StartupEntries] = None
 _FOLDERS_CACHE: Optional[List[Path]] = None
 _VALIDATION_CACHE: Dict[str, bool] = {}
@@ -144,8 +145,14 @@ class StartupEntry:
         y no es un enlace simbólico (evita ejecución dirigida por terceros).
         """
         try:
+            p_str = str(path)
+            if p_str in _RESOLVED_PATH_CACHE:
+                return True
             resolved = path.resolve(strict=False)
-            return resolved.is_file() and not resolved.is_symlink() and resolved.suffix.lower() in EXECUTABLE_EXTS
+            is_valid = resolved.is_file() and not resolved.is_symlink() and resolved.suffix.lower() in EXECUTABLE_EXTS
+            if is_valid:
+                _RESOLVED_PATH_CACHE[p_str] = str(resolved)
+            return is_valid
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
@@ -227,7 +234,12 @@ class StartupEntry:
                 _EXISTS_CACHE[path_raw] = False
                 return ""
             
-            resolved: Path = p.resolve(strict=False)
+            if norm in _RESOLVED_PATH_CACHE:
+                resolved = Path(_RESOLVED_PATH_CACHE[norm])
+            else:
+                resolved = p.resolve(strict=False)
+                _RESOLVED_PATH_CACHE[norm] = str(resolved)
+            
             if not resolved or len(resolved.parts) > 64 or resolved.is_symlink():
                 return ""
 

@@ -89,9 +89,9 @@ def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
     """Verifica si el objeto es un diccionario para ser procesado como settings."""
     return isinstance(val, dict)
 
-def _is_valid_type(val: Any, key: ConfigKey) -> bool:
+def _is_valid_type(val: Any, key: str) -> bool:
     """Valida si el tipo del valor coincide con el esquema definido en DEFAULTS."""
-    default_val = DEFAULTS.get(key.value)
+    default_val = DEFAULTS.get(key)
     return isinstance(val, type(default_val)) if default_val is not None else False
 
 __all__ = [
@@ -387,13 +387,11 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
 def _is_structure_valid(data: Any) -> bool:
     """Verifica la integridad del diccionario JSON deserializado frente a tipos esperados."""
     if not isinstance(data, dict) or not data or len(data) > 64: return False
-    try:
-        for key in ConfigKey:
-            val = data.get(key.value)
-            if val is not None and not _is_valid_type(val, key): return False
-        return all(key in _VALID_ENUM_KEYS for key in data.keys())
-    except (TypeError, AttributeError):
-        return False
+    # Valida existencia de claves desconocidas O(1) y tipo de valores definidos en DEFAULTS
+    if not all(k in _VALID_ENUM_KEYS for k in data): return False
+    for k, v in data.items():
+        if not _is_valid_type(v, k): return False
+    return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """
@@ -408,7 +406,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
             st_post = os.fstat(fd)
-            # Verificación de integridad: el archivo no debe haber cambiado durante la apertura
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or \
                st_post.st_size < MIN_SETTINGS_SIZE or st_post.st_size > MAX_SETTINGS_SIZE or \
                st_post.st_mtime != st.st_mtime or st_post.st_ino != st.st_ino:
@@ -443,7 +440,6 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         if key_name in DEFAULTS and value is not None and isinstance(value, type(DEFAULTS[key_name])):
             coerced[key_name] = value # type: ignore
     
-    # Regla de negocio: el asistente requiere obligatoriamente una clave API definida
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False
     return coerced
