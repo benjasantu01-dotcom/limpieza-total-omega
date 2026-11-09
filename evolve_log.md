@@ -880,3 +880,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T06:02:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `StartupEntry._is_valid_executable` y `_resolve_and_cache_path` para prevenir excepciones ante rutas inexistentes o inaccesibles, asegurando que el proceso de inventario no se detenga ante errores de sistema (`PermissionError`, `OSError`) al iterar sobre rutas mal formadas o bloqueadas, manteniendo el enfoque en casos límite.
 - `2026-11-09T06:02:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T06:02:42` Corrida terminada. Total usado hoy: 144.
+- `2026-11-09T06:10:25` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-11-09T06:11:18` Tests FALLARON:
+```
+.........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_build_context_ignores_non_numeric_extras _________________
+
+    def test_build_context_ignores_non_numeric_extras():
+        """Un extra con una ruta no puede colarse en el contexto."""
+        contexto = assistant.build_context(
+            ruta_secreta="C:/Users/benja/Documentos/secreto.txt",
+            memory_total_gb=8.0,
+        )
+        assert not hasattr(contexto, "ruta_secreta")
+>       assert contexto.memory_total_gb == 8.0
+E       AssertionError: assert 0.0 == 8.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+
+evolve/tests/test_assistant.py:217: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+1 failed, 298 passed in 1.45s
+
+```
+- `2026-11-09T06:11:18` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Reforcé la seguridad en la ingestión de datos dentro de `SystemContext` agregando una validación explícita que impide que el asistente procese cualquier diccionario de entrada que contenga claves no autorizadas, evitando así posibles inyecciones de atributos en el objeto.
+- `2026-11-09T06:11:50` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save_logo_svg` reemplazando la validación manual por `ensure_safe_to_modify` (que lanza excepciones ante rutas inseguras) y envolviendo la operación en un bloque `try-except` robusto, eliminando el riesgo de silenciamiento de errores y asegurando que solo se escriba en ubicaciones autorizadas.
+- `2026-11-09T06:12:21` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-09T06:12:40` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-11-09T06:12:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T06:12:40` Corrida terminada. Total usado hoy: 148.

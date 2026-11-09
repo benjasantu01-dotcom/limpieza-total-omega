@@ -320,13 +320,16 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         dest_path = Path(destination).resolve()
-        # Verificar que la ruta no sea un directorio y sea segura para modificar
-        if dest_path.is_dir() or not is_safe_to_modify(dest_path): return None
+        # Valida escritura forzando el check de seguridad mediante excepción
+        ensure_safe_to_modify(dest_path)
+        
         parent = dest_path.parent
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
-    except (OSError, PermissionError, TypeError, ValueError, AttributeError): return None
+    except Exception:
+        # La seguridad es prioritaria; cualquier error impide la escritura
+        return None
 
 _ASCII_LOGO: Final[str] = (
     "   ___  __  __ ___ ___   _\n"
