@@ -720,3 +720,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-09T03:31:32` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-09T03:31:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-09T03:31:32` Corrida terminada. Total usado hoy: 84.
+- `2026-11-09T03:37:38` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-09T03:38:20` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_safe_attr` y `SystemContext._apply_field` para evitar fallos por atributos mal formados o tipos inesperados, reemplazando accesos genéricos por un patrón de validación más explícito que previene excepciones en el motor de ingesta de datos.
+- `2026-11-09T03:38:51` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente las entradas críticas antes de operar, asegurando que valores `None` o rutas inválidas no provoquen excepciones no controladas, cumpliendo con el enfoque de manejo de errores y validación.
+- `2026-11-09T03:39:16` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-09T03:39:26` ➖ Sin cambios en diskreport.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `walk_files` y las funciones de reporte capturando explícitamente errores de acceso al tratar con rutas inaccesibles o bloqueadas por el sistema operativo, garantizando que el proceso de escaneo no se interrumpa silenciosamente ante fallos de permisos al iterar sobre directorios profundos.
+- `2026-11-09T03:39:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-09T03:39:26` Corrida terminada. Total usado hoy: 88.

@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-07 | 31 | 2 | 8 | 3 | 26 |
+| 2026-11-07 | 29 | 2 | 7 | 2 | 26 |
 | 2026-11-08 | 132 | 12 | 48 | 12 | 146 |
-| 2026-11-09 | 31 | 1 | 11 | 2 | 39 |
+| 2026-11-09 | 33 | 1 | 12 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **45**
 - seguridad defensiva: **37**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **35**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
+- `memory.py`: **20**
 - `healthscore.py`: **19**
 - `safety.py`: **18**
 - `quarantine.py`: **18**
 - `scanner.py`: **17**
 - `settings.py`: **17**
 - `diskreport.py`: **16**
+- `assistant.py`: **14**
 - `duplicates.py`: **14**
-- `assistant.py`: **13**
 - `startup.py`: **12**
-- `organizer.py`: **10**
-- `branding.py`: **10**
+- `branding.py`: **11**
 - `browser.py`: **9**
+- `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-09T03:38:51` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente las entradas críticas antes de operar, asegurando que valores `None` o rutas inválidas no provoquen excepciones no controladas, cumpliendo con el enfoque de manejo de errores y validación.
+- `2026-11-09T03:38:20` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_safe_attr` y `SystemContext._apply_field` para evitar fallos por atributos mal formados o tipos inesperados, reemplazando accesos genéricos por un patrón de validación más explícito que previene excepciones en el motor de ingesta de datos.
 - `2026-11-09T02:18:00` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` al centralizar y endurecer la validación de la integridad del archivo antes de la carga, añadiendo una comprobación explícita de `st_size` contra un límite mínimo más estricto y un chequeo preventivo de `stat` antes de abrir el descriptor de archivo para evitar accesos innecesarios a rutas que no cumplan con el perfil de seguridad esperado.
 - `2026-11-09T02:07:57` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` implementando una validación explícita para evitar que `_to_long_path` procese rutas UNC de manera incorrecta, añadiendo una restricción estricta en `ensure_safe_to_modify` que impide el procesamiento si la ruta está dentro de un "junction" (punto de reparseo) incluso antes de intentar resolver metadatos, mitigando riesgos de redirección inesperada.
 - `2026-11-09T02:06:48` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `_safe_unlink` y `purge_all` para garantizar que, ante fallos de E/S o condiciones imprevistas, no se deje un manifiesto desincronizado del estado real del sistema de archivos, aplicando una limpieza de caché después de operaciones críticas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T01:35:57` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas ante archivos bloqueados o inaccesibles añadiendo manejo explícito de `OSError` y `PermissionError` en `_run_file_heuristics`, asegurando que un acceso denegado a un solo archivo no detenga el escaneo de otros archivos en el directorio.
 - `2026-11-09T01:27:54` **safety.py** (robustez ante casos límite): Se ha implementado un mecanismo de "cierre controlado" en `_get_path_stat_robust` mediante el uso de `contextlib.closing` implícito o `finally` para asegurar que los `handles` de archivos abiertos mediante Win32 API se liberen siempre, incluso cuando ocurren excepciones durante la lectura de metadatos, evitando así bloqueos persistentes en el sistema de archivos ante condiciones de error.
 - `2026-11-09T01:26:56` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_get_sha256` y `_is_file_in_use_by_system` implementando un manejo de errores más específico para archivos bloqueados o inaccesibles, evitando que una excepción de E/S inesperada durante el escaneo de metadatos detenga el hilo principal de la aplicación.
-- `2026-11-09T01:25:52` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de seguridad atómicas previas a cada operación de E/S, asegurando que los archivos no sean enlaces simbólicos o puntos de reparse en el momento preciso de la ejecución, evitando así posibles escapes de la zona de cuarentena.
-- `2026-11-09T01:17:24` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de API nativa y casos límite de concurrencia en `_iter_process_memory` y `trim_working_set`, asegurando el cierre de recursos incluso si `GetModuleFileNameExW` falla o devuelve rutas vacías.

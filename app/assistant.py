@@ -147,11 +147,14 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     return None
 
 def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
-    """Accede a un atributo de objeto solo si el nombre de clave es seguro."""
+    """Accede a un atributo de objeto solo si el nombre de clave es seguro y el atributo es un escalar."""
     if obj is None or not _is_safe_key(name): return default
     try:
         val: Any = getattr(obj, name, default)
-        return val if not callable(val) and not isinstance(val, Path) else default
+        # Solo permitimos escalares básicos como valores de atributo
+        if isinstance(val, (int, float, str, bool)) and not isinstance(val, bool):
+            return val
+        return default
     except (AttributeError, Exception):
         return default
 
@@ -475,7 +478,7 @@ class SystemContext:
         if not isinstance(source, (dict, object)): return None
         raw_val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
         
-        # Validación estricta: solo tipos primitivos escalares permitidos
+        # Validación estricta: solo tipos escalares permitidos
         if not isinstance(raw_val, (int, float, str)) or isinstance(raw_val, bool):
             return None
             

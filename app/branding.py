@@ -305,8 +305,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         dest_path = Path(destination).resolve()
-        if dest_path.is_dir(): return None
-        if not is_safe_to_modify(dest_path): return None
+        # Verificar que la ruta no sea un directorio y sea segura para modificar
+        if dest_path.is_dir() or not is_safe_to_modify(dest_path): return None
         parent = dest_path.parent
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         dest_path.write_text(logo_svg(size), encoding="utf-8")
@@ -400,8 +400,11 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))
+        # Validar parámetros de tamaño y grosor
+        if not math.isfinite(val): return
         d = max(20, min(2048, int(size)))
-        pad = max(2, int(thickness)) / 2.0
+        thickness = max(1, int(thickness))
+        pad = thickness / 2.0
         bb = (float(canvas_x) + pad, float(canvas_y) + pad, float(canvas_x) + d - pad, float(canvas_y) + d - pad)
         canvas.create_arc(*bb, start=0.0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thickness)
         if val > 0: canvas.create_arc(*bb, start=90.0, extent=-(val / 100.0 * 359.9), style="arc", outline=fill or score_color(val), width=thickness)
