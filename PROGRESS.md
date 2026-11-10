@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 69
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 215
 
@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 27 | 5 | 11 | 2 | 41 |
+| 2026-11-08 | 25 | 5 | 9 | 2 | 41 |
 | 2026-11-09 | 142 | 9 | 53 | 11 | 135 |
-| 2026-11-10 | 19 | 2 | 5 | 3 | 39 |
+| 2026-11-10 | 22 | 2 | 6 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
+- legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **42**
-- legibilidad y documentación: **40**
 - seguridad defensiva: **36**
-- rendimiento: **27**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
-- `settings.py`: **18**
-- `healthscore.py`: **17**
-- `memory.py`: **17**
+- `healthscore.py`: **18**
+- `memory.py`: **18**
+- `safety.py`: **18**
 - `quarantine.py`: **17**
+- `settings.py`: **17**
+- `duplicates.py`: **16**
 - `assistant.py`: **15**
-- `duplicates.py`: **15**
 - `scanner.py`: **15**
 - `branding.py`: **15**
 - `diskreport.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T02:57:12` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la API de bajo nivel mediante la conversión de variables mágicas en una clase de constantes con nombres descriptivos y añadí docstrings de tipo funcional explicando el propósito de las estructuras de datos nativas.
+- `2026-11-10T02:56:42` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de `SystemMetrics` y `PIPELINE_DEFINITIONS` mediante type hints explícitos y docstrings detallados que clarifican el propósito de las métricas y la estructura de ponderación, facilitando el mantenimiento y evitando ambigüedades en la lógica del pipeline.
+- `2026-11-10T02:56:14` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados, la unificación de tipos en las firmas de función y la clarificación de las responsabilidades en los filtros de seguridad, facilitando la comprensión del flujo de datos sin alterar la lógica de escaneo.
 - `2026-11-10T02:47:54` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos a funciones clave que carecían de ellos y definiendo explícitamente los parámetros y retornos esperados, facilitando así la comprensión del flujo de datos en el análisis de disco.
 - `2026-11-10T02:47:02` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructuradas y type hints precisos en las funciones de manipulación geométrica y renderizado, facilitando la comprensión de las transformaciones de coordenadas utilizadas.
 - `2026-11-10T02:46:21` **assistant.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas de manejo de contexto y se clarificaron los docstrings en las clases de datos (`AssistantConfig`, `MetricSpec`) para explicitar su propósito y restricciones, mejorando la mantenibilidad del código sin alterar su lógica.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T00:44:08` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` al implementar una validación de propiedad (uid) y modo (permisos) antes de procesar el contenido del archivo, mitigando riesgos de lectura de archivos manipulados o con permisos excesivamente permisivos.
 - `2026-11-10T00:35:03` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para detectar y bloquear rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape invisibles al inicio de los componentes de la ruta, previniendo ataques de "spoofing" de nombres de archivo mediante ofuscación visual antes de cualquier operación de disco.
 - `2026-11-10T00:34:06` **quarantine.py** (seguridad defensiva): Se ha mejorado `_atomic_isolate_file` para implementar una verificación estricta de la integridad post-escritura, garantizando que el archivo movido al sandbox no presente atributos de sistema inesperados o cambios en su estado (como enlaces físicos adicionales) que puedan comprometer la seguridad del aislamiento.
-- `2026-11-10T00:24:45` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del proceso (si está disponible) y saneé el manejo de PIDs para prevenir posibles inyecciones de valores arbitrarios en el flujo de memoria.
-- `2026-11-10T00:23:03` **duplicates.py** (seguridad defensiva): Reforcé la integridad del escaneo en `_collect_candidates` asegurando que las rutas sigan siendo seguras justo antes de ser añadidas a los grupos, evitando condiciones de carrera o cambios en el estado del sistema tras el filtrado inicial.
-- `2026-11-10T00:14:53` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `walk_files` implementando una validación explícita `is_protected_path(entry_path)` tras cada iteración de `scandir`, asegurando que ninguna ruta pase el filtro de seguridad antes de ser procesada, incluso si los permisos del sistema operativo permitieran listar el contenido de una carpeta restringida.

@@ -56,23 +56,20 @@ INVALID_HANDLE_VALUE: Final[int] = -1
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 
+class WinAccessMasks:
+    """Constantes de permisos para la Win32 API al manipular procesos."""
+    PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
+    PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
+    PROCESS_SET_QUOTA: Final[int] = 0x0100
+    # Máscara combinada para operaciones de limpieza de memoria (Trim)
+    TRIM_REQUIRED: Final[int] = 0x00200000 | PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION
+
 class WindowsAPI:
     """
     Namespace que centraliza el acceso a librerías nativas Win32.
-    Define máscaras de acceso requeridas por las funciones de PSAPI y Kernel32.
     """
     kernel32 = ctypes.windll.kernel32 if os.name == "nt" else None
     psapi = ctypes.windll.psapi if os.name == "nt" else None
-    
-    # Máscaras de acceso (Access Rights) para OpenProcess:
-    # 0x0400 (PROCESS_QUERY_INFORMATION) requerido para obtener estadísticas de memoria.
-    # 0x0100 (PROCESS_SET_QUOTA) requerido para operaciones de ajuste de memoria (trimming).
-    QUERY_LIMITED: Final[int] = 0x1000  # Acceso eficiente para lectura de info básica
-    QUERY_INFO: Final[int] = 0x0400     # Acceso estándar a contadores
-    SET_QUOTA: Final[int] = 0x1000      # Permiso para modificar cuotas de memoria
-    
-    # Combinación de flags necesaria para invocar EmptyWorkingSet con éxito.
-    TRIM_ACCESS: Final[int] = 0x00200000 | 0x0100 | 0x0400
 
 class CacheEntry(NamedTuple):
     """Caché temporal con timestamp para evitar consultas frecuentes al sistema."""
@@ -115,8 +112,8 @@ class MEMORYSTATUSEX(ctypes.Structure):
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
     """
-    Representa el uso de memoria de un proceso. 
-    'WorkingSetSize' es la cantidad de RAM física actualmente reservada (RSS).
+    Representa las métricas de consumo de memoria de un proceso.
+    'WorkingSetSize' indica la memoria física real (RSS) actualmente en uso.
     """
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
@@ -396,7 +393,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     for pid in pids[:count]:
         if pid <= 0 or _is_system_process(pid): continue
         
-        handle = _get_handle_for_safe_proc(pid, WindowsAPI.QUERY_LIMITED, path_buf, get_mod_name)
+        handle = _get_handle_for_safe_proc(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf, get_mod_name)
         if handle is None: continue
         
         try:
@@ -477,7 +474,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida: PID protegido o función no disponible."
         
     path_buf = ctypes.create_unicode_buffer(1024)
-    handle = _get_handle_for_safe_proc(target_pid, WindowsAPI.TRIM_ACCESS, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
+    handle = _get_handle_for_safe_proc(target_pid, WinAccessMasks.TRIM_REQUIRED, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
     
     if handle is None:
         return False, "Acceso denegado o proceso en zona restringida."

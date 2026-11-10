@@ -125,7 +125,15 @@ class RecommendationRule(NamedTuple):
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Definición de un paso en el proceso de cálculo de salud."""
+    """Definición de un paso en el proceso de cálculo de salud.
+    
+    Attributes:
+        area: Identificador único de la categoría.
+        weight: Peso relativo (puntos máximos) de esta área en el puntaje total.
+        scorer: Función lógica que calcula el ratio de salud [0.0, 1.0].
+        rules: Conjunto de recomendaciones para mostrar si el ratio es bajo.
+        formatted_label: Etiqueta amigable para la interfaz de usuario.
+    """
     area: MetricKey
     weight: int
     scorer: Callable[[SystemMetrics], NormalizedRatio]
@@ -239,7 +247,19 @@ def _validate_numeric(value: Any, default: float, min_val: float, max_val: float
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos para las métricas del sistema actual."""
+    """
+    Contenedor de métricas de telemetría local.
+    
+    Attributes:
+        junk_mb: Tamaño acumulado de archivos temporales en megabytes.
+        suspicious_count: Número de archivos con firmas heurísticas sospechosas.
+        suspicious_warnings: Contador de advertencias de seguridad de alto nivel.
+        memory_available_percent: Porcentaje de RAM física libre.
+        disk_free_percent: Porcentaje de espacio libre en disco.
+        duplicate_mb: Espacio desperdiciado por archivos duplicados.
+        startup_count: Cantidad de procesos registrados en el inicio del sistema.
+        quarantined_count: Cantidad de archivos aislados por seguridad.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
