@@ -48,11 +48,13 @@ import math
 import logging
 import operator
 import os
-from itertools import islice
 from functools import lru_cache, wraps, cached_property
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple, Iterator, Dict, List, Set, Tuple
+from typing import (
+    Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple, 
+    Dict, List, Set, Tuple, Mapping, Sequence, Iterable
+)
 
 import settings
 from safety import is_protected_path
@@ -380,8 +382,8 @@ def _validate_response_length(text: Any) -> str:
 
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     """
-    Valida recursivamente que una estructura de datos (JSON) sea plana.
-    Previene DoS mediante limitación de profundidad y tamaño de colecciones.
+    Valida recursivamente que una estructura JSON (diccionario/lista) sea plana.
+    Aplica límites de profundidad y tamaño de colección para mitigar ataques DoS.
     """
     if depth > _MAX_NESTING_DEPTH: return False
     if val is None or isinstance(val, (int, float, bool)): return True
@@ -396,8 +398,8 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """
-    Detección de estructuras de datos maliciosas o excesivamente complejas.
-    Bloquea el procesamiento si se supera el límite de profundidad (protección DoS).
+    Detecta si una estructura de datos es excesivamente compleja o profunda.
+    Retorna True si supera la profundidad permitida o el tamaño máximo de colección.
     """
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
@@ -494,7 +496,7 @@ class SystemContext:
         """Verifica si la clave es una métrica válida del sistema."""
         return key in _VALID_METRIC_KEYS
 
-    def _has_circular_refs(self, source: Any, memo: Set[int] | None = None) -> bool:
+    def _has_circular_refs(self, source: Any, memo: Optional[Set[int]] = None) -> bool:
         """Verifica recursivamente si la fuente contiene referencias circulares."""
         if memo is None: memo = set()
         if id(source) in memo: return True
@@ -537,7 +539,7 @@ class SystemContext:
         except Exception:
             return ""
 
-    def _validate_keys_safe(self, source: dict[str, Any]) -> bool:
+    def _validate_keys_safe(self, source: Mapping[str, Any]) -> bool:
         """Asegura que ninguna clave de entrada sea una ruta sensible del sistema."""
         return all(isinstance(k, str) and not is_protected_path(k) for k in source.keys())
 
@@ -547,12 +549,12 @@ class SystemContext:
         val = source.get("grade") if isinstance(source, dict) else _get_safe_attr(source, "grade")
         return self._clean_grade(val)
 
-    def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
+    def _validate_and_sanitize_data(self, source: Any) -> Dict[str, Any]:
         """Procesa y sanitiza todas las métricas recibidas de una fuente externa."""
         if isinstance(source, dict) and not self._validate_keys_safe(source):
             return {}
         
-        updates = {}
+        updates: Dict[str, Any] = {}
         for k in _VALID_METRIC_KEYS:
             try:
                 val = self._apply_field(source, k, _VALIDATORS[k])
@@ -578,7 +580,7 @@ class SystemContext:
             return not _is_input_too_deep_or_complex(source)
         return True
 
-    def _apply_updates(self, updates: dict[str, Any]) -> None:
+    def _apply_updates(self, updates: Mapping[str, Any]) -> None:
         """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
         if not isinstance(updates, dict) or not updates: return
         
@@ -617,7 +619,7 @@ class Answer:
     text: str
     source: str = "local"
     notice: str = ""
-    suggestions: list[str] = field(default_factory=list)
+    suggestions: List[str] = field(default_factory=list)
 
     @property
     def is_online(self) -> bool:
@@ -664,7 +666,7 @@ def context_as_text(context: SystemContext) -> str:
     if context.is_empty: return ""
     snap: MetricsDict = context.metrics_snapshot
 
-    def gen_lines():
+    def gen_lines() -> Iterable[str]:
         for m in _CONTEXT_SCHEMA:
             val = snap.get(m.key, -1.0)
             if val >= 0.0:
@@ -680,7 +682,7 @@ def explain_area(area: Any) -> str:
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 @lru_cache(maxsize=128)
-def _format_problem_message(problems: tuple[str, ...], score: int | str) -> str:
+def _format_problem_message(problems: Tuple[str, ...], score: Union[int, str]) -> str:
     """Genera una frase humanamente legible sobre el estado de salud y puntaje."""
     clean_score: str = str(score)
     if not problems:
@@ -755,7 +757,7 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(f"{estado} {valoracion}{cierre}", notice=OFFLINE_NOTICE)
 
 # Estructura optimizada para búsqueda de tokens
-_TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
+_TOKENS_MAP: Final[Dict[str, Callable[[SystemContext, str], Answer]]] = {
     "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
     "espacio": handle_disk, "disco": handle_disk, "lleno": handle_disk, "recuperar": handle_disk, "liberar": handle_disk,
     "seguro": handle_security, "virus": handle_security, "sospechos": handle_security, "borrar": handle_security, "peligro": handle_security,
@@ -788,7 +790,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             
     return Answer(_format_problem_message(context.active_problems, context.score if context.score is not None else "N/A"), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
-def available(base: str | Path | None = None) -> bool:
+def available(base: Optional[Union[str, Path]] = None) -> bool:
     """Verifica si el asistente remoto (IA) está habilitado en las configuraciones."""
     try: return bool(settings.assistant_enabled(base))
     except Exception: return False
@@ -819,7 +821,7 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     if not q: return None
     
     # Construcción de estructura segura antes de serializar
-    content_payload: dict[str, Any] = {
+    content_payload: Dict[str, Any] = {
         "contents": [{
             "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]
         }]

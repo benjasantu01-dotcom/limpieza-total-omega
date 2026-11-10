@@ -363,10 +363,11 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     val_map = _VALIDATOR_MAP
     key_enum_map = _KEY_TO_ENUM
-    for key_str in _VALID_ENUM_KEYS.intersection(raw_values.keys()):
-        key_enum = key_enum_map[key_str]
-        if (validated_val := val_map[key_enum].func(key_enum, raw_values[key_str])) is not None:
-            config[key_enum.value] = validated_val
+    for key_str, val in raw_values.items():
+        if key_str in key_enum_map:
+            key_enum = key_enum_map[key_str]
+            if (validated_val := val_map[key_enum].func(key_enum, val)) is not None:
+                config[key_enum.value] = validated_val
     return config 
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:

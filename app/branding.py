@@ -331,7 +331,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         dest_path = Path(destination).resolve()
-        # Verificación previa de seguridad para evitar excepciones en el flujo principal
         if not is_safe_to_modify(dest_path):
             return None
             
@@ -373,7 +372,15 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Dibuja las franjas degradadas sobre el objeto Canvas recibido."""
+    """
+    Renderiza franjas decorativas sobre el escudo utilizando un lienzo Canvas.
+    
+    Args:
+        canvas: Widget de tkinter Canvas donde dibujar.
+        x: Coordenada X base de origen.
+        y: Coordenada Y base de origen.
+        scale: Factor de escala aplicado al dibujo.
+    """
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
@@ -386,7 +393,15 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza elementos decorativos (líneas, triángulos, logo central) sobre el escudo."""
+    """
+    Renderiza líneas y elementos tipográficos (Omega) sobre el escudo.
+    
+    Args:
+        canvas: Widget de tkinter Canvas donde dibujar.
+        x: Coordenada X de desplazamiento.
+        y: Coordenada Y de desplazamiento.
+        scale: Factor de escala para ajustar grosores y fuentes.
+    """
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
         canvas.create_line(
@@ -409,7 +424,13 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Función principal para dibujar el logo complejo compuesto en un widget Canvas.
+    Renderiza el logo completo en el widget Canvas.
+    
+    Args:
+        canvas: Widget destino.
+        size: Tamaño total en píxeles del logo.
+        canvas_x: Offset horizontal en el lienzo.
+        canvas_y: Offset vertical en el lienzo.
     """
     if canvas is None or not all(math.isfinite(v) for v in (size, canvas_x, canvas_y)): return
     try:
@@ -428,7 +449,9 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal con un degradado lineal personalizado."""
+    """
+    Dibuja una línea horizontal con degradado lineal.
+    """
     if canvas is None or not isinstance(width, int): return
     try:
         w = max(1, int(width))
@@ -437,7 +460,9 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un anillo de progreso circular para métricas de salud o rendimiento."""
+    """
+    Dibuja un anillo circular de progreso basado en un porcentaje.
+    """
     if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))
