@@ -646,3 +646,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-11-10T00:24:45` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del proceso (si está disponible) y saneé el manejo de PIDs para prevenir posibles inyecciones de valores arbitrarios en el flujo de memoria.
 - `2026-11-10T00:24:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T00:24:45` Corrida terminada. Total usado hoy: 12.
+- `2026-11-10T00:32:54` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-10T00:33:22` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-10T00:34:06` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado `_atomic_isolate_file` para implementar una verificación estricta de la integridad post-escritura, garantizando que el archivo movido al sandbox no presente atributos de sistema inesperados o cambios en su estado (como enlaces físicos adicionales) que puedan comprometer la seguridad del aislamiento.
+- `2026-11-10T00:34:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-10T00:35:03` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para detectar y bloquear rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape invisibles al inicio de los componentes de la ruta, previniendo ataques de "spoofing" de nombres de archivo mediante ofuscación visual antes de cualquier operación de disco.
+- `2026-11-10T00:35:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T00:35:03` Corrida terminada. Total usado hoy: 16.

@@ -478,6 +478,7 @@ def _is_file_owned_by_system(path_str: str) -> bool:
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Filtra rutas que contienen caracteres no permitidos o usados para ofuscación."""
     if not isinstance(path_str, str) or not path_str: return True
+    # Detecta caracteres de control, caracteres RTL (BiDi) y secuencias de ofuscación
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
 def _is_path_empty_or_whitespace(path_str: str) -> bool:
@@ -848,6 +849,9 @@ def normalize(path: PathLike) -> Path:
         sub_path = anchor_path
         for part in parts:
             if part in (os.sep, os.altsep): continue
+            # Previene spoofing visual mediante caracteres de control al inicio de un componente
+            if re.match(r'[\u200E\u200F\u202A-\u202E]', part):
+                raise UnsafePathError("Spoofing visual detectado en nombre de componente.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
             sub_path = os.path.join(sub_path, part)
             if os.path.exists(sub_path) and _is_system_directory_junction(sub_path):
                 raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)

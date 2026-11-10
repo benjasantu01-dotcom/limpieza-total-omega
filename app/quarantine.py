@@ -736,8 +736,13 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             raise RuntimeError(f"Error durante la escritura del archivo aislado: {e}")
             
         ensure_safe_to_modify(destination, allow_sensitive=True)
-        if destination.stat().st_ino != i or destination.stat().st_dev != d or _get_sha256(destination) != h or destination.stat().st_nlink > 1:
+        # Validación post-escritura reforzada
+        dest_stat = destination.stat()
+        if dest_stat.st_ino != i or dest_stat.st_dev != d or _get_sha256(destination) != h or dest_stat.st_nlink > 1:
             raise RuntimeError("Integridad comprometida: destino inconsistente.")
+        if _win_has_system_attributes(destination):
+            raise UnsafePathError("Integridad comprometida: el archivo en sandbox adquirió atributos de sistema.")
+            
         return h, i, d, mtime
 
 def _register_quarantine_item(destination: Path, source_path: Path, file_hash: str, file_inode: Inode, device_id: int, mtime: float, reason: str, original_size: int, base: PathLike) -> QuarantineItem:
