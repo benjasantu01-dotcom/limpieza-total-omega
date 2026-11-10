@@ -273,6 +273,10 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             return None
         
         ws_val = _safe_int_conversion(parts[2])
+        # Verificación defensiva extra: evitar rutas protegidas en datos externos
+        if len(parts) > 3 and is_protected_path(Path(parts[3])):
+            return None
+
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
     except (AttributeError, IndexError, ValueError):

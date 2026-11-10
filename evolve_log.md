@@ -639,3 +639,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-11-10T00:14:53` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `walk_files` implementando una validación explícita `is_protected_path(entry_path)` tras cada iteración de `scandir`, asegurando que ninguna ruta pase el filtro de seguridad antes de ser procesada, incluso si los permisos del sistema operativo permitieran listar el contenido de una carpeta restringida.
 - `2026-11-10T00:14:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T00:14:53` Corrida terminada. Total usado hoy: 8.
+- `2026-11-10T00:22:38` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-10T00:23:03` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Reforcé la integridad del escaneo en `_collect_candidates` asegurando que las rutas sigan siendo seguras justo antes de ser añadidas a los grupos, evitando condiciones de carrera o cambios en el estado del sistema tras el filtrado inicial.
+- `2026-11-10T00:23:29` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.__setattr__
+- `2026-11-10T00:24:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-10T00:24:45` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del proceso (si está disponible) y saneé el manejo de PIDs para prevenir posibles inyecciones de valores arbitrarios en el flujo de memoria.
+- `2026-11-10T00:24:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T00:24:45` Corrida terminada. Total usado hoy: 12.

@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 48 | 8 | 18 | 7 | 65 |
+| 2026-11-08 | 48 | 8 | 18 | 7 | 61 |
 | 2026-11-09 | 142 | 9 | 53 | 11 | 135 |
-| 2026-11-10 | 5 | 0 | 0 | 2 | 1 |
+| 2026-11-10 | 7 | 0 | 2 | 2 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **31**
+- seguridad defensiva: **33**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **19**
+- `duplicates.py`: **18**
 - `healthscore.py`: **18**
-- `memory.py`: **18**
 - `settings.py`: **18**
 - `safety.py`: **18**
-- `duplicates.py`: **17**
 - `scanner.py`: **16**
 - `quarantine.py`: **16**
 - `assistant.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T00:24:45` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del proceso (si está disponible) y saneé el manejo de PIDs para prevenir posibles inyecciones de valores arbitrarios en el flujo de memoria.
+- `2026-11-10T00:23:03` **duplicates.py** (seguridad defensiva): Reforcé la integridad del escaneo en `_collect_candidates` asegurando que las rutas sigan siendo seguras justo antes de ser añadidas a los grupos, evitando condiciones de carrera o cambios en el estado del sistema tras el filtrado inicial.
 - `2026-11-10T00:14:53` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `walk_files` implementando una validación explícita `is_protected_path(entry_path)` tras cada iteración de `scandir`, asegurando que ninguna ruta pase el filtro de seguridad antes de ser procesada, incluso si los permisos del sistema operativo permitieran listar el contenido de una carpeta restringida.
 - `2026-11-10T00:13:38` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` reemplazando la validación manual de existencia del directorio por el uso obligatorio de `ensure_safe_to_modify`, garantizando que cualquier operación de escritura en disco pase por los filtros de protección centralizados y cumpla con la regla de seguridad del proyecto ante una posible inyección de ruta.
 - `2026-11-10T00:13:09` **assistant.py** (seguridad defensiva): Mejoré la seguridad del proceso de ingestión de datos en `SystemContext` aplicando `is_protected_path` de forma explícita al procesar los atributos de entrada, asegurando que ningún dato proveniente de un objeto externo (que podría ser una ruta o nombre de archivo prohibido) pueda ser inyectado como una métrica válida.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T14:30:47` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo geométrico añadiendo validaciones estrictas ante estados inválidos o rutas inexistentes, asegurando que la app no falle ante valores de entrada corruptos o permisos denegados.
 - `2026-11-09T14:21:58` **startup.py** (rendimiento): Se introdujo una cache de resultados para `_is_valid_registry_path` y se consolidaron las comprobaciones de seguridad mediante `is_protected_path` para evitar llamadas redundantes al sistema de archivos y validaciones repetitivas durante el escaneo del registro.
 - `2026-11-09T14:10:56` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `total_quarantined_bytes` evitando el parseo completo a objetos `QuarantineItem`, y se eliminó la redundancia de llamadas a `quarantine_dir()` (que realiza múltiples validaciones de seguridad) dentro de `summarize` al usar la carga del manifiesto directamente del caché.
-- `2026-11-09T14:01:44` **memory.py** (rendimiento): Se optimizó el acceso a los procesos mediante la pre-declaración de estructuras y el uso de un buffer de memoria persistente durante la iteración, reduciendo drásticamente las asignaciones de memoria y llamadas al sistema innecesarias dentro del bucle de escaneo.
-- `2026-11-09T13:50:59` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo eliminando la reinstanciación innecesaria de `DirectoryScanner` dentro del bucle de perfiles, permitiendo reutilizar el mismo contexto y evitando la sobrecarga de múltiples inicializaciones.

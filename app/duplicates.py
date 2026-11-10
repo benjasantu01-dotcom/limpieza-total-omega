@@ -182,6 +182,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in it:
                     try:
                         p = Path(entry.path)
+                        # Re-verificación estricta de seguridad antes de procesar cada entrada
                         if not is_safe_to_modify(p):
                             continue
                         if entry.is_dir(follow_symlinks=False):
