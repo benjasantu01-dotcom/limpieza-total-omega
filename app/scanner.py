@@ -96,8 +96,8 @@ def _cached_is_protected(path_str: str) -> bool:
 
 def _get_canonical_path(path_str: str) -> str:
     """Normaliza y resuelve la ruta a formato absoluto, validando límites de longitud de Windows."""
+    if not path_str or "\0" in path_str: return ""
     try:
-        if not path_str or "\0" in path_str: return ""
         clean_path = os.path.normpath(path_str.strip())
         if len(clean_path) > 32767: return ""
         norm = os.path.normcase(os.path.abspath(clean_path))
@@ -156,19 +156,19 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
         return None
         
-    # Optimización: ya validamos protección en _is_safe_entry, omitir _cached_is_protected aquí
     if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask:
         return None
         
     try:
         stats = entry.stat(follow_symlinks=False)
-        st_size = getattr(stats, 'st_size', None)
-        st_mtime = getattr(stats, 'st_mtime', None)
+        # Validación estricta de metadatos básicos para prevenir datos corruptos o fuera de rango
+        st_size = getattr(stats, 'st_size', -1)
+        st_mtime = getattr(stats, 'st_mtime', -1.0)
         
-        if st_size is None or st_size < 0 or st_mtime is None or st_mtime < 0:
+        if st_size < 0 or st_mtime < 0:
             return None
         return stats
-    except OSError as e:
+    except (OSError, PermissionError) as e:
         if getattr(e, 'winerror', None) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos de {entry.path}: {e}")
         return None

@@ -305,6 +305,7 @@ class _Validators:
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
         """Convierte a entero y asegura que esté dentro del rango definido en _NUMERIC_LIMITS."""
+        if not isinstance(key, ConfigKey): return None
         parsed_value = _Validators._parse_as_type(val, int)
         if parsed_value is None: return None
         limit = _NUMERIC_LIMITS.get(key)
@@ -332,7 +333,7 @@ class _Validators:
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
         """Limpia strings generales, descartando caracteres de control e inválidos."""
-        if not isinstance(val, str): return None
+        if not isinstance(key, ConfigKey) or not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         return _Validators._validate_enum_str(text, key)
@@ -406,7 +407,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
             st_post = os.fstat(fd)
-            # Verificación de integridad post-apertura para evitar race conditions
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or \
                st_post.st_size < MIN_SETTINGS_SIZE or st_post.st_size > MAX_SETTINGS_SIZE or \
                st_post.st_mtime != st.st_mtime or st_post.st_ino != st.st_ino or \
@@ -419,7 +419,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
                 if not content or len(content) > MAX_SETTINGS_SIZE: return None
                 data = json.loads(content)
                 
-            # Validación exhaustiva de estructura post-parseo
             if not isinstance(data, dict) or not _is_structure_valid(data): return None
             return data, st_post
         except (OSError, ValueError, TypeError, json.JSONDecodeError):

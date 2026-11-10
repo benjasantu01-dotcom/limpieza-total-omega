@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 235
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 135 | 9 | 51 | 10 | 135 |
-| 2026-11-10 | 43 | 3 | 13 | 5 | 100 |
+| 2026-11-09 | 134 | 9 | 50 | 10 | 133 |
+| 2026-11-10 | 45 | 4 | 14 | 5 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **41**
+- manejo de errores y validación de entradas: **39**
 - legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **37**
 - seguridad defensiva: **32**
-- rendimiento: **29**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,17 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **16**
 - `memory.py`: **16**
 - `diskreport.py`: **16**
-- `branding.py`: **15**
+- `settings.py`: **15**
 - `duplicates.py`: **15**
-- `settings.py`: **14**
+- `branding.py`: **14**
+- `scanner.py`: **14**
 - `assistant.py`: **13**
-- `scanner.py`: **13**
 - `organizer.py`: **10**
 - `startup.py`: **8**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T07:02:35` **settings.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `ConfigKey` en `_Validators.int` y `_Validators.str` para prevenir que se intenten procesar claves inexistentes o inválidas durante la actualización de settings, añadiendo un `try-except` más granular en `_read_and_parse_json` para asegurar que fallos en la decodificación no propaguen excepciones inesperadas.
+- `2026-11-10T07:02:18` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del escaneo implementando una validación explícita de `st_size` y `st_mtime` en `_safe_stat`, y se mejoró la resiliencia ante errores de metadatos mediante un manejo de excepciones más granular en `_is_valid_file_path` y `_get_canonical_path`.
 - `2026-11-10T06:52:43` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` mediante la implementación de un manejo de errores más específico y granular, asegurando que cualquier fallo durante la escritura atómica limpie correctamente los recursos temporales y proporcione mensajes de error significativos, evitando estados inconsistentes en el manifiesto.
 - `2026-11-10T06:51:54` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_safe_int_conversion` y `_extract_process_info` mediante validaciones adicionales contra valores atípicos y desbordamientos en las conversiones de memoria, garantizando que el sistema no procese datos corruptos o fuera de rango.
 - `2026-11-10T06:41:56` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones explícitas de tipo y estado, asegurando que las funciones manejen correctamente grupos vacíos o inválidos antes de procesar, evitando errores de ejecución durante la renderización de la UI.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T03:59:36` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` ante entradas mal formadas, añadiendo una validación explícita para evitar que tipos no permitidos o estados inconsistentes corruptos bloqueen el asistente, y reforzando la integridad de los datos numéricos durante la ingestión masiva.
 - `2026-11-10T03:49:33` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo sustituyendo la consulta redundante de `is_protected_path` en el bucle principal por una verificación de caché `safe_cache` ya existente, evitando miles de llamadas innecesarias a la lógica de validación durante el recorrido de directorios.
 - `2026-11-10T03:48:44` **safety.py** (rendimiento): Se implementó un mecanismo de **short-circuiting** en el pipeline de validación moviendo las verificaciones más rápidas (cadenas, normalizaciones, caché léxico) antes de las operaciones de E/S (`stat`, `exists`), optimizando significativamente el rendimiento en bucles de escaneo masivo al evitar llamadas al sistema innecesarias.
-- `2026-11-10T03:47:31` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `save_manifest` reemplazando los recorridos redundantes del sistema de archivos y las lecturas síncronas de disco por una gestión basada en el `_MANIFEST_CACHE` validado por `stat.st_mtime`, reduciendo drásticamente la latencia en operaciones frecuentes.
-- `2026-11-10T03:39:04` **organizer.py** (rendimiento): Optimicé el rendimiento de `_is_valid_junk_entry` y `_process_directory` reemplazando llamadas repetidas a `Path().suffix` por manipulaciones directas sobre el nombre del archivo, evitando la sobrecarga de instanciar objetos `Path` miles de veces durante el escaneo recursivo.

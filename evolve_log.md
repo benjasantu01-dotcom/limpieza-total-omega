@@ -1371,3 +1371,22 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-11-10T06:52:43` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` mediante la implementación de un manejo de errores más específico y granular, asegurando que cualquier fallo durante la escritura atómica limpie correctamente los recursos temporales y proporcione mensajes de error significativos, evitando estados inconsistentes en el manifiesto.
 - `2026-11-10T06:52:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T06:52:43` Corrida terminada. Total usado hoy: 164.
+- `2026-11-10T07:00:36` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-11-10T07:00:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-10T07:01:51` Tests FALLARON:
+```
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+32 failed, 267 passed in 1.67s
+
+```
+- `2026-11-10T07:01:51` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejora la robustez del manejo de errores en `_get_file_attrs` y `_is_volume_readonly`, asegurando que situaciones de archivos inaccesibles o condiciones de carrera sean tratadas explícitamente mediante el retorno de valores seguros (inválidos) en lugar de permitir la propagación de excepciones no controladas.
+- `2026-11-10T07:02:18` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del escaneo implementando una validación explícita de `st_size` y `st_mtime` en `_safe_stat`, y se mejoró la resiliencia ante errores de metadatos mediante un manejo de excepciones más granular en `_is_valid_file_path` y `_get_canonical_path`.
+- `2026-11-10T07:02:35` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita de `ConfigKey` en `_Validators.int` y `_Validators.str` para prevenir que se intenten procesar claves inexistentes o inválidas durante la actualización de settings, añadiendo un `try-except` más granular en `_read_and_parse_json` para asegurar que fallos en la decodificación no propaguen excepciones inesperadas.
+- `2026-11-10T07:02:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T07:02:35` Corrida terminada. Total usado hoy: 168.
