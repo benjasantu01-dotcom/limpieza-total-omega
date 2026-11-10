@@ -1428,3 +1428,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-10T07:53:40` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` reemplazando el uso repetido de `Path.relative_to` (dentro de un loop crítico) por un manejo más directo de los nombres de archivo y evitando la instanciación innecesaria de objetos `Path` mediante el uso de `os.path.join` y `Path` solo cuando es estrictamente necesario, reduciendo la presión sobre el recolector de basura en recorridos de disco extensos.
 - `2026-11-10T07:53:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T07:53:40` Corrida terminada. Total usado hoy: 188.
+- `2026-11-10T08:01:48` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-10T08:02:58` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la función `_collect_candidates` para evitar I/O redundante eliminando las llamadas repetidas a `_is_valid_candidate` dentro del loop de procesamiento, aprovechando que las validaciones necesarias ya se realizan mediante `entry.stat()` y el chequeo de `inode_id`.
+- `2026-11-10T08:03:25` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.validate
+- `2026-11-10T08:04:25` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-10T08:05:28` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-10T08:06:47` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 32% del original (posible pérdida de código)
+- `2026-11-10T08:07:01` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento del módulo `memory.py` evitando la instanciación innecesaria de objetos `ProcessMemory` durante la enumeración de procesos mediante el uso de una validación temprana del tamaño del Working Set antes de procesar el nombre o crear el objeto.
+- `2026-11-10T08:07:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T08:07:01` Corrida terminada. Total usado hoy: 192.

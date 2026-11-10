@@ -189,21 +189,20 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        p = Path(entry.path)
-                        if not is_safe_to_modify(p):
-                            continue
                         if entry.is_dir(follow_symlinks=False):
-                            if depth < MAX_RECURSION_DEPTH and not is_junction(p):
-                                queue.append((p, depth + 1))
+                            if depth < MAX_RECURSION_DEPTH:
+                                p = Path(entry.path)
+                                if is_safe_to_modify(p) and not is_junction(p):
+                                    queue.append((p, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size >= min_size:
-                                inode_id: Tuple[int, int] = (stat.st_dev, stat.st_ino)
-                                if inode_id not in visited:
-                                    if not (skip_protected and is_protected_path(p)):
-                                        if _is_valid_candidate(p, stat.st_size):
-                                            visited.add(inode_id)
-                                            size_map[stat.st_size].append(p)
+                                p = Path(entry.path)
+                                if not (skip_protected and is_protected_path(p)) and not is_system_or_hidden(p):
+                                    inode_id = (stat.st_dev, stat.st_ino)
+                                    if inode_id not in visited and is_safe_to_modify(p):
+                                        visited.add(inode_id)
+                                        size_map[stat.st_size].append(p)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

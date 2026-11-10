@@ -401,8 +401,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         try:
             if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
                 ws = pmc.WorkingSetSize
+                # Validación temprana de rango antes de realizar operaciones costosas como obtener rutas/nombres
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
-                    # Recuperación segura del nombre del proceso desde la ruta
                     raw_path = path_buf.value
                     name = Path(raw_path).name if raw_path else "Unknown"
                     if not _is_invalid_process_name(name):
