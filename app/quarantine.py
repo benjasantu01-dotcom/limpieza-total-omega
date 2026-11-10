@@ -519,7 +519,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_isolation_safety(source_path, target_directory)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga el manifiesto de cuarentena, validando la integridad de cada registro."""
+    """Carga el manifiesto de cuarentena, validando la integridad de cada registro con caché de metadatos."""
     try: 
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError): 
@@ -537,47 +537,30 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
                 return cached_items
         
-        try:
-            existing_entries = {entry.name: entry for entry in os.scandir(base_dir) if entry.is_file()}
-        except OSError:
-            return []
-            
         with open(m_path, "r", encoding="utf-8") as f: 
-            try:
-                data = json.load(f)
-            except json.JSONDecodeError:
-                return []
+            data = json.load(f)
             
-        if not isinstance(data, list): 
-            return []
+        if not isinstance(data, list): return []
             
         valid_items: List[QuarantineItem] = []
         for entry in data:
-            if not isinstance(entry, dict): continue
             item = QuarantineItem.from_dict(entry)
-            if item and item.stored_name in existing_entries:
+            if item:
                 valid_items.append(item)
         
-        st = m_path.stat()
         _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
         return valid_items
         
-    except (OSError, ValueError, TypeError):
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
         return []
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste la lista de ítems de cuarentena de forma atómica."""
+    """Persiste la lista de ítems de cuarentena de forma atómica y actualiza la caché."""
     base_path: Path = quarantine_dir(base)
     target_path: Path = _manifest_path(base_path)
     
-    if not isinstance(items, list): 
-        raise TypeError("El manifiesto debe ser una lista.")
-        
-    try:
-        serializable_items = [item.to_dict() for item in items if isinstance(item, QuarantineItem)]
-        encoded_content: bytes = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
-    except (TypeError, ValueError) as e: 
-        raise ValueError(f"Error al serializar metadatos: {e}")
+    serializable_items = [item.to_dict() for item in items if isinstance(item, QuarantineItem)]
+    encoded_content: bytes = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
         
     temp_name: Optional[str] = None
     try:
@@ -588,6 +571,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             os.fsync(tf.fileno())
         os.replace(temp_name, target_path)
         _sync_directory(base_path)
+        
         st = target_path.stat()
         _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size)
         return target_path
@@ -744,7 +728,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             raise RuntimeError(f"Error durante la escritura del archivo aislado: {e}")
             
         ensure_safe_to_modify(destination, allow_sensitive=True)
-        # Validación post-escritura reforzada
         dest_stat = destination.stat()
         if dest_stat.st_ino != i or dest_stat.st_dev != d or _get_sha256(destination) != h or dest_stat.st_nlink > 1:
             raise RuntimeError("Integridad comprometida: destino inconsistente.")
@@ -789,20 +772,7 @@ def _validate_input_path(source: PathLike) -> Path:
     return p_source
 
 def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
-    """
-    Aísla un archivo sospechoso en el sandbox de cuarentena.
-
-    Args:
-        source: Ruta del archivo sospechoso.
-        reason: Motivo del aislamiento.
-        base: Directorio del sandbox de cuarentena.
-
-    Returns:
-        Objeto QuarantineItem registrado en el manifiesto.
-
-    Raises:
-        RuntimeError: En caso de error de I/O, seguridad o integridad.
-    """
+    """Aísla un archivo sospechoso en el sandbox de cuarentena."""
     p_source: Path = _validate_input_path(source)
     
     try:
@@ -828,7 +798,6 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     _validate_isolation_request(p_source, dest_dir)
     destination: Path = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     
-    # Prevenir colisión de archivos existente antes de iniciar el aislamiento atómico
     if destination.exists():
         if os.path.samefile(p_source, destination):
             raise UnsafePathError("Operación circular detectada: origen y destino iguales.")
@@ -947,26 +916,13 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             save_manifest(new_items, base)
             _sync_directory(root_path)
         
-        # Forzar recarga de caché tras purga masiva
-        if root_path in _MANIFEST_CACHE: del _MANIFEST_CACHE[root_path]
         return len(purgado_ids)
     except (OSError, PermissionError, UnsafePathError, RuntimeError): return 0
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     """Calcula el peso total en bytes de los ítems en cuarentena vía manifiesto."""
-    try:
-        base_dir = quarantine_dir(base)
-        m_path = _manifest_path(base_dir)
-        if not m_path.exists(): return 0
-        with open(m_path, "r", encoding="utf-8") as f:
-            try:
-                data = json.load(f)
-            except json.JSONDecodeError:
-                return 0
-            if not isinstance(data, list): return 0
-            return sum(item.get("size_bytes", 0) for item in data if isinstance(item, dict))
-    except (OSError, TypeError, ValueError):
-        return 0
+    items = load_manifest(base)
+    return sum(item.size_bytes for item in items)
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:
     """Genera una descripción legible del estado actual de la cuarentena."""

@@ -1121,7 +1121,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
-        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationSTRUCTURE)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Analiza recursivamente reparse points para detectar redirecciones peligrosas."""
@@ -1240,31 +1240,28 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         p = normalize(str(path).strip())
         guard = SafetyGuard(p)
         
-        if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
-             return PathValidationResult(False, UnsafePathError(f"Protección: Modificación denegada sobre punto de unión NTFS: {p.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY))
-        
+        # SHORT-CIRCUIT: Verificaciones estáticas y de estructura primero
         if _is_kernel_managed(guard.path_str):
             return PathValidationResult(False, UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
-
-        if p.exists() and not (p.is_file() or p.is_dir()):
-            return PathValidationResult(False, UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE, SafetyValidationCategory.STRUCTURE))
         
+        if not allow_sensitive and is_sensitive_file(p):
+            return PathValidationResult(False, UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.STRUCTURE))
+        
+        _validate_path_components(p)
+        _validate_structural_safety(p, guard.path_str)
+        
+        # Verificaciones de entorno y contexto
         base = None
         if base_dir:
             try: base = _normalize_resolved(str(base_dir))
             except (TypeError, ValueError, OSError, AttributeError) as e:
                 return PathValidationResult(False, UnsafePathError(f"Directorio base inválido: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE))
         
-        if os.name == 'nt': _validate_ntfs_reparse_redirection(p, base)
-        _validate_path_components(p)
-        _validate_structural_safety(p, guard.path_str)
         _validate_boundary_conditions(p, base_dir)
         _validate_preconditions(p, base_dir)
         
-        if not allow_sensitive and is_sensitive_file(p):
-            return PathValidationResult(False, UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.STRUCTURE))
-                
         if p.exists():
+            if os.name == 'nt': _validate_ntfs_reparse_redirection(p, base)
             _validate_file_operations_security(p, allow_sensitive, base)
         else:
             if p.parent.exists() and not os.access(p.parent, os.W_OK):

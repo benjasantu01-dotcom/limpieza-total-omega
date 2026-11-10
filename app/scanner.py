@@ -156,7 +156,8 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
         return None
         
-    if _cached_is_protected(entry.path) or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask):
+    # Optimización: ya validamos protección en _is_safe_entry, omitir _cached_is_protected aquí
+    if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask:
         return None
         
     try:
