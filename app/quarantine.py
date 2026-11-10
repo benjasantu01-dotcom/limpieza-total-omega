@@ -80,11 +80,15 @@ def _sync_directory(directory: Path) -> None:
     Fuerza la persistencia de cambios en el sistema de archivos (fsync)
     sobre el descriptor del directorio padre para asegurar atomicidad.
     """
+    if not directory.is_dir():
+        return
     try:
         dir_abs = _is_path_canonical(directory)
         fd = os.open(str(dir_abs), os.O_RDONLY)
-        try: os.fsync(fd)
-        finally: os.close(fd)
+        try: 
+            os.fsync(fd)
+        finally: 
+            os.close(fd)
     except (OSError, PermissionError):
         pass
 
@@ -353,7 +357,10 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         _check_io_error_context(path.unlink)
         if parent.exists():
             _sync_directory(parent)
-        return True
+        
+        # Doble verificación post-unlink para mitigar race conditions
+        time.sleep(0.01)
+        return not path.exists()
     except (UnsafePathError, OSError, PermissionError, RuntimeError):
         return False
 

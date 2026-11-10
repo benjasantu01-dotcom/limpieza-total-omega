@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 66
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 111 | 8 | 42 | 9 | 114 |
-| 2026-11-10 | 72 | 5 | 24 | 7 | 112 |
+| 2026-11-09 | 111 | 8 | 42 | 9 | 110 |
+| 2026-11-10 | 74 | 5 | 25 | 7 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,17 +25,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **38**
 - rendimiento: **30**
-- seguridad defensiva: **27**
+- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **18**
 - `safety.py`: **18**
-- `quarantine.py`: **17**
 - `diskreport.py`: **17**
 - `healthscore.py`: **16**
+- `memory.py`: **16**
 - `duplicates.py`: **16**
 - `assistant.py`: **15**
-- `memory.py`: **15**
 - `scanner.py`: **14**
 - `settings.py`: **14**
 - `branding.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T09:26:44` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `_sync_directory` y `_safe_unlink` añadiendo un manejo de errores más riguroso y una verificación de estado de archivo posterior a la operación para mitigar condiciones de carrera, garantizando que el sistema de archivos realmente refleje el borrado antes de continuar.
+- `2026-11-10T09:25:13` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_iter_process_memory` para asegurar que el buffer de ruta (`path_buf`) sea limpiado antes de cada iteración, evitando el riesgo de fuga de información entre procesos al reutilizar el mismo buffer de memoria.
 - `2026-11-10T09:14:41` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del motor de scoring añadiendo validación explícita para evitar inyecciones de dependencias o comportamientos indefinidos si se llegaran a modificar los límites de las métricas, reforzando la integridad del pipeline mediante el uso de `getattr` con valores por defecto seguros dentro de `score_security`.
 - `2026-11-10T09:14:30` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `group_by_size` y `_collect_candidates` al asegurar que toda llamada a `stat()` se realice mediante `follow_symlinks=False`, previniendo la resolución accidental de enlaces simbólicos o puntos de reparse fuera del árbol escaneado.
 - `2026-11-10T09:14:07` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez en la validación de rutas dentro de `_validate_root` y `walk_files` para prevenir el seguimiento de enlaces simbólicos malintencionados o accesos fuera del árbol de directorios esperado mediante el uso de `os.path.realpath` y una validación explícita de prefijos de ruta normalizada.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T08:24:11` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `SystemContext` ante valores inesperados de configuración o ingestión parcial, asegurando que `ingest` no falle silenciosamente ni deje el estado en inconsistencia si una sola métrica está corrupta o fuera de rango.
 - `2026-11-10T08:23:44` **startup.py** (rendimiento): Se optimizó el proceso de escaneo en `entries_from_folders` reemplazando la lógica de filtrado manual por el uso de `os.scandir` de forma más directa, minimizando las llamadas redundantes a `Path.is_symlink` y evitando validaciones costosas de `is_safe_to_modify` para archivos ya descartados por extensión, mejorando significativamente el rendimiento en carpetas con muchos archivos.
 - `2026-11-10T08:14:42` **safety.py** (rendimiento): Se ha optimizado la gestión de caché de `_ATTR_CACHE` y `_FILE_ID_CACHE` convirtiéndolos en `dict` simples en lugar de `OrderedDict`, ya que la lógica de validación actual no requiere el mantenimiento del orden de inserción, reduciendo el overhead de memoria y ciclos de CPU en cada acceso.
-- `2026-11-10T08:07:01` **memory.py** (rendimiento): Optimicé el rendimiento del módulo `memory.py` evitando la instanciación innecesaria de objetos `ProcessMemory` durante la enumeración de procesos mediante el uso de una validación temprana del tamaño del Working Set antes de procesar el nombre o crear el objeto.
-- `2026-11-10T08:02:58` **duplicates.py** (rendimiento): Optimizé la función `_collect_candidates` para evitar I/O redundante eliminando las llamadas repetidas a `_is_valid_candidate` dentro del loop de procesamiento, aprovechando que las validaciones necesarias ya se realizan mediante `entry.stat()` y el chequeo de `inode_id`.

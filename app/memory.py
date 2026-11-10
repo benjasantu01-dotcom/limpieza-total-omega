@@ -351,6 +351,8 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
     """Verifica que el ejecutable de un proceso no resida en directorios restringidos."""
     if handle is None or get_mod_name_func is None: return False
     try:
+        # Limpieza obligatoria del buffer antes de llenar
+        ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
         length = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
         if length <= 0: return False 
         raw_path = path_buffer.value
