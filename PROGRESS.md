@@ -16,23 +16,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 132 | 9 | 49 | 10 | 132 |
-| 2026-11-10 | 47 | 4 | 15 | 5 | 101 |
+| 2026-11-09 | 130 | 9 | 48 | 10 | 131 |
+| 2026-11-10 | 49 | 4 | 16 | 5 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **40**
 - seguridad defensiva: **32**
-- rendimiento: **26**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
-- `safety.py`: **18**
-- `diskreport.py`: **16**
-- `healthscore.py`: **15**
+- `diskreport.py`: **17**
+- `quarantine.py`: **17**
+- `safety.py`: **17**
+- `healthscore.py`: **16**
 - `memory.py`: **15**
 - `settings.py`: **15**
 - `duplicates.py`: **15**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T07:22:22` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings normalizados y explícitos, eliminé redundancias en el manejo de tipos y clarifiqué la lógica del pipeline, asegurando que las responsabilidades de cada componente sean auto-explicativas sin alterar la funcionalidad.
+- `2026-11-10T07:21:31` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `largest_folders` reemplazando la lógica manual de búsqueda de `top_level` con el método `Path.relative_to`, haciendo el código más idiomático y robusto ante rutas complejas.
 - `2026-11-10T07:11:58` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros donde faltaban (como en `_is_input_too_deep_or_complex` y `_has_circular_refs`), corregí la definición de `_CRITERIOS_MAP` para asegurar consistencia tipográfica con su versión inmutable, y añadí docstrings explicativos a las funciones de validación de estructuras para clarificar su rol defensivo ante ataques de denegación de servicio (DoS).
 - `2026-11-10T07:11:19` **startup.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta contra rutas que contienen caracteres nulos (`\0`) y se añadieron chequeos de tipo defensivos en el procesamiento de rutas dentro de `_resolve_and_cache_path` para prevenir excepciones críticas al interactuar con el sistema de archivos de Windows.
 - `2026-11-10T07:02:35` **settings.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `ConfigKey` en `_Validators.int` y `_Validators.str` para prevenir que se intenten procesar claves inexistentes o inválidas durante la actualización de settings, añadiendo un `try-except` más granular en `_read_and_parse_json` para asegurar que fallos en la decodificación no propaguen excepciones inesperadas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T04:08:23` **duplicates.py** (robustez ante casos límite): Mejora la robustez del módulo `duplicates.py` ante errores de acceso a disco mediante la centralización de la validación `stat` dentro de `_is_valid_candidate` y el uso de `path.exists()` previo a `stat()` para evitar excepciones innecesarias en archivos bloqueados o con permisos denegados.
 - `2026-11-10T04:07:59` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de lectura en `walk_files` al capturar excepciones críticas durante la creación de objetos `Path` y acceso a directorios, evitando que una ruta mal formada o con caracteres especiales detenga el escaneo completo.
 - `2026-11-10T04:07:33` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos bloqueados o en uso durante el escaneo de caché, añadiendo un manejo explícito de errores de lectura mediante `os.access` y una verificación de estado de archivo que previene cuelgues al intentar procesar recursos exclusivos del sistema de archivos.
-- `2026-11-10T03:59:59` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante fallos de E/S mediante el uso de `is_safe_to_modify` para validar la ruta antes de intentar cualquier operación, evitando que excepciones de permisos no controladas interrumpan el hilo principal de la aplicación.
-- `2026-11-10T03:59:36` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` ante entradas mal formadas, añadiendo una validación explícita para evitar que tipos no permitidos o estados inconsistentes corruptos bloqueen el asistente, y reforzando la integridad de los datos numéricos durante la ingestión masiva.
