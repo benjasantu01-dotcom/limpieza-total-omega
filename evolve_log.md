@@ -974,3 +974,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T03:18:04` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimicé el acceso a los criterios de salud eliminando la reconstrucción de diccionarios en cada llamada, reemplazando la lógica de filtrado por una consulta directa sobre el mapa `_CRITERIOS_MAP_IMMUTABLE` para reducir el consumo de CPU y memoria en cada iteración del bucle.
 - `2026-11-10T03:18:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T03:18:04` Corrida terminada. Total usado hoy: 80.
+- `2026-11-10T03:26:20` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-11-10T03:26:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-10T03:27:28` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-10T03:27:53` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó el recorrido en `largest_folders` reemplazando el uso de `relative_to` (que requiere múltiples cálculos y validaciones en cada iteración) por un acceso directo a `path.parents`, lo que reduce la carga computacional en árboles de archivos profundos.
+- `2026-11-10T03:28:00` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-10T03:28:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T03:28:00` Corrida terminada. Total usado hoy: 84.

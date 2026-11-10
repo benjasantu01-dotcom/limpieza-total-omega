@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 22 | 4 | 7 | 1 | 40 |
+| 2026-11-08 | 20 | 4 | 6 | 1 | 39 |
 | 2026-11-09 | 142 | 9 | 53 | 11 | 135 |
-| 2026-11-10 | 27 | 2 | 8 | 4 | 39 |
+| 2026-11-10 | 28 | 2 | 8 | 4 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **36**
-- rendimiento: **25**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **19**
-- `memory.py`: **18**
-- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
+- `memory.py`: **17**
+- `quarantine.py`: **17**
 - `scanner.py`: **16**
 - `branding.py`: **15**
+- `diskreport.py`: **15**
 - `duplicates.py`: **15**
 - `assistant.py`: **14**
-- `diskreport.py`: **14**
 - `startup.py`: **11**
 - `organizer.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T03:27:53` **diskreport.py** (rendimiento): Se optimizó el recorrido en `largest_folders` reemplazando el uso de `relative_to` (que requiere múltiples cálculos y validaciones en cada iteración) por un acceso directo a `path.parents`, lo que reduce la carga computacional en árboles de archivos profundos.
 - `2026-11-10T03:17:41` **startup.py** (legibilidad y documentación): Se introdujeron constantes descriptivas para reemplazar los "números mágicos" en la lógica de resolución y validación de rutas, mejorando la mantenibilidad y legibilidad del código.
 - `2026-11-10T03:17:11` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se refinó la tipografía de los validadores para documentar explícitamente el flujo de datos y el propósito de las restricciones de seguridad, facilitando la auditoría del código sin alterar su lógica.
 - `2026-11-10T03:16:38` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings y type hints detallados en la clase `Scanner` y sus métodos internos para clarificar la lógica de recorrido y los mecanismos de seguridad, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T02:37:25` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación temprana y exhaustiva en `_read_and_parse_json` para capturar errores de formato o tipos inesperados antes de procesar el JSON, asegurando que la configuración cargada sea siempre consistente con el esquema `AppSettings`.
 - `2026-11-10T02:36:55` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas mediante la adición de validaciones `None`/`type` en `check_system_lookalike` y `check_recent_executable_in_downloads`, asegurando que el motor de escaneo no falle silenciosamente ante metadatos corruptos o inesperados del sistema de archivos.
 - `2026-11-10T02:36:25` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la validación de precondiciones en `ensure_safe_to_modify` y `_validate_preconditions` reemplazando los chequeos genéricos por la captura explícita de `SafetyValidationErrorCode` y delegando la decisión de "seguridad" al pipeline, evitando que excepciones de sistema no controladas terminen en un `UnsafePathError` genérico.
-- `2026-11-10T02:27:14` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante la centralización de la validación de tipos y la implementación de bloques `try-except` más granulares, asegurando que cualquier entrada corrupta o mal formada en el JSON no provoque fallos en la persistencia o carga del estado.
