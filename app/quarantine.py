@@ -543,12 +543,25 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         if not isinstance(data, list): return []
             
         valid_items: List[QuarantineItem] = []
+        needs_cleanup = False
         for entry in data:
             item = QuarantineItem.from_dict(entry)
             if item:
-                valid_items.append(item)
+                # Verificamos si el archivo existe físicamente y no ha sido alterado
+                if item.verify_integrity(base_dir / item.stored_name):
+                    valid_items.append(item)
+                else:
+                    needs_cleanup = True
+            else:
+                needs_cleanup = True
         
-        _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
+        if needs_cleanup:
+            # Sincronizamos el manifiesto eliminando registros corruptos
+            _MANIFEST_CACHE[base_dir] = (valid_items, 0.0, 0) # Forzamos re-validación tras guardar
+            save_manifest(valid_items, base)
+        else:
+            _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
+            
         return valid_items
         
     except (OSError, ValueError, TypeError, json.JSONDecodeError):

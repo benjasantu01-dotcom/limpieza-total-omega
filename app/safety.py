@@ -471,6 +471,8 @@ def _is_file_owned_by_system(path_str: str) -> bool:
     kernel32 = ctypes.windll.kernel32
     sid_ptr = ctypes.c_void_p()
     try:
+        # Verificamos existencia antes de llamar a la API de seguridad
+        if not os.path.exists(_to_long_path(path_str)): return False
         res = advapi32.GetNamedSecurityInfoW(
             _to_long_path(path_str), 1, 1, ctypes.byref(sid_ptr), None, None, None, None
         )

@@ -1472,3 +1472,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-10T08:47:39` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de existencia y permisos dentro del bucle de `stage_for_review` para prevenir fallos silenciosos al procesar archivos que pudieron ser eliminados o bloqueados por otros procesos entre la detección inicial y el movimiento, mejorando la robustez ante condiciones de carrera (Race Conditions).
 - `2026-11-10T08:47:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T08:47:39` Corrida terminada. Total usado hoy: 208.
+- `2026-11-10T08:52:50` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-11-10T08:53:36` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados inconsistentes en `load_manifest` mediante la eliminación selectiva de registros corruptos (que no superan `verify_integrity`), evitando así que un ítem malicioso o dañado bloquee permanentemente las operaciones de listado y purga de toda la cuarentena.
+- `2026-11-10T08:53:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-10T08:54:55` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas inexistentes o mal formadas en `_is_file_owned_by_system` mediante una verificación previa de existencia y un manejo de errores más preciso, evitando excepciones no controladas cuando `GetNamedSecurityInfoW` falla sobre rutas que fueron eliminadas en una condición de carrera (TOCTOU).
+- `2026-11-10T08:55:41` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-10T08:55:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T08:55:41` Corrida terminada. Total usado hoy: 212.
