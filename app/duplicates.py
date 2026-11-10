@@ -93,6 +93,7 @@ def _safe_path_check(path: Path) -> bool:
     """
     Filtro de seguridad central.
     Valida: existencia, permiso de modificación, protección del sistema y reparse points.
+    Devuelve True solo si el archivo es seguro para ser leído durante el análisis.
     """
     if not isinstance(path, Path): return False
     try:
@@ -106,7 +107,7 @@ def _safe_path_check(path: Path) -> bool:
 
 
 def _is_valid_candidate(path: Path, st_size: int = -1) -> bool:
-    """Filtra archivos no aptos para el análisis por atributos o políticas de seguridad."""
+    """Filtra archivos aptos para análisis basados en tamaño y atributos de sistema."""
     if not _safe_path_check(path): return False
     effective_size = st_size
     if effective_size == -1:
@@ -134,7 +135,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula hash SHA256 sobre los primeros bytes (fingerprint rápida)."""
+    """Calcula hash SHA256 sobre los primeros bytes (fingerprint rápida para descartes)."""
     if not isinstance(path, Path): return None
     if path in _partial_cache: return _partial_cache.get(path)
     if not _safe_path_check(path): return None
@@ -168,7 +169,11 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un recorrido BFS limitado para descubrir candidatos, evitando recursión infinita."""
+    """
+    Realiza un recorrido BFS limitado para descubrir candidatos a duplicados.
+    Evita recursión infinita mediante MAX_RECURSION_DEPTH y trackea inodos para detectar
+    enlaces duros y duplicados físicos reales.
+    """
     if directories is None or not isinstance(directories, Iterable) or min_size < 0: 
         return {}
     size_map: Dict[int, List[Path]] = defaultdict(list)
@@ -272,7 +277,7 @@ def _get_mtime(path: Path) -> Optional[float]:
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
     Heurística de selección: sugiere conservar el archivo más antiguo
-    (menor fecha de modificación) como el original.
+    (menor fecha de modificación) como el original, asumiendo que es el 'maestro'.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths: return None
     candidates = [(m, p) for p in group.paths if (m := _get_mtime(p)) is not None]

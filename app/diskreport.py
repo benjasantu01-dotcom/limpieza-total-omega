@@ -66,7 +66,7 @@ def _safe_stat(path: Union[str, Path, None]) -> Optional[os.stat_result]:
         path: Ruta a inspeccionar como cadena o objeto Path.
 
     Returns:
-        os.stat_result con metadatos si es accesible, None si hay errores de permiso o acceso.
+        os.stat_result con metadatos si es accesible, None si hay errores de acceso.
     """
     if path is None:
         return None
@@ -174,16 +174,13 @@ def _validate_limit(limit: Any) -> int:
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
-    Normaliza la ruta raíz, verifica su existencia y comprueba que no sea una ruta de sistema.
+    Normaliza la ruta raíz, verifica su existencia y comprueba restricciones de seguridad.
     """
     if not directory:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
-        if not p.is_dir():
-            return None
-        # Validación defensiva extra contra rutas raíz UNC o bloqueadas
-        if is_protected_path(p) or str(p).lower().startswith(r'\\'):
+        if not p.is_dir() or is_protected_path(p) or str(p).lower().startswith(r'\\'):
             return None
         return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -191,7 +188,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(name: str) -> bool:
-    """Valida que el nombre no contenga caracteres inválidos para sistemas Windows/Linux."""
+    """Valida que el nombre no contenga caracteres inválidos para sistemas de archivos."""
     if not name or '\0' in name or any(ord(c) < 32 for c in name) or len(name) > 255:
         return True
     return any(c in name for c in SUSPICIOUS_CHARS) or any(char in name for char in ('<', '>', ':', '"', '|', '?', '*'))
@@ -300,7 +297,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if not root_path: return
     
-    # Normalizamos el prefijo para validar containment de rutas en el loop
     root_str = str(root_path.resolve())
     visited_inodes: set[Inode] = set()
     stack: List[Tuple[Path, List[str]]] = [(root_path, [])]
@@ -310,7 +306,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
     
     while stack:
-        current_dir, path_parts = stack.pop()
+        current_dir, _ = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -318,7 +314,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     
                     try:
-                        # Verificación de containment para evitar escapes de directorio vía symlinks
                         entry_path = Path(entry.path).resolve()
                         if not str(entry_path).startswith(root_str):
                             continue
@@ -337,7 +332,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if inode in visited_inodes:
                                 continue
                             visited_inodes.add(inode)
-                        stack.append((Path(entry.path), path_parts + [entry.name]))
+                        stack.append((Path(entry.path), []))
                     
                     elif entry.is_file(follow_symlinks=False):
                         size = getattr(st, 'st_size', None)
@@ -348,17 +343,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """
-    Retorna los N archivos más pesados encontrados en un directorio.
-
-    Args:
-        directory: Ruta de inicio del escaneo.
-        limit: Máximo número de archivos a retornar.
-        skip_protected: Si se omiten carpetas de sistema.
-
-    Returns:
-        Lista de objetos FileEntry ordenados descendentemente por tamaño.
-    """
+    """Retorna los N archivos más pesados encontrados en un directorio."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
@@ -366,17 +351,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """
-    Calcula la distribución de espacio agrupada por extensión de archivo.
-
-    Args:
-        directory: Ruta de inicio.
-        limit: Máximo de tipos de extensión a retornar.
-        skip_protected: Si se omiten carpetas de sistema.
-
-    Returns:
-        Lista de objetos ExtensionUsage ordenada por tamaño total.
-    """
+    """Calcula la distribución de espacio agrupada por extensión de archivo."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -385,9 +360,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """
-    Calcula el uso de disco de subcarpetas inmediatas al directorio dado.
-    """
+    """Calcula el uso de disco de subcarpetas inmediatas al directorio dado."""
     root = _validate_root(directory)
     if root is None: return []
     
@@ -395,7 +368,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Obtiene la subcarpeta inmediata (directa) bajo la raíz actual
             parts = path.relative_to(root).parts
             if parts:
                 top_level = root / parts[0]
@@ -417,10 +389,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Función privada de soporte que recorre el árbol de archivos, consolida
-    estadísticas por extensión y mantiene un heap para los archivos más grandes.
-    """
+    """Recorre el árbol de archivos y consolida estadísticas."""
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
@@ -440,9 +409,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """
-    Genera un reporte textual estructurado del uso de disco.
-    """
+    """Genera un reporte textual estructurado del uso de disco."""
     root = _validate_root(directory)
     if root is None: 
         return ["Error: Ruta inaccesible o no válida."]

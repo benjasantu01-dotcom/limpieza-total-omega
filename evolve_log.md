@@ -566,3 +566,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T11:39:21` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la adición de docstrings estructurados con secciones "Args" y "Returns" en las funciones de renderizado, y se han clarificado las intenciones de los parámetros geométricos para facilitar el mantenimiento.
 - `2026-11-10T11:39:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T11:39:21` Corrida terminada. Total usado hoy: 276.
+- `2026-11-10T11:46:29` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-10T11:47:01` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-10T11:47:27` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando los contratos de las funciones mediante type hints precisos, corrigiendo la semántica de las excepciones en `_validate_root` y estandarizando la documentación mediante docstrings completos que clarifican los propósitos de las estructuras de datos.
+- `2026-11-10T11:47:53` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y claridad del flujo en `duplicates.py` mediante docstrings detallados que explican la lógica de exclusión y la estrategia de hashing, además de añadir type hints específicos para mejorar la mantenibilidad.
+- `2026-11-10T11:48:08` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `healthscore.py` reemplazando los `lambda` anónimos en `PIPELINE_DEFINITIONS` por funciones nombradas explícitas, lo que clarifica la lógica de extracción de métricas para cada área.
+- `2026-11-10T11:48:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T11:48:08` Corrida terminada. Total usado hoy: 280.

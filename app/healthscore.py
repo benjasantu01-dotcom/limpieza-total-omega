@@ -188,13 +188,22 @@ _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
     "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Exceso de programas en arranque: {m.safe_get('startup_count')} entradas."), lambda m, r: r < WARN_THRESHOLD_LOW),),
 }
 
+# --- Funciones de Extracción de Pipeline ---
+
+def _get_security_ratio(m: SystemMetrics) -> NormalizedRatio: return score_security(m.safe_get("suspicious_count"), m.safe_get("suspicious_warnings"))
+def _get_disk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.safe_get("disk_free_percent"))
+def _get_memory_ratio(m: SystemMetrics) -> NormalizedRatio: return score_memory(m.safe_get("memory_available_percent"))
+def _get_junk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.safe_get("junk_mb"))
+def _get_dup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.safe_get("duplicate_mb"))
+def _get_startup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.safe_get("startup_count"))
+
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.safe_get("suspicious_count"), m.safe_get("suspicious_warnings")), _RULES["seguridad"], "Seguridad  "),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.safe_get("disk_free_percent")), _RULES["disco"], "Disco      "),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.safe_get("memory_available_percent")), _RULES["memoria"], "Memoria    "),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.safe_get("junk_mb")), _RULES["basura"], "Basura     "),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.safe_get("duplicate_mb")), _RULES["duplicados"], "Duplicados "),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.safe_get("startup_count")), _RULES["arranque"], "Arranque   "),
+    PipelineEntry("seguridad", 30, _get_security_ratio, _RULES["seguridad"], "Seguridad  "),
+    PipelineEntry("disco", 20, _get_disk_ratio, _RULES["disco"], "Disco      "),
+    PipelineEntry("memoria", 18, _get_memory_ratio, _RULES["memoria"], "Memoria    "),
+    PipelineEntry("basura", 14, _get_junk_ratio, _RULES["basura"], "Basura     "),
+    PipelineEntry("duplicados", 10, _get_dup_ratio, _RULES["duplicados"], "Duplicados "),
+    PipelineEntry("arranque", 8, _get_startup_ratio, _RULES["arranque"], "Arranque   "),
 )
 
 # --- Funciones de Cálculo ---
