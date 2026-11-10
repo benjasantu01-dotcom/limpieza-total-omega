@@ -1454,3 +1454,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-10T08:24:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez de `SystemContext` ante valores inesperados de configuración o ingestión parcial, asegurando que `ingest` no falle silenciosamente ni deje el estado en inconsistencia si una sola métrica está corrupta o fuera de rango.
 - `2026-11-10T08:24:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T08:24:11` Corrida terminada. Total usado hoy: 200.
+- `2026-11-10T08:32:25` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-10T08:32:58` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo geométrico (`draw_logo`, `draw_ring`) mediante la validación estricta de parámetros numéricos y estados de objetos, evitando fallos en tiempo de ejecución ante valores `NaN`, `inf` o tipos inesperados que podrían colapsar la interfaz.
+- `2026-11-10T08:33:22` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-10T08:33:47` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-11-10T08:33:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T08:33:58` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante errores de I/O y accesos concurrentes en el proceso de recolección de candidatos, asegurando que `_collect_candidates` no falle silenciosamente si un archivo cambia de estado o se vuelve inaccesible entre la detección y el acceso a sus atributos.
+- `2026-11-10T08:33:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T08:33:58` Corrida terminada. Total usado hoy: 204.
