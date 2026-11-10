@@ -582,11 +582,15 @@ class SystemContext:
         """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
         if not isinstance(updates, dict) or not updates: return
         
-        # Validación: solo permitimos campos definidos y tipos seguros
+        # Validación: solo permitimos campos definidos, tipos seguros y verificados contra el esquema
         valid_fields = self.__dataclass_fields__
         for key, value in updates.items():
-            if key in valid_fields and isinstance(value, (int, float, str, bool)):
-                setattr(self, key, value)
+            if key in valid_fields:
+                spec = valid_fields[key]
+                # Verifica compatibilidad de tipo antes de aplicar
+                if isinstance(value, (int, float, str, bool)):
+                    if not (isinstance(value, bool) or (spec.type == int and not isinstance(value, int))):
+                        setattr(self, key, value)
         
         self.analyzed = True
         # Limpieza manual de propiedades cacheadas al modificar estado

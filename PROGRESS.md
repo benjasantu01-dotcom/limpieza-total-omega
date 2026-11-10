@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 64
+- Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 235
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 101 | 8 | 38 | 7 | 94 |
-| 2026-11-10 | 76 | 6 | 26 | 7 | 141 |
+| 2026-11-09 | 98 | 8 | 37 | 7 | 94 |
+| 2026-11-10 | 77 | 6 | 26 | 7 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **33**
 - seguridad defensiva: **31**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
-- `diskreport.py`: **17**
 - `quarantine.py`: **17**
-- `duplicates.py`: **16**
-- `healthscore.py`: **15**
+- `diskreport.py`: **16**
 - `memory.py`: **15**
+- `duplicates.py`: **15**
 - `settings.py`: **14**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
+- `healthscore.py`: **14**
 - `scanner.py`: **13**
 - `organizer.py`: **11**
 - `startup.py`: **11**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T10:59:26` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_updates` en `SystemContext` para validar explícitamente el tipo de cada valor recibido antes de ejecutar el `setattr`, evitando posibles estados inconsistentes por asignaciones erróneas y fortaleciendo la integridad del objeto ante entradas mal formadas.
 - `2026-11-10T09:35:32` **settings.py** (seguridad defensiva): Mejoré la robustez defensiva de `_read_and_parse_json` al implementar una validación estricta de metadatos mediante `os.fstat` previo a la lectura del contenido, previniendo condiciones de carrera (TOCTOU) al asegurar que el archivo no cambió de identidad o estado entre el chequeo inicial y la apertura del descriptor de archivo.
 - `2026-11-10T09:34:51` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar que `is_file_owned_by_system` procese rutas que ya no existen, evitando errores de manejo de memoria al llamar a `GetNamedSecurityInfoW` con una ruta inexistente, reforzando la robustez de las verificaciones defensivas.
 - `2026-11-10T09:26:44` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `_sync_directory` y `_safe_unlink` añadiendo un manejo de errores más riguroso y una verificación de estado de archivo posterior a la operación para mitigar condiciones de carrera, garantizando que el sistema de archivos realmente refleje el borrado antes de continuar.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T08:47:39` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y permisos dentro del bucle de `stage_for_review` para prevenir fallos silenciosos al procesar archivos que pudieron ser eliminados o bloqueados por otros procesos entre la detección inicial y el movimiento, mejorando la robustez ante condiciones de carrera (Race Conditions).
 - `2026-11-10T08:43:09` **healthscore.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en `score_security` y `_process_pipeline_entry` para asegurar que divisiones por cero inesperadas o datos corruptos (NaN/Inf) no interrumpan el flujo de cálculo del score, devolviendo valores neutros seguros en lugar de fallar silenciosamente o propagar errores.
 - `2026-11-10T08:32:58` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo geométrico (`draw_logo`, `draw_ring`) mediante la validación estricta de parámetros numéricos y estados de objetos, evitando fallos en tiempo de ejecución ante valores `NaN`, `inf` o tipos inesperados que podrían colapsar la interfaz.
-- `2026-11-10T08:24:11` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `SystemContext` ante valores inesperados de configuración o ingestión parcial, asegurando que `ingest` no falle silenciosamente ni deje el estado en inconsistencia si una sola métrica está corrupta o fuera de rango.
