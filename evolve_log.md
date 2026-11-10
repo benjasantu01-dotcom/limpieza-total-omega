@@ -1420,3 +1420,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-10T07:44:07` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo docstrings técnicos sobre el ciclo de vida de los datos (`_exec_cache` y `_checked_exists`) y clarificando la separación entre la validación de seguridad (físico/ruta) y la validación de formato (ejecutable).
 - `2026-11-10T07:44:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T07:44:07` Corrida terminada. Total usado hoy: 184.
+- `2026-11-10T07:51:34` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-11-10T07:52:20` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `context_as_text` para evitar la creación innecesaria de listas intermedias y el filtrado redundante, utilizando un generador y una construcción más directa para mejorar el rendimiento en cada iteración del bucle.
+- `2026-11-10T07:52:53` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-10T07:52:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T07:53:23` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-10T07:53:40` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` reemplazando el uso repetido de `Path.relative_to` (dentro de un loop crítico) por un manejo más directo de los nombres de archivo y evitando la instanciación innecesaria de objetos `Path` mediante el uso de `os.path.join` y `Path` solo cuando es estrictamente necesario, reduciendo la presión sobre el recolector de basura en recorridos de disco extensos.
+- `2026-11-10T07:53:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T07:53:40` Corrida terminada. Total usado hoy: 188.

@@ -295,61 +295,46 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el árbol de archivos de forma iterativa y segura.
-
-    Args:
-        directory: Ruta base donde iniciar el escaneo.
-        skip_protected: Si es True, no accede a rutas de sistema marcadas como protegidas.
-
-    Yields:
-        Tupla con (Path, tamaño_en_bytes) de cada archivo encontrado.
     """
     root_path = _validate_root(directory)
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[Tuple[Path, List[str]]] = [(root_path, [])]
     
     root_stat = _safe_stat(root_path)
     if root_stat and hasattr(root_stat, 'st_ino') and hasattr(root_stat, 'st_dev'):
         visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
     
     while stack:
-        current_dir = stack.pop()
+        current_dir, path_parts = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
-                while True:
+                for entry in iterator:
+                    if _is_excluded_path(entry.name):
+                        continue
+                    
                     try:
-                        entry = next(iterator, None)
-                        if entry is None:
-                            break
-                            
-                        entry_path = Path(entry.path)
-                        if _is_excluded_path(entry.name) or (skip_protected and is_protected_path(entry_path)):
-                            continue
-                        
-                        try:
-                            st = entry.stat(follow_symlinks=False)
-                        except (PermissionError, FileNotFoundError, OSError):
-                            continue
+                        st = entry.stat(follow_symlinks=False)
+                    except (PermissionError, FileNotFoundError, OSError):
+                        continue
 
-                        # Manejo de directorios
-                        if entry.is_dir(follow_symlinks=False):
-                            if _is_reparse_point(st):
+                    if entry.is_dir(follow_symlinks=False):
+                        if skip_protected and is_protected_path(Path(entry.path)):
+                            continue
+                        if _is_reparse_point(st):
+                            continue
+                        if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
+                            inode = (st.st_dev, st.st_ino)
+                            if inode in visited_inodes:
                                 continue
-                            if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
-                                inode = (st.st_dev, st.st_ino)
-                                if inode in visited_inodes:
-                                    continue
-                                visited_inodes.add(inode)
-                            stack.append(entry_path)
-                        
-                        # Manejo de archivos
-                        elif entry.is_file(follow_symlinks=False):
-                            size = getattr(st, 'st_size', None)
-                            if isinstance(size, int) and size >= 0:
-                                yield entry_path, size
-                    except (StopIteration, OSError):
-                        break
+                            visited_inodes.add(inode)
+                        stack.append((Path(entry.path), path_parts + [entry.name]))
+                    
+                    elif entry.is_file(follow_symlinks=False):
+                        size = getattr(st, 'st_size', None)
+                        if isinstance(size, int) and size >= 0:
+                            yield Path(entry.path), size
         except (PermissionError, FileNotFoundError, OSError, ValueError):
             continue
 
@@ -394,14 +379,6 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Calcula el uso de disco de subcarpetas inmediatas al directorio dado.
-
-    Args:
-        directory: Ruta raíz para identificar subcarpetas.
-        limit: Número de carpetas principales a listar.
-        skip_protected: Si se omiten carpetas de sistema.
-
-    Returns:
-        Lista de objetos FolderUsage ordenada por el tamaño total acumulado.
     """
     root = _validate_root(directory)
     if root is None: return []
@@ -411,9 +388,9 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         try:
             # Obtiene la subcarpeta inmediata (directa) bajo la raíz actual
-            relative = path.relative_to(root)
-            if relative.parts:
-                top_level = root / relative.parts[0]
+            parts = path.relative_to(root).parts
+            if parts:
+                top_level = root / parts[0]
                 if not is_protected_path(top_level):
                     stats[top_level].add(size)
         except (ValueError, TypeError, PermissionError, OSError):
@@ -457,13 +434,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """
     Genera un reporte textual estructurado del uso de disco.
-
-    Args:
-        directory: Ruta del directorio a analizar.
-        skip_protected: Si se deben excluir rutas protegidas.
-
-    Returns:
-        Lista de strings formateados listos para visualización o exportación.
     """
     root = _validate_root(directory)
     if root is None: 

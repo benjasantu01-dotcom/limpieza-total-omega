@@ -655,12 +655,16 @@ def context_as_text(context: SystemContext) -> str:
     """Serializa las métricas clave de salud a texto plano, garantizando seguridad."""
     if context.is_empty: return ""
     snap: MetricsDict = context.metrics_snapshot
-    lines = [
-        f"{m.key}: {snap.get(m.key, -1.0):.{m.precision}f}{m.suffix}"
-        for m in _CONTEXT_SCHEMA
-        if snap.get(m.key, -1.0) >= 0.0
-    ]
-    return "\n".join(filter(_ensure_safe_text, lines))
+
+    def gen_lines():
+        for m in _CONTEXT_SCHEMA:
+            val = snap.get(m.key, -1.0)
+            if val >= 0.0:
+                line = f"{m.key}: {val:.{m.precision}f}{m.suffix}"
+                if _ensure_safe_text(line):
+                    yield line
+
+    return "\n".join(gen_lines())
 
 def explain_area(area: Any) -> str:
     """Retorna una explicación legible para el usuario sobre áreas de la aplicación."""
