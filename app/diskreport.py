@@ -326,13 +326,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
+                            continue
+                        
                         try:
                             st = entry.stat(follow_symlinks=False)
                         except (PermissionError, FileNotFoundError, OSError):
-                            continue
-                                
-                        entry_path = Path(entry.path)
-                        if skip_protected and is_protected_path(entry_path):
                             continue
 
                         # Manejo de directorios

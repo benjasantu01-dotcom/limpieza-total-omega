@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 71
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 205
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 48 | 8 | 18 | 7 | 69 |
+| 2026-11-08 | 48 | 8 | 18 | 7 | 65 |
 | 2026-11-09 | 142 | 9 | 53 | 11 | 135 |
-| 2026-11-10 | 2 | 0 | 0 | 1 | 1 |
+| 2026-11-10 | 5 | 0 | 0 | 2 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **43**
+- seguridad defensiva: **31**
 - rendimiento: **30**
-- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,15 +37,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `scanner.py`: **16**
 - `quarantine.py`: **16**
-- `assistant.py`: **14**
-- `branding.py`: **14**
-- `diskreport.py`: **13**
+- `assistant.py`: **15**
+- `branding.py`: **15**
+- `diskreport.py`: **14**
 - `startup.py`: **12**
 - `organizer.py`: **10**
 - `browser.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T00:14:53` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `walk_files` implementando una validación explícita `is_protected_path(entry_path)` tras cada iteración de `scandir`, asegurando que ninguna ruta pase el filtro de seguridad antes de ser procesada, incluso si los permisos del sistema operativo permitieran listar el contenido de una carpeta restringida.
+- `2026-11-10T00:13:38` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` reemplazando la validación manual de existencia del directorio por el uso obligatorio de `ensure_safe_to_modify`, garantizando que cualquier operación de escritura en disco pase por los filtros de protección centralizados y cumpla con la regla de seguridad del proyecto ante una posible inyección de ruta.
+- `2026-11-10T00:13:09` **assistant.py** (seguridad defensiva): Mejoré la seguridad del proceso de ingestión de datos en `SystemContext` aplicando `is_protected_path` de forma explícita al procesar los atributos de entrada, asegurando que ningún dato proveniente de un objeto externo (que podría ser una ruta o nombre de archivo prohibido) pueda ser inyectado como una métrica válida.
 - `2026-11-10T00:04:16` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry` implementando una validación temprana contra archivos que no pueden ser accedidos (archivos en uso exclusivo o con bloqueos de sistema) mediante el uso de `os.access` y una mejor gestión de excepciones en `_is_valid_executable`, evitando así procesar rutas que causan errores de I/O bloqueantes.
 - `2026-11-10T00:03:09` **safety.py** (robustez ante casos límite): Se ha mejorado `_validate_file_operations_security` agregando una comprobación explícita para evitar modificaciones en archivos con permisos de lectura denegados mediante `os.access(p, os.W_OK)`, cerrando una brecha donde un archivo existente pero bloqueado por ACLs a nivel de usuario podría evadir la validación previa de escritura.
 - `2026-11-09T14:51:22` **quarantine.py** (robustez ante casos límite): Mejora la robustez de `quarantine.py` ante errores de E/S y corrupción de archivos al añadir una validación de existencia antes de intentar operaciones de lectura en `load_manifest`, evitando que un acceso denegado puntual durante el listado del directorio invalide todo el manifiesto.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T14:10:56` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `total_quarantined_bytes` evitando el parseo completo a objetos `QuarantineItem`, y se eliminó la redundancia de llamadas a `quarantine_dir()` (que realiza múltiples validaciones de seguridad) dentro de `summarize` al usar la carga del manifiesto directamente del caché.
 - `2026-11-09T14:01:44` **memory.py** (rendimiento): Se optimizó el acceso a los procesos mediante la pre-declaración de estructuras y el uso de un buffer de memoria persistente durante la iteración, reduciendo drásticamente las asignaciones de memoria y llamadas al sistema innecesarias dentro del bucle de escaneo.
 - `2026-11-09T13:50:59` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo eliminando la reinstanciación innecesaria de `DirectoryScanner` dentro del bucle de perfiles, permitiendo reutilizar el mismo contexto y evitando la sobrecarga de múltiples inicializaciones.
-- `2026-11-09T13:50:33` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la recreación innecesaria de listas y la conversión redundante de colores dentro del bucle, utilizando pre-cálculos de los puntos de los gradientes para reducir la carga de CPU en renderizados frecuentes.
-- `2026-11-09T13:50:01` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud sustituyendo la búsqueda en tuplas por un acceso directo mediante `_CRITERIOS_MAP_IMMUTABLE` dentro de `_evaluate_active_problems`, eliminando ciclos innecesarios y redundancias en el recorrido de criterios.
-- `2026-11-09T13:41:38` **startup.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante tipos y docstrings las responsabilidades de cada método, además de extraer lógica de validación repetida en la clase `StartupEntry` hacia métodos privados mejor nombrados para clarificar el flujo de seguridad.

@@ -151,8 +151,10 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     if obj is None or not _is_safe_key(name): return default
     try:
         val: Any = getattr(obj, name, default)
-        # Solo permitimos escalares básicos como valores de atributo
+        # Solo permitimos escalares básicos como valores de atributo y validamos que no sean rutas protegidas
         if isinstance(val, (int, float, str, bool)) and not isinstance(val, bool):
+            if isinstance(val, str) and is_protected_path(val):
+                return default
             return val
         return default
     except (AttributeError, Exception):
@@ -508,8 +510,10 @@ class SystemContext:
         if not isinstance(source, (dict, object)): return None
         raw_val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
         
-        # Validación estricta: solo tipos escalares permitidos
+        # Validación estricta: solo tipos escalares permitidos y no rutas protegidas
         if not isinstance(raw_val, (int, float, str)) or isinstance(raw_val, bool):
+            return None
+        if isinstance(raw_val, str) and is_protected_path(raw_val):
             return None
             
         validated_val = _is_valid_numeric_update(raw_val, spec)
