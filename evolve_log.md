@@ -900,3 +900,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T02:07:16` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-10T02:07:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T02:07:16` Corrida terminada. Total usado hoy: 52.
+- `2026-11-10T02:14:58` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-10T02:15:26` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_stat` y `_collect_summary_data` para manejar posibles errores de acceso a disco de forma más explícita y prevenir que fallos aislados en `os.stat` detengan el escaneo completo o propaguen valores inválidos.
+- `2026-11-10T02:15:48` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-10T02:16:15` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics.__setattr__` para prevenir intentos de modificación de atributos inexistentes mediante una excepción específica y aseguré la integridad de los datos en `validate` ante posibles fallos de reflexión o acceso a memoria.
+- `2026-11-10T02:17:04` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-10T02:17:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T02:17:04` Corrida terminada. Total usado hoy: 56.

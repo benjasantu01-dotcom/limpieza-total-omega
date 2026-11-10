@@ -87,7 +87,7 @@ def _is_reparse_point(stat: os.stat_result) -> bool:
         bool: True si el sistema de archivos indica que es una unión o punto de reanálisis.
     """
     try:
-        if os.name == 'nt':
+        if os.name == 'nt' and hasattr(stat, 'st_file_attributes'):
             return bool(stat.st_file_attributes & 0x400)
         return False 
     except (AttributeError, OSError, TypeError):
@@ -149,8 +149,9 @@ class FolderMetrics:
 
     def add(self, size: int) -> None:
         """Incrementa los bytes y el contador de archivos de una carpeta."""
-        self.size += size
-        self.file_count += 1
+        if isinstance(size, int) and size >= 0:
+            self.size += size
+            self.file_count += 1
 
     @property
     def size_mb(self) -> float:
@@ -202,7 +203,6 @@ def _get_local_windows_drives() -> List[str]:
         drive = f"{letter}:\\"
         try:
             if os.path.exists(drive) and not is_protected_path(Path(drive)):
-                # Verificar acceso básico de lectura
                 shutil.disk_usage(drive)
                 drives.append(drive)
         except (OSError, PermissionError, TypeError, RuntimeError):
@@ -411,13 +411,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        stats.register_file(size, _get_extension(path))
-        
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif top_heap and size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+        try:
+            stats.register_file(size, _get_extension(path))
+            
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif top_heap and size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size, path))
+        except Exception:
+            continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

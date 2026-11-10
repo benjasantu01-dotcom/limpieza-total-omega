@@ -258,7 +258,7 @@ class SystemMetrics:
             clean_val = _validate_numeric(value, 0.0, *limits)
             object.__setattr__(self, name, clean_val)
         else:
-            raise AttributeError(f"Campo no permitido: {name}")
+            raise AttributeError(f"Intentando asignar atributo no permitido: {name}")
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: 
@@ -267,14 +267,19 @@ class SystemMetrics:
     def get_clamped_metric(self, field_name: str) -> float:
         """Devuelve el valor de una métrica restringido por sus límites definidos."""
         min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
-        val = getattr(self, field_name, 0.0)
-        return _validate_numeric(val, 0.0, min_v, max_v)
+        try:
+            val = getattr(self, field_name, 0.0)
+            return _validate_numeric(val, 0.0, min_v, max_v)
+        except AttributeError:
+            return 0.0
 
     def validate(self) -> None:
         """Asegura que todas las métricas almacenadas estén dentro de límites seguros."""
         for f in _ALL_METRICS:
-            val = getattr(self, f, 0.0)
-            object.__setattr__(self, f, self.get_clamped_metric(f))
+            try:
+                object.__setattr__(self, f, self.get_clamped_metric(f))
+            except Exception:
+                continue
 
     @property
     def is_finite(self) -> bool: 
