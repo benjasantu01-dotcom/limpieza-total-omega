@@ -1479,3 +1479,44 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-10T08:55:41` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-11-10T08:55:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T08:55:41` Corrida terminada. Total usado hoy: 212.
+- `2026-11-10T09:03:04` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-11-10T09:03:37` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de entrada y concurrencia en la carga de JSON, reemplazando el uso de `json.loads(content)` (que puede lanzar excepciones inesperadas ante archivos vacíos o basura) por un bloque `try-except` más robusto dentro de `_read_and_parse_json` y añadiendo validación de tipo estricta para el contenido deserializado antes de procesarlo.
+- `2026-11-10T09:04:13` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.69s
+
+```
+- `2026-11-10T09:04:13` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `startup.py` ante rutas malformadas o inexistentes al implementar una comprobación estricta de `path.exists()` y `path.is_file()` en el método `_resolve_path_from_command` para prevenir que rutas huérfanas o basura en el registro impacten el reporte.
+- `2026-11-10T09:04:53` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré `_extract_text_from_gemini_json` para implementar una verificación defensiva estricta sobre la estructura de la respuesta JSON recibida desde la API, evitando desbordamientos o accesos fuera de rango mediante el uso de un método de validación más robusto antes de procesar el texto.
+- `2026-11-10T09:05:07` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-10T09:05:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T09:05:07` Corrida terminada. Total usado hoy: 216.
