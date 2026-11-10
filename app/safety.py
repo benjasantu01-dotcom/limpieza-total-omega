@@ -1073,7 +1073,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             parent = target_path.parent
             if parent.exists():
                 if os.name == 'nt' and _is_volume_readonly(guard.path_str):
-                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationCategory.ENVIRONMENT)
+                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationCategory.ENVIRONMENT)
         except (OSError, PermissionError, AttributeError):
             pass
         

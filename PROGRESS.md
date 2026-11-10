@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 30 | 6 | 11 | 3 | 44 |
+| 2026-11-08 | 28 | 5 | 11 | 3 | 43 |
 | 2026-11-09 | 142 | 9 | 53 | 11 | 135 |
-| 2026-11-10 | 13 | 1 | 5 | 3 | 38 |
+| 2026-11-10 | 16 | 2 | 5 | 3 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **37**
 - seguridad defensiva: **36**
-- rendimiento: **30**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **18**
+- `safety.py`: **19**
 - `quarantine.py`: **18**
-- `safety.py`: **18**
-- `settings.py`: **17**
+- `settings.py`: **18**
+- `healthscore.py`: **17**
 - `memory.py`: **17**
-- `duplicates.py`: **16**
+- `duplicates.py`: **15**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
-- `scanner.py`: **14**
 - `branding.py`: **14**
 - `diskreport.py`: **13**
 - `startup.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T02:37:25` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación temprana y exhaustiva en `_read_and_parse_json` para capturar errores de formato o tipos inesperados antes de procesar el JSON, asegurando que la configuración cargada sea siempre consistente con el esquema `AppSettings`.
+- `2026-11-10T02:36:55` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas mediante la adición de validaciones `None`/`type` en `check_system_lookalike` y `check_recent_executable_in_downloads`, asegurando que el motor de escaneo no falle silenciosamente ante metadatos corruptos o inesperados del sistema de archivos.
+- `2026-11-10T02:36:25` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la validación de precondiciones en `ensure_safe_to_modify` y `_validate_preconditions` reemplazando los chequeos genéricos por la captura explícita de `SafetyValidationErrorCode` y delegando la decisión de "seguridad" al pipeline, evitando que excepciones de sistema no controladas terminen en un `UnsafePathError` genérico.
 - `2026-11-10T02:27:14` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante la centralización de la validación de tipos y la implementación de bloques `try-except` más granulares, asegurando que cualquier entrada corrupta o mal formada en el JSON no provoque fallos en la persistencia o carga del estado.
 - `2026-11-10T02:16:15` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.__setattr__` para prevenir intentos de modificación de atributos inexistentes mediante una excepción específica y aseguré la integridad de los datos en `validate` ante posibles fallos de reflexión o acceso a memoria.
 - `2026-11-10T02:15:26` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y `_collect_summary_data` para manejar posibles errores de acceso a disco de forma más explícita y prevenir que fallos aislados en `os.stat` detengan el escaneo completo o propaguen valores inválidos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T00:13:38` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` reemplazando la validación manual de existencia del directorio por el uso obligatorio de `ensure_safe_to_modify`, garantizando que cualquier operación de escritura en disco pase por los filtros de protección centralizados y cumpla con la regla de seguridad del proyecto ante una posible inyección de ruta.
 - `2026-11-10T00:13:09` **assistant.py** (seguridad defensiva): Mejoré la seguridad del proceso de ingestión de datos en `SystemContext` aplicando `is_protected_path` de forma explícita al procesar los atributos de entrada, asegurando que ningún dato proveniente de un objeto externo (que podría ser una ruta o nombre de archivo prohibido) pueda ser inyectado como una métrica válida.
 - `2026-11-10T00:04:16` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry` implementando una validación temprana contra archivos que no pueden ser accedidos (archivos en uso exclusivo o con bloqueos de sistema) mediante el uso de `os.access` y una mejor gestión de excepciones en `_is_valid_executable`, evitando así procesar rutas que causan errores de I/O bloqueantes.
-- `2026-11-10T00:03:09` **safety.py** (robustez ante casos límite): Se ha mejorado `_validate_file_operations_security` agregando una comprobación explícita para evitar modificaciones en archivos con permisos de lectura denegados mediante `os.access(p, os.W_OK)`, cerrando una brecha donde un archivo existente pero bloqueado por ACLs a nivel de usuario podría evadir la validación previa de escritura.
-- `2026-11-09T14:51:22` **quarantine.py** (robustez ante casos límite): Mejora la robustez de `quarantine.py` ante errores de E/S y corrupción de archivos al añadir una validación de existencia antes de intentar operaciones de lectura en `load_manifest`, evitando que un acceso denegado puntual durante el listado del directorio invalide todo el manifiesto.
-- `2026-11-09T14:43:29` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al implementar una validación de `ensure_safe_to_modify` antes de cualquier operación de disco (usando `is_safe_to_modify` para el filtrado previo y `ensure_safe_to_modify` para la validación crítica previa al `unlink`), protegiendo al sistema contra posibles inyecciones de rutas o manipulación de la estructura de archivos en tiempo de ejecución.

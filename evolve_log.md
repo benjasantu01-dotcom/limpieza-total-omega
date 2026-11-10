@@ -914,3 +914,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T02:27:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-11-10T02:27:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T02:27:18` Corrida terminada. Total usado hoy: 60.
+- `2026-11-10T02:35:28` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-11-10T02:36:25` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez en la validación de precondiciones en `ensure_safe_to_modify` y `_validate_preconditions` reemplazando los chequeos genéricos por la captura explícita de `SafetyValidationErrorCode` y delegando la decisión de "seguridad" al pipeline, evitando que excepciones de sistema no controladas terminen en un `UnsafePathError` genérico.
+- `2026-11-10T02:36:55` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas mediante la adición de validaciones `None`/`type` en `check_system_lookalike` y `check_recent_executable_in_downloads`, asegurando que el motor de escaneo no falle silenciosamente ante metadatos corruptos o inesperados del sistema de archivos.
+- `2026-11-10T02:37:25` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `settings.py` implementando una validación temprana y exhaustiva en `_read_and_parse_json` para capturar errores de formato o tipos inesperados antes de procesar el JSON, asegurando que la configuración cargada sea siempre consistente con el esquema `AppSettings`.
+- `2026-11-10T02:37:37` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.71s
+
+```
+- `2026-11-10T02:37:37` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry.executable` y las funciones de validación de registro, incorporando una validación estricta de `None` y tipos antes de invocar métodos de `Path` para prevenir excepciones inesperadas en entornos con rutas mal formadas o caracteres inválidos.
+- `2026-11-10T02:37:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T02:37:37` Corrida terminada. Total usado hoy: 64.

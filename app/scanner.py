@@ -206,9 +206,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     """Detecta ejecutables que intentan suplantar nombres de procesos críticos fuera de sus carpetas nativas."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         try:
-            if SYSTEM32_LOWER not in str(path).lower():
+            p_str = str(path)
+            if SYSTEM32_LOWER not in p_str.lower():
                 return Suspicion(path, "Nombre de proceso del sistema fuera de ubicación legítima", "warning")
-        except Exception:
+        except (TypeError, ValueError, AttributeError):
             return None
     return None
 
@@ -217,9 +218,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if path is None or stats is None: 
         return None
     try:
-        if path.parent.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
+        parent_name = getattr(path, "parent", None)
+        if parent_name and parent_name.name.lower() in TARGETED_DOWNLOAD_FOLDERS:
             mtime = getattr(stats, "st_mtime", 0.0)
-            if mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
+            if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_file_window_hours * 3600):
                 return Suspicion(path, "Ejecutable reciente en carpeta volátil", "info")
     except (AttributeError, ValueError, TypeError) as e:
         logger.debug(f"Error procesando metadatos temporales para {path}: {e}")
