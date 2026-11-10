@@ -60,8 +60,10 @@ SUSPICIOUS_CHARS: str = '<>|?*\0&;%^$'
 # Nombres reservados por el kernel que deben ser excluidos para evitar errores de acceso a dispositivos.
 RESERVED_DEVICE_NAMES: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
 
-# Límite máximo estándar para rutas en el sistema de archivos de Windows.
+# Límites operativos para la validación de rutas y estructuras.
 MAX_PATH_LEN: int = 260
+MAX_PATH_PARTS: int = 64
+MIN_ASCII_VAL: int = 32
 
 # --- Cachés globales ---
 _EXISTS_CACHE: Dict[str, bool] = {}
@@ -161,7 +163,7 @@ class StartupEntry:
         """Elimina caracteres de control no imprimibles (ASCII < 32)."""
         if not isinstance(raw_command, str):
             return ""
-        return "".join(c for c in raw_command.strip() if ord(c) >= 32)
+        return "".join(c for c in raw_command.strip() if ord(c) >= MIN_ASCII_VAL)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """Extrae la ruta contenida entre comillas dobles, común en claves Run."""
@@ -214,7 +216,7 @@ class StartupEntry:
         if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or path_raw.startswith(r"\\"):
             return ""
         
-        if len(path_raw) > MAX_PATH_LEN or any(ord(c) < 32 for c in path_raw):
+        if len(path_raw) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in path_raw):
             return ""
             
         try:
@@ -233,7 +235,7 @@ class StartupEntry:
                 resolved = p.resolve(strict=False)
                 _RESOLVED_PATH_CACHE[norm] = str(resolved)
             
-            if not resolved or len(resolved.parts) > 64 or resolved.is_symlink():
+            if not resolved or len(resolved.parts) > MAX_PATH_PARTS or resolved.is_symlink():
                 return ""
 
             if not self._validate_file_access(resolved):
@@ -424,7 +426,7 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
     """Filtra entradas del registro, descartando duplicados y rutas peligrosas."""
     if not isinstance(name, str) or not isinstance(command, str): 
         return False
-    if len(command) > MAX_PATH_LEN or any(ord(c) < 32 for c in command) or "\0" in command: 
+    if len(command) > MAX_PATH_LEN or any(ord(c) < MIN_ASCII_VAL for c in command) or "\0" in command: 
         return False
         
     clean_name, clean_cmd = name.strip(), command.strip()

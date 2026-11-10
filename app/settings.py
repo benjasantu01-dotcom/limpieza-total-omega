@@ -254,7 +254,10 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """Valida recursivamente la seguridad de la cadena de padres hasta la raíz."""
+        """
+        Valida recursivamente la seguridad de una ruta, verificando que sus padres
+        no sean puntos de reanálisis y que no violen las reglas de protección.
+        """
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False

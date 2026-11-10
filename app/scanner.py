@@ -244,7 +244,7 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Asegura que el recorrido del escáner no escape del directorio base mediante links."""
+        """Verifica que la ruta resuelta permanezca dentro de los límites del directorio raíz."""
         try:
             norm_entry = _get_canonical_path(entry_path)
             if not norm_entry or not self.base_root_real:
@@ -254,16 +254,16 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Filtra archivos con caracteres inválidos para el sistema de archivos de Windows."""
+        """Valida que el nombre de entrada no contenga caracteres prohibidos por Windows."""
         if not isinstance(name, str) or not name or "\0" in name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Evalúa mediante atributos de sistema si la entrada es un punto de reanálisis."""
+        """Determina si una entrada de directorio representa un enlace simbólico o unión."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida que una entrada de directorio cumpla con políticas de seguridad defensiva."""
+        """Aplica filtros de seguridad (protección, profundidad, permisos) a una entrada del sistema."""
         try:
             path_str = getattr(entry, 'path', None)
             if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
@@ -282,7 +282,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
-        """Gestiona la entrada en subdirectorios validando recursión y ciclos de enlaces."""
+        """Gestiona el descenso recursivo en el árbol de directorios controlando ciclos."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = _get_canonical_path(entry.path)
         if not norm_path or norm_path in visited: return
@@ -290,12 +290,12 @@ class Scanner:
         stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Filtra extensiones que no están bajo el alcance de nuestro análisis heurístico."""
+        """Filtra archivos por extensiones de interés definidas en SUSPICIOUS_ALL_EXTS."""
         _, ext = os.path.splitext(name)
         return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
-        """Procesa una entrada individual, diferenciando entre directorios para recorrer o archivos a analizar."""
+        """Analiza una entrada (directorio o archivo) y determina si debe descenderse o inspeccionarse."""
         if not self._is_safe_entry(entry): return
         try:
             if entry.is_dir(follow_symlinks=False):
@@ -310,7 +310,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre un archivo validado."""
+        """Aplica la secuencia completa de chequeos heurísticos a un archivo válido."""
         stats: Optional[os.stat_result] = _safe_stat(entry)
         if stats is None: return
         for check_fn in ALL_CHECKS:
