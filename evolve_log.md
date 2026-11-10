@@ -606,3 +606,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T12:31:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-10T12:31:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T12:31:53` Corrida terminada. Total usado hoy: 296.
+- `2026-11-10T12:37:29` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-10T12:38:00` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la lógica de enumeración de procesos en `_iter_process_memory` moviendo la obtención del nombre de archivo fuera del loop principal y evitando llamadas a la API de archivos cuando el tamaño del Working Set es irrelevante, reduciendo significativamente el impacto de IO/System Calls en cada iteración.
+- `2026-11-10T12:38:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T12:38:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-10T12:39:16` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` mediante la implementación de un mecanismo de validación diferida (lazy) en el caché de inodos, reduciendo las llamadas redundantes a `stat()` al cargar el manifiesto repetidamente durante la misma sesión.
+- `2026-11-10T12:39:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-11-10T12:39:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T12:39:22` Corrida terminada. Total usado hoy: 300.

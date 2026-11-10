@@ -390,31 +390,31 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
             
-    # Inicialización defensiva de la estructura de contadores con validación de tamaño
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
-    
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
-    # MAX_PATH en Windows es 260, usamos 1024 para evitar desbordamientos en casos raros
-    path_buf = ctypes.create_unicode_buffer(1024)
+    # Pre-caching de funciones críticas para el loop
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
+    get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
+    path_buf = ctypes.create_unicode_buffer(1024)
     
     for pid in pids[:count]:
         if pid <= 0 or _is_system_process(pid): continue
         
-        handle = _get_handle_for_safe_proc(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, path_buf, get_mod_name)
-        if handle is None: continue
+        # Primero abrimos para lectura mínima y chequeamos consumo
+        handle = _get_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
+        if not handle: continue
         
         try:
-            if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
+            if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
                 ws = pmc.WorkingSetSize
-                # Validación temprana de rango antes de realizar operaciones costosas como obtener rutas/nombres
+                # Chequeo de rango ANTES de realizar operación costosa de nombre/ruta
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
-                    raw_path = path_buf.value
-                    name = Path(raw_path).name if raw_path else "Unknown"
-                    if not _is_invalid_process_name(name):
-                        yield ProcessMemory(name, pid, BytesValue(ws))
+                    if _is_process_executable_safe(handle, path_buf, get_mod_name):
+                        name = Path(path_buf.value).name if path_buf.value else "Unknown"
+                        if not _is_invalid_process_name(name):
+                            yield ProcessMemory(name, pid, BytesValue(ws))
         except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
             continue
         finally:

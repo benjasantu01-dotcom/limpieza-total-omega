@@ -521,7 +521,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_for_reparse_points(source_path)
     
     if _win_has_system_attributes(source_path): 
-        raise UnsafePathError("Aislamiento denegado: archivo con atributos de sistema o solo lectura.")
+        raise UnsafePathError("Aislamiento denegado: archivo con atributos de sistema o temporal.")
     
     if len(str(target_directory)) > 240: 
         raise UnsafePathError("Ruta de cuarentena demasiado larga.")
@@ -547,6 +547,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         
     try:
         st = m_path.stat()
+        # Verificación rápida de caché
         if not force_reload and base_dir in _MANIFEST_CACHE:
             cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
@@ -562,6 +563,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         for entry in data:
             item = QuarantineItem.from_dict(entry)
             if item:
+                # La validación física es costosa; el caché de hash ayuda indirectamente.
                 if item.verify_integrity(base_dir / item.stored_name):
                     valid_items.append(item)
                 else:
