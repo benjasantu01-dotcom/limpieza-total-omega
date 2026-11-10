@@ -57,22 +57,20 @@ STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 
 class WinAccessMasks:
-    """Constantes de permisos para la Win32 API al manipular procesos."""
+    """Constantes de permisos de acceso para abrir procesos mediante la Win32 API."""
     PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
     PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
     PROCESS_SET_QUOTA: Final[int] = 0x0100
-    # Máscara combinada para operaciones de limpieza de memoria (Trim)
+    # Máscara combinada requerida para llamar a EmptyWorkingSet exitosamente
     TRIM_REQUIRED: Final[int] = 0x00200000 | PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION
 
 class WindowsAPI:
-    """
-    Namespace que centraliza el acceso a librerías nativas Win32.
-    """
+    """Namespace que centraliza el acceso a librerías nativas Win32 (kernel32/psapi)."""
     kernel32 = ctypes.windll.kernel32 if os.name == "nt" else None
     psapi = ctypes.windll.psapi if os.name == "nt" else None
 
 class CacheEntry(NamedTuple):
-    """Caché temporal con timestamp para evitar consultas frecuentes al sistema."""
+    """Caché temporal con timestamp para limitar la frecuencia de consultas costosas."""
     timestamp: float
     data: List[ProcessMemory]
 
@@ -97,7 +95,10 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 GlobalMemoryStatusEx para obtener estado global de RAM."""
+    """
+    Estructura utilizada por GlobalMemoryStatusEx para reportar el estado global de RAM.
+    dwLength debe ser inicializado con el tamaño de esta estructura.
+    """
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -112,8 +113,8 @@ class MEMORYSTATUSEX(ctypes.Structure):
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
     """
-    Representa las métricas de consumo de memoria de un proceso.
-    'WorkingSetSize' indica la memoria física real (RSS) actualmente en uso.
+    Métricas de memoria de un proceso. 'WorkingSetSize' representa la memoria
+    física (RSS) ocupada actualmente por el proceso en la RAM.
     """
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
@@ -130,7 +131,7 @@ class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
 
 @dataclass(frozen=True)
 class MemorySnapshot:
-    """Instantánea inmutable del estado global de memoria RAM."""
+    """Representación inmutable de la salud de memoria del sistema."""
     total: BytesValue
     available: BytesValue
     cached: BytesValue = BytesValue(0)
