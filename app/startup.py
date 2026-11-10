@@ -30,6 +30,7 @@ from safety import is_protected_path, is_safe_to_modify
 # Type aliases para mejorar la legibilidad de las firmas de funciones
 StartupEntries: TypeAlias = List["StartupEntry"]
 RegistryKeySet: TypeAlias = Iterable[str]
+EntryCache: TypeAlias = Dict[str, bool]
 
 __all__ = [
     "StartupEntry",
@@ -66,14 +67,14 @@ MAX_PATH_PARTS: int = 64
 MIN_ASCII_VAL: int = 32
 
 # --- Cachés globales ---
-_EXISTS_CACHE: Dict[str, bool] = {}
+_EXISTS_CACHE: EntryCache = {}
 _COMMAND_CACHE: Dict[str, str] = {}
 _RESOLVED_PATH_CACHE: Dict[str, str] = {}
 _FULL_SCAN_CACHE: Optional[StartupEntries] = None
 _FOLDERS_CACHE: Optional[List[Path]] = None
-_VALIDATION_CACHE: Dict[str, bool] = {}
-_PROCESS_CACHE: Dict[str, bool] = {}
-_REGISTRY_PATH_CACHE: Dict[str, bool] = {}
+_VALIDATION_CACHE: EntryCache = {}
+_PROCESS_CACHE: EntryCache = {}
+_REGISTRY_PATH_CACHE: EntryCache = {}
 
 # Mensaje orientativo para el usuario final sobre la gestión de persistencia.
 HOW_TO_DISABLE: str = (
@@ -167,7 +168,10 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= MIN_ASCII_VAL)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae la ruta contenida entre comillas dobles, común en claves Run."""
+        """
+        Extrae la ruta contenida entre comillas dobles, común en claves Run.
+        Valida que el contenido resultante sea una ruta local segura.
+        """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
         
@@ -253,7 +257,10 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, cmd_line: str) -> str:
-        """Divide una línea de comando para aislar y resolver el ejecutable."""
+        """
+        Divide una línea de comando para aislar y resolver el ejecutable.
+        Maneja casos con o sin comillas iniciales para separar argumentos del ejecutable.
+        """
         if not isinstance(cmd_line, str) or not cmd_line:
             return ""
         
@@ -333,7 +340,6 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         return None
         
     try:
-        # Pre-filtro: descartar carpetas, symlinks y archivos sin extensión ejecutable
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink() or "\0" in entry.path:
             return None
 
@@ -342,7 +348,6 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
             return None
             
         path_obj: Path = Path(entry.path)
-        # Validación de seguridad: costosa, por eso se deja al final
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             _PROCESS_CACHE[entry.path] = False
             return None
@@ -376,7 +381,10 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 
 def _is_valid_registry_path(path_str: str) -> bool:
-    """Valida la integridad de una ruta de archivo leída desde el registro."""
+    """
+    Realiza una validación exhaustiva de integridad para rutas extraídas del Registro.
+    Verifica caracteres peligrosos, rutas UNC y zonas de protección contra escritura.
+    """
     if not isinstance(path_str, str):
         return False
     
@@ -389,7 +397,6 @@ def _is_valid_registry_path(path_str: str) -> bool:
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
-        # Bloquear explícitamente rutas UNC (red) por seguridad
         if clean_path.startswith(r"\\"):
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
@@ -399,7 +406,6 @@ def _is_valid_registry_path(path_str: str) -> bool:
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
-        # Validar ruta resuelta contra zonas protegidas
         target_res: Path = target.resolve(strict=False)
         if not target_res or is_protected_path(target_res) or target_res.is_symlink():
             _REGISTRY_PATH_CACHE[path_str] = False

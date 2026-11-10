@@ -589,3 +589,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T12:09:20` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo documentando mediante docstrings detallados la lógica de `_SettingsManager.perform_atomic_write` y sus restricciones de seguridad, además de simplificar la navegación en el archivo mediante la reorganización de las funciones de validación.
 - `2026-11-10T12:09:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T12:09:20` Corrida terminada. Total usado hoy: 288.
+- `2026-11-10T12:17:01` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-11-10T12:17:41` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la implementación de `TypeAlias` más específicos, la adición de docstrings detallados en las funciones de validación compleja (`_is_valid_registry_path`, `_resolve_path_from_command`) y la unificación de la documentación interna, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
+- `2026-11-10T12:18:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T12:19:33` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso a los criterios de salud eliminando la creación repetida de tuplas en cada llamada a `_evaluate_active_problems` y utilicé un `frozenset` pre-calculado para la evaluación, mejorando el rendimiento en el bucle de validación.
+- `2026-11-10T12:20:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-10T12:20:12` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-10T12:20:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T12:20:12` Corrida terminada. Total usado hoy: 292.

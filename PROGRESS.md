@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 85 | 8 | 30 | 4 | 89 |
-| 2026-11-10 | 96 | 6 | 31 | 7 | 148 |
+| 2026-11-09 | 83 | 8 | 29 | 4 | 88 |
+| 2026-11-10 | 98 | 6 | 32 | 7 | 149 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **33**
 - seguridad defensiva: **31**
-- rendimiento: **25**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
 - `quarantine.py`: **17**
 - `diskreport.py`: **17**
-- `healthscore.py`: **16**
 - `memory.py`: **16**
 - `scanner.py`: **15**
 - `settings.py`: **15**
 - `duplicates.py`: **15**
-- `assistant.py`: **14**
-- `organizer.py`: **11**
+- `healthscore.py`: **15**
+- `assistant.py`: **15**
 - `branding.py`: **11**
-- `startup.py`: **10**
+- `startup.py`: **11**
+- `organizer.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T12:19:33` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud eliminando la creación repetida de tuplas en cada llamada a `_evaluate_active_problems` y utilicé un `frozenset` pre-calculado para la evaluación, mejorando el rendimiento en el bucle de validación.
+- `2026-11-10T12:17:41` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la implementación de `TypeAlias` más específicos, la adición de docstrings detallados en las funciones de validación compleja (`_is_valid_registry_path`, `_resolve_path_from_command`) y la unificación de la documentación interna, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
 - `2026-11-10T12:09:20` **settings.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante docstrings detallados la lógica de `_SettingsManager.perform_atomic_write` y sus restricciones de seguridad, además de simplificar la navegación en el archivo mediante la reorganización de las funciones de validación.
 - `2026-11-10T12:08:45` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings estructurados (usando formato Google Style) que explican explícitamente el propósito, los parámetros y las excepciones de las funciones, además de añadir type hints adicionales para clarificar el flujo de datos.
 - `2026-11-10T12:08:14` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `_execute_safety_pipeline`, extrayendo la lógica de validación de precondiciones a funciones de menor granularidad y añadiendo docstrings descriptivos que clarifican el flujo de control, facilitando auditorías futuras de seguridad.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T11:39:03` **assistant.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Mapping`, `Sequence` y `Iterable` de `typing`) y se documentó con docstrings el propósito de funciones críticas de validación (`_is_safe_payload_structure` y `_is_input_too_deep_or_complex`), mejorando la legibilidad técnica y la mantenibilidad del código sin alterar su lógica.
 - `2026-11-10T11:36:51` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos al agregar una validación de `key` en `_Validators.str` para evitar errores de tipo en tiempo de ejecución y refuerza la integridad del sistema eliminando la posibilidad de procesar claves inexistentes durante la validación de un diccionario arbitrario en `validate`.
 - `2026-11-10T11:29:21` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_canonical_path` y `_is_valid_path_structure` mediante una validación más estricta contra entradas `None` o malformadas, asegurando que las funciones no dependan de que `os.path` maneje silenciosamente tipos inesperados y evitando excepciones no capturadas al procesar rutas.
-- `2026-11-10T11:28:35` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_file_id` para capturar errores de forma más robusta ante archivos inaccesibles o bloqueados, evitando que `SafetyGuard` o el pipeline fallen silenciosamente con valores por defecto incompletos cuando el sistema operativo deniega el acceso a metadatos de bajo nivel.
-- `2026-11-10T11:26:59` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante la captura explícita de excepciones al realizar operaciones de E/S y serialización, evitando que fallos de formato JSON o problemas de acceso a disco silencien errores o dejen la aplicación en un estado inconsistente al intentar guardar el manifiesto.

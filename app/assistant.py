@@ -257,10 +257,10 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
 )
 
 # Mapa para acceso eficiente a criterios por clave de métrica
-_CRITERIOS_MAP: Final[Dict[str, List[ProblemCriterion]]] = {}
-for criterion in _CRITERIOS_SALUD:
-    _CRITERIOS_MAP.setdefault(criterion.metric_key, []).append(criterion)
-_CRITERIOS_MAP_IMMUTABLE: Final[Dict[str, Tuple[ProblemCriterion, ...]]] = {k: tuple(v) for k, v in _CRITERIOS_MAP.items()}
+_CRITERIOS_MAP_IMMUTABLE: Final[Dict[str, Tuple[ProblemCriterion, ...]]] = {
+    k: tuple(c for c in _CRITERIOS_SALUD if c.metric_key == k)
+    for k in {c.metric_key for c in _CRITERIOS_SALUD}
+}
 _KEYS_WITH_CRITERIA: Final[frozenset[str]] = frozenset(_CRITERIOS_MAP_IMMUTABLE.keys())
 
 class AreaExplanation(NamedTuple):
