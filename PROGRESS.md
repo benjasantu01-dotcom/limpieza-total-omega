@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 74 | 6 | 25 | 4 | 83 |
-| 2026-11-10 | 105 | 8 | 36 | 7 | 156 |
+| 2026-11-09 | 74 | 6 | 25 | 4 | 79 |
+| 2026-11-10 | 106 | 8 | 36 | 7 | 159 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **33**
 - rendimiento: **31**
 - seguridad defensiva: **25**
 
@@ -32,7 +32,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `assistant.py`: **15**
 - `duplicates.py`: **15**
 - `healthscore.py`: **15**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T13:24:50` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en la robustez ante casos límite en la función `_get_path_stat_robust` y `_is_file_busy`, añadiendo un manejo explícito para `ERROR_INSUFFICIENT_BUFFER` y `ERROR_INVALID_NAME` (codificados en la API de Windows), asegurando que la app no aborte ante nombres de archivo malformados o bloqueos temporales inesperados del sistema de archivos.
 - `2026-11-10T13:02:09` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `largest_folders` ante posibles errores de resolución de rutas (como `Path.relative_to` fallando por enlaces simbólicos inesperados o archivos en unidades distintas) mediante el uso de un bloque `try-except` más específico y la validación de paridad de raíces.
 - `2026-11-10T13:00:07` **browser.py** (robustez ante casos límite): Mejoré `DirectoryScanner._is_entry_valid` para incluir una verificación explícita contra archivos con atributos de sistema (ocultos/sistema) antes de intentar acceder a ellos, previniendo errores de `PermissionError` y mejorando la robustez frente a directorios de sistema protegidos que podrían causar caídas en el escaneo masivo.
 - `2026-11-10T12:39:16` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante la implementación de un mecanismo de validación diferida (lazy) en el caché de inodos, reduciendo las llamadas redundantes a `stat()` al cargar el manifiesto repetidamente durante la misma sesión.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T12:08:14` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `_execute_safety_pipeline`, extrayendo la lógica de validación de precondiciones a funciones de menor granularidad y añadiendo docstrings descriptivos que clarifican el flujo de control, facilitando auditorías futuras de seguridad.
 - `2026-11-10T11:59:38` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `quarantine.py` mediante la adición de docstrings detallados en las funciones de validación crítica y operaciones de E/S, clarificando el propósito, las condiciones de error y las salvaguardas de seguridad implementadas, mejorando así la mantenibilidad del código para el equipo de desarrollo.
 - `2026-11-10T11:59:11` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de docstrings en funciones críticas de seguridad (`_is_safe_for_disk_op`, `_is_recursive_violation`) y se ha estandarizado la nomenclatura de tipos y variables para facilitar la legibilidad del flujo de validación.
-- `2026-11-10T11:58:44` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en estructuras críticas y funciones de la API nativa, clarificando el propósito, las restricciones de seguridad y el manejo de recursos (handles) para asegurar que futuros cambios mantengan el rigor exigido.

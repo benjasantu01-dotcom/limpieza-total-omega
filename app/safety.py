@@ -177,7 +177,7 @@ def _is_file_busy(path_str: str) -> bool:
         handle = kernel32.CreateFileW(path_long, 0x80000000, 0, None, 3, 0x00000080, None)
         if handle == INVALID_HANDLE_VALUE:
             err = kernel32.GetLastError()
-            return err == ERROR_SHARING_VIOLATION or err == ERROR_ACCESS_DENIED
+            return err in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_INVALID_NAME)
         kernel32.CloseHandle(handle)
     except (OSError, AttributeError, TypeError):
         return True
@@ -203,7 +203,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         else:
             path_long = _to_long_path(path_str)
             kernel32 = ctypes.windll.kernel32
-            # Acceso mínimo (0x07) para obtener info de handle sin bloquear escritura exclusiva
             handle = kernel32.CreateFileW(path_long, 0x00, 0x03, None, 3, 0x00000080, None)
             if handle != INVALID_HANDLE_VALUE:
                 try:
@@ -213,7 +212,6 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
                 finally:
                     kernel32.CloseHandle(handle)
     except (OSError, PermissionError, Exception):
-        # En caso de error de acceso, el identificador queda como (0,0,0,0) y se gestiona vía excepciones de acceso
         pass
                 
     if len(_FILE_ID_CACHE) >= 4096: _FILE_ID_CACHE.clear()
@@ -391,7 +389,6 @@ class ValidationContext(Enum):
     STRUCTURAL = auto()
     INTEGRITY = auto()
 
-# Lista de directorios protegidos que nunca deben ser modificados o borrados
 PROTECTED_DIR_NAMES: Final[set[str]] = {
     "windows", "winnt", "system32", "syswow64", "system", "boot",
     "program files", "program files (x86)", "programdata",
@@ -494,7 +491,6 @@ def _is_file_owned_by_system(path_str: str) -> bool:
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Filtra rutas que contienen caracteres no permitidos o usados para ofuscación."""
     if not isinstance(path_str, str) or not path_str: return True
-    # Detecta caracteres de control, caracteres RTL (BiDi) y secuencias de ofuscación
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
 def _is_path_empty_or_whitespace(path_str: str) -> bool:
@@ -757,7 +753,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             return st
         except (PermissionError, OSError, FileNotFoundError) as e:
             err_code = getattr(e, 'winerror', None)
-            if isinstance(e, OSError) and (e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or err_code == ERROR_SHARING_VIOLATION):
+            if isinstance(e, OSError) and (e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or err_code in (ERROR_SHARING_VIOLATION, ERROR_INSUFFICIENT_BUFFER)):
                 if attempt < max_retries - 1:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
@@ -868,7 +864,6 @@ def normalize(path: PathLike) -> Path:
         sub_path = anchor_path
         for part in parts:
             if part in (os.sep, os.altsep): continue
-            # Previene spoofing visual mediante caracteres de control al inicio de un componente
             if re.match(r'[\u200E\u200F\u202A-\u202E]', part):
                 raise UnsafePathError("Spoofing visual detectado en nombre de componente.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
             sub_path = os.path.join(sub_path, part)
