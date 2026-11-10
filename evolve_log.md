@@ -1535,3 +1535,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T09:26:44` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad de `_sync_directory` y `_safe_unlink` añadiendo un manejo de errores más riguroso y una verificación de estado de archivo posterior a la operación para mitigar condiciones de carrera, garantizando que el sistema de archivos realmente refleje el borrado antes de continuar.
 - `2026-11-10T09:26:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T09:26:44` Corrida terminada. Total usado hoy: 224.
+- `2026-11-10T09:33:42` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-10T09:34:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-10T09:34:51` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para evitar que `is_file_owned_by_system` procese rutas que ya no existen, evitando errores de manejo de memoria al llamar a `GetNamedSecurityInfoW` con una ruta inexistente, reforzando la robustez de las verificaciones defensivas.
+- `2026-11-10T09:35:17` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-10T09:35:32` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la robustez defensiva de `_read_and_parse_json` al implementar una validación estricta de metadatos mediante `os.fstat` previo a la lectura del contenido, previniendo condiciones de carrera (TOCTOU) al asegurar que el archivo no cambió de identidad o estado entre el chequeo inicial y la apertura del descriptor de archivo.
+- `2026-11-10T09:35:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T09:35:32` Corrida terminada. Total usado hoy: 228.

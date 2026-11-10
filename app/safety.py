@@ -466,15 +466,16 @@ def _is_volume_shadow_copy(path_str: str) -> bool:
 
 def _is_file_owned_by_system(path_str: str) -> bool:
     """Determina mediante SID si el propietario del archivo es el usuario SYSTEM."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not os.path.exists(_to_long_path(path_str)): return False
+    if os.name != 'nt' or not isinstance(path_str, str): return False
+    long_path = _to_long_path(path_str)
+    if not os.path.exists(long_path): return False
+    
     advapi32 = ctypes.windll.advapi32
     kernel32 = ctypes.windll.kernel32
     sid_ptr = ctypes.c_void_p()
     try:
-        # Verificamos existencia antes de llamar a la API de seguridad
-        if not os.path.exists(_to_long_path(path_str)): return False
         res = advapi32.GetNamedSecurityInfoW(
-            _to_long_path(path_str), 1, 1, ctypes.byref(sid_ptr), None, None, None, None
+            long_path, 1, 1, ctypes.byref(sid_ptr), None, None, None, None
         )
         if res == 0 and sid_ptr.value:
             sid_str = ctypes.create_unicode_buffer(128)
@@ -1030,7 +1031,7 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.is_protected_system:
         raise UnsafePathError("Protección defensiva: Archivo de sistema oculto/protegido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH, SafetyValidationCategory.PERMISSION)
     if sd.has_flag(Win32Attr.OFFLINE):
-        raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Archivo offline.", SafetyValidationErrorCode.OFFLINE_FILE, SafetyValidationErrorCode.INTEGRITY)
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     if sd.has_flag(Win32Attr.SPARSE_FILE):

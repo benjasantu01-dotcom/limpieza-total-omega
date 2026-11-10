@@ -401,15 +401,16 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
     """
     try:
         if not file_path.exists() or not file_path.is_file(): return None
-        st = file_path.lstat()
-        if not _is_file_secure_to_read(file_path, st): return None
+        st_initial = file_path.lstat()
+        if not _is_file_secure_to_read(file_path, st_initial): return None
         
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
             st_post = os.fstat(fd)
-            if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or \
-               st_post.st_size < MIN_SETTINGS_SIZE or st_post.st_size > MAX_SETTINGS_SIZE or \
-               st_post.st_mtime != st.st_mtime or st_post.st_ino != st.st_ino or \
+            # Verifica que el archivo no haya cambiado entre lstat y open/fstat
+            if st_post.st_ino != st_initial.st_ino or st_post.st_dev != st_initial.st_dev or \
+               st_post.st_mtime != st_initial.st_mtime or st_post.st_size != st_initial.st_size or \
+               not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or \
                (hasattr(os, 'getuid') and st_post.st_uid != os.getuid()) or \
                (st_post.st_mode & 0o077) != 0:
                 return None

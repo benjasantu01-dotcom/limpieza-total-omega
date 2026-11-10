@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 67
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 111 | 8 | 42 | 9 | 110 |
-| 2026-11-10 | 74 | 5 | 25 | 7 | 113 |
+| 2026-11-09 | 111 | 8 | 42 | 9 | 106 |
+| 2026-11-10 | 76 | 5 | 26 | 7 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **38**
+- seguridad defensiva: **31**
 - rendimiento: **30**
-- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `safety.py`: **19**
 - `quarantine.py`: **18**
-- `safety.py`: **18**
 - `diskreport.py`: **17**
 - `healthscore.py`: **16**
 - `memory.py`: **16**
 - `duplicates.py`: **16**
 - `assistant.py`: **15**
+- `settings.py`: **15**
 - `scanner.py`: **14**
-- `settings.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **11**
 - `startup.py`: **11**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T09:35:32` **settings.py** (seguridad defensiva): Mejoré la robustez defensiva de `_read_and_parse_json` al implementar una validación estricta de metadatos mediante `os.fstat` previo a la lectura del contenido, previniendo condiciones de carrera (TOCTOU) al asegurar que el archivo no cambió de identidad o estado entre el chequeo inicial y la apertura del descriptor de archivo.
+- `2026-11-10T09:34:51` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar que `is_file_owned_by_system` procese rutas que ya no existen, evitando errores de manejo de memoria al llamar a `GetNamedSecurityInfoW` con una ruta inexistente, reforzando la robustez de las verificaciones defensivas.
 - `2026-11-10T09:26:44` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `_sync_directory` y `_safe_unlink` añadiendo un manejo de errores más riguroso y una verificación de estado de archivo posterior a la operación para mitigar condiciones de carrera, garantizando que el sistema de archivos realmente refleje el borrado antes de continuar.
 - `2026-11-10T09:25:13` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_iter_process_memory` para asegurar que el buffer de ruta (`path_buf`) sea limpiado antes de cada iteración, evitando el riesgo de fuga de información entre procesos al reutilizar el mismo buffer de memoria.
 - `2026-11-10T09:14:41` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del motor de scoring añadiendo validación explícita para evitar inyecciones de dependencias o comportamientos indefinidos si se llegaran a modificar los límites de las métricas, reforzando la integridad del pipeline mediante el uso de `getattr` con valores por defecto seguros dentro de `score_security`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T08:43:09` **healthscore.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en `score_security` y `_process_pipeline_entry` para asegurar que divisiones por cero inesperadas o datos corruptos (NaN/Inf) no interrumpan el flujo de cálculo del score, devolviendo valores neutros seguros en lugar de fallar silenciosamente o propagar errores.
 - `2026-11-10T08:32:58` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo geométrico (`draw_logo`, `draw_ring`) mediante la validación estricta de parámetros numéricos y estados de objetos, evitando fallos en tiempo de ejecución ante valores `NaN`, `inf` o tipos inesperados que podrían colapsar la interfaz.
 - `2026-11-10T08:24:11` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `SystemContext` ante valores inesperados de configuración o ingestión parcial, asegurando que `ingest` no falle silenciosamente ni deje el estado en inconsistencia si una sola métrica está corrupta o fuera de rango.
-- `2026-11-10T08:23:44` **startup.py** (rendimiento): Se optimizó el proceso de escaneo en `entries_from_folders` reemplazando la lógica de filtrado manual por el uso de `os.scandir` de forma más directa, minimizando las llamadas redundantes a `Path.is_symlink` y evitando validaciones costosas de `is_safe_to_modify` para archivos ya descartados por extensión, mejorando significativamente el rendimiento en carpetas con muchos archivos.
-- `2026-11-10T08:14:42` **safety.py** (rendimiento): Se ha optimizado la gestión de caché de `_ATTR_CACHE` y `_FILE_ID_CACHE` convirtiéndolos en `dict` simples en lugar de `OrderedDict`, ya que la lógica de validación actual no requiere el mantenimiento del orden de inserción, reduciendo el overhead de memoria y ciclos de CPU en cada acceso.
