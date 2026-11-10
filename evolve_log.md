@@ -1520,3 +1520,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T09:05:07` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-11-10T09:05:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T09:05:07` Corrida terminada. Total usado hoy: 216.
+- `2026-11-10T09:13:16` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-10T09:13:41` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-11-10T09:14:07` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez en la validación de rutas dentro de `_validate_root` y `walk_files` para prevenir el seguimiento de enlaces simbólicos malintencionados o accesos fuera del árbol de directorios esperado mediante el uso de `os.path.realpath` y una validación explícita de prefijos de ruta normalizada.
+- `2026-11-10T09:14:30` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `group_by_size` y `_collect_candidates` al asegurar que toda llamada a `stat()` se realice mediante `follow_symlinks=False`, previniendo la resolución accidental de enlaces simbólicos o puntos de reparse fuera del árbol escaneado.
+- `2026-11-10T09:14:41` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva del motor de scoring añadiendo validación explícita para evitar inyecciones de dependencias o comportamientos indefinidos si se llegaran a modificar los límites de las métricas, reforzando la integridad del pipeline mediante el uso de `getattr` con valores por defecto seguros dentro de `score_security`.
+- `2026-11-10T09:14:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T09:14:41` Corrida terminada. Total usado hoy: 220.

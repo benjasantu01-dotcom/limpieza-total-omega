@@ -110,7 +110,7 @@ def _is_valid_candidate(path: Path, st_size: int = -1) -> bool:
     if not _safe_path_check(path): return False
     if st_size == -1:
         with suppress(OSError):
-            st_size = path.stat().st_size
+            st_size = path.stat(follow_symlinks=False).st_size
     return st_size > 0 and not is_system_or_hidden(path)
 
 
@@ -158,7 +158,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         item = Path(p)
         try:
             if item.exists() and is_safe_to_modify(item):
-                st = item.stat()
+                st = item.stat(follow_symlinks=False)
                 if _is_valid_candidate(item, st.st_size):
                     groups_by_size[st.st_size].append(item)
         except (OSError, PermissionError, TypeError): 
@@ -259,7 +259,7 @@ def _get_mtime(path: Path) -> Optional[float]:
     """Obtiene el timestamp de modificación de un archivo de forma segura."""
     if not isinstance(path, Path): return None
     try:
-        return path.stat().st_mtime
+        return path.stat(follow_symlinks=False).st_mtime
     except (OSError, PermissionError):
         return None
 

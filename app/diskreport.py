@@ -182,6 +182,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         p = Path(directory).expanduser().resolve(strict=True)
         if not p.is_dir():
             return None
+        # Validación defensiva extra contra rutas raíz UNC o bloqueadas
         if is_protected_path(p) or str(p).lower().startswith(r'\\'):
             return None
         return p
@@ -299,6 +300,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if not root_path: return
     
+    # Normalizamos el prefijo para validar containment de rutas en el loop
+    root_str = str(root_path.resolve())
     visited_inodes: set[Inode] = set()
     stack: List[Tuple[Path, List[str]]] = [(root_path, [])]
     
@@ -315,6 +318,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     
                     try:
+                        # Verificación de containment para evitar escapes de directorio vía symlinks
+                        entry_path = Path(entry.path).resolve()
+                        if not str(entry_path).startswith(root_str):
+                            continue
+                            
                         st = entry.stat(follow_symlinks=False)
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
