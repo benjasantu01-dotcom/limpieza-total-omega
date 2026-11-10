@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 12 | 2 | 2 | 0 | 26 |
+| 2026-11-08 | 12 | 2 | 2 | 0 | 22 |
 | 2026-11-09 | 142 | 9 | 53 | 11 | 135 |
-| 2026-11-10 | 38 | 3 | 12 | 4 | 55 |
+| 2026-11-10 | 39 | 3 | 12 | 4 | 58 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **31**
+- seguridad defensiva: **32**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **19**
 - `quarantine.py`: **18**
+- `diskreport.py`: **17**
 - `memory.py`: **17**
 - `healthscore.py`: **17**
-- `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `settings.py`: **16**
 - `assistant.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T04:48:36` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo en `walk_files` mediante la validación explícita de `is_protected_path` sobre la ruta completa antes de procesar cualquier entrada, previniendo el acceso a rutas potencialmente sensibles incluso si los atributos de archivo fallan o son engañosos.
 - `2026-11-10T04:08:33` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante estados inconsistentes mediante la implementación de una validación de `__setattr__` más estricta, evitando que se ignoren errores de tipo y asegurando que las métricas siempre se mantengan dentro de rangos definidos incluso si se intenta inyectar datos inválidos.
 - `2026-11-10T04:08:23` **duplicates.py** (robustez ante casos límite): Mejora la robustez del módulo `duplicates.py` ante errores de acceso a disco mediante la centralización de la validación `stat` dentro de `_is_valid_candidate` y el uso de `path.exists()` previo a `stat()` para evitar excepciones innecesarias en archivos bloqueados o con permisos denegados.
 - `2026-11-10T04:07:59` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de lectura en `walk_files` al capturar excepciones críticas durante la creación de objetos `Path` y acceso a directorios, evitando que una ruta mal formada o con caracteres especiales detenga el escaneo completo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T03:17:41` **startup.py** (legibilidad y documentación): Se introdujeron constantes descriptivas para reemplazar los "números mágicos" en la lógica de resolución y validación de rutas, mejorando la mantenibilidad y legibilidad del código.
 - `2026-11-10T03:17:11` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se refinó la tipografía de los validadores para documentar explícitamente el flujo de datos y el propósito de las restricciones de seguridad, facilitando la auditoría del código sin alterar su lógica.
 - `2026-11-10T03:16:38` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings y type hints detallados en la clase `Scanner` y sus métodos internos para clarificar la lógica de recorrido y los mecanismos de seguridad, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
-- `2026-11-10T03:08:06` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de `safety.py` mediante una reorganización de los docstrings principales, agregando descripciones claras sobre el "porqué" de las decisiones de diseño en funciones críticas como `_get_file_id` y `ensure_safe_to_modify`, además de incluir type hints consistentes en los retornos de las funciones de validación.

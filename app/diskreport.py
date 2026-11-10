@@ -323,15 +323,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if entry is None:
                             break
                             
-                        if _is_excluded_path(entry.name):
-                            continue
-                        
-                        try:
-                            entry_path = Path(entry.path)
-                        except (ValueError, TypeError):
-                            continue
-
-                        if skip_protected and is_protected_path(entry_path):
+                        entry_path = Path(entry.path)
+                        if _is_excluded_path(entry.name) or (skip_protected and is_protected_path(entry_path)):
                             continue
                         
                         try:
