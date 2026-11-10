@@ -537,7 +537,10 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             return []
             
         with open(m_path, "r", encoding="utf-8") as f: 
-            data = json.load(f)
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                return []
             
         if not isinstance(data, list): 
             return []
@@ -554,7 +557,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
         return valid_items
         
-    except (OSError, json.JSONDecodeError, ValueError, TypeError):
+    except (OSError, ValueError, TypeError):
         return []
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -951,10 +954,13 @@ def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         m_path = _manifest_path(base_dir)
         if not m_path.exists(): return 0
         with open(m_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                return 0
             if not isinstance(data, list): return 0
             return sum(item.get("size_bytes", 0) for item in data if isinstance(item, dict))
-    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+    except (OSError, TypeError, ValueError):
         return 0
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:

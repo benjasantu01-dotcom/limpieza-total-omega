@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 68
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 215
+- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 69
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 32 | 7 | 11 | 4 | 44 |
+| 2026-11-08 | 30 | 6 | 11 | 3 | 44 |
 | 2026-11-09 | 142 | 9 | 53 | 11 | 135 |
-| 2026-11-10 | 12 | 1 | 4 | 3 | 36 |
+| 2026-11-10 | 13 | 1 | 5 | 3 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **37**
 - seguridad defensiva: **36**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **18**
 - `healthscore.py`: **18**
+- `quarantine.py`: **18**
 - `safety.py`: **18**
-- `quarantine.py`: **17**
+- `settings.py`: **17**
 - `memory.py`: **17**
 - `duplicates.py`: **16**
 - `assistant.py`: **14**
 - `scanner.py`: **14**
 - `branding.py`: **14**
 - `diskreport.py`: **13**
-- `startup.py`: **11**
+- `startup.py`: **10**
 - `organizer.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T02:27:14` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante la centralización de la validación de tipos y la implementación de bloques `try-except` más granulares, asegurando que cualquier entrada corrupta o mal formada en el JSON no provoque fallos en la persistencia o carga del estado.
 - `2026-11-10T02:16:15` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.__setattr__` para prevenir intentos de modificación de atributos inexistentes mediante una excepción específica y aseguré la integridad de los datos en `validate` ante posibles fallos de reflexión o acceso a memoria.
 - `2026-11-10T02:15:26` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y `_collect_summary_data` para manejar posibles errores de acceso a disco de forma más explícita y prevenir que fallos aislados en `os.stat` detengan el escaneo completo o propaguen valores inválidos.
 - `2026-11-10T00:44:08` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` al implementar una validación de propiedad (uid) y modo (permisos) antes de procesar el contenido del archivo, mitigando riesgos de lectura de archivos manipulados o con permisos excesivamente permisivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T00:03:09` **safety.py** (robustez ante casos límite): Se ha mejorado `_validate_file_operations_security` agregando una comprobación explícita para evitar modificaciones en archivos con permisos de lectura denegados mediante `os.access(p, os.W_OK)`, cerrando una brecha donde un archivo existente pero bloqueado por ACLs a nivel de usuario podría evadir la validación previa de escritura.
 - `2026-11-09T14:51:22` **quarantine.py** (robustez ante casos límite): Mejora la robustez de `quarantine.py` ante errores de E/S y corrupción de archivos al añadir una validación de existencia antes de intentar operaciones de lectura en `load_manifest`, evitando que un acceso denegado puntual durante el listado del directorio invalide todo el manifiesto.
 - `2026-11-09T14:43:29` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al implementar una validación de `ensure_safe_to_modify` antes de cualquier operación de disco (usando `is_safe_to_modify` para el filtrado previo y `ensure_safe_to_modify` para la validación crítica previa al `unlink`), protegiendo al sistema contra posibles inyecciones de rutas o manipulación de la estructura de archivos en tiempo de ejecución.
-- `2026-11-09T14:43:05` **memory.py** (robustez ante casos límite): Se añade una validación de longitud máxima al buffer de rutas en `_iter_process_memory` y se robustece la recuperación de nombres de proceso para evitar errores de acceso a memoria o cadenas mal formadas al tratar con procesos de sistema o nombres de ruta excesivamente largos.

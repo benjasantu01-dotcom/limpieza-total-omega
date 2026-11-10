@@ -907,3 +907,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T02:17:04` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-10T02:17:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T02:17:04` Corrida terminada. Total usado hoy: 56.
+- `2026-11-10T02:25:13` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-10T02:25:45` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-10T02:26:29` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-10T02:27:14` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` y `load_manifest` mediante la centralización de la validación de tipos y la implementación de bloques `try-except` más granulares, asegurando que cualquier entrada corrupta o mal formada en el JSON no provoque fallos en la persistencia o carga del estado.
+- `2026-11-10T02:27:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-11-10T02:27:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T02:27:18` Corrida terminada. Total usado hoy: 60.
