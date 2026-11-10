@@ -4,6 +4,13 @@ safety.py — capa de seguridad para la manipulación de archivos.
 Este módulo provee funciones de validación estricta para prevenir modificaciones
 accidentales o maliciosas en directorios del sistema o archivos críticos.
 Todo cambio destructivo debe pasar obligatoriamente por `ensure_safe_to_modify`.
+
+El diseño sigue un enfoque defensivo:
+1. Las rutas son normalizadas y resueltas antes de cualquier inspección.
+2. Se utilizan identificadores de archivo (File ID) en lugar de nombres de ruta 
+   para mitigar condiciones de carrera (Time-of-Check Time-of-Use).
+3. Las operaciones de E/S nativas se encapsulan para manejar excepciones de 
+   Windows que no mapean directamente a `OSError`.
 """
 
 from __future__ import annotations
@@ -160,7 +167,10 @@ class SafetyState(NamedTuple):
     file_id: tuple[int, int, int, int]
 
 def _is_file_busy(path_str: str) -> bool:
-    """Intenta abrir el archivo en modo exclusivo para detectar si está bloqueado por otro proceso."""
+    """
+    Intenta abrir el archivo en modo exclusivo. Si falla, el archivo está siendo 
+    utilizado por otro proceso o tiene un lock a nivel de sistema.
+    """
     if not isinstance(path_str, str) or os.name != 'nt': return False
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
@@ -175,7 +185,11 @@ def _is_file_busy(path_str: str) -> bool:
     return False
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
-    """Genera un identificador único (Volumen + FileID) para evitar manipulación (TOCTOU)."""
+    """
+    Genera un identificador único (Volumen + FileID). Es fundamental para detectar 
+    ataques TOCTOU: si el ID cambia entre chequeos, el archivo fue reemplazado 
+    o movido por un actor malicioso.
+    """
     if not isinstance(path_str, str) or not path_str or path_str.upper().startswith(("\\\\.\\", "//./")):
         return (0, 0, 0, 0)
     
@@ -792,7 +806,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
     except (OSError, PermissionError, FileNotFoundError, AttributeError):
         raise UnsafePathError("Error de acceso al validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 
@@ -1205,7 +1219,8 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida que una ruta pueda ser modificada de forma segura.
-    Lanza UnsafePathError en caso de detectar riesgos.
+    Lanza UnsafePathError si la validación falla (bloqueo por sistema, 
+    permisos insuficientes, violación de integridad, etc.).
     """
     result = _execute_safety_pipeline(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
     if not result.is_valid:
@@ -1213,7 +1228,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return Path(path)
 
 def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> PathValidationResult:
-    """Ejecuta la lógica de validación interna devolviendo un resultado."""
+    """
+    Pipeline de validación centralizado. Ejecuta chequeos estructurales, 
+    de entorno y de integridad sobre la ruta dada.
+    Retorna PathValidationResult (objeto inmutable).
+    """
     try:
         if path is None:
             return PathValidationResult(False, UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE))
