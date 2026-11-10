@@ -98,9 +98,8 @@ def _safe_path_check(path: Path) -> bool:
     if not isinstance(path, Path): return False
     try:
         if not path.exists(): return False
+        if not is_safe_to_modify(path): return False
         abs_path = path.resolve(strict=True)
-        if not abs_path.is_file() or not is_safe_to_modify(abs_path):
-            return False
         return not is_protected_path(abs_path) and not is_junction(abs_path)
     except (OSError, RuntimeError, ValueError):
         return False
@@ -158,13 +157,13 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     for p in paths:
         if p is None: continue
         item = Path(p)
-        try:
-            if item.exists() and is_safe_to_modify(item):
+        if is_safe_to_modify(item):
+            try:
                 st = item.stat(follow_symlinks=False)
                 if _is_valid_candidate(item, st.st_size):
                     groups_by_size[st.st_size].append(item)
-        except (OSError, PermissionError, TypeError): 
-            continue
+            except (OSError, PermissionError, TypeError): 
+                continue
     return dict(groups_by_size)
 
 
@@ -184,9 +183,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     for d in directories:
         if d:
             try:
-                p_dir = Path(d).resolve()
-                if p_dir.is_dir() and is_safe_to_modify(p_dir):
-                    queue.append((p_dir, 0))
+                p_dir = Path(d)
+                if is_safe_to_modify(p_dir) and p_dir.is_dir():
+                    queue.append((p_dir.resolve(), 0))
             except (OSError, PermissionError, TypeError):
                 continue
     
@@ -198,17 +197,19 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
+                    p = Path(entry.path)
+                    if not is_safe_to_modify(p): continue
+                    
                     try:
-                        p = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
-                            if depth < MAX_RECURSION_DEPTH and is_safe_to_modify(p) and not is_junction(p):
+                            if depth < MAX_RECURSION_DEPTH and not is_junction(p):
                                 queue.append((p.resolve(), depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size >= min_size:
                                 if not (skip_protected and is_protected_path(p)) and not is_system_or_hidden(p):
                                     inode_id = (stat.st_dev, stat.st_ino)
-                                    if inode_id not in visited_inodes and is_safe_to_modify(p):
+                                    if inode_id not in visited_inodes:
                                         visited_inodes.add(inode_id)
                                         size_map[stat.st_size].append(p)
                     except (OSError, PermissionError):
