@@ -289,9 +289,6 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Validador maestro de integridad previo a una operación de movimiento.
-    Realiza una secuencia estricta de verificaciones: rutas de red, bloqueos,
-    caracteres prohibidos, espacio en disco, identidad de inodo y prevenciones 
-    de recursividad para garantizar la seguridad total.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
         return False
@@ -299,7 +296,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        if not dest_real.exists() or not dest_real.is_dir(): return False
+        if not dest_real.exists() or not dest_real.is_dir() or is_protected_path(dest_real): return False
         if not os.access(dest_real, os.W_OK): return False
         
         if dest_real in src_real.parents or src_real == dest_real or src_real.parent == dest_real: return False

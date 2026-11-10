@@ -740,3 +740,14 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-10T13:40:53` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las verificaciones de seguridad en `_collect_candidates` y `group_by_size` al asegurar que la resolución de rutas mediante `resolve()` y el acceso a metadatos ocurran exclusivamente tras validar `is_safe_to_modify`, previniendo errores de acceso a rutas fuera del scope permitido o bloqueadas por el sistema.
 - `2026-11-10T13:40:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T13:40:53` Corrida terminada. Total usado hoy: 324.
+- `2026-11-10T13:48:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-10T13:49:31` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-11-10T13:50:31` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-10T13:51:34` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-10T13:52:40` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-10T13:53:58` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-10T13:54:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T13:54:34` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del chequeo de rutas al integrar una validación de longitud máxima y caracteres inválidos en `_is_process_executable_safe`, asegurando que `is_protected_path` siempre reciba una ruta normalizada y no datos corruptos del buffer de Win32.
+- `2026-11-10T13:55:04` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad de la función `_is_safe_for_disk_op` integrando una verificación explícita mediante `is_protected_path` para el destino, asegurando que ninguna operación de movimiento permita depositar basura en directorios protegidos por el sistema, reforzando la defensa contra rutas maliciosas.
+- `2026-11-10T13:55:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T13:55:04` Corrida terminada. Total usado hoy: 328.

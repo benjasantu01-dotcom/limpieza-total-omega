@@ -359,8 +359,12 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         length = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
         if length <= 0: return False 
         raw_path = path_buffer.value
-        if not raw_path: return False
-        return not is_protected_path(Path(raw_path.decode('utf-8', 'ignore')))
+        if not raw_path or len(raw_path) > 32767: return False
+        
+        path_str = raw_path.decode('utf-8', 'ignore')
+        if any(c in path_str for c in ('\0', '?', '*')): return False
+            
+        return not is_protected_path(Path(path_str))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
