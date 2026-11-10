@@ -628,7 +628,10 @@ def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _Integrity
     return _IntegrityCheck(reason, predicate)
 
 def _validate_junction_depth(path: Path) -> None:
-    """Evita la recursión infinita validando la profundidad de los reparse points."""
+    """
+    Evita la recursión infinita validando la profundidad de los reparse points.
+    Lanza UnsafePathError si la profundidad excede el máximo permitido.
+    """
     count = 0
     curr = path
     while curr.is_symlink() or _is_system_directory_junction(str(curr)):
@@ -1121,10 +1124,13 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.PERMISSION)
     except (OSError, RuntimeError, ValueError, AttributeError): pass
     if is_drive_root(target_path):
-        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationSTRUCTURE)
+        raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.STRUCTURE)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
-    """Analiza recursivamente reparse points para detectar redirecciones peligrosas."""
+    """
+    Analiza recursivamente reparse points para detectar redirecciones peligrosas 
+    que escapen del directorio base permitido.
+    """
     for p in [path] + list(path.parents):
         if _is_system_directory_junction(str(p)):
             try:
@@ -1177,7 +1183,10 @@ def _validate_path_components(path: Path) -> None:
     _validate_no_reparse_traversal(path)
 
 def _validate_no_reparse_traversal(path: Path) -> None:
-    """Asegura que el traversal no resulte en una salida fuera del volumen de origen."""
+    """
+    Asegura que el traversal de la ruta no resulte en una salida fuera 
+    del volumen de origen debido a puntos de unión o enlaces simbólicos.
+    """
     current = Path(path.anchor)
     for part in path.parts[1:]:
         current = current / part

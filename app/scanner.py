@@ -236,7 +236,11 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 )
 
 class Scanner:
-    """Motor central del escaneo que mantiene estado entre iteraciones de árbol de directorios."""
+    """
+    Motor central del escaneo. Gestiona el estado persistente durante el recorrido 
+    del árbol (visto, caché de seguridad, resultados) para optimizar el rendimiento 
+    y evitar redundancias en el análisis.
+    """
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
@@ -245,7 +249,7 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica que la ruta resuelta permanezca dentro de los límites del directorio raíz."""
+        """Verifica mediante rutas canónicas que la entrada no escape al árbol base solicitado."""
         try:
             norm_entry = _get_canonical_path(entry_path)
             if not norm_entry or not self.base_root_real:
@@ -255,16 +259,20 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida que el nombre de entrada no contenga caracteres prohibidos por Windows."""
+        """Valida que el nombre de archivo sea conforme a las restricciones del sistema Windows."""
         if not isinstance(name, str) or not name or "\0" in name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si una entrada de directorio representa un enlace simbólico o unión."""
+        """Identifica puntos de reanálisis que deben ignorarse para evitar ciclos o incursiones no deseadas."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Aplica filtros de seguridad (protección, profundidad, permisos) a una entrada del sistema."""
+        """
+        Filtro de seguridad de primer nivel para directorios y archivos.
+        Valida que la entrada sea accesible, no esté protegida y respete la estructura.
+        Utiliza `safe_cache` para minimizar llamadas repetidas a validadores costosos.
+        """
         try:
             path_str = getattr(entry, 'path', None)
             if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
@@ -283,7 +291,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
-        """Gestiona el descenso recursivo en el árbol de directorios controlando ciclos."""
+        """Registra directorios válidos en el stack para el recorrido posterior evitando bucles infinitos."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = _get_canonical_path(entry.path)
         if not norm_path or norm_path in visited: return
@@ -291,12 +299,15 @@ class Scanner:
         stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Filtra archivos por extensiones de interés definidas en SUSPICIOUS_ALL_EXTS."""
+        """Determina si el archivo debe ser sometido a heurísticas basándose en su extensión."""
         _, ext = os.path.splitext(name)
         return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
-        """Analiza una entrada (directorio o archivo) y determina si debe descenderse o inspeccionarse."""
+        """
+        Clasifica la entrada: si es directorio, lo encola para inspección recursiva; 
+        si es archivo relevante, dispara el motor de heurísticas.
+        """
         if not self._is_safe_entry(entry): return
         try:
             if entry.is_dir(follow_symlinks=False):
@@ -311,7 +322,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Aplica la secuencia completa de chequeos heurísticos a un archivo válido."""
+        """Ejecuta en secuencia todas las funciones heurísticas registradas en `ALL_CHECKS`."""
         stats: Optional[os.stat_result] = _safe_stat(entry)
         if stats is None: return
         for check_fn in ALL_CHECKS:

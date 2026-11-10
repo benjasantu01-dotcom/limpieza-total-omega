@@ -1411,3 +1411,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-10T07:33:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-11-10T07:33:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T07:33:05` Corrida terminada. Total usado hoy: 180.
+- `2026-11-10T07:41:23` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-10T07:41:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T07:42:32` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y la legibilidad interna de `safety.py` mediante la refactorización de `_validate_no_reparse_traversal` y `_validate_ntfs_reparse_redirection` para unificar el tratamiento de errores, además de incluir docstrings detallados en las funciones de validación de integridad para clarificar el propósito de las comprobaciones de profundidad y redirección, facilitando el mantenimiento técnico.
+- `2026-11-10T07:43:08` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se han enriquecido las docstrings en `Scanner` y sus métodos auxiliares para clarificar la lógica de gestión de estados y navegación, mejorando la mantenibilidad técnica del motor de escaneo sin alterar su funcionalidad.
+- `2026-11-10T07:43:39` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-11-10T07:43:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T07:44:07` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo docstrings técnicos sobre el ciclo de vida de los datos (`_exec_cache` y `_checked_exists`) y clarificando la separación entre la validación de seguridad (físico/ruta) y la validación de formato (ejecutable).
+- `2026-11-10T07:44:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T07:44:07` Corrida terminada. Total usado hoy: 184.

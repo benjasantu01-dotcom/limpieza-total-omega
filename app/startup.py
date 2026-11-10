@@ -88,9 +88,9 @@ class StartupEntry:
     """
     Representa un elemento detectado en la configuración de inicio del sistema.
     
-    Gestiona la normalización de comandos, la resolución de rutas a archivos
-    existentes en disco y garantiza que el acceso a rutas esté filtrado por
-    las directivas de `safety.py` para evitar tocar zonas protegidas.
+    Atributos internos:
+    - _exec_cache: Almacena la ruta absoluta resuelta una vez validada.
+    - _checked_exists: Flag de control para evitar re-escaneo de archivos inexistentes.
     """
     name: str
     command: str
@@ -136,18 +136,19 @@ class StartupEntry:
         return any(c in path_raw for c in SUSPICIOUS_CHARS) or path_raw.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica existencia, tipo de archivo (no symlink) y extensión ejecutable."""
+        """
+        Verifica existencia, tipo de archivo (no symlink) y extensión ejecutable.
+        La validación de existencia es previa a la resolución para prevenir bloqueos de I/O.
+        """
         try:
             p_str = str(path)
             if p_str in _RESOLVED_PATH_CACHE:
                 return True
             
-            # Verificar si existe antes de intentar resolver o acceder para evitar bloqueos
             if not path.exists():
                 return False
                 
             resolved = path.resolve(strict=True)
-            # Solo validar si podemos leer metadata básica
             if not resolved.is_file() or resolved.is_symlink():
                 return False
                 
@@ -188,7 +189,10 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica la seguridad mediante `safety.py` y permisos de ejecución."""
+        """
+        Verifica la seguridad mediante `safety.py` y permisos de ejecución.
+        Usa os.access(R_OK) para validar legibilidad sin intentar abrir archivos en uso.
+        """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
             return _VALIDATION_CACHE[p_str]
@@ -197,7 +201,6 @@ class StartupEntry:
             if is_protected_path(p) or not is_safe_to_modify(p):
                 _VALIDATION_CACHE[p_str] = False
                 return False
-            # Validamos acceso R_OK sin abrir para no bloquear procesos en uso
             if not os.access(p, os.R_OK):
                 _VALIDATION_CACHE[p_str] = False
                 return False
@@ -273,7 +276,10 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Retorna la ruta absoluta del ejecutable tras procesar el comando."""
+        """
+        Retorna la ruta absoluta del ejecutable tras procesar el comando.
+        Implementa un mecanismo de caché (lazy load) para la resolución de rutas.
+        """
         if self._checked_exists:
             return self._exec_cache or ""
             
