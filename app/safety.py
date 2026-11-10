@@ -1251,17 +1251,18 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         p = normalize(str(path).strip())
         guard = SafetyGuard(p)
         
-        # SHORT-CIRCUIT: Verificaciones estáticas y de estructura primero
+        # 1. Verificaciones críticas de seguridad estática
         if _is_kernel_managed(guard.path_str):
             return PathValidationResult(False, UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
         
         if not allow_sensitive and is_sensitive_file(p):
             return PathValidationResult(False, UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION, SafetyValidationCategory.STRUCTURE))
         
+        # 2. Verificaciones estructurales y de integridad léxica
         _validate_path_components(p)
         _validate_structural_safety(p, guard.path_str)
         
-        # Verificaciones de entorno y contexto
+        # 3. Verificaciones de contexto y entorno
         base = None
         if base_dir:
             try: base = _normalize_resolved(str(base_dir))
@@ -1271,6 +1272,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         _validate_boundary_conditions(p, base_dir)
         _validate_preconditions(p, base_dir)
         
+        # 4. Verificaciones profundas de E/S e integridad
         if p.exists():
             if os.name == 'nt': _validate_ntfs_reparse_redirection(p, base)
             _validate_file_operations_security(p, allow_sensitive, base)

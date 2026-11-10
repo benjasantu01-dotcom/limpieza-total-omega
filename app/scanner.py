@@ -95,7 +95,15 @@ def _cached_is_protected(path_str: str) -> bool:
         return True
 
 def _get_canonical_path(path_str: str) -> str:
-    """Normaliza y resuelve la ruta a formato absoluto, validando límites de longitud de Windows."""
+    """
+    Normaliza y resuelve la ruta a formato absoluto, validando límites de longitud de Windows.
+    
+    Args:
+        path_str: La ruta sin normalizar.
+        
+    Returns:
+        La ruta absoluta normalizada o un string vacío si es inválida/demasiado larga.
+    """
     if not path_str or not isinstance(path_str, str) or "\0" in path_str: return ""
     try:
         clean_path = os.path.normpath(path_str.strip())
@@ -152,7 +160,12 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Obtiene metadatos del archivo verificando la coherencia y previniendo colisiones de acceso."""
+    """
+    Obtiene metadatos del archivo verificando la coherencia y previniendo colisiones de acceso.
+    
+    Returns:
+        Un objeto stat_result si es válido, None en caso de error de acceso o archivo bloqueado.
+    """
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
         return None
         

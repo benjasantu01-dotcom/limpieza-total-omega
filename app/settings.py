@@ -161,7 +161,6 @@ class _SettingsManager:
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
-        # Cache de datos: mapea ruta resuelta a una tupla de (AppSettingsProxy, mtime, size)
         self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
 
     def clear(self, resolved_path_str: str) -> None:
@@ -170,8 +169,13 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Gestiona la escritura segura en disco mediante archivos temporales, 
-        asegurando que solo se sobrescriba la configuración si el proceso finaliza con éxito.
+        Gestiona la escritura segura en disco mediante archivos temporales.
+        
+        Asegura la atomicidad del cambio validando:
+        1. Tamaño y longitud de ruta (Límites de SO).
+        2. Seguridad: comprueba `is_safe_to_modify` y `is_protected_path`.
+        3. Integridad: comprueba permisos, tipos de archivo y puntos de reanálisis.
+        4. Exclusividad: usa `msvcrt.locking` en Windows para evitar colisiones.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
@@ -233,7 +237,6 @@ class _Validators:
 
     @staticmethod
     def _parse_as_type(val: Any, target_type: type[T]) -> Optional[T]:
-        """Intenta convertir un valor crudo al tipo esperado, capturando fallos de tipo."""
         try:
             converted = target_type(val)
             return converted if isinstance(converted, target_type) else None
@@ -243,7 +246,6 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=32)
     def _is_reparse_point(path_str: str) -> bool:
-        """Determina mediante lstat si la ruta es un punto de reanálisis (symlink/junction)."""
         try:
             st = os.lstat(path_str)
             if stat.S_ISLNK(st.st_mode): return True
@@ -254,19 +256,13 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """
-        Valida recursivamente la seguridad de una ruta, verificando que sus padres
-        no sean puntos de reanálisis y que no violen las reglas de protección.
-        """
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
             current = p.resolve()
-            
             for depth, parent in enumerate(current.parents):
                 if depth > 32: return False
                 if _Validators._is_reparse_point(str(parent)): return False
-            
             if current.exists():
                 return not is_protected_path(str(current)) and is_safe_to_modify(str(current))
             return not is_protected_path(str(p)) and is_safe_to_modify(str(p))
@@ -275,13 +271,11 @@ class _Validators:
 
     @staticmethod
     def _check_path_safety(p: Path) -> bool:
-        """Verifica que una ruta absoluta sea apta para uso (seguridad y jerarquía)."""
         return p.is_absolute() and _Validators._run_safety_checks(str(p))
 
     @staticmethod
     @lru_cache(maxsize=64)
     def _is_safe_path(path_str: str) -> bool:
-        """Filtro primario de seguridad que descarta rutas inseguras o malformadas."""
         if not path_str or len(path_str) > 260 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         if ".." in path_str: return False
@@ -293,7 +287,6 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Convierte inputs booleanos o strings (si/no/true/false) a un booleano real."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -304,7 +297,6 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Convierte a entero y asegura que esté dentro del rango definido en _NUMERIC_LIMITS."""
         if not isinstance(key, ConfigKey): return None
         parsed_value = _Validators._parse_as_type(val, int)
         if parsed_value is None: return None
@@ -314,7 +306,6 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida que una ruta sea absoluta, segura y sanitizada."""
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
@@ -323,7 +314,6 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Valida que el string coincida con una opción permitida de un ENUM."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -332,7 +322,6 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Limpia strings generales, descartando caracteres de control e inválidos."""
         if not isinstance(key, ConfigKey) or not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -398,7 +387,6 @@ def _is_structure_valid(data: Any) -> bool:
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """
     Lee y parsea el JSON validando metadatos para detectar condiciones de carrera.
-    Retorna (data, stat_result) si es seguro, None en caso contrario.
     """
     try:
         if not file_path.exists() or not file_path.is_file(): return None
@@ -408,7 +396,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
             st_post = os.fstat(fd)
-            # Verifica que el archivo no haya cambiado entre lstat y open/fstat
             if st_post.st_ino != st_initial.st_ino or st_post.st_dev != st_initial.st_dev or \
                st_post.st_mtime != st_initial.st_mtime or st_post.st_size != st_initial.st_size or \
                not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or \
@@ -434,10 +421,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """
-    Aplica lógica de negocio necesaria sobre los datos validados.
-    Ejemplo: invalida el asistente si no hay credenciales presentes.
-    """
+    """Aplica lógica de negocio necesaria sobre los datos validados."""
     coerced = DEFAULTS.copy()
     for key_name, value in settings.items():
         if key_name in DEFAULTS and value is not None and isinstance(value, type(DEFAULTS[key_name])):
