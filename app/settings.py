@@ -406,7 +406,9 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
             # Verificación de integridad post-apertura para evitar race conditions
             if not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or \
                st_post.st_size < MIN_SETTINGS_SIZE or st_post.st_size > MAX_SETTINGS_SIZE or \
-               st_post.st_mtime != st.st_mtime or st_post.st_ino != st.st_ino:
+               st_post.st_mtime != st.st_mtime or st_post.st_ino != st.st_ino or \
+               (hasattr(os, 'getuid') and st_post.st_uid != os.getuid()) or \
+               (st_post.st_mode & 0o077) != 0:
                 return None
             
             with os.fdopen(fd, "r", encoding="utf-8") as f:

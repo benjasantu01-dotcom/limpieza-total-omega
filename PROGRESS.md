@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 74
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 48 | 8 | 18 | 7 | 57 |
+| 2026-11-08 | 48 | 8 | 18 | 7 | 53 |
 | 2026-11-09 | 142 | 9 | 53 | 11 | 135 |
-| 2026-11-10 | 9 | 0 | 3 | 2 | 2 |
+| 2026-11-10 | 10 | 1 | 3 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **35**
+- seguridad defensiva: **36**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
+- `settings.py`: **19**
 - `safety.py`: **19**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
-- `settings.py`: **18**
 - `quarantine.py`: **17**
 - `scanner.py`: **16**
 - `assistant.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T00:44:08` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_read_and_parse_json` al implementar una validación de propiedad (uid) y modo (permisos) antes de procesar el contenido del archivo, mitigando riesgos de lectura de archivos manipulados o con permisos excesivamente permisivos.
 - `2026-11-10T00:35:03` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para detectar y bloquear rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape invisibles al inicio de los componentes de la ruta, previniendo ataques de "spoofing" de nombres de archivo mediante ofuscación visual antes de cualquier operación de disco.
 - `2026-11-10T00:34:06` **quarantine.py** (seguridad defensiva): Se ha mejorado `_atomic_isolate_file` para implementar una verificación estricta de la integridad post-escritura, garantizando que el archivo movido al sandbox no presente atributos de sistema inesperados o cambios en su estado (como enlaces físicos adicionales) que puedan comprometer la seguridad del aislamiento.
 - `2026-11-10T00:24:45` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_process_info` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del proceso (si está disponible) y saneé el manejo de PIDs para prevenir posibles inyecciones de valores arbitrarios en el flujo de memoria.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-09T14:43:05` **memory.py** (robustez ante casos límite): Se añade una validación de longitud máxima al buffer de rutas en `_iter_process_memory` y se robustece la recuperación de nombres de proceso para evitar errores de acceso a memoria o cadenas mal formadas al tratar con procesos de sistema o nombres de ruta excesivamente largos.
 - `2026-11-09T14:41:28` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud integrando validaciones de punto flotante adicionales y protección contra estados inconsistentes en la inicialización del objeto `SystemMetrics` ante valores inesperados.
 - `2026-11-09T14:31:39` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_get_local_windows_drives` ante errores de acceso a disco (como unidades desconectadas, dispositivos extraíbles sin medio, o fallos de lectura en tiempo real) asegurando que el bucle de iteración capture excepciones `OSError` específicas durante el `scandir` y la consulta de atributos, evitando que el escáner se detenga prematuramente.
-- `2026-11-09T14:30:47` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo geométrico añadiendo validaciones estrictas ante estados inválidos o rutas inexistentes, asegurando que la app no falle ante valores de entrada corruptos o permisos denegados.
