@@ -413,7 +413,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             if target_path and not target_path.exists(): 
                 try:
                     ensure_safe_to_modify(junk_file.path)
-                    os.replace(str(junk_file.path), str(target_path))
+                    if os.access(junk_file.path, os.R_OK):
+                        os.replace(str(junk_file.path), str(target_path))
                 except (OSError, PermissionError):
                     continue
         return dest_base

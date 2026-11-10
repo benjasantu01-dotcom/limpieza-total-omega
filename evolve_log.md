@@ -1462,3 +1462,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-10T08:33:58` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante errores de I/O y accesos concurrentes en el proceso de recolección de candidatos, asegurando que `_collect_candidates` no falle silenciosamente si un archivo cambia de estado o se vuelve inaccesible entre la detección y el acceso a sus atributos.
 - `2026-11-10T08:33:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T08:33:58` Corrida terminada. Total usado hoy: 204.
+- `2026-11-10T08:42:37` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-11-10T08:43:09` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez ante casos límite en `score_security` y `_process_pipeline_entry` para asegurar que divisiones por cero inesperadas o datos corruptos (NaN/Inf) no interrumpan el flujo de cálculo del score, devolviendo valores neutros seguros en lugar de fallar silenciosamente o propagar errores.
+- `2026-11-10T08:44:09` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-10T08:45:12` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-10T08:45:54` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-10T08:46:41` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-10T08:47:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-10T08:47:39` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de existencia y permisos dentro del bucle de `stage_for_review` para prevenir fallos silenciosos al procesar archivos que pudieron ser eliminados o bloqueados por otros procesos entre la detección inicial y el movimiento, mejorando la robustez ante condiciones de carrera (Race Conditions).
+- `2026-11-10T08:47:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T08:47:39` Corrida terminada. Total usado hoy: 208.

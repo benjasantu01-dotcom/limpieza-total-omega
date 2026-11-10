@@ -206,6 +206,7 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio: return _JUNK_SCORER(flo
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
     count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
     warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
+    # Evitar posibles valores fuera de rango post-cálculo si los límites fueran alterados
     return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)))
 
 @lru_cache(maxsize=16)
@@ -290,8 +291,9 @@ def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tup
     """Procesa una etapa del pipeline devolviendo puntos y sugerencias."""
     try:
         ratio = entry.scorer(metrics)
-        if not math.isfinite(ratio): ratio = 0.0
-        return int(ratio * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
+        # Asegurar que ratio sea finito antes de multiplicar
+        if not _is_finite_numeric(ratio): ratio = 0.0
+        return int(_clamp(ratio) * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
     except Exception: return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
