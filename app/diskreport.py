@@ -363,9 +363,10 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            parts = path.relative_to(root).parts
-            if parts:
-                top_level = root / parts[0]
+            # Aseguramos que la ruta pertenezca efectivamente a la raíz para evitar fallos de relative_to
+            rel = path.relative_to(root)
+            if rel.parts:
+                top_level = root / rel.parts[0]
                 if not is_protected_path(top_level):
                     stats[top_level].add(size)
         except (ValueError, TypeError, PermissionError, OSError):

@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 62
+- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 77 | 6 | 27 | 4 | 86 |
-| 2026-11-10 | 103 | 7 | 35 | 7 | 152 |
+| 2026-11-09 | 76 | 6 | 26 | 4 | 84 |
+| 2026-11-10 | 105 | 8 | 35 | 7 | 153 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **41**
+- robustez ante casos límite: **32**
 - rendimiento: **31**
-- robustez ante casos límite: **30**
-- seguridad defensiva: **28**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `safety.py`: **17**
 - `memory.py`: **17**
+- `quarantine.py`: **17**
 - `assistant.py`: **15**
 - `duplicates.py`: **15**
 - `healthscore.py`: **15**
@@ -41,10 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `startup.py`: **11**
 - `branding.py`: **10**
 - `organizer.py`: **10**
-- `browser.py`: **6**
+- `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T13:02:09` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `largest_folders` ante posibles errores de resolución de rutas (como `Path.relative_to` fallando por enlaces simbólicos inesperados o archivos en unidades distintas) mediante el uso de un bloque `try-except` más específico y la validación de paridad de raíces.
+- `2026-11-10T13:00:07` **browser.py** (robustez ante casos límite): Mejoré `DirectoryScanner._is_entry_valid` para incluir una verificación explícita contra archivos con atributos de sistema (ocultos/sistema) antes de intentar acceder a ellos, previniendo errores de `PermissionError` y mejorando la robustez frente a directorios de sistema protegidos que podrían causar caídas en el escaneo masivo.
 - `2026-11-10T12:39:16` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante la implementación de un mecanismo de validación diferida (lazy) en el caché de inodos, reduciendo las llamadas redundantes a `stat()` al cargar el manifiesto repetidamente durante la misma sesión.
 - `2026-11-10T12:38:00` **memory.py** (rendimiento): Optimizé la lógica de enumeración de procesos en `_iter_process_memory` moviendo la obtención del nombre de archivo fuera del loop principal y evitando llamadas a la API de archivos cuando el tamaño del Working Set es irrelevante, reduciendo significativamente el impacto de IO/System Calls en cada iteración.
 - `2026-11-10T12:28:52` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo mediante la eliminación de llamadas redundantes a `getattr` y `is_finite` dentro del bucle principal del pipeline, reemplazando la validación repetitiva por un acceso directo a los atributos validados del objeto `SystemMetrics`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T11:59:38` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `quarantine.py` mediante la adición de docstrings detallados en las funciones de validación crítica y operaciones de E/S, clarificando el propósito, las condiciones de error y las salvaguardas de seguridad implementadas, mejorando así la mantenibilidad del código para el equipo de desarrollo.
 - `2026-11-10T11:59:11` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de docstrings en funciones críticas de seguridad (`_is_safe_for_disk_op`, `_is_recursive_violation`) y se ha estandarizado la nomenclatura de tipos y variables para facilitar la legibilidad del flujo de validación.
 - `2026-11-10T11:58:44` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en estructuras críticas y funciones de la API nativa, clarificando el propósito, las restricciones de seguridad y el manejo de recursos (handles) para asegurar que futuros cambios mantengan el rigor exigido.
-- `2026-11-10T11:48:08` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` reemplazando los `lambda` anónimos en `PIPELINE_DEFINITIONS` por funciones nombradas explícitas, lo que clarifica la lógica de extracción de métricas para cada área.
-- `2026-11-10T11:47:53` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad del flujo en `duplicates.py` mediante docstrings detallados que explican la lógica de exclusión y la estrategia de hashing, además de añadir type hints específicos para mejorar la mantenibilidad.

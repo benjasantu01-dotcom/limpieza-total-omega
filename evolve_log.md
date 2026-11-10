@@ -651,3 +651,34 @@ FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and
 - `2026-11-10T12:50:47` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-11-10T12:50:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T12:50:47` Corrida terminada. Total usado hoy: 304.
+- `2026-11-10T12:57:51` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-10T12:58:49` Tests FALLARON:
+```
+0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+2 failed, 297 passed in 1.56s
+
+```
+- `2026-11-10T12:58:49` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré `SystemContext._apply_updates` para asegurar que el estado interno sea resiliente ante valores inesperados, protegiendo la integridad de la clase mediante la validación de tipos contra la especificación de `dataclass` antes de asignar valores, y añadiendo una purga explícita y segura de todas las cachés asociadas para evitar estados inconsistentes tras una actualización parcial.
+- `2026-11-10T12:58:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T12:59:39` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-10T13:00:07` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré `DirectoryScanner._is_entry_valid` para incluir una verificación explícita contra archivos con atributos de sistema (ocultos/sistema) antes de intentar acceder a ellos, previniendo errores de `PermissionError` y mejorando la robustez frente a directorios de sistema protegidos que podrían causar caídas en el escaneo masivo.
+- `2026-11-10T13:01:08` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-10T13:01:51` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-10T13:02:09` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la robustez de `walk_files` y `largest_folders` ante posibles errores de resolución de rutas (como `Path.relative_to` fallando por enlaces simbólicos inesperados o archivos en unidades distintas) mediante el uso de un bloque `try-except` más específico y la validación de paridad de raíces.
+- `2026-11-10T13:02:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T13:02:09` Corrida terminada. Total usado hoy: 308.

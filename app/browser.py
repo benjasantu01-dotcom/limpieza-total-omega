@@ -108,6 +108,9 @@ class DirectoryScanner:
             return False
         if entry.is_symlink() or self.ctx.is_junction(entry.path):
             return False
+        # Verificación anticipada de atributos para evitar accesos denegados en archivos de sistema
+        if _is_system_hidden(entry.path, self.ctx.kernel32):
+            return False
         return True
 
     def _should_stop_traversal(self, entry: os.DirEntry, depth: int) -> bool:
@@ -147,18 +150,17 @@ class DirectoryScanner:
 
     def _handle_file(self, entry: os.DirEntry) -> int:
         """Calcula el tamaño de archivo asegurando la unicidad mediante identificadores de inodo/disco."""
-        if not _is_system_hidden(entry.path, self.ctx.kernel32):
-            try:
-                # Comprobar accesibilidad antes de estadizar para evitar errores de bloqueos de sistema
-                if not os.access(entry.path, os.R_OK):
-                    return 0
-                st_file = entry.stat(follow_symlinks=False)
-                file_id = (st_file.st_dev, st_file.st_ino)
-                if file_id not in self.ctx.visited_files:
-                    self.ctx.visited_files.add(file_id)
-                    return st_file.st_size
-            except (OSError, PermissionError, FileNotFoundError):
-                pass
+        try:
+            # Comprobar accesibilidad antes de estadizar para evitar errores de bloqueos de sistema
+            if not os.access(entry.path, os.R_OK):
+                return 0
+            st_file = entry.stat(follow_symlinks=False)
+            file_id = (st_file.st_dev, st_file.st_ino)
+            if file_id not in self.ctx.visited_files:
+                self.ctx.visited_files.add(file_id)
+                return st_file.st_size
+        except (OSError, PermissionError, FileNotFoundError):
+            pass
         return 0
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
