@@ -548,3 +548,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T11:18:14` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-10T11:18:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T11:18:14` Corrida terminada. Total usado hoy: 268.
+- `2026-11-10T11:26:07` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-10T11:26:59` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` y `load_manifest` mediante la captura explícita de excepciones al realizar operaciones de E/S y serialización, evitando que fallos de formato JSON o problemas de acceso a disco silencien errores o dejen la aplicación en un estado inconsistente al intentar guardar el manifiesto.
+- `2026-11-10T11:27:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T11:27:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-11-10T11:27:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T11:27:31` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-10T11:28:35` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `_get_file_id` para capturar errores de forma más robusta ante archivos inaccesibles o bloqueados, evitando que `SafetyGuard` o el pipeline fallen silenciosamente con valores por defecto incompletos cuando el sistema operativo deniega el acceso a metadatos de bajo nivel.
+- `2026-11-10T11:29:21` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_canonical_path` y `_is_valid_path_structure` mediante una validación más estricta contra entradas `None` o malformadas, asegurando que las funciones no dependan de que `os.path` maneje silenciosamente tipos inesperados y evitando excepciones no capturadas al procesar rutas.
+- `2026-11-10T11:29:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T11:29:21` Corrida terminada. Total usado hoy: 272.

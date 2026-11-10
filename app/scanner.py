@@ -96,7 +96,7 @@ def _cached_is_protected(path_str: str) -> bool:
 
 def _get_canonical_path(path_str: str) -> str:
     """Normaliza y resuelve la ruta a formato absoluto, validando límites de longitud de Windows."""
-    if not path_str or "\0" in path_str: return ""
+    if not path_str or not isinstance(path_str, str) or "\0" in path_str: return ""
     try:
         clean_path = os.path.normpath(path_str.strip())
         if len(clean_path) > 32767: return ""

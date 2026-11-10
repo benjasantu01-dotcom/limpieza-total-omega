@@ -203,7 +203,8 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         else:
             path_long = _to_long_path(path_str)
             kernel32 = ctypes.windll.kernel32
-            handle = kernel32.CreateFileW(path_long, 0x07, 0x03, None, 3, 0x00000080, None)
+            # Acceso mínimo (0x07) para obtener info de handle sin bloquear escritura exclusiva
+            handle = kernel32.CreateFileW(path_long, 0x00, 0x03, None, 3, 0x00000080, None)
             if handle != INVALID_HANDLE_VALUE:
                 try:
                     fid = FILE_ID_INFO()
@@ -212,6 +213,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
                 finally:
                     kernel32.CloseHandle(handle)
     except (OSError, PermissionError, Exception):
+        # En caso de error de acceso, el identificador queda como (0,0,0,0) y se gestiona vía excepciones de acceso
         pass
                 
     if len(_FILE_ID_CACHE) >= 4096: _FILE_ID_CACHE.clear()

@@ -554,7 +554,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         for entry in data:
             item = QuarantineItem.from_dict(entry)
             if item:
-                # Verificamos si el archivo existe físicamente y no ha sido alterado
                 if item.verify_integrity(base_dir / item.stored_name):
                     valid_items.append(item)
                 else:
@@ -563,15 +562,14 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
                 needs_cleanup = True
         
         if needs_cleanup:
-            # Sincronizamos el manifiesto eliminando registros corruptos
-            _MANIFEST_CACHE[base_dir] = (valid_items, 0.0, 0) # Forzamos re-validación tras guardar
+            _MANIFEST_CACHE[base_dir] = (valid_items, 0.0, 0)
             save_manifest(valid_items, base)
         else:
             _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
             
         return valid_items
         
-    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError, ValueError, TypeError):
         return []
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -579,8 +577,8 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     base_path: Path = quarantine_dir(base)
     target_path: Path = _manifest_path(base_path)
     
-    serializable_items = [item.to_dict() for item in items if isinstance(item, QuarantineItem)]
     try:
+        serializable_items = [item.to_dict() for item in items if isinstance(item, QuarantineItem)]
         encoded_content: bytes = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
     except (TypeError, ValueError) as e:
         raise ValueError(f"Error al serializar manifiesto a JSON: {e}")
