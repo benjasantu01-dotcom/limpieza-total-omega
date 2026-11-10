@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 134 | 9 | 50 | 10 | 133 |
-| 2026-11-10 | 45 | 4 | 14 | 5 | 100 |
+| 2026-11-09 | 132 | 9 | 49 | 10 | 132 |
+| 2026-11-10 | 47 | 4 | 15 | 5 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **39**
+- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **40**
 - seguridad defensiva: **32**
-- rendimiento: **28**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **18**
 - `safety.py`: **18**
-- `healthscore.py`: **16**
-- `memory.py`: **16**
 - `diskreport.py`: **16**
+- `healthscore.py`: **15**
+- `memory.py`: **15**
 - `settings.py`: **15**
 - `duplicates.py`: **15**
+- `assistant.py`: **14**
 - `branding.py`: **14**
 - `scanner.py`: **14**
-- `assistant.py`: **13**
 - `organizer.py`: **10**
-- `startup.py`: **8**
+- `startup.py`: **9**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T07:11:58` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros donde faltaban (como en `_is_input_too_deep_or_complex` y `_has_circular_refs`), corregí la definición de `_CRITERIOS_MAP` para asegurar consistencia tipográfica con su versión inmutable, y añadí docstrings explicativos a las funciones de validación de estructuras para clarificar su rol defensivo ante ataques de denegación de servicio (DoS).
+- `2026-11-10T07:11:19` **startup.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta contra rutas que contienen caracteres nulos (`\0`) y se añadieron chequeos de tipo defensivos en el procesamiento de rutas dentro de `_resolve_and_cache_path` para prevenir excepciones críticas al interactuar con el sistema de archivos de Windows.
 - `2026-11-10T07:02:35` **settings.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `ConfigKey` en `_Validators.int` y `_Validators.str` para prevenir que se intenten procesar claves inexistentes o inválidas durante la actualización de settings, añadiendo un `try-except` más granular en `_read_and_parse_json` para asegurar que fallos en la decodificación no propaguen excepciones inesperadas.
 - `2026-11-10T07:02:18` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del escaneo implementando una validación explícita de `st_size` y `st_mtime` en `_safe_stat`, y se mejoró la resiliencia ante errores de metadatos mediante un manejo de excepciones más granular en `_is_valid_file_path` y `_get_canonical_path`.
 - `2026-11-10T06:52:43` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` mediante la implementación de un manejo de errores más específico y granular, asegurando que cualquier fallo durante la escritura atómica limpie correctamente los recursos temporales y proporcione mensajes de error significativos, evitando estados inconsistentes en el manifiesto.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T04:07:33` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos bloqueados o en uso durante el escaneo de caché, añadiendo un manejo explícito de errores de lectura mediante `os.access` y una verificación de estado de archivo que previene cuelgues al intentar procesar recursos exclusivos del sistema de archivos.
 - `2026-11-10T03:59:59` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante fallos de E/S mediante el uso de `is_safe_to_modify` para validar la ruta antes de intentar cualquier operación, evitando que excepciones de permisos no controladas interrumpan el hilo principal de la aplicación.
 - `2026-11-10T03:59:36` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` ante entradas mal formadas, añadiendo una validación explícita para evitar que tipos no permitidos o estados inconsistentes corruptos bloqueen el asistente, y reforzando la integridad de los datos numéricos durante la ingestión masiva.
-- `2026-11-10T03:49:33` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo sustituyendo la consulta redundante de `is_protected_path` en el bucle principal por una verificación de caché `safe_cache` ya existente, evitando miles de llamadas innecesarias a la lógica de validación durante el recorrido de directorios.
-- `2026-11-10T03:48:44` **safety.py** (rendimiento): Se implementó un mecanismo de **short-circuiting** en el pipeline de validación moviendo las verificaciones más rápidas (cadenas, normalizaciones, caché léxico) antes de las operaciones de E/S (`stat`, `exists`), optimizando significativamente el rendimiento en bucles de escaneo masivo al evitar llamadas al sistema innecesarias.

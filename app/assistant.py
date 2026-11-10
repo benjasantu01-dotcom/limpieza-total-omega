@@ -52,7 +52,7 @@ from itertools import islice
 from functools import lru_cache, wraps, cached_property
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple, Iterator, Dict
+from typing import Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple, Iterator, Dict, List, Set, Tuple
 
 import settings
 from safety import is_protected_path
@@ -255,10 +255,10 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
 )
 
 # Mapa para acceso eficiente a criterios por clave de métrica
-_CRITERIOS_MAP: Final[dict[str, tuple[ProblemCriterion, ...]]] = {}
+_CRITERIOS_MAP: Final[Dict[str, List[ProblemCriterion]]] = {}
 for criterion in _CRITERIOS_SALUD:
     _CRITERIOS_MAP.setdefault(criterion.metric_key, []).append(criterion)
-_CRITERIOS_MAP_IMMUTABLE: Final[dict[str, tuple[ProblemCriterion, ...]]] = {k: tuple(v) for k, v in _CRITERIOS_MAP.items()}
+_CRITERIOS_MAP_IMMUTABLE: Final[Dict[str, Tuple[ProblemCriterion, ...]]] = {k: tuple(v) for k, v in _CRITERIOS_MAP.items()}
 _KEYS_WITH_CRITERIA: Final[frozenset[str]] = frozenset(_CRITERIOS_MAP_IMMUTABLE.keys())
 
 class AreaExplanation(NamedTuple):
@@ -379,7 +379,10 @@ def _validate_response_length(text: Any) -> str:
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
-    """Valida recursivamente que una estructura de datos (JSON) sea plana y segura."""
+    """
+    Valida recursivamente que una estructura de datos (JSON) sea plana.
+    Previene DoS mediante limitación de profundidad y tamaño de colecciones.
+    """
     if depth > _MAX_NESTING_DEPTH: return False
     if val is None or isinstance(val, (int, float, bool)): return True
     if isinstance(val, str): return _ensure_safe_text(val)
@@ -392,7 +395,10 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
-    """Detecta estructuras de datos excesivamente complejas (protección DoS)."""
+    """
+    Detección de estructuras de datos maliciosas o excesivamente complejas.
+    Bloquea el procesamiento si se supera el límite de profundidad (protección DoS).
+    """
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
     if isinstance(val, Path): return True
@@ -488,7 +494,7 @@ class SystemContext:
         """Verifica si la clave es una métrica válida del sistema."""
         return key in _VALID_METRIC_KEYS
 
-    def _has_circular_refs(self, source: Any, memo: set[int] | None = None) -> bool:
+    def _has_circular_refs(self, source: Any, memo: Set[int] | None = None) -> bool:
         """Verifica recursivamente si la fuente contiene referencias circulares."""
         if memo is None: memo = set()
         if id(source) in memo: return True

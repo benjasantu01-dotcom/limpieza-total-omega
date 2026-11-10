@@ -131,7 +131,7 @@ class StartupEntry:
 
     def _is_path_suspicious(self, path_raw: str) -> bool:
         """Analiza la cadena de comando en busca de caracteres de inyección o rutas UNC."""
-        if not isinstance(path_raw, str):
+        if not isinstance(path_raw, str) or "\0" in path_raw:
             return True
         return any(c in path_raw for c in SUSPICIOUS_CHARS) or path_raw.startswith(r"\\")
 
@@ -330,7 +330,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         return None
         
     try:
-        if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
+        if not entry.is_file(follow_symlinks=False) or entry.is_symlink() or "\0" in entry.path:
             _PROCESS_CACHE[entry.path] = False
             return None
         
