@@ -546,10 +546,11 @@ class SystemContext:
         if isinstance(source, dict) and not self._validate_keys_safe(source):
             return {}
         
-        updates = {
-            k: val for k in _VALID_METRIC_KEYS 
-            if (val := self._apply_field(source, k, _VALIDATORS[k])) is not None
-        }
+        updates = {}
+        for k in _VALID_METRIC_KEYS:
+            val = self._apply_field(source, k, _VALIDATORS[k])
+            if val is not None:
+                updates[k] = val
         
         if (cleaned_grade := self._extract_grade(source)):
             updates["grade"] = cleaned_grade
@@ -570,11 +571,12 @@ class SystemContext:
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
-        if not isinstance(updates, dict): return
-        # Protección estricta: solo permitimos campos definidos en la clase
-        valid_keys = {k for k in self.__dataclass_fields__.keys()}
+        if not isinstance(updates, dict) or not updates: return
+        
+        # Validación: solo permitimos campos definidos y tipos seguros
+        valid_fields = self.__dataclass_fields__
         for key, value in updates.items():
-            if key in valid_keys and isinstance(value, (int, float, str, bool)):
+            if key in valid_fields and isinstance(value, (int, float, str, bool)):
                 setattr(self, key, value)
         
         self.analyzed = True

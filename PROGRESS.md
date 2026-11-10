@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 216
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 16 | 4 | 4 | 0 | 38 |
+| 2026-11-08 | 15 | 3 | 3 | 0 | 37 |
 | 2026-11-09 | 142 | 9 | 53 | 11 | 135 |
-| 2026-11-10 | 32 | 3 | 10 | 4 | 43 |
+| 2026-11-10 | 34 | 3 | 11 | 4 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **35**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **34**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **20**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
 - `settings.py`: **17**
 - `memory.py`: **17**
 - `scanner.py`: **16**
+- `healthscore.py`: **16**
+- `assistant.py`: **15**
 - `diskreport.py`: **15**
 - `duplicates.py`: **15**
-- `assistant.py`: **14**
-- `branding.py`: **14**
+- `branding.py`: **15**
 - `organizer.py`: **11**
 - `startup.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T03:59:59` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante fallos de E/S mediante el uso de `is_safe_to_modify` para validar la ruta antes de intentar cualquier operación, evitando que excepciones de permisos no controladas interrumpan el hilo principal de la aplicación.
+- `2026-11-10T03:59:36` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` ante entradas mal formadas, añadiendo una validación explícita para evitar que tipos no permitidos o estados inconsistentes corruptos bloqueen el asistente, y reforzando la integridad de los datos numéricos durante la ingestión masiva.
 - `2026-11-10T03:49:33` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo sustituyendo la consulta redundante de `is_protected_path` en el bucle principal por una verificación de caché `safe_cache` ya existente, evitando miles de llamadas innecesarias a la lógica de validación durante el recorrido de directorios.
 - `2026-11-10T03:48:44` **safety.py** (rendimiento): Se implementó un mecanismo de **short-circuiting** en el pipeline de validación moviendo las verificaciones más rápidas (cadenas, normalizaciones, caché léxico) antes de las operaciones de E/S (`stat`, `exists`), optimizando significativamente el rendimiento en bucles de escaneo masivo al evitar llamadas al sistema innecesarias.
 - `2026-11-10T03:47:31` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `save_manifest` reemplazando los recorridos redundantes del sistema de archivos y las lecturas síncronas de disco por una gestión basada en el `_MANIFEST_CACHE` validado por `stat.st_mtime`, reduciendo drásticamente la latencia en operaciones frecuentes.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T02:57:12` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la API de bajo nivel mediante la conversión de variables mágicas en una clase de constantes con nombres descriptivos y añadí docstrings de tipo funcional explicando el propósito de las estructuras de datos nativas.
 - `2026-11-10T02:56:42` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de `SystemMetrics` y `PIPELINE_DEFINITIONS` mediante type hints explícitos y docstrings detallados que clarifican el propósito de las métricas y la estructura de ponderación, facilitando el mantenimiento y evitando ambigüedades en la lógica del pipeline.
 - `2026-11-10T02:56:14` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados, la unificación de tipos en las firmas de función y la clarificación de las responsabilidades en los filtros de seguridad, facilitando la comprensión del flujo de datos sin alterar la lógica de escaneo.
-- `2026-11-10T02:47:54` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos a funciones clave que carecían de ellos y definiendo explícitamente los parámetros y retornos esperados, facilitando así la comprensión del flujo de datos en el análisis de disco.
-- `2026-11-10T02:47:02` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructuradas y type hints precisos en las funciones de manipulación geométrica y renderizado, facilitando la comprensión de las transformaciones de coordenadas utilizadas.

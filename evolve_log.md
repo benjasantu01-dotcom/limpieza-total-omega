@@ -1018,3 +1018,12 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-11-10T03:49:33` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento del escaneo sustituyendo la consulta redundante de `is_protected_path` en el bucle principal por una verificación de caché `safe_cache` ya existente, evitando miles de llamadas innecesarias a la lógica de validación durante el recorrido de directorios.
 - `2026-11-10T03:49:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T03:49:33` Corrida terminada. Total usado hoy: 92.
+- `2026-11-10T03:56:57` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-11-10T03:57:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T03:57:33` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-10T03:58:18` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-11-10T03:58:55` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-10T03:59:36` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` ante entradas mal formadas, añadiendo una validación explícita para evitar que tipos no permitidos o estados inconsistentes corruptos bloqueen el asistente, y reforzando la integridad de los datos numéricos durante la ingestión masiva.
+- `2026-11-10T03:59:59` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante fallos de E/S mediante el uso de `is_safe_to_modify` para validar la ruta antes de intentar cualquier operación, evitando que excepciones de permisos no controladas interrumpan el hilo principal de la aplicación.
+- `2026-11-10T03:59:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T03:59:59` Corrida terminada. Total usado hoy: 96.
