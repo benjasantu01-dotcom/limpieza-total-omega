@@ -614,3 +614,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T12:39:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
 - `2026-11-10T12:39:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T12:39:22` Corrida terminada. Total usado hoy: 300.
+- `2026-11-10T12:47:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-10T12:47:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T12:47:45` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-10T12:47:51` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-10T12:48:04` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-10T12:48:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T12:49:37` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-11-10T12:50:26` Tests FALLARON:
+```
+ires_both_the_switch_and_a_key(tmp_path, monkeypatch):
+        monkeypatch.delenv(settings.API_KEY_ENV_VAR, raising=False)
+    
+        settings.save({**settings.DEFAULTS, "asistente_activado": True}, tmp_path)
+        assert settings.assistant_enabled(tmp_path) is False, "activado sin clave no alcanza"
+    
+        settings.save({**settings.DEFAULTS, "asistente_clave_api": "k"}, tmp_path)
+        assert settings.assistant_enabled(tmp_path) is False, "una clave no autoriza por sí sola"
+    
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_clave_api": "k"}, tmp_path)
+>       assert settings.assistant_enabled(tmp_path) is True
+E       AssertionError: assert False is True
+E        +  where False = <function assistant_enabled at 0x7fec780d1080>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_enabled_requires_both_the0'))
+E        +    where <function assistant_enabled at 0x7fec780d1080> = settings.assistant_enabled
+
+evolve/tests/test_assistant.py:170: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x7fec780d1080>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7fec780d1080> = settings.assistant_enabled
+1 failed, 298 passed in 1.68s
+
+```
+- `2026-11-10T12:50:26` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento del proceso de carga reemplazando la serialización completa de `json` y el uso intensivo de `load()` en operaciones repetitivas por una verificación de metadatos más eficiente, y restringiendo el uso de `load.cache_clear()` para evitar re-parseos innecesarios al actualizar valores.
+- `2026-11-10T12:50:47` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-10T12:50:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T12:50:47` Corrida terminada. Total usado hoy: 304.
