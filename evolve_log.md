@@ -625,3 +625,10 @@ FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - Assertion
 - `2026-11-09T23:31:43` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-09T23:41:52` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-09T23:52:03` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-10T00:02:15` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-11-10T00:03:09` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado `_validate_file_operations_security` agregando una comprobación explícita para evitar modificaciones en archivos con permisos de lectura denegados mediante `os.access(p, os.W_OK)`, cerrando una brecha donde un archivo existente pero bloqueado por ACLs a nivel de usuario podría evadir la validación previa de escritura.
+- `2026-11-10T00:03:34` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-10T00:04:03` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `_read_and_parse_json` al implementar una validación estricta del estado del archivo tras la apertura (verificando el tamaño real y consistencia de inodo/mtime antes de la deserialización) para mitigar condiciones de carrera y asegurar que el contenido leído sea íntegro.
+- `2026-11-10T00:04:16` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `StartupEntry` implementando una validación temprana contra archivos que no pueden ser accedidos (archivos en uso exclusivo o con bloqueos de sistema) mediante el uso de `os.access` y una mejor gestión de excepciones en `_is_valid_executable`, evitando así procesar rutas que causan errores de I/O bloqueantes.
+- `2026-11-10T00:04:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T00:04:16` Corrida terminada. Total usado hoy: 4.

@@ -1069,7 +1069,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             parent = target_path.parent
             if parent.exists():
                 if os.name == 'nt' and _is_volume_readonly(guard.path_str):
-                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationCategory.ENVIRONMENT)
+                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationCategory.ENVIRONMENT)
         except (OSError, PermissionError, AttributeError):
             pass
         
@@ -1176,6 +1176,9 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
         raise UnsafePathError(f"El archivo fue eliminado: {p.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
     
     _validate_access_permissions(p)
+    if not os.access(p, os.W_OK):
+        raise UnsafePathError(f"Permisos insuficientes de escritura: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+
     if guard.is_locked():
         raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
     

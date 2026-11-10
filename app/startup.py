@@ -139,11 +139,21 @@ class StartupEntry:
             p_str = str(path)
             if p_str in _RESOLVED_PATH_CACHE:
                 return True
-            resolved = path.resolve(strict=False)
-            is_valid = resolved.is_file() and not resolved.is_symlink() and resolved.suffix.lower() in EXECUTABLE_EXTS
-            if is_valid:
-                _RESOLVED_PATH_CACHE[p_str] = str(resolved)
-            return is_valid
+            
+            # Verificar si existe antes de intentar resolver o acceder para evitar bloqueos
+            if not path.exists():
+                return False
+                
+            resolved = path.resolve(strict=True)
+            # Solo validar si podemos leer metadata básica
+            if not resolved.is_file() or resolved.is_symlink():
+                return False
+                
+            if resolved.suffix.lower() not in EXECUTABLE_EXTS:
+                return False
+                
+            _RESOLVED_PATH_CACHE[p_str] = str(resolved)
+            return True
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
@@ -185,10 +195,11 @@ class StartupEntry:
             if is_protected_path(p) or not is_safe_to_modify(p):
                 _VALIDATION_CACHE[p_str] = False
                 return False
-            if not self._is_valid_executable(p):
+            # Validamos acceso R_OK sin abrir para no bloquear procesos en uso
+            if not os.access(p, os.R_OK):
                 _VALIDATION_CACHE[p_str] = False
                 return False
-            if not os.access(p, os.R_OK | os.X_OK):
+            if not self._is_valid_executable(p):
                 _VALIDATION_CACHE[p_str] = False
                 return False
                 
