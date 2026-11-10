@@ -222,7 +222,10 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Detecta si la ruta de destino es subcarpeta de la fuente para evitar recursividad."""
+    """
+    Verifica si una operación de movimiento resultaría en una recursividad circular 
+    o una relación padre-hijo no permitida entre origen y destino.
+    """
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -285,8 +288,10 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Validador maestro que consolida todas las verificaciones de seguridad 
-    requeridas antes de realizar una operación de movimiento de archivos.
+    Validador maestro de integridad previo a una operación de movimiento.
+    Realiza una secuencia estricta de verificaciones: rutas de red, bloqueos,
+    caracteres prohibidos, espacio en disco, identidad de inodo y prevenciones 
+    de recursividad para garantizar la seguridad total.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
         return False

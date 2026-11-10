@@ -96,8 +96,8 @@ TRIM_WARNING: Final[str] = (
 
 class MEMORYSTATUSEX(ctypes.Structure):
     """
-    Estructura utilizada por GlobalMemoryStatusEx para reportar el estado global de RAM.
-    dwLength debe ser inicializado con el tamaño de esta estructura.
+    Estructura utilizada por la API de Windows 'GlobalMemoryStatusEx' para informar
+    sobre la RAM física y virtual del sistema.
     """
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
@@ -113,8 +113,8 @@ class MEMORYSTATUSEX(ctypes.Structure):
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
     """
-    Métricas de memoria de un proceso. 'WorkingSetSize' representa la memoria
-    física (RSS) ocupada actualmente por el proceso en la RAM.
+    Estructura de contadores de memoria utilizada por 'GetProcessMemoryInfo'.
+    El 'WorkingSetSize' indica la memoria RAM física en uso real por el proceso.
     """
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
@@ -185,7 +185,7 @@ def format_bytes(num: Optional[int | float]) -> str:
         return "0 B"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Inicializa la estructura MEMORYSTATUSEX con el campo dwLength correcto."""
+    """Inicializa la estructura MEMORYSTATUSEX con el campo dwLength correcto (necesario para la API Win32)."""
     mem_status = MEMORYSTATUSEX()
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
@@ -348,7 +348,10 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
 GetModNameFunc = Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]
 
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
-    """Verifica que el ejecutable de un proceso no resida en directorios restringidos."""
+    """
+    Verifica mediante la ruta del ejecutable que el proceso no resida en directorios
+    restringidos. Requiere un handle de proceso abierto con permisos de lectura.
+    """
     if handle is None or get_mod_name_func is None: return False
     try:
         # Limpieza obligatoria del buffer antes de llenar
@@ -466,8 +469,9 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Solicita al sistema que libere memoria física no utilizada por un proceso.
-    Requiere permisos administrativos y validación previa de seguridad.
+    Solicita al sistema operativo la liberación del working set físico de un proceso
+    específico mediante 'EmptyWorkingSet'. Requiere permisos elevados y validación
+    previa contra la lista de rutas protegidas para evitar manipulación de sistemas.
     """
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."

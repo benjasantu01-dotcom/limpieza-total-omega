@@ -108,6 +108,7 @@ def _check_for_reparse_points(path: Path) -> None:
     """
     Valida la ausencia de puntos de reanálisis NTFS para evitar que el
     escáner siga enlaces fuera del sandbox (evasión de confinamiento).
+    Lanza UnsafePathError si detecta enlaces sospechosos.
     """
     if path is None: raise UnsafePathError("Ruta nula en chequeo de reparse.")
     path = _is_path_canonical(path)
@@ -126,7 +127,10 @@ def _check_path_for_junctions(path: Path) -> None:
     _check_for_reparse_points(path)
 
 def _get_win_attributes(path: Path) -> int:
-    """Consulta atributos Win32 (GetFileAttributesW) usando caché con TTL de 1s."""
+    """
+    Consulta atributos Win32 (GetFileAttributesW) usando caché con TTL de 1s
+    para optimizar rendimiento en escaneos masivos.
+    """
     if os.name != 'nt': return 0
     p_str: str = str(path)
     now: float = time.monotonic()
@@ -166,8 +170,9 @@ def _is_filesystem_read_only(path: Path) -> bool:
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """
-    Ejecuta una función de I/O con una política de reintento exponencial (backoff).
-    Mitiga fallos transitorios causados por bloqueos de servicios de indexación.
+    Ejecuta una función de I/O con política de reintento exponencial (backoff).
+    Mitiga fallos transitorios causados por bloqueos de servicios de indexación
+    o antivirus activos en el sistema.
     """
     max_retries: int = 3
     for i in range(max_retries):
@@ -183,7 +188,7 @@ def _is_file_exclusive(path: Path) -> bool:
     """
     Determina si el archivo puede abrirse para acceso exclusivo sin compartir.
     Crucial para evitar operaciones sobre archivos que malware o procesos
-    están escribiendo actualmente (condiciones de carrera).
+    están escribiendo actualmente (condiciones de carrera TOCTOU).
     """
     if path is None or not path.exists():
         return False
@@ -331,7 +336,10 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         return True
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode, expected_device: int = 0) -> None:
-    """Realiza una auditoría completa del estado de un archivo previo al borrado."""
+    """
+    Auditoría estricta antes de borrar: valida permisos, integridad de hash,
+    propiedad, inodos y exclusividad para evitar borrado accidental o malicioso.
+    """
     if path is None or not path.exists(): raise UnsafePathError("Ruta nula o inexistente para unlink.")
     if path.name == MANIFEST_NAME: raise UnsafePathError("Protección de integridad: No se permite borrar el manifiesto.")
     
