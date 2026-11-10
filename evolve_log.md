@@ -1364,3 +1364,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-11-10T06:42:04` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-10T06:42:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T06:42:04` Corrida terminada. Total usado hoy: 160.
+- `2026-11-10T06:50:24` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-10T06:51:27` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-10T06:51:54` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_safe_int_conversion` y `_extract_process_info` mediante validaciones adicionales contra valores atípicos y desbordamientos en las conversiones de memoria, garantizando que el sistema no procese datos corruptos o fuera de rango.
+- `2026-11-10T06:52:19` ➖ Sin cambios en organizer.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `stage_for_review` y `delete_reviewed` reemplazando validaciones implícitas por comprobaciones de tipo y estado más estrictas, asegurando que los fallos en archivos individuales no comprometan la iteración ni la seguridad del proceso de borrado.
+- `2026-11-10T06:52:43` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` mediante la implementación de un manejo de errores más específico y granular, asegurando que cualquier fallo durante la escritura atómica limpie correctamente los recursos temporales y proporcione mensajes de error significativos, evitando estados inconsistentes en el manifiesto.
+- `2026-11-10T06:52:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T06:52:43` Corrida terminada. Total usado hoy: 164.

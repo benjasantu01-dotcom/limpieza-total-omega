@@ -560,7 +560,10 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     target_path: Path = _manifest_path(base_path)
     
     serializable_items = [item.to_dict() for item in items if isinstance(item, QuarantineItem)]
-    encoded_content: bytes = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
+    try:
+        encoded_content: bytes = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
+    except (TypeError, ValueError) as e:
+        raise ValueError(f"Error al serializar manifiesto a JSON: {e}")
         
     temp_name: Optional[str] = None
     try:
@@ -569,6 +572,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             tf.write(encoded_content)
             tf.flush()
             os.fsync(tf.fileno())
+        
         os.replace(temp_name, target_path)
         _sync_directory(base_path)
         
@@ -577,9 +581,9 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         return target_path
     except (OSError, IOError) as e:
         if temp_name and os.path.exists(temp_name):
-            try: os.unlink(temp_name)
+            try: os.remove(temp_name)
             except OSError: pass
-        raise OSError(f"Falla crítica al persistir manifiesto: {e}")
+        raise OSError(f"Falla crítica al persistir manifiesto en {target_path}: {e}")
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
     """Valida disponibilidad de espacio con margen de seguridad del 5%."""

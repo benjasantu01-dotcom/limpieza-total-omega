@@ -201,7 +201,8 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
         if isinstance(value, (int, float)):
             if math.isnan(value) or math.isinf(value): return BytesValue(0)
             fval = float(value) * multiplier
-            if fval > float(2**63 - 1): return BytesValue(0)
+            # Límite: un signed 64-bit int positivo, más que suficiente para RAM actual
+            if fval < 0 or fval > float(2**63 - 1): return BytesValue(0)
             val = int(fval)
         elif isinstance(value, str):
             clean_val = "".join(c for c in value if c.isdigit())
@@ -271,7 +272,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         
         ws_val = _safe_int_conversion(parts[2])
         # Verificación defensiva extra: evitar rutas protegidas en datos externos
-        if len(parts) > 3 and is_protected_path(Path(parts[3])):
+        if len(parts) > 3 and parts[3] and is_protected_path(Path(parts[3])):
             return None
 
         if _is_valid_process(proc_name, pid_val, ws_val):
