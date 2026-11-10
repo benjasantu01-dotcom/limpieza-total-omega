@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 67
+- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-08 | 15 | 3 | 3 | 0 | 37 |
+| 2026-11-08 | 14 | 2 | 2 | 0 | 36 |
 | 2026-11-09 | 142 | 9 | 53 | 11 | 135 |
-| 2026-11-10 | 34 | 3 | 11 | 4 | 44 |
+| 2026-11-10 | 38 | 3 | 11 | 4 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **37**
-- seguridad defensiva: **34**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **33**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **20**
+- `safety.py`: **19**
 - `quarantine.py`: **18**
 - `settings.py`: **17**
 - `memory.py`: **17**
+- `healthscore.py`: **17**
 - `scanner.py`: **16**
-- `healthscore.py`: **16**
+- `diskreport.py`: **16**
+- `duplicates.py`: **16**
 - `assistant.py`: **15**
-- `diskreport.py`: **15**
-- `duplicates.py`: **15**
 - `branding.py`: **15**
 - `organizer.py`: **11**
 - `startup.py`: **10**
-- `browser.py`: **6**
+- `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T04:08:33` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante estados inconsistentes mediante la implementación de una validación de `__setattr__` más estricta, evitando que se ignoren errores de tipo y asegurando que las métricas siempre se mantengan dentro de rangos definidos incluso si se intenta inyectar datos inválidos.
+- `2026-11-10T04:08:23` **duplicates.py** (robustez ante casos límite): Mejora la robustez del módulo `duplicates.py` ante errores de acceso a disco mediante la centralización de la validación `stat` dentro de `_is_valid_candidate` y el uso de `path.exists()` previo a `stat()` para evitar excepciones innecesarias en archivos bloqueados o con permisos denegados.
+- `2026-11-10T04:07:59` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de lectura en `walk_files` al capturar excepciones críticas durante la creación de objetos `Path` y acceso a directorios, evitando que una ruta mal formada o con caracteres especiales detenga el escaneo completo.
+- `2026-11-10T04:07:33` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos bloqueados o en uso durante el escaneo de caché, añadiendo un manejo explícito de errores de lectura mediante `os.access` y una verificación de estado de archivo que previene cuelgues al intentar procesar recursos exclusivos del sistema de archivos.
 - `2026-11-10T03:59:59` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante fallos de E/S mediante el uso de `is_safe_to_modify` para validar la ruta antes de intentar cualquier operación, evitando que excepciones de permisos no controladas interrumpan el hilo principal de la aplicación.
 - `2026-11-10T03:59:36` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` ante entradas mal formadas, añadiendo una validación explícita para evitar que tipos no permitidos o estados inconsistentes corruptos bloqueen el asistente, y reforzando la integridad de los datos numéricos durante la ingestión masiva.
 - `2026-11-10T03:49:33` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo sustituyendo la consulta redundante de `is_protected_path` en el bucle principal por una verificación de caché `safe_cache` ya existente, evitando miles de llamadas innecesarias a la lógica de validación durante el recorrido de directorios.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T03:17:11` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se refinó la tipografía de los validadores para documentar explícitamente el flujo de datos y el propósito de las restricciones de seguridad, facilitando la auditoría del código sin alterar su lógica.
 - `2026-11-10T03:16:38` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings y type hints detallados en la clase `Scanner` y sus métodos internos para clarificar la lógica de recorrido y los mecanismos de seguridad, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
 - `2026-11-10T03:08:06` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de `safety.py` mediante una reorganización de los docstrings principales, agregando descripciones claras sobre el "porqué" de las decisiones de diseño en funciones críticas como `_get_file_id` y `ensure_safe_to_modify`, además de incluir type hints consistentes en los retornos de las funciones de validación.
-- `2026-11-10T03:07:10` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de manipulación de archivos y se ha añadido un tipo de dato `Optional[Path]` consistente, facilitando la comprensión de las precondiciones de seguridad críticas en `quarantine.py`.
-- `2026-11-10T02:57:12` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la API de bajo nivel mediante la conversión de variables mágicas en una clase de constantes con nombres descriptivos y añadí docstrings de tipo funcional explicando el propósito de las estructuras de datos nativas.
-- `2026-11-10T02:56:42` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de `SystemMetrics` y `PIPELINE_DEFINITIONS` mediante type hints explícitos y docstrings detallados que clarifican el propósito de las métricas y la estructura de ponderación, facilitando el mantenimiento y evitando ambigüedades en la lógica del pipeline.
-- `2026-11-10T02:56:14` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados, la unificación de tipos en las firmas de función y la clarificación de las responsabilidades en los filtros de seguridad, facilitando la comprensión del flujo de datos sin alterar la lógica de escaneo.

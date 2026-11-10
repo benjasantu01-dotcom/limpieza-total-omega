@@ -96,6 +96,7 @@ def _safe_path_check(path: Path) -> bool:
     """
     if not isinstance(path, Path): return False
     try:
+        if not path.exists(): return False
         abs_path = path.resolve(strict=True)
         if not abs_path.is_file() or not is_safe_to_modify(abs_path):
             return False
@@ -104,9 +105,13 @@ def _safe_path_check(path: Path) -> bool:
         return False
 
 
-def _is_valid_candidate(path: Path, st_size: int) -> bool:
+def _is_valid_candidate(path: Path, st_size: int = -1) -> bool:
     """Filtra archivos no aptos para el análisis por atributos o políticas de seguridad."""
-    return st_size > 0 and not is_system_or_hidden(path) and _safe_path_check(path)
+    if not _safe_path_check(path): return False
+    if st_size == -1:
+        with suppress(OSError):
+            st_size = path.stat().st_size
+    return st_size > 0 and not is_system_or_hidden(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
@@ -152,7 +157,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if p is None: continue
         item = Path(p)
         try:
-            if is_safe_to_modify(item):
+            if item.exists() and is_safe_to_modify(item):
                 st = item.stat()
                 if _is_valid_candidate(item, st.st_size):
                     groups_by_size[st.st_size].append(item)

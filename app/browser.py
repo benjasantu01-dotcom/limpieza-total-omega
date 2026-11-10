@@ -139,6 +139,8 @@ class DirectoryScanner:
 
     def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
         """Gestiona la entrada a un subdirectorio, validando que no sea un enlace simbólico o junction."""
+        if not os.access(entry.path, os.R_OK):
+            return 0
         if not self.ctx.is_junction(entry.path):
             return self.get_size(entry.path, depth + 1).bytes_found
         return 0
@@ -147,6 +149,9 @@ class DirectoryScanner:
         """Calcula el tamaño de archivo asegurando la unicidad mediante identificadores de inodo/disco."""
         if not _is_system_hidden(entry.path, self.ctx.kernel32):
             try:
+                # Comprobar accesibilidad antes de estadizar para evitar errores de bloqueos de sistema
+                if not os.access(entry.path, os.R_OK):
+                    return 0
                 st_file = entry.stat(follow_symlinks=False)
                 file_id = (st_file.st_dev, st_file.st_ino)
                 if file_id not in self.ctx.visited_files:
@@ -175,7 +180,7 @@ class DirectoryScanner:
         Punto de entrada recursivo para el cálculo de espacio ocupado.
         Verifica el estado del directorio contra ciclos y protecciones del sistema.
         """
-        if depth > self.ctx.max_depth:
+        if depth > self.ctx.max_depth or not os.access(root_path, os.R_OK):
             return ScanResult(0, True)
 
         try:
