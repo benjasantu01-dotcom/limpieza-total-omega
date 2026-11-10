@@ -313,8 +313,11 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el tamaño total en bytes de un directorio mediante recursión controlada."""
-    if not path: return 0
-    abs_p = os.path.abspath(str(path))
+    if path is None: return 0
+    path_str = str(path)
+    if not path_str: return 0
+    
+    abs_p = os.path.abspath(path_str)
     if not os.path.exists(abs_p) or not os.path.isdir(abs_p) or not os.access(abs_p, os.R_OK): return 0
     
     ctx = ScanContext(abs_p, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
@@ -331,9 +334,11 @@ def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDL
             return False
         if _is_system_hidden(str(target), kernel): return False
         
-        parts = [p.lower() for p in target.parts]
-        if any(part in NEVER_TOUCH for part in parts):
-            return False
+        target_parts = getattr(target, 'parts', None)
+        if target_parts:
+            parts = [p.lower() for p in target_parts]
+            if any(part in NEVER_TOUCH for part in parts):
+                return False
         
         if any(c in target.name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target.name):
             return False

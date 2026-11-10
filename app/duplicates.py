@@ -108,10 +108,11 @@ def _safe_path_check(path: Path) -> bool:
 def _is_valid_candidate(path: Path, st_size: int = -1) -> bool:
     """Filtra archivos no aptos para el análisis por atributos o políticas de seguridad."""
     if not _safe_path_check(path): return False
-    if st_size == -1:
+    effective_size = st_size
+    if effective_size == -1:
         with suppress(OSError):
-            st_size = path.stat(follow_symlinks=False).st_size
-    return st_size > 0 and not is_system_or_hidden(path)
+            effective_size = path.stat(follow_symlinks=False).st_size
+    return effective_size > 0 and not is_system_or_hidden(path)
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
@@ -212,6 +213,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """Aplica una función de hash y agrupa rutas con digests idénticos."""
+    if not paths: return {}
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path is not None:
@@ -223,6 +225,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """Refinamiento de duplicados mediante hashing en cascada (Parcial -> Completo)."""
+    if not paths: return {}
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
     for subset in partial_groups.values():
@@ -232,6 +235,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona la estrategia de hash óptima según el tamaño del archivo."""
+    if not paths: return []
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
     else:
@@ -252,7 +256,8 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Calcula el total de bytes que se recuperarían tras borrar duplicados."""
-    return sum(g.wasted_bytes for g in groups) if groups else 0
+    if not groups: return 0
+    return sum(g.wasted_bytes for g in groups)
 
 
 def _get_mtime(path: Path) -> Optional[float]:
