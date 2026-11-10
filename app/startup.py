@@ -328,39 +328,27 @@ def startup_folders() -> List[Path]:
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
-    """Valida y convierte un archivo detectado en carpeta de inicio."""
-    if not hasattr(entry, "path") or not hasattr(entry, "name"):
-        return None
-        
+    """Valida y convierte un archivo detectado en carpeta de inicio mediante pre-filtros de bajo coste."""
     if entry.path in _PROCESS_CACHE:
         return None
         
     try:
+        # Pre-filtro: descartar carpetas, symlinks y archivos sin extensión ejecutable
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink() or "\0" in entry.path:
-            _PROCESS_CACHE[entry.path] = False
-            return None
-        
-        path_obj: Path = Path(entry.path)
-        if path_obj.is_symlink() or os.path.splitdrive(entry.path)[0].upper() == "\\\\":
-            _PROCESS_CACHE[entry.path] = False
             return None
 
         _, ext = os.path.splitext(entry.name)
-        if not ext or ext.lower() not in EXECUTABLE_EXTS:
-            _PROCESS_CACHE[entry.path] = False
+        if not ext or ext.lower() not in EXECUTABLE_EXTS or len(entry.path) > MAX_PATH_LEN:
             return None
             
-        if len(entry.path) > MAX_PATH_LEN:
-            _PROCESS_CACHE[entry.path] = False
-            return None
-            
+        path_obj: Path = Path(entry.path)
+        # Validación de seguridad: costosa, por eso se deja al final
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             _PROCESS_CACHE[entry.path] = False
             return None
             
-        name: str = Path(entry.name).stem
         _PROCESS_CACHE[entry.path] = True
-        return StartupEntry(name=name, command=entry.path, source="carpeta")
+        return StartupEntry(name=path_obj.stem, command=entry.path, source="carpeta")
     except (OSError, PermissionError, ValueError, TypeError, AttributeError):
         _PROCESS_CACHE[entry.path] = False
         return None

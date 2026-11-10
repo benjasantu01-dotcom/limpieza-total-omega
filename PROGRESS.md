@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 118 | 9 | 44 | 9 | 128 |
-| 2026-11-10 | 60 | 4 | 22 | 6 | 104 |
+| 2026-11-09 | 115 | 9 | 43 | 9 | 128 |
+| 2026-11-10 | 62 | 4 | 23 | 6 | 105 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **31**
-- seguridad defensiva: **30**
-- rendimiento: **29**
+- robustez ante casos límite: **32**
+- rendimiento: **30**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **18**
-- `diskreport.py`: **17**
 - `quarantine.py`: **17**
-- `duplicates.py`: **16**
 - `memory.py`: **16**
-- `healthscore.py`: **15**
+- `diskreport.py`: **16**
+- `duplicates.py`: **15**
 - `settings.py`: **14**
+- `assistant.py`: **14**
+- `healthscore.py`: **14**
 - `scanner.py`: **14**
-- `assistant.py`: **13**
 - `branding.py`: **12**
+- `startup.py`: **11**
 - `organizer.py`: **10**
-- `startup.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T08:24:11` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `SystemContext` ante valores inesperados de configuración o ingestión parcial, asegurando que `ingest` no falle silenciosamente ni deje el estado en inconsistencia si una sola métrica está corrupta o fuera de rango.
+- `2026-11-10T08:23:44` **startup.py** (rendimiento): Se optimizó el proceso de escaneo en `entries_from_folders` reemplazando la lógica de filtrado manual por el uso de `os.scandir` de forma más directa, minimizando las llamadas redundantes a `Path.is_symlink` y evitando validaciones costosas de `is_safe_to_modify` para archivos ya descartados por extensión, mejorando significativamente el rendimiento en carpetas con muchos archivos.
 - `2026-11-10T08:14:42` **safety.py** (rendimiento): Se ha optimizado la gestión de caché de `_ATTR_CACHE` y `_FILE_ID_CACHE` convirtiéndolos en `dict` simples en lugar de `OrderedDict`, ya que la lógica de validación actual no requiere el mantenimiento del orden de inserción, reduciendo el overhead de memoria y ciclos de CPU en cada acceso.
 - `2026-11-10T08:07:01` **memory.py** (rendimiento): Optimicé el rendimiento del módulo `memory.py` evitando la instanciación innecesaria de objetos `ProcessMemory` durante la enumeración de procesos mediante el uso de una validación temprana del tamaño del Working Set antes de procesar el nombre o crear el objeto.
 - `2026-11-10T08:02:58` **duplicates.py** (rendimiento): Optimizé la función `_collect_candidates` para evitar I/O redundante eliminando las llamadas repetidas a `_is_valid_candidate` dentro del loop de procesamiento, aprovechando que las validaciones necesarias ya se realizan mediante `entry.stat()` y el chequeo de `inode_id`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T07:31:47` **memory.py** (legibilidad y documentación): Documenté con docstrings detallados las estructuras de datos y funciones complejas de bajo nivel para aclarar el propósito de cada campo y la intención de seguridad detrás de la manipulación de procesos vía Win32 API.
 - `2026-11-10T07:22:22` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings normalizados y explícitos, eliminé redundancias en el manejo de tipos y clarifiqué la lógica del pipeline, asegurando que las responsabilidades de cada componente sean auto-explicativas sin alterar la funcionalidad.
 - `2026-11-10T07:21:31` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `largest_folders` reemplazando la lógica manual de búsqueda de `top_level` con el método `Path.relative_to`, haciendo el código más idiomático y robusto ante rutas complejas.
-- `2026-11-10T07:11:58` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros donde faltaban (como en `_is_input_too_deep_or_complex` y `_has_circular_refs`), corregí la definición de `_CRITERIOS_MAP` para asegurar consistencia tipográfica con su versión inmutable, y añadí docstrings explicativos a las funciones de validación de estructuras para clarificar su rol defensivo ante ataques de denegación de servicio (DoS).
-- `2026-11-10T07:11:19` **startup.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta contra rutas que contienen caracteres nulos (`\0`) y se añadieron chequeos de tipo defensivos en el procesamiento de rutas dentro de `_resolve_and_cache_path` para prevenir excepciones críticas al interactuar con el sistema de archivos de Windows.

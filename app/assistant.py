@@ -554,9 +554,12 @@ class SystemContext:
         
         updates = {}
         for k in _VALID_METRIC_KEYS:
-            val = self._apply_field(source, k, _VALIDATORS[k])
-            if val is not None:
-                updates[k] = val
+            try:
+                val = self._apply_field(source, k, _VALIDATORS[k])
+                if val is not None:
+                    updates[k] = val
+            except (AttributeError, TypeError, ValueError):
+                continue
         
         if (cleaned_grade := self._extract_grade(source)):
             updates["grade"] = cleaned_grade
@@ -586,9 +589,10 @@ class SystemContext:
                 setattr(self, key, value)
         
         self.analyzed = True
-        self.__dict__.pop("metrics_snapshot", None)
-        self.__dict__.pop("_cached_active_problems", None)
-        self.__dict__.pop("_hash_tuple", None)
+        # Limpieza manual de propiedades cacheadas al modificar estado
+        if "metrics_snapshot" in self.__dict__: del self.__dict__["metrics_snapshot"]
+        if "_cached_active_problems" in self.__dict__: del self.__dict__["_cached_active_problems"]
+        if "_hash_tuple" in self.__dict__: del self.__dict__["_hash_tuple"]
 
     def ingest(self, source: Any) -> bool:
         """Ingiere y valida datos externos para actualizar el estado de SystemContext."""

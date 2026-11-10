@@ -1447,3 +1447,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-10T08:14:42` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la gestión de caché de `_ATTR_CACHE` y `_FILE_ID_CACHE` convirtiéndolos en `dict` simples en lugar de `OrderedDict`, ya que la lógica de validación actual no requiere el mantenimiento del orden de inserción, reduciendo el overhead de memoria y ciclos de CPU en cada acceso.
 - `2026-11-10T08:14:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T08:14:42` Corrida terminada. Total usado hoy: 196.
+- `2026-11-10T08:22:16` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-10T08:22:44` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-11-10T08:23:13` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-11-10T08:23:44` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el proceso de escaneo en `entries_from_folders` reemplazando la lógica de filtrado manual por el uso de `os.scandir` de forma más directa, minimizando las llamadas redundantes a `Path.is_symlink` y evitando validaciones costosas de `is_safe_to_modify` para archivos ya descartados por extensión, mejorando significativamente el rendimiento en carpetas con muchos archivos.
+- `2026-11-10T08:24:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez de `SystemContext` ante valores inesperados de configuración o ingestión parcial, asegurando que `ingest` no falle silenciosamente ni deje el estado en inconsistencia si una sola métrica está corrupta o fuera de rango.
+- `2026-11-10T08:24:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T08:24:11` Corrida terminada. Total usado hoy: 200.
