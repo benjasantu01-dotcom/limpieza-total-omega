@@ -253,7 +253,7 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Calcula el total de bytes que se recuperarían tras borrar duplicados."""
-    return sum(g.wasted_bytes for g in groups)
+    return sum(g.wasted_bytes for g in groups) if groups else 0
 
 
 def _get_mtime(path: Path) -> Optional[float]:
@@ -270,7 +270,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     Heurística de selección: sugiere conservar el archivo más antiguo
     (menor fecha de modificación) como el original.
     """
-    if group is None or not group.paths: return None
+    if not isinstance(group, DuplicateGroup) or not group.paths: return None
     candidates = [(m, p) for p in group.paths if (m := _get_mtime(p)) is not None]
     if not candidates: return group.paths[0]
     return min(candidates, key=lambda x: x[0])[1]
@@ -278,7 +278,7 @@ def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera representación textual amigable para la interfaz de usuario."""
-    if group is None or not group.paths: return []
+    if not isinstance(group, DuplicateGroup) or not group.paths: return []
     keeper = suggest_keeper(group)
     mb, wasted = group.size_bytes / 1048576, group.wasted_bytes / 1048576
     lines = [f"{group.count} copias de {mb:.2f} MB (recuperable: {wasted:.2f} MB)"]

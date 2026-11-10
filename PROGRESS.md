@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 64
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 233
+- Rechazadas por guardia de seguridad: 63
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 141 | 9 | 52 | 11 | 135 |
-| 2026-11-10 | 39 | 3 | 12 | 4 | 98 |
+| 2026-11-09 | 139 | 9 | 51 | 10 | 135 |
+| 2026-11-10 | 41 | 3 | 12 | 4 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **35**
 - seguridad defensiva: **32**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
+- `safety.py`: **18**
 - `quarantine.py`: **17**
 - `healthscore.py`: **16**
+- `diskreport.py`: **16**
 - `settings.py`: **15**
 - `branding.py`: **15**
 - `memory.py`: **15**
-- `diskreport.py`: **15**
+- `duplicates.py`: **15**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
-- `duplicates.py`: **14**
-- `organizer.py`: **11**
+- `organizer.py`: **10**
 - `startup.py`: **9**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T06:41:56` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones explícitas de tipo y estado, asegurando que las funciones manejen correctamente grupos vacíos o inválidos antes de procesar, evitando errores de ejecución durante la renderización de la UI.
+- `2026-11-10T06:41:33` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_collect_summary_data` envolviendo el procesamiento de archivos en bloques de error específicos, evitando que excepciones inesperadas al acceder a metadatos de un archivo individual interrumpan el cálculo de las métricas totales.
 - `2026-11-10T04:48:36` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo en `walk_files` mediante la validación explícita de `is_protected_path` sobre la ruta completa antes de procesar cualquier entrada, previniendo el acceso a rutas potencialmente sensibles incluso si los atributos de archivo fallan o son engañosos.
 - `2026-11-10T04:08:33` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante estados inconsistentes mediante la implementación de una validación de `__setattr__` más estricta, evitando que se ignoren errores de tipo y asegurando que las métricas siempre se mantengan dentro de rangos definidos incluso si se intenta inyectar datos inválidos.
 - `2026-11-10T04:08:23` **duplicates.py** (robustez ante casos límite): Mejora la robustez del módulo `duplicates.py` ante errores de acceso a disco mediante la centralización de la validación `stat` dentro de `_is_valid_candidate` y el uso de `path.exists()` previo a `stat()` para evitar excepciones innecesarias en archivos bloqueados o con permisos denegados.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T03:39:04` **organizer.py** (rendimiento): Optimicé el rendimiento de `_is_valid_junk_entry` y `_process_directory` reemplazando llamadas repetidas a `Path().suffix` por manipulaciones directas sobre el nombre del archivo, evitando la sobrecarga de instanciar objetos `Path` miles de veces durante el escaneo recursivo.
 - `2026-11-10T03:27:53` **diskreport.py** (rendimiento): Se optimizó el recorrido en `largest_folders` reemplazando el uso de `relative_to` (que requiere múltiples cálculos y validaciones en cada iteración) por un acceso directo a `path.parents`, lo que reduce la carga computacional en árboles de archivos profundos.
 - `2026-11-10T03:17:41` **startup.py** (legibilidad y documentación): Se introdujeron constantes descriptivas para reemplazar los "números mágicos" en la lógica de resolución y validación de rutas, mejorando la mantenibilidad y legibilidad del código.
-- `2026-11-10T03:17:11` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se refinó la tipografía de los validadores para documentar explícitamente el flujo de datos y el propósito de las restricciones de seguridad, facilitando la auditoría del código sin alterar su lógica.
-- `2026-11-10T03:16:38` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings y type hints detallados en la clase `Scanner` y sus métodos internos para clarificar la lógica de recorrido y los mecanismos de seguridad, facilitando la comprensión del flujo de datos sin alterar el comportamiento.

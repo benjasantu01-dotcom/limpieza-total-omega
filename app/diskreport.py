@@ -452,7 +452,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heappush(top_heap, (size, path))
                 elif top_heap and size > top_heap[0][0]:
                     heapq.heapreplace(top_heap, (size, path))
-        except Exception:
+        except (AttributeError, TypeError, ValueError, OSError):
             continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
@@ -473,7 +473,11 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if root is None: 
         return ["Error: Ruta inaccesible o no válida."]
         
-    data = _collect_summary_data(root, skip_protected, limit=20)
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+    except Exception:
+        return ["Error: Fallo crítico al procesar el directorio."]
+
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos para analizar."]
     

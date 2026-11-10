@@ -1356,3 +1356,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-11-10T06:34:55` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-11-10T06:34:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T06:34:55` Corrida terminada. Total usado hoy: 156.
+- `2026-11-10T06:40:12` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-10T06:40:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-10T06:41:06` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-10T06:41:33` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `_collect_summary_data` envolviendo el procesamiento de archivos en bloques de error específicos, evitando que excepciones inesperadas al acceder a metadatos de un archivo individual interrumpan el cálculo de las métricas totales.
+- `2026-11-10T06:41:56` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones explícitas de tipo y estado, asegurando que las funciones manejen correctamente grupos vacíos o inválidos antes de procesar, evitando errores de ejecución durante la renderización de la UI.
+- `2026-11-10T06:42:04` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-10T06:42:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T06:42:04` Corrida terminada. Total usado hoy: 160.
