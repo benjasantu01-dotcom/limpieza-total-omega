@@ -541,3 +541,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T11:08:19` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del módulo agregando validaciones de tipo y de estado (None/vacíos) en las funciones críticas de procesamiento de rutas y grupos, previniendo errores en tiempo de ejecución al iterar sobre colecciones potencialmente mal formadas.
 - `2026-11-10T11:08:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T11:08:19` Corrida terminada. Total usado hoy: 264.
+- `2026-11-10T11:15:54` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-10T11:16:22` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `compute_score` y `_process_pipeline_entry` añadiendo validaciones explícitas de estado y protecciones contra fallos en cascada, asegurando que ante datos inesperados o errores de ejecución en el pipeline, el sistema retorne un estado de salud degradado pero coherente en lugar de fallar o corromperse.
+- `2026-11-10T11:17:31` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-10T11:18:03` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_iter_process_memory` implementando una validación explícita de `cb` en la estructura `PROCESS_MEMORY_COUNTERS` para prevenir desbordamientos de memoria al invocar la API, y añadí capturas de excepciones más específicas en el flujo de inspección de procesos para evitar que fallos aislados en `GetProcessMemoryInfo` interrumpan el escaneo de todo el sistema.
+- `2026-11-10T11:18:14` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-10T11:18:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T11:18:14` Corrida terminada. Total usado hoy: 268.

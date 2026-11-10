@@ -8,43 +8,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 62
-- Sin cambios (nada sustancial que mejorar): 14
+- Rechazadas por guardia de seguridad: 63
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 95 | 8 | 36 | 7 | 94 |
-| 2026-11-10 | 79 | 6 | 26 | 7 | 146 |
+| 2026-11-09 | 93 | 8 | 36 | 6 | 93 |
+| 2026-11-10 | 81 | 6 | 27 | 7 | 147 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **35**
+- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **37**
 - seguridad defensiva: **31**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
 - `quarantine.py`: **16**
 - `diskreport.py`: **16**
+- `healthscore.py`: **15**
+- `memory.py`: **15**
 - `settings.py`: **14**
 - `assistant.py`: **14**
-- `healthscore.py`: **14**
-- `memory.py`: **14**
 - `scanner.py`: **13**
-- `startup.py`: **11**
 - `branding.py`: **11**
 - `organizer.py`: **10**
+- `startup.py`: **10**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T11:18:03` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_iter_process_memory` implementando una validación explícita de `cb` en la estructura `PROCESS_MEMORY_COUNTERS` para prevenir desbordamientos de memoria al invocar la API, y añadí capturas de excepciones más específicas en el flujo de inspección de procesos para evitar que fallos aislados en `GetProcessMemoryInfo` interrumpan el escaneo de todo el sistema.
+- `2026-11-10T11:16:22` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `_process_pipeline_entry` añadiendo validaciones explícitas de estado y protecciones contra fallos en cascada, asegurando que ante datos inesperados o errores de ejecución en el pipeline, el sistema retorne un estado de salud degradado pero coherente en lugar de fallar o corromperse.
 - `2026-11-10T11:08:19` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validaciones de tipo y de estado (None/vacíos) en las funciones críticas de procesamiento de rutas y grupos, previniendo errores en tiempo de ejecución al iterar sobre colecciones potencialmente mal formadas.
 - `2026-11-10T11:07:25` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_target_valid` añadiendo validaciones explícitas contra `None` y tipos incorrectos, evitando que el escáner intente procesar entradas malformadas que podrían causar excepciones no capturadas.
 - `2026-11-10T10:59:26` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_updates` en `SystemContext` para validar explícitamente el tipo de cada valor recibido antes de ejecutar el `setattr`, evitando posibles estados inconsistentes por asignaciones erróneas y fortaleciendo la integridad del objeto ante entradas mal formadas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T09:04:53` **assistant.py** (seguridad defensiva): Mejoré `_extract_text_from_gemini_json` para implementar una verificación defensiva estricta sobre la estructura de la respuesta JSON recibida desde la API, evitando desbordamientos o accesos fuera de rango mediante el uso de un método de validación más robusto antes de procesar el texto.
 - `2026-11-10T09:03:37` **settings.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de entrada y concurrencia en la carga de JSON, reemplazando el uso de `json.loads(content)` (que puede lanzar excepciones inesperadas ante archivos vacíos o basura) por un bloque `try-except` más robusto dentro de `_read_and_parse_json` y añadiendo validación de tipo estricta para el contenido deserializado antes de procesarlo.
 - `2026-11-10T08:54:55` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes o mal formadas en `_is_file_owned_by_system` mediante una verificación previa de existencia y un manejo de errores más preciso, evitando excepciones no controladas cuando `GetNamedSecurityInfoW` falla sobre rutas que fueron eliminadas en una condición de carrera (TOCTOU).
-- `2026-11-10T08:53:36` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes en `load_manifest` mediante la eliminación selectiva de registros corruptos (que no superan `verify_integrity`), evitando así que un ítem malicioso o dañado bloquee permanentemente las operaciones de listado y purga de toda la cuarentena.
-- `2026-11-10T08:47:39` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y permisos dentro del bucle de `stage_for_review` para prevenir fallos silenciosos al procesar archivos que pudieron ser eliminados o bloqueados por otros procesos entre la detección inicial y el movimiento, mejorando la robustez ante condiciones de carrera (Race Conditions).

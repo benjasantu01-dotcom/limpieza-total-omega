@@ -294,7 +294,9 @@ def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tup
         # Asegurar que ratio sea finito antes de multiplicar
         if not _is_finite_numeric(ratio): ratio = 0.0
         return int(_clamp(ratio) * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
-    except Exception: return 0, []
+    except Exception as e: 
+        logging.error(f"Error procesando pipeline {entry.area}: {e}")
+        return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula la puntuación total de salud ejecutando el pipeline completo."""

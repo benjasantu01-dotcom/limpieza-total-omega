@@ -387,7 +387,10 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
             
-    pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
+    # Inicialización defensiva de la estructura de contadores con validación de tamaño
+    pmc = PROCESS_MEMORY_COUNTERS()
+    pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
+    
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
     # MAX_PATH en Windows es 260, usamos 1024 para evitar desbordamientos en casos raros
@@ -401,7 +404,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         if handle is None: continue
         
         try:
-            if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
+            if WindowsAPI.psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), pmc.cb):
                 ws = pmc.WorkingSetSize
                 # Validación temprana de rango antes de realizar operaciones costosas como obtener rutas/nombres
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
@@ -409,7 +412,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
                     name = Path(raw_path).name if raw_path else "Unknown"
                     if not _is_invalid_process_name(name):
                         yield ProcessMemory(name, pid, BytesValue(ws))
-        except (ctypes.ArgumentError, OSError):
+        except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
             continue
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
