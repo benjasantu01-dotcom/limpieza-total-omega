@@ -406,7 +406,15 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Función principal para dibujar el logo complejo compuesto en un widget Canvas."""
+    """
+    Función principal para dibujar el logo complejo compuesto en un widget Canvas.
+    
+    Args:
+        canvas: Objeto que implementa el protocolo CanvasElement.
+        size: Tamaño relativo del logo.
+        canvas_x: Coordenada horizontal de inicio.
+        canvas_y: Coordenada vertical de inicio.
+    """
     if canvas is None or not math.isfinite(size) or not math.isfinite(canvas_x) or not math.isfinite(canvas_y): return
     try:
         s = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
@@ -424,7 +432,11 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal con un degradado lineal personalizado."""
+    """
+    Renderiza una línea horizontal con un degradado lineal personalizado.
+    
+    Utiliza el motor de segmentos de color para optimizar el dibujo en el canvas.
+    """
     if canvas is None or not isinstance(width, int): return
     try:
         w = max(1, int(width))
@@ -433,7 +445,14 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un anillo de progreso circular para métricas de salud o rendimiento."""
+    """
+    Dibuja un anillo de progreso circular para métricas de salud o rendimiento.
+    
+    Args:
+        percent: Valor 0-100 a graficar.
+        track: Color de fondo (pista) del anillo.
+        fill: Color dinámico basado en la severidad del puntaje.
+    """
     if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))

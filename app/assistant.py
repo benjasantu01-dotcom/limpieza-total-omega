@@ -189,24 +189,20 @@ def _ensure_handler_is_safe(func: Callable[[SystemContext, str], Answer]) -> Cal
 
 @dataclass(frozen=True)
 class AssistantConfig:
-    """Configuración inmutable del cliente de IA (Gemini)."""
+    """Configuración inmutable para la conexión con el motor de IA."""
     api_key: str
     model: str
     allow_metrics: bool
 
 @dataclass(frozen=True)
 class MetricSpec:
-    """
-    Define los límites y el tipo esperado para una métrica numérica.
-    Utilizado por SystemContext para asegurar que los datos ingresados
-    no sobrepasen valores lógicos para la app.
-    """
+    """Define los límites, tipo esperado y validez para una métrica del sistema."""
     type_hint: type
     min_val: float
     max_val: float
 
     def is_valid_type(self, val: Any) -> bool:
-        """Verifica que el tipo de datos sea numérico y no booleano."""
+        """Verifica que el valor sea numérico, no booleano y finito."""
         return isinstance(val, (int, float)) and not isinstance(val, bool) and _check_metric_integrity(val)
 
 class ProblemCriterion(NamedTuple):

@@ -358,7 +358,17 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Retorna los N archivos más pesados encontrados en un directorio."""
+    """
+    Retorna los N archivos más pesados encontrados en un directorio.
+
+    Args:
+        directory: Ruta de inicio del escaneo.
+        limit: Máximo número de archivos a retornar.
+        skip_protected: Si se omiten carpetas de sistema.
+
+    Returns:
+        Lista de objetos FileEntry ordenados descendentemente por tamaño.
+    """
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
@@ -366,7 +376,17 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Calcula la distribución de espacio agrupada por extensión de archivo."""
+    """
+    Calcula la distribución de espacio agrupada por extensión de archivo.
+
+    Args:
+        directory: Ruta de inicio.
+        limit: Máximo de tipos de extensión a retornar.
+        skip_protected: Si se omiten carpetas de sistema.
+
+    Returns:
+        Lista de objetos ExtensionUsage ordenada por tamaño total.
+    """
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -375,7 +395,17 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Calcula el uso de disco de subcarpetas inmediatas al directorio dado."""
+    """
+    Calcula el uso de disco de subcarpetas inmediatas al directorio dado.
+
+    Args:
+        directory: Ruta raíz para identificar subcarpetas.
+        limit: Número de carpetas principales a listar.
+        skip_protected: Si se omiten carpetas de sistema.
+
+    Returns:
+        Lista de objetos FolderUsage ordenada por el tamaño total acumulado.
+    """
     root = _validate_root(directory)
     if root is None: return []
     
@@ -405,7 +435,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Función privada que recorre un directorio y consolida las métricas estadísticas.
+    Función privada de soporte que recorre el árbol de archivos, consolida
+    estadísticas por extensión y mantiene un heap para los archivos más grandes.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
@@ -426,7 +457,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Genera una lista de líneas de texto con un resumen del uso de disco."""
+    """
+    Genera un reporte textual estructurado del uso de disco.
+
+    Args:
+        directory: Ruta del directorio a analizar.
+        skip_protected: Si se deben excluir rutas protegidas.
+
+    Returns:
+        Lista de strings formateados listos para visualización o exportación.
+    """
     root = _validate_root(directory)
     if root is None: 
         return ["Error: Ruta inaccesible o no válida."]
