@@ -597,3 +597,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T12:20:12` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-10T12:20:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T12:20:12` Corrida terminada. Total usado hoy: 292.
+- `2026-11-10T12:27:15` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-10T12:27:46` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `walk_files` y `_collect_summary_data` evitando llamadas costosas a `Path.resolve()` (que accede al disco repetidamente) y reemplazándolas por un manejo de rutas basado en `entry.path`, reduciendo drásticamente la latencia en escaneos profundos.
+- `2026-11-10T12:28:27` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_collect_candidates` utilizando un conjunto (`set`) para registrar las rutas visitadas (`visited_paths`), lo que evita realizar llamadas redundantes a `stat` y `is_safe_to_modify` sobre archivos que ya han sido procesados en la misma iteración del árbol de directorios, reduciendo significativamente la carga de I/O.
+- `2026-11-10T12:28:52` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del motor de cálculo mediante la eliminación de llamadas redundantes a `getattr` y `is_finite` dentro del bucle principal del pipeline, reemplazando la validación repetitiva por un acceso directo a los atributos validados del objeto `SystemMetrics`.
+- `2026-11-10T12:29:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-10T12:30:55` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-10T12:31:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-10T12:31:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T12:31:53` Corrida terminada. Total usado hoy: 296.

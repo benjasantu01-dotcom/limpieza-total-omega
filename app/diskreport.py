@@ -297,16 +297,15 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if not root_path: return
     
-    root_str = str(root_path.resolve())
     visited_inodes: set[Inode] = set()
-    stack: List[Tuple[Path, List[str]]] = [(root_path, [])]
+    stack: List[Path] = [root_path]
     
     root_stat = _safe_stat(root_path)
     if root_stat and hasattr(root_stat, 'st_ino') and hasattr(root_stat, 'st_dev'):
         visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
     
     while stack:
-        current_dir, _ = stack.pop()
+        current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -314,10 +313,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     
                     try:
-                        entry_path = Path(entry.path).resolve()
-                        if not str(entry_path).startswith(root_str):
-                            continue
-                            
                         st = entry.stat(follow_symlinks=False)
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
@@ -332,7 +327,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if inode in visited_inodes:
                                 continue
                             visited_inodes.add(inode)
-                        stack.append((Path(entry.path), []))
+                        stack.append(Path(entry.path))
                     
                     elif entry.is_file(follow_symlinks=False):
                         size = getattr(st, 'st_size', None)

@@ -180,22 +180,22 @@ _DUP_SCORER: Final = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER: Final = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
 _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
-    "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _safe_factory(lambda m: f"Riesgos de seguridad detectados: {m.safe_get('suspicious_count')}."), lambda m, r: r < WARN_THRESHOLD_HIGH),),
-    "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Espacio libre en disco bajo: {m.safe_get('disk_free_percent'):.1f} porciento."), lambda m, r: r < WARN_THRESHOLD_LOW),),
+    "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _safe_factory(lambda m: f"Riesgos de seguridad detectados: {m.suspicious_count}."), lambda m, r: r < WARN_THRESHOLD_HIGH),),
+    "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento."), lambda m, r: r < WARN_THRESHOLD_LOW),),
     "memoria": (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _safe_factory(lambda m: "Memoria disponible baja, optimice sus procesos."), lambda m, r: r < WARN_THRESHOLD_LOW),),
-    "basura": (RecommendationRule("basura", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Acumulacion de archivos temporales: {m.safe_get('junk_mb'):.0f} MB."), lambda m, r: r < WARN_THRESHOLD_MED),),
-    "duplicados": (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Recuperacion posible: {m.safe_get('duplicate_mb'):.0f} MB en duplicados."), lambda m, r: r < WARN_THRESHOLD_MED),),
-    "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Exceso de programas en arranque: {m.safe_get('startup_count')} entradas."), lambda m, r: r < WARN_THRESHOLD_LOW),),
+    "basura": (RecommendationRule("basura", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Acumulacion de archivos temporales: {m.junk_mb:.0f} MB."), lambda m, r: r < WARN_THRESHOLD_MED),),
+    "duplicados": (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados."), lambda m, r: r < WARN_THRESHOLD_MED),),
+    "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Exceso de programas en arranque: {m.startup_count} entradas."), lambda m, r: r < WARN_THRESHOLD_LOW),),
 }
 
 # --- Funciones de Extracción de Pipeline ---
 
-def _get_security_ratio(m: SystemMetrics) -> NormalizedRatio: return score_security(m.safe_get("suspicious_count"), m.safe_get("suspicious_warnings"))
-def _get_disk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.safe_get("disk_free_percent"))
-def _get_memory_ratio(m: SystemMetrics) -> NormalizedRatio: return score_memory(m.safe_get("memory_available_percent"))
-def _get_junk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.safe_get("junk_mb"))
-def _get_dup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.safe_get("duplicate_mb"))
-def _get_startup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.safe_get("startup_count"))
+def _get_security_ratio(m: SystemMetrics) -> NormalizedRatio: return score_security(m.suspicious_count, m.suspicious_warnings)
+def _get_disk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_disk(m.disk_free_percent)
+def _get_memory_ratio(m: SystemMetrics) -> NormalizedRatio: return score_memory(m.memory_available_percent)
+def _get_junk_ratio(m: SystemMetrics) -> NormalizedRatio: return score_junk(m.junk_mb)
+def _get_dup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_duplicates(m.duplicate_mb)
+def _get_startup_ratio(m: SystemMetrics) -> NormalizedRatio: return score_startup(m.startup_count)
 
 PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("seguridad", 30, _get_security_ratio, _RULES["seguridad"], "Seguridad  "),
@@ -213,20 +213,17 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio: return _JUNK_SCORER(flo
 
 @lru_cache(maxsize=16)
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
-    count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
-    warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
-    # Cálculo defensivo: los coeficientes se mantienen constantes para asegurar estabilidad
+    count = float(suspicious_count)
+    warn = float(warnings)
     return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)))
 
 @lru_cache(maxsize=16)
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    val = float(available_percent)
-    return 0.0 if _LIMIT_RAM_PERCENT <= 0.0 or not math.isfinite(val) else _clamp(val / _LIMIT_RAM_PERCENT)
+    return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    val = float(free_percent)
-    return 0.0 if _LIMIT_DISK_PERCENT <= 0.0 or not math.isfinite(val) else _clamp(val / _LIMIT_DISK_PERCENT)
+    return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: return _DUP_SCORER(float(duplicate_mb))
@@ -289,23 +286,15 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     """Ejecuta un conjunto de reglas y devuelve las recomendaciones activas."""
     results = []
     for rule in rules:
-        try:
-            if rule.check(metrics, normalized_ratio):
-                msg = rule.message_factory(metrics)
-                if msg: results.append(msg)
-        except Exception: continue
+        if rule.check(metrics, normalized_ratio):
+            msg = rule.message_factory(metrics)
+            if msg: results.append(msg)
     return results
 
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Procesa una etapa del pipeline devolviendo puntos y sugerencias."""
-    try:
-        ratio = entry.scorer(metrics)
-        # Asegurar que ratio sea finito antes de multiplicar
-        if not _is_finite_numeric(ratio): ratio = 0.0
-        return int(_clamp(ratio) * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
-    except Exception as e: 
-        logging.error(f"Error procesando pipeline {entry.area}: {e}")
-        return 0, []
+    ratio = entry.scorer(metrics)
+    return int(ratio * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula la puntuación total de salud ejecutando el pipeline completo."""
@@ -320,7 +309,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         total += p
         recs.extend(r)
     
-    if metrics.safe_get("quarantined_count") > 0:
+    if metrics.quarantined_count > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
             

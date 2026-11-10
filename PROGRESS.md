@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 237
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 83 | 8 | 29 | 4 | 88 |
-| 2026-11-10 | 98 | 6 | 32 | 7 | 149 |
+| 2026-11-09 | 81 | 8 | 28 | 4 | 87 |
+| 2026-11-10 | 101 | 6 | 33 | 7 | 149 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **31**
 - seguridad defensiva: **31**
-- rendimiento: **26**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
+- `diskreport.py`: **18**
 - `quarantine.py`: **17**
-- `diskreport.py`: **17**
+- `safety.py`: **17**
+- `duplicates.py`: **16**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
-- `scanner.py`: **15**
 - `settings.py`: **15**
-- `duplicates.py`: **15**
-- `healthscore.py`: **15**
 - `assistant.py`: **15**
+- `scanner.py`: **14**
 - `branding.py`: **11**
 - `startup.py`: **11**
 - `organizer.py`: **10**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T12:28:52` **healthscore.py** (rendimiento): Optimicé el rendimiento del motor de cálculo mediante la eliminación de llamadas redundantes a `getattr` y `is_finite` dentro del bucle principal del pipeline, reemplazando la validación repetitiva por un acceso directo a los atributos validados del objeto `SystemMetrics`.
+- `2026-11-10T12:28:27` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un conjunto (`set`) para registrar las rutas visitadas (`visited_paths`), lo que evita realizar llamadas redundantes a `stat` y `is_safe_to_modify` sobre archivos que ya han sido procesados en la misma iteración del árbol de directorios, reduciendo significativamente la carga de I/O.
+- `2026-11-10T12:27:46` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` evitando llamadas costosas a `Path.resolve()` (que accede al disco repetidamente) y reemplazándolas por un manejo de rutas basado en `entry.path`, reduciendo drásticamente la latencia en escaneos profundos.
 - `2026-11-10T12:19:33` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud eliminando la creación repetida de tuplas en cada llamada a `_evaluate_active_problems` y utilicé un `frozenset` pre-calculado para la evaluación, mejorando el rendimiento en el bucle de validación.
 - `2026-11-10T12:17:41` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la implementación de `TypeAlias` más específicos, la adición de docstrings detallados en las funciones de validación compleja (`_is_valid_registry_path`, `_resolve_path_from_command`) y la unificación de la documentación interna, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
 - `2026-11-10T12:09:20` **settings.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante docstrings detallados la lógica de `_SettingsManager.perform_atomic_write` y sus restricciones de seguridad, además de simplificar la navegación en el archivo mediante la reorganización de las funciones de validación.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T11:47:53` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad del flujo en `duplicates.py` mediante docstrings detallados que explican la lógica de exclusión y la estrategia de hashing, además de añadir type hints específicos para mejorar la mantenibilidad.
 - `2026-11-10T11:47:27` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando los contratos de las funciones mediante type hints precisos, corrigiendo la semántica de las excepciones en `_validate_root` y estandarizando la documentación mediante docstrings completos que clarifican los propósitos de las estructuras de datos.
 - `2026-11-10T11:39:21` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados con secciones "Args" y "Returns" en las funciones de renderizado, y se han clarificado las intenciones de los parámetros geométricos para facilitar el mantenimiento.
-- `2026-11-10T11:39:03` **assistant.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Mapping`, `Sequence` y `Iterable` de `typing`) y se documentó con docstrings el propósito de funciones críticas de validación (`_is_safe_payload_structure` y `_is_input_too_deep_or_complex`), mejorando la legibilidad técnica y la mantenibilidad del código sin alterar su lógica.
-- `2026-11-10T11:36:51` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos al agregar una validación de `key` en `_Validators.str` para evitar errores de tipo en tiempo de ejecución y refuerza la integridad del sistema eliminando la posibilidad de procesar claves inexistentes durante la validación de un diccionario arbitrario en `validate`.
-- `2026-11-10T11:29:21` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_canonical_path` y `_is_valid_path_structure` mediante una validación más estricta contra entradas `None` o malformadas, asegurando que las funciones no dependan de que `os.path` maneje silenciosamente tipos inesperados y evitando excepciones no capturadas al procesar rutas.

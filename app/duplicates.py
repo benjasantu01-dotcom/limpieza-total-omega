@@ -177,13 +177,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     if directories is None or not isinstance(directories, Iterable) or min_size < 0: 
         return {}
     size_map: Dict[int, List[Path]] = defaultdict(list)
-    visited: set[Tuple[int, int]] = set()
+    visited_inodes: set[Tuple[int, int]] = set()
+    visited_paths: set[Path] = set()
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
         if d:
             try:
-                p_dir = Path(d)
+                p_dir = Path(d).resolve()
                 if p_dir.is_dir() and is_safe_to_modify(p_dir):
                     queue.append((p_dir, 0))
             except (OSError, PermissionError, TypeError):
@@ -191,23 +192,24 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     while queue:
         current_dir, depth = queue.popleft()
+        if current_dir in visited_paths: continue
+        visited_paths.add(current_dir)
+
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        p = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
-                            if depth < MAX_RECURSION_DEPTH:
-                                p = Path(entry.path)
-                                if is_safe_to_modify(p) and not is_junction(p):
-                                    queue.append((p, depth + 1))
+                            if depth < MAX_RECURSION_DEPTH and is_safe_to_modify(p) and not is_junction(p):
+                                queue.append((p.resolve(), depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size >= min_size:
-                                p = Path(entry.path)
                                 if not (skip_protected and is_protected_path(p)) and not is_system_or_hidden(p):
                                     inode_id = (stat.st_dev, stat.st_ino)
-                                    if inode_id not in visited and is_safe_to_modify(p):
-                                        visited.add(inode_id)
+                                    if inode_id not in visited_inodes and is_safe_to_modify(p):
+                                        visited_inodes.add(inode_id)
                                         size_map[stat.st_size].append(p)
                     except (OSError, PermissionError):
                         continue
