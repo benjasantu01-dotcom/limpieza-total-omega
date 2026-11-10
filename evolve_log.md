@@ -896,3 +896,4 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-10T15:51:43` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-10T16:01:58` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-10T16:12:10` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-10T16:22:21` Presupuesto diario agotado (350 usados). Corte hasta mañana.
