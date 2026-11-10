@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 66
-- Sin cambios (nada sustancial que mejorar): 14
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 120 | 9 | 45 | 9 | 129 |
-| 2026-11-10 | 59 | 4 | 21 | 5 | 103 |
+| 2026-11-09 | 118 | 9 | 44 | 9 | 128 |
+| 2026-11-10 | 60 | 4 | 22 | 6 | 104 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **32**
 - robustez ante casos límite: **31**
-- rendimiento: **28**
+- seguridad defensiva: **30**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `safety.py`: **18**
 - `diskreport.py`: **17**
 - `quarantine.py`: **17**
-- `safety.py`: **17**
 - `duplicates.py`: **16**
 - `memory.py`: **16**
 - `healthscore.py`: **15**
-- `assistant.py`: **14**
 - `settings.py`: **14**
 - `scanner.py`: **14**
-- `branding.py`: **13**
+- `assistant.py`: **13**
+- `branding.py`: **12**
 - `organizer.py`: **10**
 - `startup.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-10T08:14:42` **safety.py** (rendimiento): Se ha optimizado la gestión de caché de `_ATTR_CACHE` y `_FILE_ID_CACHE` convirtiéndolos en `dict` simples en lugar de `OrderedDict`, ya que la lógica de validación actual no requiere el mantenimiento del orden de inserción, reduciendo el overhead de memoria y ciclos de CPU en cada acceso.
 - `2026-11-10T08:07:01` **memory.py** (rendimiento): Optimicé el rendimiento del módulo `memory.py` evitando la instanciación innecesaria de objetos `ProcessMemory` durante la enumeración de procesos mediante el uso de una validación temprana del tamaño del Working Set antes de procesar el nombre o crear el objeto.
 - `2026-11-10T08:02:58` **duplicates.py** (rendimiento): Optimizé la función `_collect_candidates` para evitar I/O redundante eliminando las llamadas repetidas a `_is_valid_candidate` dentro del loop de procesamiento, aprovechando que las validaciones necesarias ya se realizan mediante `entry.stat()` y el chequeo de `inode_id`.
 - `2026-11-10T07:53:40` **diskreport.py** (rendimiento): Optimizé la función `walk_files` reemplazando el uso repetido de `Path.relative_to` (dentro de un loop crítico) por un manejo más directo de los nombres de archivo y evitando la instanciación innecesaria de objetos `Path` mediante el uso de `os.path.join` y `Path` solo cuando es estrictamente necesario, reduciendo la presión sobre el recolector de basura en recorridos de disco extensos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T07:21:31` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `largest_folders` reemplazando la lógica manual de búsqueda de `top_level` con el método `Path.relative_to`, haciendo el código más idiomático y robusto ante rutas complejas.
 - `2026-11-10T07:11:58` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros donde faltaban (como en `_is_input_too_deep_or_complex` y `_has_circular_refs`), corregí la definición de `_CRITERIOS_MAP` para asegurar consistencia tipográfica con su versión inmutable, y añadí docstrings explicativos a las funciones de validación de estructuras para clarificar su rol defensivo ante ataques de denegación de servicio (DoS).
 - `2026-11-10T07:11:19` **startup.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta contra rutas que contienen caracteres nulos (`\0`) y se añadieron chequeos de tipo defensivos en el procesamiento de rutas dentro de `_resolve_and_cache_path` para prevenir excepciones críticas al interactuar con el sistema de archivos de Windows.
-- `2026-11-10T07:02:35` **settings.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `ConfigKey` en `_Validators.int` y `_Validators.str` para prevenir que se intenten procesar claves inexistentes o inválidas durante la actualización de settings, añadiendo un `try-except` más granular en `_read_and_parse_json` para asegurar que fallos en la decodificación no propaguen excepciones inesperadas.
