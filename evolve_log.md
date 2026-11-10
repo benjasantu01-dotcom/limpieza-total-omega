@@ -981,3 +981,33 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-10T03:28:00` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-11-10T03:28:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-10T03:28:00` Corrida terminada. Total usado hoy: 84.
+- `2026-11-10T03:36:39` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-10T03:37:07` Tests FALLARON:
+```
+str, int] = {}
+        total = 0
+        recs: List[str] = []
+>       cache_key = _get_pipeline_cache_key(metrics)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: unhashable type: 'SystemMetrics'
+
+app/healthscore.py:306: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_clean_system_scores_high - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_a_broken_system_scores_low - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_score_never_leaves_the_zero_to_hundred_range - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommendation - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommendation - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_quarantined_files_are_mentioned - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_compute_score_is_pure_and_repeatable - TypeError: unhashable type: 'SystemMetrics'
+FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recommendations - TypeError: unhashable type: 'SystemMetrics'
+9 failed, 290 passed in 1.86s
+
+```
+- `2026-11-10T03:37:07` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Optimicé el cálculo del pipeline implementando una estrategia de cacheo basada en una firma de estado de las métricas (`_get_pipeline_cache_key`), evitando el re-procesamiento innecesario del bloque de reglas y normalización cuando los datos de entrada no han cambiado, mejorando el rendimiento en UI reactivas.
+- `2026-11-10T03:38:08` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards, ensure_safety_in_task, wrapper
+- `2026-11-10T03:38:35` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-11-10T03:39:04` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `_is_valid_junk_entry` y `_process_directory` reemplazando llamadas repetidas a `Path().suffix` por manipulaciones directas sobre el nombre del archivo, evitando la sobrecarga de instanciar objetos `Path` miles de veces durante el escaneo recursivo.
+- `2026-11-10T03:39:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-10T03:39:04` Corrida terminada. Total usado hoy: 88.

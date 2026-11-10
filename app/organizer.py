@@ -138,7 +138,8 @@ class JunkFile:
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si el nombre de archivo proporcionado corresponde a una extensión basura."""
     if not filename: return False
-    return Path(filename).suffix.lower() in JUNK_EXTENSIONS
+    _, ext = os.path.splitext(filename)
+    return ext.lower() in JUNK_EXTENSIONS
 
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """
@@ -319,7 +320,8 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 def _is_valid_junk_entry(entry: os.DirEntry) -> bool:
     """Filtra archivos de entrada según extensiones, tamaño y atributos de sistema."""
     try:
-        if Path(entry.name).suffix.lower() not in JUNK_EXTENSIONS: return False
+        _, ext = os.path.splitext(entry.name)
+        if ext.lower() not in JUNK_EXTENSIONS: return False
         stats = entry.stat(follow_symlinks=False)
         return stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry)
     except (PermissionError, OSError):
