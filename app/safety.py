@@ -440,23 +440,23 @@ def is_running_as_admin() -> bool:
     try:
         shell32 = ctypes.windll.shell32
         return bool(shell32.IsUserAnAdmin())
-    except (AttributeError, OSError, ctypes.ArgumentError):
+    except (AttributeError, OSError, ctypes.ArgumentError, Exception):
         return False
 
 @lru_cache(maxsize=128)
 def _is_virtual_drive(path_str: str) -> bool:
     """Detección de unidades virtuales mapeadas mediante `QueryDosDeviceW`."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
-    drive = os.path.splitdrive(path_str)[0]
-    if not drive: return False
     try:
+        drive = os.path.splitdrive(path_str)[0]
+        if not drive: return False
         kernel32 = ctypes.windll.kernel32
         buf = ctypes.create_unicode_buffer(512)
         res = kernel32.QueryDosDeviceW(drive, buf, 512)
         if res > 0:
             device_path = buf.value
             return device_path.startswith("\\DosDevices\\") or device_path.startswith("\\??\\")
-    except (AttributeError, OSError, ctypes.ArgumentError):
+    except (AttributeError, OSError, ctypes.ArgumentError, Exception):
         return False 
     return False
 
@@ -1039,7 +1039,7 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     if sd.has_flag(Win32Attr.SPARSE_FILE):
-        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationCategory.INTEGRITY)
 
 def _check_container_permissions(target_path: Path) -> None:
     """Verifica permisos del contenedor (padre) antes de operar."""

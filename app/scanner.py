@@ -130,7 +130,8 @@ def _is_valid_file_path(path: PathInput) -> bool:
         abs_path = _get_canonical_path(path_str)
         if not abs_path: return False
         target_path = Path(abs_path)
-        if RESERVED_NAMES_RE.match(target_path.name): return False
+        # Validar nombre de archivo antes de acceder para evitar errores de sistema en Path
+        if not target_path.name or RESERVED_NAMES_RE.match(target_path.name): return False
         return target_path.exists() and not _cached_is_protected(abs_path) and target_path.is_file() and _is_safe_by_attributes(target_path)
     except (OSError, PermissionError, ValueError, TypeError, FileNotFoundError):
         return False
@@ -193,9 +194,10 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
         abs_path = _get_canonical_path(path_str)
         if not abs_path or _cached_is_protected(abs_path):
             return False
-        if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(os.path.basename(abs_path)):
+        base_name = os.path.basename(abs_path)
+        if not base_name or RESERVED_NAMES_RE.match(base_name):
             return False
-        if RESERVED_NAMES_RE.match(os.path.basename(abs_path)):
+        if UNC_PATH_RE.match(abs_path) or RTL_CHAR_RE.search(base_name):
             return False
         return True
     except (OSError, ValueError, TypeError, AttributeError):

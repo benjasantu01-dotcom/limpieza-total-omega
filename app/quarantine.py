@@ -431,24 +431,28 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         _check_path_for_junctions(path)
         if is_protected_path(path): raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
         
-        path_resolved = path.resolve()
-        if path_resolved.exists():
-            if not path_resolved.is_dir(): raise UnsafePathError("Ruta de cuarentena apunta a un archivo existente.")
-            if not is_safe_to_modify(path_resolved): raise UnsafePathError("Ruta de cuarentena marcada como insegura.")
-            if not os.access(path_resolved, os.W_OK | os.R_OK): raise PermissionError("Directorio inaccesible para operaciones de I/O.")
-            if _is_filesystem_read_only(path_resolved): raise PermissionError("Permisos insuficientes en directorio.")
+        # Validar si existe un archivo bloqueando el directorio
+        if path.exists() and not path.is_dir():
+            raise UnsafePathError("Ruta de cuarentena bloqueada por un archivo existente.")
+            
+        if path.exists():
+            if not is_safe_to_modify(path): raise UnsafePathError("Ruta de cuarentena marcada como insegura.")
+            if not os.access(path, os.W_OK | os.R_OK): raise PermissionError("Directorio inaccesible para operaciones de I/O.")
+            if _is_filesystem_read_only(path): raise PermissionError("Permisos insuficientes en directorio.")
         else:
-            _check_io_error_context(path_resolved.mkdir, parents=True, exist_ok=True)
-            if not path_resolved.exists() or not path_resolved.is_dir(): raise OSError("Fallo al asegurar directorio de cuarentena.")
+            _check_io_error_context(path.mkdir, parents=True, exist_ok=True)
+            if not path.exists() or not path.is_dir(): raise OSError("Fallo al asegurar directorio de cuarentena.")
         
+        # Validación de capacidad de escritura y limpieza
+        tmp_name = None
         try:
-            tmp_check = tempfile.NamedTemporaryFile(dir=path_resolved, delete=True)
-            tmp_check.close()
+            with tempfile.NamedTemporaryFile(dir=path, delete=True) as tmp_check:
+                tmp_name = tmp_check.name
         except (PermissionError, OSError) as e:
             raise PermissionError(f"Directorio de cuarentena no permite creación de temporales: {e}")
         
-        _ensure_path_ownership(path_resolved)
-        return path_resolved
+        _ensure_path_ownership(path)
+        return path
     except (OSError, RuntimeError, UnsafePathError, PermissionError) as e:
         raise OSError(f"Error al preparar directorio de cuarentena: {e}")
 

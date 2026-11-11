@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 58
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 248
+- Sin respuesta de la IA (error o límite): 247
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 12 | 1 | 6 | 1 | 6 |
+| 2026-11-09 | 9 | 1 | 6 | 1 | 5 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 48 | 4 | 15 | 5 | 56 |
+| 2026-11-11 | 51 | 4 | 16 | 5 | 56 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
-- manejo de errores y validación de entradas: **37**
-- rendimiento: **33**
+- manejo de errores y validación de entradas: **40**
+- rendimiento: **30**
 - robustez ante casos límite: **30**
 - seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
+- `safety.py`: **18**
 - `memory.py`: **17**
-- `safety.py`: **17**
-- `assistant.py`: **15**
-- `quarantine.py`: **15**
+- `quarantine.py`: **16**
 - `healthscore.py`: **15**
+- `assistant.py`: **14**
 - `duplicates.py`: **14**
-- `branding.py`: **11**
 - `organizer.py`: **11**
 - `settings.py`: **11**
 - `startup.py`: **10**
-- `scanner.py`: **9**
-- `browser.py`: **5**
+- `branding.py`: **10**
+- `scanner.py`: **10**
+- `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T05:29:36` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_is_valid_file_path` y `_is_valid_path_structure` validando que los nombres de archivo sean procesables antes de operar, previniendo errores de `OSError` o `NoneType` al manejar entradas malformadas o rutas que exceden el límite de `path_length_limit`.
+- `2026-11-11T05:29:21` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_running_as_admin` y `_is_virtual_drive` al centralizar el manejo de excepciones y validaciones de tipo, evitando que un `None` o una entrada inesperada provoquen un fallo silencioso o un error de tipo en tiempo de ejecución.
+- `2026-11-11T05:28:09` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_dir` añadiendo validaciones preventivas ante la posible existencia de archivos con el nombre del directorio y reforzando el manejo de excepciones para evitar estados inconsistentes en la inicialización del sandbox.
 - `2026-11-11T05:19:23` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita de excepciones en las validaciones de ruta, asegurando que un fallo en el acceso a metadatos de un archivo individual no detenga el procesamiento del resto de la lista.
 - `2026-11-11T05:19:13` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_get_handle_for_safe_proc` añadiendo chequeos explícitos para manejar posibles fallos en la resolución de rutas y estados de procesos, evitando que excepciones en llamadas a la API de Windows aborten el proceso de escaneo.
 - `2026-11-11T05:17:39` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo añadiendo comprobaciones de tipo y valor en `_process_pipeline_entry` y `_evaluate_rules`, evitando que excepciones inesperadas durante la ejecución del pipeline terminen en fallos silenciosos o resultados parciales corruptos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T03:07:05` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` reemplazando la creación implícita del directorio (que podría crear rutas no validadas o fuera de control) por una validación estricta del directorio padre mediante `ensure_safe_to_modify`, asegurando que ninguna operación de escritura escape de los límites permitidos.
 - `2026-11-11T02:56:49` **safety.py** (robustez ante casos límite): Se introdujo una verificación robusta para detectar y abortar el procesamiento de archivos que residen en rutas con puntos de reparseo ("junctions") internos o recursivos durante la normalización, evitando que la lógica de seguridad sea engañada por redirecciones de directorio que podrían ocultar la verdadera ubicación de un archivo crítico.
 - `2026-11-11T02:46:27` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` añadiendo una comprobación explícita para evitar errores en llamadas `ctypes` cuando el proceso termina durante la ejecución, y se mejoró `_extract_process_info` para manejar rutas con caracteres nulos o malformados que podrían causar errores de codificación al instanciar `Path`.
-- `2026-11-11T02:44:48` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del modelo de datos `SystemMetrics` ante estados inesperados o corrupciones de memoria, implementando una verificación de integridad más estricta en el constructor y evitando que valores numéricos inválidos (NaN/Inf) propaguen errores silenciosos a través del pipeline.
-- `2026-11-11T02:35:52` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en el acceso a los atributos, evitando que errores de acceso al sistema de archivos detengan prematuramente el recorrido.
-- `2026-11-11T02:35:43` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o bloqueos de acceso durante la iteración, envolviendo el acceso a `entry.path` y el manejo de los metadatos en un bloque `try-except` más granular para evitar que una excepción en un archivo específico interrumpa el escaneo completo del directorio.
