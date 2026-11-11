@@ -7,29 +7,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **177** (35.1% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 60
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 240
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 59
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 84 | 6 | 29 | 4 | 145 |
-| 2026-11-11 | 93 | 9 | 31 | 8 | 95 |
+| 2026-11-10 | 83 | 5 | 28 | 4 | 144 |
+| 2026-11-11 | 94 | 9 | 31 | 9 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **40**
-- rendimiento: **34**
+- rendimiento: **33**
 - robustez ante casos límite: **31**
 - seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
 - `safety.py`: **19**
 - `memory.py`: **17**
 - `healthscore.py`: **16**
@@ -37,7 +37,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **15**
 - `organizer.py`: **14**
 - `duplicates.py`: **14**
-- `settings.py`: **11**
+- `settings.py`: **12**
 - `scanner.py`: **10**
 - `startup.py`: **10**
 - `branding.py`: **9**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T10:03:44` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` al añadir una validación de presencia obligatoria de todas las claves definidas en `DEFAULTS`, asegurando que archivos `config.json` truncados o incompletos no pasen como válidos.
 - `2026-11-11T09:54:49` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión robusta de excepciones en la función `_get_path_stat_robust` mediante el uso del código `winerror` específico para distinguir entre fallos de acceso persistentes y condiciones de carrera temporales, evitando que errores de E/S del SO interrumpan innecesariamente el bucle de validación.
 - `2026-11-11T09:53:46` **quarantine.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `quarantine_file` para evitar la propagación de excepciones genéricas al capturar fallos específicos de I/O y permisos, asegurando que el estado del sistema no quede inconsistente si `_atomic_isolate_file` falla.
 - `2026-11-11T09:53:00` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `_is_file_locked`, `_is_system_hidden` y `_is_junction` mediante la implementación de chequeos de tipos, captura de excepciones más precisas y validación de retorno de llamadas de bajo nivel para prevenir fallos al encontrar objetos con permisos restringidos o atributos inesperados.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T08:00:59` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones en `quarantine.py` mediante la implementación de `ensure_safe_to_modify` antes de la ejecución de `os.replace` en el proceso de restauración, evitando posibles operaciones inseguras en rutas que podrían haber sido alteradas o ser maliciosas desde la última validación, manteniendo la integridad del sandbox.
 - `2026-11-11T07:50:40` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el acceso directo a los campos de `SystemMetrics` en las funciones de recomendación por el uso del método seguro `safe_get`, evitando así posibles riesgos de inyección o acceso no autorizado durante el procesamiento de datos del sistema.
 - `2026-11-11T07:41:21` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en el escaneo recursivo mediante la validación explícita de `is_safe_to_modify` antes de cualquier acceso a metadatos, evitando posibles condiciones de carrera o acceso a rutas fuera del alcance permitido del usuario durante el recorrido del disco.
-- `2026-11-11T07:41:12` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `largest_folders` frente a rutas de sistema o protegidas mediante una verificación de seguridad adicional antes de registrar métricas, asegurando que cualquier subcarpeta calculada cumpla con `is_protected_path` incluso después de operaciones de navegación en el árbol.

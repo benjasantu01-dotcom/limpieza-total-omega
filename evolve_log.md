@@ -837,3 +837,13 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-11T09:54:49` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una gestión robusta de excepciones en la función `_get_path_stat_robust` mediante el uso del código `winerror` específico para distinguir entre fallos de acceso persistentes y condiciones de carrera temporales, evitando que errores de E/S del SO interrumpan innecesariamente el bucle de validación.
 - `2026-11-11T09:54:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T09:54:49` Corrida terminada. Total usado hoy: 236.
+- `2026-11-11T10:02:34` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-11-11T10:03:06` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-11T10:03:44` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` al añadir una validación de presencia obligatoria de todas las claves definidas en `DEFAULTS`, asegurando que archivos `config.json` truncados o incompletos no pasen como válidos.
+- `2026-11-11T10:03:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T10:03:50` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-11T10:03:56` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-11T10:04:08` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-11T10:04:52` ➖ Sin cambios en assistant.py (enfoque: legibilidad y documentación). Motivo: Se introdujeron type hints más precisos y docstrings explicativos en las funciones de validación y extracción, facilitando la comprensión del flujo de datos defensivo sin alterar la lógica de ejecución.
+- `2026-11-11T10:04:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T10:04:52` Corrida terminada. Total usado hoy: 240.

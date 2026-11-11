@@ -374,8 +374,10 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _is_structure_valid(data: Any) -> bool:
-    """Verifica la integridad del diccionario JSON deserializado frente a tipos esperados."""
+    """Verifica la integridad del diccionario JSON deserializado frente a tipos y claves esperadas."""
     if not isinstance(data, dict) or not data or len(data) > 64: return False
+    # Validar que contenga todas las llaves necesarias para evitar estados parciales
+    if not all(k in data for k in DEFAULTS.keys()): return False
     for k, v in data.items():
         if k not in _VALID_ENUM_KEYS or not _is_valid_type(v, k): return False
     return True
