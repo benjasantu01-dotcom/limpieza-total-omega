@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **175** (34.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 59
-- Sin cambios (nada sustancial que mejorar): 12
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 88 | 6 | 30 | 5 | 147 |
-| 2026-11-11 | 88 | 9 | 29 | 7 | 95 |
+| 2026-11-10 | 85 | 6 | 29 | 5 | 147 |
+| 2026-11-11 | 90 | 9 | 30 | 8 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
-- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **41**
+- manejo de errores y validación de entradas: **41**
 - rendimiento: **34**
 - robustez ante casos límite: **31**
 - seguridad defensiva: **28**
@@ -30,21 +30,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `safety.py`: **19**
-- `memory.py`: **16**
+- `safety.py`: **18**
+- `memory.py`: **17**
+- `healthscore.py`: **16**
 - `assistant.py`: **15**
-- `healthscore.py`: **15**
 - `quarantine.py`: **14**
 - `duplicates.py`: **14**
 - `organizer.py`: **13**
-- `settings.py`: **12**
-- `scanner.py`: **11**
 - `startup.py`: **11**
+- `settings.py`: **11**
+- `scanner.py`: **10**
 - `branding.py`: **9**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T09:44:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para evitar que `EmptyWorkingSet` se ejecute sobre procesos inexistentes o que hayan terminado prematuramente, además de centralizar el manejo de recursos mediante bloques `try/finally` más estrictos para asegurar el cierre de handles incluso ante excepciones inesperadas durante la llamada a la API.
+- `2026-11-11T09:43:05` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` mediante la adición de una validación explícita de tipo en `__setattr__` para prevenir la inyección de tipos inesperados y ajusté `compute_score` para manejar de forma segura el caso de métricas nulas, siguiendo el enfoque de validación defensiva.
 - `2026-11-11T09:33:45` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_summary_data` y `summarize` reemplazando los bloques `except Exception` genéricos por capturas de errores específicos y validaciones explícitas de estado, evitando el silenciamiento de fallos críticos y mejorando el manejo de datos incompletos.
 - `2026-11-11T09:33:36` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_target_valid` mediante la validación explícita de `None` y tipos antes de acceder a atributos de `Path`, evitando posibles `AttributeError` o comportamientos inesperados cuando la estructura de archivos es inconsistente o contiene objetos mal formados.
 - `2026-11-11T09:32:42` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext.ingest` y `_apply_updates` mediante la validación explícita de tipos, capturando excepciones de forma específica y asegurando que las actualizaciones no corrompan el estado si el origen contiene valores inesperados o malformados.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T07:32:15` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al centralizar la validación de tipos y rangos de las métricas durante la ingestión inicial, reemplazando verificaciones redundantes con un método robusto que evita la inyección de datos complejos o no deseados.
 - `2026-11-11T07:31:48` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry.executable` manejando errores de `Path.resolve()` ante archivos bloqueados o con permisos denegados, evitando que una falla en un solo acceso detenga la generación del reporte y utilizando `is_safe_to_modify` para mantener la integridad de la seguridad sin romper la lectura.
 - `2026-11-11T07:31:20` **settings.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `perform_atomic_write` y `_read_and_parse_json` ante situaciones de concurrencia y corrupción, incluyendo el cierre obligatorio del descriptor de archivo ante excepciones y una validación de `st_nlink` para detectar posibles enlaces físicos maliciosos.
-- `2026-11-11T07:21:34` **safety.py** (robustez ante casos límite): Se ha añadido una validación de seguridad en `_validate_preconditions` para detectar si el archivo es un punto de reparse que apunta fuera del volumen de origen antes de intentar cualquier operación de E/S, mitigando el riesgo de redirecciones inesperadas durante el procesamiento.
-- `2026-11-11T07:20:38` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en `_safe_unlink` y `_perform_secure_copy` mediante la incorporación de una verificación explícita de `is_file()` antes de realizar operaciones destructivas o de copia, garantizando que cambios inesperados en el sistema de archivos no resulten en errores no controlados.

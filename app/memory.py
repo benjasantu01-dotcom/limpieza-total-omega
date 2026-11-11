@@ -446,11 +446,19 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "El PID debe ser un valor numérico válido."
     if target_pid <= 0 or _is_system_process(target_pid) or not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
         return False, "Operación no permitida: PID protegido o función no disponible."
+    
     path_buf = ctypes.create_unicode_buffer(1024)
     handle = _get_handle_for_safe_proc(target_pid, WinAccessMasks.TRIM_REQUIRED, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
+    
     if handle is None:
-        return False, "Acceso denegado o proceso en zona restringida."
+        return False, "Acceso denegado o proceso inexistente/en zona restringida."
+        
     try:
+        # Re-validar que el proceso sigue activo antes de intentar el trim
+        exit_code = wintypes.DWORD()
+        if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+            return False, "El proceso terminó antes de poder liberar su memoria."
+            
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud de liberación."
