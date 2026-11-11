@@ -325,12 +325,10 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Aplica un factor de escala y desplazamiento a las coordenadas base del escudo."""
     if not math.isfinite(scale) or scale <= 0 or not math.isfinite(x) or not math.isfinite(y): return ()
-    n = len(SHIELD_BASE_COORDS)
-    res = [0.0] * n
-    for i in range(0, n, 2):
-        res[i] = x + (SHIELD_BASE_COORDS[i] * scale)
-        res[i+1] = y + (SHIELD_BASE_COORDS[i+1] * scale)
-    return tuple(res)
+    return tuple(
+        (x + SHIELD_BASE_COORDS[i] * scale) if i % 2 == 0 else (y + SHIELD_BASE_COORDS[i] * scale)
+        for i in range(len(SHIELD_BASE_COORDS))
+    )
 
 def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
     """Genera el contenido del archivo SVG del logo (formato string)."""

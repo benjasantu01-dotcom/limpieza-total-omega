@@ -287,7 +287,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     root_stat = _safe_stat(root_path)
     if root_stat and hasattr(root_stat, 'st_ino') and hasattr(root_stat, 'st_dev'):
@@ -316,7 +316,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if inode in visited_inodes:
                                 continue
                             visited_inodes.add(inode)
-                        stack.append(Path(entry.path))
+                        stack.append(entry.path)
                     
                     elif entry.is_file(follow_symlinks=False):
                         size = getattr(st, 'st_size', 0)

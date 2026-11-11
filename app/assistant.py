@@ -462,6 +462,7 @@ class SystemContext:
         """Recopila problemas detectados basándose en los criterios de salud."""
         if not self.analyzed: return ()
         snap = self.metrics_snapshot
+        # Búsqueda optimizada: solo evaluamos llaves que tienen criterios activos
         relevant = frozenset((k, snap[k]) for k in snap if k in _KEYS_WITH_CRITERIA)
         return _evaluate_active_problems(relevant)
 

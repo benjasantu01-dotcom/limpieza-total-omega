@@ -1113,3 +1113,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-11T01:45:30` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo un docstring de clase más detallado para `StartupEntry`, explicando la lógica de resolución y caché, y se añadieron type hints claros en las estructuras de datos globales para mejorar la mantenibilidad.
 - `2026-11-11T01:45:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T01:45:30` Corrida terminada. Total usado hoy: 44.
+- `2026-11-11T01:53:26` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-11T01:54:11` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_evaluate_active_problems` reemplazando la lógica de filtrado de tuplas por una búsqueda directa en `_CRITERIOS_MAP_IMMUTABLE`, eliminando loops redundantes y reduciendo la complejidad algorítmica de la evaluación de salud.
+- `2026-11-11T01:54:44` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `_get_scaled_poly` reemplazando la creación de listas intermedias por una tupla generada mediante un generador, reduciendo la carga en memoria y el uso de CPU durante los repintados frecuentes del logo en la interfaz gráfica.
+- `2026-11-11T01:55:07` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-11T01:55:18` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` reemplazando la creación repetitiva de objetos `Path` por el uso directo de strings y `entry.path`, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos de grandes volúmenes de archivos.
+- `2026-11-11T01:55:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T01:55:18` Corrida terminada. Total usado hoy: 48.
