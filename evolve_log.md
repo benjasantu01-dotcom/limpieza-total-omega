@@ -1322,3 +1322,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_pa
 - `2026-11-11T14:29:41` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo validaciones preventivas sobre las filas del CSV y reemplazando el `except Exception` genérico por un bloque de manejo de errores más específico y local, evitando que un fallo en una sola entrada corrompa el proceso de lectura de todo el registro.
 - `2026-11-11T14:29:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T14:29:41` Corrida terminada. Total usado hoy: 344.
+- `2026-11-11T14:38:15` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-11T14:39:00` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_build_payload` y `_call_gemini`, extrayendo la lógica de construcción de URL y validación de seguridad a constantes o pasos explícitos para clarificar el flujo de datos.
+- `2026-11-11T14:39:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T14:39:48` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejora de la mantenibilidad mediante la adición de Type Hints explícitos, docstrings enriquecidos y la corrección de una inconsistencia técnica en `_hex_to_rgb` para garantizar robustez ante formatos CSS no estándar.
+- `2026-11-11T14:40:13` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-11T14:40:25` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: legibilidad y documentación).
+- `2026-11-11T14:40:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T14:40:25` Corrida terminada. Total usado hoy: 348.

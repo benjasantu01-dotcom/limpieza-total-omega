@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 62
-- Sin cambios (nada sustancial que mejorar): 17
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 53 | 4 | 17 | 3 | 83 |
-| 2026-11-11 | 130 | 14 | 45 | 14 | 141 |
+| 2026-11-10 | 52 | 4 | 16 | 2 | 82 |
+| 2026-11-11 | 132 | 14 | 46 | 14 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **44**
 - seguridad defensiva: **33**
-- rendimiento: **32**
+- rendimiento: **31**
 - robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `safety.py`: **19**
-- `memory.py`: **18**
+- `memory.py`: **17**
 - `healthscore.py`: **16**
 - `quarantine.py`: **16**
 - `settings.py`: **16**
+- `assistant.py`: **15**
 - `duplicates.py`: **15**
-- `assistant.py`: **14**
 - `organizer.py`: **14**
+- `branding.py`: **11**
 - `startup.py`: **10**
-- `branding.py`: **10**
 - `scanner.py`: **9**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T14:39:48` **branding.py** (legibilidad y documentación): Mejora de la mantenibilidad mediante la adición de Type Hints explícitos, docstrings enriquecidos y la corrección de una inconsistencia técnica en `_hex_to_rgb` para garantizar robustez ante formatos CSS no estándar.
+- `2026-11-11T14:39:00` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_build_payload` y `_call_gemini`, extrayendo la lógica de construcción de URL y validación de seguridad a constantes o pasos explícitos para clarificar el flujo de datos.
 - `2026-11-11T14:29:41` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones preventivas sobre las filas del CSV y reemplazando el `except Exception` genérico por un bloque de manejo de errores más específico y local, evitando que un fallo en una sola entrada corrompa el proceso de lectura de todo el registro.
 - `2026-11-11T14:29:26` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` añadiendo validaciones de tipo explícitas y manejo de errores ante datos malformados, asegurando que la configuración cargada sea siempre consistente con el esquema `AppSettings`.
 - `2026-11-11T14:18:48` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas y capturando excepciones de sistema de forma específica para prevenir estados inconsistentes durante operaciones de disco.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T12:27:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de la integridad de los datos en `quarantine.py` mediante la implementación de `os.fsync` sobre el archivo de destino después de su escritura (`_perform_secure_copy`) y antes del reemplazo atómico, asegurando que los bytes estén físicamente en disco y no solo en el búfer del SO, previniendo así la pérdida de datos ante fallos inesperados.
 - `2026-11-11T12:17:15` **memory.py** (seguridad defensiva): Se ha mejorado `_extract_process_info` para validar la seguridad de la ruta mediante `is_protected_path` antes de procesar el PID, evitando así cualquier acceso no autorizado a rutas sensibles durante el parseo de datos de procesos.
 - `2026-11-11T12:15:38` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_path_check` añadiendo una validación explícita para asegurar que el path esté normalizado (absolute) antes de verificar si es una ruta protegida, evitando que rutas relativas malintencionadas eludan los filtros.
-- `2026-11-11T12:08:25` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` implementando una validación estricta de "traversal" que impide que una ruta se escape de la raíz permitida mediante `pathlib.Path.is_relative_to` (o lógica equivalente), garantizando que las operaciones de escaneo nunca excedan el ámbito definido por el usuario.
-- `2026-11-11T11:57:41` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_structure_valid` añadiendo una comprobación de tipo estricta para el valor de cada clave frente a su valor por defecto, evitando fallos ante configuraciones JSON cuyo esquema base es correcto pero los tipos de valores internos están corruptos.

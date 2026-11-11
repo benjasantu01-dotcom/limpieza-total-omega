@@ -803,11 +803,9 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
     
-    # Construcción de estructura segura antes de serializar
-    content_payload: Dict[str, Any] = {
-        "contents": [{
-            "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]
-        }]
+    # Construcción de estructura segura
+    content_payload = {
+        "contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]
     }
     
     if not _is_safe_payload_structure(content_payload): return None
@@ -848,21 +846,25 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not (_API_KEY_REGEX.match(api_key) and _MODEL_NAME_REGEX.match(model) and context_text and _ensure_safe_text(context_text)):
         return None
     
-    payload: Optional[bytes] = _build_payload(question, context_text)
+    payload = _build_payload(question, context_text)
     if not payload: return None
     
-    base_target = _ENDPOINT_BASE.format(model=model)
-    if not base_target.startswith(_API_HOST_ROOT) or any(c in base_target for c in _FORBIDDEN_CHARS): return None
+    target_url = _ENDPOINT_BASE.format(model=model)
+    if not target_url.startswith(_API_HOST_ROOT) or any(c in target_url for c in _FORBIDDEN_CHARS): return None
     
     try:
-        url_with_key = f"{base_target}?{urllib.parse.urlencode({'key': api_key})}"
-        req: urllib.request.Request = urllib.request.Request(url_with_key, data=payload, headers={"Content-Type": "application/json", "Accept": "application/json"}, method="POST")
+        url_with_key = f"{target_url}?{urllib.parse.urlencode({'key': api_key})}"
+        req = urllib.request.Request(
+            url_with_key, 
+            data=payload, 
+            headers={"Content-Type": "application/json", "Accept": "application/json"}, 
+            method="POST"
+        )
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
-            raw_res: bytes = res.read(_MAX_RESPONSE_BYTES + 1)
+            raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
-            decoded_res = json.loads(raw_res.decode("utf-8"))
-            return _extract_text_from_gemini_json(decoded_res)
+            return _extract_text_from_gemini_json(json.loads(raw_res.decode("utf-8")))
     except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, OSError, ValueError): return None
 
 def ask(question: str, context: Optional[SystemContext] = None, base: Optional[Union[str, Path]] = None) -> Answer:

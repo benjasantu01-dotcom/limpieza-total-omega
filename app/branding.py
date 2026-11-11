@@ -261,12 +261,19 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Convierte un string hexadecimal CSS (formato #RRGGBB) a una tupla RGB."""
-    if not isinstance(value, str) or not value.startswith('#') or len(value) != 7:
+    """Convierte un string hexadecimal CSS (formato #RRGGBB) a una tupla RGB (R, G, B)."""
+    if not isinstance(value, str) or not value.startswith('#'):
         return (0, 0, 0)
+    # Soporta formatos #RGB y #RRGGBB
+    clean_val = value.lstrip('#')
     try:
-        val = int(value[1:], 16)
-        return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
+        if len(clean_val) == 3:
+            val = int(clean_val, 16)
+            return ((val >> 8 & 0xF) * 0x11, (val >> 4 & 0xF) * 0x11, (val & 0xF) * 0x11)
+        if len(clean_val) == 6:
+            val = int(clean_val, 16)
+            return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
+        return (0, 0, 0)
     except (ValueError, TypeError): return (0, 0, 0)
 
 @lru_cache(maxsize=256)
