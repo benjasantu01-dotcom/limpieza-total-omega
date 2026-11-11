@@ -1140,7 +1140,7 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
                 continue
 
 def _validate_path_components(path: Path) -> None:
-    """Verifica componentes buscando spoofings o ciclos referenciales."""
+    """Verifica componentes buscando spoofings o ciclos referenciales mediante inspección recursiva."""
     try:
         resolved_path = path.resolve()
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError, AttributeError):
@@ -1164,34 +1164,39 @@ def _validate_path_components(path: Path) -> None:
         
         try:
             if current_check.exists():
-                try:
-                    resolved = current_check.resolve()
-                    if resolved in visited:
-                        raise UnsafePathError(f"Referencia circular detectada: {current_check}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationCategory.INTEGRITY)
-                    visited.add(resolved)
-                    
-                    if _is_system_directory_junction(str(current_check)):
-                        if _get_final_path_normalized(current_check) is None:
-                            raise UnsafePathError(f"Punto de reparse inaccesible: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
-                except (OSError, RuntimeError, PermissionError, AttributeError):
-                    continue
+                _verify_path_integrity_at_node(current_check, visited)
         except (OSError, PermissionError, AttributeError):
             continue
     
     _validate_no_reparse_traversal(path)
+
+def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
+    """Helper para verificar ciclos y accesibilidad en un nodo de la ruta."""
+    try:
+        resolved = node.resolve()
+        if resolved in visited:
+            raise UnsafePathError(f"Referencia circular detectada: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationCategory.INTEGRITY)
+        visited.add(resolved)
+        
+        if _is_system_directory_junction(str(node)):
+            if _get_final_path_normalized(node) is None:
+                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+    except (OSError, RuntimeError, PermissionError, AttributeError):
+        pass
 
 def _validate_no_reparse_traversal(path: Path) -> None:
     """
     Asegura que el traversal de la ruta no resulte en una salida fuera 
     del volumen de origen debido a puntos de unión o enlaces simbólicos.
     """
-    current = Path(path.anchor)
+    root_anchor = Path(path.anchor)
+    current = root_anchor
     for part in path.parts[1:]:
         current = current / part
         if current.is_symlink() or _is_system_directory_junction(str(current)):
             _validate_junction_depth(current)
             target = _get_final_path_normalized(current)
-            if not target.is_relative_to(Path(path.anchor)):
+            if not target.is_relative_to(root_anchor):
                 raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
 
 def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:

@@ -174,7 +174,6 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         
     try:
         stats = entry.stat(follow_symlinks=False)
-        # Validación estricta de metadatos básicos para prevenir datos corruptos o fuera de rango
         st_size = getattr(stats, 'st_size', -1)
         st_mtime = getattr(stats, 'st_mtime', -1.0)
         
@@ -284,7 +283,6 @@ class Scanner:
         """
         Filtro de seguridad de primer nivel para directorios y archivos.
         Valida que la entrada sea accesible, no esté protegida y respete la estructura.
-        Utiliza `safe_cache` para minimizar llamadas repetidas a validadores costosos.
         """
         try:
             path_str = getattr(entry, 'path', None)

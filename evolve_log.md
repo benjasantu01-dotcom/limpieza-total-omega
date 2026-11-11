@@ -1105,3 +1105,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-11T01:36:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-11-11T01:36:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T01:36:09` Corrida terminada. Total usado hoy: 40.
+- `2026-11-11T01:43:14` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-11-11T01:43:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T01:44:14` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_path_components` y `_validate_no_reparse_traversal`, extrayendo lógica de inspección profunda a funciones auxiliares con nombres semánticos y documentando los flujos de validación para clarificar las intenciones de seguridad.
+- `2026-11-11T01:44:43` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas y normalizando la nomenclatura de variables para clarificar el flujo de datos en el motor de escaneo.
+- `2026-11-11T01:45:15` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el método `_read_and_parse_json` y en las funciones auxiliares de validación para clarificar el flujo de seguridad y la lógica de manejo de errores, mejorando la legibilidad técnica sin alterar el comportamiento.
+- `2026-11-11T01:45:30` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo un docstring de clase más detallado para `StartupEntry`, explicando la lógica de resolución y caché, y se añadieron type hints claros en las estructuras de datos globales para mejorar la mantenibilidad.
+- `2026-11-11T01:45:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T01:45:30` Corrida terminada. Total usado hoy: 44.

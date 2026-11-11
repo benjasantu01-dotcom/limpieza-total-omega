@@ -387,6 +387,9 @@ def _is_structure_valid(data: Any) -> bool:
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
     """
     Lee y parsea el JSON validando metadatos para detectar condiciones de carrera.
+    
+    Aplica una comprobación estricta de estado (stat) antes y después de abrir
+    el archivo mediante un descriptor, previniendo manipulaciones externas.
     """
     try:
         if not file_path.exists() or not file_path.is_file(): return None

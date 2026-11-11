@@ -66,7 +66,7 @@ MAX_PATH_LEN: int = 260
 MAX_PATH_PARTS: int = 64
 MIN_ASCII_VAL: int = 32
 
-# --- Cachés globales ---
+# --- Cachés globales de estado para optimizar operaciones de I/O ---
 _EXISTS_CACHE: EntryCache = {}
 _COMMAND_CACHE: Dict[str, str] = {}
 _RESOLVED_PATH_CACHE: Dict[str, str] = {}
@@ -87,11 +87,12 @@ HOW_TO_DISABLE: str = (
 @dataclass
 class StartupEntry:
     """
-    Representa un elemento detectado en la configuración de inicio del sistema.
+    Representa una entrada de inicio identificada en el sistema.
     
-    Atributos internos:
-    - _exec_cache: Almacena la ruta absoluta resuelta una vez validada.
-    - _checked_exists: Flag de control para evitar re-escaneo de archivos inexistentes.
+    Esta clase encapsula la lógica de resolución de rutas de comandos y validación 
+    de seguridad. Utiliza caché interna (`_exec_cache`) para evitar llamadas
+    redundantes a `path.resolve()` y `os.access()`, minimizando el impacto 
+    en el rendimiento durante el escaneo del sistema.
     """
     name: str
     command: str
