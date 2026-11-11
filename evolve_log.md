@@ -1337,3 +1337,4 @@ FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_pa
 - `2026-11-11T14:49:24` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T14:49:24` Corrida terminada. Total usado hoy: 350.
 - `2026-11-11T14:58:40` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-11T15:08:54` Presupuesto diario agotado (350 usados). Corte hasta mañana.
