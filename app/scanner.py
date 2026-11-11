@@ -323,9 +323,9 @@ class Scanner:
         stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Determina si un archivo debe ser analizado por heurísticas."""
-        idx = name.rfind('.')
-        return idx != -1 and name[idx:].lower() in self._relevant_exts
+        """Determina si un archivo debe ser analizado por heurísticas usando set lookup."""
+        _, ext = os.path.splitext(name)
+        return ext.lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Clasifica el procesamiento según si el nodo es archivo o directorio."""

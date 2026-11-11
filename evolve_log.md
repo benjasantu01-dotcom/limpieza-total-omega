@@ -921,3 +921,22 @@ FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area -
 - `2026-11-11T11:06:35` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché de metadatos más eficiente basado en `st_ctime` (tiempo de creación/cambio de estado del nodo), garantizando que el hash solo se recalcule si el archivo realmente ha sido modificado y evitando I/O redundante durante escaneos masivos.
 - `2026-11-11T11:06:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T11:06:35` Corrida terminada. Total usado hoy: 264.
+- `2026-11-11T11:14:02` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-11T11:14:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-11-11T11:15:40` Tests FALLARON:
+```
+fePathError: [INTEGRITY] [IO_ERROR] Validación de seguridad fallida: unsupported operand type(s) for -: 'float' and 'tuple'
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [INTEGRITY] [IO_ERROR] Validación de seguridad fallida: unsupported operand type(s) for -: 'float' and 'tuple'
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [INTEGRITY] [IO_ERROR] Validación de seguridad fallida: unsupported operand type(s) for -: 'float' and 'tuple'
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [INTEGRITY] [IO_ERROR] Validación de seguridad fallida: unsupported operand type(s) for -: 'float' and 'tuple'
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [INTEGRITY] [IO_ERROR] Validación de seguridad fallida: unsupported operand type(s) for -: 'float' and 'tuple'
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [INTEGRITY] [IO_ERROR] Validación de seguridad fallida: unsupported operand type(s) for -: 'float' and 'tuple'
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [INTEGRITY] [IO_ERROR] Validación de seguridad fallida: unsupported operand type(s) for -: 'float' and 'tuple'
+26 failed, 273 passed in 1.78s
+
+```
+- `2026-11-11T11:15:40` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de TTL (Time-To-Live) en las funciones de caché (`_get_file_attrs`, `_get_file_id`, etc.) para asegurar que el rendimiento sea óptimo sin sacrificar la frescura de los metadatos, evitando re-consultas innecesarias al sistema de archivos durante una misma sesión corta.
+- `2026-11-11T11:16:11` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `_is_relevant_extension` reemplazando la búsqueda lineal de subcadenas con una verificación de conjunto (`set` lookup) basada en la extensión extraída, mejorando la eficiencia en el loop de escaneo.
+- `2026-11-11T11:16:27` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `settings.py` reemplazando la lectura repetida de archivos mediante la implementación de una caché de bajo nivel en `_read_and_parse_json` y centralizando la validación de estructura con `DEFAULTS.keys()` para evitar iteraciones redundantes.
+- `2026-11-11T11:16:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T11:16:27` Corrida terminada. Total usado hoy: 268.

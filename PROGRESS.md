@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 60
+- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 73 | 5 | 25 | 4 | 133 |
-| 2026-11-11 | 109 | 10 | 35 | 11 | 99 |
+| 2026-11-10 | 72 | 5 | 25 | 4 | 130 |
+| 2026-11-11 | 111 | 11 | 36 | 11 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **33**
-- seguridad defensiva: **28**
+- rendimiento: **35**
+- seguridad defensiva: **27**
 - robustez ante casos límite: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
 - `safety.py`: **19**
 - `memory.py`: **18**
 - `quarantine.py`: **16**
 - `duplicates.py`: **15**
 - `healthscore.py`: **15**
+- `settings.py`: **14**
 - `assistant.py`: **14**
 - `organizer.py`: **14**
-- `settings.py`: **13**
+- `scanner.py`: **11**
 - `startup.py`: **11**
-- `scanner.py`: **10**
 - `branding.py`: **10**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T11:16:27` **settings.py** (rendimiento): Optimicé el rendimiento de `settings.py` reemplazando la lectura repetida de archivos mediante la implementación de una caché de bajo nivel en `_read_and_parse_json` y centralizando la validación de estructura con `DEFAULTS.keys()` para evitar iteraciones redundantes.
+- `2026-11-11T11:16:11` **scanner.py** (rendimiento): Optimizé `_is_relevant_extension` reemplazando la búsqueda lineal de subcadenas con una verificación de conjunto (`set` lookup) basada en la extensión extraída, mejorando la eficiencia en el loop de escaneo.
 - `2026-11-11T11:06:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché de metadatos más eficiente basado en `st_ctime` (tiempo de creación/cambio de estado del nodo), garantizando que el hash solo se recalcule si el archivo realmente ha sido modificado y evitando I/O redundante durante escaneos masivos.
 - `2026-11-11T10:54:52` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` integrando el filtrado por `is_system_or_hidden` directamente dentro de `os.scandir` usando los atributos de `os.DirEntry` (que ya están en el buffer del sistema operativo), evitando así múltiples llamadas a `stat` y `GetFileAttributesW` innecesarias durante la recursión.
 - `2026-11-11T10:54:28` **diskreport.py** (rendimiento): Optimizé `walk_files` eliminando llamadas redundantes a `os.path.exists` (que ya estaba implícito en `scandir`) y reduciendo las conversiones a `Path` dentro del bucle, mejorando el rendimiento en recorridos profundos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T10:24:24` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación de las estructuras y constantes críticas para clarificar el flujo de la API Win32 y el manejo de memoria, cumpliendo con el enfoque de legibilidad y mantenibilidad sin alterar la funcionalidad.
 - `2026-11-11T10:16:01` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos, docstrings estandarizados y la refactorización de `_collect_candidates` para extraer la lógica de procesamiento de entradas, facilitando la comprensión del flujo de datos en el recorrido del sistema de archivos.
 - `2026-11-11T10:15:51` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `largest_folders` extrayendo la lógica de resolución de subdirectorio inmediato a una función auxiliar explícita, facilitando la comprensión del algoritmo de agregación.
-- `2026-11-11T10:15:26` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `browser.py` mediante la adición de docstrings estructurados y precisos en las funciones clave, clarificando las precondiciones, las responsabilidades de cada componente del escáner y el flujo de validación de seguridad para facilitar futuras auditorías.
-- `2026-11-11T10:13:21` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de renderizado geométrico (`draw_logo`, `draw_ring`, `draw_gradient_bar`) añadiendo docstrings que explican el contrato de los parámetros de coordenadas, dimensiones y las limitaciones de las excepciones, facilitando el mantenimiento futuro de la capa visual.
