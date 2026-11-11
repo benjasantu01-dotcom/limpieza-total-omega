@@ -1494,3 +1494,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-11T05:00:17` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 3): unexpected indent
 - `2026-11-11T05:00:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T05:00:17` Corrida terminada. Total usado hoy: 120.
+- `2026-11-11T05:07:00` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-11T05:08:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-11T05:08:26` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-11T05:08:52` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y las funciones auxiliares de recolección de datos capturando errores de acceso a disco específicos durante la agregación, evitando que una excepción puntual (ej. un archivo bloqueado a mitad de un proceso) invalide todo el reporte.
+- `2026-11-11T05:08:59` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-11T05:08:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T05:08:59` Corrida terminada. Total usado hoy: 124.

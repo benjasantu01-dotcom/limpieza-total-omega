@@ -375,18 +375,24 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Recorre el árbol de archivos y consolida estadísticas."""
+    """Recorre el árbol de archivos y consolida estadísticas con manejo de errores."""
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    for path, size in walk_files(directory, skip_protected):
-        stats.register_file(size, _get_extension(path))
-        
-        if limit > 0:
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, (size, path))
-            elif size > top_heap[0][0]:
-                heapq.heapreplace(top_heap, (size, path))
+    try:
+        for path, size in walk_files(directory, skip_protected):
+            try:
+                stats.register_file(size, _get_extension(path))
+                
+                if limit > 0:
+                    if len(top_heap) < limit:
+                        heapq.heappush(top_heap, (size, path))
+                    elif size > top_heap[0][0]:
+                        heapq.heapreplace(top_heap, (size, path))
+            except Exception:
+                continue
+    except Exception:
+        pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
@@ -399,7 +405,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     data = _collect_summary_data(root, skip_protected, limit=20)
 
     if data.total_files == 0: 
-        return ["Aviso: No se encontraron archivos para analizar."]
+        return ["Aviso: No se encontraron archivos para analizar o falta permiso de lectura."]
     
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} ({data.total_files} archivos)", "", "Por tipo:"]
     
