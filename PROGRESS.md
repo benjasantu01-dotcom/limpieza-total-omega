@@ -5,38 +5,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **184** (36.7% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 62
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 52 | 4 | 16 | 2 | 82 |
-| 2026-11-11 | 132 | 14 | 46 | 14 | 142 |
+| 2026-11-10 | 51 | 4 | 14 | 2 | 81 |
+| 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **33**
-- rendimiento: **31**
+- rendimiento: **30**
 - robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `safety.py`: **19**
+- `safety.py`: **18**
 - `memory.py`: **17**
 - `healthscore.py`: **16**
 - `quarantine.py`: **16**
 - `settings.py`: **16**
+- `duplicates.py`: **16**
 - `assistant.py`: **15**
-- `duplicates.py`: **15**
 - `organizer.py`: **14**
 - `branding.py`: **11**
 - `startup.py`: **10**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T14:48:57` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad del módulo mediante la adición de docstrings detallados en funciones internas y la clarificación de tipos, facilitando el mantenimiento y la comprensión de la lógica de escaneo y hashing.
 - `2026-11-11T14:39:48` **branding.py** (legibilidad y documentación): Mejora de la mantenibilidad mediante la adición de Type Hints explícitos, docstrings enriquecidos y la corrección de una inconsistencia técnica en `_hex_to_rgb` para garantizar robustez ante formatos CSS no estándar.
 - `2026-11-11T14:39:00` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_build_payload` y `_call_gemini`, extrayendo la lógica de construcción de URL y validación de seguridad a constantes o pasos explícitos para clarificar el flujo de datos.
 - `2026-11-11T14:29:41` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones preventivas sobre las filas del CSV y reemplazando el `except Exception` genérico por un bloque de manejo de errores más específico y local, evitando que un fallo en una sola entrada corrompa el proceso de lectura de todo el registro.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T12:28:45` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` ante ataques de *time-of-check time-of-use* (TOCTOU) al elevar la validación de integridad del directorio contenedor, asegurando que la estructura padre sea validada antes de intentar cualquier operación de E/S sobre el archivo destino, protegiendo contra redirecciones de último minuto en el sistema de archivos.
 - `2026-11-11T12:27:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de la integridad de los datos en `quarantine.py` mediante la implementación de `os.fsync` sobre el archivo de destino después de su escritura (`_perform_secure_copy`) y antes del reemplazo atómico, asegurando que los bytes estén físicamente en disco y no solo en el búfer del SO, previniendo así la pérdida de datos ante fallos inesperados.
 - `2026-11-11T12:17:15` **memory.py** (seguridad defensiva): Se ha mejorado `_extract_process_info` para validar la seguridad de la ruta mediante `is_protected_path` antes de procesar el PID, evitando así cualquier acceso no autorizado a rutas sensibles durante el parseo de datos de procesos.
-- `2026-11-11T12:15:38` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_path_check` añadiendo una validación explícita para asegurar que el path esté normalizado (absolute) antes de verificar si es una ruta protegida, evitando que rutas relativas malintencionadas eludan los filtros.

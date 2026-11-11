@@ -178,7 +178,10 @@ def _process_entry(
     visited_inodes: set[Tuple[int, int]], 
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Procesa una entrada individual durante el escaneo recursivo, usando atributos de DirEntry."""
+    """
+    Evalúa una entrada de directorio. Si es carpeta, encola para exploración recursiva (BFS).
+    Si es archivo, verifica viabilidad y añade a size_map para procesamiento de hashing.
+    """
     try:
         stat = entry.stat(follow_symlinks=False)
         entry_path = Path(entry.path)
