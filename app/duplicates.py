@@ -100,6 +100,7 @@ def _safe_path_check(path: Path) -> bool:
         if not path.exists(): return False
         if not is_safe_to_modify(path): return False
         abs_path = path.resolve(strict=True)
+        # Se requiere resolución absoluta para prevenir escapes mediante rutas relativas
         return not is_protected_path(abs_path) and not is_junction(abs_path)
     except (OSError, RuntimeError, ValueError):
         return False

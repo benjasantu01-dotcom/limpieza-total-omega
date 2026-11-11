@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 64
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 216
+- Rechazadas por guardia de seguridad: 65
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 72 | 5 | 25 | 4 | 110 |
-| 2026-11-11 | 117 | 13 | 39 | 13 | 106 |
+| 2026-11-10 | 72 | 5 | 25 | 4 | 106 |
+| 2026-11-11 | 119 | 13 | 40 | 14 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,16 +25,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **45**
 - rendimiento: **35**
 - robustez ante casos límite: **30**
-- seguridad defensiva: **28**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
+- `memory.py`: **19**
 - `safety.py`: **19**
-- `memory.py`: **18**
 - `quarantine.py`: **17**
+- `duplicates.py`: **16**
 - `healthscore.py`: **16**
-- `duplicates.py`: **15**
 - `settings.py`: **15**
 - `assistant.py`: **15**
 - `organizer.py`: **14**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T12:17:15` **memory.py** (seguridad defensiva): Se ha mejorado `_extract_process_info` para validar la seguridad de la ruta mediante `is_protected_path` antes de procesar el PID, evitando así cualquier acceso no autorizado a rutas sensibles durante el parseo de datos de procesos.
+- `2026-11-11T12:15:38` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_path_check` añadiendo una validación explícita para asegurar que el path esté normalizado (absolute) antes de verificar si es una ruta protegida, evitando que rutas relativas malintencionadas eludan los filtros.
 - `2026-11-11T12:08:25` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` implementando una validación estricta de "traversal" que impide que una ruta se escape de la raíz permitida mediante `pathlib.Path.is_relative_to` (o lógica equivalente), garantizando que las operaciones de escaneo nunca excedan el ámbito definido por el usuario.
 - `2026-11-11T11:57:41` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_structure_valid` añadiendo una comprobación de tipo estricta para el valor de cada clave frente a su valor por defecto, evitando fallos ante configuraciones JSON cuyo esquema base es correcto pero los tipos de valores internos están corruptos.
 - `2026-11-11T11:47:40` **quarantine.py** (robustez ante casos límite): He mejorado `_check_path_syntax_integrity` para detectar la presencia de caracteres Unicode normalizados (nfc/nfd) y rutas con espacios finales o puntos, previniendo ataques de evasión de filtros y colisiones en sistemas de archivos Windows.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T10:54:28` **diskreport.py** (rendimiento): Optimizé `walk_files` eliminando llamadas redundantes a `os.path.exists` (que ya estaba implícito en `scandir`) y reduciendo las conversiones a `Path` dentro del bucle, mejorando el rendimiento en recorridos profundos.
 - `2026-11-11T10:45:16` **branding.py** (rendimiento): Optimicé el cálculo de `draw_logo` y `draw_ring` eliminando la recreación innecesaria de objetos y simplificando el acceso a constantes, reduciendo la carga de CPU durante el renderizado frecuente en el Canvas.
 - `2026-11-11T10:44:24` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` incorporando docstrings detallados en todas las funciones y métodos públicos, explicitando los parámetros, comportamientos ante errores y las restricciones de seguridad aplicadas, facilitando así la auditabilidad del código sin alterar su lógica.
-- `2026-11-11T10:43:58` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `_SettingsManager` y sus métodos críticos para clarificar el flujo de escritura atómica, y se han añadido type hints más precisos en los validadores para facilitar el mantenimiento y la auditoría del código.
-- `2026-11-11T10:35:33` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de la clase `Scanner` y clarificando las firmas de funciones complejas mediante `TypeAlias` adicionales, facilitando la auditoría de seguridad del flujo de recorrido del sistema de archivos.

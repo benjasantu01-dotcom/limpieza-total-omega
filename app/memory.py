@@ -258,10 +258,8 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             return None
         ws_val = _safe_int_conversion(parts[2])
         if len(parts) > 3 and parts[3].strip():
-            try:
-                if is_protected_path(Path(parts[3].strip())):
-                    return None
-            except (ValueError, OSError):
+            path_check = Path(parts[3].strip())
+            if is_protected_path(path_check):
                 return None
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
