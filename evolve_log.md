@@ -855,3 +855,40 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-11T10:16:01` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos, docstrings estandarizados y la refactorización de `_collect_candidates` para extraer la lógica de procesamiento de entradas, facilitando la comprensión del flujo de datos en el recorrido del sistema de archivos.
 - `2026-11-11T10:16:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T10:16:01` Corrida terminada. Total usado hoy: 244.
+- `2026-11-11T10:23:01` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-11-11T10:23:30` Tests FALLARON:
+```
+ribute 'WEIGHTS'
+
+evolve/tests/test_modules.py:814: AttributeError
+_____________________ test_security_weighs_more_than_junk ______________________
+
+    def test_security_weighs_more_than_junk():
+        # Un archivo sospechoso importa más que unos MB de basura.
+>       assert healthscore.WEIGHTS["seguridad"] > healthscore.WEIGHTS["basura"]
+               ^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'healthscore' has no attribute 'WEIGHTS'
+
+evolve/tests/test_modules.py:819: AttributeError
+__________________ test_breakdown_covers_every_weighted_area ___________________
+
+    def test_breakdown_covers_every_weighted_area():
+        resultado = healthscore.compute_score(healthscore.SystemMetrics())
+>       assert set(resultado.breakdown) == set(healthscore.WEIGHTS)
+                                               ^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'healthscore' has no attribute 'WEIGHTS'
+
+evolve/tests/test_modules.py:857: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_weights_add_up_to_one_hundred - AttributeError: module 'healthscore' has no attribute 'WEIGHTS'
+FAILED evolve/tests/test_modules.py::test_security_weighs_more_than_junk - AttributeError: module 'healthscore' has no attribute 'WEIGHTS'
+FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area - AttributeError: module 'healthscore' has no attribute 'WEIGHTS'
+3 failed, 296 passed in 1.77s
+
+```
+- `2026-11-11T10:23:30` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de `PIPELINE_DEFINITIONS` para usar una estructura más declarativa y la adición de docstrings técnicos explicativos en los métodos críticos de la clase `SystemMetrics`.
+- `2026-11-11T10:23:56` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 20% del original (posible pérdida de código)
+- `2026-11-11T10:24:24` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las estructuras y constantes críticas para clarificar el flujo de la API Win32 y el manejo de memoria, cumpliendo con el enfoque de legibilidad y mantenibilidad sin alterar la funcionalidad.
+- `2026-11-11T10:24:37` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad mediante la actualización de los docstrings en las funciones críticas de E/S (`stage_for_review`, `delete_reviewed`, `_is_safe_for_disk_op`), aclarando el propósito y el flujo de validación, y se ha estandarizado la nomenclatura interna de variables para diferenciar mejor los estados de los archivos (`src_real`, `target_path`) sin alterar la funcionalidad.
+- `2026-11-11T10:24:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T10:24:37` Corrida terminada. Total usado hoy: 248.

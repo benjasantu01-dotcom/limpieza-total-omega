@@ -95,7 +95,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura de la API Windows 'GlobalMemoryStatusEx' para RAM física y virtual."""
+    """Estructura de la API Windows 'GlobalMemoryStatusEx' (RAM física y paginación)."""
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -109,7 +109,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura de contadores utilizada por 'GetProcessMemoryInfo'."""
+    """Estructura de contadores utilizada por 'GetProcessMemoryInfo' para Working Set."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
