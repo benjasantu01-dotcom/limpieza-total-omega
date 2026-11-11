@@ -365,6 +365,7 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         
+        # En sistemas POSIX, validar estricta propiedad del archivo
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if (st.st_mode & 0o077) != 0: return False
         

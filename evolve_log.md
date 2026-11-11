@@ -610,3 +610,20 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-11T08:02:25` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
 - `2026-11-11T08:02:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T08:02:25` Corrida terminada. Total usado hoy: 192.
+- `2026-11-11T08:10:21` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-11-11T08:10:54` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `settings.py` al implementar una validación estricta de "Owner" para el archivo de configuración en sistemas POSIX, garantizando que solo el propietario del proceso pueda leer o modificar su propia configuración, evitando ataques de suplantación o acceso por otros usuarios en entornos multiusuario.
+- `2026-11-11T08:11:21` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se endureció la seguridad en `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo una comprobación contra puntos de reparse (reparse points) mediante `is_symlink()` antes de cualquier operación de resolución, previniendo el seguimiento de enlaces simbólicos o junctions que podrían apuntar fuera de las áreas permitidas del sistema de archivos.
+- `2026-11-11T08:11:21` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T08:11:21` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-11T08:11:41` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T08:11:41` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-11T08:12:11` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T08:12:11` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-11T08:12:27` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T08:12:27` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-11T08:12:47` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T08:12:47` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-11T08:13:17` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T08:13:17` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-11T08:13:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T08:13:17` Corrida terminada. Total usado hoy: 196.

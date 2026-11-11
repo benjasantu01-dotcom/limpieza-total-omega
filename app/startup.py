@@ -132,11 +132,12 @@ class StartupEntry:
             if p_str in _RESOLVED_PATH_CACHE:
                 return True
             
-            if not path.exists():
+            # Reparse point check
+            if not path.exists() or path.is_symlink():
                 return False
                 
             resolved = path.resolve(strict=True)
-            if not resolved.is_file() or resolved.is_symlink():
+            if not resolved.is_file():
                 return False
                 
             if resolved.suffix.lower() not in EXECUTABLE_EXTS:
@@ -167,7 +168,7 @@ class StartupEntry:
             
         try:
             p: Path = Path(path_str)
-            if not p.parts or is_protected_path(p):
+            if not p.parts or is_protected_path(p) or p.is_symlink():
                 return ""
             return str(p)
         except (OSError, ValueError, RuntimeError, TypeError, PermissionError, AttributeError):
@@ -179,7 +180,7 @@ class StartupEntry:
             return _VALIDATION_CACHE[p_str]
             
         try:
-            if is_protected_path(p) or not is_safe_to_modify(p):
+            if is_protected_path(p) or not is_safe_to_modify(p) or p.is_symlink():
                 _VALIDATION_CACHE[p_str] = False
                 return False
             if not os.access(p, os.R_OK):
@@ -208,7 +209,7 @@ class StartupEntry:
                 return path_raw if _EXISTS_CACHE[path_raw] else path_raw
             
             p: Path = Path(norm)
-            if not p.is_absolute() or ".." in p.parts or not p.anchor:
+            if not p.is_absolute() or ".." in p.parts or not p.anchor or p.is_symlink():
                 _EXISTS_CACHE[path_raw] = False
                 return ""
             
@@ -306,7 +307,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         return None
         
     try:
-        if not entry.is_file(follow_symlinks=False) or entry.is_symlink() or "\0" in entry.path:
+        if not entry.is_file() or entry.is_symlink() or "\0" in entry.path:
             return None
 
         _, ext = os.path.splitext(entry.name)
