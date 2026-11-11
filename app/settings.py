@@ -300,7 +300,6 @@ class _Validators:
         if not isinstance(val, str): return None
         path_string = val.strip()
         if not path_string or "\0" in path_string or len(path_string) > 260: return None
-        # Validar que sea una ruta absoluta, existente o que apunte a un lugar seguro
         p = Path(path_string)
         if not p.is_absolute(): return None
         return path_string if _Validators._is_safe_path(path_string) else None
