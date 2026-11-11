@@ -145,7 +145,7 @@ def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
         if isinstance(entry, os.DirEntry):
             return entry.stat(follow_symlinks=False).st_file_attributes
         return entry.lstat().st_file_attributes
-    except (OSError, AttributeError, ValueError):
+    except (OSError, AttributeError, ValueError, PermissionError):
         return 0
 
 def _is_file_read_only(path: Path) -> bool:
@@ -192,6 +192,7 @@ def _try_open_win_file(path: Path) -> bool:
     Verifica si un archivo está disponible para acceso mediante la creación 
     de un handle compartido.
     """
+    if not isinstance(path, Path): return False
     try:
         if not path.exists(): return False
         handle = ctypes.windll.kernel32.CreateFileW(
@@ -241,10 +242,12 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_system_hidden(entry: Union[os.DirEntry, Path]) -> bool:
     """Verifica si el archivo es considerado oculto o de sistema por el SO."""
-    return bool(_get_win_attributes(entry) & LIMITS.ATTRS.MASK_PROTECTED)
+    attrs = _get_win_attributes(entry)
+    return bool(attrs & LIMITS.ATTRS.MASK_PROTECTED)
 
 def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
     """Valida el inodo y dispositivo original contra el archivo presente en el disco."""
+    if not isinstance(src_real, Path): return False
     try:
         if not src_real.exists(): return False
         stat_result = src_real.stat()

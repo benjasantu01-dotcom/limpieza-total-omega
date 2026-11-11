@@ -808,14 +808,10 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
     try:
         if not _is_file_exclusive(p_source):
             raise IOError("El archivo origen está bloqueado por otro proceso.")
-    except (OSError, PermissionError) as e:
-        raise RuntimeError(f"Error de acceso durante pre-check de exclusividad: {e}")
-
-    try:
         initial_stat = p_source.stat()
-    except OSError as e:
-        raise RuntimeError(f"Error al acceder a metadatos de origen: {e}")
-    
+    except (OSError, IOError, PermissionError) as e:
+        raise RuntimeError(f"Error de acceso durante validación de origen: {e}")
+
     if _is_filesystem_read_only(p_source.parent): raise OSError("El archivo origen reside en un volumen de solo lectura.")
     try: dest_dir: Path = quarantine_dir(base)
     except (OSError, PermissionError) as e: raise RuntimeError(f"Sandbox inaccesible: {e}")
@@ -838,10 +834,10 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
         item: QuarantineItem = _register_quarantine_item(destination, p_source, file_hash, file_inode, dev_id, mtime, reason, initial_stat.st_size, base)
         if p_source.exists() and not os.path.samefile(p_source, destination):
             try: _check_io_error_context(p_source.unlink)
-            except OSError as e: raise RuntimeError(f"Falla al remover original post-aislamiento: {e}")
+            except (OSError, PermissionError) as e: raise RuntimeError(f"Falla al remover original post-aislamiento: {e}")
         return item
     except (OSError, IOError, ValueError, RuntimeError, UnsafePathError) as e:
-        if destination and destination.exists(): _safe_unlink(destination)
+        if destination.exists(): _safe_unlink(destination)
         raise RuntimeError(f"Error durante proceso de cuarentena: {e}")
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:

@@ -763,7 +763,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
             return st
         except (PermissionError, OSError, FileNotFoundError) as e:
             err_code = getattr(e, 'winerror', None)
-            if isinstance(e, OSError) and (e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or err_code in (ERROR_SHARING_VIOLATION, ERROR_INSUFFICIENT_BUFFER)):
+            # Diferenciar fallos de bloqueo transitorio (error 32) de fallos de acceso definitivo
+            if isinstance(e, (PermissionError, OSError)) and (err_code == ERROR_SHARING_VIOLATION or e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN)):
                 if attempt < max_retries - 1:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
@@ -1046,7 +1047,7 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     if sd.has_flag(Win32Attr.SPARSE_FILE):
-        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationCategory.INTEGRITY)
 
 def _check_container_permissions(target_path: Path) -> None:
     """Verifica permisos del contenedor (padre) antes de operar."""
