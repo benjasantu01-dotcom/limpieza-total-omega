@@ -194,19 +194,23 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if not is_safe_to_modify(Path(entry.path)): continue
-                    
-                    if entry.is_dir(follow_symlinks=False):
-                        if depth < MAX_RECURSION_DEPTH and not is_junction(Path(entry.path)):
-                            queue.append((Path(entry.path).resolve(), depth + 1))
-                    elif entry.is_file(follow_symlinks=False):
-                        stat = entry.stat(follow_symlinks=False)
-                        if stat.st_size >= min_size and not is_system_or_hidden(Path(entry.path)):
-                            if skip_protected and is_protected_path(Path(entry.path)): continue
-                            inode_id = (stat.st_dev, stat.st_ino)
-                            if inode_id not in visited_inodes:
-                                visited_inodes.add(inode_id)
-                                size_map[stat.st_size].append(Path(entry.path))
+                    try:
+                        entry_path = Path(entry.path)
+                        if not is_safe_to_modify(entry_path): continue
+                        
+                        if entry.is_dir(follow_symlinks=False):
+                            if depth < MAX_RECURSION_DEPTH and not is_junction(entry_path):
+                                queue.append((entry_path.resolve(), depth + 1))
+                        elif entry.is_file(follow_symlinks=False):
+                            stat = entry.stat(follow_symlinks=False)
+                            if stat.st_size >= min_size and not is_system_or_hidden(entry_path):
+                                if skip_protected and is_protected_path(entry_path): continue
+                                inode_id = (stat.st_dev, stat.st_ino)
+                                if inode_id not in visited_inodes:
+                                    visited_inodes.add(inode_id)
+                                    size_map[stat.st_size].append(entry_path)
+                    except (OSError, PermissionError):
+                        continue
         except (OSError, PermissionError):
             continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}

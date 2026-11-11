@@ -298,30 +298,30 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if _is_excluded_path(entry.name):
-                        continue
-                    
                     try:
+                        if _is_excluded_path(entry.name):
+                            continue
+                        
                         st = entry.stat(follow_symlinks=False)
+                        
+                        if entry.is_dir(follow_symlinks=False):
+                            if skip_protected and is_protected_path(Path(entry.path)):
+                                continue
+                            if _is_reparse_point(st):
+                                continue
+                            if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
+                                inode = (st.st_dev, st.st_ino)
+                                if inode in visited_inodes:
+                                    continue
+                                visited_inodes.add(inode)
+                            stack.append(entry.path)
+                        
+                        elif entry.is_file(follow_symlinks=False):
+                            size = getattr(st, 'st_size', 0)
+                            if size >= 0:
+                                yield Path(entry.path), size
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
-
-                    if entry.is_dir(follow_symlinks=False):
-                        if skip_protected and is_protected_path(Path(entry.path)):
-                            continue
-                        if _is_reparse_point(st):
-                            continue
-                        if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
-                            inode = (st.st_dev, st.st_ino)
-                            if inode in visited_inodes:
-                                continue
-                            visited_inodes.add(inode)
-                        stack.append(entry.path)
-                    
-                    elif entry.is_file(follow_symlinks=False):
-                        size = getattr(st, 'st_size', 0)
-                        if size >= 0:
-                            yield Path(entry.path), size
         except (PermissionError, FileNotFoundError, OSError):
             continue
 

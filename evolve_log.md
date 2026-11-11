@@ -1143,3 +1143,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-11T02:26:07` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` ante entradas malformadas o tipos inesperados, garantizando que una actualización parcial fallida no deje el estado en un punto inconsistente o con tipos de datos erróneos que pudieran romper las operaciones matemáticas de los criterios de salud.
 - `2026-11-11T02:26:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T02:26:07` Corrida terminada. Total usado hoy: 60.
+- `2026-11-11T02:34:09` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-11-11T02:34:51` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-11T02:35:17` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-11T02:35:43` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o bloqueos de acceso durante la iteración, envolviendo el acceso a `entry.path` y el manejo de los metadatos en un bloque `try-except` más granular para evitar que una excepción en un archivo específico interrumpa el escaneo completo del directorio.
+- `2026-11-11T02:35:52` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_collect_candidates` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en el acceso a los atributos, evitando que errores de acceso al sistema de archivos detengan prematuramente el recorrido.
+- `2026-11-11T02:35:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T02:35:52` Corrida terminada. Total usado hoy: 64.
