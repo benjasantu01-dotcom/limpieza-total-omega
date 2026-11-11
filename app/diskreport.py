@@ -293,7 +293,9 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """Devuelve métricas de uso para todas las unidades detectadas."""
     targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
-    return [d for m in targets if (d := drive_usage(m)) is not None]
+    # Filtrado explícito para asegurar que solo se devuelvan objetos válidos
+    results = [d for m in targets if (d := drive_usage(m)) is not None]
+    return results
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
@@ -430,7 +432,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """Genera un reporte textual estructurado del uso de disco."""
     root = _validate_root(directory)
-    if root is None: return ["Error: Ruta inaccesible o no válida."]
+    if root is None: 
+        return ["Error: Ruta inaccesible, protegida o no válida."]
         
     data = _collect_summary_data(root, skip_protected, limit=20)
 

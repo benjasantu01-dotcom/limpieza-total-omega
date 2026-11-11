@@ -342,6 +342,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in PIPELINE_DEFINITIONS:
         try:
+            # Validación previa: omitir procesamiento si el entry tiene componentes inesperados
+            if not isinstance(entry, PipelineEntry): continue
             p, r = _process_pipeline_entry(metrics, entry)
             metric_breakdown[entry.area] = p
             total += p

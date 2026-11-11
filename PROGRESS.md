@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 60 | 4 | 21 | 3 | 84 |
-| 2026-11-11 | 123 | 13 | 42 | 14 | 140 |
+| 2026-11-10 | 57 | 4 | 20 | 3 | 84 |
+| 2026-11-11 | 126 | 13 | 43 | 14 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
-- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **43**
+- manejo de errores y validación de entradas: **42**
 - rendimiento: **35**
 - seguridad defensiva: **33**
 - robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `safety.py`: **20**
-- `quarantine.py`: **17**
+- `diskreport.py`: **22**
+- `safety.py`: **19**
 - `memory.py`: **17**
+- `duplicates.py`: **16**
+- `healthscore.py`: **16**
+- `quarantine.py`: **16**
 - `assistant.py`: **15**
-- `duplicates.py`: **15**
-- `healthscore.py`: **15**
 - `settings.py`: **15**
 - `organizer.py`: **13**
-- `scanner.py`: **10**
 - `startup.py`: **10**
 - `branding.py`: **10**
+- `scanner.py`: **9**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T14:08:53` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo al añadir un chequeo de precondición en `compute_score` que evita iterar sobre métricas mal inicializadas, reforzando la validación de los datos de entrada antes de que el pipeline procese información potencialmente corrupta.
+- `2026-11-11T14:08:25` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `group_by_size` y `_collect_candidates` mediante la validación explícita de `Path` y la captura de excepciones específicas, evitando que operaciones sobre tipos inesperados o rutas inaccesibles interrumpan el flujo del escaneo.
+- `2026-11-11T14:07:56` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `summarize` y `all_drives_usage` mediante la validación explícita de retornos, evitando la propagación de valores `None` y garantizando que el reporte refleje correctamente fallos en el acceso a disco en lugar de procesar objetos inválidos.
 - `2026-11-11T13:58:59` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_updates` en `SystemContext` para evitar fallos por cambios de tipo inesperados durante la asignación de atributos, añadiendo una validación explícita de tipos basada en el valor actual del objeto para prevenir inconsistencias.
 - `2026-11-11T12:37:18` **settings.py** (seguridad defensiva): Se endureció la validación de `ultima_carpeta` para evitar inyecciones de rutas externas o sospechosas, moviendo la lógica de chequeo `is_safe_to_modify` a una verificación estricta de sub-directorio mediante `pathlib.Path.resolve` y asegurando que la carpeta exista o sea una ruta absoluta válida antes de aceptarla como configuración persistente.
 - `2026-11-11T12:28:45` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` ante ataques de *time-of-check time-of-use* (TOCTOU) al elevar la validación de integridad del directorio contenedor, asegurando que la estructura padre sea validada antes de intentar cualquier operación de E/S sobre el archivo destino, protegiendo contra redirecciones de último minuto en el sistema de archivos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T11:37:34` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud mediante la implementación de una validación explícita en `_process_pipeline_entry` para prevenir errores de cálculo si un `scorer` devuelve valores fuera de rango o `NaN` (caso límite de operaciones matemáticas), asegurando que el pipeline no se interrumpa ante datos inesperados.
 - `2026-11-11T11:35:13` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad en `_get_immediate_child` para prevenir errores de cálculo si la ruta del archivo ya no existe, y se fortaleció `walk_files` con un bloque `try-except` más robusto durante la resolución de `st_ino/st_dev` para evitar interrupciones en sistemas con archivos bloqueados o volúmenes volátiles.
 - `2026-11-11T11:26:27` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` ante casos límite mediante una validación más estricta del tipo de los valores recibidos, asegurando que `_apply_updates` no falle ni contamine el estado ante entradas inesperadas que esquiven validaciones superficiales.
-- `2026-11-11T11:16:27` **settings.py** (rendimiento): Optimicé el rendimiento de `settings.py` reemplazando la lectura repetida de archivos mediante la implementación de una caché de bajo nivel en `_read_and_parse_json` y centralizando la validación de estructura con `DEFAULTS.keys()` para evitar iteraciones redundantes.
-- `2026-11-11T11:16:11` **scanner.py** (rendimiento): Optimizé `_is_relevant_extension` reemplazando la búsqueda lineal de subcadenas con una verificación de conjunto (`set` lookup) basada en la extensión extraída, mejorando la eficiencia en el loop de escaneo.
-- `2026-11-11T11:06:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché de metadatos más eficiente basado en `st_ctime` (tiempo de creación/cambio de estado del nodo), garantizando que el hash solo se recalcule si el archivo realmente ha sido modificado y evitando I/O redundante durante escaneos masivos.

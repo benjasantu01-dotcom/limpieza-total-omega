@@ -154,17 +154,18 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa rutas por tamaño exacto en bytes, descartando archivos no candidatos."""
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
-    if paths is None: return {}
+    if not isinstance(paths, Iterable): return {}
+    
     for p in paths:
-        if p is None: continue
-        item = Path(p)
-        if _safe_path_check(item):
-            try:
+        try:
+            if p is None: continue
+            item = Path(p)
+            if _safe_path_check(item):
                 st = item.stat(follow_symlinks=False)
                 if _is_valid_candidate(item, st.st_size):
                     groups_by_size[st.st_size].append(item)
-            except (OSError, PermissionError, TypeError): 
-                continue
+        except (OSError, PermissionError, TypeError): 
+            continue
     return dict(groups_by_size)
 
 
@@ -179,18 +180,15 @@ def _process_entry(
 ) -> None:
     """Procesa una entrada individual durante el escaneo recursivo, usando atributos de DirEntry."""
     try:
-        # Usamos los atributos de stat integrados en DirEntry para evitar llamadas extras
         stat = entry.stat(follow_symlinks=False)
         entry_path = Path(entry.path)
         
-        # Filtro de seguridad inicial rápido
         if not _safe_path_check(entry_path): return
         
         if entry.is_dir(follow_symlinks=False):
             if depth < MAX_RECURSION_DEPTH:
                 queue.append((entry_path.resolve(), depth + 1))
         elif entry.is_file(follow_symlinks=False):
-            # Optimización: filtrar sistema/oculto sin llamada externa adicional si fuera posible
             if stat.st_size >= min_size and not is_system_or_hidden(entry_path):
                 if skip_protected and is_protected_path(entry_path): return
                 inode_id = (stat.st_dev, stat.st_ino)
@@ -212,23 +210,25 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     queue: deque[Tuple[Path, int]] = deque()
     
     for d in directories:
-        if d:
-            try:
-                p_dir = Path(d).resolve()
-                if p_dir.is_dir() and _safe_path_check(p_dir):
-                    queue.append((p_dir, 0))
-            except (OSError, PermissionError, TypeError, ValueError):
-                continue
+        if d is None: continue
+        try:
+            p_dir = Path(d).resolve()
+            if p_dir.is_dir() and _safe_path_check(p_dir):
+                queue.append((p_dir, 0))
+        except (OSError, PermissionError, TypeError, ValueError):
+            continue
     
     while queue:
         current_dir, depth = queue.popleft()
         if current_dir in visited_paths: continue
         visited_paths.add(current_dir)
 
-        with suppress(OSError, PermissionError):
+        try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     _process_entry(entry, depth, min_size, skip_protected, queue, visited_inodes, size_map)
+        except (OSError, PermissionError):
+            continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 

@@ -1268,3 +1268,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-11T13:59:53` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-11T13:59:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T13:59:53` Corrida terminada. Total usado hoy: 332.
+- `2026-11-11T14:07:24` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-11T14:07:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T14:07:56` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `summarize` y `all_drives_usage` mediante la validación explícita de retornos, evitando la propagación de valores `None` y garantizando que el reporte refleje correctamente fallos en el acceso a disco en lugar de procesar objetos inválidos.
+- `2026-11-11T14:07:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T14:08:25` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `group_by_size` y `_collect_candidates` mediante la validación explícita de `Path` y la captura de excepciones específicas, evitando que operaciones sobre tipos inesperados o rutas inaccesibles interrumpan el flujo del escaneo.
+- `2026-11-11T14:08:53` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del cálculo al añadir un chequeo de precondición en `compute_score` que evita iterar sobre métricas mal inicializadas, reforzando la validación de los datos de entrada antes de que el pipeline procese información potencialmente corrupta.
+- `2026-11-11T14:09:39` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-11T14:09:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T14:09:39` Corrida terminada. Total usado hoy: 336.
