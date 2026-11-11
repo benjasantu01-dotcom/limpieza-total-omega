@@ -1350,3 +1350,4 @@ FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_pa
 - `2026-11-11T16:51:03` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-11T17:01:14` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-11-11T17:11:25` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-11T17:21:38` Presupuesto diario agotado (350 usados). Corte hasta mañana.
