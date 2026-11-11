@@ -1165,3 +1165,35 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-11T02:58:08` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-11-11T02:58:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T02:58:08` Corrida terminada. Total usado hoy: 72.
+- `2026-11-11T03:04:40` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-11-11T03:05:12` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se mejoró la resiliencia en la lectura y validación de archivos al añadir una comprobación de integridad mediante la comparación de tamaño y fecha de modificación antes y después de la lectura, evitando lecturas parciales o manipulaciones durante el proceso de E/S.
+- `2026-11-11T03:05:43` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.79s
+
+```
+- `2026-11-11T03:05:43` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de integridad en `_resolve_and_cache_path` para detectar y descartar rutas que, aunque absolutas, apuntan a dispositivos lógicos o unidades de red inexistentes mediante `os.path.exists()` antes de la resolución, previniendo cuelgues del hilo principal ante estados de montaje inestables.
+- `2026-11-11T03:06:26` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad en la deserialización de la respuesta de la API (`_extract_text_from_gemini_json`) integrando una validación estricta del tipo de dato `str` y forzando el truncado mediante `_validate_response_length` antes de cualquier procesamiento posterior, asegurando que ningún payload malicioso pueda sobrepasar los límites de memoria definidos.
+- `2026-11-11T03:06:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T03:07:05` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de `save_logo_svg` reemplazando la creación implícita del directorio (que podría crear rutas no validadas o fuera de control) por una validación estricta del directorio padre mediante `ensure_safe_to_modify`, asegurando que ninguna operación de escritura escape de los límites permitidos.
+- `2026-11-11T03:07:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T03:07:05` Corrida terminada. Total usado hoy: 76.

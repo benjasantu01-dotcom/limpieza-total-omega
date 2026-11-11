@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
-- Rechazadas por tests: 10
+- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 60
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 242
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 32 | 1 | 12 | 1 | 36 |
+| 2026-11-09 | 32 | 1 | 12 | 1 | 32 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 38 | 1 | 11 | 2 | 20 |
+| 2026-11-11 | 39 | 2 | 11 | 4 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **41**
 - rendimiento: **33**
 - robustez ante casos límite: **30**
-- seguridad defensiva: **22**
+- seguridad defensiva: **23**
 
 ## Mejoras aceptadas por archivo
 
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **13**
 - `startup.py`: **12**
 - `organizer.py`: **11**
+- `branding.py`: **11**
 - `scanner.py`: **10**
-- `branding.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T03:07:05` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` reemplazando la creación implícita del directorio (que podría crear rutas no validadas o fuera de control) por una validación estricta del directorio padre mediante `ensure_safe_to_modify`, asegurando que ninguna operación de escritura escape de los límites permitidos.
 - `2026-11-11T02:56:49` **safety.py** (robustez ante casos límite): Se introdujo una verificación robusta para detectar y abortar el procesamiento de archivos que residen en rutas con puntos de reparseo ("junctions") internos o recursivos durante la normalización, evitando que la lógica de seguridad sea engañada por redirecciones de directorio que podrían ocultar la verdadera ubicación de un archivo crítico.
 - `2026-11-11T02:46:27` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` añadiendo una comprobación explícita para evitar errores en llamadas `ctypes` cuando el proceso termina durante la ejecución, y se mejoró `_extract_process_info` para manejar rutas con caracteres nulos o malformados que podrían causar errores de codificación al instanciar `Path`.
 - `2026-11-11T02:44:48` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del modelo de datos `SystemMetrics` ante estados inesperados o corrupciones de memoria, implementando una verificación de integridad más estricta en el constructor y evitando que valores numéricos inválidos (NaN/Inf) propaguen errores silenciosos a través del pipeline.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T02:07:27` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de los contadores y reutilizando el buffer de ruta, evitando asignaciones de memoria repetitivas dentro del bucle de procesos.
 - `2026-11-11T02:05:11` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño, tipo, inodo) directamente durante el listado, evitando llamadas redundantes a `os.path.exists` y `stat()` posteriores, lo cual reduce drásticamente las llamadas al sistema y el tiempo de escaneo.
 - `2026-11-11T01:55:18` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la creación repetitiva de objetos `Path` por el uso directo de strings y `entry.path`, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos de grandes volúmenes de archivos.
-- `2026-11-11T01:54:44` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` reemplazando la creación de listas intermedias por una tupla generada mediante un generador, reduciendo la carga en memoria y el uso de CPU durante los repintados frecuentes del logo en la interfaz gráfica.
