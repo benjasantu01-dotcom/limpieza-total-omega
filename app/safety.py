@@ -1147,37 +1147,26 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
 
 def _validate_path_components(path: Path) -> None:
     """Verifica componentes buscando spoofings o ciclos referenciales mediante inspección recursiva."""
-    try:
-        resolved_path = path.resolve()
-    except (OSError, RuntimeError, PermissionError, ValueError, TypeError, AttributeError):
-        resolved_path = path
-
-    try:
-        anchor = Path(resolved_path.anchor)
-        parts = resolved_path.parts
-    except (AttributeError, ValueError, TypeError):
-        raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE)
-        
+    resolved_path = _get_final_path_normalized(path)
+    anchor = Path(resolved_path.anchor)
+    parts = resolved_path.parts
     visited: set[Path] = set()
 
     if len(parts) > MAX_DIRECTORY_DEPTH:
         raise UnsafePathError("Ruta demasiado profunda.", SafetyValidationErrorCode.PATH_TOO_DEEP, SafetyValidationCategory.STRUCTURE)
 
-    for i in range(len(parts)):
-        current_check = anchor.joinpath(*parts[:i+1])
-        if "~" in current_check.name or re.search(r'[\u200E\u200F\u202A-\u202E]', current_check.name):
-            raise UnsafePathError("Ruta con spoofing de nombres detectada.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
+    # Validar cada nodo de la jerarquía de la ruta
+    for i in range(1, len(parts) + 1):
+        node = anchor.joinpath(*parts[:i])
+        _verify_path_integrity_at_node(node, visited)
         
-        try:
-            if current_check.exists():
-                _verify_path_integrity_at_node(current_check, visited)
-        except (OSError, PermissionError, AttributeError):
-            continue
-    
     _validate_no_reparse_traversal(path)
 
 def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
-    """Helper para verificar ciclos y accesibilidad en un nodo de la ruta."""
+    """Valida la integridad de un nodo individual para prevenir spoofing y ciclos."""
+    if re.search(r'[\u200E\u200F\u202A-\u202E]', node.name):
+        raise UnsafePathError(f"Spoofing de nombres detectado en: {node.name}", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
+    
     try:
         resolved = node.resolve()
         if resolved in visited:
