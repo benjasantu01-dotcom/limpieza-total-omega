@@ -168,18 +168,16 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """
-    Realiza un recorrido BFS limitado para descubrir candidatos a duplicados.
-    Evita recursión infinita mediante MAX_RECURSION_DEPTH y trackea inodos para detectar
-    enlaces duros y duplicados físicos reales.
-    """
+    """Realiza un recorrido BFS limitado para descubrir candidatos a duplicados."""
     if directories is None or not isinstance(directories, Iterable) or min_size < 0: 
         return {}
+    
     size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
     visited_paths: set[Path] = set()
     queue: deque[Tuple[Path, int]] = deque()
     
+    # Inicialización de la cola con directorios raíz seguros
     for d in directories:
         if d:
             try:
@@ -197,23 +195,22 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
-                        p = Path(entry.path)
-                        if not is_safe_to_modify(p): continue
-                        
-                        if entry.is_dir(follow_symlinks=False):
-                            if depth < MAX_RECURSION_DEPTH and not is_junction(p):
-                                queue.append((p.resolve(), depth + 1))
-                        elif entry.is_file(follow_symlinks=False):
-                            stat = entry.stat(follow_symlinks=False)
-                            if stat.st_size >= min_size:
-                                if not (skip_protected and is_protected_path(p)) and not is_system_or_hidden(p):
-                                    inode_id = (stat.st_dev, stat.st_ino)
-                                    if inode_id not in visited_inodes:
-                                        visited_inodes.add(inode_id)
-                                        size_map[stat.st_size].append(p)
-                    except (OSError, PermissionError):
-                        continue
+                    p = Path(entry.path)
+                    if not is_safe_to_modify(p): continue
+                    
+                    if entry.is_dir(follow_symlinks=False):
+                        if depth < MAX_RECURSION_DEPTH and not is_junction(p):
+                            queue.append((p.resolve(), depth + 1))
+                    elif entry.is_file(follow_symlinks=False):
+                        stat = entry.stat(follow_symlinks=False)
+                        # Aplicar filtros de exclusión antes de registrar el archivo
+                        if stat.st_size >= min_size:
+                            is_protected = skip_protected and is_protected_path(p)
+                            if not is_protected and not is_system_or_hidden(p):
+                                inode_id = (stat.st_dev, stat.st_ino)
+                                if inode_id not in visited_inodes:
+                                    visited_inodes.add(inode_id)
+                                    size_map[stat.st_size].append(p)
         except (OSError, PermissionError):
             continue
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}

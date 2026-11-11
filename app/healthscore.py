@@ -179,13 +179,22 @@ _JUNK_SCORER: Final = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER: Final = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER: Final = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
+# --- Funciones de Recomendación (Reglas de Negocio) ---
+
+def _msg_security(m: SystemMetrics) -> str: return f"Riesgos de seguridad detectados: {m.suspicious_count}."
+def _msg_disk(m: SystemMetrics) -> str: return f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento."
+def _msg_memory(m: SystemMetrics) -> str: return "Memoria disponible baja, optimice sus procesos."
+def _msg_junk(m: SystemMetrics) -> str: return f"Acumulacion de archivos temporales: {m.junk_mb:.0f} MB."
+def _msg_duplicates(m: SystemMetrics) -> str: return f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados."
+def _msg_startup(m: SystemMetrics) -> str: return f"Exceso de programas en arranque: {m.startup_count} entradas."
+
 _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
-    "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _safe_factory(lambda m: f"Riesgos de seguridad detectados: {m.suspicious_count}."), lambda m, r: r < WARN_THRESHOLD_HIGH),),
-    "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Espacio libre en disco bajo: {m.disk_free_percent:.1f} porciento."), lambda m, r: r < WARN_THRESHOLD_LOW),),
-    "memoria": (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _safe_factory(lambda m: "Memoria disponible baja, optimice sus procesos."), lambda m, r: r < WARN_THRESHOLD_LOW),),
-    "basura": (RecommendationRule("basura", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Acumulacion de archivos temporales: {m.junk_mb:.0f} MB."), lambda m, r: r < WARN_THRESHOLD_MED),),
-    "duplicados": (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _safe_factory(lambda m: f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados."), lambda m, r: r < WARN_THRESHOLD_MED),),
-    "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _safe_factory(lambda m: f"Exceso de programas en arranque: {m.startup_count} entradas."), lambda m, r: r < WARN_THRESHOLD_LOW),),
+    "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _safe_factory(_msg_security), lambda m, r: r < WARN_THRESHOLD_HIGH),),
+    "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, _safe_factory(_msg_disk), lambda m, r: r < WARN_THRESHOLD_LOW),),
+    "memoria": (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _safe_factory(_msg_memory), lambda m, r: r < WARN_THRESHOLD_LOW),),
+    "basura": (RecommendationRule("basura", WARN_THRESHOLD_MED, _safe_factory(_msg_junk), lambda m, r: r < WARN_THRESHOLD_MED),),
+    "duplicados": (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _safe_factory(_msg_duplicates), lambda m, r: r < WARN_THRESHOLD_MED),),
+    "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _safe_factory(_msg_startup), lambda m, r: r < WARN_THRESHOLD_LOW),),
 }
 
 # --- Funciones de Extracción de Pipeline ---

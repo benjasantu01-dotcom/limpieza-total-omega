@@ -1088,3 +1088,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-11T01:14:45` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-11T01:14:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T01:14:45` Corrida terminada. Total usado hoy: 32.
+- `2026-11-11T01:23:00` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-11-11T01:23:29` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` añadiendo docstrings descriptivos con secciones de parámetros y retornos en funciones clave, y simplificando la lógica de `_validate_root` y `_is_excluded_path` para hacerlas más robustas y fáciles de entender, eliminando redundancias en las validaciones de tipo.
+- `2026-11-11T01:24:02` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron type hints en funciones críticas y se refactorizó la lógica de `_collect_candidates` para mejorar la legibilidad del flujo de trabajo, clarificando la separación entre la recolección de candidatos y la lógica de filtrado de seguridad.
+- `2026-11-11T01:24:39` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la robustez del código reemplazando las lambdas complejas en `_RULES` por funciones nominales bien documentadas, lo que facilita el mantenimiento, mejora la trazabilidad de errores y documenta el propósito de cada regla de recomendación.
+- `2026-11-11T01:25:39` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-11T01:26:42` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-11T01:27:35` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-11T01:27:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T01:27:35` Corrida terminada. Total usado hoy: 36.

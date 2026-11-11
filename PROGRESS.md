@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 57
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 247
+- Sin respuesta de la IA (error o límite): 246
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 52 | 5 | 17 | 2 | 46 |
+| 2026-11-09 | 51 | 4 | 16 | 2 | 45 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 13 | 1 | 3 | 0 | 15 |
+| 2026-11-11 | 16 | 1 | 4 | 0 | 15 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **30**
-- rendimiento: **26**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `quarantine.py`: **17**
 - `assistant.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **16**
-- `healthscore.py`: **14**
-- `duplicates.py`: **14**
+- `healthscore.py`: **15**
+- `duplicates.py`: **15**
 - `settings.py`: **13**
 - `startup.py`: **12**
-- `scanner.py`: **11**
+- `scanner.py`: **10**
 - `branding.py`: **10**
 - `organizer.py`: **10**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T01:24:39` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código reemplazando las lambdas complejas en `_RULES` por funciones nominales bien documentadas, lo que facilita el mantenimiento, mejora la trazabilidad de errores y documenta el propósito de cada regla de recomendación.
+- `2026-11-11T01:24:02` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas y se refactorizó la lógica de `_collect_candidates` para mejorar la legibilidad del flujo de trabajo, clarificando la separación entre la recolección de candidatos y la lógica de filtrado de seguridad.
+- `2026-11-11T01:23:29` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` añadiendo docstrings descriptivos con secciones de parámetros y retornos en funciones clave, y simplificando la lógica de `_validate_root` y `_is_excluded_path` para hacerlas más robustas y fáciles de entender, eliminando redundancias en las validaciones de tipo.
 - `2026-11-11T01:14:34` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings detallados para las constantes de layout y las clases de soporte, además de añadir type hints y clarificar la lógica de las funciones de renderizado geométrico para mejorar la mantenibilidad del motor visual.
 - `2026-11-11T01:14:01` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo `assistant.py` mediante docstrings detallados en funciones críticas y se ha refactorizado la lógica de validación de métricas para hacerla más explícita y legible, garantizando que el cumplimiento de los contratos de tipo sea transparente sin alterar el comportamiento.
 - `2026-11-11T01:13:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` asegurando que el lector de CSV maneje correctamente los errores de formato inesperados mediante la validación estricta de `fieldnames` y la prevención de excepciones durante la iteración sobre filas incompletas o mal formadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T00:43:41` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `collect_candidates` mediante la validación temprana de los parámetros de entrada y el manejo defensivo de errores en el bucle principal, asegurando que cualquier entrada nula o malformada en `directories` no interrumpa el proceso de escaneo.
 - `2026-11-11T00:43:15` **diskreport.py** (manejo de errores y validación de entradas): Reforcé la robustez de `summarize` y `_collect_summary_data` capturando excepciones granulares durante la iteración y el acceso a disco, asegurando que un archivo individual bloqueado o corrupto no interrumpa el informe completo.
 - `2026-11-11T00:42:48` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `_is_target_valid` mediante la validación explícita de tipos y la captura de errores en operaciones de ruta, evitando que rutas mal formadas o permisos denegados interrumpan el escaneo de navegadores.
-- `2026-11-11T00:35:19` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `blend` mediante validación explícita de formato y manejo de errores, asegurando que cualquier entrada malformada (ej. cadenas vacías, sin '#', o con caracteres no hexadecimales) no propague valores inválidos.
-- `2026-11-10T13:55:04` **organizer.py** (seguridad defensiva): Mejoré la seguridad de la función `_is_safe_for_disk_op` integrando una verificación explícita mediante `is_protected_path` para el destino, asegurando que ninguna operación de movimiento permita depositar basura en directorios protegidos por el sistema, reforzando la defensa contra rutas maliciosas.
-- `2026-11-10T13:54:34` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del chequeo de rutas al integrar una validación de longitud máxima y caracteres inválidos en `_is_process_executable_safe`, asegurando que `is_protected_path` siempre reciba una ruta normalizada y no datos corruptos del buffer de Win32.
