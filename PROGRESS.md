@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 32 | 1 | 12 | 1 | 32 |
+| 2026-11-09 | 32 | 1 | 12 | 1 | 28 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 39 | 2 | 11 | 4 | 20 |
+| 2026-11-11 | 41 | 2 | 11 | 4 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,17 +26,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **41**
 - rendimiento: **33**
 - robustez ante casos límite: **30**
-- seguridad defensiva: **23**
+- seguridad defensiva: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `memory.py`: **18**
 - `safety.py`: **18**
 - `duplicates.py`: **16**
 - `quarantine.py`: **16**
 - `assistant.py`: **16**
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
 - `settings.py`: **13**
 - `startup.py`: **12**
 - `organizer.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T03:16:19` **healthscore.py** (seguridad defensiva): He refactorizado `SystemMetrics.__setattr__` y `SystemMetrics.validate` para centralizar la lógica de asignación y validación en un método privado `_set_validated_field`, evitando la duplicidad y asegurando que cualquier modificación de las métricas pase por el mismo filtro estricto de seguridad definido en `_METRIC_LIMITS` y `_is_finite_numeric`.
+- `2026-11-11T03:15:44` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo en `walk_files` implementando una validación explícita con `is_protected_path` al procesar cada archivo detectado, asegurando que ningún archivo sea procesado si su ruta, por algún cambio dinámico o caso de borde en el sistema de archivos, termina siendo una ruta protegida.
 - `2026-11-11T03:07:05` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` reemplazando la creación implícita del directorio (que podría crear rutas no validadas o fuera de control) por una validación estricta del directorio padre mediante `ensure_safe_to_modify`, asegurando que ninguna operación de escritura escape de los límites permitidos.
 - `2026-11-11T02:56:49` **safety.py** (robustez ante casos límite): Se introdujo una verificación robusta para detectar y abortar el procesamiento de archivos que residen en rutas con puntos de reparseo ("junctions") internos o recursivos durante la normalización, evitando que la lógica de seguridad sea engañada por redirecciones de directorio que podrían ocultar la verdadera ubicación de un archivo crítico.
 - `2026-11-11T02:46:27` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` añadiendo una comprobación explícita para evitar errores en llamadas `ctypes` cuando el proceso termina durante la ejecución, y se mejoró `_extract_process_info` para manejar rutas con caracteres nulos o malformados que podrían causar errores de codificación al instanciar `Path`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T02:16:04` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) granular en `_get_file_attrs` y se introdujeron conjuntos de exclusión rápida en `_is_kernel_managed` para reducir significativamente la cantidad de llamadas costosas a la API de Win32 durante la iteración sobre directorios grandes.
 - `2026-11-11T02:14:21` **organizer.py** (rendimiento): Se optimizó el proceso `_process_directory` reemplazando la verificación constante de `entry.name` mediante `os.path.splitext` (operación costosa en strings) por una comprobación directa contra el set `JUNK_EXTENSIONS` usando el atributo `suffix` ya normalizado, mejorando el rendimiento en directorios con gran cantidad de archivos.
 - `2026-11-11T02:07:27` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de los contadores y reutilizando el buffer de ruta, evitando asignaciones de memoria repetitivas dentro del bucle de procesos.
-- `2026-11-11T02:05:11` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño, tipo, inodo) directamente durante el listado, evitando llamadas redundantes a `os.path.exists` y `stat()` posteriores, lo cual reduce drásticamente las llamadas al sistema y el tiempo de escaneo.
-- `2026-11-11T01:55:18` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la creación repetitiva de objetos `Path` por el uso directo de strings y `entry.path`, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos de grandes volúmenes de archivos.

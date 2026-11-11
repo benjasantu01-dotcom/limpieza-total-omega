@@ -317,6 +317,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             stack.append(entry.path)
                         
                         elif entry.is_file(follow_symlinks=False):
+                            if skip_protected and is_protected_path(Path(entry.path)):
+                                continue
                             size = getattr(st, 'st_size', 0)
                             if size >= 0:
                                 yield Path(entry.path), size

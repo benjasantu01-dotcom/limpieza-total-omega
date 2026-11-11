@@ -256,11 +256,15 @@ class SystemMetrics:
 
     def __post_init__(self) -> None: self.validate()
 
+    def _set_validated_field(self, name: str, value: Any) -> None:
+        """Centraliza la validación de campos para evitar estados inconsistentes."""
+        limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
+        clean_val = _validate_numeric(value, 0.0, *limits)
+        object.__setattr__(self, name, clean_val)
+
     def __setattr__(self, name: str, value: Any) -> None:
         if name in _ALL_METRICS:
-            limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
-            clean_val = _validate_numeric(value, 0.0, *limits)
-            object.__setattr__(self, name, clean_val)
+            self._set_validated_field(name, value)
         else:
             raise AttributeError(f"Campo no permitido: {name}")
 
@@ -272,9 +276,9 @@ class SystemMetrics:
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
 
     def validate(self) -> None:
-        """Asegura la integridad total de los campos internos."""
+        """Asegura la integridad total de los campos internos mediante re-validación."""
         for f in _ALL_METRICS:
-            object.__setattr__(self, f, self.get_clamped_metric(f))
+            self._set_validated_field(f, getattr(self, f, 0.0))
 
     @property
     def is_finite(self) -> bool: 
