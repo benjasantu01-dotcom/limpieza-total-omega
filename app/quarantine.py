@@ -296,23 +296,22 @@ def _get_sha256(path: Path, st: Optional[os.stat_result] = None) -> str:
     if path is None: return ""
     try:
         stat_res = st if st else path.stat()
-        cache_key = (stat_res.st_dev, stat_res.st_ino, stat_res.st_mtime, stat_res.st_size)
+        key = (stat_res.st_dev, stat_res.st_ino, stat_res.st_mtime, stat_res.st_size)
         now = time.monotonic()
         
-        if cache_key in _HASH_CACHE:
-            res, ts = _HASH_CACHE[cache_key]
-            if now - ts < 60.0: return res
+        if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < 60.0):
+            return _HASH_CACHE[key][0]
         
         with open(path, "rb") as f:
             if hasattr(hashlib, "file_digest"):
                 res = hashlib.file_digest(f, "sha256").hexdigest()
             else:
                 sha256_hash = hashlib.sha256()
-                for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
+                while chunk := f.read(CHUNK_SIZE):
                     sha256_hash.update(chunk)
                 res = sha256_hash.hexdigest()
         
-        _HASH_CACHE[cache_key] = (res, now)
+        _HASH_CACHE[key] = (res, now)
         return res
     except (OSError, IOError, MemoryError, PermissionError): 
         return ""
@@ -322,16 +321,15 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     if path is None or not path.exists(): return False
     try:
         st = path.stat()
-        cache_key = (st.st_dev, st.st_ino)
+        key = (st.st_dev, st.st_ino)
         now = time.monotonic()
         
-        if cache_key in _INODE_USE_CACHE:
-            res, ts = _INODE_USE_CACHE[cache_key]
-            if now - ts < 0.5: return res
+        if key in _INODE_USE_CACHE and (now - _INODE_USE_CACHE[key][1] < 0.5):
+            return _INODE_USE_CACHE[key][0]
         
         in_use = (st.st_nlink > 1 or _win_has_system_attributes(path) or not _is_file_exclusive(path))
             
-        _INODE_USE_CACHE[cache_key] = (in_use, now)
+        _INODE_USE_CACHE[key] = (in_use, now)
         return in_use
     except (OSError, PermissionError):
         return True
@@ -442,10 +440,9 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             if not path.exists() or not path.is_dir(): raise OSError("Fallo al asegurar directorio de cuarentena.")
         
         # Validación de capacidad de escritura y limpieza
-        tmp_name = None
         try:
-            with tempfile.NamedTemporaryFile(dir=path, delete=True) as tmp_check:
-                tmp_name = tmp_check.name
+            with tempfile.NamedTemporaryFile(dir=path, delete=True):
+                pass
         except (PermissionError, OSError) as e:
             raise PermissionError(f"Directorio de cuarentena no permite creación de temporales: {e}")
         
@@ -494,22 +491,18 @@ def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
     source_abs: Path = _is_path_canonical(source_path)
     target_abs: Path = _is_path_canonical(target_directory)
     
-    # 1. Validaciones físicas de seguridad
     _check_for_reparse_points(source_abs)
     if not source_abs.is_file(): raise UnsafePathError("Solo se permiten archivos regulares.")
     if source_abs.stat().st_size == 0: raise UnsafePathError("Archivos vacíos prohibidos.")
     if _is_filesystem_read_only(target_abs): raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
     
-    # 2. Validación de propiedad
     if hasattr(os, 'getuid'):
         if source_abs.stat().st_uid != os.getuid(): raise UnsafePathError("Aislamiento denegado: propiedad incorrecta.")
         
-    # 3. Consistencia y confinamiento
     _check_device_consistency(source_abs, target_abs)
     _verify_quarantine_preconditions(source_abs, target_abs)
     ensure_safe_to_modify(source_abs, allow_sensitive=True)
     
-    # 4. Exclusividad para prevenir acceso concurrente durante la copia
     if not _is_file_exclusive(source_abs): raise IOError("Archivo origen bloqueado por otro proceso.")
 
 def _validate_isolation_request(source_path: Path, target_directory: Path) -> None:
@@ -586,10 +579,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     target_path: Path = _manifest_path(base_path)
     
     try:
-        serializable = []
-        for item in items:
-            if not isinstance(item, QuarantineItem): raise TypeError("Tipo de dato inválido en manifiesto")
-            serializable.append(item.to_dict())
+        serializable = [item.to_dict() for item in items if isinstance(item, QuarantineItem)]
         encoded = json.dumps(serializable, indent=2, ensure_ascii=False).encode('utf-8')
     except (TypeError, ValueError) as e:
         raise ValueError(f"Error de serialización: {e}")
@@ -869,7 +859,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         _ensure_disk_space(parent, quarantine_item.size_bytes)
         if not parent.exists(): _check_io_error_context(parent.mkdir, parents=True, exist_ok=True)
         
-        # Validar seguridad antes de reubicar el archivo
         ensure_safe_to_modify(destination)
         
         _check_io_error_context(os.replace, str(stored_file), str(destination))

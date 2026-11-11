@@ -86,6 +86,7 @@ ScanResult: TypeAlias = List[Suspicion]
 TraversalStack: TypeAlias = List[Tuple[str, int]]
 Timestamp: TypeAlias = float
 PathInput: TypeAlias = Union[Path, str, None]
+VisitedNodes: TypeAlias = set[str]
 
 # Expresiones regulares para detección de técnicas de evasión y validación de nombres
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
@@ -295,7 +296,7 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida si una entrada de sistema debe ser ignorada por seguridad."""
+        """Valida si una entrada de sistema debe ser ignorada por seguridad o límites."""
         try:
             path_str = getattr(entry, 'path', None)
             if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
@@ -313,8 +314,8 @@ class Scanner:
         except (OSError, AttributeError, PermissionError):
             return False
 
-    def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
-        """Registra directorios en la pila de recorrido evitando bucles."""
+    def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
+        """Gestiona el registro de un nuevo directorio en el stack de búsqueda evitando bucles."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = _get_canonical_path(entry.path)
         if not norm_path or norm_path in visited: return
@@ -326,7 +327,7 @@ class Scanner:
         idx = name.rfind('.')
         return idx != -1 and name[idx:].lower() in self._relevant_exts
 
-    def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
+    def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Clasifica el procesamiento según si el nodo es archivo o directorio."""
         if not self._is_safe_entry(entry): return
         try:
@@ -342,7 +343,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta la suite de heurísticas sobre el archivo indicado."""
+        """Aplica la secuencia de checks heurísticos definidos en ALL_CHECKS."""
         stats: Optional[os.stat_result] = _safe_stat(entry)
         if stats is None: return
         for check_fn in ALL_CHECKS:
@@ -382,7 +383,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return []
     stack: TraversalStack = [(str(base_path), 0)]
-    visited: set[str] = {abs_path_str}
+    visited: VisitedNodes = {abs_path_str}
     while stack:
         current_dir, depth = stack.pop()
         try:

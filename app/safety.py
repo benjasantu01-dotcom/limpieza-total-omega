@@ -191,9 +191,8 @@ def _is_file_in_use_exclusive(path_str: str) -> bool:
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     """
-    Genera un identificador único (Volumen + FileID). Es fundamental para detectar 
-    ataques TOCTOU: si el ID cambia entre chequeos, el archivo fue reemplazado 
-    o movido por un actor malicioso.
+    Genera un identificador único (Volumen + FileID) mediante el uso de handles de sistema.
+    Es fundamental para detectar ataques TOCTOU.
     """
     if not isinstance(path_str, str) or not path_str or path_str.upper().startswith(("\\\\.\\", "//./")):
         return (0, 0, 0, 0)
@@ -207,9 +206,8 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
             st = os.stat(path_str)
             res = (st.st_dev, st.st_ino, 0, 0)
         else:
-            path_long = _to_long_path(path_str)
             kernel32 = ctypes.windll.kernel32
-            handle = kernel32.CreateFileW(path_long, 0x00, 0x03, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
+            handle = kernel32.CreateFileW(_to_long_path(path_str), 0x00, 0x03, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
             if handle != INVALID_HANDLE_VALUE:
                 try:
                     fid = FILE_ID_INFO()
@@ -217,7 +215,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
                         res = (int(fid.VolumeSerialNumber), int.from_bytes(bytes(fid.FileId.Identifier), 'little'), 0, 0)
                 finally:
                     kernel32.CloseHandle(handle)
-    except (OSError, PermissionError, Exception):
+    except Exception:
         pass
                 
     if len(_FILE_ID_CACHE) >= 4096: _FILE_ID_CACHE.clear()
