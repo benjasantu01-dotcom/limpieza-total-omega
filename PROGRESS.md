@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 63 | 4 | 22 | 3 | 84 |
-| 2026-11-11 | 122 | 13 | 41 | 14 | 138 |
+| 2026-11-10 | 60 | 4 | 21 | 3 | 84 |
+| 2026-11-11 | 123 | 13 | 42 | 14 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
-- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **46**
+- manejo de errores y validación de entradas: **39**
 - rendimiento: **35**
 - seguridad defensiva: **33**
 - robustez ante casos límite: **30**
@@ -31,13 +31,13 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **21**
 - `safety.py`: **20**
-- `memory.py`: **18**
 - `quarantine.py`: **17**
-- `healthscore.py`: **16**
+- `memory.py`: **17**
+- `assistant.py`: **15**
 - `duplicates.py`: **15**
+- `healthscore.py`: **15**
 - `settings.py`: **15**
-- `organizer.py`: **14**
-- `assistant.py`: **14**
+- `organizer.py`: **13**
 - `scanner.py`: **10**
 - `startup.py`: **10**
 - `branding.py`: **10**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T13:58:59` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_updates` en `SystemContext` para evitar fallos por cambios de tipo inesperados durante la asignación de atributos, añadiendo una validación explícita de tipos basada en el valor actual del objeto para prevenir inconsistencias.
 - `2026-11-11T12:37:18` **settings.py** (seguridad defensiva): Se endureció la validación de `ultima_carpeta` para evitar inyecciones de rutas externas o sospechosas, moviendo la lógica de chequeo `is_safe_to_modify` a una verificación estricta de sub-directorio mediante `pathlib.Path.resolve` y asegurando que la carpeta exista o sea una ruta absoluta válida antes de aceptarla como configuración persistente.
 - `2026-11-11T12:28:45` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` ante ataques de *time-of-check time-of-use* (TOCTOU) al elevar la validación de integridad del directorio contenedor, asegurando que la estructura padre sea validada antes de intentar cualquier operación de E/S sobre el archivo destino, protegiendo contra redirecciones de último minuto en el sistema de archivos.
 - `2026-11-11T12:27:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de la integridad de los datos en `quarantine.py` mediante la implementación de `os.fsync` sobre el archivo de destino después de su escritura (`_perform_secure_copy`) y antes del reemplazo atómico, asegurando que los bytes estén físicamente en disco y no solo en el búfer del SO, previniendo así la pérdida de datos ante fallos inesperados.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T11:16:27` **settings.py** (rendimiento): Optimicé el rendimiento de `settings.py` reemplazando la lectura repetida de archivos mediante la implementación de una caché de bajo nivel en `_read_and_parse_json` y centralizando la validación de estructura con `DEFAULTS.keys()` para evitar iteraciones redundantes.
 - `2026-11-11T11:16:11` **scanner.py** (rendimiento): Optimizé `_is_relevant_extension` reemplazando la búsqueda lineal de subcadenas con una verificación de conjunto (`set` lookup) basada en la extensión extraída, mejorando la eficiencia en el loop de escaneo.
 - `2026-11-11T11:06:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché de metadatos más eficiente basado en `st_ctime` (tiempo de creación/cambio de estado del nodo), garantizando que el hash solo se recalcule si el archivo realmente ha sido modificado y evitando I/O redundante durante escaneos masivos.
-- `2026-11-11T10:54:52` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` integrando el filtrado por `is_system_or_hidden` directamente dentro de `os.scandir` usando los atributos de `os.DirEntry` (que ya están en el buffer del sistema operativo), evitando así múltiples llamadas a `stat` y `GetFileAttributesW` innecesarias durante la recursión.
