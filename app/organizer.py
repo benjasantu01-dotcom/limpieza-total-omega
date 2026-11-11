@@ -316,7 +316,6 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 def _is_valid_junk_entry(entry: os.DirEntry) -> bool:
     """Valida requisitos básicos (extensión, tamaño, ocultamiento) de un archivo basura."""
     try:
-        # Optimización: Path(entry.path).suffix permite evitar operaciones de string innecesarias
         if Path(entry.name).suffix.lower() not in JUNK_EXTENSIONS: return False
         stats = entry.stat(follow_symlinks=False)
         return stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry)
@@ -413,6 +412,13 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         logger.error(f"Falla crítica en stage_for_review: {e}")
         return None
 
+def _is_same_file_identity(path: Path, expected_ino: int) -> bool:
+    """Verifica si el inodo actual coincide con el esperado para prevenir TOCTOU."""
+    try:
+        return path.stat().st_ino == expected_ino
+    except (OSError, AttributeError):
+        return False
+
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
     Genera y valida una ruta de destino única para el archivo, basada en su 
@@ -449,7 +455,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                     if is_valid_junk_extension(item.name) and not _is_file_locked(item):
                         stat_before = item.stat()
                         ensure_safe_to_modify(item)
-                        if item.exists() and item.stat().st_ino == stat_before.st_ino:
+                        # Verificación de identidad post-bloqueo para confirmar que no fue reemplazado
+                        if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
                             item.unlink()
                             count += 1
             except (OSError, PermissionError):

@@ -314,7 +314,10 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]:
-    """Abre un proceso Win32 solicitando permisos específicos."""
+    """
+    Abre un proceso Win32 solicitando permisos específicos.
+    Requiere manejar el handle retornado con CloseHandle posteriormente.
+    """
     if WindowsAPI.kernel32 is None: return None
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
@@ -325,7 +328,10 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
 GetModNameFunc = Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]
 
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
-    """Verifica mediante la ruta del ejecutable que el proceso no resida en zonas restringidas."""
+    """
+    Verifica mediante la ruta del ejecutable que el proceso no resida en zonas restringidas.
+    Utiliza buffers pre-asignados para evitar errores de memoria durante la llamada a la API.
+    """
     if handle is None or get_mod_name_func is None: return False
     try:
         ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
@@ -427,7 +433,10 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita la liberación del working set físico de un proceso tras validar permisos."""
+    """
+    Solicita la liberación del working set físico de un proceso tras validar permisos.
+    Usa la API EmptyWorkingSet, que es una operación de bajo nivel del subsistema de memoria.
+    """
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
     try: 

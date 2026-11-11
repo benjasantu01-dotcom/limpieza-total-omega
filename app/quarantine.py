@@ -194,8 +194,6 @@ def _is_file_exclusive(path: Path) -> bool:
         return False
     if os.name == 'nt':
         try:
-            # GENERIC_READ = 0x80000000, OPEN_EXISTING = 3, FILE_ATTRIBUTE_NORMAL = 0x80
-            # dwShareMode = 0 (prohíbe cualquier uso compartido)
             INVALID_HANDLE_VALUE = -1
             handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
             if handle == INVALID_HANDLE_VALUE: return False

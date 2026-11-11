@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 57
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 245
+- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 58
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 244
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 7 | 1 | 2 | 1 | 3 |
+| 2026-11-09 | 6 | 0 | 2 | 0 | 2 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 56 | 5 | 18 | 5 | 56 |
+| 2026-11-11 | 59 | 5 | 19 | 5 | 56 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **30**
-- rendimiento: **28**
 - seguridad defensiva: **28**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `safety.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
+- `quarantine.py`: **16**
 - `healthscore.py`: **15**
-- `quarantine.py`: **15**
 - `duplicates.py`: **15**
 - `assistant.py`: **14**
+- `organizer.py`: **12**
 - `settings.py`: **12**
-- `startup.py`: **11**
 - `branding.py`: **11**
-- `organizer.py`: **11**
+- `startup.py`: **10**
 - `scanner.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T06:00:34` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo `quarantine.py` mediante la normalización de la terminología en docstrings, la inclusión de type hints explícitos en funciones que carecían de ellos y la estandarización de la estructura de las advertencias de seguridad para mejorar la auditoría del código.
+- `2026-11-11T06:00:07` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados que explican el "porqué" de las decisiones de seguridad en funciones críticas, se han añadido type hints en las firmas de funciones faltantes y se ha extraído la lógica de validación de identidad en `delete_reviewed` para mejorar la legibilidad y mantenimiento.
+- `2026-11-11T05:59:41` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de bajo nivel y aplicando *type hinting* consistente para clarificar los flujos de datos en el manejo de estructuras de la API de Windows.
 - `2026-11-11T05:49:10` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo documentando los tipos complejos y el propósito de las funciones internas con docstrings de estilo Google, además de añadir type hints explícitos en la recolección de candidatos para clarificar la estructura de datos utilizada.
 - `2026-11-11T05:48:47` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con sus parámetros, refinando los type hints y simplificando el acceso a propiedades mediante `dataclasses` donde correspondía, asegurando que las intenciones del código sean claras para futuras extensiones.
 - `2026-11-11T05:39:45` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `draw_logo` para eliminar la lógica de renderizado fragmentada, sustituyendo el uso de variables "mágicas" por constantes semánticas y mejorando la documentación de las funciones de dibujo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T05:19:13` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_get_handle_for_safe_proc` añadiendo chequeos explícitos para manejar posibles fallos en la resolución de rutas y estados de procesos, evitando que excepciones en llamadas a la API de Windows aborten el proceso de escaneo.
 - `2026-11-11T05:17:39` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo añadiendo comprobaciones de tipo y valor en `_process_pipeline_entry` y `_evaluate_rules`, evitando que excepciones inesperadas durante la ejecución del pipeline terminen en fallos silenciosos o resultados parciales corruptos.
 - `2026-11-11T05:08:52` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y las funciones auxiliares de recolección de datos capturando errores de acceso a disco específicos durante la agregación, evitando que una excepción puntual (ej. un archivo bloqueado a mitad de un proceso) invalide todo el reporte.
-- `2026-11-11T03:37:37` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_file_id` para prevenir posibles errores al intentar abrir el handle con flags de acceso incompatibles para ciertos directorios, utilizando `FILE_FLAG_BACKUP_SEMANTICS` lo cual es una práctica estándar de seguridad para obtener información de directorios y archivos de sistema sin activar bloqueos o denegaciones de acceso innecesarias.
-- `2026-11-11T03:28:43` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_exclusive` para evitar condiciones de carrera (TOCTOU) en Windows mediante el uso de `CreateFileW` con flags de acceso nulo y `FILE_SHARE_NONE`, asegurando que ningún otro proceso mantenga un handle abierto sobre el archivo origen antes de iniciar el aislamiento.
-- `2026-11-11T03:27:09` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para evitar un ataque TOCTOU (Time-of-check to time-of-use) mediante la validación de la identidad del archivo (inodo/dispositivo) justo antes de la operación `os.replace`, asegurando que el archivo movido sea exactamente el que fue analizado y validado inicialmente.
