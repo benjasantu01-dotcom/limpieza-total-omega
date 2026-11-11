@@ -260,7 +260,8 @@ class SystemMetrics:
 
     def __post_init__(self) -> None: 
         for f in _ALL_METRICS:
-            self._set_validated_field(f, getattr(self, f, 0.0))
+            val = getattr(self, f)
+            self._set_validated_field(f, val)
 
     def _set_validated_field(self, name: str, value: Any) -> None:
         """Centraliza la validación de campos para evitar estados inconsistentes."""

@@ -535,3 +535,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-11T07:00:56` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` y `largest_folders` añadiendo chequeos de existencia (`path.exists()`) y manejo de errores ante cambios de estado en el sistema de archivos durante la iteración, previniendo fallos cuando carpetas o archivos son eliminados o renombrados por otros procesos mientras se escanea.
 - `2026-11-11T07:00:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T07:00:56` Corrida terminada. Total usado hoy: 168.
+- `2026-11-11T07:09:19` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-11-11T07:09:42` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-11-11T07:10:07` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante valores `NaN` o `inf` durante la inicialización, asegurando que `__post_init__` y los setters no propaguen estados inválidos que romperían los cálculos de `lru_cache` o los resultados finales de salud.
+- `2026-11-11T07:11:09` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-11T07:11:23` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de errores en `_iter_process_memory` mediante un bloque `try...except` más granular y una validación de `path_buf` tras la llamada a `GetModuleFileNameExW`, evitando lecturas de buffers corruptos o nulos cuando el acceso está restringido por el sistema, además de asegurar que la liberación del handle ocurra incluso si el buffer es inválido.
+- `2026-11-11T07:11:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T07:11:23` Corrida terminada. Total usado hoy: 172.

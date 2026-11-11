@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 103 | 8 | 35 | 6 | 184 |
-| 2026-11-11 | 70 | 8 | 25 | 7 | 58 |
+| 2026-11-10 | 101 | 8 | 34 | 6 | 183 |
+| 2026-11-11 | 72 | 8 | 26 | 7 | 59 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **34**
-- robustez ante casos límite: **24**
-- seguridad defensiva: **22**
+- robustez ante casos límite: **26**
+- seguridad defensiva: **20**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `safety.py`: **19**
-- `memory.py`: **16**
-- `healthscore.py`: **15**
+- `safety.py`: **18**
+- `memory.py`: **17**
+- `healthscore.py`: **16**
 - `quarantine.py`: **14**
 - `assistant.py`: **14**
 - `duplicates.py`: **14**
-- `settings.py`: **12**
 - `scanner.py`: **12**
 - `organizer.py`: **12**
+- `settings.py`: **11**
 - `branding.py`: **10**
 - `startup.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T07:11:23` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_iter_process_memory` mediante un bloque `try...except` más granular y una validación de `path_buf` tras la llamada a `GetModuleFileNameExW`, evitando lecturas de buffers corruptos o nulos cuando el acceso está restringido por el sistema, además de asegurar que la liberación del handle ocurra incluso si el buffer es inválido.
+- `2026-11-11T07:10:07` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante valores `NaN` o `inf` durante la inicialización, asegurando que `__post_init__` y los setters no propaguen estados inválidos que romperían los cálculos de `lru_cache` o los resultados finales de salud.
 - `2026-11-11T07:00:56` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` y `largest_folders` añadiendo chequeos de existencia (`path.exists()`) y manejo de errores ante cambios de estado en el sistema de archivos durante la iteración, previniendo fallos cuando carpetas o archivos son eliminados o renombrados por otros procesos mientras se escanea.
 - `2026-11-11T06:59:56` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext` ante entradas mal formadas implementando un chequeo estricto de tipos y estructura mediante `isinstance` antes de intentar cualquier operación de acceso a atributos o ingesta, evitando posibles excepciones de `AttributeError` o `TypeError` si la fuente es un objeto inesperado o parcialmente inicializado.
 - `2026-11-11T06:50:36` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo de directorios eliminando llamadas redundantes a `os.path.commonpath` (operación costosa) en `_is_inside_base_root`, reemplazándola por una comparación directa de prefijos de cadena (`str.startswith`) sobre rutas ya normalizadas y canónicas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T06:09:23` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `_validate_path_components` y `_verify_path_integrity_at_node`, reemplazando el uso de una lista de componentes procesada imperativamente por una lógica más limpia de validación de nodos, y añadiendo type hints faltantes y docstrings descriptivos para clarificar la intención de las verificaciones de integridad.
 - `2026-11-11T06:00:34` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo `quarantine.py` mediante la normalización de la terminología en docstrings, la inclusión de type hints explícitos en funciones que carecían de ellos y la estandarización de la estructura de las advertencias de seguridad para mejorar la auditoría del código.
 - `2026-11-11T06:00:07` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados que explican el "porqué" de las decisiones de seguridad en funciones críticas, se han añadido type hints en las firmas de funciones faltantes y se ha extraído la lógica de validación de identidad en `delete_reviewed` para mejorar la legibilidad y mantenimiento.
-- `2026-11-11T05:59:41` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de bajo nivel y aplicando *type hinting* consistente para clarificar los flujos de datos en el manejo de estructuras de la API de Windows.
-- `2026-11-11T05:49:10` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo documentando los tipos complejos y el propósito de las funciones internas con docstrings de estilo Google, además de añadir type hints explícitos en la recolección de candidatos para clarificar la estructura de datos utilizada.

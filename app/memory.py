@@ -382,9 +382,11 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
                 if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
                     if _is_process_executable_safe(handle, path_buf, get_mod_name):
-                        name = Path(path_buf.value).name if path_buf.value else "Unknown"
-                        if not _is_invalid_process_name(name):
-                            yield ProcessMemory(name, pid, BytesValue(pmc.WorkingSetSize))
+                        val_name = path_buf.value
+                        if val_name:
+                            name = Path(val_name).name
+                            if not _is_invalid_process_name(name):
+                                yield ProcessMemory(name, pid, BytesValue(pmc.WorkingSetSize))
         except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
             continue
         finally:
