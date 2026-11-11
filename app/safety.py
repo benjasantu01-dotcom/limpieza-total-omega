@@ -1051,6 +1051,7 @@ def _check_container_permissions(target_path: Path) -> None:
     """Verifica permisos del contenedor (padre) antes de operar."""
     try:
         parent = target_path.parent
+        # Refuerzo: validar el padre antes de operar
         if parent.exists():
             if _is_system_directory_junction(str(parent)):
                 raise UnsafePathError("Protección: No se puede operar dentro de un punto de reparseo.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
@@ -1070,8 +1071,8 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if any(guard.path_str.startswith(p) for p in ("\\\\.\\", "\\\\?\\")):
         raise UnsafePathError("Prohibido uso de rutas de dispositivo en modificación.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
-    if os.name == 'nt':
-        _check_container_permissions(target_path)
+    # Refuerzo: El chequeo de permisos del padre es mandatorio antes de cualquier I/O
+    _check_container_permissions(target_path)
 
     try:
         app_root = Path(getattr(sys, 'executable', os.getcwd())).parent

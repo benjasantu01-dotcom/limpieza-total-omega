@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 65
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 72 | 5 | 25 | 4 | 106 |
-| 2026-11-11 | 119 | 13 | 40 | 14 | 106 |
+| 2026-11-10 | 72 | 5 | 25 | 4 | 102 |
+| 2026-11-11 | 121 | 13 | 41 | 14 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **45**
 - rendimiento: **35**
+- seguridad defensiva: **32**
 - robustez ante casos límite: **30**
-- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
+- `safety.py`: **20**
 - `memory.py`: **19**
-- `safety.py`: **19**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `settings.py`: **15**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T12:28:45` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` ante ataques de *time-of-check time-of-use* (TOCTOU) al elevar la validación de integridad del directorio contenedor, asegurando que la estructura padre sea validada antes de intentar cualquier operación de E/S sobre el archivo destino, protegiendo contra redirecciones de último minuto en el sistema de archivos.
+- `2026-11-11T12:27:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de la integridad de los datos en `quarantine.py` mediante la implementación de `os.fsync` sobre el archivo de destino después de su escritura (`_perform_secure_copy`) y antes del reemplazo atómico, asegurando que los bytes estén físicamente en disco y no solo en el búfer del SO, previniendo así la pérdida de datos ante fallos inesperados.
 - `2026-11-11T12:17:15` **memory.py** (seguridad defensiva): Se ha mejorado `_extract_process_info` para validar la seguridad de la ruta mediante `is_protected_path` antes de procesar el PID, evitando así cualquier acceso no autorizado a rutas sensibles durante el parseo de datos de procesos.
 - `2026-11-11T12:15:38` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_path_check` añadiendo una validación explícita para asegurar que el path esté normalizado (absolute) antes de verificar si es una ruta protegida, evitando que rutas relativas malintencionadas eludan los filtros.
 - `2026-11-11T12:08:25` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` implementando una validación estricta de "traversal" que impide que una ruta se escape de la raíz permitida mediante `pathlib.Path.is_relative_to` (o lógica equivalente), garantizando que las operaciones de escaneo nunca excedan el ámbito definido por el usuario.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T11:06:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché de metadatos más eficiente basado en `st_ctime` (tiempo de creación/cambio de estado del nodo), garantizando que el hash solo se recalcule si el archivo realmente ha sido modificado y evitando I/O redundante durante escaneos masivos.
 - `2026-11-11T10:54:52` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` integrando el filtrado por `is_system_or_hidden` directamente dentro de `os.scandir` usando los atributos de `os.DirEntry` (que ya están en el buffer del sistema operativo), evitando así múltiples llamadas a `stat` y `GetFileAttributesW` innecesarias durante la recursión.
 - `2026-11-11T10:54:28` **diskreport.py** (rendimiento): Optimizé `walk_files` eliminando llamadas redundantes a `os.path.exists` (que ya estaba implícito en `scandir`) y reduciendo las conversiones a `Path` dentro del bucle, mejorando el rendimiento en recorridos profundos.
-- `2026-11-11T10:45:16` **branding.py** (rendimiento): Optimicé el cálculo de `draw_logo` y `draw_ring` eliminando la recreación innecesaria de objetos y simplificando el acceso a constantes, reduciendo la carga de CPU durante el renderizado frecuente en el Canvas.
-- `2026-11-11T10:44:24` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` incorporando docstrings detallados en todas las funciones y métodos públicos, explicitando los parámetros, comportamientos ante errores y las restricciones de seguridad aplicadas, facilitando así la auditabilidad del código sin alterar su lógica.

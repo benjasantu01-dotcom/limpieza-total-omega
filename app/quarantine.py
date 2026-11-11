@@ -669,7 +669,7 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
                 with open(temp_dest, "wb") as f_dst:
                     shutil.copyfileobj(f_src, f_dst)
                     f_dst.flush()
-                    os.fsync(f_dst.fileno())
+                    os.fsync(f_dst.fileno()) # Garantiza persistencia física antes de continuar
         
         _check_io_error_context(_copy)
         

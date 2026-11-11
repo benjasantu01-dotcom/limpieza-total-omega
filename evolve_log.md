@@ -1046,3 +1046,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-11T12:17:15` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado `_extract_process_info` para validar la seguridad de la ruta mediante `is_protected_path` antes de procesar el PID, evitando así cualquier acceso no autorizado a rutas sensibles durante el parseo de datos de procesos.
 - `2026-11-11T12:17:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T12:17:15` Corrida terminada. Total usado hoy: 292.
+- `2026-11-11T12:25:22` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-11-11T12:25:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-11T12:26:49` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-11T12:27:34` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de la integridad de los datos en `quarantine.py` mediante la implementación de `os.fsync` sobre el archivo de destino después de su escritura (`_perform_secure_copy`) y antes del reemplazo atómico, asegurando que los bytes estén físicamente en disco y no solo en el búfer del SO, previniendo así la pérdida de datos ante fallos inesperados.
+- `2026-11-11T12:27:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-11T12:28:45` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `ensure_safe_to_modify` ante ataques de *time-of-check time-of-use* (TOCTOU) al elevar la validación de integridad del directorio contenedor, asegurando que la estructura padre sea validada antes de intentar cualquier operación de E/S sobre el archivo destino, protegiendo contra redirecciones de último minuto en el sistema de archivos.
+- `2026-11-11T12:28:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T12:28:45` Corrida terminada. Total usado hoy: 296.
