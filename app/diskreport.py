@@ -375,7 +375,14 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Recorre el árbol de archivos y consolida estadísticas con manejo de errores."""
+    """
+    Recorre el árbol de archivos y consolida estadísticas.
+
+    Args:
+        directory: Directorio base de inicio.
+        skip_protected: Si debe ignorar rutas protegidas.
+        limit: Máximo número de archivos pesados a mantener en el heap.
+    """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     

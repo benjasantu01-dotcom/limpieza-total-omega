@@ -168,7 +168,17 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un recorrido BFS optimizado usando metadatos de scandir."""
+    """
+    Realiza un recorrido BFS del sistema de archivos para encontrar candidatos.
+    
+    Args:
+        directories: Lista de rutas base a escanear.
+        min_size: Tamaño mínimo en bytes para considerar un archivo.
+        skip_protected: Si es True, ignora rutas marcadas como protegidas.
+        
+    Returns:
+        Diccionario {tamaño_bytes: [lista_de_paths]}
+    """
     if directories is None or not isinstance(directories, Iterable) or min_size < 0: 
         return {}
     

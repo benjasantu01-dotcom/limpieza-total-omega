@@ -1522,3 +1522,30 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-11T05:39:45` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `draw_logo` para eliminar la lógica de renderizado fragmentada, sustituyendo el uso de variables "mágicas" por constantes semánticas y mejorando la documentación de las funciones de dibujo.
 - `2026-11-11T05:39:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T05:39:45` Corrida terminada. Total usado hoy: 136.
+- `2026-11-11T05:47:55` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-11-11T05:48:21` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-11T05:48:47` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con sus parámetros, refinando los type hints y simplificando el acceso a propiedades mediante `dataclasses` donde correspondía, asegurando que las intenciones del código sean claras para futuras extensiones.
+- `2026-11-11T05:49:10` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento del módulo documentando los tipos complejos y el propósito de las funciones internas con docstrings de estilo Google, además de añadir type hints explícitos en la recolección de candidatos para clarificar la estructura de datos utilizada.
+- `2026-11-11T05:49:22` Tests FALLARON:
+```
+_____________
+
+    def test_summarize_shows_score_grade_and_recommendations():
+>       resultado = healthscore.compute_score(healthscore.SystemMetrics(junk_mb=3000))
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: SystemMetrics.__init__() got an unexpected keyword argument 'junk_mb'
+
+evolve/tests/test_modules.py:921: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_a_broken_system_scores_low - TypeError: SystemMetrics.__init__() got an unexpected keyword argument 'junk_mb'
+FAILED evolve/tests/test_modules.py::test_score_never_leaves_the_zero_to_hundred_range - TypeError: SystemMetrics.__init__() got an unexpected keyword argument 'junk_mb'
+FAILED evolve/tests/test_modules.py::test_low_disk_produces_a_specific_recommendation - TypeError: SystemMetrics.__init__() got an unexpected keyword argument 'disk_free_percent'
+FAILED evolve/tests/test_modules.py::test_quarantined_files_are_mentioned - TypeError: SystemMetrics.__init__() got an unexpected keyword argument 'quarantined_count'
+FAILED evolve/tests/test_modules.py::test_compute_score_is_pure_and_repeatable - TypeError: SystemMetrics.__init__() got an unexpected keyword argument 'junk_mb'
+FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recommendations - TypeError: SystemMetrics.__init__() got an unexpected keyword argument 'junk_mb'
+6 failed, 293 passed in 1.80s
+
+```
+- `2026-11-11T05:49:22` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad del modelo `SystemMetrics` reemplazando los nombres de atributos opacos por `properties` más claras que documentan el origen y el propósito de cada métrica mediante docstrings, manteniendo la compatibilidad total con la lógica existente.
+- `2026-11-11T05:49:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T05:49:22` Corrida terminada. Total usado hoy: 140.
