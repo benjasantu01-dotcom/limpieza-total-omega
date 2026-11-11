@@ -359,7 +359,7 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: int = 0) -> bool:
     """Borra un archivo garantizando su integridad y sincronización de metadatos del sistema."""
-    if not path or not path.exists(): return True
+    if not path or not path.exists() or not path.is_file(): return True
     try:
         _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)
         parent: Path = path.parent
@@ -678,6 +678,7 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         
         try: os.chmod(temp_dest, 0o600)
         except OSError: pass
+        if not temp_dest.is_file(): raise OSError("El archivo copiado fue reemplazado.")
         _verify_copied_data(st, temp_dest, source_hash)
     except (OSError, IOError) as e:
         if temp_dest.exists():
