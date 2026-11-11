@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 57 | 5 | 19 | 2 | 47 |
+| 2026-11-09 | 55 | 5 | 18 | 2 | 46 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 8 | 1 | 1 | 0 | 14 |
+| 2026-11-11 | 10 | 1 | 2 | 0 | 15 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **33**
-- rendimiento: **31**
 - seguridad defensiva: **30**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
-- `duplicates.py`: **15**
+- `safety.py`: **16**
 - `healthscore.py`: **15**
 - `assistant.py`: **15**
-- `safety.py`: **15**
-- `settings.py`: **12**
+- `duplicates.py`: **14**
+- `settings.py`: **13**
 - `organizer.py`: **11**
 - `scanner.py`: **11**
 - `startup.py`: **11**
-- `branding.py`: **10**
+- `branding.py`: **9**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T01:04:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al implementar una validación estricta del tamaño antes de la lectura en memoria y un manejo de errores más específico para evitar que cualquier anomalía en el sistema de archivos (ej. archivo bloqueado o eliminado en medio de la operación) cause una terminación inesperada.
+- `2026-11-11T01:03:53` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `_get_file_attrs` y `_is_volume_readonly` manejando explícitamente posibles errores de `ctypes` y valores `None` durante la llamada a la API de Windows, evitando cierres inesperados de la aplicación ante estados de hardware inestables o volúmenes momentáneamente inaccesibles.
 - `2026-11-11T00:55:24` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` añadiendo validación de tipos estricta y manejo explícito de errores de serialización para prevenir la corrupción del archivo de manifiesto si el contenido no es el esperado.
 - `2026-11-11T00:54:44` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de errores en `stage_for_review` y `delete_reviewed` al asegurar que los parámetros de entrada se validen antes de operar, reemplazando chequeos implícitos por validaciones explícitas de tipo y estado, evitando así excepciones no controladas durante el procesamiento de listas de archivos.
 - `2026-11-11T00:54:16` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `format_bytes` y `parse_linux_meminfo` mediante la centralización del manejo de excepciones y la validación estricta de tipos, asegurando que cualquier entrada malformada (como valores `NaN`, `inf` o tipos inesperados) devuelva un valor seguro y predecible en lugar de fallar silenciosamente o propagar errores.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T13:40:53` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `_collect_candidates` y `group_by_size` al asegurar que la resolución de rutas mediante `resolve()` y el acceso a metadatos ocurran exclusivamente tras validar `is_safe_to_modify`, previniendo errores de acceso a rutas fuera del scope permitido o bloqueadas por el sistema.
 - `2026-11-10T13:40:39` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `drive_usage` implementando una validación estricta de la relación de parentesco mediante `Path.resolve()`, asegurando que ninguna ruta resuelta escape del directorio raíz o acceda a rutas UNC malintencionadas antes de ser procesada.
 - `2026-11-10T13:36:03` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_build_payload` validando explícitamente que la pregunta `q` no contenga caracteres prohibidos antes de serializar el JSON, evitando que el payload final sea construido a partir de datos potencialmente inseguros.
-- `2026-11-10T13:24:50` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en la robustez ante casos límite en la función `_get_path_stat_robust` y `_is_file_busy`, añadiendo un manejo explícito para `ERROR_INSUFFICIENT_BUFFER` y `ERROR_INVALID_NAME` (codificados en la API de Windows), asegurando que la app no aborte ante nombres de archivo malformados o bloqueos temporales inesperados del sistema de archivos.
-- `2026-11-10T13:02:09` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `largest_folders` ante posibles errores de resolución de rutas (como `Path.relative_to` fallando por enlaces simbólicos inesperados o archivos en unidades distintas) mediante el uso de un bloque `try-except` más específico y la validación de paridad de raíces.

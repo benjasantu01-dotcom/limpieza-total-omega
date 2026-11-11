@@ -1074,3 +1074,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-11T00:55:24` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` y `load_manifest` añadiendo validación de tipos estricta y manejo explícito de errores de serialización para prevenir la corrupción del archivo de manifiesto si el contenido no es el esperado.
 - `2026-11-11T00:55:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T00:55:24` Corrida terminada. Total usado hoy: 24.
+- `2026-11-11T01:02:36` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-11-11T01:02:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-11-11T01:03:53` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `_get_file_attrs` y `_is_volume_readonly` manejando explícitamente posibles errores de `ctypes` y valores `None` durante la llamada a la API de Windows, evitando cierres inesperados de la aplicación ante estados de hardware inestables o volúmenes momentáneamente inaccesibles.
+- `2026-11-11T01:04:21` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-11T01:04:38` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` al implementar una validación estricta del tamaño antes de la lectura en memoria y un manejo de errores más específico para evitar que cualquier anomalía en el sistema de archivos (ej. archivo bloqueado o eliminado en medio de la operación) cause una terminación inesperada.
+- `2026-11-11T01:04:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T01:04:38` Corrida terminada. Total usado hoy: 28.

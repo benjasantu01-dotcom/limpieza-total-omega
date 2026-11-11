@@ -331,7 +331,8 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
         if now - ts < 5.0:
             return val
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
+        long_p = _to_long_path(path_str)
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(long_p)
         if attrs == INVALID_FILE_ATTRIBUTES:
             err = ctypes.windll.kernel32.GetLastError()
             if err == ERROR_ACCESS_DENIED:
@@ -553,7 +554,7 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
     try:
         drive = os.path.splitdrive(path_str)[0] + "\\"
         if not os.path.exists(drive): return False
-        flags = ctypes.c_ulong()
+        flags = ctypes.c_ulong(0)
         if ctypes.windll.kernel32.GetVolumeInformationW(drive, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & 0x80000)
     except (AttributeError, OSError, ctypes.ArgumentError, TypeError): pass
@@ -597,7 +598,7 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         if not os.path.exists(root): return False
-        flags = ctypes.c_ulong()
+        flags = ctypes.c_ulong(0)
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & (0x10 | 0x20000))
     except (AttributeError, OSError, ctypes.ArgumentError): pass

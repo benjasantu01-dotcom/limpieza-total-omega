@@ -396,24 +396,23 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         try:
             st_post = os.fstat(fd)
+            # Validación estricta de metadatos pre y post apertura
             if st_post.st_ino != st_initial.st_ino or st_post.st_dev != st_initial.st_dev or \
-               st_post.st_mtime != st_initial.st_mtime or st_post.st_size != st_initial.st_size or \
-               not stat.S_ISREG(st_post.st_mode) or st_post.st_nlink != 1 or \
-               (hasattr(os, 'getuid') and st_post.st_uid != os.getuid()) or \
-               (st_post.st_mode & 0o077) != 0:
+               st_post.st_mtime != st_initial.st_mtime or st_post.st_size != st_initial.st_size:
                 return None
             
+            # Pre-validación de tamaño crítico antes de leer
+            if st_post.st_size > MAX_SETTINGS_SIZE or st_post.st_size < MIN_SETTINGS_SIZE:
+                return None
+                
             with os.fdopen(fd, "r", encoding="utf-8") as f:
                 content = f.read(MAX_SETTINGS_SIZE + 1)
                 if not content or len(content) > MAX_SETTINGS_SIZE: return None
-                try:
-                    data = json.loads(content)
-                except json.JSONDecodeError:
-                    return None
+                data = json.loads(content)
                 
             if not isinstance(data, dict) or not _is_structure_valid(data): return None
             return data, st_post
-        except (OSError, ValueError, TypeError):
+        except (OSError, ValueError, TypeError, json.JSONDecodeError):
             return None
         finally:
             if 'fd' in locals(): os.close(fd)
