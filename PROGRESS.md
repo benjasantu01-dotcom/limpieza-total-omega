@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 61
+- Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 101 | 7 | 34 | 6 | 172 |
-| 2026-11-11 | 80 | 9 | 27 | 7 | 61 |
+| 2026-11-10 | 101 | 7 | 34 | 6 | 168 |
+| 2026-11-11 | 81 | 9 | 28 | 7 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,14 +25,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **34**
 - robustez ante casos límite: **31**
-- seguridad defensiva: **23**
+- seguridad defensiva: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `safety.py`: **19**
+- `healthscore.py`: **17**
 - `memory.py`: **17**
-- `healthscore.py`: **16**
 - `quarantine.py`: **15**
 - `assistant.py`: **15**
 - `duplicates.py`: **15**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T07:50:40` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el acceso directo a los campos de `SystemMetrics` en las funciones de recomendación por el uso del método seguro `safe_get`, evitando así posibles riesgos de inyección o acceso no autorizado durante el procesamiento de datos del sistema.
 - `2026-11-11T07:41:21` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en el escaneo recursivo mediante la validación explícita de `is_safe_to_modify` antes de cualquier acceso a metadatos, evitando posibles condiciones de carrera o acceso a rutas fuera del alcance permitido del usuario durante el recorrido del disco.
 - `2026-11-11T07:41:12` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `largest_folders` frente a rutas de sistema o protegidas mediante una verificación de seguridad adicional antes de registrar métricas, asegurando que cualquier subcarpeta calculada cumpla con `is_protected_path` incluso después de operaciones de navegación en el árbol.
 - `2026-11-11T07:32:15` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al centralizar la validación de tipos y rangos de las métricas durante la ingestión inicial, reemplazando verificaciones redundantes con un método robusto que evita la inyección de datos complejos o no deseados.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T06:59:56` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext` ante entradas mal formadas implementando un chequeo estricto de tipos y estructura mediante `isinstance` antes de intentar cualquier operación de acceso a atributos o ingesta, evitando posibles excepciones de `AttributeError` o `TypeError` si la fuente es un objeto inesperado o parcialmente inicializado.
 - `2026-11-11T06:50:36` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo de directorios eliminando llamadas redundantes a `os.path.commonpath` (operación costosa) en `_is_inside_base_root`, reemplazándola por una comparación directa de prefijos de cadena (`str.startswith`) sobre rutas ya normalizadas y canónicas.
 - `2026-11-11T06:50:08` **safety.py** (rendimiento): Optimicé el rendimiento de la caché de seguridad (`_SECURITY_CACHE` y sus variantes) implementando un mecanismo de TTL (Time-To-Live) y un límite de tamaño más estricto, evitando que el consumo de memoria crezca linealmente y reduciendo el overhead de validaciones repetitivas en escaneos masivos.
-- `2026-11-11T06:39:46` **organizer.py** (rendimiento): Se optimizó el proceso recursivo de escaneo en `_process_directory` transformando `junk_candidates` de una `List` a una estructura que evita la sobrecarga de consultas redundantes mediante una validación de `path` inmediata, y se pre-calculó `JUNK_EXTENSIONS` como un `frozenset` local para acelerar la búsqueda de pertenencia durante la iteración masiva de archivos.
