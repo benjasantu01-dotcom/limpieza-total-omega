@@ -590,13 +590,18 @@ class SystemContext:
         
         # Validación: solo permitimos campos definidos, tipos seguros y verificados contra el esquema
         valid_fields = self.__dataclass_fields__
+        new_state = {}
         for key, value in updates.items():
             if key in valid_fields:
                 spec = valid_fields[key]
-                # Verifica compatibilidad de tipo antes de aplicar
-                if isinstance(value, (int, float, str, bool)):
-                    if not (isinstance(value, bool) or (spec.type == int and not isinstance(value, int))):
-                        setattr(self, key, value)
+                # Verifica compatibilidad de tipo antes de aplicar (evita booleans o mismatch)
+                if isinstance(value, (int, float, str)):
+                    if not (spec.type is int and not isinstance(value, int)):
+                        new_state[key] = value
+        
+        # Aplicación atómica
+        for key, value in new_state.items():
+            setattr(self, key, value)
         
         self.analyzed = True
         # Limpieza manual de propiedades cacheadas al modificar estado

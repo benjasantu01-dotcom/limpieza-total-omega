@@ -510,26 +510,21 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
 
 
 def list_startup_entries() -> StartupEntries:
-    """Consolida el inventario completo, combinando carpetas y registro."""
+    """Consolida el inventario completo, combinando carpetas y registro eficientemente."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
 
-    seen_commands: Set[str] = set()
-    unique_entries: StartupEntries = []
+    seen_cmds: Set[str] = set()
+    results: StartupEntries = []
     
-    for entry in entries_from_folders():
-        if entry.command not in seen_commands:
-            seen_commands.add(entry.command)
-            unique_entries.append(entry)
+    for entry in entries_from_folders() + entries_from_registry():
+        if entry.command not in seen_cmds:
+            seen_cmds.add(entry.command)
+            results.append(entry)
             
-    for entry in entries_from_registry():
-        if entry.command not in seen_commands:
-            seen_commands.add(entry.command)
-            unique_entries.append(entry)
-            
-    _FULL_SCAN_CACHE = unique_entries
-    return unique_entries
+    _FULL_SCAN_CACHE = results
+    return results
 
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:

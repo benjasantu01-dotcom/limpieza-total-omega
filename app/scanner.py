@@ -259,6 +259,7 @@ class Scanner:
         self.safe_cache: set[str] = set()
         self.base_root_real: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
+        self._relevant_exts: set[str] = set(SUSPICIOUS_ALL_EXTS)
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica mediante rutas canónicas que la entrada no escape al árbol base solicitado."""
@@ -311,8 +312,8 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Determina si el archivo debe ser sometido a heurísticas basándose en su extensión."""
-        _, ext = os.path.splitext(name)
-        return ext.lower() in SUSPICIOUS_ALL_EXTS
+        idx = name.rfind('.')
+        return idx != -1 and name[idx:].lower() in self._relevant_exts
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: set[str]) -> None:
         """
