@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 59
+- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 57
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 247
+- Sin respuesta de la IA (error o límite): 249
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 62 | 6 | 22 | 3 | 49 |
+| 2026-11-09 | 60 | 6 | 20 | 3 | 49 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 0 | 0 | 0 | 0 | 12 |
+| 2026-11-11 | 1 | 1 | 0 | 0 | 14 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **47**
 - robustez ante casos límite: **33**
 - rendimiento: **31**
+- manejo de errores y validación de entradas: **31**
 - seguridad defensiva: **30**
-- manejo de errores y validación de entradas: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `memory.py`: **17**
 - `safety.py`: **16**
+- `memory.py`: **16**
 - `quarantine.py`: **16**
-- `duplicates.py`: **15**
 - `assistant.py`: **15**
+- `duplicates.py`: **14**
 - `healthscore.py`: **14**
 - `settings.py`: **13**
 - `scanner.py`: **12**
 - `startup.py`: **11**
+- `branding.py`: **10**
 - `organizer.py`: **10**
-- `branding.py`: **9**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T00:35:19` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `blend` mediante validación explícita de formato y manejo de errores, asegurando que cualquier entrada malformada (ej. cadenas vacías, sin '#', o con caracteres no hexadecimales) no propague valores inválidos.
 - `2026-11-10T13:55:04` **organizer.py** (seguridad defensiva): Mejoré la seguridad de la función `_is_safe_for_disk_op` integrando una verificación explícita mediante `is_protected_path` para el destino, asegurando que ninguna operación de movimiento permita depositar basura en directorios protegidos por el sistema, reforzando la defensa contra rutas maliciosas.
 - `2026-11-10T13:54:34` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del chequeo de rutas al integrar una validación de longitud máxima y caracteres inválidos en `_is_process_executable_safe`, asegurando que `is_protected_path` siempre reciba una ruta normalizada y no datos corruptos del buffer de Win32.
 - `2026-11-10T13:40:53` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `_collect_candidates` y `group_by_size` al asegurar que la resolución de rutas mediante `resolve()` y el acceso a metadatos ocurran exclusivamente tras validar `is_safe_to_modify`, previniendo errores de acceso a rutas fuera del scope permitido o bloqueadas por el sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-10T12:28:27` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un conjunto (`set`) para registrar las rutas visitadas (`visited_paths`), lo que evita realizar llamadas redundantes a `stat` y `is_safe_to_modify` sobre archivos que ya han sido procesados en la misma iteración del árbol de directorios, reduciendo significativamente la carga de I/O.
 - `2026-11-10T12:27:46` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` evitando llamadas costosas a `Path.resolve()` (que accede al disco repetidamente) y reemplazándolas por un manejo de rutas basado en `entry.path`, reduciendo drásticamente la latencia en escaneos profundos.
 - `2026-11-10T12:19:33` **assistant.py** (rendimiento): Optimicé el acceso a los criterios de salud eliminando la creación repetida de tuplas en cada llamada a `_evaluate_active_problems` y utilicé un `frozenset` pre-calculado para la evaluación, mejorando el rendimiento en el bucle de validación.
-- `2026-11-10T12:17:41` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` mediante la implementación de `TypeAlias` más específicos, la adición de docstrings detallados en las funciones de validación compleja (`_is_valid_registry_path`, `_resolve_path_from_command`) y la unificación de la documentación interna, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.

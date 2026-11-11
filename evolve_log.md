@@ -1022,3 +1022,41 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-11T00:26:06` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-11T00:26:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T00:26:06` Corrida terminada. Total usado hoy: 12.
+- `2026-11-11T00:32:05` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-11T00:32:08` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T00:32:08` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-11T00:32:28` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T00:32:28` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-11T00:32:58` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T00:32:58` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-11T00:33:13` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T00:33:13` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-11T00:33:34` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T00:33:34` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-11T00:34:04` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T00:34:04` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-11T00:35:02` Tests FALLARON:
+```
+0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+2 failed, 297 passed in 1.71s
+
+```
+- `2026-11-11T00:35:02` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_apply_updates` en `SystemContext` mediante una validación de tipos más estricta antes de aplicar atributos, y añadí una verificación de `None` en `_extract_text_from_gemini_json` para evitar excepciones al navegar estructuras JSON malformadas.
+- `2026-11-11T00:35:19` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_hex_to_rgb` y `blend` mediante validación explícita de formato y manejo de errores, asegurando que cualquier entrada malformada (ej. cadenas vacías, sin '#', o con caracteres no hexadecimales) no propague valores inválidos.
+- `2026-11-11T00:35:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T00:35:19` Corrida terminada. Total usado hoy: 16.
