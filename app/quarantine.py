@@ -872,6 +872,10 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         ensure_safe_to_modify(parent)
         _ensure_disk_space(parent, quarantine_item.size_bytes)
         if not parent.exists(): _check_io_error_context(parent.mkdir, parents=True, exist_ok=True)
+        
+        # Validar seguridad antes de reubicar el archivo
+        ensure_safe_to_modify(destination)
+        
         _check_io_error_context(os.replace, str(stored_file), str(destination))
         for p in [parent, base_path]:
             if p and p.exists():

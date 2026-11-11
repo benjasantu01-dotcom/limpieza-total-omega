@@ -603,3 +603,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-11T07:52:23` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-11-11T07:52:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T07:52:23` Corrida terminada. Total usado hoy: 188.
+- `2026-11-11T08:00:13` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-11-11T08:00:59` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las validaciones en `quarantine.py` mediante la implementación de `ensure_safe_to_modify` antes de la ejecución de `os.replace` en el proceso de restauración, evitando posibles operaciones inseguras en rutas que podrían haber sido alteradas o ser maliciosas desde la última validación, manteniendo la integridad del sandbox.
+- `2026-11-11T08:01:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-11T08:02:13` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de la validación de archivos mediante la implementación de `_is_file_in_use_exclusive`, que intenta abrir el archivo con `FILE_SHARE_READ` (sin exclusividad de lectura), permitiendo identificar de forma más precisa si el archivo está siendo editado o bloqueado por otro proceso en modo escritura, mejorando el chequeo de `is_locked` en `SafetyGuard`.
+- `2026-11-11T08:02:25` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-11T08:02:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T08:02:25` Corrida terminada. Total usado hoy: 192.

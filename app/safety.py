@@ -126,7 +126,7 @@ class SafetyGuard:
         """Determina si el SO mantiene un bloqueo sobre la ruta (exclusivo o sistema)."""
         if not self.is_nt: return False
         try:
-            return _is_file_busy(self.path_str) or _is_file_in_use_by_system(self.path_str)
+            return _is_file_in_use_exclusive(self.path_str) or _is_file_in_use_by_system(self.path_str)
         except (OSError, FileNotFoundError, AttributeError, TypeError):
             return True
 
@@ -174,22 +174,19 @@ class SafetyState(NamedTuple):
     stat_result: os.stat_result
     file_id: tuple[int, int, int, int]
 
-def _is_file_busy(path_str: str) -> bool:
+def _is_file_in_use_exclusive(path_str: str) -> bool:
     """
-    Intenta abrir el archivo en modo exclusivo. Si falla, el archivo está siendo 
-    utilizado por otro proceso o tiene un lock a nivel de sistema.
+    Intenta abrir el archivo para escritura exclusiva. Si falla, otro proceso 
+    tiene un lock de escritura o acceso exclusivo.
     """
-    if not isinstance(path_str, str) or os.name != 'nt': return False
+    if os.name != 'nt': return False
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
-    try:
-        handle = kernel32.CreateFileW(path_long, 0x80000000, 0, None, 3, 0x00000080, None)
-        if handle == INVALID_HANDLE_VALUE:
-            err = kernel32.GetLastError()
-            return err in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_INVALID_NAME)
-        kernel32.CloseHandle(handle)
-    except (OSError, AttributeError, TypeError):
+    # GENERIC_WRITE (0x40000000), FILE_SHARE_READ (0x01)
+    handle = kernel32.CreateFileW(path_long, 0x40000000, 0x01, None, 3, 0, None)
+    if handle == INVALID_HANDLE_VALUE:
         return True
+    kernel32.CloseHandle(handle)
     return False
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
@@ -270,7 +267,7 @@ class SecurityDescriptor(NamedTuple):
             risk_flags = (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | 
                           Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)
             is_protected = bool(attrs & risk_flags) or _is_file_owned_by_system(path_str)
-            is_in_use = is_protected or _is_file_busy(path_str)
+            is_in_use = is_protected or _is_file_in_use_exclusive(path_str)
             
             return cls(
                 attrs=attrs,
@@ -818,9 +815,9 @@ def _validate_access_permissions(path: Path) -> None:
         if not path.exists():
             raise UnsafePathError("Archivo inexistente, no se pueden validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.R_OK):
-            raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError, AttributeError):
         raise UnsafePathError("Error de acceso al validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 
@@ -1049,7 +1046,7 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     if sd.has_flag(Win32Attr.SPARSE_FILE):
-        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
 def _check_container_permissions(target_path: Path) -> None:
     """Verifica permisos del contenedor (padre) antes de operar."""
