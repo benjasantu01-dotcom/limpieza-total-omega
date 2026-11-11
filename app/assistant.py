@@ -568,14 +568,17 @@ class SystemContext:
         """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
         if not isinstance(updates, dict) or not updates: return
         
-        for key, value in updates.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-        
-        self.analyzed = True
-        if "metrics_snapshot" in self.__dict__: del self.__dict__["metrics_snapshot"]
-        if "_cached_active_problems" in self.__dict__: del self.__dict__["_cached_active_problems"]
-        if "_hash_tuple" in self.__dict__: del self.__dict__["_hash_tuple"]
+        try:
+            for key, value in updates.items():
+                if hasattr(self, key):
+                    setattr(self, key, value)
+            
+            self.analyzed = True
+            for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
+                if attr in self.__dict__:
+                    del self.__dict__[attr]
+        except (AttributeError, TypeError):
+            pass
 
     def ingest(self, source: Any) -> bool:
         """Ingiere y valida datos externos para actualizar el estado de SystemContext."""

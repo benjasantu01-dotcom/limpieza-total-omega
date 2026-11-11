@@ -327,20 +327,21 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """Realiza validaciones de integridad sobre la ruta candidata antes de iniciar el escaneo."""
-    if not isinstance(target, Path): return False
+    if not isinstance(target, Path) or target is None: return False
     try:
         if not target.exists() or not target.is_dir(): return False
         if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): return False
         if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(str(target), kernel): return False
         
+        target_name = getattr(target, 'name', None)
+        if target_name and (any(c in target_name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target_name)):
+            return False
+
         target_parts = getattr(target, 'parts', None)
         if target_parts:
-            parts = [p.lower() for p in target_parts]
+            parts = [str(p).lower() for p in target_parts]
             if any(part in NEVER_TOUCH for part in parts): return False
-        
-        if any(c in target.name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target.name):
-            return False
             
         target_norm = os.path.realpath(str(target))
         return os.path.commonpath([target_norm, base_norm]) == base_norm

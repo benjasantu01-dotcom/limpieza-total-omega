@@ -816,3 +816,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-11T09:25:57` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-11T09:25:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T09:25:57` Corrida terminada. Total usado hoy: 224.
+- `2026-11-11T09:32:00` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-11T09:32:42` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la ingestión de datos en `SystemContext.ingest` y `_apply_updates` mediante la validación explícita de tipos, capturando excepciones de forma específica y asegurando que las actualizaciones no corrompan el estado si el origen contiene valores inesperados o malformados.
+- `2026-11-11T09:33:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-11T09:33:36` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_target_valid` mediante la validación explícita de `None` y tipos antes de acceder a atributos de `Path`, evitando posibles `AttributeError` o comportamientos inesperados cuando la estructura de archivos es inconsistente o contiene objetos mal formados.
+- `2026-11-11T09:33:45` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_collect_summary_data` y `summarize` reemplazando los bloques `except Exception` genéricos por capturas de errores específicos y validaciones explícitas de estado, evitando el silenciamiento de fallos críticos y mejorando el manejo de datos incompletos.
+- `2026-11-11T09:33:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T09:33:45` Corrida terminada. Total usado hoy: 228.
