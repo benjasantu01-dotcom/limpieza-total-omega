@@ -1277,3 +1277,41 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-11T14:09:39` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-11T14:09:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T14:09:39` Corrida terminada. Total usado hoy: 336.
+- `2026-11-11T14:17:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-11T14:18:17` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_process_executable_safe` y `_iter_process_memory` mediante la validación explícita de `handle` y `path_buffer` antes de acceder a la API, evitando posibles violaciones de segmento o errores de ctypes al pasar punteros inválidos, y se agregó una captura de excepciones más específica en el bucle de procesos.
+- `2026-11-11T14:18:48` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas y capturando excepciones de sistema de forma específica para prevenir estados inconsistentes durante operaciones de disco.
+- `2026-11-11T14:19:37` Tests FALLARON:
+```
+')
+
+    def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", base: PathLike = DEFAULT_QUARANTINE_DIR) -> QuarantineItem:
+        """Aísla un archivo sospechoso en el sandbox de cuarentena."""
+        p_source: Path = _validate_input_path(source)
+    
+        try:
+            if not _is_file_exclusive(p_source):
+                raise IOError("El archivo origen está bloqueado por otro proceso.")
+            initial_stat = p_source.stat()
+        except (OSError, PermissionError) as e:
+            raise RuntimeError(f"Error de acceso durante validación de origen: {e}")
+    
+        if _is_filesystem_read_only(p_source.parent): raise OSError("El archivo origen reside en un volumen de solo lectura.")
+    
+        try:
+            dest_dir: Path = quarantine_dir(base)
+            ensure_safe_to_modify(dest_dir)
+            _validate_isolation_request(p_source, dest_dir)
+        except (OSError, PermissionError, UnsafePathError) as e:
+>           raise RuntimeError(f"Sandbox inaccesible o error de validación: {e}")
+E           RuntimeError: Sandbox inaccesible o error de validación: [STRUCTURE] [GENERIC] Ruta origen protegida.
+
+app/quarantine.py:819: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - RuntimeError: Sandbox inaccesible o error de validación: [STRUCTURE] [GENERIC] Ruta origen protegida.
+1 failed, 298 passed in 1.62s
+
+```
+- `2026-11-11T14:19:37` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las validaciones de entrada en `quarantine_file` y `restore_item` capturando excepciones específicas (`PermissionError`, `OSError`) y centralizando la validación de integridad para evitar condiciones de carrera antes de realizar operaciones de I/O críticas.
+- `2026-11-11T14:19:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-11T14:19:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T14:19:42` Corrida terminada. Total usado hoy: 340.

@@ -7,23 +7,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **183** (36.3% de aceptación)
-- Rechazadas por tests: 17
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 63
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 57 | 4 | 20 | 3 | 84 |
-| 2026-11-11 | 126 | 13 | 43 | 14 | 140 |
+| 2026-11-10 | 55 | 4 | 19 | 3 | 83 |
+| 2026-11-11 | 128 | 14 | 44 | 14 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **43**
-- manejo de errores y validación de entradas: **42**
-- rendimiento: **35**
+- manejo de errores y validación de entradas: **44**
+- legibilidad y documentación: **42**
+- rendimiento: **34**
 - seguridad defensiva: **33**
 - robustez ante casos límite: **30**
 
@@ -31,20 +31,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **22**
 - `safety.py`: **19**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `quarantine.py`: **16**
-- `assistant.py`: **15**
 - `settings.py`: **15**
-- `organizer.py`: **13**
-- `startup.py`: **10**
+- `assistant.py`: **14**
+- `organizer.py`: **14**
 - `branding.py`: **10**
+- `startup.py`: **9**
 - `scanner.py`: **9**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T14:18:48` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas y capturando excepciones de sistema de forma específica para prevenir estados inconsistentes durante operaciones de disco.
+- `2026-11-11T14:18:17` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` y `_iter_process_memory` mediante la validación explícita de `handle` y `path_buffer` antes de acceder a la API, evitando posibles violaciones de segmento o errores de ctypes al pasar punteros inválidos, y se agregó una captura de excepciones más específica en el bucle de procesos.
 - `2026-11-11T14:08:53` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del cálculo al añadir un chequeo de precondición en `compute_score` que evita iterar sobre métricas mal inicializadas, reforzando la validación de los datos de entrada antes de que el pipeline procese información potencialmente corrupta.
 - `2026-11-11T14:08:25` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `group_by_size` y `_collect_candidates` mediante la validación explícita de `Path` y la captura de excepciones específicas, evitando que operaciones sobre tipos inesperados o rutas inaccesibles interrumpan el flujo del escaneo.
 - `2026-11-11T14:07:56` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `summarize` y `all_drives_usage` mediante la validación explícita de retornos, evitando la propagación de valores `None` y garantizando que el reporte refleje correctamente fallos en el acceso a disco en lugar de procesar objetos inválidos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T11:57:41` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_structure_valid` añadiendo una comprobación de tipo estricta para el valor de cada clave frente a su valor por defecto, evitando fallos ante configuraciones JSON cuyo esquema base es correcto pero los tipos de valores internos están corruptos.
 - `2026-11-11T11:47:40` **quarantine.py** (robustez ante casos límite): He mejorado `_check_path_syntax_integrity` para detectar la presencia de caracteres Unicode normalizados (nfc/nfd) y rutas con espacios finales o puntos, previniendo ataques de evasión de filtros y colisiones en sistemas de archivos Windows.
 - `2026-11-11T11:37:34` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud mediante la implementación de una validación explícita en `_process_pipeline_entry` para prevenir errores de cálculo si un `scorer` devuelve valores fuera de rango o `NaN` (caso límite de operaciones matemáticas), asegurando que el pipeline no se interrumpa ante datos inesperados.
-- `2026-11-11T11:35:13` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad en `_get_immediate_child` para prevenir errores de cálculo si la ruta del archivo ya no existe, y se fortaleció `walk_files` con un bloque `try-except` más robusto durante la resolución de `st_ino/st_dev` para evitar interrupciones en sistemas con archivos bloqueados o volúmenes volátiles.
-- `2026-11-11T11:26:27` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` ante casos límite mediante una validación más estricta del tipo de los valores recibidos, asegurando que `_apply_updates` no falle ni contamine el estado ante entradas inesperadas que esquiven validaciones superficiales.

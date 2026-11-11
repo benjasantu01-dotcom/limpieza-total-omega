@@ -388,10 +388,9 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 target_path = _can_move_file(junk_file, dest_base)
                 if target_path and not target_path.exists(): 
                     ensure_safe_to_modify(junk_file.path)
-                    # Verificación doble de identidad antes del movimiento (TOCTOU prevention)
                     if _validate_file_identity(junk_file, junk_file.path) and os.access(junk_file.path, os.R_OK):
                         os.replace(str(junk_file.path), str(target_path))
-            except (OSError, PermissionError):
+            except (OSError, PermissionError, RuntimeError):
                 continue
         return dest_base
     except (OSError, PermissionError, RuntimeError) as e:
@@ -441,7 +440,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                         if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
                             item.unlink()
                             count += 1
-            except (OSError, PermissionError):
+            except (OSError, PermissionError, RuntimeError):
                 continue
         return count
     except (OSError, PermissionError, RuntimeError):

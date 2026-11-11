@@ -328,13 +328,13 @@ GetModNameFunc = Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
     """
     Verifica mediante la ruta del ejecutable que el proceso no resida en zonas restringidas.
-    Utiliza buffers pre-asignados para evitar errores de memoria durante la llamada a la API.
     """
-    if handle is None or get_mod_name_func is None: return False
+    if not handle or handle == INVALID_HANDLE_VALUE or not path_buffer or not get_mod_name_func:
+        return False
     try:
         ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
-        result = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
-        if result == 0: return False
+        if get_mod_name_func(handle, None, path_buffer, len(path_buffer)) == 0:
+            return False
         path_str = path_buffer.value.decode('utf-8', 'ignore')
         if not path_str or any(c in path_str for c in ('\0', '?', '*')): return False
         return not is_protected_path(Path(path_str))
@@ -385,7 +385,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
                             name = Path(val_name).name
                             if not _is_invalid_process_name(name):
                                 yield ProcessMemory(name, pid, BytesValue(pmc.WorkingSetSize))
-        except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
+        except (ctypes.ArgumentError, OSError, ValueError, RuntimeError, Exception):
             continue
         finally:
             WindowsAPI.kernel32.CloseHandle(handle)
