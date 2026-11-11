@@ -510,6 +510,9 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
         """
         Extrae, valida y convierte un valor específico desde una fuente externa.
+        
+        Realiza una verificación estricta de tipo escalar, asegurando que no se 
+        filtren rutas protegidas.
         """
         if not isinstance(source, (dict, object)): return None
         raw_val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)

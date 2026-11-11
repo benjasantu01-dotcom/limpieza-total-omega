@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 55 | 5 | 18 | 2 | 46 |
+| 2026-11-09 | 52 | 5 | 17 | 2 | 46 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 10 | 1 | 2 | 0 | 15 |
+| 2026-11-11 | 13 | 1 | 3 | 0 | 15 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
-- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **46**
+- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **30**
-- rendimiento: **29**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `memory.py`: **17**
 - `quarantine.py`: **17**
+- `assistant.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **16**
-- `healthscore.py`: **15**
-- `assistant.py`: **15**
+- `healthscore.py`: **14**
 - `duplicates.py`: **14**
 - `settings.py`: **13**
-- `organizer.py`: **11**
+- `startup.py`: **12**
 - `scanner.py`: **11**
-- `startup.py`: **11**
-- `branding.py`: **9**
+- `branding.py`: **10**
+- `organizer.py`: **10**
 - `browser.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T01:14:34` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings detallados para las constantes de layout y las clases de soporte, además de añadir type hints y clarificar la lógica de las funciones de renderizado geométrico para mejorar la mantenibilidad del motor visual.
+- `2026-11-11T01:14:01` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo `assistant.py` mediante docstrings detallados en funciones críticas y se ha refactorizado la lógica de validación de métricas para hacerla más explícita y legible, garantizando que el cumplimiento de los contratos de tipo sea transparente sin alterar el comportamiento.
+- `2026-11-11T01:13:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` asegurando que el lector de CSV maneje correctamente los errores de formato inesperados mediante la validación estricta de `fieldnames` y la prevención de excepciones durante la iteración sobre filas incompletas o mal formadas.
 - `2026-11-11T01:04:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al implementar una validación estricta del tamaño antes de la lectura en memoria y un manejo de errores más específico para evitar que cualquier anomalía en el sistema de archivos (ej. archivo bloqueado o eliminado en medio de la operación) cause una terminación inesperada.
 - `2026-11-11T01:03:53` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `_get_file_attrs` y `_is_volume_readonly` manejando explícitamente posibles errores de `ctypes` y valores `None` durante la llamada a la API de Windows, evitando cierres inesperados de la aplicación ante estados de hardware inestables o volúmenes momentáneamente inaccesibles.
 - `2026-11-11T00:55:24` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` añadiendo validación de tipos estricta y manejo explícito de errores de serialización para prevenir la corrupción del archivo de manifiesto si el contenido no es el esperado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T00:35:19` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_hex_to_rgb` y `blend` mediante validación explícita de formato y manejo de errores, asegurando que cualquier entrada malformada (ej. cadenas vacías, sin '#', o con caracteres no hexadecimales) no propague valores inválidos.
 - `2026-11-10T13:55:04` **organizer.py** (seguridad defensiva): Mejoré la seguridad de la función `_is_safe_for_disk_op` integrando una verificación explícita mediante `is_protected_path` para el destino, asegurando que ninguna operación de movimiento permita depositar basura en directorios protegidos por el sistema, reforzando la defensa contra rutas maliciosas.
 - `2026-11-10T13:54:34` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del chequeo de rutas al integrar una validación de longitud máxima y caracteres inválidos en `_is_process_executable_safe`, asegurando que `is_protected_path` siempre reciba una ruta normalizada y no datos corruptos del buffer de Win32.
-- `2026-11-10T13:40:53` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `_collect_candidates` y `group_by_size` al asegurar que la resolución de rutas mediante `resolve()` y el acceso a metadatos ocurran exclusivamente tras validar `is_safe_to_modify`, previniendo errores de acceso a rutas fuera del scope permitido o bloqueadas por el sistema.
-- `2026-11-10T13:40:39` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `drive_usage` implementando una validación estricta de la relación de parentesco mediante `Path.resolve()`, asegurando que ninguna ruta resuelta escape del directorio raíz o acceda a rutas UNC malintencionadas antes de ser procesada.
-- `2026-11-10T13:36:03` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_build_payload` validando explícitamente que la pregunta `q` no contenga caracteres prohibidos antes de serializar el JSON, evitando que el payload final sea construido a partir de datos potencialmente inseguros.

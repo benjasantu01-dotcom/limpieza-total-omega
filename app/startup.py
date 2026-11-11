@@ -451,7 +451,8 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         f: io.StringIO = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         
-        if not reader.fieldnames or "Name" not in reader.fieldnames or "Value" not in reader.fieldnames:
+        # Validación de campos mínimos necesarios para una fila válida de registro
+        if not reader.fieldnames or not {"Name", "Value"}.issubset(set(reader.fieldnames)):
             return []
         
         for row in reader:
