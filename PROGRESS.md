@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 60
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 242
 
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 110 | 8 | 37 | 8 | 185 |
-| 2026-11-11 | 64 | 6 | 23 | 6 | 57 |
+| 2026-11-10 | 107 | 8 | 37 | 7 | 185 |
+| 2026-11-11 | 66 | 6 | 24 | 7 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **42**
-- rendimiento: **30**
-- seguridad defensiva: **28**
-- robustez ante casos límite: **23**
+- rendimiento: **32**
+- seguridad defensiva: **26**
+- robustez ante casos límite: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `safety.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `duplicates.py`: **15**
 - `quarantine.py`: **15**
 - `healthscore.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **13**
 - `settings.py`: **12**
-- `branding.py`: **11**
+- `organizer.py`: **12**
 - `scanner.py`: **11**
-- `organizer.py`: **11**
-- `startup.py`: **10**
+- `branding.py`: **10**
+- `startup.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T06:39:46` **organizer.py** (rendimiento): Se optimizó el proceso recursivo de escaneo en `_process_directory` transformando `junk_candidates` de una `List` a una estructura que evita la sobrecarga de consultas redundantes mediante una validación de `path` inmediata, y se pre-calculó `JUNK_EXTENSIONS` como un `frozenset` local para acelerar la búsqueda de pertenencia durante la iteración masiva de archivos.
+- `2026-11-11T06:39:17` **memory.py** (rendimiento): Optimizado el rendimiento de `_iter_process_memory` reutilizando el buffer de ruta y la estructura de contadores, evitando instanciaciones innecesarias dentro del bucle de PIDs.
 - `2026-11-11T06:29:55` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación eliminando la re-validación recursiva innecesaria de campos en `SystemMetrics` y reemplazando las lambdas de reglas por funciones cacheadas, lo que reduce drásticamente la carga de CPU durante iteraciones repetidas.
 - `2026-11-11T06:29:05` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación de objetos `Path` y llamadas redundantes a `relative_to` dentro del loop de `walk_files`, utilizando en su lugar la caché de resultados de `os.scandir` y operando directamente con las rutas de nivel superior, reduciendo significativamente la sobrecarga en directorios profundos.
 - `2026-11-11T06:21:17` **branding.py** (rendimiento): Se ha optimizado `get_gradient_segments` para evitar la re-ejecución innecesaria de la lógica de segmentación mediante la expansión de la caché y se redujo la sobrecarga de memoria al simplificar la creación de la lista `segments` en tiempo de ejecución.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T05:39:45` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `draw_logo` para eliminar la lógica de renderizado fragmentada, sustituyendo el uso de variables "mágicas" por constantes semánticas y mejorando la documentación de las funciones de dibujo.
 - `2026-11-11T05:38:47` **startup.py** (manejo de errores y validación de entradas): Reforcé `parse_registry_csv` y `entries_from_registry` para capturar excepciones específicas de `subprocess` y errores de parseo de CSV, previniendo que una salida de PowerShell malformada o un timeout interrumpan la ejecución global de la app.
 - `2026-11-11T05:38:18` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` y `validate` agregando una comprobación de tipo explícita para evitar errores en tiempo de ejecución si el JSON contiene valores `None` inesperados (nulos en JSON) que los validadores no manejan, asegurando que `AppSettings` siempre contenga valores del tipo esperado (bool/str/int) antes de que la app los procese.
-- `2026-11-11T05:29:36` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_is_valid_file_path` y `_is_valid_path_structure` validando que los nombres de archivo sean procesables antes de operar, previniendo errores de `OSError` o `NoneType` al manejar entradas malformadas o rutas que exceden el límite de `path_length_limit`.
-- `2026-11-11T05:29:21` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_running_as_admin` y `_is_virtual_drive` al centralizar el manejo de excepciones y validaciones de tipo, evitando que un `None` o una entrada inesperada provoquen un fallo silencioso o un error de tipo en tiempo de ejecución.

@@ -442,3 +442,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-11T06:30:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-11T06:30:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T06:30:52` Corrida terminada. Total usado hoy: 156.
+- `2026-11-11T06:38:47` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-11-11T06:39:17` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizado el rendimiento de `_iter_process_memory` reutilizando el buffer de ruta y la estructura de contadores, evitando instanciaciones innecesarias dentro del bucle de PIDs.
+- `2026-11-11T06:39:46` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el proceso recursivo de escaneo en `_process_directory` transformando `junk_candidates` de una `List` a una estructura que evita la sobrecarga de consultas redundantes mediante una validación de `path` inmediata, y se pre-calculó `JUNK_EXTENSIONS` como un `frozenset` local para acelerar la búsqueda de pertenencia durante la iteración masiva de archivos.
+- `2026-11-11T06:40:29` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Se ha optimizado `load_manifest` mediante la implementación de una caché de manifiesto basada en `st_mtime` y `st_size` (evitando lecturas y parseos JSON innecesarios en llamadas repetidas), mejorando significativamente el rendimiento en operaciones de escaneo o resumen.
+- `2026-11-11T06:40:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-11-11T06:40:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T06:40:32` Corrida terminada. Total usado hoy: 160.

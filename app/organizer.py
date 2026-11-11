@@ -101,9 +101,6 @@ def list_available_drives() -> List[str]:
 class JunkFile:
     """
     Representa un archivo candidato a limpieza.
-    
-    Almacena metadatos críticos para detección de ataques TOCTOU,
-    usando identificadores de inodo y dispositivo para validar identidad.
     """
     path: Path
     size_bytes: int
@@ -143,7 +140,6 @@ def is_valid_junk_extension(filename: str) -> bool:
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """
     Ejecuta llamadas al kernel para obtener atributos de archivo Win32.
-    Utiliza follow_symlinks=False para evitar seguir enlaces durante la inspección.
     """
     try:
         if isinstance(entry, os.DirEntry):
@@ -159,7 +155,6 @@ def _is_file_read_only(path: Path) -> bool:
 def _is_junction(entry: Union[os.DirEntry, Path]) -> bool:
     """
     Verifica si la ruta es un punto de reparse (Junction/Symlink).
-    Previene el procesamiento de bucles infinitos en escaneos recursivos.
     """
     try:
         if isinstance(entry, Path) and entry.is_symlink(): return True
@@ -178,7 +173,6 @@ def _is_unc_path(path: Path) -> bool:
 def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres añadiendo un sufijo numérico (1-999).
-    Asegura que el archivo de destino no sobrescriba datos existentes.
     """
     if not isinstance(target, Path): return target
     base_target = target
@@ -196,7 +190,7 @@ def _is_allowed_directory(name: str) -> bool:
 def _try_open_win_file(path: Path) -> bool:
     """
     Verifica si un archivo está disponible para acceso mediante la creación 
-    de un handle compartido. Retorna True si está libre, False si está bloqueado.
+    de un handle compartido.
     """
     try:
         if not path.exists(): return False
@@ -279,7 +273,6 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Validador maestro de integridad previo a una operación de movimiento.
-    Verifica seguridad de rutas, bloqueos de archivos, permisos y espacio.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
         return False
@@ -313,10 +306,10 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
         return False
     return True
 
-def _is_valid_junk_entry(entry: os.DirEntry) -> bool:
+def _is_valid_junk_entry(entry: os.DirEntry, extensions: frozenset[str]) -> bool:
     """Valida requisitos básicos (extensión, tamaño, ocultamiento) de un archivo basura."""
     try:
-        if Path(entry.name).suffix.lower() not in JUNK_EXTENSIONS: return False
+        if Path(entry.name).suffix.lower() not in extensions: return False
         stats = entry.stat(follow_symlinks=False)
         return stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry)
     except (PermissionError, OSError):
@@ -324,7 +317,7 @@ def _is_valid_junk_entry(entry: os.DirEntry) -> bool:
 
 def _process_directory(current_dir: Path, junk_candidates: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[str]) -> None:
     """
-    Realiza un escaneo recursivo limitado por profundidad y ciclos para detectar basura.
+    Realiza un escaneo recursivo optimizado utilizando un cache local de extensiones.
     """
     if depth > LIMITS.MAX_SCAN_DEPTH: return
         
@@ -334,6 +327,7 @@ def _process_directory(current_dir: Path, junk_candidates: List[JunkFile], depth
         if not real_path.is_dir() or str_path in visited: return
         
         visited.add(str_path)
+        extensions = JUNK_EXTENSIONS
         
         with os.scandir(real_path) as iterator:
             for entry in iterator:
@@ -341,7 +335,7 @@ def _process_directory(current_dir: Path, junk_candidates: List[JunkFile], depth
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), junk_candidates, depth + 1, protected_cache, visited)
-                    elif entry.is_file(follow_symlinks=False) and _is_valid_junk_entry(entry):
+                    elif entry.is_file(follow_symlinks=False) and _is_valid_junk_entry(entry, extensions):
                         stats = entry.stat(follow_symlinks=False)
                         junk_candidates.append(JunkFile(
                             Path(entry.path), 
@@ -378,8 +372,7 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
-    Mueve los archivos confirmados al directorio de revisión, validando cada 
-    movimiento con las reglas de seguridad vigentes.
+    Mueve los archivos confirmados al directorio de revisión.
     """
     if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
         return None
@@ -421,8 +414,7 @@ def _is_same_file_identity(path: Path, expected_ino: int) -> bool:
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
-    Genera y valida una ruta de destino única para el archivo, basada en su 
-    timestamp de modificación, para evitar colisiones.
+    Genera y valida una ruta de destino única para el archivo.
     """
     if not isinstance(junk_file.modified, datetime): return None
     try:
@@ -440,7 +432,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos validados en la carpeta de revisión.
-    Realiza una verificación doble de inodos para mitigar ataques TOCTOU.
     """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
@@ -455,7 +446,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                     if is_valid_junk_extension(item.name) and not _is_file_locked(item):
                         stat_before = item.stat()
                         ensure_safe_to_modify(item)
-                        # Verificación de identidad post-bloqueo para confirmar que no fue reemplazado
                         if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
                             item.unlink()
                             count += 1
