@@ -101,6 +101,9 @@ def _get_immediate_child(root: Path, path: Path) -> Path:
     try:
         if not path.exists():
             return path
+        # Aseguramos que el path sea realmente hijo de root para prevenir escalada
+        if path == root:
+            return path
         parts = path.relative_to(root).parts
         return root / parts[0]
     except (ValueError, IndexError, OSError):
@@ -295,13 +298,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el árbol de directorios de forma iterativa y segura, evitando enlaces circulares.
+    Recorre el árbol de directorios de forma iterativa y segura, evitando enlaces circulares y escapes de root.
     """
     root_path = _validate_root(directory)
     if not root_path: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[Path] = [root_path]
     
     root_stat = _safe_stat(root_path)
     if root_stat:
@@ -315,14 +318,19 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
+                    entry_path = Path(entry.path)
                     try:
+                        # Seguridad: impedir escape de directorio mediante resolve()
+                        if not str(entry_path.resolve()).startswith(str(root_path)):
+                            continue
+
                         if _is_excluded_path(entry.name):
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
                         
                         if entry.is_dir(follow_symlinks=False):
-                            if skip_protected and is_protected_path(Path(entry.path)):
+                            if skip_protected and is_protected_path(entry_path):
                                 continue
                             if _is_reparse_point(st):
                                 continue
@@ -333,14 +341,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                             except AttributeError:
                                 pass
-                            stack.append(entry.path)
+                            stack.append(entry_path)
                         
                         elif entry.is_file(follow_symlinks=False):
-                            if skip_protected and is_protected_path(Path(entry.path)):
+                            if skip_protected and is_protected_path(entry_path):
                                 continue
                             size = getattr(st, 'st_size', 0)
                             if size >= 0:
-                                yield Path(entry.path), size
+                                yield entry_path, size
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):

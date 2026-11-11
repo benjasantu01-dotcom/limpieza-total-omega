@@ -1028,3 +1028,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-11T11:57:54` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `StartupEntry.executable` manejando explícitamente excepciones de `Path.resolve` y verificaciones de archivos inexistentes, evitando que la caché de resolución se contamine con rutas inválidas tras cambios en el sistema.
 - `2026-11-11T11:57:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T11:57:54` Corrida terminada. Total usado hoy: 284.
+- `2026-11-11T12:05:00` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-11-11T12:05:40` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-11-11T12:05:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T12:05:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-11T12:06:25` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-11T12:07:25` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-11T12:07:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-11T12:08:14` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed, directory_size
+- `2026-11-11T12:08:25` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_validate_root` y `walk_files` implementando una validación estricta de "traversal" que impide que una ruta se escape de la raíz permitida mediante `pathlib.Path.is_relative_to` (o lógica equivalente), garantizando que las operaciones de escaneo nunca excedan el ámbito definido por el usuario.
+- `2026-11-11T12:08:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T12:08:25` Corrida terminada. Total usado hoy: 288.

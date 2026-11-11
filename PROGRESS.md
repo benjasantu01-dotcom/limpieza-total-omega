@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 63
+- Rechazadas por guardia de seguridad: 64
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 72 | 5 | 25 | 4 | 114 |
-| 2026-11-11 | 116 | 13 | 38 | 13 | 104 |
+| 2026-11-10 | 72 | 5 | 25 | 4 | 110 |
+| 2026-11-11 | 117 | 13 | 39 | 13 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,11 +25,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **45**
 - rendimiento: **35**
 - robustez ante casos límite: **30**
-- seguridad defensiva: **27**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `safety.py`: **19**
 - `memory.py`: **18**
 - `quarantine.py`: **17**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T12:08:25` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` implementando una validación estricta de "traversal" que impide que una ruta se escape de la raíz permitida mediante `pathlib.Path.is_relative_to` (o lógica equivalente), garantizando que las operaciones de escaneo nunca excedan el ámbito definido por el usuario.
 - `2026-11-11T11:57:41` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_structure_valid` añadiendo una comprobación de tipo estricta para el valor de cada clave frente a su valor por defecto, evitando fallos ante configuraciones JSON cuyo esquema base es correcto pero los tipos de valores internos están corruptos.
 - `2026-11-11T11:47:40` **quarantine.py** (robustez ante casos límite): He mejorado `_check_path_syntax_integrity` para detectar la presencia de caracteres Unicode normalizados (nfc/nfd) y rutas con espacios finales o puntos, previniendo ataques de evasión de filtros y colisiones en sistemas de archivos Windows.
 - `2026-11-11T11:37:34` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud mediante la implementación de una validación explícita en `_process_pipeline_entry` para prevenir errores de cálculo si un `scorer` devuelve valores fuera de rango o `NaN` (caso límite de operaciones matemáticas), asegurando que el pipeline no se interrumpa ante datos inesperados.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T10:44:24` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` incorporando docstrings detallados en todas las funciones y métodos públicos, explicitando los parámetros, comportamientos ante errores y las restricciones de seguridad aplicadas, facilitando así la auditabilidad del código sin alterar su lógica.
 - `2026-11-11T10:43:58` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `_SettingsManager` y sus métodos críticos para clarificar el flujo de escritura atómica, y se han añadido type hints más precisos en los validadores para facilitar el mantenimiento y la auditoría del código.
 - `2026-11-11T10:35:33` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de la clase `Scanner` y clarificando las firmas de funciones complejas mediante `TypeAlias` adicionales, facilitando la auditoría de seguridad del flujo de recorrido del sistema de archivos.
-- `2026-11-11T10:35:19` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_file_id`, consolidando la lógica de detección de ID de archivo y centralizando el manejo de recursos (handles de Win32) para evitar fugas de memoria y mejorar la claridad del flujo de ejecución.
