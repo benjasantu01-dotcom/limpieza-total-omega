@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 59
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 239
+- Rechazadas por guardia de seguridad: 58
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 75 | 5 | 26 | 4 | 142 |
-| 2026-11-11 | 103 | 10 | 33 | 9 | 97 |
+| 2026-11-10 | 73 | 5 | 25 | 4 | 141 |
+| 2026-11-11 | 106 | 10 | 33 | 10 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **29**
+- rendimiento: **30**
 - seguridad defensiva: **28**
-- robustez ante casos límite: **27**
+- robustez ante casos límite: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `safety.py`: **19**
 - `memory.py`: **18**
-- `healthscore.py`: **16**
-- `duplicates.py`: **15**
 - `quarantine.py`: **15**
+- `healthscore.py`: **15**
+- `duplicates.py`: **14**
 - `assistant.py`: **14**
 - `organizer.py`: **14**
-- `settings.py`: **12**
+- `settings.py`: **13**
+- `startup.py`: **11**
 - `scanner.py`: **10**
-- `startup.py`: **10**
-- `branding.py`: **9**
+- `branding.py`: **10**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T10:45:16` **branding.py** (rendimiento): Optimicé el cálculo de `draw_logo` y `draw_ring` eliminando la recreación innecesaria de objetos y simplificando el acceso a constantes, reduciendo la carga de CPU durante el renderizado frecuente en el Canvas.
+- `2026-11-11T10:44:24` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` incorporando docstrings detallados en todas las funciones y métodos públicos, explicitando los parámetros, comportamientos ante errores y las restricciones de seguridad aplicadas, facilitando así la auditabilidad del código sin alterar su lógica.
+- `2026-11-11T10:43:58` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `_SettingsManager` y sus métodos críticos para clarificar el flujo de escritura atómica, y se han añadido type hints más precisos en los validadores para facilitar el mantenimiento y la auditoría del código.
 - `2026-11-11T10:35:33` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de la clase `Scanner` y clarificando las firmas de funciones complejas mediante `TypeAlias` adicionales, facilitando la auditoría de seguridad del flujo de recorrido del sistema de archivos.
 - `2026-11-11T10:35:19` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_file_id`, consolidando la lógica de detección de ID de archivo y centralizando el manejo de recursos (handles de Win32) para evitar fugas de memoria y mejorar la claridad del flujo de ejecución.
 - `2026-11-11T10:34:04` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la refactorización de `_get_sha256` y `_is_file_in_use_by_system` para reducir la complejidad ciclomática y mejorar la claridad de los flujos de control, además de añadir type hints explícitos en funciones internas que carecían de ellos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T10:03:44` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` al añadir una validación de presencia obligatoria de todas las claves definidas en `DEFAULTS`, asegurando que archivos `config.json` truncados o incompletos no pasen como válidos.
 - `2026-11-11T09:54:49` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión robusta de excepciones en la función `_get_path_stat_robust` mediante el uso del código `winerror` específico para distinguir entre fallos de acceso persistentes y condiciones de carrera temporales, evitando que errores de E/S del SO interrumpan innecesariamente el bucle de validación.
 - `2026-11-11T09:53:46` **quarantine.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `quarantine_file` para evitar la propagación de excepciones genéricas al capturar fallos específicos de I/O y permisos, asegurando que el estado del sistema no quede inconsistente si `_atomic_isolate_file` falla.
-- `2026-11-11T09:53:00` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `_is_file_locked`, `_is_system_hidden` y `_is_junction` mediante la implementación de chequeos de tipos, captura de excepciones más precisas y validación de retorno de llamadas de bajo nivel para prevenir fallos al encontrar objetos con permisos restringidos o atributos inesperados.
-- `2026-11-11T09:44:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para evitar que `EmptyWorkingSet` se ejecute sobre procesos inexistentes o que hayan terminado prematuramente, además de centralizar el manejo de recursos mediante bloques `try/finally` más estrictos para asegurar el cierre de handles incluso ante excepciones inesperadas durante la llamada a la API.
-- `2026-11-11T09:43:05` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` mediante la adición de una validación explícita de tipo en `__setattr__` para prevenir la inyección de tipos inesperados y ajusté `compute_score` para manejar de forma segura el caso de métricas nulas, siguiendo el enfoque de validación defensiva.

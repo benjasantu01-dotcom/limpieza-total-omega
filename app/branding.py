@@ -387,15 +387,15 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         center_x = x + SHIELD_CENTER_X * scale
         for seg in get_gradient_segments(n):
             for i in range(seg.start_index, seg.end_index):
-                if i < len(params):
-                    p = params[i]
-                    canvas.create_rectangle(center_x - p[0], base_y + p[1], center_x + p[0], base_y + p[2], fill=seg.hex_color, outline="")
+                p = params[i]
+                canvas.create_rectangle(center_x - p[0], base_y + p[1], center_x + p[0], base_y + p[2], fill=seg.hex_color, outline="")
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Renderiza los detalles internos (línea, triángulo, símbolo Omega) del logo."""
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
+        cx, cy = x + SHIELD_CENTER_X * scale, y + SHIELD_CENTER_Y * scale
         canvas.create_line(
             x + _DECOR_LINE_X1 * scale, y + _DECOR_LINE_Y1 * scale,
             x + _DECOR_LINE_X2 * scale, y + _DECOR_LINE_Y2 * scale,
@@ -408,32 +408,19 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
             fill=C_BACKGROUND, outline=""
         )
         canvas.create_text(
-            x + SHIELD_CENTER_X * scale, y + (SHIELD_CENTER_Y + 40) * scale,
+            cx, y + (SHIELD_CENTER_Y + 40) * scale,
             text="\u03a9", fill=C_BACKGROUND,
             font=(UI_CONFIG.font_family, ts, UI_CONFIG.bold_weight), anchor="center"
         )
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza el logo vectorial completo en el widget Canvas proporcionado.
-    
-    Args:
-        canvas: Widget de tkinter.Canvas sobre el cual dibujar.
-        size: Tamaño base del logo, escalado automáticamente.
-        canvas_x: Desplazamiento horizontal inicial en el lienzo.
-        canvas_y: Desplazamiento vertical inicial en el lienzo.
-    """
-    if canvas is None or not all(math.isfinite(v) for v in (size, canvas_x, canvas_y)): 
-        return
-    
+    """Renderiza el logo vectorial completo en el widget Canvas proporcionado."""
+    if canvas is None or not all(math.isfinite(v) for v in (size, canvas_x, canvas_y)): return
     try:
         scale = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
         poly = _get_scaled_poly(scale, float(canvas_x), float(canvas_y))
-        if not poly: 
-            return
-
-        # Dibujar halo de brillo
+        if not poly: return
         glow_radius = SHIELD_GLOW_OFFSET * scale
         canvas.create_oval(
             canvas_x + (SHIELD_CENTER_X * scale) - glow_radius, 
@@ -442,26 +429,13 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
             canvas_y + (SHIELD_CENTER_Y * scale) + glow_radius,
             fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
         )
-
-        # Dibujar base del escudo y elementos decorativos
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)
-    except (AttributeError, TypeError, ValueError, ZeroDivisionError): 
-        pass
+    except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una línea horizontal con degradado lineal en el Canvas.
-    
-    Args:
-        canvas: Widget de tkinter.Canvas donde se renderiza la barra.
-        width: Longitud total de la barra en píxeles.
-        height: Grosor vertical de la barra.
-        canvas_x: Offset horizontal en píxeles.
-        canvas_y: Offset vertical en píxeles.
-        stops: Tupla opcional de colores para el degradado.
-    """
+    """Dibuja una línea horizontal con degradado lineal en el Canvas."""
     if canvas is None or not isinstance(width, int): return
     try:
         w = max(1, int(width))
@@ -470,18 +444,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """
-    Dibuja un anillo circular de progreso basado en un porcentaje en el Canvas.
-    
-    Args:
-        canvas: Widget de tkinter.Canvas donde se dibuja el anillo.
-        percent: Valor 0-100 para la progresión del arco.
-        size: Diámetro del anillo en píxeles.
-        canvas_x, canvas_y: Posición del origen del anillo.
-        thickness: Ancho del trazo del anillo.
-        track: Color del fondo (incompleto) del anillo.
-        fill: Color del arco activo de progreso.
-    """
+    """Dibuja un anillo circular de progreso basado en un porcentaje en el Canvas."""
     if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))

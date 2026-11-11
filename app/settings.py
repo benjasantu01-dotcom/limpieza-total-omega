@@ -159,10 +159,15 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 
 class _SettingsManager:
     """
-    Singleton que gestiona el acceso a disco y la caché en memoria de la configuración.
+    Singleton que gestiona el acceso a disco y la caché en memoria.
+    
+    Implementa escritura atómica (creación de temporal + reemplazo atómico)
+    y validación de metadatos para asegurar que los datos en caché coincidan
+    con el estado actual del archivo en disco.
     """
     def __init__(self) -> None:
         self.path_cache: dict[str, Path] = {}
+        # Cache de datos: (MappingProxyType[dict], mtime, size)
         self.data_cache: dict[str, tuple[MappingProxyType[str, Any], float, int]] = {}
 
     def clear(self, resolved_path_str: str) -> None:
@@ -171,7 +176,8 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Gestiona la escritura segura en disco mediante archivos temporales.
+        Gestiona la escritura segura en disco mediante archivos temporales únicos por proceso.
+        Valida permisos y restricciones de seguridad antes y después de la operación.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
