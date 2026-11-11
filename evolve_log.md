@@ -1501,3 +1501,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-11T05:08:59` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-11T05:08:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T05:08:59` Corrida terminada. Total usado hoy: 124.
+- `2026-11-11T05:17:11` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-11-11T05:17:39` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del cálculo añadiendo comprobaciones de tipo y valor en `_process_pipeline_entry` y `_evaluate_rules`, evitando que excepciones inesperadas durante la ejecución del pipeline terminen en fallos silenciosos o resultados parciales corruptos.
+- `2026-11-11T05:18:46` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-11T05:19:13` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_process_executable_safe` y `_get_handle_for_safe_proc` añadiendo chequeos explícitos para manejar posibles fallos en la resolución de rutas y estados de procesos, evitando que excepciones en llamadas a la API de Windows aborten el proceso de escaneo.
+- `2026-11-11T05:19:23` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita de excepciones en las validaciones de ruta, asegurando que un fallo en el acceso a metadatos de un archivo individual no detenga el procesamiento del resto de la lista.
+- `2026-11-11T05:19:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T05:19:24` Corrida terminada. Total usado hoy: 128.

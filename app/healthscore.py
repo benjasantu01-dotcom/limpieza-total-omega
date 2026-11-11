@@ -301,10 +301,11 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
     """Ejecuta un conjunto de reglas y devuelve las recomendaciones activas."""
     results = []
-    if metrics is None: return results
+    if not isinstance(metrics, SystemMetrics) or not isinstance(rules, tuple):
+        return results
     for rule in rules:
         try:
-            if rule.check(metrics, normalized_ratio):
+            if callable(rule.check) and rule.check(metrics, normalized_ratio):
                 msg = rule.message_factory(metrics)
                 if msg: results.append(msg)
         except (AttributeError, TypeError, ValueError):
@@ -313,9 +314,14 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Procesa una etapa del pipeline devolviendo puntos y sugerencias."""
-    if metrics is None or entry is None: return 0, []
-    ratio = entry.scorer(metrics)
-    return int(ratio * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
+    if not isinstance(metrics, SystemMetrics) or not isinstance(entry, PipelineEntry): 
+        return 0, []
+    try:
+        ratio = entry.scorer(metrics)
+        if not _is_finite_numeric(ratio): ratio = 0.0
+        return int(ratio * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
+    except Exception:
+        return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula la puntuación total de salud ejecutando el pipeline completo."""

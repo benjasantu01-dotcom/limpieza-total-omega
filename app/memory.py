@@ -329,8 +329,8 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
     if handle is None or get_mod_name_func is None: return False
     try:
         ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
-        if get_mod_name_func(handle, None, path_buffer, len(path_buffer)) == 0:
-            return False
+        result = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
+        if result == 0: return False
         path_str = path_buffer.value.decode('utf-8', 'ignore')
         if not path_str or any(c in path_str for c in ('\0', '?', '*')): return False
         return not is_protected_path(Path(path_str))
@@ -342,11 +342,14 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
     handle = _get_process_handle(pid, access)
     if not handle: return None
     exit_code = wintypes.DWORD()
-    if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-        WindowsAPI.kernel32.CloseHandle(handle)
-        return None
-    if _is_process_executable_safe(handle, path_buf, get_mod_name_func):
-        return handle
+    try:
+        if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+            WindowsAPI.kernel32.CloseHandle(handle)
+            return None
+        if _is_process_executable_safe(handle, path_buf, get_mod_name_func):
+            return handle
+    except (ctypes.ArgumentError, OSError):
+        pass
     WindowsAPI.kernel32.CloseHandle(handle)
     return None
 
