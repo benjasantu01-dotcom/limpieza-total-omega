@@ -1129,3 +1129,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-11T02:07:27` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de los contadores y reutilizando el buffer de ruta, evitando asignaciones de memoria repetitivas dentro del bucle de procesos.
 - `2026-11-11T02:07:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T02:07:27` Corrida terminada. Total usado hoy: 52.
+- `2026-11-11T02:13:51` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-11T02:14:21` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el proceso `_process_directory` reemplazando la verificación constante de `entry.name` mediante `os.path.splitext` (operación costosa en strings) por una comprobación directa contra el set `JUNK_EXTENSIONS` usando el atributo `suffix` ya normalizado, mejorando el rendimiento en directorios con gran cantidad de archivos.
+- `2026-11-11T02:15:02` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché en `total_quarantined_bytes` mediante el uso de `_MANIFEST_CACHE` para evitar el parseo innecesario del archivo JSON y el cálculo recursivo de los pesos en cada llamada, optimizando significativamente el rendimiento al consultar el estado de la cuarentena.
+- `2026-11-11T02:15:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-11T02:16:04` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché TTL (Time-To-Live) granular en `_get_file_attrs` y se introdujeron conjuntos de exclusión rápida en `_is_kernel_managed` para reducir significativamente la cantidad de llamadas costosas a la API de Win32 durante la iteración sobre directorios grandes.
+- `2026-11-11T02:16:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T02:16:04` Corrida terminada. Total usado hoy: 56.

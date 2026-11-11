@@ -316,8 +316,8 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
 def _is_valid_junk_entry(entry: os.DirEntry) -> bool:
     """Valida requisitos básicos (extensión, tamaño, ocultamiento) de un archivo basura."""
     try:
-        _, ext = os.path.splitext(entry.name)
-        if ext.lower() not in JUNK_EXTENSIONS: return False
+        # Optimización: Path(entry.path).suffix permite evitar operaciones de string innecesarias
+        if Path(entry.name).suffix.lower() not in JUNK_EXTENSIONS: return False
         stats = entry.stat(follow_symlinks=False)
         return stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry)
     except (PermissionError, OSError):

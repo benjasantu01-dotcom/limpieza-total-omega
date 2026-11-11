@@ -609,6 +609,7 @@ def _is_kernel_managed(path_str: str) -> bool:
     """Determina si un archivo es crítico para la estabilidad del SO."""
     if not isinstance(path_str, str) or not path_str: return False
     p_lower = path_str.lower()
+    if p_lower in _KERNEL_BLOCKED_FILES: return True
     if any(p_lower.endswith(f) for f in _KERNEL_BLOCKED_FILES): return True
     if os.name == 'nt':
         local_app_data = os.environ.get("LOCALAPPDATA", "").lower()

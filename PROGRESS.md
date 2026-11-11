@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **178** (35.3% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 58
-- Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 246
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 59
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 40 | 3 | 14 | 2 | 43 |
+| 2026-11-09 | 38 | 2 | 14 | 2 | 42 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 27 | 1 | 7 | 0 | 17 |
+| 2026-11-11 | 29 | 1 | 8 | 1 | 17 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **30**
-- rendimiento: **28**
+- rendimiento: **30**
+- seguridad defensiva: **28**
 - robustez ante casos límite: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `memory.py`: **17**
-- `assistant.py`: **16**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
 - `quarantine.py`: **16**
-- `safety.py`: **16**
+- `assistant.py`: **15**
 - `healthscore.py`: **14**
+- `organizer.py`: **12**
 - `startup.py`: **12**
 - `settings.py`: **12**
-- `branding.py`: **11**
-- `organizer.py`: **11**
 - `scanner.py`: **10**
+- `branding.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T02:16:04` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) granular en `_get_file_attrs` y se introdujeron conjuntos de exclusión rápida en `_is_kernel_managed` para reducir significativamente la cantidad de llamadas costosas a la API de Win32 durante la iteración sobre directorios grandes.
+- `2026-11-11T02:14:21` **organizer.py** (rendimiento): Se optimizó el proceso `_process_directory` reemplazando la verificación constante de `entry.name` mediante `os.path.splitext` (operación costosa en strings) por una comprobación directa contra el set `JUNK_EXTENSIONS` usando el atributo `suffix` ya normalizado, mejorando el rendimiento en directorios con gran cantidad de archivos.
 - `2026-11-11T02:07:27` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de los contadores y reutilizando el buffer de ruta, evitando asignaciones de memoria repetitivas dentro del bucle de procesos.
 - `2026-11-11T02:05:11` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño, tipo, inodo) directamente durante el listado, evitando llamadas redundantes a `os.path.exists` y `stat()` posteriores, lo cual reduce drásticamente las llamadas al sistema y el tiempo de escaneo.
 - `2026-11-11T01:55:18` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la creación repetitiva de objetos `Path` por el uso directo de strings y `entry.path`, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos de grandes volúmenes de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T01:33:42` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la adición de docstrings técnicos detallados en estructuras y funciones críticas, la estandarización de type hints y la clarificación de las responsabilidades de los helpers de la API Win32 para facilitar futuras auditorías de seguridad.
 - `2026-11-11T01:24:39` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código reemplazando las lambdas complejas en `_RULES` por funciones nominales bien documentadas, lo que facilita el mantenimiento, mejora la trazabilidad de errores y documenta el propósito de cada regla de recomendación.
 - `2026-11-11T01:24:02` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas y se refactorizó la lógica de `_collect_candidates` para mejorar la legibilidad del flujo de trabajo, clarificando la separación entre la recolección de candidatos y la lógica de filtrado de seguridad.
-- `2026-11-11T01:23:29` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` añadiendo docstrings descriptivos con secciones de parámetros y retornos en funciones clave, y simplificando la lógica de `_validate_root` y `_is_excluded_path` para hacerlas más robustas y fáciles de entender, eliminando redundancias en las validaciones de tipo.
-- `2026-11-11T01:14:34` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings detallados para las constantes de layout y las clases de soporte, además de añadir type hints y clarificar la lógica de las funciones de renderizado geométrico para mejorar la mantenibilidad del motor visual.
