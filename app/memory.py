@@ -172,7 +172,7 @@ class ProcessMemory:
 
 def format_bytes(num: Optional[int | float]) -> str:
     """Convierte un valor numérico a una cadena legible con unidades de medida."""
-    if not isinstance(num, (int, float)) or math.isnan(num) or math.isinf(num) or num < 0:
+    if not isinstance(num, (int, float)) or not math.isfinite(num) or num < 0:
         return "0 B"
     num_f = float(num)
     if num_f == 0:
@@ -200,9 +200,8 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
     try:
         val: int = 0
         if isinstance(value, (int, float)):
-            if math.isnan(value) or math.isinf(value): return BytesValue(0)
+            if not math.isfinite(value): return BytesValue(0)
             fval = float(value) * multiplier
-            # Límite: un signed 64-bit int positivo, más que suficiente para RAM actual
             if fval < 0 or fval > float(2**63 - 1): return BytesValue(0)
             val = int(fval)
         elif isinstance(value, str):
@@ -228,12 +227,15 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         return _EMPTY_SNAPSHOT
         
     metrics: Dict[str, BytesValue] = {}
-    for line in meminfo_text.splitlines():
-        if ":" not in line: continue
-        key, _, value_part = line.partition(":")
-        key_stripped = key.strip()
-        if not key_stripped: continue
-        metrics[key_stripped] = _safe_int_conversion(value_part, 1024)
+    try:
+        for line in meminfo_text.splitlines():
+            if ":" not in line: continue
+            key, _, value_part = line.partition(":")
+            key_stripped = key.strip()
+            if not key_stripped: continue
+            metrics[key_stripped] = _safe_int_conversion(value_part, 1024)
+    except Exception:
+        return _EMPTY_SNAPSHOT
             
     total: BytesValue = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
@@ -272,7 +274,6 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             return None
         
         ws_val = _safe_int_conversion(parts[2])
-        # Verificación defensiva extra: evitar rutas protegidas en datos externos
         if len(parts) > 3 and parts[3] and is_protected_path(Path(parts[3])):
             return None
 
@@ -354,7 +355,6 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
     """
     if handle is None or get_mod_name_func is None: return False
     try:
-        # Limpieza obligatoria del buffer antes de llenar
         ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
         length = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
         if length <= 0: return False 
@@ -398,7 +398,6 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
-    # Pre-caching de funciones críticas para el loop
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
     path_buf = ctypes.create_unicode_buffer(1024)
@@ -406,14 +405,12 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     for pid in pids[:count]:
         if pid <= 0 or _is_system_process(pid): continue
         
-        # Primero abrimos para lectura mínima y chequeamos consumo
         handle = _get_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
         if not handle: continue
         
         try:
             if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
                 ws = pmc.WorkingSetSize
-                # Chequeo de rango ANTES de realizar operación costosa de nombre/ruta
                 if 0 < ws < MAX_VALID_PROCESS_MEM_BYTES:
                     if _is_process_executable_safe(handle, path_buf, get_mod_name):
                         name = Path(path_buf.value).name if path_buf.value else "Unknown"

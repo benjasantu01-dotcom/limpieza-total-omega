@@ -547,7 +547,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         
     try:
         st = m_path.stat()
-        # Verificación rápida de caché
         if not force_reload and base_dir in _MANIFEST_CACHE:
             cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
@@ -556,27 +555,21 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         with open(m_path, "r", encoding="utf-8") as f: 
             data = json.load(f)
             
-        if not isinstance(data, list): return []
+        if not isinstance(data, list): raise ValueError("Formato de manifiesto inválido")
             
         valid_items: List[QuarantineItem] = []
         needs_cleanup = False
         for entry in data:
             item = QuarantineItem.from_dict(entry)
-            if item:
-                # La validación física es costosa; el caché de hash ayuda indirectamente.
-                if item.verify_integrity(base_dir / item.stored_name):
-                    valid_items.append(item)
-                else:
-                    needs_cleanup = True
+            if item and item.verify_integrity(base_dir / item.stored_name):
+                valid_items.append(item)
             else:
                 needs_cleanup = True
         
         if needs_cleanup:
-            _MANIFEST_CACHE[base_dir] = (valid_items, 0.0, 0)
             save_manifest(valid_items, base)
-        else:
-            _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
-            
+        
+        _MANIFEST_CACHE[base_dir] = (valid_items, st.st_mtime, st.st_size)
         return valid_items
         
     except (OSError, json.JSONDecodeError, ValueError, TypeError):
@@ -588,22 +581,23 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     target_path: Path = _manifest_path(base_path)
     
     try:
-        serializable_items = [item.to_dict() for item in items if isinstance(item, QuarantineItem)]
-        encoded_content: bytes = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
+        serializable = []
+        for item in items:
+            if not isinstance(item, QuarantineItem): raise TypeError("Tipo de dato inválido en manifiesto")
+            serializable.append(item.to_dict())
+        encoded = json.dumps(serializable, indent=2, ensure_ascii=False).encode('utf-8')
     except (TypeError, ValueError) as e:
-        raise ValueError(f"Error al serializar manifiesto a JSON: {e}")
+        raise ValueError(f"Error de serialización: {e}")
         
     temp_name: Optional[str] = None
     try:
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             temp_name = tf.name
-            tf.write(encoded_content)
+            tf.write(encoded)
             tf.flush()
             os.fsync(tf.fileno())
-        
         os.replace(temp_name, target_path)
         _sync_directory(base_path)
-        
         st = target_path.stat()
         _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size)
         return target_path
@@ -611,7 +605,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         if temp_name and os.path.exists(temp_name):
             try: os.remove(temp_name)
             except OSError: pass
-        raise OSError(f"Falla crítica al persistir manifiesto en {target_path}: {e}")
+        raise OSError(f"Error crítico al guardar manifiesto: {e}")
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
     """Valida disponibilidad de espacio con margen de seguridad del 5%."""

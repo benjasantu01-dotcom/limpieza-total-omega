@@ -137,7 +137,7 @@ class JunkFile:
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si el nombre de archivo proporcionado corresponde a una extensión basura."""
-    if not filename: return False
+    if not isinstance(filename, str) or not filename: return False
     _, ext = os.path.splitext(filename)
     return ext.lower() in JUNK_EXTENSIONS
 
@@ -191,7 +191,7 @@ def _generate_unique_target(target: Path) -> Path:
 
 def _is_allowed_directory(name: str) -> bool:
     """Verifica si el nombre de una carpeta no está en la lista negra de seguridad."""
-    if not name: return False
+    if not isinstance(name, str) or not name: return False
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _try_open_win_file(path: Path) -> bool:
@@ -420,7 +420,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 except (OSError, PermissionError):
                     continue
         return dest_base
-    except (OSError, PermissionError) as e:
+    except (OSError, PermissionError, RuntimeError) as e:
         logger.error(f"Falla crítica en stage_for_review: {e}")
         return None
 
