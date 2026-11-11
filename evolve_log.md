@@ -940,3 +940,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-11T11:16:27` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `settings.py` reemplazando la lectura repetida de archivos mediante la implementación de una caché de bajo nivel en `_read_and_parse_json` y centralizando la validación de estructura con `DEFAULTS.keys()` para evitar iteraciones redundantes.
 - `2026-11-11T11:16:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T11:16:27` Corrida terminada. Total usado hoy: 268.
+- `2026-11-11T11:24:14` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-11-11T11:24:43` ➖ Sin cambios en startup.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de memoización selectiva en el método `_is_valid_registry_path` usando `_REGISTRY_PATH_CACHE` para evitar la costosa operación de `path.resolve()` (acceso a disco) sobre rutas de registro que ya fueron validadas previamente, mejorando significativamente el rendimiento durante el escaneo de múltiples claves de registro.
+- `2026-11-11T11:25:43` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-11T11:26:27` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `ingest` ante casos límite mediante una validación más estricta del tipo de los valores recibidos, asegurando que `_apply_updates` no falle ni contamine el estado ante entradas inesperadas que esquiven validaciones superficiales.
+- `2026-11-11T11:27:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-11T11:27:12` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-11T11:27:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T11:27:12` Corrida terminada. Total usado hoy: 272.

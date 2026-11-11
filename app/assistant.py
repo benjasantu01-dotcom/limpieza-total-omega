@@ -571,7 +571,12 @@ class SystemContext:
         try:
             for key, value in updates.items():
                 if hasattr(self, key):
-                    setattr(self, key, value)
+                    # Validación estricta de tipo en asignación
+                    attr_type = type(getattr(self, key))
+                    if isinstance(value, (int, float)) and attr_type in (int, float):
+                        setattr(self, key, attr_type(value))
+                    elif isinstance(value, str) and attr_type is str:
+                        setattr(self, key, value)
             
             self.analyzed = True
             for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
