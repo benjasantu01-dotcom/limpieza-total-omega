@@ -272,11 +272,14 @@ class SystemMetrics:
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
 
     def validate(self) -> None:
+        """Asegura la integridad total de los campos internos."""
         for f in _ALL_METRICS:
             object.__setattr__(self, f, self.get_clamped_metric(f))
 
     @property
-    def is_finite(self) -> bool: return all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
+    def is_finite(self) -> bool: 
+        """Verifica que todos los campos sean números finitos válidos."""
+        return all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
 
 @dataclass
 class HealthResult:

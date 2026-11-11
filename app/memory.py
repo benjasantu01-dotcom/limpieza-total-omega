@@ -257,8 +257,12 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         except (ValueError, TypeError):
             return None
         ws_val = _safe_int_conversion(parts[2])
-        if len(parts) > 3 and parts[3] and is_protected_path(Path(parts[3])):
-            return None
+        if len(parts) > 3 and parts[3].strip():
+            try:
+                if is_protected_path(Path(parts[3].strip())):
+                    return None
+            except (ValueError, OSError):
+                return None
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
     except (AttributeError, IndexError, ValueError):
@@ -325,12 +329,10 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
     if handle is None or get_mod_name_func is None: return False
     try:
         ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
-        length = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
-        if length <= 0: return False 
-        raw_path = path_buffer.value
-        if not raw_path or len(raw_path) > 32767: return False
-        path_str = raw_path.decode('utf-8', 'ignore')
-        if any(c in path_str for c in ('\0', '?', '*')): return False
+        if get_mod_name_func(handle, None, path_buffer, len(path_buffer)) == 0:
+            return False
+        path_str = path_buffer.value.decode('utf-8', 'ignore')
+        if not path_str or any(c in path_str for c in ('\0', '?', '*')): return False
         return not is_protected_path(Path(path_str))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False

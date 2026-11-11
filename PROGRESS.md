@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 58
-- Sin cambios (nada sustancial que mejorar): 11
+- Rechazadas por guardia de seguridad: 59
+- Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 245
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 34 | 1 | 12 | 2 | 41 |
+| 2026-11-09 | 32 | 1 | 12 | 1 | 40 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 35 | 1 | 9 | 1 | 18 |
+| 2026-11-11 | 37 | 1 | 10 | 1 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **41**
 - rendimiento: **33**
-- robustez ante casos límite: **27**
-- seguridad defensiva: **24**
+- robustez ante casos límite: **29**
+- seguridad defensiva: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `safety.py`: **17**
 - `duplicates.py`: **16**
 - `quarantine.py`: **16**
 - `assistant.py`: **16**
-- `startup.py`: **13**
+- `healthscore.py`: **14**
 - `settings.py`: **13**
-- `healthscore.py`: **13**
-- `scanner.py`: **11**
+- `startup.py`: **12**
 - `organizer.py`: **11**
+- `scanner.py`: **10**
 - `branding.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T02:46:27` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` añadiendo una comprobación explícita para evitar errores en llamadas `ctypes` cuando el proceso termina durante la ejecución, y se mejoró `_extract_process_info` para manejar rutas con caracteres nulos o malformados que podrían causar errores de codificación al instanciar `Path`.
+- `2026-11-11T02:44:48` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del modelo de datos `SystemMetrics` ante estados inesperados o corrupciones de memoria, implementando una verificación de integridad más estricta en el constructor y evitando que valores numéricos inválidos (NaN/Inf) propaguen errores silenciosos a través del pipeline.
 - `2026-11-11T02:35:52` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en el acceso a los atributos, evitando que errores de acceso al sistema de archivos detengan prematuramente el recorrido.
 - `2026-11-11T02:35:43` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o bloqueos de acceso durante la iteración, envolviendo el acceso a `entry.path` y el manejo de los metadatos en un bloque `try-except` más granular para evitar que una excepción en un archivo específico interrumpa el escaneo completo del directorio.
 - `2026-11-11T02:26:07` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_apply_updates` ante entradas malformadas o tipos inesperados, garantizando que una actualización parcial fallida no deje el estado en un punto inconsistente o con tipos de datos erróneos que pudieran romper las operaciones matemáticas de los criterios de salud.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T01:55:18` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la creación repetitiva de objetos `Path` por el uso directo de strings y `entry.path`, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos de grandes volúmenes de archivos.
 - `2026-11-11T01:54:44` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` reemplazando la creación de listas intermedias por una tupla generada mediante un generador, reduciendo la carga en memoria y el uso de CPU durante los repintados frecuentes del logo en la interfaz gráfica.
 - `2026-11-11T01:54:11` **assistant.py** (rendimiento): Optimicé el rendimiento de `_evaluate_active_problems` reemplazando la lógica de filtrado de tuplas por una búsqueda directa en `_CRITERIOS_MAP_IMMUTABLE`, eliminando loops redundantes y reduciendo la complejidad algorítmica de la evaluación de salud.
-- `2026-11-11T01:45:30` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo un docstring de clase más detallado para `StartupEntry`, explicando la lógica de resolución y caché, y se añadieron type hints claros en las estructuras de datos globales para mejorar la mantenibilidad.
-- `2026-11-11T01:45:15` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el método `_read_and_parse_json` y en las funciones auxiliares de validación para clarificar el flujo de seguridad y la lógica de manejo de errores, mejorando la legibilidad técnica sin alterar el comportamiento.
