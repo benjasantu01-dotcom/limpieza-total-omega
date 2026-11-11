@@ -95,10 +95,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """
-    Estructura utilizada por la API de Windows 'GlobalMemoryStatusEx' para informar
-    sobre la RAM física y virtual del sistema.
-    """
+    """Estructura de la API Windows 'GlobalMemoryStatusEx' para RAM física y virtual."""
     _fields_: List[Tuple[str, Any]] = [
         ("dwLength", wintypes.DWORD),
         ("dwMemoryLoad", wintypes.DWORD),
@@ -112,10 +109,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """
-    Estructura de contadores de memoria utilizada por 'GetProcessMemoryInfo'.
-    El 'WorkingSetSize' indica la memoria RAM física en uso real por el proceso.
-    """
+    """Estructura de contadores utilizada por 'GetProcessMemoryInfo'."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", wintypes.DWORD),
         ("PageFaultCount", wintypes.DWORD),
@@ -185,18 +179,14 @@ def format_bytes(num: Optional[int | float]) -> str:
         return "0 B"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Inicializa la estructura MEMORYSTATUSEX con el campo dwLength correcto (necesario para la API Win32)."""
+    """Inicializa la estructura MEMORYSTATUSEX con dwLength obligatorio para la API."""
     mem_status = MEMORYSTATUSEX()
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
 
 def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
-    """
-    Convierte entradas heterogéneas a BytesValue, validando rangos y tipos.
-    Asegura que no se propaguen errores de desbordamiento (overflow).
-    """
+    """Convierte entradas heterogéneas a BytesValue validando rangos y tipos."""
     if value is None: return BytesValue(0)
-    
     try:
         val: int = 0
         if isinstance(value, (int, float)):
@@ -210,7 +200,6 @@ def _safe_int_conversion(value: Any, multiplier: int = 1) -> BytesValue:
             val = int(clean_val) * multiplier
         else:
             return BytesValue(0)
-            
         return BytesValue(max(0, val))
     except (ValueError, OverflowError, TypeError):
         return BytesValue(0)
@@ -225,7 +214,6 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     """Interpreta el contenido de /proc/meminfo para extraer métricas clave."""
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return _EMPTY_SNAPSHOT
-        
     metrics: Dict[str, BytesValue] = {}
     try:
         for line in meminfo_text.splitlines():
@@ -236,47 +224,41 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
             metrics[key_stripped] = _safe_int_conversion(value_part, 1024)
     except Exception:
         return _EMPTY_SNAPSHOT
-            
     total: BytesValue = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
-    
     avail_raw = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
     available = BytesValue(max(0, min(total, avail_raw)))
     cached = BytesValue(max(0, metrics.get("Cached", BytesValue(0))))
-    
     return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si el PID es parte de la lista negra de seguridad o el proceso mismo."""
+    """Verifica si el PID es un proceso del sistema o la propia aplicación."""
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _is_invalid_process_name(name: str) -> bool:
-    """Verifica la integridad de la cadena de nombre para evitar caracteres de control."""
+    """Valida que el nombre del proceso no contenga caracteres de control."""
     return not name or any(ord(c) < 32 or ord(c) == 127 for c in name) or len(name) > 256
 
 def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
-    """Validación centralizada de que el proceso sea legítimo y medible."""
+    """Validación centralizada: PID legítimo, proceso no crítico y consumo dentro de límites."""
     if _is_system_process(pid) or pid <= 0 or _is_invalid_process_name(name):
         return False
     return 0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Parsea una línea de CSV y la convierte en un objeto ProcessMemory validado."""
+    """Parsea una línea CSV, valida integridad de datos y seguridad de la ruta."""
     if not isinstance(line, str): return None
     try:
         parts = [p.strip().strip("'\"") for p in line.split(",")]
         if len(parts) < 3: return None
-        
         proc_name = str(parts[0]).strip()
         try:
             pid_val = int(parts[1])
         except (ValueError, TypeError):
             return None
-        
         ws_val = _safe_int_conversion(parts[2])
         if len(parts) > 3 and parts[3] and is_protected_path(Path(parts[3])):
             return None
-
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
     except (AttributeError, IndexError, ValueError):
@@ -284,28 +266,21 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Procesa un dump de memoria en formato texto para retornar los N mayores."""
-    if not isinstance(raw_csv_text, str) or not raw_csv_text: 
-        return []
-    
+    """Procesa volcado CSV de memoria retornando los N procesos de mayor consumo."""
+    if not isinstance(raw_csv_text, str) or not raw_csv_text: return []
     lines = raw_csv_text.splitlines()
-    if len(lines) < 2:
-        return []
-    
+    if len(lines) < 2: return []
     def _gen() -> Iterator[ProcessMemory]:
         for line in lines[1:]:
             proc = _extract_process_info(line)
-            if proc: 
-                yield proc
-            
+            if proc: yield proc
     return heapq.nlargest(limit, _gen())
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Interfaz con GlobalMemoryStatusEx para obtener RAM total y disponible."""
+    """Interfaz con GlobalMemoryStatusEx; retorna snapshot si la consulta es exitosa."""
     try:
         if WindowsAPI.kernel32 is None or not hasattr(WindowsAPI.kernel32, "GlobalMemoryStatusEx"): 
             return _EMPTY_SNAPSHOT
-        
         mem_status = _create_mem_status_ex()
         if WindowsAPI.kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
             if 0 < mem_status.ullTotalPhys < (1024**5 * 256): 
@@ -320,7 +295,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 @lru_cache(maxsize=1)
 def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
-    """Implementa una caché temporal de 5 segundos para lecturas globales."""
+    """Cache de 5 segundos para lecturas de estado global del sistema."""
     if _is_windows: return _read_windows_snapshot()
     try:
         if _linux_mem_path.exists():
@@ -339,20 +314,14 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
     if WindowsAPI.kernel32 is None: return None
     try:
         handle = WindowsAPI.kernel32.OpenProcess(access_mask, False, pid)
-        if not handle or handle == INVALID_HANDLE_VALUE:
-            return None
+        if not handle or handle == INVALID_HANDLE_VALUE: return None
         return wintypes.HANDLE(handle)
-    except (ctypes.WinError, OSError):
-        return None
+    except (ctypes.WinError, OSError): return None
 
-# Alias para la función de la API GetModuleFileNameEx
 GetModNameFunc = Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]
 
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
-    """
-    Verifica mediante la ruta del ejecutable que el proceso no resida en directorios
-    restringidos. Requiere un handle de proceso abierto con permisos de lectura.
-    """
+    """Verifica mediante la ruta del ejecutable que el proceso no resida en zonas restringidas."""
     if handle is None or get_mod_name_func is None: return False
     try:
         ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
@@ -360,54 +329,42 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         if length <= 0: return False 
         raw_path = path_buffer.value
         if not raw_path or len(raw_path) > 32767: return False
-        
         path_str = raw_path.decode('utf-8', 'ignore')
         if any(c in path_str for c in ('\0', '?', '*')): return False
-            
         return not is_protected_path(Path(path_str))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return False
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: GetModNameFunc) -> Optional[wintypes.HANDLE]:
-    """Helper que valida si un proceso está vivo y su ruta es segura antes de dar acceso."""
+    """Helper que valida existencia del proceso y seguridad de ruta antes de devolver el handle."""
     handle = _get_process_handle(pid, access)
     if not handle: return None
-    
     exit_code = wintypes.DWORD()
     if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
         WindowsAPI.kernel32.CloseHandle(handle)
         return None
-            
     if _is_process_executable_safe(handle, path_buf, get_mod_name_func):
         return handle
-        
     WindowsAPI.kernel32.CloseHandle(handle)
     return None
 
 def _iter_process_memory() -> Iterator[ProcessMemory]:
-    """Recorre procesos activos y filtra aquellos con alto consumo o rutas prohibidas."""
+    """Recorre procesos activos y filtra aquellos con alto consumo o rutas protegidas."""
     if WindowsAPI.psapi is None or WindowsAPI.kernel32 is None: return
-    
     pids = (wintypes.DWORD * 2048)()
     bytes_written = wintypes.DWORD(0)
-    
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
-            
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
-    
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
     path_buf = ctypes.create_unicode_buffer(1024)
-    
     for pid in pids[:count]:
         if pid <= 0 or _is_system_process(pid): continue
-        
         handle = _get_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
         if not handle: continue
-        
         try:
             if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
                 ws = pmc.WorkingSetSize
@@ -422,23 +379,21 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
             WindowsAPI.kernel32.CloseHandle(handle)
 
 def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
-    """Obtiene la lista top N de procesos ordenados por consumo."""
+    """Obtiene la lista de los N procesos con mayor uso de memoria."""
     return heapq.nlargest(limit, _iter_process_memory())
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Retorna lista de procesos, con caché de 60 segundos."""
+    """Retorna lista de procesos top, con caché de 60 segundos."""
     global _CACHE_TOP_PROC
     if not _is_windows: return []
     now = time.time()
-    
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
         _CACHE_TOP_PROC = CacheEntry(now, _get_process_snapshot(limit))
-            
     return _CACHE_TOP_PROC.data
 
 @lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Clasifica la severidad de uso según el porcentaje de RAM disponible."""
+    """Clasifica severidad de uso según porcentaje de RAM disponible."""
     if snapshot.total <= 0: return "info"
     avail = snapshot.available_percent
     if avail >= 35: return "ok"
@@ -446,51 +401,38 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "warning" if avail >= 10 else "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un reporte textual descriptivo de la situación de memoria."""
+    """Genera reporte textual de salud de memoria basado en snapshot actual."""
     if snapshot.total <= 0: return ["No se pudo leer el estado de la memoria."]
-    
     diagnostics: Dict[str, str] = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
         "info": "Estado: normal. Windows gestiona la memoria de forma eficiente.",
         "warning": "Estado: ajustado. Conviene cerrar aplicaciones innecesarias.",
         "danger": "Estado: crítico. El sistema recurre al archivo de paginación."
     }
-    
     report: List[str] = [
         f"Memoria total: {format_bytes(snapshot.total)}",
         f"En uso: {format_bytes(snapshot.used)} ({snapshot.used_percent}%)",
         f"Disponible: {format_bytes(snapshot.available)} ({snapshot.available_percent}%)",
         diagnostics.get(pressure_level(snapshot), "")
     ]
-    
     if processes:
         report.extend(f"  Mayor consumo: {p.name} (PID {p.pid}) — {p.working_set_mb} MB" for p in processes[:3])
-        
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Solicita al sistema operativo la liberación del working set físico de un proceso
-    específico mediante 'EmptyWorkingSet'. Requiere permisos elevados y validación
-    previa contra la lista de rutas protegidas para evitar manipulación de sistemas.
-    """
+    """Solicita la liberación del working set físico de un proceso tras validar permisos."""
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
-    
     try: 
         target_pid = int(pid)
     except (ValueError, TypeError): 
         return False, "El PID debe ser un valor numérico válido."
-        
     if target_pid <= 0 or _is_system_process(target_pid) or not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
         return False, "Operación no permitida: PID protegido o función no disponible."
-        
     path_buf = ctypes.create_unicode_buffer(1024)
     handle = _get_handle_for_safe_proc(target_pid, WinAccessMasks.TRIM_REQUIRED, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
-    
     if handle is None:
         return False, "Acceso denegado o proceso en zona restringida."
-
     try:
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
