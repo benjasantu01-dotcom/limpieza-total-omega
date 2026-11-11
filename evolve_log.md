@@ -559,3 +559,40 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-11T07:32:15` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al centralizar la validación de tipos y rangos de las métricas durante la ingestión inicial, reemplazando verificaciones redundantes con un método robusto que evita la inyección de datos complejos o no deseados.
 - `2026-11-11T07:32:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T07:32:15` Corrida terminada. Total usado hoy: 180.
+- `2026-11-11T07:39:51` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-11T07:40:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-11-11T07:40:47` Tests FALLARON:
+```
+ummarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:393: in summarize
+    total_bytes = total_cache_bytes(current_caches)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:386: in total_cache_bytes
+    return sum(c.bytes_found for c in caches if isinstance(c, BrowserCache) and c.size_bytes > 0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7f6ebd80e9e0>
+
+>   return sum(c.bytes_found for c in caches if isinstance(c, BrowserCache) and c.size_bytes > 0)
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:386: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.40s
+
+```
+- `2026-11-11T07:40:47` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_is_target_valid` al implementar una verificación estricta de "path traversal" usando `os.path.commonprefix` en combinación con la normalización de rutas, garantizando que ninguna ruta candidata pueda escapar del `base_norm` incluso si contiene componentes ambiguos o intentos de salto de directorio (como `..`).
+- `2026-11-11T07:41:12` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `largest_folders` frente a rutas de sistema o protegidas mediante una verificación de seguridad adicional antes de registrar métricas, asegurando que cualquier subcarpeta calculada cumpla con `is_protected_path` incluso después de operaciones de navegación en el árbol.
+- `2026-11-11T07:41:21` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad en el escaneo recursivo mediante la validación explícita de `is_safe_to_modify` antes de cualquier acceso a metadatos, evitando posibles condiciones de carrera o acceso a rutas fuera del alcance permitido del usuario durante el recorrido del disco.
+- `2026-11-11T07:41:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T07:41:21` Corrida terminada. Total usado hoy: 184.

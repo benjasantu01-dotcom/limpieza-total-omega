@@ -355,18 +355,15 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Asegurar que el archivo sigue existiendo antes de intentar medir su jerarquía
             if not path.exists(): continue
             
             # Subir por el árbol hasta encontrar la carpeta inmediata bajo la raíz
             current = path.parent
-            if current == root:
-                top_level = path
-            else:
-                top_level = current
-                while top_level.parent != root and top_level.parent != top_level:
-                    top_level = top_level.parent
+            top_level = path if current == root else current
+            while top_level.parent != root and top_level.parent != top_level:
+                top_level = top_level.parent
             
+            # Verificación defensiva contra rutas protegidas o mal resueltas
             if not is_protected_path(top_level):
                 stats[top_level].add(size)
         except (ValueError, TypeError, PermissionError, OSError):

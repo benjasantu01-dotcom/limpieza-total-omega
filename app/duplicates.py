@@ -157,7 +157,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     for p in paths:
         if p is None: continue
         item = Path(p)
-        if is_safe_to_modify(item):
+        if _safe_path_check(item):
             try:
                 st = item.stat(follow_symlinks=False)
                 if _is_valid_candidate(item, st.st_size):
@@ -170,14 +170,6 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido BFS del sistema de archivos para encontrar candidatos.
-    
-    Args:
-        directories: Lista de rutas base a escanear.
-        min_size: Tamaño mínimo en bytes para considerar un archivo.
-        skip_protected: Si es True, ignora rutas marcadas como protegidas.
-        
-    Returns:
-        Diccionario {tamaño_bytes: [lista_de_paths]}
     """
     if directories is None or not isinstance(directories, Iterable) or min_size < 0: 
         return {}
@@ -191,7 +183,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         if d:
             try:
                 p_dir = Path(d).resolve()
-                if p_dir.is_dir() and is_safe_to_modify(p_dir):
+                if p_dir.is_dir() and _safe_path_check(p_dir):
                     queue.append((p_dir, 0))
             except (OSError, PermissionError, TypeError, ValueError):
                 continue
@@ -206,10 +198,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in it:
                     try:
                         entry_path = Path(entry.path)
-                        if not is_safe_to_modify(entry_path): continue
+                        if not _safe_path_check(entry_path): continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            if depth < MAX_RECURSION_DEPTH and not is_junction(entry_path):
+                            if depth < MAX_RECURSION_DEPTH:
                                 queue.append((entry_path.resolve(), depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat(follow_symlinks=False)
