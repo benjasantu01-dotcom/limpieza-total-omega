@@ -528,3 +528,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-11T06:51:17` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento al implementar un caché de validación en `_is_valid_registry_path` y reducir las llamadas a `Path.resolve()` en los chequeos de seguridad, evitando recorridos redundantes del sistema de archivos sobre rutas que ya fueron validadas previamente.
 - `2026-11-11T06:51:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T06:51:17` Corrida terminada. Total usado hoy: 164.
+- `2026-11-11T06:59:10` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-11-11T06:59:56` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemContext` ante entradas mal formadas implementando un chequeo estricto de tipos y estructura mediante `isinstance` antes de intentar cualquier operación de acceso a atributos o ingesta, evitando posibles excepciones de `AttributeError` o `TypeError` si la fuente es un objeto inesperado o parcialmente inicializado.
+- `2026-11-11T07:00:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-11T07:00:47` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-11T07:00:56` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` y `largest_folders` añadiendo chequeos de existencia (`path.exists()`) y manejo de errores ante cambios de estado en el sistema de archivos durante la iteración, previniendo fallos cuando carpetas o archivos son eliminados o renombrados por otros procesos mientras se escanea.
+- `2026-11-11T07:00:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T07:00:56` Corrida terminada. Total usado hoy: 168.

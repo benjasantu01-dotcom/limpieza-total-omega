@@ -152,6 +152,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     """Accede a un atributo de objeto solo si el nombre de clave es seguro y el atributo es un escalar."""
     if obj is None or not _is_safe_key(name): return default
     try:
+        if not hasattr(obj, name): return default
         val: Any = getattr(obj, name, default)
         # Solo permitimos escalares básicos como valores de atributo y validamos que no sean rutas protegidas
         if isinstance(val, (int, float, str, bool)) and not isinstance(val, bool):
@@ -511,12 +512,15 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
         """
         Extrae, valida y convierte un valor específico desde una fuente externa.
-        
-        Realiza una verificación estricta de tipo escalar, asegurando que no se 
-        filtren rutas protegidas.
         """
         if not isinstance(source, (dict, object)): return None
-        raw_val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
+        
+        # Acceso seguro dependiendo del tipo
+        raw_val = None
+        if isinstance(source, dict):
+            raw_val = source.get(key)
+        else:
+            raw_val = _get_safe_attr(source, key)
         
         # Validación estricta: solo tipos escalares permitidos y no rutas protegidas
         if not isinstance(raw_val, (int, float, str)) or isinstance(raw_val, bool):
@@ -588,23 +592,20 @@ class SystemContext:
         """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
         if not isinstance(updates, dict) or not updates: return
         
-        # Validación: solo permitimos campos definidos, tipos seguros y verificados contra el esquema
         valid_fields = self.__dataclass_fields__
         new_state = {}
         for key, value in updates.items():
             if key in valid_fields:
+                # Verificación estricta de tipos previo al setattr
                 spec = valid_fields[key]
-                # Verifica compatibilidad de tipo antes de aplicar (evita booleans o mismatch)
                 if isinstance(value, (int, float, str)):
                     if not (spec.type is int and not isinstance(value, int)):
                         new_state[key] = value
         
-        # Aplicación atómica
         for key, value in new_state.items():
             setattr(self, key, value)
         
         self.analyzed = True
-        # Limpieza manual de propiedades cacheadas al modificar estado
         if "metrics_snapshot" in self.__dict__: del self.__dict__["metrics_snapshot"]
         if "_cached_active_problems" in self.__dict__: del self.__dict__["_cached_active_problems"]
         if "_hash_tuple" in self.__dict__: del self.__dict__["_hash_tuple"]

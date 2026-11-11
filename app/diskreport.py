@@ -295,6 +295,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
+        if not os.path.exists(current_dir): continue
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -351,18 +352,23 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if root is None: return []
     
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
-    root_str = str(root)
     
-    # Optimizamos recorriendo manualmente para evitar relativas y Path.parts excesivos
     for path, size in walk_files(root, skip_protected):
         try:
-            # Obtenemos la subcarpeta inmediata evitando relative_to pesadas
-            parts = path.parent.parts
-            root_parts_len = len(root.parts)
-            if len(parts) > root_parts_len:
-                top_level = Path(*parts[:root_parts_len + 1])
-                if not is_protected_path(top_level):
-                    stats[top_level].add(size)
+            # Asegurar que el archivo sigue existiendo antes de intentar medir su jerarquía
+            if not path.exists(): continue
+            
+            # Subir por el árbol hasta encontrar la carpeta inmediata bajo la raíz
+            current = path.parent
+            if current == root:
+                top_level = path
+            else:
+                top_level = current
+                while top_level.parent != root and top_level.parent != top_level:
+                    top_level = top_level.parent
+            
+            if not is_protected_path(top_level):
+                stats[top_level].add(size)
         except (ValueError, TypeError, PermissionError, OSError):
             continue
             

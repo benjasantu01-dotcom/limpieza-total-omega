@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 105 | 8 | 36 | 6 | 185 |
-| 2026-11-11 | 68 | 8 | 24 | 7 | 57 |
+| 2026-11-10 | 103 | 8 | 35 | 6 | 184 |
+| 2026-11-11 | 70 | 8 | 25 | 7 | 58 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **34**
-- seguridad defensiva: **24**
-- robustez ante casos límite: **22**
+- robustez ante casos límite: **24**
+- seguridad defensiva: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `safety.py`: **19**
-- `memory.py`: **17**
-- `quarantine.py`: **15**
+- `memory.py`: **16**
 - `healthscore.py`: **15**
+- `quarantine.py`: **14**
+- `assistant.py`: **14**
 - `duplicates.py`: **14**
-- `assistant.py`: **13**
 - `settings.py`: **12**
 - `scanner.py`: **12**
 - `organizer.py`: **12**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T07:00:56` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` y `largest_folders` añadiendo chequeos de existencia (`path.exists()`) y manejo de errores ante cambios de estado en el sistema de archivos durante la iteración, previniendo fallos cuando carpetas o archivos son eliminados o renombrados por otros procesos mientras se escanea.
+- `2026-11-11T06:59:56` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext` ante entradas mal formadas implementando un chequeo estricto de tipos y estructura mediante `isinstance` antes de intentar cualquier operación de acceso a atributos o ingesta, evitando posibles excepciones de `AttributeError` o `TypeError` si la fuente es un objeto inesperado o parcialmente inicializado.
 - `2026-11-11T06:50:36` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo de directorios eliminando llamadas redundantes a `os.path.commonpath` (operación costosa) en `_is_inside_base_root`, reemplazándola por una comparación directa de prefijos de cadena (`str.startswith`) sobre rutas ya normalizadas y canónicas.
 - `2026-11-11T06:50:08` **safety.py** (rendimiento): Optimicé el rendimiento de la caché de seguridad (`_SECURITY_CACHE` y sus variantes) implementando un mecanismo de TTL (Time-To-Live) y un límite de tamaño más estricto, evitando que el consumo de memoria crezca linealmente y reduciendo el overhead de validaciones repetitivas en escaneos masivos.
 - `2026-11-11T06:39:46` **organizer.py** (rendimiento): Se optimizó el proceso recursivo de escaneo en `_process_directory` transformando `junk_candidates` de una `List` a una estructura que evita la sobrecarga de consultas redundantes mediante una validación de `path` inmediata, y se pre-calculó `JUNK_EXTENSIONS` como un `frozenset` local para acelerar la búsqueda de pertenencia durante la iteración masiva de archivos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T06:00:07` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados que explican el "porqué" de las decisiones de seguridad en funciones críticas, se han añadido type hints en las firmas de funciones faltantes y se ha extraído la lógica de validación de identidad en `delete_reviewed` para mejorar la legibilidad y mantenimiento.
 - `2026-11-11T05:59:41` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de bajo nivel y aplicando *type hinting* consistente para clarificar los flujos de datos en el manejo de estructuras de la API de Windows.
 - `2026-11-11T05:49:10` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo documentando los tipos complejos y el propósito de las funciones internas con docstrings de estilo Google, además de añadir type hints explícitos en la recolección de candidatos para clarificar la estructura de datos utilizada.
-- `2026-11-11T05:48:47` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con sus parámetros, refinando los type hints y simplificando el acceso a propiedades mediante `dataclasses` donde correspondía, asegurando que las intenciones del código sean claras para futuras extensiones.
-- `2026-11-11T05:39:45` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `draw_logo` para eliminar la lógica de renderizado fragmentada, sustituyendo el uso de variables "mágicas" por constantes semánticas y mejorando la documentación de las funciones de dibujo.
