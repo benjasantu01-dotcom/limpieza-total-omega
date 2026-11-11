@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 62
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 224
+- Rechazadas por guardia de seguridad: 63
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 72 | 5 | 25 | 4 | 122 |
-| 2026-11-11 | 114 | 11 | 37 | 12 | 102 |
+| 2026-11-10 | 72 | 5 | 25 | 4 | 118 |
+| 2026-11-11 | 115 | 11 | 38 | 13 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **45**
 - rendimiento: **35**
-- robustez ante casos límite: **28**
+- robustez ante casos límite: **29**
 - seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
@@ -32,7 +32,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **22**
 - `safety.py`: **19**
 - `memory.py`: **18**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `healthscore.py`: **16**
 - `duplicates.py`: **15**
 - `assistant.py`: **15**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T11:47:40` **quarantine.py** (robustez ante casos límite): He mejorado `_check_path_syntax_integrity` para detectar la presencia de caracteres Unicode normalizados (nfc/nfd) y rutas con espacios finales o puntos, previniendo ataques de evasión de filtros y colisiones en sistemas de archivos Windows.
 - `2026-11-11T11:37:34` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de salud mediante la implementación de una validación explícita en `_process_pipeline_entry` para prevenir errores de cálculo si un `scorer` devuelve valores fuera de rango o `NaN` (caso límite de operaciones matemáticas), asegurando que el pipeline no se interrumpa ante datos inesperados.
 - `2026-11-11T11:35:13` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad en `_get_immediate_child` para prevenir errores de cálculo si la ruta del archivo ya no existe, y se fortaleció `walk_files` con un bloque `try-except` más robusto durante la resolución de `st_ino/st_dev` para evitar interrupciones en sistemas con archivos bloqueados o volúmenes volátiles.
 - `2026-11-11T11:26:27` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` ante casos límite mediante una validación más estricta del tipo de los valores recibidos, asegurando que `_apply_updates` no falle ni contamine el estado ante entradas inesperadas que esquiven validaciones superficiales.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T10:35:33` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de la clase `Scanner` y clarificando las firmas de funciones complejas mediante `TypeAlias` adicionales, facilitando la auditoría de seguridad del flujo de recorrido del sistema de archivos.
 - `2026-11-11T10:35:19` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_file_id`, consolidando la lógica de detección de ID de archivo y centralizando el manejo de recursos (handles de Win32) para evitar fugas de memoria y mejorar la claridad del flujo de ejecución.
 - `2026-11-11T10:34:04` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la refactorización de `_get_sha256` y `_is_file_in_use_by_system` para reducir la complejidad ciclomática y mejorar la claridad de los flujos de control, además de añadir type hints explícitos en funciones internas que carecían de ellos.
-- `2026-11-11T10:24:37` **organizer.py** (legibilidad y documentación): Se ha mejorado la legibilidad mediante la actualización de los docstrings en las funciones críticas de E/S (`stage_for_review`, `delete_reviewed`, `_is_safe_for_disk_op`), aclarando el propósito y el flujo de validación, y se ha estandarizado la nomenclatura interna de variables para diferenciar mejor los estados de los archivos (`src_real`, `target_path`) sin alterar la funcionalidad.

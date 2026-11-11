@@ -24,6 +24,7 @@ import tempfile
 import ctypes
 import time
 import fcntl
+import unicodedata
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -384,6 +385,10 @@ def _check_path_syntax_integrity(path: Path) -> None:
     if len(path.parts) > 32: raise UnsafePathError("Profundidad de ruta excesiva.")
     if ":" in path.name: raise UnsafePathError("Ruta con flujos de datos alternos (ADS) prohibidos.")
     if path.name.upper() in WINDOWS_RESERVED_NAMES: raise UnsafePathError("Nombre de archivo reservado por el sistema.")
+    # Prevención de evasión por normalización Unicode o espacios finales
+    if path.name != unicodedata.normalize("NFC", path.name): raise UnsafePathError("Normalización Unicode inválida.")
+    if path.name.endswith(" ") or path.name.endswith("."): raise UnsafePathError("Ruta con terminación peligrosa.")
+    
     _check_path_for_junctions(path)
     if path.exists():
         try:

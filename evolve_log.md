@@ -963,3 +963,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-11-11T11:40:36` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-11-11T11:40:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T11:40:36` Corrida terminada. Total usado hoy: 276.
+- `2026-11-11T11:44:36` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-11-11T11:44:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T11:45:32` ➖ Sin cambios en memory.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `_iter_process_memory` al incluir un bloque `try-except` para capturar errores inesperados durante el acceso a la API `GetProcessMemoryInfo`, evitando que un proceso con denegación de acceso o estado transitorio rompa la iteración completa del bucle.
+- `2026-11-11T11:45:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T11:45:48` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-11T11:46:06` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-11T11:46:24` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-11T11:47:40` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). He mejorado `_check_path_syntax_integrity` para detectar la presencia de caracteres Unicode normalizados (nfc/nfd) y rutas con espacios finales o puntos, previniendo ataques de evasión de filtros y colisiones en sistemas de archivos Windows.
+- `2026-11-11T11:47:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-11T11:47:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T11:47:50` Corrida terminada. Total usado hoy: 280.
