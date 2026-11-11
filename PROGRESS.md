@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 58
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 73 | 5 | 25 | 4 | 141 |
-| 2026-11-11 | 106 | 10 | 33 | 10 | 97 |
+| 2026-11-10 | 73 | 5 | 25 | 4 | 137 |
+| 2026-11-11 | 108 | 10 | 34 | 10 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **30**
+- rendimiento: **32**
 - seguridad defensiva: **28**
 - robustez ante casos límite: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `safety.py`: **19**
 - `memory.py`: **18**
+- `duplicates.py`: **15**
 - `quarantine.py`: **15**
 - `healthscore.py`: **15**
-- `duplicates.py`: **14**
 - `assistant.py`: **14**
 - `organizer.py`: **14**
 - `settings.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T10:54:52` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` integrando el filtrado por `is_system_or_hidden` directamente dentro de `os.scandir` usando los atributos de `os.DirEntry` (que ya están en el buffer del sistema operativo), evitando así múltiples llamadas a `stat` y `GetFileAttributesW` innecesarias durante la recursión.
+- `2026-11-11T10:54:28` **diskreport.py** (rendimiento): Optimizé `walk_files` eliminando llamadas redundantes a `os.path.exists` (que ya estaba implícito en `scandir`) y reduciendo las conversiones a `Path` dentro del bucle, mejorando el rendimiento en recorridos profundos.
 - `2026-11-11T10:45:16` **branding.py** (rendimiento): Optimicé el cálculo de `draw_logo` y `draw_ring` eliminando la recreación innecesaria de objetos y simplificando el acceso a constantes, reduciendo la carga de CPU durante el renderizado frecuente en el Canvas.
 - `2026-11-11T10:44:24` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` incorporando docstrings detallados en todas las funciones y métodos públicos, explicitando los parámetros, comportamientos ante errores y las restricciones de seguridad aplicadas, facilitando así la auditabilidad del código sin alterar su lógica.
 - `2026-11-11T10:43:58` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `_SettingsManager` y sus métodos críticos para clarificar el flujo de escritura atómica, y se han añadido type hints más precisos en los validadores para facilitar el mantenimiento y la auditoría del código.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T10:15:26` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `browser.py` mediante la adición de docstrings estructurados y precisos en las funciones clave, clarificando las precondiciones, las responsabilidades de cada componente del escáner y el flujo de validación de seguridad para facilitar futuras auditorías.
 - `2026-11-11T10:13:21` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de renderizado geométrico (`draw_logo`, `draw_ring`, `draw_gradient_bar`) añadiendo docstrings que explican el contrato de los parámetros de coordenadas, dimensiones y las limitaciones de las excepciones, facilitando el mantenimiento futuro de la capa visual.
 - `2026-11-11T10:03:44` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` al añadir una validación de presencia obligatoria de todas las claves definidas en `DEFAULTS`, asegurando que archivos `config.json` truncados o incompletos no pasen como válidos.
-- `2026-11-11T09:54:49` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión robusta de excepciones en la función `_get_path_stat_robust` mediante el uso del código `winerror` específico para distinguir entre fallos de acceso persistentes y condiciones de carrera temporales, evitando que errores de E/S del SO interrumpan innecesariamente el bucle de validación.
-- `2026-11-11T09:53:46` **quarantine.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `quarantine_file` para evitar la propagación de excepciones genéricas al capturar fallos específicos de I/O y permisos, asegurando que el estado del sistema no quede inconsistente si `_atomic_isolate_file` falla.

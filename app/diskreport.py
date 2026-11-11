@@ -307,7 +307,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        if not os.path.exists(current_dir): continue
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -367,10 +366,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            if not path.exists(): continue
-            
             top_level = _get_immediate_child(root, path)
-            
             # Verificación defensiva contra rutas protegidas o mal resueltas
             if not is_protected_path(top_level):
                 stats[top_level].add(size)

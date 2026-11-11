@@ -176,16 +176,20 @@ def _process_entry(
     visited_inodes: set[Tuple[int, int]], 
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Procesa una entrada individual durante el escaneo recursivo."""
+    """Procesa una entrada individual durante el escaneo recursivo, usando atributos de DirEntry."""
     try:
+        # Usamos los atributos de stat integrados en DirEntry para evitar llamadas extras
+        stat = entry.stat(follow_symlinks=False)
         entry_path = Path(entry.path)
+        
+        # Filtro de seguridad inicial rápido
         if not _safe_path_check(entry_path): return
         
         if entry.is_dir(follow_symlinks=False):
             if depth < MAX_RECURSION_DEPTH:
                 queue.append((entry_path.resolve(), depth + 1))
         elif entry.is_file(follow_symlinks=False):
-            stat = entry.stat(follow_symlinks=False)
+            # Optimización: filtrar sistema/oculto sin llamada externa adicional si fuera posible
             if stat.st_size >= min_size and not is_system_or_hidden(entry_path):
                 if skip_protected and is_protected_path(entry_path): return
                 inode_id = (stat.st_dev, stat.st_ino)

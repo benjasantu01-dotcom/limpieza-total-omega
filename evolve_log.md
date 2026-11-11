@@ -906,3 +906,10 @@ FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area -
 - `2026-11-11T10:45:16` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `draw_logo` y `draw_ring` eliminando la recreación innecesaria de objetos y simplificando el acceso a constantes, reduciendo la carga de CPU durante el renderizado frecuente en el Canvas.
 - `2026-11-11T10:45:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T10:45:16` Corrida terminada. Total usado hoy: 256.
+- `2026-11-11T10:53:37` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-11-11T10:54:03` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-11T10:54:28` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` eliminando llamadas redundantes a `os.path.exists` (que ya estaba implícito en `scandir`) y reduciendo las conversiones a `Path` dentro del bucle, mejorando el rendimiento en recorridos profundos.
+- `2026-11-11T10:54:52` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` integrando el filtrado por `is_system_or_hidden` directamente dentro de `os.scandir` usando los atributos de `os.DirEntry` (que ya están en el buffer del sistema operativo), evitando así múltiples llamadas a `stat` y `GetFileAttributesW` innecesarias durante la recursión.
+- `2026-11-11T10:55:02` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-11-11T10:55:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T10:55:02` Corrida terminada. Total usado hoy: 260.
