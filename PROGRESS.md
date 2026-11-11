@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 60
+- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 61
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 236
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 32 | 1 | 12 | 1 | 28 |
+| 2026-11-09 | 32 | 1 | 12 | 1 | 24 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 41 | 2 | 11 | 4 | 22 |
+| 2026-11-11 | 43 | 3 | 12 | 4 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,26 +26,28 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **41**
 - rendimiento: **33**
 - robustez ante casos límite: **30**
-- seguridad defensiva: **25**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `memory.py`: **18**
 - `safety.py`: **18**
+- `quarantine.py`: **17**
 - `duplicates.py`: **16**
-- `quarantine.py`: **16**
 - `assistant.py`: **16**
 - `healthscore.py`: **15**
 - `settings.py`: **13**
+- `organizer.py`: **12**
 - `startup.py`: **12**
-- `organizer.py`: **11**
 - `branding.py`: **11**
 - `scanner.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T03:28:43` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_exclusive` para evitar condiciones de carrera (TOCTOU) en Windows mediante el uso de `CreateFileW` con flags de acceso nulo y `FILE_SHARE_NONE`, asegurando que ningún otro proceso mantenga un handle abierto sobre el archivo origen antes de iniciar el aislamiento.
+- `2026-11-11T03:27:09` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para evitar un ataque TOCTOU (Time-of-check to time-of-use) mediante la validación de la identidad del archivo (inodo/dispositivo) justo antes de la operación `os.replace`, asegurando que el archivo movido sea exactamente el que fue analizado y validado inicialmente.
 - `2026-11-11T03:16:19` **healthscore.py** (seguridad defensiva): He refactorizado `SystemMetrics.__setattr__` y `SystemMetrics.validate` para centralizar la lógica de asignación y validación en un método privado `_set_validated_field`, evitando la duplicidad y asegurando que cualquier modificación de las métricas pase por el mismo filtro estricto de seguridad definido en `_METRIC_LIMITS` y `_is_finite_numeric`.
 - `2026-11-11T03:15:44` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo en `walk_files` implementando una validación explícita con `is_protected_path` al procesar cada archivo detectado, asegurando que ningún archivo sea procesado si su ruta, por algún cambio dinámico o caso de borde en el sistema de archivos, termina siendo una ruta protegida.
 - `2026-11-11T03:07:05` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` reemplazando la creación implícita del directorio (que podría crear rutas no validadas o fuera de control) por una validación estricta del directorio padre mediante `ensure_safe_to_modify`, asegurando que ninguna operación de escritura escape de los límites permitidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T02:25:08` **settings.py** (rendimiento): Optimicé el acceso a las configuraciones convirtiendo `_VALIDATOR_MAP` en un diccionario estándar en lugar de un `MappingProxyType` para evitar el overhead de resolución en cada llamada de validación, y reemplacé la búsqueda lineal por búsqueda directa en `validate` y `update` usando las enumeraciones pre-mapeadas.
 - `2026-11-11T02:24:35` **scanner.py** (rendimiento): Se optimizó el proceso de filtrado de extensiones mediante la conversión de `SUSPICIOUS_ALL_EXTS` a un conjunto local de tipo `set` en la clase `Scanner` para aprovechar la velocidad de búsqueda $O(1)$ y se evitó el uso de `os.path.splitext` dentro del bucle crítico al reutilizar `entry.name` de forma más eficiente.
 - `2026-11-11T02:16:04` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) granular en `_get_file_attrs` y se introdujeron conjuntos de exclusión rápida en `_is_kernel_managed` para reducir significativamente la cantidad de llamadas costosas a la API de Win32 durante la iteración sobre directorios grandes.
-- `2026-11-11T02:14:21` **organizer.py** (rendimiento): Se optimizó el proceso `_process_directory` reemplazando la verificación constante de `entry.name` mediante `os.path.splitext` (operación costosa en strings) por una comprobación directa contra el set `JUNK_EXTENSIONS` usando el atributo `suffix` ya normalizado, mejorando el rendimiento en directorios con gran cantidad de archivos.
-- `2026-11-11T02:07:27` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de los contadores y reutilizando el buffer de ruta, evitando asignaciones de memoria repetitivas dentro del bucle de procesos.

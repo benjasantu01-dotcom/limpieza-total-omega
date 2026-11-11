@@ -404,7 +404,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             if target_path and not target_path.exists(): 
                 try:
                     ensure_safe_to_modify(junk_file.path)
-                    if os.access(junk_file.path, os.R_OK):
+                    # Validación post-ensure contra TOCTOU: verificar identidad antes de reemplazar
+                    if _validate_file_identity(junk_file, junk_file.path) and os.access(junk_file.path, os.R_OK):
                         os.replace(str(junk_file.path), str(target_path))
                 except (OSError, PermissionError):
                     continue

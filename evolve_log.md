@@ -1204,3 +1204,55 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-11T03:16:19` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). He refactorizado `SystemMetrics.__setattr__` y `SystemMetrics.validate` para centralizar la lógica de asignación y validación en un método privado `_set_validated_field`, evitando la duplicidad y asegurando que cualquier modificación de las métricas pase por el mismo filtro estricto de seguridad definido en `_METRIC_LIMITS` y `_is_finite_numeric`.
 - `2026-11-11T03:16:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T03:16:19` Corrida terminada. Total usado hoy: 80.
+- `2026-11-11T03:25:03` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-11-11T03:26:08` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-11T03:26:39` Tests FALLARON:
+```
+procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.57s
+
+```
+- `2026-11-11T03:26:39` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_extract_process_info` mediante la centralización de la validación de rutas usando `is_protected_path` en lugar de una lógica de filtrado parcial, garantizando que cualquier proceso cuya ruta no pueda ser analizada de forma segura sea descartado preventivamente antes de intentar procesar sus datos.
+- `2026-11-11T03:27:09` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó `stage_for_review` para evitar un ataque TOCTOU (Time-of-check to time-of-use) mediante la validación de la identidad del archivo (inodo/dispositivo) justo antes de la operación `os.replace`, asegurando que el archivo movido sea exactamente el que fue analizado y validado inicialmente.
+- `2026-11-11T03:28:09` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-11T03:28:43` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_file_exclusive` para evitar condiciones de carrera (TOCTOU) en Windows mediante el uso de `CreateFileW` con flags de acceso nulo y `FILE_SHARE_NONE`, asegurando que ningún otro proceso mantenga un handle abierto sobre el archivo origen antes de iniciar el aislamiento.
+- `2026-11-11T03:28:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T03:28:43` Corrida terminada. Total usado hoy: 84.
