@@ -47,13 +47,21 @@ class PathValidationResult(NamedTuple):
     is_valid: bool
     error: Optional[UnsafePathError] = None
 
-# Cachés para optimización de rendimiento en operaciones de disco frecuentes
-_SECURITY_CACHE: Final[set[tuple[int, int, int, int]]] = set()
-_NEGATIVE_SECURITY_CACHE: Final[set[tuple[int, int, int, int]]] = set()
+# Cachés para optimización de rendimiento: TTL de 5s y límite de 1024 entradas para evitar bloat
+_SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
+_NEGATIVE_SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
 _STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
 _FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
 _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, bool]] = {}
+
+def _is_cache_valid(cache_map: dict[any, float], key: any) -> bool:
+    """Verifica si la entrada en caché está dentro del periodo de validez."""
+    if key not in cache_map: return False
+    if time.monotonic() - cache_map[key] > 5.0:
+        del cache_map[key]
+        return False
+    return True
 
 class SafetyValidationCategory(Enum):
     """Clasificación de alto nivel para errores de seguridad, usada para diagnóstico."""
@@ -720,21 +728,23 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 
 def _evaluate_security_rules(state: SafetyState) -> None:
     """Verifica el estado del archivo contra el mapa de reglas de integridad."""
-    if state.file_id in _NEGATIVE_SECURITY_CACHE:
+    if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, state.file_id):
         raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
-    if state.file_id in _SECURITY_CACHE:
+    if _is_cache_valid(_SECURITY_CACHE, state.file_id):
         return
 
     for reason, predicate in _VALIDATOR_MAP.items():
         try:
             if predicate(state.path, state.stat_result, state.descriptor):
-                _NEGATIVE_SECURITY_CACHE.add(state.file_id)
+                if len(_NEGATIVE_SECURITY_CACHE) >= 1024: _NEGATIVE_SECURITY_CACHE.clear()
+                _NEGATIVE_SECURITY_CACHE[state.file_id] = time.monotonic()
                 code = _REASON_TO_CODE.get(reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {reason.name}", code, SafetyValidationCategory.INTEGRITY)
         except (OSError, PermissionError, AttributeError, TypeError):
             continue
     
-    _SECURITY_CACHE.add(state.file_id)
+    if len(_SECURITY_CACHE) >= 1024: _SECURITY_CACHE.clear()
+    _SECURITY_CACHE[state.file_id] = time.monotonic()
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """Obtiene metadatos con reintentos para mitigar condiciones de carrera."""
@@ -768,7 +778,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
 
 def _check_file_integrity(state: SafetyState) -> None:
     """Valida la integridad de la ruta detectando cambios tipo TOCTOU."""
-    if state.file_id in _NEGATIVE_SECURITY_CACHE:
+    if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, state.file_id):
         raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
         
     if not state.path.exists():
@@ -1080,7 +1090,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
 
     try:
         file_id = _get_file_id(guard.path_str)
-        if file_id in _NEGATIVE_SECURITY_CACHE:
+        if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
 
         if guard.is_locked():

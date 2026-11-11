@@ -449,3 +449,82 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-11T06:40:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-11-11T06:40:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T06:40:32` Corrida terminada. Total usado hoy: 160.
+- `2026-11-11T06:49:02` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-11-11T06:50:08` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de la caché de seguridad (`_SECURITY_CACHE` y sus variantes) implementando un mecanismo de TTL (Time-To-Live) y un límite de tamaño más estricto, evitando que el consumo de memoria crezca linealmente y reduciendo el overhead de validaciones repetitivas en escaneos masivos.
+- `2026-11-11T06:50:36` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento del escaneo de directorios eliminando llamadas redundantes a `os.path.commonpath` (operación costosa) en `_is_inside_base_root`, reemplazándola por una comparación directa de prefijos de cadena (`str.startswith`) sobre rutas ya normalizadas y canónicas.
+- `2026-11-11T06:51:05` Tests FALLARON:
+```
+test_assistant.py::test_update_applies_partial_changes - AssertionError: no debe perder lo que no se tocó
+assert 'oscuro' == 'claro'
+  
+  - claro
+  + oscuro
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AssertionError: assert 15 == 33
+ +  where 15 = <function get at 0x7fdec0dd1120>('top_procesos', PosixPath('/tmp/pytest-of-runner/pytest-3/test_get_reads_a_single_value0'))
+ +    where <function get at 0x7fdec0dd1120> = settings.get
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AssertionError: assert '' == 'del-archivo'
+  
+  - del-archivo
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x7fdec0dd1260>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7fdec0dd1260> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-3/test_describe_never_prints_the0/config.json\n\n  Ap...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in ''
+8 failed, 291 passed in 1.57s
+
+```
+- `2026-11-11T06:51:05` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a los datos de configuración reemplazando el uso repetitivo de `json.loads` y las comprobaciones de estado del archivo mediante la implementación de una caché con `lru_cache` y una invalidación basada en metadatos, evitando lecturas innecesarias del disco en operaciones recurrentes.
+- `2026-11-11T06:51:17` Tests FALLARON:
+```
+'MiApp'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.59s
+
+```
+- `2026-11-11T06:51:17` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento al implementar un caché de validación en `_is_valid_registry_path` y reducir las llamadas a `Path.resolve()` en los chequeos de seguridad, evitando recorridos redundantes del sistema de archivos sobre rutas que ya fueron validadas previamente.
+- `2026-11-11T06:51:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T06:51:17` Corrida terminada. Total usado hoy: 164.

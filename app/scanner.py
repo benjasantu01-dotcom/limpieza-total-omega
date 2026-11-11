@@ -276,16 +276,14 @@ class Scanner:
         self.base_root_real: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
         self._relevant_exts: set[str] = set(SUSPICIOUS_ALL_EXTS)
+        self._base_sep: str = self.base_root_real + os.sep
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la entrada permanezca dentro del directorio raíz de escaneo."""
-        try:
-            norm_entry = _get_canonical_path(entry_path)
-            if not norm_entry or not self.base_root_real:
-                return False
-            return os.path.commonpath([self.base_root_real, norm_entry]) == self.base_root_real
-        except (ValueError, OSError):
+        norm_entry = _get_canonical_path(entry_path)
+        if not norm_entry or not self.base_root_real:
             return False
+        return norm_entry == self.base_root_real or norm_entry.startswith(self._base_sep)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida que el nombre de archivo cumpla con las restricciones de Windows."""

@@ -7,44 +7,46 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **173** (34.3% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 61
-- Sin cambios (nada sustancial que mejorar): 14
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 60
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 107 | 8 | 37 | 7 | 185 |
-| 2026-11-11 | 66 | 6 | 24 | 7 | 57 |
+| 2026-11-10 | 105 | 8 | 36 | 6 | 185 |
+| 2026-11-11 | 68 | 8 | 24 | 7 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **42**
-- rendimiento: **32**
-- seguridad defensiva: **26**
+- rendimiento: **34**
+- seguridad defensiva: **24**
 - robustez ante casos límite: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `safety.py`: **18**
+- `diskreport.py`: **21**
+- `safety.py`: **19**
 - `memory.py`: **17**
-- `duplicates.py`: **15**
 - `quarantine.py`: **15**
 - `healthscore.py`: **15**
+- `duplicates.py`: **14**
 - `assistant.py`: **13**
 - `settings.py`: **12**
+- `scanner.py`: **12**
 - `organizer.py`: **12**
-- `scanner.py`: **11**
 - `branding.py`: **10**
 - `startup.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T06:50:36` **scanner.py** (rendimiento): Optimizé el rendimiento del escaneo de directorios eliminando llamadas redundantes a `os.path.commonpath` (operación costosa) en `_is_inside_base_root`, reemplazándola por una comparación directa de prefijos de cadena (`str.startswith`) sobre rutas ya normalizadas y canónicas.
+- `2026-11-11T06:50:08` **safety.py** (rendimiento): Optimicé el rendimiento de la caché de seguridad (`_SECURITY_CACHE` y sus variantes) implementando un mecanismo de TTL (Time-To-Live) y un límite de tamaño más estricto, evitando que el consumo de memoria crezca linealmente y reduciendo el overhead de validaciones repetitivas en escaneos masivos.
 - `2026-11-11T06:39:46` **organizer.py** (rendimiento): Se optimizó el proceso recursivo de escaneo en `_process_directory` transformando `junk_candidates` de una `List` a una estructura que evita la sobrecarga de consultas redundantes mediante una validación de `path` inmediata, y se pre-calculó `JUNK_EXTENSIONS` como un `frozenset` local para acelerar la búsqueda de pertenencia durante la iteración masiva de archivos.
 - `2026-11-11T06:39:17` **memory.py** (rendimiento): Optimizado el rendimiento de `_iter_process_memory` reutilizando el buffer de ruta y la estructura de contadores, evitando instanciaciones innecesarias dentro del bucle de PIDs.
 - `2026-11-11T06:29:55` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación eliminando la re-validación recursiva innecesaria de campos en `SystemMetrics` y reemplazando las lambdas de reglas por funciones cacheadas, lo que reduce drásticamente la carga de CPU durante iteraciones repetidas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T05:49:10` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo documentando los tipos complejos y el propósito de las funciones internas con docstrings de estilo Google, además de añadir type hints explícitos en la recolección de candidatos para clarificar la estructura de datos utilizada.
 - `2026-11-11T05:48:47` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando docstrings descriptivos con sus parámetros, refinando los type hints y simplificando el acceso a propiedades mediante `dataclasses` donde correspondía, asegurando que las intenciones del código sean claras para futuras extensiones.
 - `2026-11-11T05:39:45` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `draw_logo` para eliminar la lógica de renderizado fragmentada, sustituyendo el uso de variables "mágicas" por constantes semánticas y mejorando la documentación de las funciones de dibujo.
-- `2026-11-11T05:38:47` **startup.py** (manejo de errores y validación de entradas): Reforcé `parse_registry_csv` y `entries_from_registry` para capturar excepciones específicas de `subprocess` y errores de parseo de CSV, previniendo que una salida de PowerShell malformada o un timeout interrumpan la ejecución global de la app.
-- `2026-11-11T05:38:18` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` y `validate` agregando una comprobación de tipo explícita para evitar errores en tiempo de ejecución si el JSON contiene valores `None` inesperados (nulos en JSON) que los validadores no manejan, asegurando que `AppSettings` siempre contenga valores del tipo esperado (bool/str/int) antes de que la app los procese.
