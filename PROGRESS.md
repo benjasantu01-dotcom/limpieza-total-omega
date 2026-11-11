@@ -6,45 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 59
+- Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 83 | 5 | 28 | 4 | 144 |
-| 2026-11-11 | 94 | 9 | 31 | 9 | 97 |
+| 2026-11-10 | 81 | 5 | 27 | 4 | 143 |
+| 2026-11-11 | 98 | 9 | 31 | 9 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
-- legibilidad y documentación: **40**
-- rendimiento: **33**
+- legibilidad y documentación: **44**
+- rendimiento: **31**
 - robustez ante casos límite: **31**
 - seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `safety.py`: **19**
 - `memory.py`: **17**
 - `healthscore.py`: **16**
-- `quarantine.py`: **15**
 - `assistant.py`: **15**
-- `organizer.py`: **14**
-- `duplicates.py`: **14**
+- `duplicates.py`: **15**
+- `quarantine.py`: **14**
+- `organizer.py`: **13**
 - `settings.py`: **12**
 - `scanner.py`: **10**
+- `branding.py`: **10**
 - `startup.py`: **10**
-- `branding.py`: **9**
-- `browser.py`: **5**
+- `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T10:16:01` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos, docstrings estandarizados y la refactorización de `_collect_candidates` para extraer la lógica de procesamiento de entradas, facilitando la comprensión del flujo de datos en el recorrido del sistema de archivos.
+- `2026-11-11T10:15:51` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `largest_folders` extrayendo la lógica de resolución de subdirectorio inmediato a una función auxiliar explícita, facilitando la comprensión del algoritmo de agregación.
+- `2026-11-11T10:15:26` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `browser.py` mediante la adición de docstrings estructurados y precisos en las funciones clave, clarificando las precondiciones, las responsabilidades de cada componente del escáner y el flujo de validación de seguridad para facilitar futuras auditorías.
+- `2026-11-11T10:13:21` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de renderizado geométrico (`draw_logo`, `draw_ring`, `draw_gradient_bar`) añadiendo docstrings que explican el contrato de los parámetros de coordenadas, dimensiones y las limitaciones de las excepciones, facilitando el mantenimiento futuro de la capa visual.
 - `2026-11-11T10:03:44` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` al añadir una validación de presencia obligatoria de todas las claves definidas en `DEFAULTS`, asegurando que archivos `config.json` truncados o incompletos no pasen como válidos.
 - `2026-11-11T09:54:49` **safety.py** (manejo de errores y validación de entradas): Se introdujo una gestión robusta de excepciones en la función `_get_path_stat_robust` mediante el uso del código `winerror` específico para distinguir entre fallos de acceso persistentes y condiciones de carrera temporales, evitando que errores de E/S del SO interrumpan innecesariamente el bucle de validación.
 - `2026-11-11T09:53:46` **quarantine.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `quarantine_file` para evitar la propagación de excepciones genéricas al capturar fallos específicos de I/O y permisos, asegurando que el estado del sistema no quede inconsistente si `_atomic_isolate_file` falla.
@@ -56,7 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T09:32:42` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext.ingest` y `_apply_updates` mediante la validación explícita de tipos, capturando excepciones de forma específica y asegurando que las actualizaciones no corrompan el estado si el origen contiene valores inesperados o malformados.
 - `2026-11-11T08:11:21` **startup.py** (seguridad defensiva): Se endureció la seguridad en `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo una comprobación contra puntos de reparse (reparse points) mediante `is_symlink()` antes de cualquier operación de resolución, previniendo el seguimiento de enlaces simbólicos o junctions que podrían apuntar fuera de las áreas permitidas del sistema de archivos.
 - `2026-11-11T08:10:54` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` al implementar una validación estricta de "Owner" para el archivo de configuración en sistemas POSIX, garantizando que solo el propietario del proceso pueda leer o modificar su propia configuración, evitando ataques de suplantación o acceso por otros usuarios en entornos multiusuario.
-- `2026-11-11T08:02:13` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de archivos mediante la implementación de `_is_file_in_use_exclusive`, que intenta abrir el archivo con `FILE_SHARE_READ` (sin exclusividad de lectura), permitiendo identificar de forma más precisa si el archivo está siendo editado o bloqueado por otro proceso en modo escritura, mejorando el chequeo de `is_locked` en `SafetyGuard`.
-- `2026-11-11T08:00:59` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones en `quarantine.py` mediante la implementación de `ensure_safe_to_modify` antes de la ejecución de `os.replace` en el proceso de restauración, evitando posibles operaciones inseguras en rutas que podrían haber sido alteradas o ser maliciosas desde la última validación, manteniendo la integridad del sandbox.
-- `2026-11-11T07:50:40` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el acceso directo a los campos de `SystemMetrics` en las funciones de recomendación por el uso del método seguro `safe_get`, evitando así posibles riesgos de inyección o acceso no autorizado durante el procesamiento de datos del sistema.
-- `2026-11-11T07:41:21` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en el escaneo recursivo mediante la validación explícita de `is_safe_to_modify` antes de cualquier acceso a metadatos, evitando posibles condiciones de carrera o acceso a rutas fuera del alcance permitido del usuario durante el recorrido del disco.

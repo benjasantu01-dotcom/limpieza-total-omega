@@ -108,7 +108,6 @@ class DirectoryScanner:
             return False
         if entry.is_symlink() or self.ctx.is_junction(entry.path):
             return False
-        # Verificación anticipada de atributos para evitar accesos denegados en archivos de sistema
         if _is_system_hidden(entry.path, self.ctx.kernel32):
             return False
         return True
@@ -141,7 +140,10 @@ class DirectoryScanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, depth: int) -> int:
-        """Gestiona la entrada a un subdirectorio, validando que no sea un enlace simbólico o junction."""
+        """
+        Gestiona el acceso a un subdirectorio recursivo.
+        Verifica permisos de lectura antes de proceder al escaneo profundo.
+        """
         if not os.access(entry.path, os.R_OK):
             return 0
         if not self.ctx.is_junction(entry.path):
@@ -149,9 +151,12 @@ class DirectoryScanner:
         return 0
 
     def _handle_file(self, entry: os.DirEntry) -> int:
-        """Calcula el tamaño de archivo asegurando la unicidad mediante identificadores de inodo/disco."""
+        """
+        Calcula el tamaño de un archivo individual.
+        Utiliza identificadores de inodo (st_dev, st_ino) para garantizar
+        que un mismo archivo en disco no se contabilice múltiples veces.
+        """
         try:
-            # Comprobar accesibilidad antes de estadizar para evitar errores de bloqueos de sistema
             if not os.access(entry.path, os.R_OK):
                 return 0
             st_file = entry.stat(follow_symlinks=False)
@@ -164,7 +169,9 @@ class DirectoryScanner:
         return 0
 
     def _process_entry(self, entry: os.DirEntry, depth: int, total_bytes: int) -> int:
-        """Delegado de procesamiento: enruta el manejo según el tipo de sistema de archivos."""
+        """
+        Delegado de procesamiento: enruta el manejo según el tipo de sistema de archivos.
+        """
         if self._should_stop_traversal(entry, depth):
             return total_bytes
             
@@ -291,7 +298,10 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def base_directories() -> List[Path]:
-    """Detecta los directorios locales base (LOCALAPPDATA) autorizados para el escaneo."""
+    """
+    Detecta los directorios locales base (LOCALAPPDATA) autorizados para el escaneo.
+    Aplica filtros de seguridad contra rutas UNC y directorios protegidos.
+    """
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env.strip() or _is_unc_path(local_env):
         return []
@@ -326,7 +336,10 @@ def directory_size(path: Optional[OSPath]) -> int:
     return DirectoryScanner(ctx).get_size(abs_p).bytes_found
 
 def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
-    """Realiza validaciones de integridad sobre la ruta candidata antes de iniciar el escaneo."""
+    """
+    Realiza validaciones de integridad sobre la ruta candidata antes de iniciar el escaneo.
+    Verifica que la ruta sea un directorio dentro del sandbox y no contenga flags de sistema.
+    """
     if not isinstance(target, Path) or target is None: return False
     try:
         if not target.exists() or not target.is_dir(): return False
@@ -349,7 +362,10 @@ def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL
         return False
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Escanea el sistema en busca de cachés de navegadores conocidos basándose en perfiles de usuario."""
+    """
+    Escanea el sistema en busca de cachés de navegadores conocidos basándose en perfiles de usuario.
+    Retorna una lista ordenada de objetos BrowserCache con el tamaño de los hallazgos.
+    """
     raw_bases = list(bases) if isinstance(bases, (list, tuple)) else base_directories()
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     

@@ -93,6 +93,18 @@ def _get_extension(path: Path) -> str:
     return path.suffix.lower() or "(sin extensión)"
 
 
+def _get_immediate_child(root: Path, path: Path) -> Path:
+    """
+    Determina la subcarpeta directa de 'root' que contiene al archivo o carpeta 'path'.
+    Si el archivo está en la raíz, devuelve el mismo archivo.
+    """
+    try:
+        parts = path.relative_to(root).parts
+        return root / parts[0]
+    except (ValueError, IndexError):
+        return path
+
+
 class ExtStats:
     """
     Acumulador para métricas agregadas de una extensión de archivo.
@@ -357,11 +369,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
         try:
             if not path.exists(): continue
             
-            # Subir por el árbol hasta encontrar la carpeta inmediata bajo la raíz
-            current = path.parent
-            top_level = path if current == root else current
-            while top_level.parent != root and top_level.parent != top_level:
-                top_level = top_level.parent
+            top_level = _get_immediate_child(root, path)
             
             # Verificación defensiva contra rutas protegidas o mal resueltas
             if not is_protected_path(top_level):

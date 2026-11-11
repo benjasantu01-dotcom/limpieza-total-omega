@@ -417,6 +417,12 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
     Renderiza el logo vectorial completo en el widget Canvas proporcionado.
+    
+    Args:
+        canvas: Widget de tkinter.Canvas sobre el cual dibujar.
+        size: Tamaño base del logo, escalado automáticamente.
+        canvas_x: Desplazamiento horizontal inicial en el lienzo.
+        canvas_y: Desplazamiento vertical inicial en el lienzo.
     """
     if canvas is None or not all(math.isfinite(v) for v in (size, canvas_x, canvas_y)): 
         return
@@ -445,7 +451,17 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una línea horizontal con degradado lineal en el Canvas."""
+    """
+    Dibuja una línea horizontal con degradado lineal en el Canvas.
+    
+    Args:
+        canvas: Widget de tkinter.Canvas donde se renderiza la barra.
+        width: Longitud total de la barra en píxeles.
+        height: Grosor vertical de la barra.
+        canvas_x: Offset horizontal en píxeles.
+        canvas_y: Offset vertical en píxeles.
+        stops: Tupla opcional de colores para el degradado.
+    """
     if canvas is None or not isinstance(width, int): return
     try:
         w = max(1, int(width))
@@ -454,7 +470,18 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (AttributeError, TypeError, ValueError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un anillo circular de progreso basado en un porcentaje en el Canvas."""
+    """
+    Dibuja un anillo circular de progreso basado en un porcentaje en el Canvas.
+    
+    Args:
+        canvas: Widget de tkinter.Canvas donde se dibuja el anillo.
+        percent: Valor 0-100 para la progresión del arco.
+        size: Diámetro del anillo en píxeles.
+        canvas_x, canvas_y: Posición del origen del anillo.
+        thickness: Ancho del trazo del anillo.
+        track: Color del fondo (incompleto) del anillo.
+        fill: Color del arco activo de progreso.
+    """
     if canvas is None or percent is None: return
     try:
         val = max(0.0, min(100.0, float(percent)))

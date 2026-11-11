@@ -167,10 +167,37 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     return dict(groups_by_size)
 
 
+def _process_entry(
+    entry: os.DirEntry, 
+    depth: int, 
+    min_size: int, 
+    skip_protected: bool, 
+    queue: deque[Tuple[Path, int]], 
+    visited_inodes: set[Tuple[int, int]], 
+    size_map: Dict[int, List[Path]]
+) -> None:
+    """Procesa una entrada individual durante el escaneo recursivo."""
+    try:
+        entry_path = Path(entry.path)
+        if not _safe_path_check(entry_path): return
+        
+        if entry.is_dir(follow_symlinks=False):
+            if depth < MAX_RECURSION_DEPTH:
+                queue.append((entry_path.resolve(), depth + 1))
+        elif entry.is_file(follow_symlinks=False):
+            stat = entry.stat(follow_symlinks=False)
+            if stat.st_size >= min_size and not is_system_or_hidden(entry_path):
+                if skip_protected and is_protected_path(entry_path): return
+                inode_id = (stat.st_dev, stat.st_ino)
+                if inode_id not in visited_inodes:
+                    visited_inodes.add(inode_id)
+                    size_map[stat.st_size].append(entry_path)
+    except (OSError, PermissionError):
+        pass
+
+
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """
-    Realiza un recorrido BFS del sistema de archivos para encontrar candidatos.
-    """
+    """Realiza un recorrido BFS del sistema de archivos para encontrar candidatos."""
     if directories is None or not isinstance(directories, Iterable) or min_size < 0: 
         return {}
     
@@ -193,28 +220,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         if current_dir in visited_paths: continue
         visited_paths.add(current_dir)
 
-        try:
+        with suppress(OSError, PermissionError):
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
-                        entry_path = Path(entry.path)
-                        if not _safe_path_check(entry_path): continue
-                        
-                        if entry.is_dir(follow_symlinks=False):
-                            if depth < MAX_RECURSION_DEPTH:
-                                queue.append((entry_path.resolve(), depth + 1))
-                        elif entry.is_file(follow_symlinks=False):
-                            stat = entry.stat(follow_symlinks=False)
-                            if stat.st_size >= min_size and not is_system_or_hidden(entry_path):
-                                if skip_protected and is_protected_path(entry_path): continue
-                                inode_id = (stat.st_dev, stat.st_ino)
-                                if inode_id not in visited_inodes:
-                                    visited_inodes.add(inode_id)
-                                    size_map[stat.st_size].append(entry_path)
-                    except (OSError, PermissionError):
-                        continue
-        except (OSError, PermissionError):
-            continue
+                    _process_entry(entry, depth, min_size, skip_protected, queue, visited_inodes, size_map)
     return {sz: ps for sz, ps in size_map.items() if len(ps) > 1}
 
 
