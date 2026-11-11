@@ -1157,3 +1157,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-11T02:46:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-11-11T02:46:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T02:46:39` Corrida terminada. Total usado hoy: 68.
+- `2026-11-11T02:54:32` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-11-11T02:55:33` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una validación de coherencia en `load_manifest` para manejar casos donde el manifiesto existe pero el directorio base no es accesible o está corrupto, evitando el retorno de datos potencialmente inválidos al bucle principal ante errores de E/S.
+- `2026-11-11T02:55:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-11T02:56:49` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una verificación robusta para detectar y abortar el procesamiento de archivos que residen en rutas con puntos de reparseo ("junctions") internos o recursivos durante la normalización, evitando que la lógica de seguridad sea engañada por redirecciones de directorio que podrían ocultar la verdadera ubicación de un archivo crítico.
+- `2026-11-11T02:57:49` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-11T02:58:08` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-11T02:58:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T02:58:08` Corrida terminada. Total usado hoy: 72.

@@ -832,7 +832,11 @@ def _validate_volume_integrity(path: Path) -> None:
 def _normalize_resolved(path_str: str) -> Path:
     """Resuelve y normaliza una ruta."""
     try:
-        return Path(os.path.abspath(path_str)).resolve(strict=False)
+        # Detectar recursión o malformación de reparse antes de la resolución total
+        p = Path(os.path.abspath(path_str))
+        if os.name == 'nt' and _is_system_directory_junction(str(p.parent)):
+             raise UnsafePathError("Directorio padre es punto de unión.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.STRUCTURE)
+        return p.resolve(strict=False)
     except (OSError, RuntimeError, PermissionError, ValueError, TypeError, AttributeError):
         return Path(path_str).absolute()
 
