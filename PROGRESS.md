@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 59
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 235
+- Rechazadas por guardia de seguridad: 60
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 73 | 5 | 25 | 4 | 137 |
-| 2026-11-11 | 108 | 10 | 34 | 10 | 98 |
+| 2026-11-10 | 73 | 5 | 25 | 4 | 133 |
+| 2026-11-11 | 109 | 10 | 35 | 11 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **32**
+- rendimiento: **33**
 - seguridad defensiva: **28**
 - robustez ante casos límite: **25**
 
@@ -32,8 +32,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **22**
 - `safety.py`: **19**
 - `memory.py`: **18**
+- `quarantine.py`: **16**
 - `duplicates.py`: **15**
-- `quarantine.py`: **15**
 - `healthscore.py`: **15**
 - `assistant.py`: **14**
 - `organizer.py`: **14**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T11:06:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché de metadatos más eficiente basado en `st_ctime` (tiempo de creación/cambio de estado del nodo), garantizando que el hash solo se recalcule si el archivo realmente ha sido modificado y evitando I/O redundante durante escaneos masivos.
 - `2026-11-11T10:54:52` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` integrando el filtrado por `is_system_or_hidden` directamente dentro de `os.scandir` usando los atributos de `os.DirEntry` (que ya están en el buffer del sistema operativo), evitando así múltiples llamadas a `stat` y `GetFileAttributesW` innecesarias durante la recursión.
 - `2026-11-11T10:54:28` **diskreport.py** (rendimiento): Optimizé `walk_files` eliminando llamadas redundantes a `os.path.exists` (que ya estaba implícito en `scandir`) y reduciendo las conversiones a `Path` dentro del bucle, mejorando el rendimiento en recorridos profundos.
 - `2026-11-11T10:45:16` **branding.py** (rendimiento): Optimicé el cálculo de `draw_logo` y `draw_ring` eliminando la recreación innecesaria de objetos y simplificando el acceso a constantes, reduciendo la carga de CPU durante el renderizado frecuente en el Canvas.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T10:15:51` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `largest_folders` extrayendo la lógica de resolución de subdirectorio inmediato a una función auxiliar explícita, facilitando la comprensión del algoritmo de agregación.
 - `2026-11-11T10:15:26` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `browser.py` mediante la adición de docstrings estructurados y precisos en las funciones clave, clarificando las precondiciones, las responsabilidades de cada componente del escáner y el flujo de validación de seguridad para facilitar futuras auditorías.
 - `2026-11-11T10:13:21` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de renderizado geométrico (`draw_logo`, `draw_ring`, `draw_gradient_bar`) añadiendo docstrings que explican el contrato de los parámetros de coordenadas, dimensiones y las limitaciones de las excepciones, facilitando el mantenimiento futuro de la capa visual.
-- `2026-11-11T10:03:44` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` al añadir una validación de presencia obligatoria de todas las claves definidas en `DEFAULTS`, asegurando que archivos `config.json` truncados o incompletos no pasen como válidos.

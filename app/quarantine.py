@@ -65,9 +65,9 @@ DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 262144  # 256KB para streaming eficiente de archivos grandes
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float, int]] = {}
-_HASH_CACHE: Dict[Tuple[int, int, float, int], Tuple[str, float]] = {}
+_HASH_CACHE: Dict[Tuple[int, int, float, float], Tuple[str, float]] = {}
 _WIN_ATTR_CACHE: Dict[str, Tuple[int, float]] = {}
-_INODE_USE_CACHE: Dict[Tuple[int, int], Tuple[bool, float]] = {}
+_INODE_USE_CACHE: Dict[Tuple[int, int, float], Tuple[bool, float]] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -292,11 +292,12 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path, st: Optional[os.stat_result] = None) -> str:
-    """Calcula el hash SHA256 del archivo, optimizado mediante caché de metadatos."""
+    """Calcula el hash SHA256 del archivo, optimizado mediante caché de metadatos (dev, ino, mtime, ctime)."""
     if path is None: return ""
     try:
         stat_res = st if st else path.stat()
-        key = (stat_res.st_dev, stat_res.st_ino, stat_res.st_mtime, stat_res.st_size)
+        # Se añade st_ctime para detectar renombrados o cambios de metadatos más allá del mtime
+        key = (stat_res.st_dev, stat_res.st_ino, stat_res.st_mtime, getattr(stat_res, 'st_ctime', 0.0))
         now = time.monotonic()
         
         if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < 60.0):
@@ -317,11 +318,12 @@ def _get_sha256(path: Path, st: Optional[os.stat_result] = None) -> str:
         return ""
 
 def _is_file_in_use_by_system(path: Path) -> bool:
-    """Valida si un archivo está en uso exclusivo mediante inspección de inodos y atributos."""
+    """Valida si un archivo está en uso exclusivo mediante inspección de inodos y atributos con caché local."""
     if path is None or not path.exists(): return False
     try:
         st = path.stat()
-        key = (st.st_dev, st.st_ino)
+        # Usamos ctime en la llave del caché para invalidar rápidamente si el estado del inodo cambió
+        key = (st.st_dev, st.st_ino, getattr(st, 'st_ctime', 0.0))
         now = time.monotonic()
         
         if key in _INODE_USE_CACHE and (now - _INODE_USE_CACHE[key][1] < 0.5):

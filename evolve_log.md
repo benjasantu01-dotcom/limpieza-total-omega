@@ -913,3 +913,11 @@ FAILED evolve/tests/test_modules.py::test_breakdown_covers_every_weighted_area -
 - `2026-11-11T10:55:02` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
 - `2026-11-11T10:55:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T10:55:02` Corrida terminada. Total usado hoy: 260.
+- `2026-11-11T11:03:50` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-11T11:03:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T11:05:10` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-11T11:05:39` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `_iter_process_memory` pre-asignando los objetos de memoria de la API y reutilizando el buffer de ruta para evitar múltiples asignaciones de memoria y sobrecarga de recolector de basura durante el escaneo de procesos.
+- `2026-11-11T11:06:06` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-11T11:06:35` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un caché de metadatos más eficiente basado en `st_ctime` (tiempo de creación/cambio de estado del nodo), garantizando que el hash solo se recalcule si el archivo realmente ha sido modificado y evitando I/O redundante durante escaneos masivos.
+- `2026-11-11T11:06:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T11:06:35` Corrida terminada. Total usado hoy: 264.
