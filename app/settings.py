@@ -172,17 +172,12 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
         Gestiona la escritura segura en disco mediante archivos temporales.
-        
-        Asegura la atomicidad del cambio validando:
-        1. Tamaño y longitud de ruta (Límites de SO).
-        2. Seguridad: comprueba `is_safe_to_modify` y `is_protected_path`.
-        3. Integridad: comprueba permisos, tipos de archivo y puntos de reanálisis.
-        4. Exclusividad: usa `msvcrt.locking` en Windows para evitar colisiones.
         """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
         if len(str(config_path)) > 260: return False
         
+        fd = -1
         try:
             if not is_safe_to_modify(str(config_path)): return False
             parent_dir = config_path.parent
@@ -194,25 +189,20 @@ class _SettingsManager:
             if is_protected_path(resolved_str) or not is_safe_to_modify(resolved_str): return False
             
             if resolved_path.exists():
-                try:
-                    st = resolved_path.lstat()
-                    if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
-                    if (st.st_mode & 0o077) != 0: return False 
-                    if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-                except OSError: return False
+                st = resolved_path.lstat()
+                if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
+                if (st.st_mode & 0o077) != 0: return False 
+                if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             
             temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
+            fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
             try:
-                with open(temp_path, "wb") as f:
-                    if platform.system() == "Windows":
-                        msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
-                    f.write(serialized_bytes)
-                    f.flush()
-                    try:
-                        os.fsync(f.fileno())
-                    except OSError:
-                        return False
-                os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
+                if platform.system() == "Windows":
+                    msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+                os.write(fd, serialized_bytes)
+                os.fsync(fd)
+                os.close(fd)
+                fd = -1
                 os.replace(temp_path, resolved_path)
                 self.clear(resolved_str)
                 return True
@@ -220,8 +210,13 @@ class _SettingsManager:
                 if temp_path.exists():
                     try: os.remove(temp_path)
                     except OSError: pass
-        except (OSError, IOError, PermissionError, ValueError, RuntimeError, TypeError):
+        except (OSError, PermissionError, ValueError):
             return False
+        finally:
+            if fd != -1:
+                try: os.close(fd)
+                except OSError: pass
+        return False
 
 _MANAGER = _SettingsManager()
 
@@ -355,7 +350,6 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     for key_str, val in raw_values.items():
         if key_enum := _KEY_TO_ENUM.get(key_str):
-            # El validador debe retornar un valor válido, nunca None si queremos preservar el original
             validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, val)
             if validated_val is not None:
                 config[key_enum.value] = validated_val
@@ -381,48 +375,40 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
 def _is_structure_valid(data: Any) -> bool:
     """Verifica la integridad del diccionario JSON deserializado frente a tipos esperados."""
     if not isinstance(data, dict) or not data or len(data) > 64: return False
-    # Validar que cada clave exista y su tipo coincida exactamente (y no sea None)
     for k, v in data.items():
         if k not in _VALID_ENUM_KEYS or not _is_valid_type(v, k): return False
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
-    """
-    Lee y parsea el JSON validando metadatos para detectar condiciones de carrera.
-    
-    Aplica una comprobación estricta de estado (stat) antes y después de abrir
-    el archivo mediante un descriptor, previniendo manipulaciones externas.
-    """
+    """Lee y parsea el JSON validando metadatos para detectar condiciones de carrera."""
+    fd = -1
     try:
         if not file_path.exists() or not file_path.is_file(): return None
         st_initial = file_path.lstat()
         if not _is_file_secure_to_read(file_path, st_initial): return None
         
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
-        try:
-            st_post = os.fstat(fd)
-            # Validación estricta de metadatos pre y post apertura
-            if st_post.st_ino != st_initial.st_ino or st_post.st_dev != st_initial.st_dev or \
-               st_post.st_mtime != st_initial.st_mtime or st_post.st_size != st_initial.st_size:
-                return None
-            
-            # Pre-validación de tamaño crítico antes de leer
-            if st_post.st_size > MAX_SETTINGS_SIZE or st_post.st_size < MIN_SETTINGS_SIZE:
-                return None
-                
-            with os.fdopen(fd, "r", encoding="utf-8") as f:
-                content = f.read(MAX_SETTINGS_SIZE + 1)
-                if not content or len(content) > MAX_SETTINGS_SIZE: return None
-                data = json.loads(content)
-                
-            if not isinstance(data, dict) or not _is_structure_valid(data): return None
-            return data, st_post
-        except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        st_post = os.fstat(fd)
+        
+        if (st_post.st_ino != st_initial.st_ino or st_post.st_dev != st_initial.st_dev or 
+            st_post.st_mtime != st_initial.st_mtime or st_post.st_nlink != 1 or
+            st_post.st_size != st_initial.st_size):
             return None
-        finally:
-            if 'fd' in locals(): os.close(fd)
-    except (OSError, IOError, PermissionError, TypeError): 
+            
+        with os.fdopen(fd, "r", encoding="utf-8") as f:
+            fd = -1
+            content = f.read(MAX_SETTINGS_SIZE + 1)
+            if not content or len(content) > MAX_SETTINGS_SIZE: return None
+            data = json.loads(content)
+            
+        if not isinstance(data, dict) or not _is_structure_valid(data): return None
+        return data, st_post
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
         return None
+    finally:
+        if fd != -1:
+            try: os.close(fd)
+            except OSError: pass
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Aplica lógica de negocio necesaria sobre los datos validados."""

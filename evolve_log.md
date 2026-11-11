@@ -549,3 +549,13 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-11T07:21:34` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación de seguridad en `_validate_preconditions` para detectar si el archivo es un punto de reparse que apunta fuera del volumen de origen antes de intentar cualquier operación de E/S, mitigando el riesgo de redirecciones inesperadas durante el procesamiento.
 - `2026-11-11T07:21:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T07:21:34` Corrida terminada. Total usado hoy: 176.
+- `2026-11-11T07:29:40` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-11-11T07:29:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T07:30:29` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-11T07:30:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T07:30:39` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-11T07:31:20` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de errores en `perform_atomic_write` y `_read_and_parse_json` ante situaciones de concurrencia y corrupción, incluyendo el cierre obligatorio del descriptor de archivo ante excepciones y una validación de `st_nlink` para detectar posibles enlaces físicos maliciosos.
+- `2026-11-11T07:31:48` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `StartupEntry.executable` manejando errores de `Path.resolve()` ante archivos bloqueados o con permisos denegados, evitando que una falla en un solo acceso detenga la generación del reporte y utilizando `is_safe_to_modify` para mantener la integridad de la seguridad sin romper la lectura.
+- `2026-11-11T07:32:15` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al centralizar la validación de tipos y rangos de las métricas durante la ingestión inicial, reemplazando verificaciones redundantes con un método robusto que evita la inyección de datos complejos o no deseados.
+- `2026-11-11T07:32:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T07:32:15` Corrida terminada. Total usado hoy: 180.

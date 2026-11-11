@@ -510,29 +510,9 @@ class SystemContext:
         return False
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Optional[Union[int, float]]:
-        """
-        Extrae, valida y convierte un valor específico desde una fuente externa.
-        """
-        if not isinstance(source, (dict, object)): return None
-        
-        # Acceso seguro dependiendo del tipo
-        raw_val = None
-        if isinstance(source, dict):
-            raw_val = source.get(key)
-        else:
-            raw_val = _get_safe_attr(source, key)
-        
-        # Validación estricta: solo tipos escalares permitidos y no rutas protegidas
-        if not isinstance(raw_val, (int, float, str)) or isinstance(raw_val, bool):
-            return None
-        if isinstance(raw_val, str) and is_protected_path(raw_val):
-            return None
-            
-        validated_val = _is_valid_numeric_update(raw_val, spec)
-        if validated_val is None:
-            return None
-        
-        return int(validated_val) if spec.type_hint is int else float(validated_val)
+        """Extrae, valida y convierte un valor específico desde una fuente externa."""
+        val = source.get(key) if isinstance(source, dict) else _get_safe_attr(source, key)
+        return _is_valid_numeric_update(val, spec)
 
     def _clean_grade(self, val: Any) -> str:
         """Desinfecta la calificación para asegurar que sea una cadena limpia."""
@@ -563,13 +543,10 @@ class SystemContext:
             return {}
         
         updates: Dict[str, Any] = {}
-        for k in _VALID_METRIC_KEYS:
-            try:
-                val = self._apply_field(source, k, _VALIDATORS[k])
-                if val is not None:
-                    updates[k] = val
-            except (AttributeError, TypeError, ValueError):
-                continue
+        for k, spec in _VALIDATORS.items():
+            val = self._apply_field(source, k, spec)
+            if val is not None:
+                updates[k] = int(val) if spec.type_hint is int else float(val)
         
         if (cleaned_grade := self._extract_grade(source)):
             updates["grade"] = cleaned_grade
@@ -584,7 +561,6 @@ class SystemContext:
             if not all(isinstance(k, str) and not is_protected_path(k) for k in source.keys()):
                 return False
         if isinstance(source, (dict, list, tuple)):
-            # Fallo defensivo: las estructuras profundas se rechazan inmediatamente
             return not _is_input_too_deep_or_complex(source)
         return True
 
@@ -592,18 +568,9 @@ class SystemContext:
         """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
         if not isinstance(updates, dict) or not updates: return
         
-        valid_fields = self.__dataclass_fields__
-        new_state = {}
         for key, value in updates.items():
-            if key in valid_fields:
-                # Verificación estricta de tipos previo al setattr
-                spec = valid_fields[key]
-                if isinstance(value, (int, float, str)):
-                    if not (spec.type is int and not isinstance(value, int)):
-                        new_state[key] = value
-        
-        for key, value in new_state.items():
-            setattr(self, key, value)
+            if hasattr(self, key):
+                setattr(self, key, value)
         
         self.analyzed = True
         if "metrics_snapshot" in self.__dict__: del self.__dict__["metrics_snapshot"]
