@@ -283,7 +283,7 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
         return _rgb_to_hex((int(r1 + (r2 - r1) * r), int(g1 + (g2 - g1) * r), int(b1 + (b2 - b1) * r)))
     except (TypeError, ValueError): return start
 
-@lru_cache(maxsize=64)
+@lru_cache(maxsize=128)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
     """Calcula una secuencia de colores interpolados a través de múltiples puntos de control."""
     n = max(1, int(steps))
@@ -306,19 +306,18 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
         )))
     return tuple(res)
 
-@lru_cache(maxsize=64)
+@lru_cache(maxsize=128)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
     """Optimiza llamadas al motor gráfico agrupando colores contiguos en segmentos."""
     colors = gradient_colors(steps, stops)
     if not colors: return ()
-    segments: List[ColorSegment] = []
+    segments = []
     start = 0
     curr_color = colors[0]
     for i in range(1, len(colors)):
         if colors[i] != curr_color:
             segments.append(ColorSegment(curr_color, start, i))
-            start = i
-            curr_color = colors[i]
+            start, curr_color = i, colors[i]
     segments.append(ColorSegment(curr_color, start, len(colors)))
     return tuple(segments)
 

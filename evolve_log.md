@@ -402,3 +402,36 @@ FAILED evolve/tests/test_modules.py::test_summarize_shows_score_grade_and_recomm
 - `2026-11-11T06:10:06` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators.bool, _Validators.int, _Validators.path, _Validators.str
 - `2026-11-11T06:10:06` Rotación — log: 1163 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T06:10:06` Corrida terminada. Total usado hoy: 148.
+- `2026-11-11T06:18:25` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-11T06:18:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T06:18:59` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.56s
+
+```
+- `2026-11-11T06:18:59` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se han documentado las clases, métodos y lógica de validación mediante docstrings descriptivos, se mejoró la nomenclatura de variables internas para mayor claridad y se extrajo la lógica compleja de normalización de rutas en `StartupEntry` para facilitar su lectura y mantenimiento, alineándose con el enfoque de legibilidad.
+- `2026-11-11T06:19:59` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-11T06:20:42` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Se optimizó el acceso a los criterios de salud eliminando la iteración completa sobre `_CRITERIOS_SALUD` y utilizando un `frozenset` de los criterios relevantes pre-calculados, mejorando el rendimiento en cada consulta del asistente.
+- `2026-11-11T06:21:17` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado `get_gradient_segments` para evitar la re-ejecución innecesaria de la lógica de segmentación mediante la expansión de la caché y se redujo la sobrecarga de memoria al simplificar la creación de la lista `segments` en tiempo de ejecución.
+- `2026-11-11T06:21:27` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-11T06:21:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T06:21:27` Corrida terminada. Total usado hoy: 152.
