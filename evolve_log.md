@@ -1264,3 +1264,49 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-11T03:38:19` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: seguridad defensiva).
 - `2026-11-11T03:38:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T03:38:19` Corrida terminada. Total usado hoy: 88.
+- `2026-11-11T03:45:22` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-11T03:45:53` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.05s
+
+```
+- `2026-11-11T03:45:53` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación estricta de puntos de reparse (junctions) y enlaces simbólicos en `_resolve_and_cache_path` usando `resolve(strict=False)` y verificando el estado del `Path` antes de procesar, reforzando la seguridad defensiva al evitar el seguimiento de rutas fuera del árbol esperado del sistema.
+- `2026-11-11T03:45:53` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T03:45:53` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-11T03:46:13` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T03:46:13` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-11T03:46:43` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T03:46:43` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-11T03:46:58` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T03:46:58` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-11T03:47:19` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T03:47:19` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-11T03:47:49` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T03:47:49` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-11T03:48:04` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T03:48:04` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-11T03:48:24` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T03:48:24` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-11T03:48:54` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-11T03:48:54` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-11T03:48:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T03:48:54` Corrida terminada. Total usado hoy: 92.
