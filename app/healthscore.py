@@ -326,9 +326,11 @@ def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tup
         return 0, []
     try:
         ratio = entry.scorer(metrics)
+        # Validación estricta: si el ratio es inválido o no numérico, lo tratamos como neutro.
         if not _is_finite_numeric(ratio): ratio = 0.0
-        return int(ratio * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
-    except Exception:
+        final_ratio = _clamp(float(ratio))
+        return int(final_ratio * entry.weight), _evaluate_rules(metrics, entry.rules, final_ratio)
+    except (Exception, ValueError, TypeError):
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

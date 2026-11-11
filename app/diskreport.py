@@ -99,9 +99,11 @@ def _get_immediate_child(root: Path, path: Path) -> Path:
     Si el archivo está en la raíz, devuelve el mismo archivo.
     """
     try:
+        if not path.exists():
+            return path
         parts = path.relative_to(root).parts
         return root / parts[0]
-    except (ValueError, IndexError):
+    except (ValueError, IndexError, OSError):
         return path
 
 
@@ -302,8 +304,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     stack: List[str] = [str(root_path)]
     
     root_stat = _safe_stat(root_path)
-    if root_stat and hasattr(root_stat, 'st_ino') and hasattr(root_stat, 'st_dev'):
-        visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
+    if root_stat:
+        try:
+            visited_inodes.add((root_stat.st_dev, root_stat.st_ino))
+        except AttributeError:
+            pass
     
     while stack:
         current_dir = stack.pop()
@@ -321,11 +326,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 continue
                             if _is_reparse_point(st):
                                 continue
-                            if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
+                            try:
                                 inode = (st.st_dev, st.st_ino)
                                 if inode in visited_inodes:
                                     continue
                                 visited_inodes.add(inode)
+                            except AttributeError:
+                                pass
                             stack.append(entry.path)
                         
                         elif entry.is_file(follow_symlinks=False):
