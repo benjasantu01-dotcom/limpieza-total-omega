@@ -37,6 +37,7 @@ INVALID_FILE_ATTRIBUTES: Final[int] = 0xFFFFFFFF
 INVALID_HANDLE_VALUE: Final[int] = -1
 LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 FILE_ID_INFO_LEVEL: Final[int] = 18
+FILE_FLAG_BACKUP_SEMANTICS: Final[int] = 0x02000000
 
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
@@ -203,7 +204,7 @@ def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
         else:
             path_long = _to_long_path(path_str)
             kernel32 = ctypes.windll.kernel32
-            handle = kernel32.CreateFileW(path_long, 0x00, 0x03, None, 3, 0x00000080, None)
+            handle = kernel32.CreateFileW(path_long, 0x00, 0x03, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None)
             if handle != INVALID_HANDLE_VALUE:
                 try:
                     fid = FILE_ID_INFO()
@@ -935,7 +936,7 @@ def _get_final_path_normalized(p: Path) -> Path:
     try:
         if not p.exists(): return p.resolve(strict=False)
         handle = kernel32.CreateFileW(
-            _to_long_path(str(p)), 0, 0, None, 3, 0x02000000, None
+            _to_long_path(str(p)), 0, 0, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None
         )
         if handle == INVALID_HANDLE_VALUE:
             return p.resolve(strict=False)
@@ -1038,7 +1039,7 @@ def _validate_security_descriptor_attributes(sd: SecurityDescriptor) -> None:
     if sd.is_reparse:
         raise UnsafePathError("Protección defensiva: Redirección no autorizada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     if sd.has_flag(Win32Attr.SPARSE_FILE):
-        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationCategory.INTEGRITY)
+        raise UnsafePathError("Protección defensiva: Archivo disperso no permitido.", SafetyValidationErrorCode.SPARSE_FILE_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
 def _check_container_permissions(target_path: Path) -> None:
     """Verifica permisos del contenedor (padre) antes de operar."""

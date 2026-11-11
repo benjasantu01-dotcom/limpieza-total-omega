@@ -1256,3 +1256,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-11-11T03:28:43` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_file_exclusive` para evitar condiciones de carrera (TOCTOU) en Windows mediante el uso de `CreateFileW` con flags de acceso nulo y `FILE_SHARE_NONE`, asegurando que ningún otro proceso mantenga un handle abierto sobre el archivo origen antes de iniciar el aislamiento.
 - `2026-11-11T03:28:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T03:28:43` Corrida terminada. Total usado hoy: 84.
+- `2026-11-11T03:35:14` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-11T03:35:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-11T03:36:35` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-11T03:37:37` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_get_file_id` para prevenir posibles errores al intentar abrir el handle con flags de acceso incompatibles para ciertos directorios, utilizando `FILE_FLAG_BACKUP_SEMANTICS` lo cual es una práctica estándar de seguridad para obtener información de directorios y archivos de sistema sin activar bloqueos o denegaciones de acceso innecesarias.
+- `2026-11-11T03:38:04` ➖ Sin cambios en scanner.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva mediante la validación estricta de rutas en `_is_inside_base_root`, asegurando que `os.path.commonpath` reciba rutas normalizadas (usando `_get_canonical_path`) y evitando que posibles escapes de directorio por manipulación de strings o caracteres nulos alcancen la lógica de escaneo.
+- `2026-11-11T03:38:19` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: seguridad defensiva).
+- `2026-11-11T03:38:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T03:38:19` Corrida terminada. Total usado hoy: 88.
