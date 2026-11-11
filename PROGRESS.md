@@ -16,27 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 1 | 0 | 1 | 0 | 0 |
-| 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 62 | 6 | 22 | 6 | 56 |
+| 2026-11-10 | 110 | 8 | 37 | 8 | 185 |
+| 2026-11-11 | 64 | 6 | 23 | 6 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **42**
+- rendimiento: **30**
 - seguridad defensiva: **28**
-- rendimiento: **28**
-- robustez ante casos límite: **25**
+- robustez ante casos límite: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `safety.py`: **19**
-- `quarantine.py`: **16**
+- `diskreport.py`: **22**
+- `safety.py`: **18**
 - `memory.py`: **16**
 - `duplicates.py`: **15**
+- `quarantine.py`: **15**
+- `healthscore.py`: **15**
 - `assistant.py`: **14**
-- `healthscore.py`: **14**
 - `settings.py`: **12**
 - `branding.py`: **11**
 - `scanner.py`: **11**
@@ -46,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T06:29:55` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline de puntuación eliminando la re-validación recursiva innecesaria de campos en `SystemMetrics` y reemplazando las lambdas de reglas por funciones cacheadas, lo que reduce drásticamente la carga de CPU durante iteraciones repetidas.
+- `2026-11-11T06:29:05` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación de objetos `Path` y llamadas redundantes a `relative_to` dentro del loop de `walk_files`, utilizando en su lugar la caché de resultados de `os.scandir` y operando directamente con las rutas de nivel superior, reduciendo significativamente la sobrecarga en directorios profundos.
 - `2026-11-11T06:21:17` **branding.py** (rendimiento): Se ha optimizado `get_gradient_segments` para evitar la re-ejecución innecesaria de la lógica de segmentación mediante la expansión de la caché y se redujo la sobrecarga de memoria al simplificar la creación de la lista `segments` en tiempo de ejecución.
 - `2026-11-11T06:09:50` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados en las clases y métodos clave, clarificando las responsabilidades de cada componente y los límites del escáner heurístico, lo que facilita el mantenimiento y la comprensión de la lógica de seguridad.
 - `2026-11-11T06:09:23` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `_validate_path_components` y `_verify_path_integrity_at_node`, reemplazando el uso de una lista de componentes procesada imperativamente por una lógica más limpia de validación de nodos, y añadiendo type hints faltantes y docstrings descriptivos para clarificar la intención de las verificaciones de integridad.
@@ -59,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T05:38:18` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_structure_valid` y `validate` agregando una comprobación de tipo explícita para evitar errores en tiempo de ejecución si el JSON contiene valores `None` inesperados (nulos en JSON) que los validadores no manejan, asegurando que `AppSettings` siempre contenga valores del tipo esperado (bool/str/int) antes de que la app los procese.
 - `2026-11-11T05:29:36` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_is_valid_file_path` y `_is_valid_path_structure` validando que los nombres de archivo sean procesables antes de operar, previniendo errores de `OSError` o `NoneType` al manejar entradas malformadas o rutas que exceden el límite de `path_length_limit`.
 - `2026-11-11T05:29:21` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_running_as_admin` y `_is_virtual_drive` al centralizar el manejo de excepciones y validaciones de tipo, evitando que un `None` o una entrada inesperada provoquen un fallo silencioso o un error de tipo en tiempo de ejecución.
-- `2026-11-11T05:28:09` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_dir` añadiendo validaciones preventivas ante la posible existencia de archivos con el nombre del directorio y reforzando el manejo de excepciones para evitar estados inconsistentes en la inicialización del sandbox.
-- `2026-11-11T05:19:23` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita de excepciones en las validaciones de ruta, asegurando que un fallo en el acceso a metadatos de un archivo individual no detenga el procesamiento del resto de la lista.

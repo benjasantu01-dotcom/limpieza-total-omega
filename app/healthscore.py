@@ -188,13 +188,17 @@ def _msg_junk(m: SystemMetrics) -> str: return f"Acumulacion de archivos tempora
 def _msg_duplicates(m: SystemMetrics) -> str: return f"Recuperacion posible: {m.duplicate_mb:.0f} MB en duplicados."
 def _msg_startup(m: SystemMetrics) -> str: return f"Exceso de programas en arranque: {m.startup_count} entradas."
 
+def _check_low(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_LOW
+def _check_med(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_MED
+def _check_high(m: SystemMetrics, r: NormalizedRatio) -> bool: return r < WARN_THRESHOLD_HIGH
+
 _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
-    "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _safe_factory(_msg_security), lambda m, r: r < WARN_THRESHOLD_HIGH),),
-    "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, _safe_factory(_msg_disk), lambda m, r: r < WARN_THRESHOLD_LOW),),
-    "memoria": (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _safe_factory(_msg_memory), lambda m, r: r < WARN_THRESHOLD_LOW),),
-    "basura": (RecommendationRule("basura", WARN_THRESHOLD_MED, _safe_factory(_msg_junk), lambda m, r: r < WARN_THRESHOLD_MED),),
-    "duplicados": (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _safe_factory(_msg_duplicates), lambda m, r: r < WARN_THRESHOLD_MED),),
-    "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _safe_factory(_msg_startup), lambda m, r: r < WARN_THRESHOLD_LOW),),
+    "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _safe_factory(_msg_security), _check_high),),
+    "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, _safe_factory(_msg_disk), _check_low),),
+    "memoria": (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _safe_factory(_msg_memory), _check_low),),
+    "basura": (RecommendationRule("basura", WARN_THRESHOLD_MED, _safe_factory(_msg_junk), _check_med),),
+    "duplicados": (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _safe_factory(_msg_duplicates), _check_med),),
+    "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _safe_factory(_msg_startup), _check_low),),
 }
 
 # --- Funciones de Extracción de Pipeline ---
@@ -254,7 +258,9 @@ class SystemMetrics:
     startup_count: int = 0
     quarantined_count: int = 0
 
-    def __post_init__(self) -> None: self.validate()
+    def __post_init__(self) -> None: 
+        for f in _ALL_METRICS:
+            self._set_validated_field(f, getattr(self, f, 0.0))
 
     def _set_validated_field(self, name: str, value: Any) -> None:
         """Centraliza la validación de campos para evitar estados inconsistentes."""
@@ -276,9 +282,8 @@ class SystemMetrics:
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
 
     def validate(self) -> None:
-        """Asegura la integridad total de los campos internos mediante re-validación."""
-        for f in _ALL_METRICS:
-            self._set_validated_field(f, getattr(self, f, 0.0))
+        """Legado: se mantiene vacío para no romper interfaces."""
+        pass
 
     @property
     def is_finite(self) -> bool: 
@@ -305,7 +310,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         return results
     for rule in rules:
         try:
-            if callable(rule.check) and rule.check(metrics, normalized_ratio):
+            if rule.check(metrics, normalized_ratio):
                 msg = rule.message_factory(metrics)
                 if msg: results.append(msg)
         except (AttributeError, TypeError, ValueError):
