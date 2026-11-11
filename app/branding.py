@@ -36,6 +36,7 @@ SHIELD_WIDTH: Final[float] = 128.0
 SHIELD_CENTER_X: Final[float] = 64.0
 SHIELD_CENTER_Y: Final[float] = 56.0
 SHIELD_RADIUS: Final[float] = 52.0
+SHIELD_GLOW_OFFSET: Final[float] = 75.0
 
 # Vértices del polígono base del escudo para trazado vectorial
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
@@ -340,9 +341,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         dest_path = Path(destination).resolve()
-        # Valida que la ruta sea segura
         safe_path = ensure_safe_to_modify(dest_path)
-        # Valida que el padre sea seguro y exista
         parent = safe_path.parent
         if not is_safe_to_modify(parent): return None
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
@@ -381,20 +380,21 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza franjas decorativas sobre el escudo utilizando un lienzo Canvas."""
+    """Renderiza franjas decorativas del escudo en un Canvas."""
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
-        by, cx = y + STRIPE_BASE_Y_OFFSET * scale, x + SHIELD_CENTER_X * scale
+        base_y = y + STRIPE_BASE_Y_OFFSET * scale
+        center_x = x + SHIELD_CENTER_X * scale
         for seg in get_gradient_segments(n):
             for i in range(seg.start_index, seg.end_index):
                 if i < len(params):
                     p = params[i]
-                    canvas.create_rectangle(cx - p[0], by + p[1], cx + p[0], by + p[2], fill=seg.hex_color, outline="")
+                    canvas.create_rectangle(center_x - p[0], base_y + p[1], center_x + p[0], base_y + p[2], fill=seg.hex_color, outline="")
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza elementos gráficos de detalle (línea, triángulo, símbolo Omega)."""
+    """Renderiza los detalles internos (línea, triángulo, símbolo Omega) del logo."""
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
         canvas.create_line(
@@ -417,23 +417,33 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Renderiza el logo vectorial completo en el widget Canvas.
+    Renderiza el logo vectorial completo en el widget Canvas proporcionado.
     """
-    if canvas is None or not all(math.isfinite(v) for v in (size, canvas_x, canvas_y)): return
+    if canvas is None or not all(math.isfinite(v) for v in (size, canvas_x, canvas_y)): 
+        return
+    
     try:
-        s = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
-        poly = _get_scaled_poly(s, float(canvas_x), float(canvas_y))
-        if not poly: return
-        offset = 75.0 * s
+        scale = max(_MIN_SCALE, min(_MAX_SCALE, float(size) / SHIELD_WIDTH))
+        poly = _get_scaled_poly(scale, float(canvas_x), float(canvas_y))
+        if not poly: 
+            return
+
+        # Dibujar halo de brillo
+        glow_radius = SHIELD_GLOW_OFFSET * scale
         canvas.create_oval(
-            canvas_x + (SHIELD_CENTER_X * s) - offset, canvas_y + (SHIELD_CENTER_Y * s) - offset,
-            canvas_x + (SHIELD_CENTER_X * s) + offset, canvas_y + (SHIELD_CENTER_Y * s) + offset,
+            canvas_x + (SHIELD_CENTER_X * scale) - glow_radius, 
+            canvas_y + (SHIELD_CENTER_Y * scale) - glow_radius,
+            canvas_x + (SHIELD_CENTER_X * scale) + glow_radius, 
+            canvas_y + (SHIELD_CENTER_Y * scale) + glow_radius,
             fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
         )
+
+        # Dibujar base del escudo y elementos decorativos
         canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
-        _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
-        _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, s)
-    except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
+        _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
+        _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)
+    except (AttributeError, TypeError, ValueError, ZeroDivisionError): 
+        pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """Dibuja una línea horizontal con degradado lineal en el Canvas."""

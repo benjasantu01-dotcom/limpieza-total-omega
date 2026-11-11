@@ -92,6 +92,8 @@ def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
 def _is_valid_type(val: Any, key: str) -> bool:
     """Valida si el tipo del valor coincide con el esquema definido en DEFAULTS."""
     default_val = DEFAULTS.get(key)
+    # Evitar None explícitamente ya que los tipos definidos no admiten Optional por diseño
+    if val is None: return False
     return isinstance(val, type(default_val)) if default_val is not None else False
 
 __all__ = [
@@ -237,6 +239,7 @@ class _Validators:
 
     @staticmethod
     def _parse_as_type(val: Any, target_type: type[T]) -> Optional[T]:
+        if val is None: return None
         try:
             converted = target_type(val)
             return converted if isinstance(converted, target_type) else None
@@ -352,7 +355,9 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     for key_str, val in raw_values.items():
         if key_enum := _KEY_TO_ENUM.get(key_str):
-            if (validated_val := _VALIDATOR_MAP[key_enum].func(key_enum, val)) is not None:
+            # El validador debe retornar un valor válido, nunca None si queremos preservar el original
+            validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, val)
+            if validated_val is not None:
                 config[key_enum.value] = validated_val
     return config 
 
@@ -376,9 +381,9 @@ def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
 def _is_structure_valid(data: Any) -> bool:
     """Verifica la integridad del diccionario JSON deserializado frente a tipos esperados."""
     if not isinstance(data, dict) or not data or len(data) > 64: return False
-    if not all(k in _VALID_ENUM_KEYS for k in data): return False
+    # Validar que cada clave exista y su tipo coincida exactamente (y no sea None)
     for k, v in data.items():
-        if not _is_valid_type(v, k): return False
+        if k not in _VALID_ENUM_KEYS or not _is_valid_type(v, k): return False
     return True
 
 def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
