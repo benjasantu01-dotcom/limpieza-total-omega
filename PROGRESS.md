@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 245
+- Sin respuesta de la IA (error o límite): 246
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-09 | 43 | 3 | 15 | 2 | 43 |
+| 2026-11-09 | 40 | 3 | 14 | 2 | 43 |
 | 2026-11-10 | 111 | 8 | 37 | 8 | 186 |
-| 2026-11-11 | 25 | 1 | 6 | 0 | 16 |
+| 2026-11-11 | 27 | 1 | 7 | 0 | 17 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **30**
-- robustez ante casos límite: **27**
-- rendimiento: **26**
+- rendimiento: **28**
+- robustez ante casos límite: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `safety.py`: **17**
+- `memory.py`: **17**
 - `assistant.py`: **16**
-- `memory.py`: **16**
+- `duplicates.py`: **16**
 - `quarantine.py`: **16**
-- `duplicates.py`: **15**
+- `safety.py`: **16**
 - `healthscore.py`: **14**
-- `settings.py`: **13**
 - `startup.py`: **12**
-- `scanner.py`: **11**
+- `settings.py`: **12**
 - `branding.py`: **11**
 - `organizer.py`: **11**
+- `scanner.py`: **10**
 - `browser.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-11T02:07:27` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de los contadores y reutilizando el buffer de ruta, evitando asignaciones de memoria repetitivas dentro del bucle de procesos.
+- `2026-11-11T02:05:11` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño, tipo, inodo) directamente durante el listado, evitando llamadas redundantes a `os.path.exists` y `stat()` posteriores, lo cual reduce drásticamente las llamadas al sistema y el tiempo de escaneo.
 - `2026-11-11T01:55:18` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la creación repetitiva de objetos `Path` por el uso directo de strings y `entry.path`, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos de grandes volúmenes de archivos.
 - `2026-11-11T01:54:44` **branding.py** (rendimiento): Optimicé el cálculo de `_get_scaled_poly` reemplazando la creación de listas intermedias por una tupla generada mediante un generador, reduciendo la carga en memoria y el uso de CPU durante los repintados frecuentes del logo en la interfaz gráfica.
 - `2026-11-11T01:54:11` **assistant.py** (rendimiento): Optimicé el rendimiento de `_evaluate_active_problems` reemplazando la lógica de filtrado de tuplas por una búsqueda directa en `_CRITERIOS_MAP_IMMUTABLE`, eliminando loops redundantes y reduciendo la complejidad algorítmica de la evaluación de salud.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T01:24:02` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas y se refactorizó la lógica de `_collect_candidates` para mejorar la legibilidad del flujo de trabajo, clarificando la separación entre la recolección de candidatos y la lógica de filtrado de seguridad.
 - `2026-11-11T01:23:29` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` añadiendo docstrings descriptivos con secciones de parámetros y retornos en funciones clave, y simplificando la lógica de `_validate_root` y `_is_excluded_path` para hacerlas más robustas y fáciles de entender, eliminando redundancias en las validaciones de tipo.
 - `2026-11-11T01:14:34` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` incluyendo docstrings detallados para las constantes de layout y las clases de soporte, además de añadir type hints y clarificar la lógica de las funciones de renderizado geométrico para mejorar la mantenibilidad del motor visual.
-- `2026-11-11T01:14:01` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo `assistant.py` mediante docstrings detallados en funciones críticas y se ha refactorizado la lógica de validación de métricas para hacerla más explícita y legible, garantizando que el cumplimiento de los contratos de tipo sea transparente sin alterar el comportamiento.
-- `2026-11-11T01:13:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` asegurando que el lector de CSV maneje correctamente los errores de formato inesperados mediante la validación estricta de `fieldnames` y la prevención de excepciones durante la iteración sobre filas incompletas o mal formadas.

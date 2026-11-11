@@ -1120,3 +1120,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-11-11T01:55:18` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` reemplazando la creación repetitiva de objetos `Path` por el uso directo de strings y `entry.path`, reduciendo drásticamente la presión sobre el recolector de basura durante escaneos de grandes volúmenes de archivos.
 - `2026-11-11T01:55:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-11T01:55:18` Corrida terminada. Total usado hoy: 48.
+- `2026-11-11T02:03:41` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-11T02:04:44` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-11T02:05:11` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño, tipo, inodo) directamente durante el listado, evitando llamadas redundantes a `os.path.exists` y `stat()` posteriores, lo cual reduce drásticamente las llamadas al sistema y el tiempo de escaneo.
+- `2026-11-11T02:05:35` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-11-11T02:06:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-11T02:07:13` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-11T02:07:27` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` pre-calculando el tamaño de los contadores y reutilizando el buffer de ruta, evitando asignaciones de memoria repetitivas dentro del bucle de procesos.
+- `2026-11-11T02:07:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-11T02:07:27` Corrida terminada. Total usado hoy: 52.

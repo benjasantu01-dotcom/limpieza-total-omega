@@ -355,12 +355,14 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     bytes_written = wintypes.DWORD(0)
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
+    
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
     path_buf = ctypes.create_unicode_buffer(1024)
+    
     for pid in pids[:count]:
         if pid <= 0 or _is_system_process(pid): continue
         handle = _get_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
