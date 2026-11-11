@@ -325,22 +325,19 @@ def directory_size(path: Optional[OSPath]) -> int:
     ctx = ScanContext(abs_p, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH)
     return DirectoryScanner(ctx).get_size(abs_p).bytes_found
 
-def _is_target_valid(target: Path, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
+def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL]) -> bool:
     """Realiza validaciones de integridad sobre la ruta candidata antes de iniciar el escaneo."""
-    if not isinstance(target, Path) or not target.exists() or not target.is_dir(): 
-        return False
+    if not isinstance(target, Path): return False
     try:
-        if _IS_JUNCTION_FN(str(target)) or target.is_symlink():
-            return False
-        if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): 
-            return False
+        if not target.exists() or not target.is_dir(): return False
+        if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): return False
+        if not os.access(target, os.R_OK) or not is_safe_to_modify(target) or is_protected_path(target): return False
         if _is_system_hidden(str(target), kernel): return False
         
         target_parts = getattr(target, 'parts', None)
         if target_parts:
             parts = [p.lower() for p in target_parts]
-            if any(part in NEVER_TOUCH for part in parts):
-                return False
+            if any(part in NEVER_TOUCH for part in parts): return False
         
         if any(c in target.name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target.name):
             return False
@@ -364,18 +361,20 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path) or not base.exists(): continue
         base_norm = os.path.realpath(str(base))
         
-        # Reutilizamos el contexto y el scanner para optimizar el ciclo de escaneo
         scanner = DirectoryScanner(ScanContext(base_norm, kernel, _IS_JUNCTION_FN, set(), set(), NEVER_TOUCH, MAX_SCAN_DEPTH))
         
         for browser_key, relative_path in browser_map.items():
             if not _is_valid_rel_path(relative_path): continue
             
-            target = base.joinpath(*relative_path.split("\\"))
-            if not _is_target_valid(target, base_norm, kernel): continue
-            
-            scan_res = scanner.get_size(str(target))
-            if scan_res.success and scan_res.bytes_found > 0:
-                found.append(BrowserCache(str(browser_key), target, scan_res.bytes_found))
+            try:
+                target = base.joinpath(*relative_path.split("\\"))
+                if not _is_target_valid(target, base_norm, kernel): continue
+                
+                scan_res = scanner.get_size(str(target))
+                if scan_res.success and scan_res.bytes_found > 0:
+                    found.append(BrowserCache(str(browser_key), target, scan_res.bytes_found))
+            except (OSError, TypeError, ValueError):
+                continue
     
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found

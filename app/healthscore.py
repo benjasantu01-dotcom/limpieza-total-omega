@@ -285,14 +285,19 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
     """Ejecuta un conjunto de reglas y devuelve las recomendaciones activas."""
     results = []
+    if metrics is None: return results
     for rule in rules:
-        if rule.check(metrics, normalized_ratio):
-            msg = rule.message_factory(metrics)
-            if msg: results.append(msg)
+        try:
+            if rule.check(metrics, normalized_ratio):
+                msg = rule.message_factory(metrics)
+                if msg: results.append(msg)
+        except (AttributeError, TypeError, ValueError):
+            continue
     return results
 
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
     """Procesa una etapa del pipeline devolviendo puntos y sugerencias."""
+    if metrics is None or entry is None: return 0, []
     ratio = entry.scorer(metrics)
     return int(ratio * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
 
@@ -304,10 +309,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown, total, recs = {}, 0, []
     
     for entry in PIPELINE_DEFINITIONS:
-        p, r = _process_pipeline_entry(metrics, entry)
-        metric_breakdown[entry.area] = p
-        total += p
-        recs.extend(r)
+        try:
+            p, r = _process_pipeline_entry(metrics, entry)
+            metric_breakdown[entry.area] = p
+            total += p
+            recs.extend(r)
+        except Exception:
+            continue
     
     if metrics.quarantined_count > 0:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
@@ -318,7 +326,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(points: int, max_val: int) -> str:
     """Genera una representación visual de barra para los resultados."""
-    if max_val <= 0: return ""
+    if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0: return ""
     p = max(0, min(points, max_val))
     return "#" * p + "." * (max_val - p)
 

@@ -184,9 +184,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         if d:
             try:
                 p_dir = Path(d)
-                if is_safe_to_modify(p_dir) and p_dir.is_dir():
+                if p_dir.is_dir() and is_safe_to_modify(p_dir):
                     queue.append((p_dir.resolve(), 0))
-            except (OSError, PermissionError, TypeError):
+            except (OSError, PermissionError, TypeError, ValueError):
                 continue
     
     while queue:
@@ -197,10 +197,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    p = Path(entry.path)
-                    if not is_safe_to_modify(p): continue
-                    
                     try:
+                        p = Path(entry.path)
+                        if not is_safe_to_modify(p): continue
+                        
                         if entry.is_dir(follow_symlinks=False):
                             if depth < MAX_RECURSION_DEPTH and not is_junction(p):
                                 queue.append((p.resolve(), depth + 1))
