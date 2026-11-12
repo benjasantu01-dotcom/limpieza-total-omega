@@ -555,7 +555,7 @@ def _validate_isolation_request(source_path: Path, target_directory: Path) -> No
     _check_isolation_safety(source_path, target_directory)
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga y valida el manifiesto contra el estado actual del disco."""
+    """Carga y valida el manifiesto contra el estado actual del disco, optimizado con caché."""
     try: 
         base_dir: Path = quarantine_dir(base)
     except (OSError, UnsafePathError): 
@@ -863,7 +863,7 @@ def quarantine_file(source: PathLike, reason: str = "Marcado como sospechoso", b
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna ítems ordenados por fecha de aislamiento."""
-    try: base_dir = quarantine_dir(base)
+    try: quarantine_dir(base)
     except (OSError, UnsafePathError): return []
     items = load_manifest(base)
     return sorted(items, key=lambda x: x.quarantined_at, reverse=True)

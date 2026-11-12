@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 69
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 70
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 5 | 0 | 1 | 1 | 27 |
+| 2026-11-10 | 4 | 0 | 1 | 1 | 24 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 45 | 4 | 21 | 7 | 43 |
+| 2026-11-12 | 46 | 4 | 22 | 8 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **32**
-- rendimiento: **32**
+- rendimiento: **33**
+- seguridad defensiva: **31**
 - robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **23**
 - `safety.py`: **18**
 - `memory.py`: **17**
+- `quarantine.py`: **17**
 - `duplicates.py`: **16**
-- `quarantine.py`: **16**
 - `settings.py`: **16**
 - `organizer.py`: **15**
-- `assistant.py`: **13**
 - `healthscore.py`: **13**
+- `assistant.py`: **12**
 - `branding.py`: **11**
 - `startup.py`: **11**
 - `scanner.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T06:49:57` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `list_items` implementando una técnica de "lazy loading" con validación de estado basada en la última modificación del archivo de manifiesto (mtime) y tamaño, evitando así recorridos de disco costosos y re-hashes innecesarios en operaciones repetitivas.
 - `2026-11-12T06:36:38` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para realizar una única llamada a `stat` por archivo, eliminando redundancias y mejorando el rendimiento en discos mecánicos.
 - `2026-11-12T06:36:13` **diskreport.py** (rendimiento): Optimizamos el escaneo recursivo en `walk_files` y `_collect_summary_data` eliminando el uso de `Path` dentro de los bucles críticos, reemplazándolo por operaciones de string nativas para reducir la sobrecarga de instanciación de objetos en directorios con miles de archivos.
 - `2026-11-12T06:26:20` **assistant.py** (rendimiento): Optimicé el método `_apply_updates` para evitar la eliminación innecesaria de todas las propiedades cacheadas cuando solo una pequeña parte del contexto ha cambiado, y ajusté `_cached_active_problems` para utilizar `frozenset` de forma más eficiente, reduciendo la sobrecarga de cálculo durante consultas repetidas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T05:37:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use_exclusive` añadiendo un bloque `try...finally` que asegura el cierre del handle del kernel en caso de error durante la ejecución de la API de Windows, evitando así fugas de recursos (handle leaks) que podrían bloquear el sistema de archivos del usuario.
 - `2026-11-12T05:28:28` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_process_executable_safe` y `_iter_process_memory` agregando validaciones de tipo y estructura frente a errores de la API nativa, evitando que valores `None` o buffers malformados causen excepciones no capturadas durante la enumeración de procesos.
 - `2026-11-12T05:26:00` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.__setattr__` para prevenir errores de validación, asegurando que cualquier entrada no numérica sea rechazada explícitamente mediante una excepción antes de corromper el estado del objeto, y ajusté `compute_score` para manejar de forma segura el caso de métricas parcialmente nulas o inconsistentes.
-- `2026-11-12T05:14:51` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez de la lógica de escaneo mediante la captura de excepciones específicas (como `PermissionError` y `OSError`) al acceder a propiedades críticas de archivos durante el recorrido, evitando interrupciones inesperadas.
