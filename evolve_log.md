@@ -1456,3 +1456,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T02:33:50` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó `_resolve_and_cache_path` y `_is_valid_executable` para evitar llamadas redundantes a `Path.resolve()` y `path.exists()`, consolidando la lógica de validación de rutas mediante un uso más eficiente de las cachés existentes y reduciendo la profundidad de las ramas de ejecución.
 - `2026-11-12T02:33:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T02:33:50` Corrida terminada. Total usado hoy: 24.
+- `2026-11-12T02:40:46` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-11-12T02:41:29` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` añadiendo una comprobación explícita para evitar que objetos de tipo `Path` (u otros tipos no serializables/peligrosos) se filtren en la estructura de datos que se procesa o se envía a la API, reforzando la seguridad frente a casos límite de tipos inesperados.
+- `2026-11-12T02:41:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-12T02:42:24` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-12T02:42:34` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo una validación explícita mediante `is_safe_to_modify` (que verifica `is_protected_path`) antes de intentar acceder a los atributos, previniendo excepciones innecesarias en entornos donde el sistema de archivos deniega lectura por políticas de seguridad o estados de bloqueo.
+- `2026-11-12T02:42:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T02:42:34` Corrida terminada. Total usado hoy: 28.

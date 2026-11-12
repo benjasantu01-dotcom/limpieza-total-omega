@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 68
+- Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 39 | 3 | 13 | 1 | 74 |
+| 2026-11-10 | 37 | 3 | 12 | 1 | 73 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 12 | 1 | 8 | 1 | 2 |
+| 2026-11-12 | 14 | 1 | 8 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **35**
-- seguridad defensiva: **29**
-- robustez ante casos límite: **23**
+- seguridad defensiva: **27**
+- robustez ante casos límite: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `safety.py`: **19**
-- `memory.py`: **18**
-- `quarantine.py`: **17**
+- `memory.py`: **17**
 - `duplicates.py`: **16**
+- `quarantine.py`: **16**
 - `settings.py`: **15**
+- `assistant.py`: **14**
 - `healthscore.py`: **14**
 - `organizer.py`: **14**
-- `assistant.py`: **13**
 - `scanner.py`: **11**
 - `branding.py`: **11**
 - `startup.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T02:42:34` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo una validación explícita mediante `is_safe_to_modify` (que verifica `is_protected_path`) antes de intentar acceder a los atributos, previniendo excepciones innecesarias en entornos donde el sistema de archivos deniega lectura por políticas de seguridad o estados de bloqueo.
+- `2026-11-12T02:41:29` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` añadiendo una comprobación explícita para evitar que objetos de tipo `Path` (u otros tipos no serializables/peligrosos) se filtren en la estructura de datos que se procesa o se envía a la API, reforzando la seguridad frente a casos límite de tipos inesperados.
 - `2026-11-12T02:33:08` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo centralizado implementando un sistema de caché de atributos en la clase `Scanner` para evitar llamadas redundantes al sistema de archivos (`os.stat`) durante el procesamiento de entradas ya visitadas, reduciendo la carga de E/S.
 - `2026-11-12T02:32:41` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) global para las validaciones de `is_protected_path` y se refactorizó `_validate_structural_safety` para evitar cálculos repetitivos de regex y normalizaciones de rutas en bucles, mejorando significativamente el rendimiento al escanear directorios grandes.
 - `2026-11-12T02:22:21` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un mecanismo de caché más eficiente basado en `os.stat` (inodo/mtime) que evita I/O redundante y llamadas costosas a `ctypes` al verificar archivos ya analizados en la misma iteración de bucle.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T01:41:04` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a funciones que carecían de ellos y clarificando las responsabilidades de los métodos de la clase `JunkFile`, facilitando la comprensión del flujo de datos sin alterar la lógica.
 - `2026-11-12T01:40:35` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en retornos complejos, la consolidación de constantes de API y la clarificación de las responsabilidades en la lógica de escaneo de procesos mediante docstrings más precisos.
 - `2026-11-11T14:48:57` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad del módulo mediante la adición de docstrings detallados en funciones internas y la clarificación de tipos, facilitando el mantenimiento y la comprensión de la lógica de escaneo y hashing.
-- `2026-11-11T14:39:48` **branding.py** (legibilidad y documentación): Mejora de la mantenibilidad mediante la adición de Type Hints explícitos, docstrings enriquecidos y la corrección de una inconsistencia técnica en `_hex_to_rgb` para garantizar robustez ante formatos CSS no estándar.
-- `2026-11-11T14:39:00` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_build_payload` y `_call_gemini`, extrayendo la lógica de construcción de URL y validación de seguridad a constantes o pasos explícitos para clarificar el flujo de datos.

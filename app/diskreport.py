@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union, NamedTuple, TypeAlias, Any
 
-from safety import is_protected_path
+from safety import is_protected_path, is_safe_to_modify
 
 __all__ = [
     "FileEntry",
@@ -185,7 +185,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
-        if not p.is_dir() or is_protected_path(p) or str(p).startswith(r'\\'):
+        if not p.is_dir() or not is_safe_to_modify(p) or str(p).startswith(r'\\'):
             return None
         return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -209,7 +209,7 @@ def _get_local_windows_drives() -> List[str]:
     drives: List[str] = []
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
-        if os.path.exists(drive) and not is_protected_path(Path(drive)):
+        if os.path.exists(drive) and is_safe_to_modify(Path(drive)):
             drives.append(drive)
     return drives
 
@@ -280,7 +280,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount: return None
     try:
         p = Path(mount).resolve()
-        if not p.is_dir() or is_protected_path(p) or str(p).startswith(r'\\'):
+        if not p.is_dir() or not is_safe_to_modify(p) or str(p).startswith(r'\\'):
             return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -322,11 +322,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if _is_excluded_path(entry.name):
                             continue
                         
+                        if skip_protected and not is_safe_to_modify(entry_path):
+                            continue
+                            
                         st = entry.stat(follow_symlinks=False)
                         
                         if entry.is_dir(follow_symlinks=False):
-                            if skip_protected and is_protected_path(entry_path):
-                                continue
                             if _is_reparse_point(st):
                                 continue
                             inode = (st.st_dev, st.st_ino)
@@ -336,8 +337,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             stack.append(entry_path)
                         
                         elif entry.is_file(follow_symlinks=False):
-                            if skip_protected and is_protected_path(entry_path):
-                                continue
                             size = getattr(st, 'st_size', 0)
                             if size >= 0:
                                 yield entry_path, size
@@ -374,7 +373,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         try:
             top_level = _get_immediate_child(root, path)
-            if not is_protected_path(top_level):
+            if is_safe_to_modify(top_level):
                 stats[top_level].add(size)
         except (ValueError, TypeError, PermissionError, OSError):
             continue
