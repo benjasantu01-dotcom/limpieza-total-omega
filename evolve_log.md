@@ -1100,3 +1100,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-12T10:41:43` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult, _IntegrityCheck
 - `2026-11-12T10:41:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T10:41:43` Corrida terminada. Total usado hoy: 216.
+- `2026-11-12T10:49:41` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-12T10:50:07` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._has_invalid_name, Scanner._is_relevant_extension, scan_file
+- `2026-11-12T10:50:36` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _Validators, _Validators._check_path_safety, _Validators._is_reparse_point, _Validators._is_safe_path, _Validators._parse_as_type, _Validators._run_safety_checks, _Validators._validate_enum_str, _Validators.bool, _Validators.int, _Validators.path, _Validators.str
+- `2026-11-12T10:51:05` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de procesamiento y utilidades, clarificando las responsabilidades de validación, el manejo de cachés globales y los supuestos de seguridad, facilitando el mantenimiento y la auditoría del código.
+- `2026-11-12T10:51:29` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._is_valid_metric_key
+- `2026-11-12T10:51:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T10:51:29` Corrida terminada. Total usado hoy: 220.
