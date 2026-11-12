@@ -206,7 +206,7 @@ def _process_entry(
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un recorrido BFS optimizando llamadas a stat via scandir."""
+    """Realiza un recorrido BFS utilizando un mapa de inodos para evitar el procesamiento de hardlinks idénticos."""
     if directories is None or not isinstance(directories, Iterable) or min_size < 0: 
         return {}
     
@@ -239,7 +239,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica una función de hash y agrupa rutas con digests idénticos."""
+    """Aplica una función de hash y agrupa rutas con digests idénticos, omitiendo fallos de lectura."""
     if not paths: return {}
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
@@ -251,7 +251,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Refinamiento de duplicados mediante hashing en cascada."""
+    """Refinamiento de duplicados mediante hashing en cascada (primero parcial, luego total)."""
     if not paths: return {}
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
@@ -261,7 +261,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hash óptima según el tamaño del archivo."""
+    """Selecciona la estrategia de hash óptima según el tamaño del archivo para reducir I/O innecesario."""
     if not paths: return []
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
@@ -271,7 +271,7 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Punto de entrada: recolecta, filtra y detecta duplicados en directorios provistos."""
+    """Punto de entrada principal: recolecta, filtra y detecta duplicados en los directorios indicados."""
     if not directories: return []
     _partial_cache.clear()
     _full_hash_cache.clear()

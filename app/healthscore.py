@@ -17,7 +17,6 @@ from typing import Dict, List, Any, Final, NamedTuple, Annotated, Callable, Type
 from enum import Enum
 from pathlib import Path
 import math
-import logging
 import string
 import sys
 from functools import lru_cache, wraps
@@ -317,7 +316,7 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
     """Evalúa las reglas de recomendación aplicables según los resultados del pipeline."""
-    results = []
+    results: List[str] = []
     if not isinstance(metrics, SystemMetrics) or not isinstance(rules, tuple):
         return results
     for rule in rules:
@@ -346,7 +345,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Métricas no numéricas detectadas."])
     
-    metric_breakdown, total, recs = {}, 0, []
+    metric_breakdown: Dict[MetricKey, int] = {}
+    total: int = 0
+    recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
         p, r = _process_pipeline_entry(metrics, entry)
@@ -370,7 +371,7 @@ def _render_bar(points: int, max_val: int) -> str:
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte legible por el usuario a partir de HealthResult."""
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
-    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for e in PIPELINE_DEFINITIONS:
         val = result.breakdown.get(e.area, 0)
         lines.append(f"  {e.formatted_label} {val:>2}/{e.weight:<2} [{_render_bar(val, e.weight)}]")

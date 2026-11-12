@@ -1502,3 +1502,12 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T14:47:23` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-12T14:47:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T14:47:23` Corrida terminada. Total usado hoy: 312.
+- `2026-11-12T14:54:30` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-12T14:55:06` ➖ Sin cambios en diskreport.py (enfoque: legibilidad y documentación). Motivo: Mejoré la documentación técnica mediante la adición de Type Hints detallados en los retornos de las funciones de alto nivel y la estandarización de los comentarios de bloque, asegurando que el propósito y los parámetros críticos sean explícitos sin alterar la lógica de ejecución.
+- `2026-11-12T14:55:39` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad añadiendo type hints faltantes, tipado explícito en los resultados de funciones y clarificando mediante docstrings el propósito de las funciones internas que gestionan el recorrido y el hashing, garantizando que el flujo de trabajo (recorrido -> agrupación por tamaño -> hash parcial -> hash completo) sea evidente para cualquier desarrollador.
+- `2026-11-12T14:56:14` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las funciones de recomendación y simplificando la estructura del pipeline mediante una mejor definición de los decoradores y el manejo de excepciones para asegurar la robustez.
+- `2026-11-12T14:56:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T14:56:31` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-12T14:57:30` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-12T14:57:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T14:57:30` Corrida terminada. Total usado hoy: 316.
