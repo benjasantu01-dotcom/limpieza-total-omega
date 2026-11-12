@@ -266,7 +266,6 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     """Convierte un string hexadecimal CSS (formato #RRGGBB) a una tupla RGB (R, G, B)."""
     if not isinstance(value, str) or not value.startswith('#'):
         return (0, 0, 0)
-    # Soporta formatos #RGB y #RRGGBB
     clean_val = value.lstrip('#')
     try:
         if len(clean_val) == 3:
@@ -356,7 +355,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         safe_path.write_text(logo_svg(size), encoding="utf-8")
         return safe_path
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, AttributeError):
         return None
 
 _ASCII_LOGO: Final[str] = (

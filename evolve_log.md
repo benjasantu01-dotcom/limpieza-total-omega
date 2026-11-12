@@ -483,3 +483,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T05:07:23` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-12T05:07:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T05:07:23` Corrida terminada. Total usado hoy: 84.
+- `2026-11-12T05:13:22` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-11-12T05:13:44` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 1): unexpected indent
+- `2026-11-12T05:14:16` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación temprana de parámetros y manejo de excepciones más preciso para evitar valores None o formatos inesperados.
+- `2026-11-12T05:14:41` ➖ Sin cambios en browser.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `detect_profiles` y `directory_size` añadiendo validaciones preventivas de tipos y estados (None/vacíos) para evitar excepciones innecesarias durante el escaneo y mejorar la predictibilidad del flujo de datos en condiciones de error.
+- `2026-11-12T05:14:51` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de la lógica de escaneo mediante la captura de excepciones específicas (como `PermissionError` y `OSError`) al acceder a propiedades críticas de archivos durante el recorrido, evitando interrupciones inesperadas.
+- `2026-11-12T05:14:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T05:14:51` Corrida terminada. Total usado hoy: 88.

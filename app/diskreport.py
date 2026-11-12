@@ -330,7 +330,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and not is_safe_to_modify(entry_path):
                             continue
                             
-                        st = entry.stat(follow_symlinks=False)
+                        try:
+                            st = entry.stat(follow_symlinks=False)
+                        except (PermissionError, OSError):
+                            continue
                         
                         if entry.is_dir(follow_symlinks=False):
                             if _is_reparse_point(st):
