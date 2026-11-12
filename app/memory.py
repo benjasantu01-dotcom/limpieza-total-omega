@@ -311,9 +311,10 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         return False
     try:
         ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
-        if get_mod_name_func(handle, None, path_buffer, len(path_buffer)) == 0:
+        result = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
+        if result == 0:
             return True # Si no podemos leer el nombre, asumimos inofensivo por ahora
-        path_str = path_buffer.value.decode('utf-8', 'ignore')
+        path_str = path_buffer.value.decode('utf-16', 'ignore') if isinstance(path_buffer, ctypes.Array) else ""
         if not path_str: return False
         return not is_protected_path(Path(path_str))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):

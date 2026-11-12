@@ -490,3 +490,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T05:14:51` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de la lógica de escaneo mediante la captura de excepciones específicas (como `PermissionError` y `OSError`) al acceder a propiedades críticas de archivos durante el recorrido, evitando interrupciones inesperadas.
 - `2026-11-12T05:14:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T05:14:51` Corrida terminada. Total usado hoy: 88.
+- `2026-11-12T05:23:33` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-12T05:24:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T05:25:32` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-12T05:26:00` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics.__setattr__` para prevenir errores de validación, asegurando que cualquier entrada no numérica sea rechazada explícitamente mediante una excepción antes de corromper el estado del objeto, y ajusté `compute_score` para manejar de forma segura el caso de métricas parcialmente nulas o inconsistentes.
+- `2026-11-12T05:27:01` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T05:28:16` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-12T05:28:28` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_process_executable_safe` y `_iter_process_memory` agregando validaciones de tipo y estructura frente a errores de la API nativa, evitando que valores `None` o buffers malformados causen excepciones no capturadas durante la enumeración de procesos.
+- `2026-11-12T05:28:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T05:28:28` Corrida terminada. Total usado hoy: 92.
