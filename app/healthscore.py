@@ -269,6 +269,7 @@ class SystemMetrics:
     def __post_init__(self) -> None: 
         for f in _ALL_METRICS:
             val = getattr(self, f)
+            # Forzamos la normalización incluso en la inicialización
             self._set_validated_field(f, val)
 
     def _set_validated_field(self, name: str, value: Any) -> None:

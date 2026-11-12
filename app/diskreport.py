@@ -333,7 +333,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         entry_path = Path(entry.path)
-                        # Chequeo dinámico de seguridad para cada entrada detectada
                         if skip_protected and not is_safe_to_modify(entry_path):
                             continue
                             
@@ -353,7 +352,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         elif entry.is_file(follow_symlinks=False):
                             size = getattr(st, 'st_size', 0)
-                            if size >= 0:
+                            if isinstance(size, int) and size >= 0:
                                 yield entry_path, size
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
@@ -420,7 +419,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                 if limit > 0:
                     if len(top_heap) < limit:
                         heapq.heappush(top_heap, (size, path))
-                    elif size > top_heap[0][0]:
+                    elif top_heap and size > top_heap[0][0]:
                         heapq.heapreplace(top_heap, (size, path))
             except (OSError, PermissionError, ValueError):
                 continue

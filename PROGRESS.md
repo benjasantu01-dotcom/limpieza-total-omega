@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 92 | 11 | 35 | 10 | 120 |
-| 2026-11-12 | 91 | 8 | 41 | 11 | 85 |
+| 2026-11-11 | 89 | 11 | 34 | 10 | 120 |
+| 2026-11-12 | 94 | 8 | 42 | 11 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **34**
+- robustez ante casos límite: **36**
 - rendimiento: **33**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `quarantine.py`: **21**
-- `safety.py`: **17**
+- `diskreport.py`: **23**
+- `quarantine.py`: **20**
 - `settings.py`: **17**
 - `memory.py`: **16**
-- `duplicates.py`: **15**
-- `healthscore.py`: **14**
+- `safety.py`: **16**
+- `duplicates.py`: **16**
+- `healthscore.py`: **15**
 - `assistant.py`: **13**
 - `startup.py`: **12**
-- `organizer.py`: **11**
 - `scanner.py`: **11**
+- `organizer.py`: **10**
 - `branding.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T11:42:52` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante la inyección de datos inesperados en el constructor mediante un filtrado estricto en `__post_init__` y `__setattr__`, asegurando que cualquier entrada que no sea numérica finita o que exceda límites lógicos sea rechazada o normalizada antes de entrar al pipeline.
+- `2026-11-12T11:42:10` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante archivos bloqueados o eliminados durante el recorrido (race conditions) integrando una validación de `os.DirEntry` más defensiva y un manejo de excepciones local que evita la interrupción prematura de la búsqueda.
+- `2026-11-12T11:41:46` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo manejo explícito de errores de I/O en la obtención del tamaño (`st_size`) y asegurando que las comparaciones del heap no fallen ante valores nulos o inesperados.
 - `2026-11-12T11:32:31` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante posibles errores de sistema de archivos (como rutas inexistentes o permisos denegados) utilizando `pathlib` de forma más defensiva y validando la integridad del directorio padre antes de la escritura.
 - `2026-11-12T11:32:13` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` al introducir una validación de estado pre-ingesta y post-ingesta mediante una copia temporal (transactional approach), asegurando que el objeto nunca quede en un estado inconsistente o parcialmente actualizado ante entradas inesperadas.
 - `2026-11-12T11:31:31` **startup.py** (rendimiento): Se ha optimizado `list_startup_entries` para evitar la creación de una lista temporal completa en memoria antes de filtrar, utilizando un generador y procesando los elementos de forma perezosa, lo que reduce el uso de memoria y la latencia cuando el número de entradas de inicio es elevado.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T10:51:05` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de procesamiento y utilidades, clarificando las responsabilidades de validación, el manejo de cachés globales y los supuestos de seguridad, facilitando el mantenimiento y la auditoría del código.
 - `2026-11-12T10:40:44` **quarantine.py** (legibilidad y documentación): Se han documentado mediante docstrings específicos las funciones críticas de validación y gestión de E/S, aclarando el propósito de las protecciones de integridad, el manejo de reintento ante bloqueos de sistema y la importancia del uso de `fsync`, facilitando así la comprensión del código para futuras auditorías o mantenimiento.
 - `2026-11-12T10:31:39` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de procesamiento de datos para clarificar los tipos esperados y se añadieron `type hints` explícitos en variables internas complejas, facilitando la auditoría del código bajo las reglas de seguridad.
-- `2026-11-12T10:30:21` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de las responsabilidades de los componentes en los docstrings y la adición de Type Hints detallados, garantizando que la arquitectura "Pipeline" sea auto-explicativa para futuros colaboradores.
-- `2026-11-12T10:29:51` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de las funciones y se extrajeron las constantes de flags de Windows en una estructura más legible, mejorando la documentación interna para aclarar el propósito de la lógica de filtrado de archivos.
-- `2026-11-12T10:21:03` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints y docstrings explicativos en las estructuras de datos y funciones auxiliares, clarificando el propósito de cada componente para facilitar el mantenimiento futuro sin alterar la lógica de escaneo.

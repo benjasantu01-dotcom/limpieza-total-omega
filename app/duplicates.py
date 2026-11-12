@@ -183,8 +183,11 @@ def _process_entry(
     """Evalúa una entrada de directorio para BFS, gestionando bloqueos por acceso denegado."""
     try:
         if entry.is_symlink(): return
-        entry_path = Path(entry.path)
         
+        # Validar existencia y atributos básicos antes de resolver para evitar errores
+        if not entry.is_file() and not entry.is_dir(): return
+        
+        entry_path = Path(entry.path)
         if not _safe_path_check(entry_path): return
         
         stat = entry.stat(follow_symlinks=False)
