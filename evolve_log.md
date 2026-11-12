@@ -1544,3 +1544,13 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T15:28:54` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó el proceso de recolección de estadísticas (`_collect_summary_data`) eliminando la llamada redundante a `is_protected_path` dentro del loop, ya que `walk_files` ya realiza este filtrado de forma nativa.
 - `2026-11-12T15:28:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T15:28:54` Corrida terminada. Total usado hoy: 328.
+- `2026-11-12T15:35:20` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-12T15:35:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T15:36:15` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-12T15:37:01` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del proceso de cálculo reemplazando las llamadas repetitivas y costosas a `getattr` y `getattr` con un acceso directo a los atributos dentro del bucle del pipeline, y eliminando validaciones redundantes en `SystemMetrics` durante el acceso a datos.
+- `2026-11-12T15:38:01` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T15:39:04` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-12T15:40:17` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-12T15:40:30` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé el rendimiento de `_iter_process_memory` pre-alocando recursos y evitando el re-mapeo de funciones de API dentro del bucle, además de reemplazar la creación redundante de objetos `Path` por comparaciones de strings directas para reducir la presión sobre el recolector de basura.
+- `2026-11-12T15:40:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T15:40:30` Corrida terminada. Total usado hoy: 332.

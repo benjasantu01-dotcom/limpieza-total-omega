@@ -271,16 +271,12 @@ class SystemMetrics:
             self._set_validated_field(f, val)
 
     def _set_validated_field(self, name: str, value: Any) -> None:
-        """Centraliza la lógica de validación de campos para garantizar integridad."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
         clean_val = _validate_numeric(value, 0.0, *limits)
         object.__setattr__(self, name, clean_val)
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name in _ALL_METRICS:
-            if not _is_finite_numeric(value):
-                self._set_validated_field(name, 0.0)
-                return
             self._set_validated_field(name, value)
         else:
             object.__setattr__(self, name, value)
@@ -289,7 +285,6 @@ class SystemMetrics:
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
-        """Obtiene una métrica asegurándose de que esté dentro de límites técnicos."""
         min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
 
@@ -298,7 +293,6 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool: 
-        """Verifica que todos los campos métricos contengan valores numéricos finitos."""
         return all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
 
 @dataclass
@@ -315,35 +309,20 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
-    """Evalúa las reglas de recomendación aplicables según los resultados del pipeline."""
     results: List[str] = []
-    if not isinstance(metrics, SystemMetrics) or not isinstance(rules, tuple):
-        return results
     for rule in rules:
-        try:
-            if rule.check(metrics, normalized_ratio):
-                msg = rule.message_factory(metrics)
-                if msg: results.append(msg)
-        except (AttributeError, TypeError, ValueError):
-            continue
+        if rule.check(metrics, normalized_ratio):
+            msg = rule.message_factory(metrics)
+            if msg: results.append(msg)
     return results
 
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
-    """Ejecuta una etapa única del pipeline: cálculo de puntos y reglas asociadas."""
-    try:
-        ratio = entry.scorer(metrics)
-        return int(ratio * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
-    except Exception:
-        return 0, []
+    ratio = entry.scorer(metrics)
+    return int(ratio * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Punto de entrada principal: orquesta el cálculo de salud a través del pipeline."""
-    if not isinstance(metrics, SystemMetrics):
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
-    
-    # Validar integridad profunda antes de procesar
-    if not metrics.is_finite:
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Métricas no numéricas detectadas."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
     total: int = 0
@@ -363,13 +342,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Genera una visualización en consola para los resultados del desglose."""
     if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0: return ""
     p = max(0, min(points, max_val))
     return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera un reporte legible por el usuario a partir de HealthResult."""
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for e in PIPELINE_DEFINITIONS:

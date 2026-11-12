@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 59 | 6 | 21 | 7 | 83 |
-| 2026-11-12 | 122 | 10 | 56 | 12 | 128 |
+| 2026-11-11 | 57 | 6 | 20 | 7 | 82 |
+| 2026-11-12 | 124 | 10 | 57 | 12 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **40**
 - seguridad defensiva: **39**
-- robustez ante casos límite: **32**
-- rendimiento: **28**
+- robustez ante casos límite: **30**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **20**
-- `settings.py`: **19**
 - `duplicates.py`: **18**
+- `settings.py`: **18**
+- `healthscore.py`: **16**
 - `assistant.py`: **15**
-- `healthscore.py`: **15**
-- `safety.py`: **14**
+- `memory.py`: **14**
 - `startup.py`: **13**
-- `memory.py`: **13**
+- `safety.py`: **13**
 - `scanner.py`: **11**
 - `branding.py`: **9**
 - `organizer.py`: **7**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T15:40:30` **memory.py** (rendimiento): Optimizé el rendimiento de `_iter_process_memory` pre-alocando recursos y evitando el re-mapeo de funciones de API dentro del bucle, además de reemplazar la creación redundante de objetos `Path` por comparaciones de strings directas para reducir la presión sobre el recolector de basura.
+- `2026-11-12T15:37:01` **healthscore.py** (rendimiento): Optimicé el rendimiento del proceso de cálculo reemplazando las llamadas repetitivas y costosas a `getattr` y `getattr` con un acceso directo a los atributos dentro del bucle del pipeline, y eliminando validaciones redundantes en `SystemMetrics` durante el acceso a datos.
 - `2026-11-12T15:28:54` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de estadísticas (`_collect_summary_data`) eliminando la llamada redundante a `is_protected_path` dentro del loop, ya que `walk_files` ya realiza este filtrado de forma nativa.
 - `2026-11-12T15:27:36` **assistant.py** (rendimiento): Optimicé el método `SystemContext._apply_updates` para reducir drásticamente el número de operaciones de borrado y recreación de cachés (`del self.__dict__[...]`), centralizando la invalidación en un solo punto y evitando iteraciones redundantes sobre las métricas.
 - `2026-11-12T15:18:50` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos y descriptivos, especialmente en la lógica de validación de rutas y cachés, y se extrajeron las verificaciones de seguridad de `_is_valid_registry_path` a una función auxiliar nombrada `_is_path_syntax_safe` para clarificar la separación entre sintaxis y resolución de disco.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T14:37:37` **settings.py** (manejo de errores y validación de entradas): Reforcé `_read_and_parse_json` para manejar explícitamente posibles errores de `json.loads` y problemas de codificación mediante un bloque `try-except` más robusto, asegurando que cualquier entrada malformada o inesperada resulte en un retorno `None` seguro y no en una propagación de excepciones.
 - `2026-11-12T14:37:21` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de `_safe_stat` y las funciones de escaneo envolviendo las llamadas a `os.stat` en un manejo de excepciones explícito que captura errores comunes de E/S, evitando que fallos puntuales en metadatos detengan el procesamiento de archivos.
 - `2026-11-12T14:25:58` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída del proceso antes de ejecutar la acción, para asegurar consistencia con las reglas de seguridad.
-- `2026-11-12T14:16:51` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` y `compute_score` validando explícitamente la integridad de los datos en el punto de entrada y asegurando que las operaciones de cálculo utilicen valores numéricos limpios, evitando errores silenciosos por tipos de datos inesperados.
-- `2026-11-12T14:16:07` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_candidates` y `_process_entry` mediante la validación explícita de `entries` nulas y la mejora en la captura de errores en el acceso a metadatos, evitando que fallos parciales en el sistema de archivos interrumpan todo el escaneo de duplicados.

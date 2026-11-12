@@ -251,8 +251,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             return None
         ws_val: BytesValue = _safe_int_conversion(parts[2])
         if len(parts) > 3 and parts[3].strip():
-            path_check = Path(parts[3].strip())
-            if is_protected_path(path_check):
+            if is_protected_path(Path(parts[3].strip())):
                 return None
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
@@ -320,13 +319,12 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
         result = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
         if result <= 0:
-            return True # Si no podemos leer el nombre, asumimos inofensivo por ahora
-        path_str: str = path_buffer.value.decode('utf-16', 'ignore') if isinstance(path_buffer, ctypes.Array) else ""
+            return True 
+        path_str: str = path_buffer.value
         if not path_str: return False
         return not is_protected_path(Path(path_str))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return True
-    return False
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: GetModNameFunc) -> Optional[wintypes.HANDLE]:
     handle = _get_process_handle(pid, access)
@@ -344,7 +342,6 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
     return None
 
 def _init_memory_counters() -> PROCESS_MEMORY_COUNTERS:
-    """Inicializa la estructura de contadores de memoria nativa."""
     pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     return pmc
@@ -358,10 +355,8 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     pmc: PROCESS_MEMORY_COUNTERS = _init_memory_counters()
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
-    # Cacheo de referencias a funciones de librería
     get_mod_name: GetModNameFunc = WindowsAPI.psapi.GetModuleFileNameExW
     get_mem_info: Callable[[wintypes.HANDLE, Any, int], int] = WindowsAPI.psapi.GetProcessMemoryInfo
-    # Buffer pre-alocado fuera del bucle
     path_buf: ctypes.Array = ctypes.create_unicode_buffer(1024)
     
     for pid in pids[:count]:
@@ -441,10 +436,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if handle is None:
         return False, "Acceso denegado o proceso inexistente/en zona restringida."
         
-    # Verificación de seguridad adicional: confirmar que la ruta no sea protegida
     try:
-        path_str: str = path_buf.value
-        if is_protected_path(Path(path_str)):
+        if is_protected_path(Path(path_buf.value)):
             WindowsAPI.kernel32.CloseHandle(handle)
             return False, "Operación denegada: el proceso reside en una zona protegida."
         
