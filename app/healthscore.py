@@ -311,14 +311,20 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
     results: List[str] = []
     for rule in rules:
-        if rule.check(metrics, normalized_ratio):
-            msg = rule.message_factory(metrics)
-            if msg: results.append(msg)
+        try:
+            if rule.check(metrics, normalized_ratio):
+                msg = rule.message_factory(metrics)
+                if msg: results.append(msg)
+        except Exception:
+            continue
     return results
 
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
-    ratio = entry.scorer(metrics)
-    return int(ratio * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
+    try:
+        ratio = entry.scorer(metrics)
+        return int(ratio * entry.weight), _evaluate_rules(metrics, entry.rules, ratio)
+    except Exception:
+        return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
