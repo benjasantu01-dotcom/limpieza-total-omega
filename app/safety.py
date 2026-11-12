@@ -57,13 +57,13 @@ _FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
 _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 
-def _is_cache_valid(cache_map: dict[any, float | tuple[any, float]], key: any) -> bool:
+def _is_cache_valid(cache_map: dict[any, float | tuple[any, float]], key: any, ttl: float = 5.0) -> bool:
     """Verifica si la entrada en caché está dentro del periodo de validez."""
     if key not in cache_map: return False
     val = cache_map[key]
     ts = val[1] if isinstance(val, tuple) else val
-    if time.monotonic() - ts > 5.0:
-        del cache_map[key]
+    if time.monotonic() - ts > ttl:
+        cache_map.pop(key, None)
         return False
     return True
 
@@ -335,7 +335,6 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     """Recupera los atributos de archivo mediante GetFileAttributesW con caché TTL."""
     if not isinstance(path_str, str) or not path_str:
         return 0
-    now = time.monotonic()
     if _is_cache_valid(_ATTR_CACHE, path_str):
         return _ATTR_CACHE[path_str][0]
     try:
@@ -348,7 +347,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
             else:
                 return INVALID_FILE_ATTRIBUTES
         if len(_ATTR_CACHE) > 8192: _ATTR_CACHE.clear()
-        _ATTR_CACHE[path_str] = (attrs, now)
+        _ATTR_CACHE[path_str] = (attrs, time.monotonic())
         return attrs
     except (AttributeError, ctypes.ArgumentError, OSError, ValueError, Exception):
         return 0
@@ -819,7 +818,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not path.exists():
             raise UnsafePathError("Archivo inexistente, no se pueden validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.R_OK):
-            raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
             raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
     except (OSError, PermissionError, FileNotFoundError, AttributeError):

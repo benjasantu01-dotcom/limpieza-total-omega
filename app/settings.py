@@ -362,15 +362,13 @@ def validate(raw_values: Any) -> AppSettings:
                 config[key_enum.value] = validated_val
     return config 
 
-def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
+def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
     """
     Realiza validaciones de integridad sobre el archivo de configuración existente,
     asegurando que sea un archivo regular, propiedad del usuario y sin enlaces simbólicos
     malintencionados.
     """
     try:
-        resolved_path = file_path.resolve()
-        resolved_str = str(resolved_path)
         if is_protected_path(resolved_str): return False
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
@@ -387,12 +385,11 @@ def _is_structure_valid(data: Any) -> bool:
         if k not in _VALID_ENUM_KEYS or not _is_valid_type(v, k): return False
     return True
 
-def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.stat_result]]:
+def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
     fd = -1
     try:
-        if not file_path.exists() or not file_path.is_file(): return None
         st_initial = file_path.lstat()
-        if not _is_file_secure_to_read(file_path, st_initial): return None
+        if not _is_file_secure_to_read(file_path, resolved_str, st_initial): return None
         
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         st_post = os.fstat(fd)
@@ -429,15 +426,17 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
 @lru_cache(maxsize=8)
 def load(custom_base: PathLike | None = None) -> AppSettings:
     primary_path = settings_path(custom_base)
-    if not primary_path.exists() or not primary_path.is_file():
+    if not primary_path.exists():
         return DEFAULTS.copy()
+    
     resolved_str = str(primary_path.resolve())
     try:
-        st = primary_path.lstat()
         cached = _MANAGER.data_cache.get(resolved_str)
+        st = primary_path.lstat()
         if cached and cached[1] == st.st_mtime and cached[2] == st.st_size:
             return dict(cached[0])
-        result = _read_and_parse_json(primary_path)
+            
+        result = _read_and_parse_json(primary_path, resolved_str)
         if result is not None:
             data, st = result
             settings = _coerce_and_verify(validate(data))
