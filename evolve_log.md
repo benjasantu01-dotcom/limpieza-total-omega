@@ -1494,3 +1494,11 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T14:37:37` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé `_read_and_parse_json` para manejar explícitamente posibles errores de `json.loads` y problemas de codificación mediante un bloque `try-except` más robusto, asegurando que cualquier entrada malformada o inesperada resulte en un retorno `None` seguro y no en una propagación de excepciones.
 - `2026-11-12T14:37:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T14:37:37` Corrida terminada. Total usado hoy: 308.
+- `2026-11-12T14:44:20` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-12T14:45:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T14:45:54` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_registry_csv` y `_process_folder_entry` añadiendo validaciones estrictas de tipos y manejo seguro de errores para evitar que entradas malformadas corrompan el flujo del escaneo.
+- `2026-11-12T14:46:31` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ProblemCriterion._evaluate_metric
+- `2026-11-12T14:47:06` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros faltantes y la creación de docstrings descriptivos para las funciones geométricas, facilitando la comprensión del motor de renderizado vectorial.
+- `2026-11-12T14:47:23` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-12T14:47:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T14:47:23` Corrida terminada. Total usado hoy: 312.

@@ -331,7 +331,7 @@ def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STO
 
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
-    """Aplica un factor de escala y desplazamiento a las coordenadas base del escudo."""
+    """Calcula las coordenadas del escudo aplicando transformación afín (escala y traslación)."""
     if not math.isfinite(scale) or scale <= 0 or not math.isfinite(x) or not math.isfinite(y): return ()
     return tuple(
         (x + SHIELD_BASE_COORDS[i] * scale) if i % 2 == 0 else (y + SHIELD_BASE_COORDS[i] * scale)
@@ -379,7 +379,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
-    """Calcula la geometría de las franjas decorativas del escudo según el factor de escala."""
+    """Calcula los parámetros geométricos (grosor y posición) de las franjas del escudo."""
     if not math.isfinite(scale) or scale <= 0 or n < 1: return ()
     tf = STRIPE_THICKNESS_SCALE * scale
     params = []
@@ -391,7 +391,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[StripeParams, ...]:
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza franjas decorativas del escudo en un Canvas."""
+    """Renderiza el patrón de franjas decorativas sobre el Canvas."""
     try:
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         params = _get_stripe_params(scale, n)
@@ -404,7 +404,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except (AttributeError, TypeError, ValueError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza los detalles internos (línea, triángulo, símbolo Omega) del logo."""
+    """Renderiza la línea, el triángulo y el glifo central del logo en el Canvas."""
     try:
         ts = max(8, int(UI_CONFIG.header_size * scale))
         cx, cy = x + SHIELD_CENTER_X * scale, y + SHIELD_CENTER_Y * scale

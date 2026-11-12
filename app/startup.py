@@ -326,6 +326,7 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """Valida un archivo encontrado en carpetas de inicio bajo reglas de seguridad."""
+    if not hasattr(entry, 'path'): return None
     if entry.path in _PROCESS_CACHE:
         return None
         
@@ -452,9 +453,16 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(raw_name, str) or not isinstance(raw_cmd, str):
                 continue
             
-            if _is_registry_entry_safe(raw_name, raw_cmd, seen_commands):
-                seen_commands.add(raw_cmd.strip())
-                parsed_entries.append(StartupEntry(name=raw_name.strip(), command=raw_cmd.strip(), source=source))
+            # Limpieza básica para evitar entradas vacías o malformadas tras parseo de CSV
+            clean_name = raw_name.strip()
+            clean_cmd = raw_cmd.strip()
+            
+            if not clean_name or not clean_cmd:
+                continue
+            
+            if _is_registry_entry_safe(clean_name, clean_cmd, seen_commands):
+                seen_commands.add(clean_cmd)
+                parsed_entries.append(StartupEntry(name=clean_name, command=clean_cmd, source=source))
             
     except (csv.Error, ValueError, TypeError, AttributeError):
         return []
