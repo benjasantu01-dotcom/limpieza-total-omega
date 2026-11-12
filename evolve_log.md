@@ -1522,3 +1522,14 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T15:09:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
 - `2026-11-12T15:09:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T15:09:22` Corrida terminada. Total usado hoy: 320.
+- `2026-11-12T15:14:58` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-12T15:16:02` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T15:16:11` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-12T15:16:17` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-12T15:16:32` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-12T15:16:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T15:17:23` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de la suite de heurísticas estandarizando la documentación mediante docstrings detallados, añadiendo type hints faltantes y estructurando la lógica de validación para eliminar redundancias en las funciones `check_*`.
+- `2026-11-12T15:18:17` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._check_path_safety, _Validators._is_reparse_point, _Validators._is_safe_path, _Validators._parse_as_type
+- `2026-11-12T15:18:50` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings más precisos y descriptivos, especialmente en la lógica de validación de rutas y cachés, y se extrajeron las verificaciones de seguridad de `_is_valid_registry_path` a una función auxiliar nombrada `_is_path_syntax_safe` para clarificar la separación entre sintaxis y resolución de disco.
+- `2026-11-12T15:18:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T15:18:50` Corrida terminada. Total usado hoy: 324.
