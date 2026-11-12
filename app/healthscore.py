@@ -226,8 +226,8 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio: return _JUNK_SCORER(flo
 
 @lru_cache(maxsize=16)
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
-    count = float(suspicious_count)
-    warn = float(warnings)
+    count = max(0.0, float(suspicious_count))
+    warn = max(0.0, float(warnings))
     return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)))
 
 @lru_cache(maxsize=16)

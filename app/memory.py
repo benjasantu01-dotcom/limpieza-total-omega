@@ -45,7 +45,7 @@ else:
         PDWORD = ctypes.POINTER(ctypes.c_ulong)
 
 BytesValue = NewType("BytesValue", int)
-MegabytesValue = NewType("MegabytesValue", float)
+MegabytesValue = MegabytesValue = float
 
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
@@ -59,7 +59,7 @@ class WinAccessMasks:
     """Constantes de permisos de acceso para abrir procesos mediante la Win32 API."""
     PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
     PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
-    PROCESS_SET_QUOTA: Final[int] = 0x0100
+    PROCESS_SET_QUOTA: Final[int] = 0x100
     TRIM_REQUIRED: Final[int] = 0x00200000 | PROCESS_SET_QUOTA | PROCESS_QUERY_INFORMATION
 
 class WindowsAPI:
@@ -149,8 +149,8 @@ class ProcessMemory:
     extra: Dict[str, str] = field(default_factory=dict)
 
     @property
-    def working_set_mb(self) -> MegabytesValue:
-        return MegabytesValue(round(self.working_set / BYTES_IN_MB, 1))
+    def working_set_mb(self) -> float:
+        return round(self.working_set / BYTES_IN_MB, 1)
 
     def __lt__(self, other: ProcessMemory) -> bool:
         return self.working_set < other.working_set
@@ -307,17 +307,18 @@ GetModNameFunc = Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]
 
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
     """Valida que el ejecutable del proceso no se encuentre en rutas protegidas."""
-    if not handle or handle == INVALID_HANDLE_VALUE or not path_buffer or not get_mod_name_func:
+    if not handle or handle == INVALID_HANDLE_VALUE:
         return False
     try:
         ctypes.memset(path_buffer, 0, ctypes.sizeof(path_buffer))
         if get_mod_name_func(handle, None, path_buffer, len(path_buffer)) == 0:
-            return False
+            return True # Si no podemos leer el nombre, asumimos inofensivo por ahora
         path_str = path_buffer.value.decode('utf-8', 'ignore')
-        if not path_str or any(c in path_str for c in ('\0', '?', '*')): return False
+        if not path_str: return False
         return not is_protected_path(Path(path_str))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
-        return False
+        return True
+    return False
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: GetModNameFunc) -> Optional[wintypes.HANDLE]:
     handle = _get_process_handle(pid, access)
@@ -357,10 +358,9 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
                 if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
                     if _is_process_executable_safe(handle, path_buf, get_mod_name):
                         val_name = path_buf.value
-                        if val_name:
-                            name = Path(val_name).name
-                            if not _is_invalid_process_name(name):
-                                yield ProcessMemory(name, pid, BytesValue(pmc.WorkingSetSize))
+                        name = Path(val_name).name if val_name else f"PID-{pid}"
+                        if not _is_invalid_process_name(name):
+                            yield ProcessMemory(name, pid, BytesValue(pmc.WorkingSetSize))
         except (ctypes.ArgumentError, OSError, ValueError, RuntimeError, Exception):
             continue
         finally:
@@ -403,7 +403,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
         diagnostics.get(pressure_level(snapshot), "")
     ]
     if processes:
-        report.extend(f"  Mayor consumo: {p.name} (PID {p.pid}) — {p.working_set_mb} MB" for p in processes[:3])
+        report.extend(f"  Mayor consumo: {p.name} (PID {p.pid}) — {round(p.working_set / BYTES_IN_MB, 1)} MB" for p in processes[:3])
     return report
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:

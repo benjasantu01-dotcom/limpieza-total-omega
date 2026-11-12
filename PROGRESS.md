@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 67
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 37 | 3 | 12 | 1 | 73 |
+| 2026-11-10 | 35 | 3 | 11 | 1 | 72 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 14 | 1 | 8 | 1 | 4 |
+| 2026-11-12 | 17 | 1 | 9 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **35**
-- seguridad defensiva: **27**
-- robustez ante casos límite: **25**
+- robustez ante casos límite: **28**
+- seguridad defensiva: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `safety.py`: **19**
-- `memory.py`: **17**
-- `duplicates.py`: **16**
+- `memory.py`: **18**
+- `safety.py`: **18**
+- `duplicates.py`: **17**
 - `quarantine.py`: **16**
-- `settings.py`: **15**
+- `healthscore.py`: **15**
 - `assistant.py`: **14**
-- `healthscore.py`: **14**
+- `settings.py`: **14**
 - `organizer.py`: **14**
 - `scanner.py`: **11**
 - `branding.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T02:53:16` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` y `_iter_process_memory` ante rutas inexistentes, procesos con privilegios elevados que deniegan lectura de nombre, y buffers de memoria mal formados, garantizando que el escaneo de procesos no aborte ante condiciones de sistema comunes.
+- `2026-11-12T02:51:51` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas no numéricas o valores extremos (ej. negativos), evitando que una división o multiplicación inesperada genere resultados fuera de rango antes de que `_clamp` actúe, asegurando que el cálculo de salud sea consistente incluso ante métricas corruptas.
+- `2026-11-12T02:51:23` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de archivos añadiendo un manejo de excepciones más granular en `_process_entry` y `_collect_candidates`, garantizando que problemas de acceso a niveles profundos del sistema de archivos no interrumpan el escaneo completo, y asegurando que las rutas resultantes sean siempre válidas mediante la normalización explícita.
 - `2026-11-12T02:42:34` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo una validación explícita mediante `is_safe_to_modify` (que verifica `is_protected_path`) antes de intentar acceder a los atributos, previniendo excepciones innecesarias en entornos donde el sistema de archivos deniega lectura por políticas de seguridad o estados de bloqueo.
 - `2026-11-12T02:41:29` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` añadiendo una comprobación explícita para evitar que objetos de tipo `Path` (u otros tipos no serializables/peligrosos) se filtren en la estructura de datos que se procesa o se envía a la API, reforzando la seguridad frente a casos límite de tipos inesperados.
 - `2026-11-12T02:33:08` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo centralizado implementando un sistema de caché de atributos en la clase `Scanner` para evitar llamadas redundantes al sistema de archivos (`os.stat`) durante el procesamiento de entradas ya visitadas, reduciendo la carga de E/S.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T01:51:33` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados y type hints precisos, clarificando las responsabilidades de las funciones de alto nivel y el flujo de trabajo del escáner heurístico.
 - `2026-11-12T01:51:05` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la implementación de `Docstrings` detallados en funciones críticas (como `_validate_file_operations_security` y las funciones de validación de volumen) y la estandarización de type hints y nomenclatura interna, facilitando la auditoría de seguridad del código.
 - `2026-11-12T01:41:36` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando exhaustivamente las funciones internas complejas mediante docstrings detallados que explican el "porqué" de las decisiones de seguridad, y refinando los nombres de variables internas (ej. `stat_res` -> `st_stat`, `p_source` -> `source_path`) para eliminar ambigüedades técnicas.
-- `2026-11-12T01:41:04` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a funciones que carecían de ellos y clarificando las responsabilidades de los métodos de la clase `JunkFile`, facilitando la comprensión del flujo de datos sin alterar la lógica.
-- `2026-11-12T01:40:35` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en retornos complejos, la consolidación de constantes de API y la clarificación de las responsabilidades en la lógica de escaneo de procesos mediante docstrings más precisos.
-- `2026-11-11T14:48:57` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad del módulo mediante la adición de docstrings detallados en funciones internas y la clarificación de tipos, facilitando el mantenimiento y la comprensión de la lógica de escaneo y hashing.

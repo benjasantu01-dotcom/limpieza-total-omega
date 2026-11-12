@@ -100,7 +100,6 @@ def _safe_path_check(path: Path) -> bool:
         if not path.exists(): return False
         if not is_safe_to_modify(path): return False
         abs_path = path.resolve(strict=True)
-        # Se requiere resolución absoluta para prevenir escapes mediante rutas relativas
         return not is_protected_path(abs_path) and not is_junction(abs_path)
     except (OSError, RuntimeError, ValueError):
         return False
@@ -178,32 +177,30 @@ def _process_entry(
     visited_inodes: set[Tuple[int, int]], 
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """
-    Evalúa una entrada de directorio. Si es carpeta, encola para exploración recursiva (BFS).
-    Si es archivo, verifica viabilidad y añade a size_map para procesamiento de hashing.
-    """
+    """Evalúa una entrada de directorio para BFS, manejando errores de acceso de forma robusta."""
     try:
+        if entry.is_symlink(): return
         stat = entry.stat(follow_symlinks=False)
-        entry_path = Path(entry.path)
+        entry_path = Path(entry.path).resolve()
         
         if not _safe_path_check(entry_path): return
         
-        if entry.is_dir(follow_symlinks=False):
+        if entry.is_dir():
             if depth < MAX_RECURSION_DEPTH:
-                queue.append((entry_path.resolve(), depth + 1))
-        elif entry.is_file(follow_symlinks=False):
+                queue.append((entry_path, depth + 1))
+        elif entry.is_file():
             if stat.st_size >= min_size and not is_system_or_hidden(entry_path):
                 if skip_protected and is_protected_path(entry_path): return
                 inode_id = (stat.st_dev, stat.st_ino)
                 if inode_id not in visited_inodes:
                     visited_inodes.add(inode_id)
                     size_map[stat.st_size].append(entry_path)
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, ValueError):
         pass
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un recorrido BFS del sistema de archivos para encontrar candidatos."""
+    """Realiza un recorrido BFS del sistema de archivos manejando errores en raíces o subdirectorios."""
     if directories is None or not isinstance(directories, Iterable) or min_size < 0: 
         return {}
     
@@ -215,7 +212,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     for d in directories:
         if d is None: continue
         try:
-            p_dir = Path(d).resolve()
+            p_dir = Path(d).resolve(strict=True)
             if p_dir.is_dir() and _safe_path_check(p_dir):
                 queue.append((p_dir, 0))
         except (OSError, PermissionError, TypeError, ValueError):
@@ -260,7 +257,6 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona la estrategia de hash óptima según el tamaño del archivo."""
     if not paths: return []
-    # Rendimiento: si el archivo es pequeño, leemos completo directamente evitando hash parcial
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
     else:
