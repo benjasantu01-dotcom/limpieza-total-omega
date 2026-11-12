@@ -162,7 +162,7 @@ class StartupEntry:
                 
             _RESOLVED_PATH_CACHE[p_str] = str(resolved)
             return True
-        except (OSError, ValueError, RuntimeError, TypeError, PermissionError):
+        except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:

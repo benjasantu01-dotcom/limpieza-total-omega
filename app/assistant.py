@@ -574,7 +574,7 @@ class SystemContext:
                 if hasattr(self, key):
                     current_val = getattr(self, key)
                     # Validación estricta: asegurar que el tipo de datos coincida
-                    if isinstance(value, type(current_val)) or (isinstance(current_val, (int, float)) and isinstance(value, (int, float))):
+                    if type(value) in (int, float) and type(current_val) in (int, float):
                         setattr(self, key, type(current_val)(value))
             
             self.analyzed = True

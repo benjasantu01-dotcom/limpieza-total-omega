@@ -199,6 +199,10 @@ class _SettingsManager:
                 os.close(fd)
                 fd = -1
                 os.replace(temp_path, resolved_path)
+                # Sincronizar directorio padre para asegurar persistencia del nuevo archivo
+                pfd = os.open(str(parent_dir), os.O_RDONLY)
+                try: os.fsync(pfd)
+                finally: os.close(pfd)
                 self.clear(resolved_str)
                 return True
             finally:
