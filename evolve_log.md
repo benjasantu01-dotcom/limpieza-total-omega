@@ -584,3 +584,10 @@ FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner
 - `2026-11-12T05:46:56` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se introdujeron constantes de tipo `DocString` y se refinaron los docstrings existentes para mejorar la legibilidad del propósito y las salvaguardas de seguridad en el módulo, asegurando que las reglas críticas de privacidad sean evidentes para futuros colaboradores.
 - `2026-11-12T05:46:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T05:46:56` Corrida terminada. Total usado hoy: 100.
+- `2026-11-12T05:54:06` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-11-12T05:54:39` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-11-12T05:55:04` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-12T05:56:01` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings técnicos detallados en funciones clave, la clarificación de tipos en las firmas de funciones complejas y la estandarización de los comentarios de bloque para mejorar la mantenibilidad de la lógica de escaneo.
+- `2026-11-12T05:56:10` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los parámetros de entrada de las funciones de alto nivel (`group_by_size` y `find_duplicates`) y se ha corregido un docstring ambiguo en `hash_file` para especificar claramente el comportamiento del caché durante la sesión.
+- `2026-11-12T05:56:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T05:56:10` Corrida terminada. Total usado hoy: 104.

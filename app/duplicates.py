@@ -116,7 +116,7 @@ def _is_valid_candidate(path: Path, st_size: int = -1) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula hash SHA256 completo. Implementa caché de sesión para evitar I/O redundante."""
+    """Calcula hash SHA256 completo. Usa un caché global de sesión para evitar I/O redundante en archivos ya procesados."""
     if not isinstance(path, Path): return None
     if path in _full_hash_cache: return _full_hash_cache.get(path)
     if not _safe_path_check(path): return None

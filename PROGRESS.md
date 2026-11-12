@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 10 | 2 | 4 | 1 | 37 |
+| 2026-11-10 | 8 | 2 | 3 | 1 | 36 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 36 | 3 | 15 | 7 | 39 |
+| 2026-11-12 | 38 | 3 | 16 | 7 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **32**
-- rendimiento: **31**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `safety.py`: **19**
-- `memory.py`: **17**
-- `quarantine.py`: **16**
+- `memory.py`: **16**
+- `duplicates.py`: **15**
+- `quarantine.py`: **15**
 - `settings.py`: **15**
-- `duplicates.py`: **14**
 - `organizer.py`: **14**
 - `healthscore.py`: **13**
 - `assistant.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T05:56:10` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los parámetros de entrada de las funciones de alto nivel (`group_by_size` y `find_duplicates`) y se ha corregido un docstring ambiguo en `hash_file` para especificar claramente el comportamiento del caché durante la sesión.
+- `2026-11-12T05:56:01` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `diskreport.py` mediante la adición de docstrings técnicos detallados en funciones clave, la clarificación de tipos en las firmas de funciones complejas y la estandarización de los comentarios de bloque para mejorar la mantenibilidad de la lógica de escaneo.
 - `2026-11-12T05:46:01` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` capturando errores de forma más granular y evitando que una clave faltante o un valor `None` inesperado durante la deserialización JSON provoquen una caída o la carga de configuraciones parcialmente corruptas.
 - `2026-11-12T05:44:24` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de `stats` y `path` mediante una función auxiliar `_validate_heuristic_input`, evitando repetición de lógica defensiva y previniendo errores por atributos faltantes en las funciones de inspección individuales.
 - `2026-11-12T05:37:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use_exclusive` añadiendo un bloque `try...finally` que asegura el cierre del handle del kernel en caso de error durante la ejecución de la API de Windows, evitando así fugas de recursos (handle leaks) que podrían bloquear el sistema de archivos del usuario.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T03:43:51` **safety.py** (seguridad defensiva): Se ha añadido una validación estricta en el pipeline de seguridad (`_execute_safety_pipeline`) para bloquear explícitamente rutas que contengan caracteres de escape visuales (RTL/bidireccionales) que podrían ser utilizados para ofuscar extensiones de archivo maliciosas en la UI, reforzando la seguridad defensiva contra ataques de spoofing de nombre.
 - `2026-11-12T03:42:32` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` implementando una validación explícita para asegurar que la ruta a purgar permanezca dentro del sandbox, previniendo posibles ataques de *path traversal* o manipulación de la estructura de archivos en caso de una entrada maliciosa en el manifiesto.
 - `2026-11-12T03:22:52` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_validate_root` y `drive_usage` centralizando la validación de seguridad para bloquear específicamente rutas UNC y evitar errores de resolución de rutas en dispositivos de red o inaccesibles, asegurando que solo se escaneen rutas locales validadas por `is_safe_to_modify`.
-- `2026-11-12T03:13:08` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al centralizar la validación de tipos y rangos de las métricas en `SystemContext`, asegurando que `_apply_updates` no pueda inyectar tipos inesperados o corromper el estado si la fuente externa es malintencionada.
-- `2026-11-12T03:12:44` **startup.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_is_valid_executable` ante el caso límite de archivos cuyo acceso está restringido por el sistema, añadiendo un manejo explícito para `PermissionError` y `OSError` que garantiza que la validación retorne `False` en lugar de propagar una excepción durante el escaneo.
