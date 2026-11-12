@@ -569,18 +569,22 @@ class SystemContext:
         """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
         if not isinstance(updates, dict) or not updates: return
         
+        modified = False
         try:
             for key, value in updates.items():
                 if hasattr(self, key):
                     current_val = getattr(self, key)
-                    # Validación estricta: asegurar que el tipo de datos coincida
                     if type(value) in (int, float) and type(current_val) in (int, float):
-                        setattr(self, key, type(current_val)(value))
+                        if current_val != value:
+                            setattr(self, key, type(current_val)(value))
+                            modified = True
             
-            self.analyzed = True
-            for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
-                if attr in self.__dict__:
-                    del self.__dict__[attr]
+            if modified:
+                self.analyzed = True
+                # Solo invalidar cachés si hubo cambios reales
+                for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
+                    if attr in self.__dict__:
+                        del self.__dict__[attr]
         except (AttributeError, TypeError):
             pass
 

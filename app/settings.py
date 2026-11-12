@@ -168,6 +168,11 @@ class _SettingsManager:
         self.data_cache.pop(resolved_path_str, None)
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
+        """
+        Escribe el contenido en un archivo temporal y realiza un reemplazo atómico.
+        Verifica seguridad de rutas, permisos y exclusión de enlaces simbólicos antes
+        de proceder, garantizando que el archivo final sea un archivo regular.
+        """
         serialized_bytes = serialized.encode("utf-8")
         if len(serialized_bytes) > MAX_SETTINGS_SIZE or len(serialized_bytes) < MIN_SETTINGS_SIZE: return False
         if len(str(config_path)) > 260: return False
@@ -224,6 +229,7 @@ class _SettingsManager:
 _MANAGER = _SettingsManager()
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
+    """Decorador para suprimir excepciones durante la validación de tipos crudos."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
         try:
             return func(*args, **kwargs)
@@ -357,6 +363,11 @@ def validate(raw_values: Any) -> AppSettings:
     return config 
 
 def _is_file_secure_to_read(file_path: Path, st: os.stat_result) -> bool:
+    """
+    Realiza validaciones de integridad sobre el archivo de configuración existente,
+    asegurando que sea un archivo regular, propiedad del usuario y sin enlaces simbólicos
+    malintencionados.
+    """
     try:
         resolved_path = file_path.resolve()
         resolved_str = str(resolved_path)
@@ -409,7 +420,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     coerced = DEFAULTS.copy()
     for key_name, value in settings.items():
-        # Verificación explícita de existencia y tipo para evitar KeyError o mal uso de tipos
         if key_name in coerced and value is not None and isinstance(value, type(DEFAULTS.get(key_name))):
             coerced[key_name] = value 
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):

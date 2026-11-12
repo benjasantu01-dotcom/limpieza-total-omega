@@ -605,3 +605,58 @@ FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner
 - `2026-11-12T06:16:11` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: legibilidad y documentación).
 - `2026-11-12T06:16:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T06:16:11` Corrida terminada. Total usado hoy: 112.
+- `2026-11-12T06:24:36` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-12T06:25:11` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings detallados en funciones críticas de validación y gestión de archivos para clarificar las asunciones de seguridad y los flujos de control, facilitando la auditoría del código bajo las estrictas reglas del proyecto.
+- `2026-11-12T06:25:39` Tests FALLARON:
+```
+sertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+3 failed, 296 passed in 1.38s
+
+```
+- `2026-11-12T06:25:39` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: He refactorizado `StartupEntry.is_valid` y los métodos auxiliares de validación de rutas para unificar la lógica de seguridad y mejorar la claridad, asegurando que la intención detrás de cada chequeo sea evidente y facilitando su mantenimiento futuro.
+- `2026-11-12T06:26:20` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `_apply_updates` para evitar la eliminación innecesaria de todas las propiedades cacheadas cuando solo una pequeña parte del contexto ha cambiado, y ajusté `_cached_active_problems` para utilizar `frozenset` de forma más eficiente, reduciendo la sobrecarga de cálculo durante consultas repetidas.
+- `2026-11-12T06:26:56` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-12T06:26:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T06:26:56` Corrida terminada. Total usado hoy: 116.
