@@ -993,3 +993,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T09:51:05` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-12T09:51:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T09:51:05` Corrida terminada. Total usado hoy: 196.
+- `2026-11-12T09:58:51` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-12T09:59:22` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_process_executable_safe` y `_iter_process_memory` validando explícitamente el valor de retorno de las llamadas a la API de Windows (`GetModuleFileNameExW`), evitando el procesamiento de buffers nulos o corruptos y capturando posibles errores de acceso a memoria nativa antes de que afecten la estabilidad del bucle de escaneo.
+- `2026-11-12T09:59:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-12T10:00:34` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` más granular y una validación explícita para evitar que un manifiesto malformado (ej. JSON vacío o no lista) bloquee la carga de la cuarentena, devolviendo siempre una estructura vacía segura.
+- `2026-11-12T10:00:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-11-12T10:00:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T10:00:38` Corrida terminada. Total usado hoy: 200.
