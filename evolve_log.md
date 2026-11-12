@@ -702,3 +702,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T07:21:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): el archivo se encogió al 43% del original (posible pérdida de código)
 - `2026-11-12T07:21:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T07:21:53` Corrida terminada. Total usado hoy: 136.
+- `2026-11-12T07:25:44` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-11-12T07:26:17` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado `_iter_process_memory` para manejar de forma robusta los casos donde la API `GetProcessMemoryInfo` falla debido a procesos en estado de transición (finalizando) o con restricciones de permisos, evitando que la iteración se detenga prematuramente y protegiendo la integridad de la lista mediante una gestión de recursos más estricta (`finally` block) y filtros de validación adicionales.
+- `2026-11-12T07:26:41` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-12T07:27:55` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). He mejorado `quarantine.py` implementando una validación de "concurrencia de archivos" más robusta en `_is_file_exclusive` para evitar que el escáner intente mover archivos que están siendo bloqueados por operaciones de lectura/escritura pendientes, lo cual es un caso límite frecuente en Windows.
+- `2026-11-12T07:28:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-11-12T07:28:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T07:28:01` Corrida terminada. Total usado hoy: 140.

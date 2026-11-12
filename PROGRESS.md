@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 0 | 0 | 0 | 0 | 18 |
+| 2026-11-10 | 0 | 0 | 0 | 0 | 14 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 53 | 4 | 25 | 9 | 45 |
+| 2026-11-12 | 55 | 4 | 26 | 9 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **36**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **36**
 - seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `safety.py`: **19**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
+- `memory.py`: **17**
 - `settings.py`: **17**
 - `duplicates.py`: **16**
-- `memory.py`: **16**
 - `healthscore.py`: **14**
 - `organizer.py`: **14**
 - `assistant.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T07:27:55` **quarantine.py** (robustez ante casos límite): He mejorado `quarantine.py` implementando una validación de "concurrencia de archivos" más robusta en `_is_file_exclusive` para evitar que el escáner intente mover archivos que están siendo bloqueados por operaciones de lectura/escritura pendientes, lo cual es un caso límite frecuente en Windows.
+- `2026-11-12T07:26:17` **memory.py** (robustez ante casos límite): Se ha mejorado `_iter_process_memory` para manejar de forma robusta los casos donde la API `GetProcessMemoryInfo` falla debido a procesos en estado de transición (finalizando) o con restricciones de permisos, evitando que la iteración se detenga prematuramente y protegiendo la integridad de la lista mediante una gestión de recursos más estricta (`finally` block) y filtros de validación adicionales.
 - `2026-11-12T07:19:18` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del manejo de métricas en `SystemMetrics` evitando la propagación de excepciones críticas durante la inicialización y garantizando que los valores de coma flotante sean tratados de forma segura en entornos con configuraciones regionales variables.
 - `2026-11-12T07:17:48` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `_collect_candidates` procese archivos que están siendo bloqueados por el sistema operativo (denegación de acceso o archivo en uso) al capturar excepciones `PermissionError` y `OSError` de forma más granular durante la iteración de `scandir`.
 - `2026-11-12T07:16:49` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` ante archivos bloqueados o bloqueos de acceso durante la iteración, envolviendo el `yield` y las operaciones con `path` en un bloque `try-except` más amplio para evitar que el generador colapse prematuramente ante errores de I/O en sistemas con permisos restrictivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T06:26:20` **assistant.py** (rendimiento): Optimicé el método `_apply_updates` para evitar la eliminación innecesaria de todas las propiedades cacheadas cuando solo una pequeña parte del contexto ha cambiado, y ajusté `_cached_active_problems` para utilizar `frozenset` de forma más eficiente, reduciendo la sobrecarga de cálculo durante consultas repetidas.
 - `2026-11-12T06:25:11` **settings.py** (legibilidad y documentación): Se introdujeron docstrings detallados en funciones críticas de validación y gestión de archivos para clarificar las asunciones de seguridad y los flujos de control, facilitando la auditoría del código bajo las estrictas reglas del proyecto.
 - `2026-11-12T06:15:18` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para extraer la lógica compleja de validación de integridad post-escritura en una función dedicada y documentada, además de añadir type hints faltantes en funciones internas para asegurar mayor claridad en la firma de los métodos.
-- `2026-11-12T06:06:41` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) en las funciones críticas de validación y escaneo para clarificar la lógica de seguridad, sin alterar el comportamiento funcional del módulo.
-- `2026-11-12T06:06:28` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_iter_process_memory` para extraer la lógica de instanciación de contadores de memoria y el manejo de buffers a una función dedicada, reduciendo el anidamiento y aclarando el propósito de cada paso en el bucle.

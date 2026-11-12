@@ -194,16 +194,16 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
 
 def _is_file_exclusive(path: Path) -> bool:
     """
-    Verifica si el archivo puede abrirse en modo de exclusividad.
-    Si falla, significa que otro proceso (o el malware) mantiene el
-    archivo bloqueado para escritura/leer, impidiendo un movimiento seguro.
+    Verifica si el archivo puede abrirse en modo de exclusividad usando el flag
+    FILE_SHARE_NONE para asegurar que ningún proceso lo está leyendo o escribiendo.
     """
     if path is None or not path.exists():
         return False
     if os.name == 'nt':
         try:
             INVALID_HANDLE_VALUE = -1
-            # 0x80000000 es GENERIC_READ, 0 es dwShareMode (exclusivo)
+            # 0x80000000 = GENERIC_READ, 0x00000000 = FILE_SHARE_NONE (exclusivo), 
+            # 3 = OPEN_EXISTING, 0x00000080 = FILE_ATTRIBUTE_NORMAL
             handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
             if handle == INVALID_HANDLE_VALUE: return False
             ctypes.windll.kernel32.CloseHandle(handle)

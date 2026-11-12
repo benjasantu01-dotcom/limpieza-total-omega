@@ -360,6 +360,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         handle = _get_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
         if not handle: continue
         try:
+            # Solo procesar si el proceso está activo y responde a la consulta
             if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
                 if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
                     if _is_process_executable_safe(handle, path_buf, get_mod_name):
