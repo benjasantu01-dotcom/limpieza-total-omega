@@ -119,7 +119,7 @@ C_TEXT: Final[ColorHex] = _RAW_PALETTE["text"]
 C_TEXT_MUTED: Final[ColorHex] = _RAW_PALETTE["text_muted"]
 C_GLOW: Final[ColorHex] = _RAW_PALETTE["glow"]
 
-_SVG_TEMPLATE: Final[str] = (
+_SVG_TEMPLATE_PRECOMPUTED: Final[str] = (
     '<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">\n'
     '  <defs>\n'
     '    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}</linearGradient>\n'
@@ -342,7 +342,7 @@ def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
 def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
     """Genera el contenido del archivo SVG del logo (formato string)."""
     s = max(16, min(1024, int(size)))
-    return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS)
+    return _SVG_TEMPLATE_PRECOMPUTED.format(s=s, stops=_SVG_GRADIENT_STOPS)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_SIZE) -> Optional[Path]:
     """Guarda el logo vectorial en una ruta especificada, previa validación de seguridad."""

@@ -1107,3 +1107,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-12T10:51:29` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext._is_valid_metric_key
 - `2026-11-12T10:51:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T10:51:29` Corrida terminada. Total usado hoy: 220.
+- `2026-11-12T10:59:53` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-11-12T11:00:59` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el cálculo de la escala del logo en `draw_logo` eliminando la llamada innecesaria a `_get_scaled_poly` antes de validar la escala, y se refactorizó `logo_svg` para eliminar el formateo de strings en tiempo de ejecución mediante pre-cálculo de la constante `_SVG_TEMPLATE_PRECOMPUTED`.
+- `2026-11-12T11:01:28` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-12T11:02:33` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó el proceso de recolección de estadísticas evitando el uso redundante de `is_safe_to_modify` dentro de `largest_folders`, ya que `walk_files` ya realiza este chequeo de seguridad de manera nativa, reduciendo drásticamente las llamadas al sistema operativo innecesarias durante el recorrido.
+- `2026-11-12T11:02:41` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-12T11:02:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T11:02:41` Corrida terminada. Total usado hoy: 224.

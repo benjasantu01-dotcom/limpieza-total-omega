@@ -388,9 +388,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         try:
             top_level = _get_immediate_child(root, path)
-            # Validación adicional antes de agregar al reporte de carpetas
-            if not skip_protected or is_safe_to_modify(top_level):
-                stats[top_level].add(size)
+            stats[top_level].add(size)
         except (ValueError, TypeError, PermissionError, OSError):
             continue
             

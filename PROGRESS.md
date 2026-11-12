@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 206
+- Rechazadas por guardia de seguridad: 73
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 97 | 13 | 37 | 13 | 124 |
-| 2026-11-12 | 82 | 8 | 37 | 11 | 82 |
+| 2026-11-11 | 96 | 13 | 36 | 12 | 123 |
+| 2026-11-12 | 84 | 8 | 37 | 11 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **41**
 - seguridad defensiva: **37**
-- robustez ante casos límite: **33**
-- rendimiento: **26**
+- robustez ante casos límite: **32**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `quarantine.py`: **20**
 - `safety.py`: **18**
-- `memory.py`: **16**
 - `settings.py`: **16**
+- `memory.py`: **15**
 - `duplicates.py`: **15**
 - `healthscore.py`: **14**
 - `assistant.py`: **12**
 - `organizer.py`: **11**
 - `scanner.py`: **11**
 - `startup.py`: **11**
-- `branding.py`: **9**
+- `branding.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T11:02:33` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de estadísticas evitando el uso redundante de `is_safe_to_modify` dentro de `largest_folders`, ya que `walk_files` ya realiza este chequeo de seguridad de manera nativa, reduciendo drásticamente las llamadas al sistema operativo innecesarias durante el recorrido.
+- `2026-11-12T11:00:59` **branding.py** (rendimiento): Se optimizó el cálculo de la escala del logo en `draw_logo` eliminando la llamada innecesaria a `_get_scaled_poly` antes de validar la escala, y se refactorizó `logo_svg` para eliminar el formateo de strings en tiempo de ejecución mediante pre-cálculo de la constante `_SVG_TEMPLATE_PRECOMPUTED`.
 - `2026-11-12T10:51:05` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de procesamiento y utilidades, clarificando las responsabilidades de validación, el manejo de cachés globales y los supuestos de seguridad, facilitando el mantenimiento y la auditoría del código.
 - `2026-11-12T10:40:44` **quarantine.py** (legibilidad y documentación): Se han documentado mediante docstrings específicos las funciones críticas de validación y gestión de E/S, aclarando el propósito de las protecciones de integridad, el manejo de reintento ante bloqueos de sistema y la importancia del uso de `fsync`, facilitando así la comprensión del código para futuras auditorías o mantenimiento.
 - `2026-11-12T10:31:39` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de procesamiento de datos para clarificar los tipos esperados y se añadieron `type hints` explícitos en variables internas complejas, facilitando la auditoría del código bajo las reglas de seguridad.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T09:59:22` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_process_executable_safe` y `_iter_process_memory` validando explícitamente el valor de retorno de las llamadas a la API de Windows (`GetModuleFileNameExW`), evitando el procesamiento de buffers nulos o corruptos y capturando posibles errores de acceso a memoria nativa antes de que afecten la estabilidad del bucle de escaneo.
 - `2026-11-12T09:50:09` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de cálculo de score (`score_security`, `score_memory`, etc.) agregando validaciones de tipo y rango defensivas para evitar errores en tiempo de ejecución si se inyectan datos inesperados, asegurando que siempre retornen valores normalizados.
 - `2026-11-12T09:49:38` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del módulo `duplicates.py` mediante la validación proactiva de tipos y estados (`None`, vacíos, errores de conversión) en funciones críticas de procesamiento, evitando que excepciones en el flujo de entrada detengan la ejecución del análisis o causen comportamientos inesperados en las operaciones de hashing.
-- `2026-11-12T09:49:06` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de reporte (`largest_files`, `usage_by_extension`, `largest_folders`, `total_size`) añadiendo una validación explícita para evitar errores de tipo si se pasa un objeto `limit` no entero, además de asegurar que los resultados procesados en `_collect_summary_data` manejen de forma consistente cualquier posible excepción inesperada durante la iteración del generador `walk_files`.
-- `2026-11-12T09:40:56` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `_is_target_valid` añadiendo validaciones preventivas de tipos y estados, asegurando que los argumentos `bases` y `cache_paths` sean procesados de forma segura incluso si el llamador envía tipos inesperados, evitando posibles `AttributeError` o `TypeError` durante el bucle.
