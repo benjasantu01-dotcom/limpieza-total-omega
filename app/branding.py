@@ -138,9 +138,9 @@ _SVG_TEMPLATE: Final[str] = (
 )
 
 class CanvasElement(Protocol):
-    """Protocolo de tipado para los métodos de dibujo del widget tkinter.Canvas."""
+    """Define los métodos mínimos requeridos por el Canvas de tkinter/customtkinter."""
     def create_rectangle(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., outline: str = ..., width: int = ...) -> int: ...
-    def create_polygon(self, *args: float, fill: str = ..., outline: str = ...) -> int: ...
+    def create_polygon(self, *coords: float, fill: str = ..., outline: str = ...) -> int: ...
     def create_oval(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., outline: str = ...) -> int: ...
     def create_line(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., width: int = ..., capstyle: str = ...) -> int: ...
     def create_text(self, x: float, y: float, *, text: str, fill: str = ..., font: Union[Tuple[str, int, str], str] = ..., anchor: str = ...) -> int: ...
@@ -153,7 +153,7 @@ class ColorSegment(NamedTuple):
     end_index: int
 
 class FontSizesDict(TypedDict):
-    """Mapeo de nombres semánticos a tamaños de fuente base."""
+    """Escala tipográfica semántica: define el tamaño de fuente para cada jerarquía de UI."""
     display: int; title: int; subtitle: int; heading: int; body: int; mono: int; caption: int
 
 FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({

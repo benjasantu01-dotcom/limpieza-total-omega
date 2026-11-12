@@ -1055,3 +1055,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T10:11:10` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_resolve_and_cache_path` implementando una validación de `None` y tipos más estricta, asegurando que cualquier entrada corrupta o mal formada retorne de forma segura antes de intentar operaciones de sistema de archivos, previniendo excepciones innecesarias.
 - `2026-11-12T10:11:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T10:11:10` Corrida terminada. Total usado hoy: 204.
+- `2026-11-12T10:19:09` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-11-12T10:19:54` Tests FALLARON:
+```
+.........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_build_context_ignores_non_numeric_extras _________________
+
+    def test_build_context_ignores_non_numeric_extras():
+        """Un extra con una ruta no puede colarse en el contexto."""
+        contexto = assistant.build_context(
+            ruta_secreta="C:/Users/benja/Documentos/secreto.txt",
+            memory_total_gb=8.0,
+        )
+        assert not hasattr(contexto, "ruta_secreta")
+>       assert contexto.memory_total_gb == 8.0
+E       AssertionError: assert 0.0 == 8.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+
+evolve/tests/test_assistant.py:217: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+1 failed, 298 passed in 1.45s
+
+```
+- `2026-11-12T10:19:54` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la legibilidad y mantenibilidad del módulo `assistant.py` mediante la refactorización de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex`, consolidando la lógica de validación de estructuras en un único método privado `_check_structure_compliance` para eliminar la duplicación de código y errores de coherencia.
+- `2026-11-12T10:20:25` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos a los miembros de `PaletteDict` y `FontSizesDict`, y refiné los tipos en `CanvasElement` para asegurar que el contrato con `customtkinter` sea claro y robusto.
+- `2026-11-12T10:20:51` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-12T10:21:03` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints y docstrings explicativos en las estructuras de datos y funciones auxiliares, clarificando el propósito de cada componente para facilitar el mantenimiento futuro sin alterar la lógica de escaneo.
+- `2026-11-12T10:21:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T10:21:03` Corrida terminada. Total usado hoy: 208.

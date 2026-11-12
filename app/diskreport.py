@@ -143,7 +143,7 @@ class GlobalStats:
 
 class FolderMetrics:
     """
-    Contenedor de métricas para el tamaño de subcarpetas.
+    Contenedor de métricas para el tamaño de subcarpetas individuales.
     """
     __slots__ = ('size', 'file_count')
     
@@ -152,18 +152,21 @@ class FolderMetrics:
         self.file_count: int = 0
 
     def add(self, size: int) -> None:
-        """Incrementa los bytes y el contador de archivos."""
+        """Incrementa los bytes y el contador de archivos para la carpeta actual."""
         if size >= 0:
             self.size += size
             self.file_count += 1
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño en MB del acumulado de archivos en la carpeta."""
         return _bytes_to_mb(self.size)
 
 
 class SummaryData(NamedTuple):
-    """Resultados consolidados de un escaneo de directorio."""
+    """
+    Resultados consolidados de un escaneo de directorio para uso interno.
+    """
     total_bytes: int
     total_files: int
     ext_stats: Dict[str, ExtStats]
@@ -219,6 +222,7 @@ def _get_local_windows_drives() -> List[str]:
 
 @dataclass(frozen=True)
 class FileEntry:
+    """Representación de un archivo para reportes de los más pesados."""
     path: Path
     size_bytes: int
 
@@ -229,6 +233,7 @@ class FileEntry:
 
 @dataclass(frozen=True)
 class ExtensionUsage:
+    """Agregado estadístico por extensión."""
     extension: str
     size_bytes: int
     count: int
@@ -240,6 +245,7 @@ class ExtensionUsage:
 
 @dataclass(frozen=True)
 class FolderUsage:
+    """Resultado estadístico de una carpeta específica."""
     path: Path
     size_bytes: int
     file_count: int
@@ -251,6 +257,7 @@ class FolderUsage:
 
 @dataclass(frozen=True)
 class DriveUsage:
+    """Estadísticas de uso de una unidad de almacenamiento."""
     mount: str
     total: int
     used: int
@@ -258,10 +265,12 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
+        """Porcentaje de espacio utilizado en la unidad."""
         return round(self.used / self.total * 100, 1) if self.total > 0 else 0.0
 
     @property
     def is_almost_full(self) -> bool:
+        """Retorna True si la unidad tiene menos del 10% de espacio disponible."""
         return self.total > 0 and (self.free / self.total) < 0.10
 
 
