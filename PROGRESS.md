@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 68
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 211
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 35 | 2 | 11 | 1 | 65 |
+| 2026-11-10 | 35 | 2 | 11 | 1 | 61 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 23 | 1 | 10 | 2 | 4 |
+| 2026-11-12 | 24 | 1 | 10 | 3 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,11 +26,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **35**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **26**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `safety.py`: **19**
 - `memory.py`: **18**
 - `duplicates.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T03:22:52` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_validate_root` y `drive_usage` centralizando la validación de seguridad para bloquear específicamente rutas UNC y evitar errores de resolución de rutas en dispositivos de red o inaccesibles, asegurando que solo se escaneen rutas locales validadas por `is_safe_to_modify`.
 - `2026-11-12T03:13:08` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al centralizar la validación de tipos y rangos de las métricas en `SystemContext`, asegurando que `_apply_updates` no pueda inyectar tipos inesperados o corromper el estado si la fuente externa es malintencionada.
 - `2026-11-12T03:12:44` **startup.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_is_valid_executable` ante el caso límite de archivos cuyo acceso está restringido por el sistema, añadiendo un manejo explícito para `PermissionError` y `OSError` que garantiza que la validación retorne `False` en lugar de propagar una excepción durante el escaneo.
 - `2026-11-12T03:12:14` **settings.py** (robustez ante casos límite): Mejora la robustez del manejo de archivos mediante la implementación de `os.fsync` sobre el directorio padre tras la operación `os.replace` para asegurar la persistencia física de la configuración en sistemas de archivos con búferes agresivos, además de asegurar que la creación de directorios y archivos de configuración maneje explícitamente posibles errores de concurrencia o permisos antes de continuar.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T02:33:08` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo centralizado implementando un sistema de caché de atributos en la clase `Scanner` para evitar llamadas redundantes al sistema de archivos (`os.stat`) durante el procesamiento de entradas ya visitadas, reduciendo la carga de E/S.
 - `2026-11-12T02:32:41` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) global para las validaciones de `is_protected_path` y se refactorizó `_validate_structural_safety` para evitar cálculos repetitivos de regex y normalizaciones de rutas en bucles, mejorando significativamente el rendimiento al escanear directorios grandes.
 - `2026-11-12T02:22:21` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un mecanismo de caché más eficiente basado en `os.stat` (inodo/mtime) que evita I/O redundante y llamadas costosas a `ctypes` al verificar archivos ya analizados en la misma iteración de bucle.
-- `2026-11-12T02:11:02` **duplicates.py** (rendimiento): Optimizé el rendimiento de la detección de duplicados implementando una estrategia de filtrado temprano: ahora los archivos pequeños (menor o igual a `PARTIAL_READ_BYTES`) omiten el paso de hash parcial y pasan directamente al hash completo, evitando el costo de dos lecturas de disco sobre archivos que, por definición, se leen de forma atómica y eficiente en una sola operación de E/S.

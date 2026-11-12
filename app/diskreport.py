@@ -177,6 +177,11 @@ def _validate_limit(limit: Any) -> int:
     return limit if isinstance(limit, int) and limit > 0 else 0
 
 
+def _is_unc_path(p: Path) -> bool:
+    """Verifica si una ruta es UNC (comienza con \\)."""
+    return str(p).startswith(os.sep * 2)
+
+
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Normaliza la ruta raíz, verifica su existencia y comprueba restricciones de seguridad.
@@ -185,7 +190,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
-        if not p.is_dir() or not is_safe_to_modify(p) or str(p).startswith(r'\\'):
+        if not p.is_dir() or _is_unc_path(p) or not is_safe_to_modify(p):
             return None
         return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
@@ -280,7 +285,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount: return None
     try:
         p = Path(mount).resolve()
-        if not p.is_dir() or not is_safe_to_modify(p) or str(p).startswith(r'\\'):
+        if not p.is_dir() or _is_unc_path(p) or not is_safe_to_modify(p):
             return None
         usage = shutil.disk_usage(p)
         return DriveUsage(str(p), usage.total, usage.used, usage.free)
