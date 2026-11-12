@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 76
+- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 78 | 10 | 29 | 9 | 86 |
-| 2026-11-12 | 104 | 10 | 47 | 11 | 120 |
+| 2026-11-11 | 76 | 9 | 28 | 9 | 86 |
+| 2026-11-12 | 105 | 10 | 47 | 11 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **39**
 - seguridad defensiva: **39**
 - robustez ante casos límite: **38**
+- legibilidad y documentación: **37**
+- manejo de errores y validación de entradas: **34**
 - rendimiento: **33**
-- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **21**
 - `settings.py`: **18**
-- `duplicates.py`: **17**
 - `safety.py`: **16**
-- `memory.py`: **15**
+- `duplicates.py`: **16**
 - `healthscore.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
+- `memory.py`: **14**
 - `scanner.py`: **11**
 - `startup.py`: **11**
 - `organizer.py`: **9**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T14:06:42` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de la ingestión de métricas mediante la validación estricta de tipos en `_apply_updates`, asegurando que no se inyecten valores de tipos incompatibles y capturando excepciones de conversión de forma temprana para evitar estados internos corruptos.
 - `2026-11-12T12:43:53` **settings.py** (seguridad defensiva): Reforcé la integridad del proceso de escritura atómica añadiendo `os.chmod(temp_path, 0o600)` explícito tras la creación del archivo temporal para garantizar que los permisos sean restrictivos incluso antes del cierre del descriptor, protegiendo contra posibles condiciones de carrera en sistemas multiusuario.
 - `2026-11-12T12:43:22` **scanner.py** (seguridad defensiva): Mejoré la seguridad en el recorrido de directorios reemplazando la verificación de `is_readable` (que solo chequea acceso global) por una validación estricta de rutas protegidas mediante `_cached_is_protected` antes de cualquier iteración en `os.scandir`, asegurando que no se acceda a ninguna ruta crítica del sistema incluso en niveles profundos.
 - `2026-11-12T12:42:54` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva implementando una validación estricta de puntos de reparseo en `_get_final_path_normalized` para prevenir que `is_within_directory` y otros métodos sean engañados por redirecciones que escapan del volumen raíz, asegurando que la resolución de rutas sea consistente con la topología del sistema de archivos real.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T11:42:10` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante archivos bloqueados o eliminados durante el recorrido (race conditions) integrando una validación de `os.DirEntry` más defensiva y un manejo de excepciones local que evita la interrupción prematura de la búsqueda.
 - `2026-11-12T11:41:46` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo manejo explícito de errores de I/O en la obtención del tamaño (`st_size`) y asegurando que las comparaciones del heap no fallen ante valores nulos o inesperados.
 - `2026-11-12T11:32:31` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante posibles errores de sistema de archivos (como rutas inexistentes o permisos denegados) utilizando `pathlib` de forma más defensiva y validando la integridad del directorio padre antes de la escritura.
-- `2026-11-12T11:32:13` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` al introducir una validación de estado pre-ingesta y post-ingesta mediante una copia temporal (transactional approach), asegurando que el objeto nunca quede en un estado inconsistente o parcialmente actualizado ante entradas inesperadas.

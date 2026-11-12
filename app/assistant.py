@@ -580,17 +580,19 @@ class SystemContext:
             for key, value in updates.items():
                 if hasattr(self, key):
                     current_val = getattr(self, key)
-                    # Forzar compatibilidad de tipos estrictos
                     val_type = type(current_val)
-                    if isinstance(value, (int, float)) and isinstance(current_val, (int, float)):
-                        casted_value = val_type(value)
-                        if current_val != casted_value:
-                            setattr(self, key, casted_value)
-                            modified = True
+                    # Validación estricta de tipo antes de aplicar la actualización
+                    if isinstance(value, (int, float)):
+                        try:
+                            casted_value = val_type(value)
+                            if current_val != casted_value:
+                                setattr(self, key, casted_value)
+                                modified = True
+                        except (ValueError, TypeError):
+                            continue
             
             if modified:
                 self.analyzed = True
-                # Solo invalidar cachés si hubo cambios reales
                 for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
                     if attr in self.__dict__:
                         del self.__dict__[attr]
