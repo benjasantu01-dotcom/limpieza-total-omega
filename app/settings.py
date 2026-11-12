@@ -181,6 +181,7 @@ class _SettingsManager:
         try:
             if not is_safe_to_modify(str(config_path)): return False
             parent_dir = config_path.parent
+            if is_protected_path(str(parent_dir)): return False
             if not parent_dir.exists() or not os.access(parent_dir, os.W_OK): return False
             if _Validators._is_reparse_point(str(parent_dir)): return False
             
@@ -369,7 +370,7 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
     malintencionados.
     """
     try:
-        if is_protected_path(resolved_str): return False
+        if is_protected_path(resolved_str) or is_protected_path(str(file_path.parent)): return False
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
         if not stat.S_ISREG(st.st_mode) or st.st_nlink != 1: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False

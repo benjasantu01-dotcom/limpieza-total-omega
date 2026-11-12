@@ -404,8 +404,9 @@ def _is_valid_registry_path(path_str: str) -> bool:
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
         
+        # Validar resolución física contra symlinks y protección
         target_res: Path = target.resolve(strict=False)
-        if not target_res or is_protected_path(target_res) or target_res.is_symlink():
+        if not target_res or target_res.is_symlink() or is_protected_path(target_res):
             _REGISTRY_PATH_CACHE[path_str] = False
             return False
         

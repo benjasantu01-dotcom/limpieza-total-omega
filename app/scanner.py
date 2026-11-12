@@ -34,6 +34,8 @@ FILE_ATTRIBUTE_DIRECTORY: Final = 0x10
 ERROR_SHARING_VIOLATION: Final = 32
 ERROR_ACCESS_DENIED: Final = 5
 ERROR_FILE_NOT_FOUND: Final = 2
+IO_REPARSE_TAG_MOUNT_POINT: Final = 0xA0000003
+IO_REPARSE_TAG_SYMLINK: Final = 0xA000000C
 
 class ScannerLimits(NamedTuple):
     """
@@ -276,7 +278,14 @@ class Scanner:
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask)
+        try:
+            stats = entry.stat(follow_symlinks=False)
+            tag = getattr(stats, "st_reparse_tag", 0)
+            if tag in (IO_REPARSE_TAG_MOUNT_POINT, IO_REPARSE_TAG_SYMLINK):
+                return True
+            return bool(getattr(stats, "st_file_attributes", 0) & SCAN_LIMITS.reparse_point_mask)
+        except (AttributeError, OSError):
+            return True
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         try:
@@ -288,9 +297,6 @@ class Scanner:
             
             norm_path = _get_canonical_path(path_str)
             if not norm_path or _cached_is_protected(norm_path): return False
-            
-            stats = entry.stat(follow_symlinks=False)
-            if getattr(stats, 'st_nlink', 1) > 1 and entry.is_dir(): return False
             
             if not self._is_inside_base_root(path_str): return False
             if not os.access(path_str, os.R_OK): return False
