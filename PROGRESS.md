@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 67
-- Sin cambios (nada sustancial que mejorar): 15
+- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 68
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 44 | 4 | 13 | 1 | 76 |
+| 2026-11-10 | 42 | 3 | 13 | 1 | 75 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 9 | 0 | 7 | 0 | 0 |
+| 2026-11-12 | 10 | 0 | 8 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **33**
-- rendimiento: **32**
-- robustez ante casos límite: **24**
+- rendimiento: **33**
+- seguridad defensiva: **32**
+- robustez ante casos límite: **23**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,11 +34,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **18**
 - `safety.py`: **18**
 - `duplicates.py`: **17**
-- `settings.py`: **16**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `healthscore.py`: **15**
-- `assistant.py`: **14**
+- `settings.py`: **15**
 - `organizer.py`: **14**
+- `assistant.py`: **13**
 - `branding.py`: **11**
 - `scanner.py`: **10**
 - `startup.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T02:22:21` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un mecanismo de caché más eficiente basado en `os.stat` (inodo/mtime) que evita I/O redundante y llamadas costosas a `ctypes` al verificar archivos ya analizados en la misma iteración de bucle.
 - `2026-11-12T02:11:02` **duplicates.py** (rendimiento): Optimizé el rendimiento de la detección de duplicados implementando una estrategia de filtrado temprano: ahora los archivos pequeños (menor o igual a `PARTIAL_READ_BYTES`) omiten el paso de hash parcial y pasan directamente al hash completo, evitando el costo de dos lecturas de disco sobre archivos que, por definición, se leen de forma atómica y eficiente en una sola operación de E/S.
 - `2026-11-12T02:10:38` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando llamadas redundantes a `resolve()` (que accede a disco) por lógica de validación basada en `pathlib.Path.parts` y `is_relative_to` (disponible desde Python 3.9), reduciendo drásticamente la latencia en escaneos profundos.
 - `2026-11-12T02:01:39` **branding.py** (rendimiento): Se introdujo una cache de nivel de módulo para `_SVG_TEMPLATE` mediante `lru_cache` y se pre-compilaron las constantes de configuración de renderizado en `_SVG_TEMPLATE` para evitar la interpolación constante de strings cada vez que se genera el logo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T14:39:00` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_build_payload` y `_call_gemini`, extrayendo la lógica de construcción de URL y validación de seguridad a constantes o pasos explícitos para clarificar el flujo de datos.
 - `2026-11-11T14:29:41` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones preventivas sobre las filas del CSV y reemplazando el `except Exception` genérico por un bloque de manejo de errores más específico y local, evitando que un fallo en una sola entrada corrompa el proceso de lectura de todo el registro.
 - `2026-11-11T14:29:26` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` añadiendo validaciones de tipo explícitas y manejo de errores ante datos malformados, asegurando que la configuración cargada sea siempre consistente con el esquema `AppSettings`.
-- `2026-11-11T14:18:48` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas y capturando excepciones de sistema de forma específica para prevenir estados inconsistentes durante operaciones de disco.

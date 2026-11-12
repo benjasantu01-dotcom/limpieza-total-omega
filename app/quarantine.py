@@ -337,7 +337,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     if path is None or not path.exists(): return False
     try:
         st = path.stat()
-        key = (st.st_dev, st.st_ino, getattr(st, 'st_ctime', 0.0))
+        key = (st.st_dev, st.st_ino, st.st_mtime)
         now = time.monotonic()
         
         if key in _INODE_USE_CACHE and (now - _INODE_USE_CACHE[key][1] < 0.5):

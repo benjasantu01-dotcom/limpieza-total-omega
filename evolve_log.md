@@ -1396,3 +1396,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_pa
 - `2026-11-12T02:12:20` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-12T02:12:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T02:12:20` Corrida terminada. Total usado hoy: 16.
+- `2026-11-12T02:20:21` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-12T02:21:09` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de la recolección de métricas mediante la reutilización de búferes y estructuras de memoria (`PROCESS_MEMORY_COUNTERS` y `path_buf`), evitando la asignación repetitiva de memoria en el bucle principal de `_iter_process_memory`.
+- `2026-11-12T02:21:35` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-12T02:22:21` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un mecanismo de caché más eficiente basado en `os.stat` (inodo/mtime) que evita I/O redundante y llamadas costosas a `ctypes` al verificar archivos ya analizados en la misma iteración de bucle.
+- `2026-11-12T02:22:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-11-12T02:22:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T02:22:24` Corrida terminada. Total usado hoy: 20.
