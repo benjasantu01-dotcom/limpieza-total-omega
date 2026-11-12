@@ -332,7 +332,7 @@ def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tup
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula la puntuación total de salud ejecutando el pipeline completo."""
-    if metrics is None or not isinstance(metrics, SystemMetrics):
+    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
     
     metric_breakdown, total, recs = {}, 0, []

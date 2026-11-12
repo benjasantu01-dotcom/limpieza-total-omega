@@ -180,23 +180,25 @@ def _process_entry(
     """Evalúa una entrada de directorio para BFS, gestionando bloqueos por acceso denegado."""
     try:
         if entry.is_symlink(): return
-        # El acceso a stat puede fallar en archivos en uso o bloqueados por sistema
+        entry_path = Path(entry.path)
+        
+        # Validar seguridad antes de cualquier operación costosa o resolución
+        if not _safe_path_check(entry_path): return
+        
         stat = entry.stat(follow_symlinks=False)
-        entry_path = Path(entry.path).resolve()
+        resolved_path = entry_path.resolve()
         
         if entry.is_dir():
-            if depth < MAX_RECURSION_DEPTH and _safe_path_check(entry_path):
-                queue.append((entry_path, depth + 1))
+            if depth < MAX_RECURSION_DEPTH:
+                queue.append((resolved_path, depth + 1))
         elif entry.is_file():
-            if stat.st_size >= min_size and not is_system_or_hidden(entry_path):
-                if skip_protected and is_protected_path(entry_path): return
-                if not _safe_path_check(entry_path): return
+            if stat.st_size >= min_size and not is_system_or_hidden(resolved_path):
+                if skip_protected and is_protected_path(resolved_path): return
                 inode_id = (stat.st_dev, stat.st_ino)
                 if inode_id not in visited_inodes:
                     visited_inodes.add(inode_id)
-                    size_map[stat.st_size].append(entry_path)
+                    size_map[stat.st_size].append(resolved_path)
     except (OSError, PermissionError, ValueError):
-        # Caso límite: archivo denegado o inaccesible durante el listado, se omite
         return
 
 

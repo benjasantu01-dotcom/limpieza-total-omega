@@ -757,3 +757,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T07:48:20` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo chequeos explícitos de `is_safe_to_modify` sobre las rutas resueltas antes de procesarlas, evitando que el escaneo siga rutas que, aunque no sean de sistema, hayan sido marcadas como restringidas dinámicamente.
 - `2026-11-12T07:48:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T07:48:20` Corrida terminada. Total usado hoy: 148.
+- `2026-11-12T07:56:20` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-11-12T07:56:55` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha robustecido el filtrado de archivos durante el escaneo en `_process_entry` al verificar `is_safe_to_modify` *antes* de realizar cualquier operación de resolución de rutas o acceso, asegurando que no se acceda a archivos que hayan cambiado su estado de seguridad o sean inaccesibles desde el momento en que se listaron.
+- `2026-11-12T07:57:28` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva de `healthscore.py` mediante la validación estricta de los tipos de entrada y la robustez del cálculo en `compute_score`, asegurando que el pipeline no pueda ser manipulado por inyecciones o estados inesperados que rompan la lógica de puntuación.
+- `2026-11-12T07:58:28` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T07:59:31` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-12T08:00:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-12T08:01:03` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `_extract_process_info` para validar explícitamente la ruta del proceso antes de procesar su información, garantizando que procesos en rutas protegidas no sean incluidos en los reportes, incluso si los permisos de API permitieran su lectura.
+- `2026-11-12T08:01:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T08:01:03` Corrida terminada. Total usado hoy: 152.
