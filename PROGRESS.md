@@ -6,45 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 77
+- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 93 | 12 | 36 | 10 | 121 |
-| 2026-11-12 | 87 | 8 | 41 | 11 | 85 |
+| 2026-11-11 | 92 | 11 | 35 | 10 | 120 |
+| 2026-11-12 | 91 | 8 | 41 | 11 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **35**
-- rendimiento: **31**
-- robustez ante casos límite: **31**
+- seguridad defensiva: **34**
+- rendimiento: **33**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **21**
 - `safety.py`: **17**
+- `settings.py`: **17**
 - `memory.py`: **16**
-- `settings.py`: **16**
-- `healthscore.py`: **15**
 - `duplicates.py`: **15**
-- `assistant.py`: **12**
+- `healthscore.py`: **14**
+- `assistant.py`: **13**
+- `startup.py`: **12**
 - `organizer.py`: **11**
 - `scanner.py`: **11**
-- `startup.py`: **11**
-- `branding.py`: **9**
+- `branding.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T11:32:31` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante posibles errores de sistema de archivos (como rutas inexistentes o permisos denegados) utilizando `pathlib` de forma más defensiva y validando la integridad del directorio padre antes de la escritura.
+- `2026-11-12T11:32:13` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` al introducir una validación de estado pre-ingesta y post-ingesta mediante una copia temporal (transactional approach), asegurando que el objeto nunca quede en un estado inconsistente o parcialmente actualizado ante entradas inesperadas.
+- `2026-11-12T11:31:31` **startup.py** (rendimiento): Se ha optimizado `list_startup_entries` para evitar la creación de una lista temporal completa en memoria antes de filtrar, utilizando un generador y procesando los elementos de forma perezosa, lo que reduce el uso de memoria y la latencia cuando el número de entradas de inicio es elevado.
+- `2026-11-12T11:31:04` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuraciones mediante la implementación de un mecanismo de "dirty check" más eficiente en `_read_and_parse_json` y `load`, evitando deserializaciones innecesarias al verificar el hash de los metadatos del archivo antes de procesar el contenido.
 - `2026-11-12T11:21:03` **quarantine.py** (rendimiento): Optimizado el rendimiento de `load_manifest` eliminando la relectura redundante de metadatos de disco para cada ítem en el manifiesto, utilizando los datos del `stat()` del archivo de manifiesto para validar la caché antes de procesar la lista, reduciendo drásticamente las llamadas al sistema en el bucle principal.
 - `2026-11-12T11:15:00` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` moviendo la inicialización de buffers y la resolución de funciones `ctypes` fuera del bucle `for`, evitando la reasignación de memoria y el lookup de símbolos en cada iteración.
 - `2026-11-12T11:11:04` **healthscore.py** (rendimiento): Optimicé el rendimiento del Pipeline eliminando la sobrecarga de `getattr` en `_get_..._ratio` mediante el acceso directo a los atributos de `SystemMetrics` y simplifiqué la lógica de `compute_score` evitando conversiones de tipo redundantes dentro del bucle.
@@ -56,7 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T10:30:21` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de las responsabilidades de los componentes en los docstrings y la adición de Type Hints detallados, garantizando que la arquitectura "Pipeline" sea auto-explicativa para futuros colaboradores.
 - `2026-11-12T10:29:51` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de las funciones y se extrajeron las constantes de flags de Windows en una estructura más legible, mejorando la documentación interna para aclarar el propósito de la lógica de filtrado de archivos.
 - `2026-11-12T10:21:03` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints y docstrings explicativos en las estructuras de datos y funciones auxiliares, clarificando el propósito de cada componente para facilitar el mantenimiento futuro sin alterar la lógica de escaneo.
-- `2026-11-12T10:20:25` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos a los miembros de `PaletteDict` y `FontSizesDict`, y refiné los tipos en `CanvasElement` para asegurar que el contrato con `customtkinter` sea claro y robusto.
-- `2026-11-12T10:10:57` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_Validators.int` mediante la captura explícita de excepciones al manejar tipos, evitando fallos en tiempo de ejecución al procesar valores inesperados durante la carga o validación.
-- `2026-11-12T10:10:26` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de archivos en `_run_file_heuristics` para asegurar que `stats` no sea `None` y capturando excepciones de forma granular, evitando que errores de metadatos en un archivo específico aborten el análisis de los restantes.
-- `2026-11-12T10:00:34` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` más granular y una validación explícita para evitar que un manifiesto malformado (ej. JSON vacío o no lista) bloquee la carga de la cuarentena, devolviendo siempre una estructura vacía segura.

@@ -20,6 +20,7 @@ import os
 import subprocess
 import csv
 import io
+import itertools
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
@@ -496,13 +497,16 @@ def list_startup_entries() -> StartupEntries:
         return _FULL_SCAN_CACHE
 
     seen_cmds: Set[str] = set()
-    results: StartupEntries = []
+    results: List[StartupEntry] = []
     
-    for entry in entries_from_folders() + entries_from_registry():
-        if entry.command not in seen_cmds:
-            seen_cmds.add(entry.command)
-            results.append(entry)
-            
+    # Uso de generador para filtrar en flujo y evitar listas intermedias innecesarias
+    def generator() -> Iterator[StartupEntry]:
+        for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
+            if entry.command not in seen_cmds:
+                seen_cmds.add(entry.command)
+                yield entry
+    
+    results = list(generator())
     _FULL_SCAN_CACHE = results
     return results
 

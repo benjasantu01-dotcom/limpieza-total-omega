@@ -1130,3 +1130,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-12T11:22:13` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
 - `2026-11-12T11:22:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T11:22:13` Corrida terminada. Total usado hoy: 232.
+- `2026-11-12T11:30:30` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-11-12T11:31:04` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuraciones mediante la implementación de un mecanismo de "dirty check" más eficiente en `_read_and_parse_json` y `load`, evitando deserializaciones innecesarias al verificar el hash de los metadatos del archivo antes de procesar el contenido.
+- `2026-11-12T11:31:31` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se ha optimizado `list_startup_entries` para evitar la creación de una lista temporal completa en memoria antes de filtrar, utilizando un generador y procesando los elementos de forma perezosa, lo que reduce el uso de memoria y la latencia cuando el número de entradas de inicio es elevado.
+- `2026-11-12T11:32:13` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` al introducir una validación de estado pre-ingesta y post-ingesta mediante una copia temporal (transactional approach), asegurando que el objeto nunca quede en un estado inconsistente o parcialmente actualizado ante entradas inesperadas.
+- `2026-11-12T11:32:31` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save_logo_svg` ante posibles errores de sistema de archivos (como rutas inexistentes o permisos denegados) utilizando `pathlib` de forma más defensiva y validando la integridad del directorio padre antes de la escritura.
+- `2026-11-12T11:32:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T11:32:31` Corrida terminada. Total usado hoy: 236.

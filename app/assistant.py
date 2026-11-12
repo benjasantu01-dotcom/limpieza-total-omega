@@ -48,6 +48,7 @@ import math
 import logging
 import operator
 import os
+import copy
 from functools import lru_cache, wraps, cached_property
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -603,6 +604,11 @@ class SystemContext:
         try:
             updates = self._validate_and_sanitize_data(source)
             if updates:
+                # Transacción: crear copia temporal para validar estabilidad
+                tmp_ctx = copy.deepcopy(self)
+                tmp_ctx._apply_updates(updates)
+                if not tmp_ctx.is_valid_structure:
+                    return False
                 self._apply_updates(updates)
                 return True
         except (AttributeError, TypeError, Exception):
