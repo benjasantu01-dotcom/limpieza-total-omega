@@ -260,6 +260,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Selecciona la estrategia de hash óptima según el tamaño del archivo."""
     if not paths: return []
+    # Rendimiento: si el archivo es pequeño, leemos completo directamente evitando hash parcial
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, hash_file)
     else:

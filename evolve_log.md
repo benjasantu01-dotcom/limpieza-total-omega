@@ -1389,3 +1389,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_pa
 - `2026-11-12T02:01:49` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-12T02:01:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T02:01:49` Corrida terminada. Total usado hoy: 12.
+- `2026-11-12T02:10:11` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-11-12T02:10:38` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` reemplazando llamadas redundantes a `resolve()` (que accede a disco) por lógica de validación basada en `pathlib.Path.parts` y `is_relative_to` (disponible desde Python 3.9), reduciendo drásticamente la latencia en escaneos profundos.
+- `2026-11-12T02:11:02` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de la detección de duplicados implementando una estrategia de filtrado temprano: ahora los archivos pequeños (menor o igual a `PARTIAL_READ_BYTES`) omiten el paso de hash parcial y pasan directamente al hash completo, evitando el costo de dos lecturas de disco sobre archivos que, por definición, se leen de forma atómica y eficiente en una sola operación de E/S.
+- `2026-11-12T02:11:29` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: score_disk, score_duplicates, score_junk, score_memory, score_security, score_startup
+- `2026-11-12T02:12:20` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-12T02:12:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T02:12:20` Corrida terminada. Total usado hoy: 16.
