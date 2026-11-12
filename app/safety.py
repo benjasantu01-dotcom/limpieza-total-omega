@@ -190,8 +190,10 @@ def _is_file_in_use_exclusive(path_str: str) -> bool:
     handle = kernel32.CreateFileW(path_long, 0x40000000, 0x01, None, 3, 0, None)
     if handle == INVALID_HANDLE_VALUE:
         return True
-    kernel32.CloseHandle(handle)
-    return False
+    try:
+        return False
+    finally:
+        kernel32.CloseHandle(handle)
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     """

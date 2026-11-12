@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 67
-- Sin cambios (nada sustancial que mejorar): 21
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 15 | 2 | 6 | 1 | 38 |
+| 2026-11-10 | 13 | 2 | 5 | 1 | 37 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 33 | 1 | 14 | 6 | 38 |
+| 2026-11-12 | 34 | 1 | 15 | 7 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **41**
-- legibilidad y documentación: **40**
-- rendimiento: **35**
+- manejo de errores y validación de entradas: **42**
+- legibilidad y documentación: **39**
+- rendimiento: **34**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `memory.py`: **17**
 - `quarantine.py`: **16**
 - `duplicates.py`: **15**
 - `healthscore.py`: **14**
 - `organizer.py`: **14**
 - `settings.py`: **14**
-- `assistant.py`: **13**
-- `startup.py`: **12**
+- `assistant.py`: **12**
 - `branding.py`: **11**
+- `startup.py`: **11**
 - `scanner.py`: **10**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T05:37:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use_exclusive` añadiendo un bloque `try...finally` que asegura el cierre del handle del kernel en caso de error durante la ejecución de la API de Windows, evitando así fugas de recursos (handle leaks) que podrían bloquear el sistema de archivos del usuario.
 - `2026-11-12T05:28:28` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_process_executable_safe` y `_iter_process_memory` agregando validaciones de tipo y estructura frente a errores de la API nativa, evitando que valores `None` o buffers malformados causen excepciones no capturadas durante la enumeración de procesos.
 - `2026-11-12T05:26:00` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.__setattr__` para prevenir errores de validación, asegurando que cualquier entrada no numérica sea rechazada explícitamente mediante una excepción antes de corromper el estado del objeto, y ajusté `compute_score` para manejar de forma segura el caso de métricas parcialmente nulas o inconsistentes.
 - `2026-11-12T05:14:51` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez de la lógica de escaneo mediante la captura de excepciones específicas (como `PermissionError` y `OSError`) al acceder a propiedades críticas de archivos durante el recorrido, evitando interrupciones inesperadas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T03:12:44` **startup.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_is_valid_executable` ante el caso límite de archivos cuyo acceso está restringido por el sistema, añadiendo un manejo explícito para `PermissionError` y `OSError` que garantiza que la validación retorne `False` en lugar de propagar una excepción durante el escaneo.
 - `2026-11-12T03:12:14` **settings.py** (robustez ante casos límite): Mejora la robustez del manejo de archivos mediante la implementación de `os.fsync` sobre el directorio padre tras la operación `os.replace` para asegurar la persistencia física de la configuración en sistemas de archivos con búferes agresivos, además de asegurar que la creación de directorios y archivos de configuración maneje explícitamente posibles errores de concurrencia o permisos antes de continuar.
 - `2026-11-12T03:03:25` **safety.py** (robustez ante casos límite): Se ha añadido un robusto manejo de estados transitorios de red (`ERROR_NETWORK_UNREACHABLE`, `WSAENETDOWN`) y de volumen (`ERROR_DEVICE_NOT_AVAILABLE`) en `_get_path_stat_robust` y `_is_volume_busy_or_invalid`, previniendo excepciones fatales cuando el hardware subyacente (discos externos, mapeos de red) se desconecta inesperadamente.
-- `2026-11-12T03:02:22` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en `_sync_directory` y `_safe_unlink`, asegurando que los manejadores de archivos se cierren correctamente mediante bloques `finally` ante cualquier excepción imprevista.

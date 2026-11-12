@@ -499,3 +499,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T05:28:28` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_process_executable_safe` y `_iter_process_memory` agregando validaciones de tipo y estructura frente a errores de la API nativa, evitando que valores `None` o buffers malformados causen excepciones no capturadas durante la enumeración de procesos.
 - `2026-11-12T05:28:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T05:28:28` Corrida terminada. Total usado hoy: 92.
+- `2026-11-12T05:33:44` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-11-12T05:34:54` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-12T05:35:38` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `load_manifest` capturando errores de `json.load` y validaciones de tipos para evitar que un manifiesto parcialmente corrupto detenga el arranque de la app, permitiendo una recuperación limpia mediante la limpieza automática de entradas inválidas.
+- `2026-11-12T05:35:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-12T05:36:57` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T05:37:42` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_in_use_exclusive` añadiendo un bloque `try...finally` que asegura el cierre del handle del kernel en caso de error durante la ejecución de la API de Windows, evitando así fugas de recursos (handle leaks) que podrían bloquear el sistema de archivos del usuario.
+- `2026-11-12T05:37:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T05:37:42` Corrida terminada. Total usado hoy: 96.
