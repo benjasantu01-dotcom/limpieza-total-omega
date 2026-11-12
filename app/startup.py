@@ -118,7 +118,6 @@ class StartupEntry:
     def _is_reserved_device_name(self, path_raw: str) -> bool:
         """
         Determina si la ruta hace referencia a un dispositivo reservado del sistema.
-        Devuelve True si la ruta es sospechosa, contiene caracteres nulos o es un alias de hardware.
         """
         if not isinstance(path_raw, str) or "\0" in path_raw:
             return True
@@ -149,7 +148,6 @@ class StartupEntry:
             if p_str in _RESOLVED_PATH_CACHE:
                 return True
             
-            # Reparse point check y validación de lectura
             if not path.exists() or path.is_symlink() or not os.access(path, os.R_OK):
                 return False
                 
@@ -174,7 +172,6 @@ class StartupEntry:
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
         Extrae la ruta de un comando entrecomillado, aplicando reglas de validación de path.
-        Devuelve una ruta absoluta o una cadena vacía si el formato es inválido.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 3:
             return ""
@@ -199,7 +196,6 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """
         Verifica permisos de lectura, seguridad contra rutas protegidas y validez del ejecutable.
-        La validación se almacena en caché local por ejecución.
         """
         p_str: str = str(p)
         if p_str in _VALIDATION_CACHE:
@@ -225,7 +221,6 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_raw: str) -> str:
         """
         Resuelve una ruta relativa o absoluta al sistema de archivos real.
-        Incluye validaciones de seguridad, protección contra symlinks y límite de profundidad.
         """
         if not isinstance(path_raw, str) or not path_raw or "\0" in path_raw or path_raw.startswith(r"\\"):
             return ""
@@ -266,7 +261,6 @@ class StartupEntry:
     def _resolve_path_from_command(self, cmd_line: str) -> str:
         """
         Decodifica una línea de comando compleja para extraer la ruta del ejecutable principal.
-        Maneja tanto comandos entrecomillados como ejecuciones directas.
         """
         if not isinstance(cmd_line, str) or not cmd_line:
             return ""
@@ -307,7 +301,6 @@ class StartupEntry:
 def startup_folders() -> List[Path]:
     """
     Retorna la lista de rutas de carpetas 'Startup' de Windows tras validarlas.
-    Ignora symlinks y rutas protegidas por seguridad.
     """
     global _FOLDERS_CACHE
     if _FOLDERS_CACHE is not None:
@@ -376,12 +369,13 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
         try:
             with os.scandir(folder) as it:
                 for entry in it:
-                    if entry.path in processed_paths:
+                    norm_path = os.path.normpath(entry.path)
+                    if norm_path in processed_paths:
                         continue
                     processed: Optional[StartupEntry] = _process_folder_entry(entry)
                     if processed:
                         found_entries.append(processed)
-                        processed_paths.add(entry.path)
+                        processed_paths.add(norm_path)
         except (OSError, PermissionError):
             continue
     return found_entries
@@ -446,7 +440,6 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
     Parsea la salida CSV cruda de PowerShell. Filtra entradas inseguras o duplicadas.
-    Es agnóstica a la plataforma de ejecución.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -483,7 +476,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
     """
     Ejecuta un script de PowerShell para extraer programas de inicio del registro.
-    Retorna solo las entradas validadas.
     """
     if os.name != "nt":
         return []

@@ -206,7 +206,10 @@ class MetricSpec:
 
     def is_valid_type(self, val: Any) -> bool:
         """Verifica que el valor sea numérico, no booleano y finito."""
-        return isinstance(val, (int, float)) and not isinstance(val, bool) and _check_metric_integrity(val)
+        # Se asegura que la validación sea exacta contra el tipo (int vs float)
+        if not isinstance(val, (int, float)) or isinstance(val, bool):
+            return False
+        return _check_metric_integrity(val)
 
 class ProblemCriterion(NamedTuple):
     """
@@ -547,7 +550,9 @@ class SystemContext:
         for k, spec in _VALIDATORS.items():
             val = self._apply_field(source, k, spec)
             if val is not None:
-                updates[k] = int(val) if spec.type_hint is int else float(val)
+                # Forzar validación de tipo según la spec antes de asignar
+                validated_val = int(val) if spec.type_hint is int else float(val)
+                updates[k] = validated_val
         
         if (cleaned_grade := self._extract_grade(source)):
             updates["grade"] = cleaned_grade
@@ -574,9 +579,12 @@ class SystemContext:
             for key, value in updates.items():
                 if hasattr(self, key):
                     current_val = getattr(self, key)
-                    if type(value) in (int, float) and type(current_val) in (int, float):
-                        if current_val != value:
-                            setattr(self, key, type(current_val)(value))
+                    # Forzar compatibilidad de tipos estrictos
+                    val_type = type(current_val)
+                    if isinstance(value, (int, float)) and val_type in (int, float):
+                        casted_value = val_type(value)
+                        if current_val != casted_value:
+                            setattr(self, key, casted_value)
                             modified = True
             
             if modified:

@@ -684,3 +684,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T06:57:15` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `_read_and_parse_json` y `load` mediante la reducción de llamadas redundantes a `Path.resolve()` y `stat()`, consolidando verificaciones de sistema de archivos para evitar múltiples syscalls en el acceso a la caché de configuración.
 - `2026-11-12T06:57:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T06:57:15` Corrida terminada. Total usado hoy: 128.
+- `2026-11-12T07:05:22` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-11-12T07:05:52` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo de carpetas eliminando la redundancia en la resolución de rutas mediante el uso de `os.path.normpath` y una caché unificada de rutas ya procesadas (`seen_paths`), evitando llamadas innecesarias al sistema de archivos dentro de los bucles.
+- `2026-11-12T07:06:34` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en la ingestión de datos al añadir una validación de tipo estricta para asegurar que el contexto solo procese valores numéricos (int/float) y no tipos complejos o booleanos accidentalmente, evitando comportamientos inesperados durante el procesamiento de métricas.
+- `2026-11-12T07:07:07` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-12T07:07:16` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-12T07:07:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T07:07:16` Corrida terminada. Total usado hoy: 132.
