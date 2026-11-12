@@ -766,3 +766,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T08:01:03` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `_extract_process_info` para validar explícitamente la ruta del proceso antes de procesar su información, garantizando que procesos en rutas protegidas no sean incluidos en los reportes, incluso si los permisos de API permitieran su lectura.
 - `2026-11-12T08:01:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T08:01:03` Corrida terminada. Total usado hoy: 152.
+- `2026-11-12T08:06:29` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-11-12T08:06:57` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-12T08:07:39` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha robustecido `_validate_file_for_unlink` incluyendo un chequeo explícito de la longitud de la ruta (MAX_PATH) y una verificación estricta de que el archivo no contenga flujos de datos alternos (ADS) mediante la presencia de `:`, previniendo técnicas de ofuscación de archivos en el proceso de purgado.
+- `2026-11-12T08:08:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-12T08:08:44` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_check_container_permissions` añadiendo una validación explícita de `os.access` sobre el directorio padre para garantizar permisos de escritura antes de realizar cualquier operación de E/S, corrigiendo además un error de sintaxis en el nombre de la excepción (`SafetyValidationPERMISSION` a `SafetyValidationCategory.PERMISSION`).
+- `2026-11-12T08:08:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T08:08:44` Corrida terminada. Total usado hoy: 156.
