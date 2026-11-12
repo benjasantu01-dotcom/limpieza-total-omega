@@ -7,25 +7,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **182** (36.1% de aceptación)
-- Rechazadas por tests: 19
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 209
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 73 | 9 | 27 | 9 | 86 |
-| 2026-11-12 | 109 | 10 | 47 | 11 | 123 |
+| 2026-11-11 | 72 | 8 | 26 | 8 | 86 |
+| 2026-11-12 | 110 | 10 | 48 | 11 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **39**
+- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **38**
-- legibilidad y documentación: **34**
 - rendimiento: **33**
+- legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,17 +34,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **18**
 - `duplicates.py`: **17**
 - `healthscore.py`: **16**
+- `memory.py`: **15**
 - `safety.py`: **15**
 - `assistant.py`: **15**
-- `memory.py`: **14**
-- `scanner.py`: **11**
 - `startup.py`: **11**
+- `scanner.py`: **10**
 - `branding.py`: **9**
 - `organizer.py`: **8**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T14:25:58` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída del proceso antes de ejecutar la acción, para asegurar consistencia con las reglas de seguridad.
 - `2026-11-12T14:16:51` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` y `compute_score` validando explícitamente la integridad de los datos en el punto de entrada y asegurando que las operaciones de cálculo utilicen valores numéricos limpios, evitando errores silenciosos por tipos de datos inesperados.
 - `2026-11-12T14:16:07` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_candidates` y `_process_entry` mediante la validación explícita de `entries` nulas y la mejora en la captura de errores en el acceso a metadatos, evitando que fallos parciales en el sistema de archivos interrumpan todo el escaneo de duplicados.
 - `2026-11-12T14:15:42` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` reemplazando la captura de excepción genérica (`except Exception: pass`) por bloques específicos de control de errores y validación de datos para evitar que fallos aislados al leer atributos de archivo detengan el análisis completo.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T12:21:51` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_summary_data` y `walk_files` incorporando una verificación explícita de `is_protected_path` como capa adicional antes de procesar cualquier entrada, garantizando que aunque un archivo pase los filtros iniciales, no se acceda a rutas restringidas por políticas de seguridad del sistema.
 - `2026-11-12T12:12:40` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_call_gemini` mediante la validación explícita del host y la desinfección del uso de la clave API, evitando posibles ataques de inyección en la construcción de la URL o el header.
 - `2026-11-12T12:04:49` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta contra race conditions y problemas de permisos en `settings_path` al asegurar que el directorio padre sea verificable y accesible antes de intentar crear o retornar la ruta de configuración, evitando fallos en entornos con permisos restringidos.
-- `2026-11-12T11:56:52` **quarantine.py** (robustez ante casos límite): Mejoré `_safe_unlink` para manejar el caso límite donde la ruta ya no existe, añadiendo una verificación robusta para evitar errores de tipo en la condición de retorno, alineándolo con el enfoque de robustez frente a estados de archivo cambiantes.

@@ -1476,3 +1476,12 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T14:16:51` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics` y `compute_score` validando explícitamente la integridad de los datos en el punto de entrada y asegurando que las operaciones de cálculo utilicen valores numéricos limpios, evitando errores silenciosos por tipos de datos inesperados.
 - `2026-11-12T14:16:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T14:16:51` Corrida terminada. Total usado hoy: 300.
+- `2026-11-12T14:23:55` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-12T14:24:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T14:25:14` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-12T14:25:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T14:25:58` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída del proceso antes de ejecutar la acción, para asegurar consistencia con las reglas de seguridad.
+- `2026-11-12T14:26:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-12T14:27:19` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-12T14:27:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T14:27:19` Corrida terminada. Total usado hoy: 304.

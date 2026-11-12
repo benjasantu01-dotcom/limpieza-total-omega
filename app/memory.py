@@ -441,7 +441,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if handle is None:
         return False, "Acceso denegado o proceso inexistente/en zona restringida."
         
+    # Verificación de seguridad adicional: confirmar que la ruta no sea protegida
     try:
+        path_str: str = path_buf.value
+        if is_protected_path(Path(path_str)):
+            WindowsAPI.kernel32.CloseHandle(handle)
+            return False, "Operación denegada: el proceso reside en una zona protegida."
+        
         exit_code = wintypes.DWORD()
         if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso terminó antes de poder liberar su memoria."
