@@ -1234,3 +1234,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T12:13:20` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-12T12:13:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T12:13:20` Corrida terminada. Total usado hoy: 252.
+- `2026-11-12T12:21:24` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-11-12T12:21:51` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_summary_data` y `walk_files` incorporando una verificación explícita de `is_protected_path` como capa adicional antes de procesar cualquier entrada, garantizando que aunque un archivo pase los filtros iniciales, no se acceda a rutas restringidas por políticas de seguridad del sistema.
+- `2026-11-12T12:22:14` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad en el escaneo mediante la validación estricta de las rutas resueltas antes de procesar atributos o realizar operaciones de I/O, evitando el seguimiento de enlaces simbólicos o puntos de reparse que podrían escapar del contexto definido por el usuario.
+- `2026-11-12T12:22:41` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del modelo de datos `SystemMetrics` evitando la modificación directa de atributos mediante `object.__setattr__` y añadiendo una validación explícita de tipos en el método `__setattr__`, garantizando que solo valores numéricos finitos puedan ser asignados a las métricas del sistema.
+- `2026-11-12T12:23:29` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._ensure_safe_path_for_action, LimpiezaTotalOmegaApp._validate_path_for_read, wrapper
+- `2026-11-12T12:23:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T12:23:29` Corrida terminada. Total usado hoy: 256.
