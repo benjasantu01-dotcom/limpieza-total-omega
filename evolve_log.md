@@ -1511,3 +1511,14 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T14:57:30` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-12T14:57:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T14:57:30` Corrida terminada. Total usado hoy: 316.
+- `2026-11-12T15:04:40` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-12T15:04:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T15:05:23` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: legibilidad y documentación).
+- `2026-11-12T15:05:50` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op`, extrayendo la lógica de validación de seguridad y de estado en sub-funciones con nombres explícitos, eliminando anidamiento excesivo y aclarando las condiciones de guardia.
+- `2026-11-12T15:06:50` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T15:06:53` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-12T15:07:59` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-11-12T15:09:17` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados y type hints en las funciones de manipulación de bajo nivel (`_safe_unlink`, `_is_file_exclusive`, `_is_file_in_use_by_system`), clarificando las precondiciones de seguridad y el manejo de excepciones para futuros desarrolladores.
+- `2026-11-12T15:09:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-11-12T15:09:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T15:09:22` Corrida terminada. Total usado hoy: 320.

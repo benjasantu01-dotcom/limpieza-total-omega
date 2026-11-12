@@ -191,8 +191,9 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
 
 def _is_file_exclusive(path: Path) -> bool:
     """
-    Verifica si el archivo está libre de bloqueos de terceros.
-    En Windows usa CreateFile con FILE_SHARE_NONE; en POSIX usa flock.
+    Determina si un archivo puede abrirse para acceso exclusivo (sin bloqueos).
+    En Windows, intenta abrir el archivo denegando todo acceso compartido.
+    En POSIX, verifica mediante flock. Retorna False si está en uso.
     """
     if path is None or not path.exists():
         return False
@@ -329,7 +330,11 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
         return ""
 
 def _is_file_in_use_by_system(path: Path) -> bool:
-    """Verifica uso mediante inodos y atributos. Usa caché local para rapidez."""
+    """
+    Verifica si un archivo está en uso por el sistema o procesos externos.
+    Realiza una comprobación de inodos y exclusividad. Cachea resultados breves
+    para evitar latencia en escaneos masivos.
+    """
     if path is None or not path.exists(): return False
     try:
         st = path.stat()
@@ -369,7 +374,10 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
     if _is_file_in_use_by_system(path): raise UnsafePathError("Archivo en uso por el sistema.")
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: int = 0) -> bool:
-    """Elimina el archivo validando integridad y forzando sincronización del FS."""
+    """
+    Elimina un archivo de forma segura mediante validación previa de integridad.
+    Requiere que el inodo y hash coincidan con el registro de cuarentena para evitar borrados accidentales.
+    """
     if not path or not path.exists() or not path.is_file(): return True
     try:
         _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)

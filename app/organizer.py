@@ -269,18 +269,19 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
+        # Validaciones de precondición (destino y permisos)
         if not dest_real.exists() or not dest_real.is_dir() or is_protected_path(dest_real): return False
         if not os.access(dest_real, os.W_OK): return False
         
-        if dest_real in src_real.parents or src_real == dest_real or src_real.parent == dest_real: return False
-        
-        if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
+        # Validaciones de seguridad de ruta y estructura
+        if _is_recursive_violation(src_real, dest_real) or src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or _is_junction(junk_file.path): return False
-        
         if not _validate_path_security(src_real, dest_real): return False
-        if junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev: return False
+        
+        # Validaciones de integridad y estado del archivo
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
-        if _is_recursive_violation(src_real, dest_real) or not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
+        if (junk_file._dev is not None and dest_real.stat().st_dev != junk_file._dev): return False
+        if not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
         return True
     except (OSError, AttributeError, ValueError, PermissionError):
