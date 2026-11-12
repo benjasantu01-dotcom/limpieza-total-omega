@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 67
+- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 69
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 216
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 8 | 1 | 2 | 1 | 34 |
+| 2026-11-10 | 6 | 0 | 2 | 1 | 33 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 40 | 3 | 18 | 7 | 40 |
+| 2026-11-12 | 41 | 3 | 20 | 7 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **43**
-- robustez ante casos límite: **33**
+- legibilidad y documentación: **44**
 - seguridad defensiva: **32**
+- robustez ante casos límite: **31**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
+- `diskreport.py`: **22**
 - `safety.py`: **19**
 - `memory.py`: **17**
+- `quarantine.py`: **16**
 - `duplicates.py`: **15**
 - `organizer.py`: **15**
-- `quarantine.py`: **15**
 - `settings.py`: **15**
 - `healthscore.py`: **13**
 - `assistant.py`: **12**
 - `branding.py`: **11**
 - `startup.py`: **11**
 - `scanner.py`: **11**
-- `browser.py`: **4**
+- `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T06:15:18` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para extraer la lógica compleja de validación de integridad post-escritura en una función dedicada y documentada, además de añadir type hints faltantes en funciones internas para asegurar mayor claridad en la firma de los métodos.
 - `2026-11-12T06:06:41` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) en las funciones críticas de validación y escaneo para clarificar la lógica de seguridad, sin alterar el comportamiento funcional del módulo.
 - `2026-11-12T06:06:28` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_iter_process_memory` para extraer la lógica de instanciación de contadores de memoria y el manejo de buffers a una función dedicada, reduciendo el anidamiento y aclarando el propósito de cada paso en el bucle.
 - `2026-11-12T05:56:10` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los parámetros de entrada de las funciones de alto nivel (`group_by_size` y `find_duplicates`) y se ha corregido un docstring ambiguo en `hash_file` para especificar claramente el comportamiento del caché durante la sesión.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T03:53:03` **startup.py** (seguridad defensiva): Se endureció la seguridad de `_is_valid_executable` agregando `os.access(path, os.R_OK)` para confirmar que el ejecutable es realmente legible para el proceso antes de intentar cualquier operación de resolución de rutas, protegiendo contra posibles errores de permisos en rutas de sistema durante el escaneo.
 - `2026-11-12T03:52:33` **settings.py** (seguridad defensiva): Se endurece `perform_atomic_write` añadiendo una comprobación explícita para evitar que `os.open` cree archivos en rutas que, aunque pasaron los filtros previos, pudieran haber sido convertidas en puntos de montaje o enlaces simbólicos maliciosos durante la ventana de tiempo entre la validación y la apertura (TOCTOU).
 - `2026-11-12T03:44:06` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` al agregar una validación de `st_nlink` para detectar hard links y prevenir el seguimiento de estructuras de archivo circulares o inusuales, además de centralizar el manejo de `is_protected_path` evitando que rutas malformadas pasen el filtro.
-- `2026-11-12T03:43:51` **safety.py** (seguridad defensiva): Se ha añadido una validación estricta en el pipeline de seguridad (`_execute_safety_pipeline`) para bloquear explícitamente rutas que contengan caracteres de escape visuales (RTL/bidireccionales) que podrían ser utilizados para ofuscar extensiones de archivo maliciosas en la UI, reforzando la seguridad defensiva contra ataques de spoofing de nombre.

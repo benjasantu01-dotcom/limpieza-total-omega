@@ -598,3 +598,10 @@ FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner
 - `2026-11-12T06:06:41` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) en las funciones críticas de validación y escaneo para clarificar la lógica de seguridad, sin alterar el comportamiento funcional del módulo.
 - `2026-11-12T06:06:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T06:06:41` Corrida terminada. Total usado hoy: 108.
+- `2026-11-12T06:14:27` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-11-12T06:15:18` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para extraer la lógica compleja de validación de integridad post-escritura en una función dedicada y documentada, además de añadir type hints faltantes en funciones internas para asegurar mayor claridad en la firma de los métodos.
+- `2026-11-12T06:15:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 117): unterminated string literal (detected at line 117)
+- `2026-11-12T06:15:59` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 8% del original (posible pérdida de código)
+- `2026-11-12T06:16:11` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: legibilidad y documentación).
+- `2026-11-12T06:16:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T06:16:11` Corrida terminada. Total usado hoy: 112.

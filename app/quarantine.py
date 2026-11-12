@@ -742,6 +742,16 @@ class IsolationManager:
         if not is_within_directory(dest_res, base_res): raise UnsafePathError("Intento de escape del sandbox.")
         ensure_safe_to_modify(dest.parent)
 
+def _verify_post_isolation_integrity(dest_path: Path, expected_hash: str, expected_inode: Inode, expected_device: int) -> None:
+    """Valida la consistencia de los atributos y el contenido tras mover el archivo al sandbox."""
+    dest_stat = dest_path.stat()
+    if dest_stat.st_ino != expected_inode or dest_stat.st_dev != expected_device or dest_stat.st_nlink > 1:
+        raise RuntimeError("Integridad comprometida: destino inconsistente.")
+    if _get_sha256(dest_path) != expected_hash:
+        raise RuntimeError("Integridad comprometida: hash mismatch.")
+    if _win_has_system_attributes(dest_path):
+        raise UnsafePathError("Integridad comprometida: el archivo en sandbox adquirió atributos de sistema.")
+
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode, int, float]:
     """Aísla archivos mediante un proceso atómico de varias etapas."""
     _check_path_syntax_integrity(destination)
@@ -774,12 +784,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             raise RuntimeError(f"Error durante la escritura del archivo aislado: {e}")
             
         ensure_safe_to_modify(destination, allow_sensitive=True)
-        dest_stat = destination.stat()
-        if dest_stat.st_ino != i or dest_stat.st_dev != d or _get_sha256(destination) != h or dest_stat.st_nlink > 1:
-            raise RuntimeError("Integridad comprometida: destino inconsistente.")
-        if _win_has_system_attributes(destination):
-            raise UnsafePathError("Integridad comprometida: el archivo en sandbox adquirió atributos de sistema.")
-            
+        _verify_post_isolation_integrity(destination, h, i, d)
         return h, i, d, mtime
 
 def _register_quarantine_item(destination: Path, source_path: Path, file_hash: str, file_inode: Inode, device_id: int, mtime: float, reason: str, original_size: int, base: PathLike) -> QuarantineItem:
