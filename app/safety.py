@@ -180,14 +180,15 @@ class SafetyState(NamedTuple):
 
 def _is_file_in_use_exclusive(path_str: str) -> bool:
     """
-    Intenta abrir el archivo para escritura exclusiva. Si falla, otro proceso 
-    tiene un lock de escritura o acceso exclusivo.
+    Intenta abrir el archivo para escritura exclusiva con flags de compartición
+    permisivos para evitar bloqueos por indexadores.
     """
     if os.name != 'nt': return False
     kernel32 = ctypes.windll.kernel32
     path_long = _to_long_path(path_str)
-    # GENERIC_WRITE (0x40000000), FILE_SHARE_READ (0x01)
-    handle = kernel32.CreateFileW(path_long, 0x40000000, 0x01, None, 3, 0, None)
+    # GENERIC_WRITE (0x40000000), FILE_SHARE_READ|WRITE|DELETE (0x07)
+    # Si falla, significa que otro proceso tiene un bloqueo exclusivo (como un instalador)
+    handle = kernel32.CreateFileW(path_long, 0x40000000, 0x07, None, 3, 0, None)
     if handle == INVALID_HANDLE_VALUE:
         return True
     try:
@@ -1059,7 +1060,7 @@ def _check_container_permissions(target_path: Path) -> None:
             if parent == Path(parent.anchor) or os.path.ismount(parent):
                 raise UnsafePathError("Protección: No se puede operar en la raíz o punto de montaje.", SafetyValidationErrorCode.ROOT_ACCESS, SafetyValidationCategory.PERMISSION)
             if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationPERMISSION)
     except (OSError, PermissionError, AttributeError):
         pass
 

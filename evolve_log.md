@@ -709,3 +709,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T07:28:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-11-12T07:28:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T07:28:01` Corrida terminada. Total usado hoy: 140.
+- `2026-11-12T07:36:00` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-11-12T07:37:05` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una verificación de "estado de archivo ocupado" más resiliente en `_is_file_in_use_exclusive` mediante el uso de `FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE` (0x07) para minimizar falsos positivos causados por bloqueos de lectura de software de indexación, sin comprometer la seguridad de escritura.
+- `2026-11-12T07:37:35` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-12T07:38:09` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `_is_structure_valid` añadiendo una comprobación explícita de tipos basada en el esquema de `DEFAULTS` para prevenir que valores inyectados manualmente con tipos inesperados corrompan el estado interno de la aplicación.
+- `2026-11-12T07:38:28` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.69s
+
+```
+- `2026-11-12T07:38:28` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `StartupEntry.executable` manejando explícitamente excepciones de resolución de rutas (como `OSError` o `RuntimeError`) mediante el uso de `path.resolve(strict=False)` y verificaciones de existencia seguras, evitando que una ruta mal formada o con acceso restringido bloquee el escaneo completo de entradas de inicio.
+- `2026-11-12T07:38:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T07:38:28` Corrida terminada. Total usado hoy: 144.
