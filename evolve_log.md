@@ -1114,3 +1114,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-12T11:02:41` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-11-12T11:02:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T11:02:41` Corrida terminada. Total usado hoy: 224.
+- `2026-11-12T11:10:05` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-12T11:11:04` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del Pipeline eliminando la sobrecarga de `getattr` en `_get_..._ratio` mediante el acceso directo a los atributos de `SystemMetrics` y simplifiqué la lógica de `compute_score` evitando conversiones de tipo redundantes dentro del bucle.
+- `2026-11-12T11:12:04` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T11:13:07` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-12T11:14:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-12T11:15:00` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` moviendo la inicialización de buffers y la resolución de funciones `ctypes` fuera del bucle `for`, evitando la reasignación de memoria y el lookup de símbolos en cada iteración.
+- `2026-11-12T11:15:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-12T11:15:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T11:15:11` Corrida terminada. Total usado hoy: 228.

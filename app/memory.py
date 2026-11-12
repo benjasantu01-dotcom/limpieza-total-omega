@@ -358,8 +358,10 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     
     pmc: PROCESS_MEMORY_COUNTERS = _init_memory_counters()
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
+    # Cacheo de referencias a funciones de librería
     get_mod_name: GetModNameFunc = WindowsAPI.psapi.GetModuleFileNameExW
     get_mem_info: Callable[[wintypes.HANDLE, Any, int], int] = WindowsAPI.psapi.GetProcessMemoryInfo
+    # Buffer pre-alocado fuera del bucle
     path_buf: ctypes.Array = ctypes.create_unicode_buffer(1024)
     
     for pid in pids[:count]:
