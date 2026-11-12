@@ -869,12 +869,14 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not payload: return None
     
     target_url = _ENDPOINT_BASE.format(model=model)
-    # Validar que la URL pertenezca al host oficial y no contenga caracteres de control/inyección
+    # Validar que el dominio es el correcto y que no hay inyección en la URL
     if not target_url.startswith(_API_HOST_ROOT) or any(c in target_url for c in _FORBIDDEN_CHARS): return None
     
     try:
+        # Sanitizar entrada de query en URL
+        parsed_url = f"{target_url}?key={urllib.parse.quote(api_key)}"
         req = urllib.request.Request(
-            f"{target_url}?key={urllib.parse.quote(api_key)}", 
+            parsed_url, 
             data=payload, 
             headers={"Content-Type": "application/json", "Accept": "application/json"}, 
             method="POST"
