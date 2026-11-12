@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 67
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 35 | 3 | 11 | 1 | 72 |
+| 2026-11-10 | 35 | 2 | 11 | 1 | 69 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 17 | 1 | 9 | 1 | 4 |
+| 2026-11-12 | 20 | 1 | 10 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **35**
-- robustez ante casos límite: **28**
+- robustez ante casos límite: **31**
 - seguridad defensiva: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
+- `safety.py`: **19**
 - `memory.py`: **18**
-- `safety.py`: **18**
 - `duplicates.py`: **17**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `healthscore.py`: **15**
+- `organizer.py`: **15**
 - `assistant.py`: **14**
 - `settings.py`: **14**
-- `organizer.py`: **14**
 - `scanner.py`: **11**
 - `branding.py`: **11**
 - `startup.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T03:03:25` **safety.py** (robustez ante casos límite): Se ha añadido un robusto manejo de estados transitorios de red (`ERROR_NETWORK_UNREACHABLE`, `WSAENETDOWN`) y de volumen (`ERROR_DEVICE_NOT_AVAILABLE`) en `_get_path_stat_robust` y `_is_volume_busy_or_invalid`, previniendo excepciones fatales cuando el hardware subyacente (discos externos, mapeos de red) se desconecta inesperadamente.
+- `2026-11-12T03:02:22` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en `_sync_directory` y `_safe_unlink`, asegurando que los manejadores de archivos se cierren correctamente mediante bloques `finally` ante cualquier excepción imprevista.
+- `2026-11-12T03:01:36` **organizer.py** (robustez ante casos límite): Se mejora la robustez de `organizer.py` ante errores de concurrencia y acceso al sistema de archivos mediante la validación explícita de `is_file()` antes de realizar operaciones de E/S, evitando excepciones innecesarias cuando un archivo desaparece entre la detección y el procesamiento.
 - `2026-11-12T02:53:16` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` y `_iter_process_memory` ante rutas inexistentes, procesos con privilegios elevados que deniegan lectura de nombre, y buffers de memoria mal formados, garantizando que el escaneo de procesos no aborte ante condiciones de sistema comunes.
 - `2026-11-12T02:51:51` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas no numéricas o valores extremos (ej. negativos), evitando que una división o multiplicación inesperada genere resultados fuera de rango antes de que `_clamp` actúe, asegurando que el cálculo de salud sea consistente incluso ante métricas corruptas.
 - `2026-11-12T02:51:23` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de archivos añadiendo un manejo de excepciones más granular en `_process_entry` y `_collect_candidates`, garantizando que problemas de acceso a niveles profundos del sistema de archivos no interrumpan el escaneo completo, y asegurando que las rutas resultantes sean siempre válidas mediante la normalización explícita.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T02:10:38` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando llamadas redundantes a `resolve()` (que accede a disco) por lógica de validación basada en `pathlib.Path.parts` y `is_relative_to` (disponible desde Python 3.9), reduciendo drásticamente la latencia en escaneos profundos.
 - `2026-11-12T02:01:39` **branding.py** (rendimiento): Se introdujo una cache de nivel de módulo para `_SVG_TEMPLATE` mediante `lru_cache` y se pre-compilaron las constantes de configuración de renderizado en `_SVG_TEMPLATE` para evitar la interpolación constante de strings cada vez que se genera el logo.
 - `2026-11-12T02:00:32` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de validación, clarificando el propósito, las condiciones de retorno y las excepciones manejadas, para facilitar el mantenimiento y la auditoría de seguridad del código.
-- `2026-11-12T01:51:33` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados y type hints precisos, clarificando las responsabilidades de las funciones de alto nivel y el flujo de trabajo del escáner heurístico.
-- `2026-11-12T01:51:05` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la implementación de `Docstrings` detallados en funciones críticas (como `_validate_file_operations_security` y las funciones de validación de volumen) y la estandarización de type hints y nomenclatura interna, facilitando la auditoría de seguridad del código.
-- `2026-11-12T01:41:36` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando exhaustivamente las funciones internas complejas mediante docstrings detallados que explican el "porqué" de las decisiones de seguridad, y refinando los nombres de variables internas (ej. `stat_res` -> `st_stat`, `p_source` -> `source_path`) para eliminar ambigüedades técnicas.

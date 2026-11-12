@@ -84,15 +84,16 @@ def _sync_directory(directory: Path) -> None:
     """
     if not directory.is_dir():
         return
+    fd = -1
     try:
         dir_abs = _is_path_canonical(directory)
         fd = os.open(str(dir_abs), os.O_RDONLY)
-        try: 
-            os.fsync(fd)
-        finally: 
-            os.close(fd)
+        os.fsync(fd)
     except (OSError, PermissionError):
         pass
+    finally:
+        if fd != -1:
+            os.close(fd)
 
 def _is_path_canonical(path: Path) -> Path:
     """
@@ -210,16 +211,17 @@ def _is_file_exclusive(path: Path) -> bool:
         except (OSError, AttributeError, PermissionError):
             return False
     
+    fd = -1
     try:
         fd = os.open(path, os.O_RDONLY)
-        try:
-            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            fcntl.flock(fd, fcntl.LOCK_UN)
-            return True
-        finally:
-            os.close(fd)
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        return True
     except (OSError, IOError, PermissionError, AttributeError):
         return False
+    finally:
+        if fd != -1:
+            os.close(fd)
 
 @dataclass
 class QuarantineItem:

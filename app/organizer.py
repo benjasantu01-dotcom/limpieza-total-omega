@@ -263,7 +263,7 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """Valida exhaustivamente que una operación de movimiento sea segura y permitida."""
-    if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
+    if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): 
         return False
     try:
         src_real = junk_file.path.resolve(strict=True)
@@ -371,9 +371,9 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         
         for junk_file in files:
             try:
-                if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
+                if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file(): continue
                 
-                if not junk_file.path.exists() or junk_file.path.is_symlink() or _is_junction(junk_file.path):
+                if junk_file.path.is_symlink() or _is_junction(junk_file.path):
                     continue
                     
                 if not _is_safe_for_disk_op(junk_file, dest_base): continue
