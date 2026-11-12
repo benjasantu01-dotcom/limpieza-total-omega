@@ -1466,3 +1466,13 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T14:06:56` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-12T14:06:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T14:06:56` Corrida terminada. Total usado hoy: 296.
+- `2026-11-12T14:13:43` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-12T14:14:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T14:14:21` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-12T14:15:14` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_is_target_valid` para manejar correctamente entradas `None`, rutas inexistentes o tipos inválidos antes de invocar operaciones de sistema, reforzando el manejo defensivo de excepciones.
+- `2026-11-12T14:15:42` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_summary_data` reemplazando la captura de excepción genérica (`except Exception: pass`) por bloques específicos de control de errores y validación de datos para evitar que fallos aislados al leer atributos de archivo detengan el análisis completo.
+- `2026-11-12T14:16:07` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_collect_candidates` y `_process_entry` mediante la validación explícita de `entries` nulas y la mejora en la captura de errores en el acceso a metadatos, evitando que fallos parciales en el sistema de archivos interrumpan todo el escaneo de duplicados.
+- `2026-11-12T14:16:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T14:16:51` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics` y `compute_score` validando explícitamente la integridad de los datos en el punto de entrada y asegurando que las operaciones de cálculo utilicen valores numéricos limpios, evitando errores silenciosos por tipos de datos inesperados.
+- `2026-11-12T14:16:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T14:16:51` Corrida terminada. Total usado hoy: 300.

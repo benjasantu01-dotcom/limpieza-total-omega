@@ -411,22 +411,20 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    try:
-        for path, size in walk_files(directory, skip_protected):
+    for path, size in walk_files(directory, skip_protected):
+        try:
             if skip_protected and is_protected_path(path):
                 continue
-            try:
-                stats.register_file(size, _get_extension(str(path)))
-                
-                if limit > 0:
-                    if len(top_heap) < limit:
-                        heapq.heappush(top_heap, (size, path))
-                    elif top_heap and size > top_heap[0][0]:
-                        heapq.heapreplace(top_heap, (size, path))
-            except (OSError, PermissionError, ValueError):
-                continue
-    except Exception:
-        pass
+            
+            stats.register_file(size, _get_extension(str(path)))
+            
+            if limit > 0:
+                if len(top_heap) < limit:
+                    heapq.heappush(top_heap, (size, path))
+                elif top_heap and size > top_heap[0][0]:
+                    heapq.heapreplace(top_heap, (size, path))
+        except (AttributeError, TypeError, ValueError):
+            continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

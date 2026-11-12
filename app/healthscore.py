@@ -280,6 +280,7 @@ class SystemMetrics:
     def __setattr__(self, name: str, value: Any) -> None:
         if name in _ALL_METRICS:
             if not _is_finite_numeric(value):
+                self._set_validated_field(name, 0.0)
                 return
             self._set_validated_field(name, value)
         else:
@@ -338,8 +339,12 @@ def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tup
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Punto de entrada principal: orquesta el cálculo de salud a través del pipeline."""
-    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if not isinstance(metrics, SystemMetrics):
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
+    
+    # Validar integridad profunda antes de procesar
+    if not metrics.is_finite:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Métricas no numéricas detectadas."])
     
     metric_breakdown, total, recs = {}, 0, []
     

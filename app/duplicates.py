@@ -181,12 +181,11 @@ def _process_entry(
     size_map: Dict[int, List[Path]]
 ) -> None:
     """Evalúa una entrada de directorio para BFS, gestionando bloqueos por acceso denegado."""
+    if entry is None: return
     try:
-        # No seguir enlaces bajo ninguna circunstancia
         if entry.is_symlink(): return
         
         entry_path = Path(entry.path)
-        # Validación temprana de seguridad sobre el path resuelto
         resolved = entry_path.resolve()
         if not _safe_path_check(resolved): return
         
