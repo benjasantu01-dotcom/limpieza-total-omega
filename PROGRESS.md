@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 105 | 13 | 40 | 13 | 125 |
-| 2026-11-12 | 77 | 8 | 31 | 11 | 81 |
+| 2026-11-11 | 102 | 13 | 39 | 13 | 125 |
+| 2026-11-12 | 80 | 8 | 32 | 11 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **37**
 - seguridad defensiva: **37**
-- legibilidad y documentación: **36**
-- rendimiento: **30**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
-- `safety.py`: **19**
 - `quarantine.py`: **19**
-- `settings.py`: **17**
-- `duplicates.py`: **15**
-- `memory.py`: **15**
-- `healthscore.py`: **14**
+- `safety.py`: **18**
+- `duplicates.py`: **16**
+- `memory.py`: **16**
+- `settings.py`: **16**
+- `healthscore.py`: **15**
 - `assistant.py`: **13**
-- `scanner.py`: **12**
 - `startup.py`: **11**
 - `organizer.py`: **11**
+- `scanner.py`: **11**
 - `branding.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T10:31:39` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de procesamiento de datos para clarificar los tipos esperados y se añadieron `type hints` explícitos en variables internas complejas, facilitando la auditoría del código bajo las reglas de seguridad.
+- `2026-11-12T10:30:21` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la clarificación de las responsabilidades de los componentes en los docstrings y la adición de Type Hints detallados, garantizando que la arquitectura "Pipeline" sea auto-explicativa para futuros colaboradores.
+- `2026-11-12T10:29:51` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de las funciones y se extrajeron las constantes de flags de Windows en una estructura más legible, mejorando la documentación interna para aclarar el propósito de la lógica de filtrado de archivos.
 - `2026-11-12T10:21:03` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints y docstrings explicativos en las estructuras de datos y funciones auxiliares, clarificando el propósito de cada componente para facilitar el mantenimiento futuro sin alterar la lógica de escaneo.
 - `2026-11-12T10:20:25` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos a los miembros de `PaletteDict` y `FontSizesDict`, y refiné los tipos en `CanvasElement` para asegurar que el contrato con `customtkinter` sea claro y robusto.
 - `2026-11-12T10:10:57` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_Validators.int` mediante la captura explícita de excepciones al manejar tipos, evitando fallos en tiempo de ejecución al procesar valores inesperados durante la carga o validación.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T09:40:56` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `_is_target_valid` añadiendo validaciones preventivas de tipos y estados, asegurando que los argumentos `bases` y `cache_paths` sean procesados de forma segura incluso si el llamador envía tipos inesperados, evitando posibles `AttributeError` o `TypeError` durante el bucle.
 - `2026-11-12T09:40:11` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` implementando un chequeo de tipos estricto y seguro mediante `isinstance` antes de realizar operaciones de asignación, evitando fallos silenciosos por tipos incompatibles o mutaciones inesperadas.
 - `2026-11-12T08:18:12` **startup.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_is_valid_registry_path` al añadir una verificación estricta de la ruta resuelta contra el sistema de protección: ahora, además de validar la existencia, se confirma explícitamente que la ruta no sea un vínculo simbólico (symlink) para evitar ataques de redirección, y se garantiza que el path resuelto esté dentro de los límites de seguridad permitidos antes de ser incluido en el inventario.
-- `2026-11-12T08:17:45` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre del archivo de configuración, evitando cualquier potencial inyección de rutas en directorios protegidos por el sistema.
-- `2026-11-12T08:17:13` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al agregar una validación de `st_reparse_tag` para detectar puntos de reanálisis (Junctions, Symlinks, Mount Points) que no se limitan a la máscara de bits simple, garantizando que el escáner no abandone el `base_root` ni siga enlaces recursivos que puedan causar bucles infinitos o ataques de escape de directorio.
-- `2026-11-12T08:08:44` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_check_container_permissions` añadiendo una validación explícita de `os.access` sobre el directorio padre para garantizar permisos de escritura antes de realizar cualquier operación de E/S, corrigiendo además un error de sintaxis en el nombre de la excepción (`SafetyValidationPERMISSION` a `SafetyValidationCategory.PERMISSION`).

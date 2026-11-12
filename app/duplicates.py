@@ -42,11 +42,14 @@ __all__ = [
     "format_group",
 ]
 
-# Configuración de lectura y flags de sistema (Win32 API)
+# Configuración de lectura y constantes de la Win32 API para atributos de archivo
 PARTIAL_READ_BYTES: int = 64 * 1024
-FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400  
-FILE_ATTRIBUTE_HIDDEN: int = 0x2          
-FILE_ATTRIBUTE_SYSTEM: int = 0x4          
+
+class Win32Attributes:
+    REPARSE_POINT: int = 0x400  
+    HIDDEN: int = 0x2          
+    SYSTEM: int = 0x4          
+
 MAX_RECURSION_DEPTH: int = 100
 
 # Cachés para evitar re-procesamiento durante una única corrida de análisis
@@ -58,7 +61,7 @@ def is_junction(path: Path) -> bool:
     if not isinstance(path, Path): return True
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
+        return bool(attrs != -1 and (attrs & Win32Attributes.REPARSE_POINT))
     return False
 
 
@@ -67,7 +70,7 @@ def is_system_or_hidden(path: Path) -> bool:
     if not isinstance(path, Path): return False
     with suppress(AttributeError, OSError, RuntimeError):
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        return bool(attrs != -1 and (attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)))
+        return bool(attrs != -1 and (attrs & (Win32Attributes.HIDDEN | Win32Attributes.SYSTEM)))
     return False
 
 
@@ -116,7 +119,7 @@ def _is_valid_candidate(path: Path, st_size: int = -1) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula hash SHA256 completo. Usa un caché global de sesión para evitar I/O redundante en archivos ya procesados."""
+    """Calcula hash SHA256 completo. Usa un caché global de sesión para evitar I/O redundante."""
     if not isinstance(path, Path) or not path.is_file(): return None
     if path in _full_hash_cache: return _full_hash_cache.get(path)
     if not _safe_path_check(path): return None
@@ -134,7 +137,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula hash SHA256 sobre los primeros bytes (fingerprint rápida para descartes)."""
+    """Calcula hash SHA256 sobre los primeros bytes (fingerprint rápida)."""
     if not isinstance(path, Path) or not path.is_file(): return None
     if path in _partial_cache: return _partial_cache.get(path)
     if not _safe_path_check(path): return None
@@ -182,7 +185,6 @@ def _process_entry(
         if entry.is_symlink(): return
         entry_path = Path(entry.path)
         
-        # Validar seguridad antes de cualquier operación costosa o resolución
         if not _safe_path_check(entry_path): return
         
         stat = entry.stat(follow_symlinks=False)
@@ -248,7 +250,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Refinamiento de duplicados mediante hashing en cascada (Parcial -> Completo)."""
+    """Refinamiento de duplicados mediante hashing en cascada."""
     if not paths: return {}
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final: Dict[str, List[Path]] = {}
@@ -296,7 +298,7 @@ def _get_mtime(path: Path) -> Optional[float]:
 def suggest_keeper(group: DuplicateGroup) -> Optional[Path]:
     """
     Heurística de selección: sugiere conservar el archivo más antiguo
-    (menor fecha de modificación) como el original, asumiendo que es el 'maestro'.
+    como el original, asumiendo que es el 'maestro'.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths: return None
     candidates = [(m, p) for p in group.paths if (m := _get_mtime(p)) is not None]

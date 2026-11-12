@@ -1086,3 +1086,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-12T10:21:03` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints y docstrings explicativos en las estructuras de datos y funciones auxiliares, clarificando el propósito de cada componente para facilitar el mantenimiento futuro sin alterar la lógica de escaneo.
 - `2026-11-12T10:21:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T10:21:03` Corrida terminada. Total usado hoy: 208.
+- `2026-11-12T10:29:23` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-11-12T10:29:51` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los retornos de las funciones y se extrajeron las constantes de flags de Windows en una estructura más legible, mejorando la documentación interna para aclarar el propósito de la lógica de filtrado de archivos.
+- `2026-11-12T10:30:21` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la clarificación de las responsabilidades de los componentes en los docstrings y la adición de Type Hints detallados, garantizando que la arquitectura "Pipeline" sea auto-explicativa para futuros colaboradores.
+- `2026-11-12T10:31:26` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-12T10:31:39` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de procesamiento de datos para clarificar los tipos esperados y se añadieron `type hints` explícitos en variables internas complejas, facilitando la auditoría del código bajo las reglas de seguridad.
+- `2026-11-12T10:31:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T10:31:39` Corrida terminada. Total usado hoy: 212.

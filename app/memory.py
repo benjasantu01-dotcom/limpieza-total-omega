@@ -45,7 +45,7 @@ else:
         PDWORD = ctypes.POINTER(ctypes.c_ulong)
 
 BytesValue = NewType("BytesValue", int)
-MegabytesValue = MegabytesValue = float
+MegabytesValue = float
 
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
@@ -201,7 +201,10 @@ _CACHE_TOP_PROC: CacheEntry = CacheEntry(0.0, [])
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """Interpreta el contenido de /proc/meminfo para extraer métricas clave."""
+    """
+    Parsea el contenido crudo de /proc/meminfo (formato texto clave:valor).
+    Retorna MemorySnapshot con los totales calculados o snapshot vacío ante error.
+    """
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return _EMPTY_SNAPSHOT
     metrics: Dict[str, BytesValue] = {}
@@ -233,16 +236,20 @@ def _is_valid_process(name: str, pid: int, ws_bytes: int) -> bool:
     return 0 < ws_bytes < MAX_VALID_PROCESS_MEM_BYTES
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
+    """
+    Analiza una línea de CSV (formato: nombre,pid,ws,ruta) y extrae datos de proceso.
+    Valida la seguridad de la ruta antes de instanciar ProcessMemory.
+    """
     if not isinstance(line, str): return None
     try:
-        parts = [p.strip().strip("'\"") for p in line.split(",")]
+        parts: List[str] = [p.strip().strip("'\"") for p in line.split(",")]
         if len(parts) < 3: return None
-        proc_name = str(parts[0]).strip()
+        proc_name: str = str(parts[0]).strip()
         try:
-            pid_val = int(parts[1])
+            pid_val: int = int(parts[1])
         except (ValueError, TypeError):
             return None
-        ws_val = _safe_int_conversion(parts[2])
+        ws_val: BytesValue = _safe_int_conversion(parts[2])
         if len(parts) > 3 and parts[3].strip():
             path_check = Path(parts[3].strip())
             if is_protected_path(path_check):
@@ -256,7 +263,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Procesa volcado CSV de memoria retornando los N procesos de mayor consumo."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text: return []
-    lines = raw_csv_text.splitlines()
+    lines: List[str] = raw_csv_text.splitlines()
     if len(lines) < 2: return []
     def _gen() -> Iterator[ProcessMemory]:
         for line in lines[1:]:
@@ -314,7 +321,7 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         result = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
         if result <= 0:
             return True # Si no podemos leer el nombre, asumimos inofensivo por ahora
-        path_str = path_buffer.value.decode('utf-16', 'ignore') if isinstance(path_buffer, ctypes.Array) else ""
+        path_str: str = path_buffer.value.decode('utf-16', 'ignore') if isinstance(path_buffer, ctypes.Array) else ""
         if not path_str: return False
         return not is_protected_path(Path(path_str))
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
@@ -349,22 +356,21 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
     
-    pmc = _init_memory_counters()
-    count = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
-    get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
-    get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
-    path_buf = ctypes.create_unicode_buffer(1024)
+    pmc: PROCESS_MEMORY_COUNTERS = _init_memory_counters()
+    count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
+    get_mod_name: GetModNameFunc = WindowsAPI.psapi.GetModuleFileNameExW
+    get_mem_info: Callable[[wintypes.HANDLE, Any, int], int] = WindowsAPI.psapi.GetProcessMemoryInfo
+    path_buf: ctypes.Array = ctypes.create_unicode_buffer(1024)
     
     for pid in pids[:count]:
         if pid <= 0 or _is_system_process(pid): continue
         handle = _get_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
         if not handle: continue
         try:
-            # Solo procesar si el proceso está activo y responde a la consulta
             if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
                 if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
                     if _is_process_executable_safe(handle, path_buf, get_mod_name):
-                        val_name = path_buf.value
+                        val_name: str = path_buf.value
                         name = Path(val_name).name if val_name else f"PID-{pid}"
                         if not _is_invalid_process_name(name):
                             yield ProcessMemory(name, pid, BytesValue(pmc.WorkingSetSize))

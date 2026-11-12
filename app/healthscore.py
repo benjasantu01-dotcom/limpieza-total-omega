@@ -114,11 +114,11 @@ def _safe_factory(factory: Callable[[SystemMetrics], str]) -> Callable[[SystemMe
 # --- Estructuras y Protocolos ---
 
 class Scorer(Protocol):
-    """Interfaz para funciones que transforman métricas en un ratio [0.0, 1.0]."""
+    """Protocolo de interfaz para funciones que transforman métricas en un ratio [0.0, 1.0]."""
     def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
 class Grade(Enum):
-    """Calificaciones asociadas a los rangos de salud."""
+    """Enumeración de calificaciones asociadas a rangos de salud."""
     A = "A"; B = "B"; C = "C"; D = "D"; F = "F"
 
     @classmethod
@@ -134,14 +134,14 @@ class Grade(Enum):
         return cls.F.value
 
 class RecommendationRule(NamedTuple):
-    """Define una lógica de advertencia basada en el estado de una métrica."""
+    """Define una lógica de advertencia basada en el estado de una métrica específica."""
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Configuración para cada etapa del cálculo de salud integral."""
+    """Configuración para cada etapa del cálculo integral de salud."""
     area: MetricKey
     weight: int
     scorer: Callable[[SystemMetrics], NormalizedRatio]
@@ -167,7 +167,7 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 # --- Factorías de Scorers ---
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Genera una función de scoring lineal basada en límites predefinidos."""
+    """Crea un calculador de ratio lineal con caché para optimizar el rendimiento."""
     @lru_cache(maxsize=32)
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0 or not _is_finite_numeric(val): return 0.0
@@ -256,7 +256,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de métricas crudas con validación automática de rangos."""
+    """Contenedor central de métricas crudas con validación de rangos integrada."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -272,7 +272,7 @@ class SystemMetrics:
             self._set_validated_field(f, val)
 
     def _set_validated_field(self, name: str, value: Any) -> None:
-        """Centraliza la validación de campos para evitar estados inconsistentes."""
+        """Centraliza la lógica de validación de campos para garantizar integridad."""
         limits = _METRIC_LIMITS.get(name, (0.0, 1e9))
         clean_val = _validate_numeric(value, 0.0, *limits)
         object.__setattr__(self, name, clean_val)
@@ -287,6 +287,7 @@ class SystemMetrics:
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: return getattr(self, field_name, default)
 
     def get_clamped_metric(self, field_name: str) -> float:
+        """Obtiene una métrica asegurándose de que esté dentro de límites técnicos."""
         min_v, max_v = _METRIC_LIMITS.get(field_name, (0.0, 1e9))
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
 
@@ -295,11 +296,12 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool: 
+        """Verifica que todos los campos métricos contengan valores numéricos finitos."""
         return all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
 
 @dataclass
 class HealthResult:
-    """Resultado procesado del análisis de salud del sistema."""
+    """Estructura que encapsula el resultado final del análisis de salud."""
     score: int = 0
     grade: str = "F"
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -311,7 +313,7 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
-    """Ejecuta un conjunto de reglas y devuelve las recomendaciones activas."""
+    """Evalúa las reglas de recomendación aplicables según los resultados del pipeline."""
     results = []
     if not isinstance(metrics, SystemMetrics) or not isinstance(rules, tuple):
         return results
@@ -325,7 +327,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     return results
 
 def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tuple[int, List[str]]:
-    """Procesa una etapa del pipeline devolviendo puntos y sugerencias."""
+    """Ejecuta una etapa única del pipeline: cálculo de puntos y reglas asociadas."""
     if not isinstance(metrics, SystemMetrics) or not isinstance(entry, PipelineEntry): 
         return 0, []
     try:
@@ -336,7 +338,7 @@ def _process_pipeline_entry(metrics: SystemMetrics, entry: PipelineEntry) -> Tup
         return 0, []
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Calcula la puntuación total de salud ejecutando el pipeline completo."""
+    """Punto de entrada principal: orquesta el cálculo de salud a través del pipeline."""
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
     
@@ -359,13 +361,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Genera una representación visual de barra para los resultados."""
+    """Genera una visualización en consola para los resultados del desglose."""
     if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0: return ""
     p = max(0, min(points, max_val))
     return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Convierte el resultado de salud en un informe textual legible."""
+    """Genera un reporte legible por el usuario a partir de HealthResult."""
     if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for e in PIPELINE_DEFINITIONS:
