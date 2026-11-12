@@ -1499,3 +1499,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T03:34:57` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-11-12T03:34:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T03:34:57` Corrida terminada. Total usado hoy: 48.
+- `2026-11-12T03:41:44` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-12T03:42:32` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `purge_all` implementando una validación explícita para asegurar que la ruta a purgar permanezca dentro del sandbox, previniendo posibles ataques de *path traversal* o manipulación de la estructura de archivos en caso de una entrada maliciosa en el manifiesto.
+- `2026-11-12T03:42:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-12T03:43:51` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta en el pipeline de seguridad (`_execute_safety_pipeline`) para bloquear explícitamente rutas que contengan caracteres de escape visuales (RTL/bidireccionales) que podrían ser utilizados para ofuscar extensiones de archivo maliciosas en la UI, reforzando la seguridad defensiva contra ataques de spoofing de nombre.
+- `2026-11-12T03:44:06` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` al agregar una validación de `st_nlink` para detectar hard links y prevenir el seguimiento de estructuras de archivo circulares o inusuales, además de centralizar el manejo de `is_protected_path` evitando que rutas malformadas pasen el filtro.
+- `2026-11-12T03:44:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T03:44:06` Corrida terminada. Total usado hoy: 52.

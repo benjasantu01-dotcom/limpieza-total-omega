@@ -196,7 +196,7 @@ def _is_file_exclusive(path: Path) -> bool:
     """
     Verifica si el archivo puede abrirse en modo de exclusividad.
     Si falla, significa que otro proceso (o el malware) mantiene el
-    archivo bloqueado para escritura/lectura, impidiendo un movimiento seguro.
+    archivo bloqueado para escritura/leer, impidiendo un movimiento seguro.
     """
     if path is None or not path.exists():
         return False
@@ -943,16 +943,21 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             for entry in it:
                 if entry.name == MANIFEST_NAME or not entry.is_file():
                     continue
+                
+                # Validación de seguridad: debe estar estrictamente dentro del sandbox
+                entry_path = Path(entry.path)
+                if not is_within_directory(_is_path_canonical(entry_path), _is_path_canonical(root_path)):
+                    continue
+
                 item = item_map.get(entry.name)
                 if not item:
                     try:
-                        _safe_unlink(Path(entry.path))
+                        _safe_unlink(entry_path)
                     except (OSError, PermissionError, UnsafePathError): continue
                     continue
                 
                 try:
-                    f = Path(entry.path)
-                    if _is_item_purgable(f, item):
+                    if _is_item_purgable(entry_path, item):
                         purgado_ids.add(item.item_id)
                 except (OSError, PermissionError, UnsafePathError): continue
             

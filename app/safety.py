@@ -1090,14 +1090,14 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
              final_path = _get_final_path_normalized(target_path)
              if not final_path.drive == target_path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
         file_id = _get_file_id(guard.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
 
         if guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
 
         sd = guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
@@ -1260,7 +1260,11 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         if path is None:
             return PathValidationResult(False, UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE))
         
-        p = normalize(str(path).strip())
+        path_str = str(path).strip()
+        if re.search(r'[\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str):
+            return PathValidationResult(False, UnsafePathError("Secuencias de control visual bloqueadas.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
+        
+        p = normalize(path_str)
         guard = SafetyGuard(p)
         
         # 1. Verificaciones críticas de seguridad estática

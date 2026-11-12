@@ -308,6 +308,10 @@ class Scanner:
             norm_path = _get_canonical_path(path_str)
             if not norm_path or _cached_is_protected(norm_path): return False
             
+            # Defensa contra hard-links excesivos o estructuras circulares
+            stats = entry.stat(follow_symlinks=False)
+            if getattr(stats, 'st_nlink', 1) > 1 and entry.is_dir(): return False
+            
             if not self._is_inside_base_root(path_str): return False
             if not os.access(path_str, os.R_OK): return False
             self.safe_cache.add(path_str)
