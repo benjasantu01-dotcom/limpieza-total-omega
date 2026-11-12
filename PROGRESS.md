@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 67
+- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 66
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 218
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 13 | 2 | 5 | 1 | 37 |
+| 2026-11-10 | 10 | 2 | 4 | 1 | 37 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 34 | 1 | 15 | 7 | 39 |
+| 2026-11-12 | 36 | 3 | 15 | 7 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **39**
-- rendimiento: **34**
 - robustez ante casos límite: **33**
 - seguridad defensiva: **32**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
+- `diskreport.py`: **22**
 - `safety.py`: **19**
 - `memory.py`: **17**
 - `quarantine.py`: **16**
-- `duplicates.py`: **15**
-- `healthscore.py`: **14**
+- `settings.py`: **15**
+- `duplicates.py`: **14**
 - `organizer.py`: **14**
-- `settings.py`: **14**
+- `healthscore.py`: **13**
 - `assistant.py`: **12**
 - `branding.py`: **11**
 - `startup.py`: **11**
-- `scanner.py`: **10**
+- `scanner.py`: **11**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T05:46:01` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` capturando errores de forma más granular y evitando que una clave faltante o un valor `None` inesperado durante la deserialización JSON provoquen una caída o la carga de configuraciones parcialmente corruptas.
+- `2026-11-12T05:44:24` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de `stats` y `path` mediante una función auxiliar `_validate_heuristic_input`, evitando repetición de lógica defensiva y previniendo errores por atributos faltantes en las funciones de inspección individuales.
 - `2026-11-12T05:37:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use_exclusive` añadiendo un bloque `try...finally` que asegura el cierre del handle del kernel en caso de error durante la ejecución de la API de Windows, evitando así fugas de recursos (handle leaks) que podrían bloquear el sistema de archivos del usuario.
 - `2026-11-12T05:28:28` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_process_executable_safe` y `_iter_process_memory` agregando validaciones de tipo y estructura frente a errores de la API nativa, evitando que valores `None` o buffers malformados causen excepciones no capturadas durante la enumeración de procesos.
 - `2026-11-12T05:26:00` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.__setattr__` para prevenir errores de validación, asegurando que cualquier entrada no numérica sea rechazada explícitamente mediante una excepción antes de corromper el estado del objeto, y ajusté `compute_score` para manejar de forma segura el caso de métricas parcialmente nulas o inconsistentes.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T03:22:52` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_validate_root` y `drive_usage` centralizando la validación de seguridad para bloquear específicamente rutas UNC y evitar errores de resolución de rutas en dispositivos de red o inaccesibles, asegurando que solo se escaneen rutas locales validadas por `is_safe_to_modify`.
 - `2026-11-12T03:13:08` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al centralizar la validación de tipos y rangos de las métricas en `SystemContext`, asegurando que `_apply_updates` no pueda inyectar tipos inesperados o corromper el estado si la fuente externa es malintencionada.
 - `2026-11-12T03:12:44` **startup.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_is_valid_executable` ante el caso límite de archivos cuyo acceso está restringido por el sistema, añadiendo un manejo explícito para `PermissionError` y `OSError` que garantiza que la validación retorne `False` en lugar de propagar una excepción durante el escaneo.
-- `2026-11-12T03:12:14` **settings.py** (robustez ante casos límite): Mejora la robustez del manejo de archivos mediante la implementación de `os.fsync` sobre el directorio padre tras la operación `os.replace` para asegurar la persistencia física de la configuración en sistemas de archivos con búferes agresivos, además de asegurar que la creación de directorios y archivos de configuración maneje explícitamente posibles errores de concurrencia o permisos antes de continuar.
-- `2026-11-12T03:03:25` **safety.py** (robustez ante casos límite): Se ha añadido un robusto manejo de estados transitorios de red (`ERROR_NETWORK_UNREACHABLE`, `WSAENETDOWN`) y de volumen (`ERROR_DEVICE_NOT_AVAILABLE`) en `_get_path_stat_robust` y `_is_volume_busy_or_invalid`, previniendo excepciones fatales cuando el hardware subyacente (discos externos, mapeos de red) se desconecta inesperadamente.

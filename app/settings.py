@@ -190,11 +190,9 @@ class _SettingsManager:
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             
             temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
-            # Usar O_EXCL para evitar sobreescritura accidental y O_NOFOLLOW por seguridad
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, 'O_NOFOLLOW', 0)
             fd = os.open(temp_path, flags, 0o600)
             
-            # Post-apertura: verificar si el archivo recién creado es un enlace simbólico
             if stat.S_ISLNK(os.fstat(fd).st_mode):
                 os.close(fd); fd = -1; return False
 
@@ -411,7 +409,8 @@ def _read_and_parse_json(file_path: Path) -> Optional[tuple[SettingsDict, os.sta
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     coerced = DEFAULTS.copy()
     for key_name, value in settings.items():
-        if key_name in DEFAULTS and value is not None and isinstance(value, type(DEFAULTS[key_name])):
+        # Verificación explícita de existencia y tipo para evitar KeyError o mal uso de tipos
+        if key_name in coerced and value is not None and isinstance(value, type(DEFAULTS.get(key_name))):
             coerced[key_name] = value 
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False

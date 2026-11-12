@@ -507,3 +507,80 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T05:37:42` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_in_use_exclusive` añadiendo un bloque `try...finally` que asegura el cierre del handle del kernel en caso de error durante la ejecución de la API de Windows, evitando así fugas de recursos (handle leaks) que podrían bloquear el sistema de archivos del usuario.
 - `2026-11-12T05:37:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T05:37:42` Corrida terminada. Total usado hoy: 96.
+- `2026-11-12T05:43:55` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-11-12T05:44:24` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas centralizando la validación de `stats` y `path` mediante una función auxiliar `_validate_heuristic_input`, evitando repetición de lógica defensiva y previniendo errores por atributos faltantes en las funciones de inspección individuales.
+- `2026-11-12T05:45:24` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T05:46:01` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` y `_coerce_and_verify` capturando errores de forma más granular y evitando que una clave faltante o un valor `None` inesperado durante la deserialización JSON provoquen una caída o la carga de configuraciones parcialmente corruptas.
+- `2026-11-12T05:46:29` Tests FALLARON:
+```
+app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+4 failed, 295 passed in 1.10s
+
+```
+- `2026-11-12T05:46:29` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_valid_registry_path` y `_resolve_path_from_command` mediante una validación más estricta de los retornos de `path.resolve()` y el manejo explícito de rutas que podrían ser inexistentes o malformadas, evitando que errores de `Path` propaguen excepciones silenciosas hacia el escáner.
+- `2026-11-12T05:46:56` Tests FALLARON:
+```
+....................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_ram_question_debunks_the_ram_cleaner_myth ________________
+
+    def test_ram_question_debunks_the_ram_cleaner_myth():
+        """La respuesta honesta sobre RAM es lo que diferencia esto de un limpiador falso."""
+        respuesta = assistant.local_answer("¿por qué está lenta la ram?", _contexto_lleno())
+        texto = respuesta.text.lower()
+>       assert "liberador de ram" in texto or "más lenta" in texto
+E       AssertionError: assert ('liberador de ram' in 'error al procesar la respuesta.' or 'más lenta' in 'error al procesar la respuesta.')
+
+evolve/tests/test_assistant.py:309: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    root:assistant.py:180 Falla inesperada en handler handle_ram: name 'DEFAULT_RAM_PCT' is not defined
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner_myth - AssertionError: assert ('liberador de ram' in 'error al procesar la respuesta.' or 'más lenta' in 'error al procesar la respuesta.')
+1 failed, 298 passed in 1.05s
+
+```
+- `2026-11-12T05:46:56` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se introdujeron constantes de tipo `DocString` y se refinaron los docstrings existentes para mejorar la legibilidad del propósito y las salvaguardas de seguridad en el módulo, asegurando que las reglas críticas de privacidad sean evidentes para futuros colaboradores.
+- `2026-11-12T05:46:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T05:46:56` Corrida terminada. Total usado hoy: 100.
