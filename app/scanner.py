@@ -363,9 +363,9 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if directory is None: return []
     try:
         abs_path_str = _get_canonical_path(str(directory))
-        if not abs_path_str: return []
+        if not abs_path_str or _cached_is_protected(abs_path_str): return []
         base_path = Path(abs_path_str)
-        if not base_path.exists() or not base_path.is_dir() or not _is_readable(abs_path_str):
+        if not base_path.exists() or not base_path.is_dir() or not os.access(abs_path_str, os.R_OK):
             return []
         scanner: Scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):

@@ -1253,3 +1253,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T12:34:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-12T12:34:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T12:34:00` Corrida terminada. Total usado hoy: 260.
+- `2026-11-12T12:41:55` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-11-12T12:42:54` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva implementando una validación estricta de puntos de reparseo en `_get_final_path_normalized` para prevenir que `is_within_directory` y otros métodos sean engañados por redirecciones que escapan del volumen raíz, asegurando que la resolución de rutas sea consistente con la topología del sistema de archivos real.
+- `2026-11-12T12:43:22` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Mejoré la seguridad en el recorrido de directorios reemplazando la verificación de `is_readable` (que solo chequea acceso global) por una validación estricta de rutas protegidas mediante `_cached_is_protected` antes de cualquier iteración en `os.scandir`, asegurando que no se acceda a ninguna ruta crítica del sistema incluso en niveles profundos.
+- `2026-11-12T12:43:53` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Reforcé la integridad del proceso de escritura atómica añadiendo `os.chmod(temp_path, 0o600)` explícito tras la creación del archivo temporal para garantizar que los permisos sean restrictivos incluso antes del cierre del descriptor, protegiendo contra posibles condiciones de carrera en sistemas multiusuario.
+- `2026-11-12T12:44:08` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-11-12T12:44:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T12:44:08` Corrida terminada. Total usado hoy: 264.

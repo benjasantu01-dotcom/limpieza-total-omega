@@ -198,6 +198,7 @@ class _SettingsManager:
             temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, 'O_NOFOLLOW', 0)
             fd = os.open(temp_path, flags, 0o600)
+            os.chmod(temp_path, 0o600)
             
             if stat.S_ISLNK(os.fstat(fd).st_mode):
                 os.close(fd); fd = -1; return False
@@ -303,7 +304,6 @@ class _Validators:
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
         if not isinstance(key, ConfigKey): return None
-        # Conversión explícita manejando posibles desbordamientos
         try:
             parsed_value = int(val)
         except (ValueError, TypeError):
@@ -367,11 +367,6 @@ def validate(raw_values: Any) -> AppSettings:
     return config 
 
 def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_result) -> bool:
-    """
-    Realiza validaciones de integridad sobre el archivo de configuración existente,
-    asegurando que sea un archivo regular, propiedad del usuario y sin enlaces simbólicos
-    malintencionados.
-    """
     try:
         if is_protected_path(resolved_str) or is_protected_path(str(file_path.parent)): return False
         if stat.S_ISLNK(st.st_mode) or _Validators._is_reparse_point(str(file_path)): return False
@@ -398,7 +393,6 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         fd = os.open(file_path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0))
         st_post = os.fstat(fd)
         
-        # Validación de estabilidad mediante hash de metadatos críticos
         if (st_post.st_ino != st_initial.st_ino or st_post.st_dev != st_initial.st_dev or 
             st_post.st_mtime != st_initial.st_mtime or st_post.st_size != st_initial.st_size):
             return None
@@ -440,7 +434,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     try:
         st = primary_path.lstat()
         cached = _MANAGER.data_cache.get(resolved_str)
-        # Check rápido: mtime, tamaño e inodo
         if cached and cached[1] == st.st_mtime and cached[2] == st.st_size and cached[3] == st.st_ino:
             return dict(cached[0])
             
@@ -459,7 +452,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     try:
         base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
         
-        # Validar seguridad antes de intentar cualquier operación de disco
         if not is_safe_to_modify(str(base)): return SETTINGS_DIR / SETTINGS_FILE
         
         if not base.exists():

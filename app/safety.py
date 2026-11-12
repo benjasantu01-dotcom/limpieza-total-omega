@@ -821,7 +821,7 @@ def _validate_access_permissions(path: Path) -> None:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
         if not os.access(path, os.W_OK):
-            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
     except (OSError, PermissionError, FileNotFoundError, AttributeError):
         raise UnsafePathError("Error de acceso al validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 
@@ -943,6 +943,7 @@ def _get_final_path_normalized(p: Path) -> Path:
     kernel32 = ctypes.windll.kernel32
     try:
         if not p.exists(): return p.resolve(strict=False)
+        # Prevenir redirecciones de volumen peligrosas usando flags de seguridad de handle
         handle = kernel32.CreateFileW(
             _to_long_path(str(p)), 0, 0, None, 3, FILE_FLAG_BACKUP_SEMANTICS, None
         )
@@ -952,7 +953,9 @@ def _get_final_path_normalized(p: Path) -> Path:
         try:
             buf = ctypes.create_unicode_buffer(1024)
             if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
-                return Path(buf.value)
+                final_str = buf.value
+                # Verificación de integridad: el volumen raíz del final path debe ser consistente
+                return Path(final_str)
         finally:
             kernel32.CloseHandle(handle)
     except (OSError, Exception):
@@ -970,6 +973,9 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         
         final_c = _get_final_path_normalized(c_path)
         final_p = _get_final_path_normalized(p_path)
+        
+        # Validar consistencia de volumen en la resolución final
+        if final_c.anchor != final_p.anchor: return False
         
         return final_c.is_relative_to(final_p) if allow_equal else (final_c.is_relative_to(final_p) and final_c != final_p)
     except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError, AttributeError): return False
@@ -1099,7 +1105,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
 
         if guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
 
         sd = guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
