@@ -324,6 +324,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         entry_path = Path(entry.path)
+                        # Chequeo dinámico de seguridad para cada entrada detectada
                         if skip_protected and not is_safe_to_modify(entry_path):
                             continue
                             
@@ -378,7 +379,8 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         try:
             top_level = _get_immediate_child(root, path)
-            if is_safe_to_modify(top_level):
+            # Validación adicional antes de agregar al reporte de carpetas
+            if not skip_protected or is_safe_to_modify(top_level):
                 stats[top_level].add(size)
         except (ValueError, TypeError, PermissionError, OSError):
             continue
