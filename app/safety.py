@@ -1208,7 +1208,10 @@ def _validate_no_reparse_traversal(path: Path) -> None:
                 raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
 
 def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
-    """Inspección final de seguridad para autorizar la operación sobre un archivo."""
+    """
+    Realiza la inspección final de seguridad antes de autorizar cualquier operación de 
+    escritura sobre un archivo. Verifica permisos, bloqueos y consistencia de estado.
+    """
     guard = SafetyGuard(p)
     if not p.exists():
         raise UnsafePathError(f"El archivo fue eliminado: {p.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)

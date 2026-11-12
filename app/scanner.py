@@ -265,10 +265,10 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 
 class Scanner:
     """
-    Gestiona el contexto de escaneo de un árbol de directorios completo.
+    Motor de escaneo que gestiona el contexto de un árbol de directorios completo.
     
-    Mantiene caché de seguridad y registro de nodos visitados para evitar
-    re-procesamiento y recursión circular.
+    Implementa un recorrido iterativo con detección de ciclos y memoria de estados
+    para asegurar eficiencia y evitar el re-procesamiento de nodos.
     """
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
@@ -371,7 +371,12 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Punto de entrada de alto nivel para escanear un árbol de directorios completo."""
+    """
+    Punto de entrada principal para el análisis heurístico de un directorio.
+    
+    Realiza un recorrido de árbol iterativo utilizando un stack, delegando la
+    lógica de escaneo individual a la clase Scanner.
+    """
     if directory is None: return []
     try:
         abs_path_str = _get_canonical_path(str(directory))
