@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 62 | 6 | 22 | 7 | 83 |
-| 2026-11-12 | 120 | 10 | 55 | 12 | 127 |
+| 2026-11-11 | 59 | 6 | 21 | 7 | 83 |
+| 2026-11-12 | 122 | 10 | 56 | 12 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **40**
 - seguridad defensiva: **39**
-- robustez ante casos límite: **35**
-- rendimiento: **26**
+- robustez ante casos límite: **32**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
+- `quarantine.py`: **20**
 - `settings.py`: **19**
 - `duplicates.py`: **18**
+- `assistant.py`: **15**
 - `healthscore.py`: **15**
-- `memory.py`: **14**
 - `safety.py`: **14**
-- `assistant.py`: **14**
 - `startup.py`: **13**
+- `memory.py`: **13**
 - `scanner.py`: **11**
 - `branding.py`: **9**
-- `organizer.py`: **8**
+- `organizer.py`: **7**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T15:28:54` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de estadísticas (`_collect_summary_data`) eliminando la llamada redundante a `is_protected_path` dentro del loop, ya que `walk_files` ya realiza este filtrado de forma nativa.
+- `2026-11-12T15:27:36` **assistant.py** (rendimiento): Optimicé el método `SystemContext._apply_updates` para reducir drásticamente el número de operaciones de borrado y recreación de cachés (`del self.__dict__[...]`), centralizando la invalidación en un solo punto y evitando iteraciones redundantes sobre las métricas.
 - `2026-11-12T15:18:50` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos y descriptivos, especialmente en la lógica de validación de rutas y cachés, y se extrajeron las verificaciones de seguridad de `_is_valid_registry_path` a una función auxiliar nombrada `_is_path_syntax_safe` para clarificar la separación entre sintaxis y resolución de disco.
 - `2026-11-12T15:17:23` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la suite de heurísticas estandarizando la documentación mediante docstrings detallados, añadiendo type hints faltantes y estructurando la lógica de validación para eliminar redundancias en las funciones `check_*`.
 - `2026-11-12T15:09:17` **quarantine.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados y type hints en las funciones de manipulación de bajo nivel (`_safe_unlink`, `_is_file_exclusive`, `_is_file_in_use_by_system`), clarificando las precondiciones de seguridad y el manejo de excepciones para futuros desarrolladores.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T14:25:58` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída del proceso antes de ejecutar la acción, para asegurar consistencia con las reglas de seguridad.
 - `2026-11-12T14:16:51` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics` y `compute_score` validando explícitamente la integridad de los datos en el punto de entrada y asegurando que las operaciones de cálculo utilicen valores numéricos limpios, evitando errores silenciosos por tipos de datos inesperados.
 - `2026-11-12T14:16:07` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_collect_candidates` y `_process_entry` mediante la validación explícita de `entries` nulas y la mejora en la captura de errores en el acceso a metadatos, evitando que fallos parciales en el sistema de archivos interrumpan todo el escaneo de duplicados.
-- `2026-11-12T14:15:42` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` reemplazando la captura de excepción genérica (`except Exception: pass`) por bloques específicos de control de errores y validación de datos para evitar que fallos aislados al leer atributos de archivo detengan el análisis completo.
-- `2026-11-12T14:15:14` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_is_target_valid` para manejar correctamente entradas `None`, rutas inexistentes o tipos inválidos antes de invocar operaciones de sistema, reforzando el manejo defensivo de excepciones.

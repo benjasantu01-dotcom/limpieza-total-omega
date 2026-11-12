@@ -1533,3 +1533,14 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T15:18:50` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings más precisos y descriptivos, especialmente en la lógica de validación de rutas y cachés, y se extrajeron las verificaciones de seguridad de `_is_valid_registry_path` a una función auxiliar nombrada `_is_path_syntax_safe` para clarificar la separación entre sintaxis y resolución de disco.
 - `2026-11-12T15:18:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T15:18:50` Corrida terminada. Total usado hoy: 324.
+- `2026-11-12T15:25:09` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-12T15:26:12` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T15:26:47` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-12T15:27:36` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `SystemContext._apply_updates` para reducir drásticamente el número de operaciones de borrado y recreación de cachés (`del self.__dict__[...]`), centralizando la invalidación en un solo punto y evitando iteraciones redundantes sobre las métricas.
+- `2026-11-12T15:27:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T15:28:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-12T15:28:38` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-12T15:28:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T15:28:54` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó el proceso de recolección de estadísticas (`_collect_summary_data`) eliminando la llamada redundante a `is_protected_path` dentro del loop, ya que `walk_files` ya realiza este filtrado de forma nativa.
+- `2026-11-12T15:28:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T15:28:54` Corrida terminada. Total usado hoy: 328.

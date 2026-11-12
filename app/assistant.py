@@ -581,21 +581,17 @@ class SystemContext:
                 if hasattr(self, key):
                     current_val = getattr(self, key)
                     val_type = type(current_val)
-                    # Validación estricta de tipo antes de aplicar la actualización
                     if isinstance(value, (int, float)):
-                        try:
-                            casted_value = val_type(value)
-                            if current_val != casted_value:
-                                setattr(self, key, casted_value)
-                                modified = True
-                        except (ValueError, TypeError):
-                            continue
+                        casted_value = val_type(value)
+                        if current_val != casted_value:
+                            setattr(self, key, casted_value)
+                            modified = True
             
             if modified:
                 self.analyzed = True
-                for attr in ("metrics_snapshot", "_cached_active_problems", "_hash_tuple"):
-                    if attr in self.__dict__:
-                        del self.__dict__[attr]
+                self.__dict__.pop("metrics_snapshot", None)
+                self.__dict__.pop("_cached_active_problems", None)
+                self.__dict__.pop("_hash_tuple", None)
         except (AttributeError, TypeError):
             pass
 

@@ -413,9 +413,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size in walk_files(directory, skip_protected):
         try:
-            if skip_protected and is_protected_path(path):
-                continue
-            
             stats.register_file(size, _get_extension(str(path)))
             
             if limit > 0:
