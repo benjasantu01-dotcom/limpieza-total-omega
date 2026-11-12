@@ -581,7 +581,7 @@ class SystemContext:
                     current_val = getattr(self, key)
                     # Forzar compatibilidad de tipos estrictos
                     val_type = type(current_val)
-                    if isinstance(value, (int, float)) and val_type in (int, float):
+                    if isinstance(value, (int, float)) and isinstance(current_val, (int, float)):
                         casted_value = val_type(value)
                         if current_val != casted_value:
                             setattr(self, key, casted_value)

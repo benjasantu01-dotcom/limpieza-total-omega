@@ -344,7 +344,7 @@ def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL
     Realiza validaciones de integridad sobre la ruta candidata antes de iniciar el escaneo.
     Verifica que la ruta sea un directorio dentro del sandbox y no contenga flags de sistema.
     """
-    if not isinstance(target, Path) or target is None: return False
+    if not isinstance(target, Path): return False
     try:
         if not target.exists() or not target.is_dir(): return False
         if _IS_JUNCTION_FN(str(target)) or target.is_symlink(): return False
@@ -357,8 +357,8 @@ def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL
 
         target_parts = getattr(target, 'parts', None)
         if target_parts:
-            parts = [str(p).lower() for p in target_parts]
-            if any(part in NEVER_TOUCH for part in parts): return False
+            parts = {str(p).lower() for p in target_parts}
+            if not parts.isdisjoint(NEVER_TOUCH): return False
             
         target_norm = os.path.realpath(str(target))
         return os.path.commonpath([target_norm, base_norm]) == base_norm

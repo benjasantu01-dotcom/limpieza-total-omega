@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 72
+- Rechazadas por guardia de seguridad: 71
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 118 | 13 | 44 | 14 | 127 |
-| 2026-11-12 | 66 | 5 | 28 | 11 | 78 |
+| 2026-11-11 | 115 | 13 | 43 | 14 | 127 |
+| 2026-11-12 | 68 | 5 | 28 | 11 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **38**
 - robustez ante casos límite: **37**
 - seguridad defensiva: **37**
 - rendimiento: **36**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,18 +33,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **20**
 - `quarantine.py`: **18**
 - `settings.py`: **17**
-- `memory.py`: **16**
 - `duplicates.py`: **15**
-- `healthscore.py`: **14**
-- `organizer.py`: **13**
-- `assistant.py`: **13**
+- `memory.py`: **15**
+- `assistant.py`: **14**
+- `healthscore.py`: **13**
 - `scanner.py`: **12**
 - `startup.py`: **12**
+- `organizer.py`: **12**
 - `branding.py`: **9**
-- `browser.py`: **3**
+- `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T09:40:56` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `_is_target_valid` añadiendo validaciones preventivas de tipos y estados, asegurando que los argumentos `bases` y `cache_paths` sean procesados de forma segura incluso si el llamador envía tipos inesperados, evitando posibles `AttributeError` o `TypeError` durante el bucle.
+- `2026-11-12T09:40:11` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` implementando un chequeo de tipos estricto y seguro mediante `isinstance` antes de realizar operaciones de asignación, evitando fallos silenciosos por tipos incompatibles o mutaciones inesperadas.
 - `2026-11-12T08:18:12` **startup.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_is_valid_registry_path` al añadir una verificación estricta de la ruta resuelta contra el sistema de protección: ahora, además de validar la existencia, se confirma explícitamente que la ruta no sea un vínculo simbólico (symlink) para evitar ataques de redirección, y se garantiza que el path resuelto esté dentro de los límites de seguridad permitidos antes de ser incluido en el inventario.
 - `2026-11-12T08:17:45` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva de `_read_and_parse_json` y `_SettingsManager.perform_atomic_write` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre del archivo de configuración, evitando cualquier potencial inyección de rutas en directorios protegidos por el sistema.
 - `2026-11-12T08:17:13` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `process_entry` al agregar una validación de `st_reparse_tag` para detectar puntos de reanálisis (Junctions, Symlinks, Mount Points) que no se limitan a la máscara de bits simple, garantizando que el escáner no abandone el `base_root` ni siga enlaces recursivos que puedan causar bucles infinitos o ataques de escape de directorio.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T07:37:05` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "estado de archivo ocupado" más resiliente en `_is_file_in_use_exclusive` mediante el uso de `FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE` (0x07) para minimizar falsos positivos causados por bloqueos de lectura de software de indexación, sin comprometer la seguridad de escritura.
 - `2026-11-12T07:27:55` **quarantine.py** (robustez ante casos límite): He mejorado `quarantine.py` implementando una validación de "concurrencia de archivos" más robusta en `_is_file_exclusive` para evitar que el escáner intente mover archivos que están siendo bloqueados por operaciones de lectura/escritura pendientes, lo cual es un caso límite frecuente en Windows.
 - `2026-11-12T07:26:17` **memory.py** (robustez ante casos límite): Se ha mejorado `_iter_process_memory` para manejar de forma robusta los casos donde la API `GetProcessMemoryInfo` falla debido a procesos en estado de transición (finalizando) o con restricciones de permisos, evitando que la iteración se detenga prematuramente y protegiendo la integridad de la lista mediante una gestión de recursos más estricta (`finally` block) y filtros de validación adicionales.
-- `2026-11-12T07:19:18` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del manejo de métricas en `SystemMetrics` evitando la propagación de excepciones críticas durante la inicialización y garantizando que los valores de coma flotante sean tratados de forma segura en entornos con configuraciones regionales variables.
-- `2026-11-12T07:17:48` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `_collect_candidates` procese archivos que están siendo bloqueados por el sistema operativo (denegación de acceso o archivo en uso) al capturar excepciones `PermissionError` y `OSError` de forma más granular durante la iteración de `scandir`.
