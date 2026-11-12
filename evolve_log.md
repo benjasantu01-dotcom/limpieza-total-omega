@@ -1491,3 +1491,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T03:23:00` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-11-12T03:23:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T03:23:00` Corrida terminada. Total usado hoy: 44.
+- `2026-11-12T03:31:36` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-11-12T03:32:03` ➖ Sin cambios en healthscore.py (enfoque: seguridad defensiva). Motivo: Se ha endurecido el método `SystemMetrics.__setattr__` para prevenir la inyección de atributos no permitidos, asegurando que la validación de tipos sea un requisito previo estricto antes de cualquier modificación en la instancia.
+- `2026-11-12T03:33:03` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T03:34:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-12T03:34:47` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad defensiva en `_iter_process_memory` al asegurar que el manejo del `handle` y la validación de la ruta del ejecutable se realicen con un bloque `try...finally` más robusto, evitando filtraciones de recursos y verificando de forma explícita que el proceso no sea un proceso del sistema antes de realizar cualquier operación de consulta.
+- `2026-11-12T03:34:57` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-11-12T03:34:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T03:34:57` Corrida terminada. Total usado hoy: 48.
