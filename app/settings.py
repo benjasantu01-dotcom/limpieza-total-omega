@@ -458,15 +458,20 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if cache_key in _MANAGER.path_cache: return _MANAGER.path_cache[cache_key]
     try:
         base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
-        if is_safe_to_modify(str(base)):
-            if not base.exists():
-                try: base.mkdir(parents=True, exist_ok=True)
-                except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE
-            if not os.access(base, os.R_OK | os.W_OK) or _Validators._is_reparse_point(str(base)): 
-                return SETTINGS_DIR / SETTINGS_FILE
-            full_path = base / SETTINGS_FILE
-            _MANAGER.path_cache[cache_key] = full_path
-            return full_path
+        
+        # Validar seguridad antes de intentar cualquier operación de disco
+        if not is_safe_to_modify(str(base)): return SETTINGS_DIR / SETTINGS_FILE
+        
+        if not base.exists():
+            try: base.mkdir(parents=True, exist_ok=True)
+            except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE
+        
+        if not os.access(base, os.R_OK | os.W_OK) or _Validators._is_reparse_point(str(base)): 
+            return SETTINGS_DIR / SETTINGS_FILE
+            
+        full_path = base / SETTINGS_FILE
+        _MANAGER.path_cache[cache_key] = full_path
+        return full_path
     except (OSError, RuntimeError, PermissionError, ValueError): pass
     return SETTINGS_DIR / SETTINGS_FILE
 

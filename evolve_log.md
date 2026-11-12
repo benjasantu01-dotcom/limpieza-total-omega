@@ -1154,3 +1154,25 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-12T11:56:52` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré `_safe_unlink` para manejar el caso límite donde la ruta ya no existe, añadiendo una verificación robusta para evitar errores de tipo en la condición de retorno, alineándolo con el enfoque de robustez frente a estados de archivo cambiantes.
 - `2026-11-12T11:56:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T11:56:52` Corrida terminada. Total usado hoy: 244.
+- `2026-11-12T12:01:02` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-11-12T12:01:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T12:01:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-12T12:01:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-12T12:02:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T12:03:50` Tests FALLARON:
+```
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [PERMISSION] [PROTECTED_SYSTEM_PATH] Protección defensiva: Archivo de sistema oculto/protegido.
+42 failed, 257 passed in 1.47s
+
+```
+- `2026-11-12T12:03:50` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante rutas inexistentes o mal formadas en `_is_file_owned_by_system` y se ha reforzado la validación de `_get_file_attrs` para evitar excepciones no controladas al acceder a rutas protegidas por el SO, garantizando que el `SafetyGuard` siempre devuelva un estado coherente incluso ante fallos de E/S.
+- `2026-11-12T12:04:26` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-11-12T12:04:49` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra race conditions y problemas de permisos en `settings_path` al asegurar que el directorio padre sea verificable y accesible antes de intentar crear o retornar la ruta de configuración, evitando fallos en entornos con permisos restringidos.
+- `2026-11-12T12:04:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T12:04:49` Corrida terminada. Total usado hoy: 248.

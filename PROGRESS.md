@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 77
+- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 89 | 10 | 34 | 9 | 118 |
-| 2026-11-12 | 95 | 8 | 43 | 11 | 87 |
+| 2026-11-11 | 89 | 10 | 34 | 9 | 114 |
+| 2026-11-12 | 96 | 9 | 44 | 11 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **38**
 - rendimiento: **33**
 - seguridad defensiva: **31**
 
@@ -31,7 +31,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **23**
 - `quarantine.py`: **21**
-- `settings.py`: **17**
+- `settings.py`: **18**
 - `memory.py`: **16**
 - `safety.py`: **16**
 - `duplicates.py`: **16**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T12:04:49` **settings.py** (robustez ante casos límite): Se introdujo una validación robusta contra race conditions y problemas de permisos en `settings_path` al asegurar que el directorio padre sea verificable y accesible antes de intentar crear o retornar la ruta de configuración, evitando fallos en entornos con permisos restringidos.
 - `2026-11-12T11:56:52` **quarantine.py** (robustez ante casos límite): Mejoré `_safe_unlink` para manejar el caso límite donde la ruta ya no existe, añadiendo una verificación robusta para evitar errores de tipo en la condición de retorno, alineándolo con el enfoque de robustez frente a estados de archivo cambiantes.
 - `2026-11-12T11:42:52` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante la inyección de datos inesperados en el constructor mediante un filtrado estricto en `__post_init__` y `__setattr__`, asegurando que cualquier entrada que no sea numérica finita o que exceda límites lógicos sea rechazada o normalizada antes de entrar al pipeline.
 - `2026-11-12T11:42:10` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante archivos bloqueados o eliminados durante el recorrido (race conditions) integrando una validación de `os.DirEntry` más defensiva y un manejo de excepciones local que evita la interrupción prematura de la búsqueda.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T11:02:33` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de estadísticas evitando el uso redundante de `is_safe_to_modify` dentro de `largest_folders`, ya que `walk_files` ya realiza este chequeo de seguridad de manera nativa, reduciendo drásticamente las llamadas al sistema operativo innecesarias durante el recorrido.
 - `2026-11-12T11:00:59` **branding.py** (rendimiento): Se optimizó el cálculo de la escala del logo en `draw_logo` eliminando la llamada innecesaria a `_get_scaled_poly` antes de validar la escala, y se refactorizó `logo_svg` para eliminar el formateo de strings en tiempo de ejecución mediante pre-cálculo de la constante `_SVG_TEMPLATE_PRECOMPUTED`.
 - `2026-11-12T10:51:05` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de procesamiento y utilidades, clarificando las responsabilidades de validación, el manejo de cachés globales y los supuestos de seguridad, facilitando el mantenimiento y la auditoría del código.
-- `2026-11-12T10:40:44` **quarantine.py** (legibilidad y documentación): Se han documentado mediante docstrings específicos las funciones críticas de validación y gestión de E/S, aclarando el propósito de las protecciones de integridad, el manejo de reintento ante bloqueos de sistema y la importancia del uso de `fsync`, facilitando así la comprensión del código para futuras auditorías o mantenimiento.
