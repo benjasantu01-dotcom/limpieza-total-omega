@@ -5,32 +5,32 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **178** (35.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 48 | 5 | 18 | 7 | 78 |
-| 2026-11-12 | 129 | 11 | 59 | 12 | 137 |
+| 2026-11-11 | 48 | 5 | 18 | 7 | 74 |
+| 2026-11-12 | 130 | 11 | 60 | 12 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **40**
+- robustez ante casos límite: **33**
 - rendimiento: **32**
-- robustez ante casos límite: **32**
 - seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `duplicates.py`: **18**
 - `settings.py`: **17**
 - `healthscore.py`: **16**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T16:28:13` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de E/S y condiciones de carrera al implementar una validación de `os.fsync` más estricta durante el salvado del manifiesto y la purga, asegurando que el estado en disco refleje los cambios en el manifiesto incluso ante fallos transitorios de los controladores de archivos.
 - `2026-11-12T16:16:53` **healthscore.py** (robustez ante casos límite): Se ha robustecido el `Pipeline` frente a posibles estados de error en tiempo de ejecución al añadir una comprobación defensiva en `_process_pipeline_entry` que garantiza que, incluso si una función de score falla inesperadamente, el bucle de cálculo no colapse ni propague excepciones hacia la interfaz.
 - `2026-11-12T16:09:25` **duplicates.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_process_entry` y `_collect_candidates` mediante la consolidación de bloques `try-except` y la adición de verificaciones de tipo `isinstance` para prevenir `AttributeError` ante entradas malformadas o rutas que cambian su estado de existencia durante el escaneo.
 - `2026-11-12T16:08:58` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y permisos de lectura dentro del bucle `while` en `walk_files` para manejar de manera robusta los casos donde una subcarpeta es eliminada o sus permisos cambian durante la ejecución, evitando que el escaneo se aborte prematuramente.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T15:09:17` **quarantine.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados y type hints en las funciones de manipulación de bajo nivel (`_safe_unlink`, `_is_file_exclusive`, `_is_file_in_use_by_system`), clarificando las precondiciones de seguridad y el manejo de excepciones para futuros desarrolladores.
 - `2026-11-12T15:05:50` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op`, extrayendo la lógica de validación de seguridad y de estado en sub-funciones con nombres explícitos, eliminando anidamiento excesivo y aclarando las condiciones de guardia.
 - `2026-11-12T14:56:14` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las funciones de recomendación y simplificando la estructura del pipeline mediante una mejor definición de los decoradores y el manejo de excepciones para asegurar la robustez.
-- `2026-11-12T14:55:39` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad añadiendo type hints faltantes, tipado explícito en los resultados de funciones y clarificando mediante docstrings el propósito de las funciones internas que gestionan el recorrido y el hashing, garantizando que el flujo de trabajo (recorrido -> agrupación por tamaño -> hash parcial -> hash completo) sea evidente para cualquier desarrollador.

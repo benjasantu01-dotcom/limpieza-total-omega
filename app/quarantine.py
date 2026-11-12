@@ -616,6 +616,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         
     temp_name: Optional[str] = None
     try:
+        # Uso de delete=False para manejar el reemplazo manualmente tras fsync
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             temp_name = tf.name
             tf.write(encoded)
@@ -983,6 +984,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if purgado_ids:
             new_items = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
+            # Asegurar persistencia tras el purgado masivo
             _sync_directory(root_path)
         
         return len(purgado_ids)
