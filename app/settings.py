@@ -303,8 +303,11 @@ class _Validators:
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
         if not isinstance(key, ConfigKey): return None
-        parsed_value = _Validators._parse_as_type(val, int)
-        if parsed_value is None: return None
+        # Conversión explícita manejando posibles desbordamientos
+        try:
+            parsed_value = int(val)
+        except (ValueError, TypeError):
+            return None
         limit = _NUMERIC_LIMITS.get(key)
         if limit: return max(limit.min, min(limit.max, parsed_value))
         return parsed_value
@@ -404,11 +407,14 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
             fd = -1
             content = f.read(MAX_SETTINGS_SIZE + 1)
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
-            data = json.loads(content)
+            try:
+                data = json.loads(content)
+            except json.JSONDecodeError:
+                return None
             
         if not isinstance(data, dict) or not _is_structure_valid(data): return None
         return data, st_post
-    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+    except (OSError, ValueError, TypeError):
         return None
     finally:
         if fd != -1:

@@ -1000,3 +1000,58 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T10:00:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
 - `2026-11-12T10:00:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T10:00:38` Corrida terminada. Total usado hoy: 200.
+- `2026-11-12T10:08:58` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-11-12T10:09:57` Tests FALLARON:
+```
+raises(safety, tmp_path):
+        """`is_safe_to_modify` es la variante para usar en un `if`."""
+        assert safety.is_safe_to_modify(tmp_path / "ok.tmp") is True
+        assert safety.is_safe_to_modify(tmp_path / "Windows" / "x.txt") is False
+        assert safety.is_safe_to_modify(tmp_path.anchor) is False
+        assert safety.is_safe_to_modify(tmp_path / "prog.exe") is False
+        assert safety.is_safe_to_modify(tmp_path / "prog.exe", allow_sensitive=True) is True
+        # Basura de entrada: devuelve False, no explota.
+        for basura in (None, "", 12345, [], {}):
+>           assert safety.is_safe_to_modify(basura) is False
+E           AssertionError: assert True is False
+E            +  where True = <function is_safe_to_modify at 0x7f5eb3353380>(12345)
+E            +    where <function is_safe_to_modify at 0x7f5eb3353380> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+
+evolve/tests/test_integrity.py:217: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7f5eb3353380>(12345)
+ +    where <function is_safe_to_modify at 0x7f5eb3353380> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+1 failed, 298 passed in 1.88s
+
+```
+- `2026-11-12T10:09:57` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez en la captura de excepciones dentro de `_get_path_stat_robust` y `_is_volume_busy_or_invalid`, centralizando la propagación de errores mediante `UnsafePathError` con códigos específicos y evitando la propagación de excepciones genéricas que podrían ocultar fallos de acceso o condiciones de carrera.
+- `2026-11-12T10:10:26` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas centralizando la validación de archivos en `_run_file_heuristics` para asegurar que `stats` no sea `None` y capturando excepciones de forma granular, evitando que errores de metadatos en un archivo específico aborten el análisis de los restantes.
+- `2026-11-12T10:10:57` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` y `_Validators.int` mediante la captura explícita de excepciones al manejar tipos, evitando fallos en tiempo de ejecución al procesar valores inesperados durante la carga o validación.
+- `2026-11-12T10:11:10` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.37s
+
+```
+- `2026-11-12T10:11:10` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_resolve_and_cache_path` implementando una validación de `None` y tipos más estricta, asegurando que cualquier entrada corrupta o mal formada retorne de forma segura antes de intentar operaciones de sistema de archivos, previniendo excepciones innecesarias.
+- `2026-11-12T10:11:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T10:11:10` Corrida terminada. Total usado hoy: 204.

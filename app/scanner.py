@@ -333,14 +333,15 @@ class Scanner:
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
-        if stats:
-            self.attr_cache[path_str] = stats
-            for check_fn in ALL_CHECKS:
-                try:
-                    finding = check_fn(path, entry, self.now_ts, stats)
-                    if finding: self.results.append(finding)
-                except Exception as e:
-                    logger.debug(f"Heurística {check_fn.__name__} omitida en {path}: {e}")
+        if not stats:
+            return
+        self.attr_cache[path_str] = stats
+        for check_fn in ALL_CHECKS:
+            try:
+                finding = check_fn(path, entry, self.now_ts, stats)
+                if finding: self.results.append(finding)
+            except (Exception, OSError, AttributeError) as e:
+                logger.debug(f"Heurística {check_fn.__name__} falló inesperadamente en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     if not isinstance(path, Path) or not _is_valid_path_structure(str(path)) or not _is_readable(path):
@@ -354,7 +355,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
         try:
             res = check_fn(path, entry, now_ts, stats)
             if res: findings.append(res)
-        except Exception as e:
+        except (Exception, OSError, AttributeError) as e:
             logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
     return findings
 
