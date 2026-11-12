@@ -181,27 +181,26 @@ def _process_entry(
     size_map: Dict[int, List[Path]]
 ) -> None:
     """Evalúa una entrada de directorio para BFS, gestionando bloqueos por acceso denegado."""
-    if entry is None: return
+    if entry is None or not hasattr(entry, 'path'): return
     try:
         if entry.is_symlink(): return
         
         entry_path = Path(entry.path)
-        resolved = entry_path.resolve()
-        if not _safe_path_check(resolved): return
+        if not _safe_path_check(entry_path): return
         
         stat = entry.stat(follow_symlinks=False)
         
         if entry.is_dir():
             if depth < MAX_RECURSION_DEPTH:
-                queue.append((resolved, depth + 1))
+                queue.append((entry_path, depth + 1))
         elif entry.is_file():
-            if stat.st_size >= min_size and not is_system_or_hidden(resolved):
-                if skip_protected and is_protected_path(resolved): return
+            if stat.st_size >= min_size and not is_system_or_hidden(entry_path):
+                if skip_protected and is_protected_path(entry_path): return
                 inode_id = (stat.st_dev, stat.st_ino)
                 if inode_id not in visited_inodes:
                     visited_inodes.add(inode_id)
-                    size_map[stat.st_size].append(resolved)
-    except (OSError, PermissionError, ValueError):
+                    size_map[stat.st_size].append(entry_path)
+    except (OSError, PermissionError, ValueError, AttributeError):
         return
 
 
@@ -226,7 +225,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     while queue:
         current_dir, depth = queue.popleft()
-        if current_dir in visited_paths: continue
+        if not isinstance(current_dir, Path) or current_dir in visited_paths: continue
         visited_paths.add(current_dir)
 
         try:
@@ -243,7 +242,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     if not paths: return {}
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path is not None and isinstance(path, Path):
+        if isinstance(path, Path):
             digest = hash_func(path)
             if digest:
                 groups[digest].append(path)

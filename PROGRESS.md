@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 78
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 213
 
@@ -16,23 +16,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 52 | 5 | 19 | 7 | 81 |
-| 2026-11-12 | 126 | 11 | 59 | 12 | 132 |
+| 2026-11-11 | 51 | 5 | 18 | 7 | 79 |
+| 2026-11-12 | 128 | 11 | 59 | 12 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **35**
+- seguridad defensiva: **34**
 - rendimiento: **32**
-- robustez ante casos límite: **29**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `quarantine.py`: **20**
+- `diskreport.py`: **22**
+- `quarantine.py`: **19**
 - `settings.py`: **18**
-- `duplicates.py`: **17**
+- `duplicates.py`: **18**
 - `healthscore.py`: **15**
 - `safety.py`: **14**
 - `assistant.py`: **14**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T16:09:25` **duplicates.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_process_entry` y `_collect_candidates` mediante la consolidación de bloques `try-except` y la adición de verificaciones de tipo `isinstance` para prevenir `AttributeError` ante entradas malformadas o rutas que cambian su estado de existencia durante el escaneo.
+- `2026-11-12T16:08:58` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y permisos de lectura dentro del bucle `while` en `walk_files` para manejar de manera robusta los casos donde una subcarpeta es eliminada o sus permisos cambian durante la ejecución, evitando que el escaneo se aborte prematuramente.
 - `2026-11-12T15:51:43` **safety.py** (rendimiento): Se ha optimizado el rendimiento de `is_protected_path` centralizando el cálculo de rutas raíz del sistema mediante una única llamada eficiente a `os.normcase` durante la inicialización, evitando el re-procesamiento de listas en cada llamada y reduciendo la complejidad de las comparaciones de string.
 - `2026-11-12T15:48:52` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la validación de extensiones mediante conversión a `Path` y múltiples llamadas a `os.path.splitext` por una verificación directa sobre el string del nombre del archivo usando `endswith` sobre una tupla precalculada, reduciendo la carga de objetos y llamadas a sistema en el bucle principal.
 - `2026-11-12T15:40:30` **memory.py** (rendimiento): Optimizé el rendimiento de `_iter_process_memory` pre-alocando recursos y evitando el re-mapeo de funciones de API dentro del bucle, además de reemplazar la creación redundante de objetos `Path` por comparaciones de strings directas para reducir la presión sobre el recolector de basura.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T14:56:14` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en las funciones de recomendación y simplificando la estructura del pipeline mediante una mejor definición de los decoradores y el manejo de excepciones para asegurar la robustez.
 - `2026-11-12T14:55:39` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad añadiendo type hints faltantes, tipado explícito en los resultados de funciones y clarificando mediante docstrings el propósito de las funciones internas que gestionan el recorrido y el hashing, garantizando que el flujo de trabajo (recorrido -> agrupación por tamaño -> hash parcial -> hash completo) sea evidente para cualquier desarrollador.
 - `2026-11-12T14:47:06` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros faltantes y la creación de docstrings descriptivos para las funciones geométricas, facilitando la comprensión del motor de renderizado vectorial.
-- `2026-11-12T14:45:54` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` y `_process_folder_entry` añadiendo validaciones estrictas de tipos y manejo seguro de errores para evitar que entradas malformadas corrompan el flujo del escaneo.
-- `2026-11-12T14:37:37` **settings.py** (manejo de errores y validación de entradas): Reforcé `_read_and_parse_json` para manejar explícitamente posibles errores de `json.loads` y problemas de codificación mediante un bloque `try-except` más robusto, asegurando que cualquier entrada malformada o inesperada resulte en un retorno `None` seguro y no en una propagación de excepciones.
