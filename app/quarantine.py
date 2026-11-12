@@ -561,6 +561,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         
     try:
         st = m_path.stat()
+        # Validación de caché usando metadatos de archivo (sin leer el JSON)
         if not force_reload and base_dir in _MANIFEST_CACHE:
             cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
@@ -576,6 +577,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         needs_cleanup = False
         for entry in data:
             item = QuarantineItem.from_dict(entry)
+            # Solo verificar integridad si el ítem es válido según el schema
             if item and item.verify_integrity(base_dir / item.stored_name):
                 valid_items.append(item)
             else:

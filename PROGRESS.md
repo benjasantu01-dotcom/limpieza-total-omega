@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 74
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 207
+- Rechazadas por guardia de seguridad: 77
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 95 | 12 | 36 | 11 | 122 |
-| 2026-11-12 | 86 | 8 | 38 | 11 | 85 |
+| 2026-11-11 | 93 | 12 | 36 | 10 | 121 |
+| 2026-11-12 | 87 | 8 | 41 | 11 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **37**
+- seguridad defensiva: **35**
+- rendimiento: **31**
 - robustez ante casos límite: **31**
-- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
-- `quarantine.py`: **20**
+- `diskreport.py`: **22**
+- `quarantine.py`: **21**
 - `safety.py`: **17**
 - `memory.py`: **16**
 - `settings.py`: **16**
@@ -40,11 +40,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **11**
 - `scanner.py`: **11**
 - `startup.py`: **11**
-- `branding.py`: **10**
+- `branding.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T11:21:03` **quarantine.py** (rendimiento): Optimizado el rendimiento de `load_manifest` eliminando la relectura redundante de metadatos de disco para cada ítem en el manifiesto, utilizando los datos del `stat()` del archivo de manifiesto para validar la caché antes de procesar la lista, reduciendo drásticamente las llamadas al sistema en el bucle principal.
 - `2026-11-12T11:15:00` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` moviendo la inicialización de buffers y la resolución de funciones `ctypes` fuera del bucle `for`, evitando la reasignación de memoria y el lookup de símbolos en cada iteración.
 - `2026-11-12T11:11:04` **healthscore.py** (rendimiento): Optimicé el rendimiento del Pipeline eliminando la sobrecarga de `getattr` en `_get_..._ratio` mediante el acceso directo a los atributos de `SystemMetrics` y simplifiqué la lógica de `compute_score` evitando conversiones de tipo redundantes dentro del bucle.
 - `2026-11-12T11:02:33` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de estadísticas evitando el uso redundante de `is_safe_to_modify` dentro de `largest_folders`, ya que `walk_files` ya realiza este chequeo de seguridad de manera nativa, reduciendo drásticamente las llamadas al sistema operativo innecesarias durante el recorrido.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T10:10:57` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `_Validators.int` mediante la captura explícita de excepciones al manejar tipos, evitando fallos en tiempo de ejecución al procesar valores inesperados durante la carga o validación.
 - `2026-11-12T10:10:26` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de archivos en `_run_file_heuristics` para asegurar que `stats` no sea `None` y capturando excepciones de forma granular, evitando que errores de metadatos en un archivo específico aborten el análisis de los restantes.
 - `2026-11-12T10:00:34` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un bloque `try-except` más granular y una validación explícita para evitar que un manifiesto malformado (ej. JSON vacío o no lista) bloquee la carga de la cuarentena, devolviendo siempre una estructura vacía segura.
-- `2026-11-12T09:59:22` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_process_executable_safe` y `_iter_process_memory` validando explícitamente el valor de retorno de las llamadas a la API de Windows (`GetModuleFileNameExW`), evitando el procesamiento de buffers nulos o corruptos y capturando posibles errores de acceso a memoria nativa antes de que afecten la estabilidad del bucle de escaneo.
