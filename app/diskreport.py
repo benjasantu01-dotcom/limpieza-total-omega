@@ -84,9 +84,10 @@ def _is_reparse_point(stat: os.stat_result) -> bool:
         return False
 
 
-def _get_extension(path: Path) -> str:
+def _get_extension(path: str) -> str:
     """Extrae y normaliza la extensión de un archivo, devolviendo un marcador por defecto si falta."""
-    return path.suffix.lower() or "(sin extensión)"
+    _, ext = os.path.splitext(path)
+    return ext.lower() or "(sin extensión)"
 
 
 def _get_immediate_child(root: Path, path: Path) -> Path:
@@ -305,8 +306,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if not root_path: return
     
+    root_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [root_str]
     
     root_stat = _safe_stat(root_path)
     if root_stat:
@@ -317,14 +319,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    entry_path = Path(entry.path)
                     try:
-                        if not entry_path.is_relative_to(root_path):
-                            continue
-
                         if _is_excluded_path(entry.name):
                             continue
                         
+                        entry_path = Path(entry.path)
                         if skip_protected and not is_safe_to_modify(entry_path):
                             continue
                             
@@ -340,7 +339,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if inode in visited_inodes:
                                 continue
                             visited_inodes.add(inode)
-                            stack.append(entry_path)
+                            stack.append(entry.path)
                         
                         elif entry.is_file(follow_symlinks=False):
                             size = getattr(st, 'st_size', 0)
@@ -406,7 +405,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size in walk_files(directory, skip_protected):
         try:
-            stats.register_file(size, _get_extension(path))
+            stats.register_file(size, _get_extension(str(path)))
             
             if limit > 0:
                 if len(top_heap) < limit:

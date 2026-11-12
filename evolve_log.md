@@ -660,3 +660,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T06:26:56` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-11-12T06:26:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T06:26:56` Corrida terminada. Total usado hoy: 116.
+- `2026-11-12T06:34:49` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-11-12T06:35:47` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-11-12T06:36:13` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizamos el escaneo recursivo en `walk_files` y `_collect_summary_data` eliminando el uso de `Path` dentro de los bucles críticos, reemplazándolo por operaciones de string nativas para reducir la sobrecarga de instanciación de objetos en directorios con miles de archivos.
+- `2026-11-12T06:36:38` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para realizar una única llamada a `stat` por archivo, eliminando redundancias y mejorando el rendimiento en discos mecánicos.
+- `2026-11-12T06:36:48` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.__setattr__, SystemMetrics._set_validated_field
+- `2026-11-12T06:36:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T06:36:48` Corrida terminada. Total usado hoy: 120.

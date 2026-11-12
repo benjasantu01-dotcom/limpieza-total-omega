@@ -177,20 +177,19 @@ def _process_entry(
     visited_inodes: set[Tuple[int, int]], 
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Evalúa una entrada de directorio para BFS, manejando errores de acceso de forma robusta."""
+    """Evalúa una entrada de directorio para BFS usando datos de stat ya obtenidos."""
     try:
         if entry.is_symlink(): return
         stat = entry.stat(follow_symlinks=False)
         entry_path = Path(entry.path).resolve()
         
-        if not _safe_path_check(entry_path): return
-        
         if entry.is_dir():
-            if depth < MAX_RECURSION_DEPTH:
+            if depth < MAX_RECURSION_DEPTH and _safe_path_check(entry_path):
                 queue.append((entry_path, depth + 1))
         elif entry.is_file():
             if stat.st_size >= min_size and not is_system_or_hidden(entry_path):
                 if skip_protected and is_protected_path(entry_path): return
+                if not _safe_path_check(entry_path): return
                 inode_id = (stat.st_dev, stat.st_ino)
                 if inode_id not in visited_inodes:
                     visited_inodes.add(inode_id)
@@ -200,7 +199,7 @@ def _process_entry(
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un recorrido BFS del sistema de archivos manejando errores en raíces o subdirectorios."""
+    """Realiza un recorrido BFS optimizando llamadas a stat via scandir."""
     if directories is None or not isinstance(directories, Iterable) or min_size < 0: 
         return {}
     
