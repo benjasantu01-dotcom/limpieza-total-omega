@@ -190,7 +190,14 @@ class _SettingsManager:
                 if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
             
             temp_path = config_path.with_suffix(f".{os.getpid()}.tmp")
-            fd = os.open(temp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            # Usar O_EXCL para evitar sobreescritura accidental y O_NOFOLLOW por seguridad
+            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | getattr(os, 'O_NOFOLLOW', 0)
+            fd = os.open(temp_path, flags, 0o600)
+            
+            # Post-apertura: verificar si el archivo recién creado es un enlace simbólico
+            if stat.S_ISLNK(os.fstat(fd).st_mode):
+                os.close(fd); fd = -1; return False
+
             try:
                 if platform.system() == "Windows":
                     msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
@@ -199,7 +206,6 @@ class _SettingsManager:
                 os.close(fd)
                 fd = -1
                 os.replace(temp_path, resolved_path)
-                # Sincronizar directorio padre para asegurar persistencia del nuevo archivo
                 pfd = os.open(str(parent_dir), os.O_RDONLY)
                 try: os.fsync(pfd)
                 finally: os.close(pfd)

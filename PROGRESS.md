@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 35 | 2 | 11 | 1 | 53 |
+| 2026-11-10 | 35 | 2 | 11 | 1 | 49 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 27 | 1 | 12 | 5 | 7 |
+| 2026-11-12 | 29 | 1 | 12 | 5 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **35**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **30**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **18**
 - `quarantine.py`: **18**
 - `duplicates.py`: **17**
+- `settings.py`: **16**
 - `assistant.py`: **15**
 - `healthscore.py`: **15**
-- `settings.py`: **15**
 - `organizer.py`: **15**
 - `scanner.py`: **12**
+- `startup.py`: **12**
 - `branding.py`: **11**
-- `startup.py`: **11**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T03:53:03` **startup.py** (seguridad defensiva): Se endureció la seguridad de `_is_valid_executable` agregando `os.access(path, os.R_OK)` para confirmar que el ejecutable es realmente legible para el proceso antes de intentar cualquier operación de resolución de rutas, protegiendo contra posibles errores de permisos en rutas de sistema durante el escaneo.
+- `2026-11-12T03:52:33` **settings.py** (seguridad defensiva): Se endurece `perform_atomic_write` añadiendo una comprobación explícita para evitar que `os.open` cree archivos en rutas que, aunque pasaron los filtros previos, pudieran haber sido convertidas en puntos de montaje o enlaces simbólicos maliciosos durante la ventana de tiempo entre la validación y la apertura (TOCTOU).
 - `2026-11-12T03:44:06` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` al agregar una validación de `st_nlink` para detectar hard links y prevenir el seguimiento de estructuras de archivo circulares o inusuales, además de centralizar el manejo de `is_protected_path` evitando que rutas malformadas pasen el filtro.
 - `2026-11-12T03:43:51` **safety.py** (seguridad defensiva): Se ha añadido una validación estricta en el pipeline de seguridad (`_execute_safety_pipeline`) para bloquear explícitamente rutas que contengan caracteres de escape visuales (RTL/bidireccionales) que podrían ser utilizados para ofuscar extensiones de archivo maliciosas en la UI, reforzando la seguridad defensiva contra ataques de spoofing de nombre.
 - `2026-11-12T03:42:32` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` implementando una validación explícita para asegurar que la ruta a purgar permanezca dentro del sandbox, previniendo posibles ataques de *path traversal* o manipulación de la estructura de archivos en caso de una entrada maliciosa en el manifiesto.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T02:53:16` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` y `_iter_process_memory` ante rutas inexistentes, procesos con privilegios elevados que deniegan lectura de nombre, y buffers de memoria mal formados, garantizando que el escaneo de procesos no aborte ante condiciones de sistema comunes.
 - `2026-11-12T02:51:51` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas no numéricas o valores extremos (ej. negativos), evitando que una división o multiplicación inesperada genere resultados fuera de rango antes de que `_clamp` actúe, asegurando que el cálculo de salud sea consistente incluso ante métricas corruptas.
 - `2026-11-12T02:51:23` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de archivos añadiendo un manejo de excepciones más granular en `_process_entry` y `_collect_candidates`, garantizando que problemas de acceso a niveles profundos del sistema de archivos no interrumpan el escaneo completo, y asegurando que las rutas resultantes sean siempre válidas mediante la normalización explícita.
-- `2026-11-12T02:42:34` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo una validación explícita mediante `is_safe_to_modify` (que verifica `is_protected_path`) antes de intentar acceder a los atributos, previniendo excepciones innecesarias en entornos donde el sistema de archivos deniega lectura por políticas de seguridad o estados de bloqueo.
-- `2026-11-12T02:41:29` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` añadiendo una comprobación explícita para evitar que objetos de tipo `Path` (u otros tipos no serializables/peligrosos) se filtren en la estructura de datos que se procesa o se envía a la API, reforzando la seguridad frente a casos límite de tipos inesperados.

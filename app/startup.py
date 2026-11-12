@@ -149,8 +149,8 @@ class StartupEntry:
             if p_str in _RESOLVED_PATH_CACHE:
                 return True
             
-            # Reparse point check
-            if not path.exists() or path.is_symlink():
+            # Reparse point check y validación de lectura
+            if not path.exists() or path.is_symlink() or not os.access(path, os.R_OK):
                 return False
                 
             resolved = path.resolve(strict=True)
