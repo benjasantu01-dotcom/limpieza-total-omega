@@ -1568,3 +1568,40 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T15:51:43` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado el rendimiento de `is_protected_path` centralizando el cálculo de rutas raíz del sistema mediante una única llamada eficiente a `os.normcase` durante la inicialización, evitando el re-procesamiento de listas en cada llamada y reduciendo la complejidad de las comparaciones de string.
 - `2026-11-12T15:51:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T15:51:43` Corrida terminada. Total usado hoy: 336.
+- `2026-11-12T15:55:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-12T15:56:37` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-11-12T15:56:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T15:56:45` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-12T15:57:32` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._check_path_safety, _Validators._is_safe_path, _Validators._parse_as_type, _Validators._validate_enum_str
+- `2026-11-12T15:57:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T15:58:06` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.33s
+
+```
+- `2026-11-12T15:58:06` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_resolve_and_cache_path` y `_validate_file_access` moviendo la verificación `path.is_symlink()` a una posición temprana para evitar resoluciones innecesarias de rutas complejas o accesos al disco en archivos que son atajos, y reemplacé la llamada a `path.exists()` por una lógica basada en el caché global para reducir llamadas redundantes al sistema de archivos durante escaneos masivos.
+- `2026-11-12T15:58:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T15:58:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-12T15:58:43` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-12T15:58:55` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-12T15:58:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T15:58:55` Corrida terminada. Total usado hoy: 340.
