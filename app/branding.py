@@ -119,21 +119,23 @@ C_TEXT: Final[ColorHex] = _RAW_PALETTE["text"]
 C_TEXT_MUTED: Final[ColorHex] = _RAW_PALETTE["text_muted"]
 C_GLOW: Final[ColorHex] = _RAW_PALETTE["glow"]
 
-_SVG_TEMPLATE: Final[str] = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{{s}}" height="{{s}}" viewBox="0 0 128 128">
-  <defs>
-    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{{stops}}</linearGradient>
-    <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
-      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <rect width="128" height="128" rx="30" fill="{C_SURFACE}"/>
-  <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>
-  <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z" fill="url(#omegaShield)"/>
-  <path d="M41 75 L75 41" stroke="{C_SURFACE}" stroke-width="8" stroke-linecap="round"/>
-  <path d="M75 41 L89 38 L92 52 Z" fill="{C_SURFACE}"/>
-  <text x="64" y="98" font-family="{UI_CONFIG.font_family}" font-size="26" font-weight="bold" fill="{C_SURFACE}" text-anchor="middle">&#937;</text>
-</svg>"""
+_SVG_TEMPLATE: Final[str] = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">\n'
+    '  <defs>\n'
+    '    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}</linearGradient>\n'
+    '    <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">\n'
+    f'      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>\n'
+    f'      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>\n'
+    '    </radialGradient>\n'
+    '  </defs>\n'
+    f'  <rect width="128" height="128" rx="30" fill="{C_SURFACE}"/>\n'
+    '  <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>\n'
+    '  <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z" fill="url(#omegaShield)"/>\n'
+    f'  <path d="M41 75 L75 41" stroke="{C_SURFACE}" stroke-width="8" stroke-linecap="round"/>\n'
+    f'  <path d="M75 41 L89 38 L92 52 Z" fill="{C_SURFACE}"/>\n'
+    f'  <text x="64" y="98" font-family="{UI_CONFIG.font_family}" font-size="26" font-weight="bold" fill="{C_SURFACE}" text-anchor="middle">&#937;</text>\n'
+    '</svg>'
+)
 
 class CanvasElement(Protocol):
     """Protocolo de tipado para los métodos de dibujo del widget tkinter.Canvas."""
@@ -337,6 +339,7 @@ def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
         for i in range(len(SHIELD_BASE_COORDS))
     )
 
+@lru_cache(maxsize=16)
 def logo_svg(size: int = _DEFAULT_SVG_SIZE) -> str:
     """Genera el contenido del archivo SVG del logo (formato string)."""
     s = max(16, min(1024, int(size)))

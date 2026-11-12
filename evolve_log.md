@@ -1382,3 +1382,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_pa
 - `2026-11-12T01:51:49` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _ValidatorEntry, _ValidatorEntry.__init__, _Validators._validate_enum_str
 - `2026-11-12T01:51:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T01:51:49` Corrida terminada. Total usado hoy: 8.
+- `2026-11-12T02:00:01` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-12T02:00:32` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de validación, clarificando el propósito, las condiciones de retorno y las excepciones manejadas, para facilitar el mantenimiento y la auditoría de seguridad del código.
+- `2026-11-12T02:01:05` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Answer.is_online, SystemContext.__hash__, SystemContext._apply_field, SystemContext._clean_grade, SystemContext._has_circular_refs, SystemContext._hash_tuple, SystemContext._is_valid_metric_key, SystemContext._validate_keys_safe, SystemContext.get_metric, SystemContext.is_valid_structure
+- `2026-11-12T02:01:39` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se introdujo una cache de nivel de módulo para `_SVG_TEMPLATE` mediante `lru_cache` y se pre-compilaron las constantes de configuración de renderizado en `_SVG_TEMPLATE` para evitar la interpolación constante de strings cada vez que se genera el logo.
+- `2026-11-12T02:01:49` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-12T02:01:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T02:01:49` Corrida terminada. Total usado hoy: 12.
