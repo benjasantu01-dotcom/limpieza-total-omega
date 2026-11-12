@@ -381,7 +381,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         time.sleep(0.01)
         return not path.exists()
     except (UnsafePathError, OSError, PermissionError, RuntimeError):
-        return False
+        return not path.exists()
 
 def _check_path_syntax_integrity(path: Path) -> None:
     """

@@ -1144,3 +1144,13 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-11-12T11:42:52` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante la inyección de datos inesperados en el constructor mediante un filtrado estricto en `__post_init__` y `__setattr__`, asegurando que cualquier entrada que no sea numérica finita o que exceda límites lógicos sea rechazada o normalizada antes de entrar al pipeline.
 - `2026-11-12T11:42:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T11:42:52` Corrida terminada. Total usado hoy: 240.
+- `2026-11-12T11:50:51` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-11-12T11:51:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T11:52:57` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-12T11:54:10` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-12T11:54:39` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-12T11:55:39` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T11:56:16` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-12T11:56:52` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré `_safe_unlink` para manejar el caso límite donde la ruta ya no existe, añadiendo una verificación robusta para evitar errores de tipo en la condición de retorno, alineándolo con el enfoque de robustez frente a estados de archivo cambiantes.
+- `2026-11-12T11:56:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T11:56:52` Corrida terminada. Total usado hoy: 244.

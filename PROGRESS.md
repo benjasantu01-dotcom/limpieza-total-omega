@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 76
-- Sin cambios (nada sustancial que mejorar): 21
+- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 77
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 89 | 11 | 34 | 10 | 120 |
-| 2026-11-12 | 94 | 8 | 42 | 11 | 85 |
+| 2026-11-11 | 89 | 10 | 34 | 9 | 118 |
+| 2026-11-12 | 95 | 8 | 43 | 11 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 - rendimiento: **33**
 - seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `settings.py`: **17**
 - `memory.py`: **16**
 - `safety.py`: **16**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T11:56:52` **quarantine.py** (robustez ante casos límite): Mejoré `_safe_unlink` para manejar el caso límite donde la ruta ya no existe, añadiendo una verificación robusta para evitar errores de tipo en la condición de retorno, alineándolo con el enfoque de robustez frente a estados de archivo cambiantes.
 - `2026-11-12T11:42:52` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante la inyección de datos inesperados en el constructor mediante un filtrado estricto en `__post_init__` y `__setattr__`, asegurando que cualquier entrada que no sea numérica finita o que exceda límites lógicos sea rechazada o normalizada antes de entrar al pipeline.
 - `2026-11-12T11:42:10` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante archivos bloqueados o eliminados durante el recorrido (race conditions) integrando una validación de `os.DirEntry` más defensiva y un manejo de excepciones local que evita la interrupción prematura de la búsqueda.
 - `2026-11-12T11:41:46` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo manejo explícito de errores de I/O en la obtención del tamaño (`st_size`) y asegurando que las comparaciones del heap no fallen ante valores nulos o inesperados.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T11:00:59` **branding.py** (rendimiento): Se optimizó el cálculo de la escala del logo en `draw_logo` eliminando la llamada innecesaria a `_get_scaled_poly` antes de validar la escala, y se refactorizó `logo_svg` para eliminar el formateo de strings en tiempo de ejecución mediante pre-cálculo de la constante `_SVG_TEMPLATE_PRECOMPUTED`.
 - `2026-11-12T10:51:05` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de procesamiento y utilidades, clarificando las responsabilidades de validación, el manejo de cachés globales y los supuestos de seguridad, facilitando el mantenimiento y la auditoría del código.
 - `2026-11-12T10:40:44` **quarantine.py** (legibilidad y documentación): Se han documentado mediante docstrings específicos las funciones críticas de validación y gestión de E/S, aclarando el propósito de las protecciones de integridad, el manejo de reintento ante bloqueos de sistema y la importancia del uso de `fsync`, facilitando así la comprensión del código para futuras auditorías o mantenimiento.
-- `2026-11-12T10:31:39` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de procesamiento de datos para clarificar los tipos esperados y se añadieron `type hints` explícitos en variables internas complejas, facilitando la auditoría del código bajo las reglas de seguridad.
