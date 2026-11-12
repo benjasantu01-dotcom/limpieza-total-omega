@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 80
+- Rechazadas por guardia de seguridad: 81
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 89 | 10 | 34 | 9 | 106 |
-| 2026-11-12 | 100 | 10 | 46 | 11 | 89 |
+| 2026-11-11 | 89 | 10 | 34 | 9 | 102 |
+| 2026-11-12 | 101 | 10 | 47 | 11 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **35**
+- seguridad defensiva: **36**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **24**
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `settings.py`: **18**
 - `duplicates.py`: **17**
 - `healthscore.py`: **16**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T12:33:56` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_create_temp_file` y `_perform_secure_copy` para mitigar condiciones de carrera y ataques de reemplazo de archivos mediante la validación del descriptor de archivo (`fd`) tras la creación y la verificación explícita del estado del archivo temporal antes de cada escritura crítica.
 - `2026-11-12T12:22:41` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del modelo de datos `SystemMetrics` evitando la modificación directa de atributos mediante `object.__setattr__` y añadiendo una validación explícita de tipos en el método `__setattr__`, garantizando que solo valores numéricos finitos puedan ser asignados a las métricas del sistema.
 - `2026-11-12T12:22:14` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad en el escaneo mediante la validación estricta de las rutas resueltas antes de procesar atributos o realizar operaciones de I/O, evitando el seguimiento de enlaces simbólicos o puntos de reparse que podrían escapar del contexto definido por el usuario.
 - `2026-11-12T12:21:51` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_summary_data` y `walk_files` incorporando una verificación explícita de `is_protected_path` como capa adicional antes de procesar cualquier entrada, garantizando que aunque un archivo pase los filtros iniciales, no se acceda a rutas restringidas por políticas de seguridad del sistema.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T11:31:31` **startup.py** (rendimiento): Se ha optimizado `list_startup_entries` para evitar la creación de una lista temporal completa en memoria antes de filtrar, utilizando un generador y procesando los elementos de forma perezosa, lo que reduce el uso de memoria y la latencia cuando el número de entradas de inicio es elevado.
 - `2026-11-12T11:31:04` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuraciones mediante la implementación de un mecanismo de "dirty check" más eficiente en `_read_and_parse_json` y `load`, evitando deserializaciones innecesarias al verificar el hash de los metadatos del archivo antes de procesar el contenido.
 - `2026-11-12T11:21:03` **quarantine.py** (rendimiento): Optimizado el rendimiento de `load_manifest` eliminando la relectura redundante de metadatos de disco para cada ítem en el manifiesto, utilizando los datos del `stat()` del archivo de manifiesto para validar la caché antes de procesar la lista, reduciendo drásticamente las llamadas al sistema en el bucle principal.
-- `2026-11-12T11:15:00` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` moviendo la inicialización de buffers y la resolución de funciones `ctypes` fuera del bucle `for`, evitando la reasignación de memoria y el lookup de símbolos en cada iteración.

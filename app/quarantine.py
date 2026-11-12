@@ -655,7 +655,13 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
         temp_path = parent / f".tmp_{uuid.uuid4().hex}"
         try:
             fd = os.open(str(temp_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-            try: os.fsync(fd)
+            try:
+                # Verificación de integridad tras creación exclusiva
+                st = os.fstat(fd)
+                if st.st_nlink != 1:
+                    os.close(fd)
+                    continue
+                os.fsync(fd)
             finally: os.close(fd)
             return temp_path
         except (FileExistsError, OSError): continue
@@ -682,6 +688,8 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         def _copy():
             with open(source, "rb") as f_src:
                 with open(temp_dest, "wb") as f_dst:
+                    # Validar nuevamente que el temporal sea un archivo simple antes de escribir
+                    if os.path.islink(temp_dest): raise UnsafePathError("Inyección de enlace durante copia.")
                     shutil.copyfileobj(f_src, f_dst)
                     f_dst.flush()
                     os.fsync(f_dst.fileno()) 
