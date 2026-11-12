@@ -178,18 +178,13 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Obtiene metadatos del archivo asegurando que no sea un punto de reanálisis."""
     if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
         return None
-        
-    if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask:
-        return None
-        
     try:
+        if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_mask:
+            return None
         stats = entry.stat(follow_symlinks=False)
         st_size = getattr(stats, 'st_size', -1)
         st_mtime = getattr(stats, 'st_mtime', -1.0)
-        
-        if st_size < 0 or st_mtime < 0:
-            return None
-        return stats
+        return stats if (st_size >= 0 and st_mtime >= 0) else None
     except (OSError, PermissionError) as e:
         if getattr(e, 'winerror', None) not in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED, ERROR_FILE_NOT_FOUND):
             logger.debug(f"Error accediendo a metadatos de {entry.path}: {e}")

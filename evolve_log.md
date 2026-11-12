@@ -1485,3 +1485,12 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-11-12T14:27:19` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-12T14:27:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T14:27:19` Corrida terminada. Total usado hoy: 304.
+- `2026-11-12T14:34:06` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-12T14:34:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-11-12T14:34:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T14:35:54` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-12T14:36:55` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-11-12T14:37:21` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_safe_stat` y las funciones de escaneo envolviendo las llamadas a `os.stat` en un manejo de excepciones explícito que captura errores comunes de E/S, evitando que fallos puntuales en metadatos detengan el procesamiento de archivos.
+- `2026-11-12T14:37:37` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé `_read_and_parse_json` para manejar explícitamente posibles errores de `json.loads` y problemas de codificación mediante un bloque `try-except` más robusto, asegurando que cualquier entrada malformada o inesperada resulte en un retorno `None` seguro y no en una propagación de excepciones.
+- `2026-11-12T14:37:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T14:37:37` Corrida terminada. Total usado hoy: 308.
