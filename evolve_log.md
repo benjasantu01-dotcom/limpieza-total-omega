@@ -591,3 +591,10 @@ FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner
 - `2026-11-12T05:56:10` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los parámetros de entrada de las funciones de alto nivel (`group_by_size` y `find_duplicates`) y se ha corregido un docstring ambiguo en `hash_file` para especificar claramente el comportamiento del caché durante la sesión.
 - `2026-11-12T05:56:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T05:56:10` Corrida terminada. Total usado hoy: 104.
+- `2026-11-12T06:04:18` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-11-12T06:04:46` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: score_disk, score_duplicates, score_junk, score_memory, score_security, score_startup
+- `2026-11-12T06:05:57` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-12T06:06:28` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_iter_process_memory` para extraer la lógica de instanciación de contadores de memoria y el manejo de buffers a una función dedicada, reduciendo el anidamiento y aclarando el propósito de cada paso en el bucle.
+- `2026-11-12T06:06:41` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) en las funciones críticas de validación y escaneo para clarificar la lógica de seguridad, sin alterar el comportamiento funcional del módulo.
+- `2026-11-12T06:06:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T06:06:41` Corrida terminada. Total usado hoy: 108.
