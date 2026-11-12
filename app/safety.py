@@ -418,7 +418,13 @@ SENSITIVE_EXTENSIONS: Final[set[str]] = {
 @lru_cache(maxsize=1)
 def _get_system_root_paths() -> tuple[str, ...]:
     """Obtiene y normaliza rutas raíz del sistema basadas en variables de entorno."""
-    return tuple(os.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData") if os.environ.get(v))
+    # Pre-calculamos las rutas de forma normalizada para optimizar is_protected_path
+    paths = []
+    for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData"):
+        env_val = os.environ.get(v)
+        if env_val:
+            paths.append(os.path.normcase(env_val))
+    return tuple(paths)
 
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
@@ -920,8 +926,10 @@ def is_protected_path(path: PathLike) -> bool:
     try:
         norm_p = _normalize_resolved(path_str)
         norm_str = os.path.normcase(str(norm_p))
+        system_roots = _get_system_root_paths()
         
-        if any(norm_str.startswith(r) for r in _get_system_root_paths()):
+        is_protected = False
+        if any(norm_str.startswith(r) for r in system_roots):
             is_protected = True
         elif any(part.lower() in PROTECTED_DIR_NAMES for part in norm_p.parts):
             is_protected = True
@@ -1098,7 +1106,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
              final_path = _get_final_path_normalized(target_path)
              if not final_path.drive == target_path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(guard.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):

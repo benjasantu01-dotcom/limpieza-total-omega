@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **181** (35.9% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 57 | 6 | 20 | 7 | 82 |
-| 2026-11-12 | 124 | 10 | 57 | 12 | 129 |
+| 2026-11-11 | 55 | 5 | 20 | 7 | 81 |
+| 2026-11-12 | 126 | 10 | 58 | 12 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **30**
-- rendimiento: **30**
+- seguridad defensiva: **38**
+- rendimiento: **32**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,17 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **16**
-- `assistant.py`: **15**
+- `safety.py`: **14**
+- `assistant.py`: **14**
 - `memory.py`: **14**
-- `startup.py`: **13**
-- `safety.py`: **13**
+- `startup.py`: **12**
 - `scanner.py`: **11**
 - `branding.py`: **9**
-- `organizer.py`: **7**
+- `organizer.py`: **8**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T15:51:43` **safety.py** (rendimiento): Se ha optimizado el rendimiento de `is_protected_path` centralizando el cálculo de rutas raíz del sistema mediante una única llamada eficiente a `os.normcase` durante la inicialización, evitando el re-procesamiento de listas en cada llamada y reduciendo la complejidad de las comparaciones de string.
+- `2026-11-12T15:48:52` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la validación de extensiones mediante conversión a `Path` y múltiples llamadas a `os.path.splitext` por una verificación directa sobre el string del nombre del archivo usando `endswith` sobre una tupla precalculada, reduciendo la carga de objetos y llamadas a sistema en el bucle principal.
 - `2026-11-12T15:40:30` **memory.py** (rendimiento): Optimizé el rendimiento de `_iter_process_memory` pre-alocando recursos y evitando el re-mapeo de funciones de API dentro del bucle, además de reemplazar la creación redundante de objetos `Path` por comparaciones de strings directas para reducir la presión sobre el recolector de basura.
 - `2026-11-12T15:37:01` **healthscore.py** (rendimiento): Optimicé el rendimiento del proceso de cálculo reemplazando las llamadas repetitivas y costosas a `getattr` y `getattr` con un acceso directo a los atributos dentro del bucle del pipeline, y eliminando validaciones redundantes en `SystemMetrics` durante el acceso a datos.
 - `2026-11-12T15:28:54` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de estadísticas (`_collect_summary_data`) eliminando la llamada redundante a `is_protected_path` dentro del loop, ya que `walk_files` ya realiza este filtrado de forma nativa.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T14:47:06` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros faltantes y la creación de docstrings descriptivos para las funciones geométricas, facilitando la comprensión del motor de renderizado vectorial.
 - `2026-11-12T14:45:54` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` y `_process_folder_entry` añadiendo validaciones estrictas de tipos y manejo seguro de errores para evitar que entradas malformadas corrompan el flujo del escaneo.
 - `2026-11-12T14:37:37` **settings.py** (manejo de errores y validación de entradas): Reforcé `_read_and_parse_json` para manejar explícitamente posibles errores de `json.loads` y problemas de codificación mediante un bloque `try-except` más robusto, asegurando que cualquier entrada malformada o inesperada resulte en un retorno `None` seguro y no en una propagación de excepciones.
-- `2026-11-12T14:37:21` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de `_safe_stat` y las funciones de escaneo envolviendo las llamadas a `os.stat` en un manejo de excepciones explícito que captura errores comunes de E/S, evitando que fallos puntuales en metadatos detengan el procesamiento de archivos.
-- `2026-11-12T14:25:58` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída del proceso antes de ejecutar la acción, para asegurar consistencia con las reglas de seguridad.

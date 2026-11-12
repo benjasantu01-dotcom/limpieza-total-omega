@@ -59,6 +59,9 @@ JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
 })
 
+# Tupla precalculada para optimizar las comprobaciones de final de cadena en el bucle
+JUNK_EXTENSIONS_TUPLE: Final[tuple[str, ...]] = tuple(JUNK_EXTENSIONS)
+
 @dataclass(frozen=True)
 class ScanSettings:
     """Configuración inmutable para el proceso de escaneo de archivos."""
@@ -126,13 +129,11 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Verifica si la extensión del archivo coincide con las definidas en JUNK_EXTENSIONS."""
-        return self.path.suffix.lower() in JUNK_EXTENSIONS
+        return self.path.name.lower().endswith(JUNK_EXTENSIONS_TUPLE)
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si un nombre de archivo dado posee una extensión considerada basura."""
-    if not isinstance(filename, str) or not filename: return False
-    _, ext = os.path.splitext(filename)
-    return ext.lower() in JUNK_EXTENSIONS
+    return isinstance(filename, str) and filename.lower().endswith(JUNK_EXTENSIONS_TUPLE)
 
 def _get_win_attributes(entry: Union[os.DirEntry, Path]) -> int:
     """Obtiene los atributos de archivo (bits Win32) mediante syscalls del SO."""
@@ -296,10 +297,10 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
         return False
     return True
 
-def _is_valid_junk_entry(entry: os.DirEntry, extensions: frozenset[str]) -> bool:
+def _is_valid_junk_entry(entry: os.DirEntry) -> bool:
     """Valida requisitos de tamaño y extensión de una entrada de directorio."""
     try:
-        if Path(entry.name).suffix.lower() not in extensions: return False
+        if not entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE): return False
         stats = entry.stat(follow_symlinks=False)
         return stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and not _is_system_hidden(entry)
     except (PermissionError, OSError):
@@ -315,7 +316,6 @@ def _process_directory(current_dir: Path, junk_candidates: List[JunkFile], depth
         if not real_path.is_dir() or str_path in visited: return
         
         visited.add(str_path)
-        extensions = JUNK_EXTENSIONS
         
         with os.scandir(real_path) as iterator:
             for entry in iterator:
@@ -323,7 +323,7 @@ def _process_directory(current_dir: Path, junk_candidates: List[JunkFile], depth
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), junk_candidates, depth + 1, protected_cache, visited)
-                    elif entry.is_file(follow_symlinks=False) and _is_valid_junk_entry(entry, extensions):
+                    elif entry.is_file(follow_symlinks=False) and _is_valid_junk_entry(entry):
                         stats = entry.stat(follow_symlinks=False)
                         junk_candidates.append(JunkFile(
                             Path(entry.path), 
