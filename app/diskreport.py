@@ -172,7 +172,7 @@ class SummaryData(NamedTuple):
 
 def _validate_limit(limit: Any) -> int:
     """Valida que el límite sea un entero positivo, retornando 0 ante error."""
-    return limit if isinstance(limit, int) and limit > 0 else 0
+    return int(limit) if isinstance(limit, int) and limit > 0 else 0
 
 
 def _is_unc_path(p: Path) -> bool:
@@ -405,17 +405,20 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
-    for path, size in walk_files(directory, skip_protected):
-        try:
-            stats.register_file(size, _get_extension(str(path)))
-            
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-        except (OSError, PermissionError, ValueError):
-            continue
+    try:
+        for path, size in walk_files(directory, skip_protected):
+            try:
+                stats.register_file(size, _get_extension(str(path)))
+                
+                if limit > 0:
+                    if len(top_heap) < limit:
+                        heapq.heappush(top_heap, (size, path))
+                    elif size > top_heap[0][0]:
+                        heapq.heapreplace(top_heap, (size, path))
+            except (OSError, PermissionError, ValueError):
+                continue
+    except Exception:
+        pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

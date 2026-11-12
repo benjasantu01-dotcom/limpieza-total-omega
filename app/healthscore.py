@@ -225,27 +225,32 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
 # --- Funciones de Cálculo ---
 
 @lru_cache(maxsize=16)
-def score_junk(junk_mb: float | int) -> NormalizedRatio: return _JUNK_SCORER(float(junk_mb))
+def score_junk(junk_mb: float | int) -> NormalizedRatio: 
+    return _JUNK_SCORER(_validate_numeric(junk_mb, 0.0, 0.0, float('inf')))
 
 @lru_cache(maxsize=16)
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
-    count = max(0.0, float(suspicious_count))
-    warn = max(0.0, float(warnings))
+    count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
+    warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
     return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)))
 
 @lru_cache(maxsize=16)
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
+    val = _validate_numeric(available_percent, 0.0, 0.0, 100.0)
+    return _clamp(val / _LIMIT_RAM_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
+    val = _validate_numeric(free_percent, 0.0, 0.0, 100.0)
+    return _clamp(val / _LIMIT_DISK_PERCENT)
 
 @lru_cache(maxsize=16)
-def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: return _DUP_SCORER(float(duplicate_mb))
+def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
+    return _DUP_SCORER(_validate_numeric(duplicate_mb, 0.0, 0.0, float('inf')))
 
 @lru_cache(maxsize=16)
-def score_startup(startup_count: int | float) -> NormalizedRatio: return _STARTUP_SCORER(float(startup_count))
+def score_startup(startup_count: int | float) -> NormalizedRatio: 
+    return _STARTUP_SCORER(_validate_numeric(startup_count, 0.0, 0.0, 1000.0))
 
 # --- Modelos de Datos ---
 

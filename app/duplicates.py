@@ -117,7 +117,7 @@ def _is_valid_candidate(path: Path, st_size: int = -1) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula hash SHA256 completo. Usa un caché global de sesión para evitar I/O redundante en archivos ya procesados."""
-    if not isinstance(path, Path): return None
+    if not isinstance(path, Path) or not path.is_file(): return None
     if path in _full_hash_cache: return _full_hash_cache.get(path)
     if not _safe_path_check(path): return None
     
@@ -135,7 +135,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula hash SHA256 sobre los primeros bytes (fingerprint rápida para descartes)."""
-    if not isinstance(path, Path): return None
+    if not isinstance(path, Path) or not path.is_file(): return None
     if path in _partial_cache: return _partial_cache.get(path)
     if not _safe_path_check(path): return None
     
@@ -156,8 +156,8 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     if not isinstance(paths, Iterable): return {}
     
     for p in paths:
+        if p is None: continue
         try:
-            if p is None: continue
             item = Path(p)
             if _safe_path_check(item):
                 st = item.stat(follow_symlinks=False)
@@ -240,7 +240,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     if not paths: return {}
     groups: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path is not None:
+        if path is not None and isinstance(path, Path):
             digest = hash_func(path)
             if digest:
                 groups[digest].append(path)

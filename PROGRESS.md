@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 71
+- Rechazadas por guardia de seguridad: 70
 - Sin cambios (nada sustancial que mejorar): 25
 - Sin respuesta de la IA (error o límite): 207
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 115 | 13 | 43 | 14 | 127 |
-| 2026-11-12 | 68 | 5 | 28 | 11 | 80 |
+| 2026-11-11 | 113 | 13 | 41 | 14 | 127 |
+| 2026-11-12 | 71 | 5 | 29 | 11 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **37**
 - seguridad defensiva: **37**
+- legibilidad y documentación: **36**
 - rendimiento: **36**
-- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `safety.py`: **20**
+- `diskreport.py`: **23**
+- `safety.py`: **19**
 - `quarantine.py`: **18**
 - `settings.py`: **17**
-- `duplicates.py`: **15**
+- `duplicates.py`: **16**
 - `memory.py`: **15**
 - `assistant.py`: **14**
-- `healthscore.py`: **13**
-- `scanner.py`: **12**
+- `healthscore.py`: **14**
 - `startup.py`: **12**
 - `organizer.py`: **12**
+- `scanner.py`: **11**
 - `branding.py`: **9**
 - `browser.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T09:50:09` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de cálculo de score (`score_security`, `score_memory`, etc.) agregando validaciones de tipo y rango defensivas para evitar errores en tiempo de ejecución si se inyectan datos inesperados, asegurando que siempre retornen valores normalizados.
+- `2026-11-12T09:49:38` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del módulo `duplicates.py` mediante la validación proactiva de tipos y estados (`None`, vacíos, errores de conversión) en funciones críticas de procesamiento, evitando que excepciones en el flujo de entrada detengan la ejecución del análisis o causen comportamientos inesperados en las operaciones de hashing.
+- `2026-11-12T09:49:06` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de reporte (`largest_files`, `usage_by_extension`, `largest_folders`, `total_size`) añadiendo una validación explícita para evitar errores de tipo si se pasa un objeto `limit` no entero, además de asegurar que los resultados procesados en `_collect_summary_data` manejen de forma consistente cualquier posible excepción inesperada durante la iteración del generador `walk_files`.
 - `2026-11-12T09:40:56` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `_is_target_valid` añadiendo validaciones preventivas de tipos y estados, asegurando que los argumentos `bases` y `cache_paths` sean procesados de forma segura incluso si el llamador envía tipos inesperados, evitando posibles `AttributeError` o `TypeError` durante el bucle.
 - `2026-11-12T09:40:11` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` implementando un chequeo de tipos estricto y seguro mediante `isinstance` antes de realizar operaciones de asignación, evitando fallos silenciosos por tipos incompatibles o mutaciones inesperadas.
 - `2026-11-12T08:18:12` **startup.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_is_valid_registry_path` al añadir una verificación estricta de la ruta resuelta contra el sistema de protección: ahora, además de validar la existencia, se confirma explícitamente que la ruta no sea un vínculo simbólico (symlink) para evitar ataques de redirección, y se garantiza que el path resuelto esté dentro de los límites de seguridad permitidos antes de ser incluido en el inventario.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T07:48:20` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo chequeos explícitos de `is_safe_to_modify` sobre las rutas resueltas antes de procesarlas, evitando que el escaneo siga rutas que, aunque no sean de sistema, hayan sido marcadas como restringidas dinámicamente.
 - `2026-11-12T07:48:01` **browser.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `DirectoryScanner._process_entry` para validar que ninguna subcarpeta acceda a `NEVER_TOUCH` (como perfiles o extensiones), cerrando una brecha de seguridad donde el escaneo recursivo podría haber inspeccionado archivos críticos dentro de carpetas de caché no estándar.
 - `2026-11-12T07:46:56` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_call_gemini` validando estrictamente el protocolo `https` y evitando la construcción dinámica de URLs con `urlencode` al detectar que `urllib` puede ser manipulado, pasando a usar un `Request` con cabeceras estrictas y validando que el `host` de destino sea inamovible.
-- `2026-11-12T07:37:05` **safety.py** (robustez ante casos límite): Se introdujo una verificación de "estado de archivo ocupado" más resiliente en `_is_file_in_use_exclusive` mediante el uso de `FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE` (0x07) para minimizar falsos positivos causados por bloqueos de lectura de software de indexación, sin comprometer la seguridad de escritura.
-- `2026-11-12T07:27:55` **quarantine.py** (robustez ante casos límite): He mejorado `quarantine.py` implementando una validación de "concurrencia de archivos" más robusta en `_is_file_exclusive` para evitar que el escáner intente mover archivos que están siendo bloqueados por operaciones de lectura/escritura pendientes, lo cual es un caso límite frecuente en Windows.
-- `2026-11-12T07:26:17` **memory.py** (robustez ante casos límite): Se ha mejorado `_iter_process_memory` para manejar de forma robusta los casos donde la API `GetProcessMemoryInfo` falla debido a procesos en estado de transición (finalizando) o con restricciones de permisos, evitando que la iteración se detenga prematuramente y protegiendo la integridad de la lista mediante una gestión de recursos más estricta (`finally` block) y filtros de validación adicionales.
