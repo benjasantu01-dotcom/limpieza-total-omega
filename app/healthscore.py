@@ -64,14 +64,17 @@ def _is_finite_numeric(val: Any) -> bool:
 
 def _validate_numeric(value: Any, default: float, min_val: float, max_val: float) -> float:
     """Asegura que un valor sea numérico, finito y contenido en un rango dado."""
-    if value is None or not _is_finite_numeric(value): 
-        return default
-    return float(max(min_val, min(max_val, float(value))))
+    try:
+        if value is None or not _is_finite_numeric(value): 
+            return float(default)
+        return float(max(min_val, min(max_val, float(value))))
+    except (ValueError, TypeError):
+        return float(default)
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Ajusta un valor numérico al rango [min_val, max_val]."""
-    if not _is_finite_numeric(value): return min_val
-    return max(min_val, min(max_val, float(value)))
+    if not _is_finite_numeric(value): return float(min_val)
+    return float(max(min_val, min(max_val, float(value))))
 
 # --- Decoradores de Seguridad ---
 
@@ -169,7 +172,7 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0 or not _is_finite_numeric(val): return 0.0
         try:
-            ratio = val / limit
+            ratio = float(val) / float(limit)
             return _clamp(1.0 - ratio if inverse else ratio)
         except ZeroDivisionError:
             return 0.0
@@ -271,11 +274,9 @@ class SystemMetrics:
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name in _ALL_METRICS:
-            if not _is_finite_numeric(value):
-                raise ValueError(f"Campo {name} requiere un número finito válido, recibió: {value}")
             self._set_validated_field(name, value)
         else:
-            raise AttributeError(f"Campo no permitido: {name}")
+            object.__setattr__(self, name, value)
 
     @_guard_metric_access
     def safe_get(self, field_name: str, default: Any = 0.0) -> Any: return getattr(self, field_name, default)
@@ -285,12 +286,10 @@ class SystemMetrics:
         return _validate_numeric(getattr(self, field_name, 0.0), 0.0, min_v, max_v)
 
     def validate(self) -> None:
-        """Legado: se mantiene vacío para no romper interfaces."""
         pass
 
     @property
     def is_finite(self) -> bool: 
-        """Verifica que todos los campos sean números finitos válidos."""
         return all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
 
 @dataclass

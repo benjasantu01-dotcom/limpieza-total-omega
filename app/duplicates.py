@@ -177,9 +177,10 @@ def _process_entry(
     visited_inodes: set[Tuple[int, int]], 
     size_map: Dict[int, List[Path]]
 ) -> None:
-    """Evalúa una entrada de directorio para BFS usando datos de stat ya obtenidos."""
+    """Evalúa una entrada de directorio para BFS, gestionando bloqueos por acceso denegado."""
     try:
         if entry.is_symlink(): return
+        # El acceso a stat puede fallar en archivos en uso o bloqueados por sistema
         stat = entry.stat(follow_symlinks=False)
         entry_path = Path(entry.path).resolve()
         
@@ -195,7 +196,8 @@ def _process_entry(
                     visited_inodes.add(inode_id)
                     size_map[stat.st_size].append(entry_path)
     except (OSError, PermissionError, ValueError):
-        pass
+        # Caso límite: archivo denegado o inaccesible durante el listado, se omite
+        return
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:

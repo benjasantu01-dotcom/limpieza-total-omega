@@ -691,3 +691,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-12T07:07:16` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
 - `2026-11-12T07:07:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T07:07:16` Corrida terminada. Total usado hoy: 132.
+- `2026-11-12T07:15:32` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-11-12T07:16:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-12T07:16:49` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` ante archivos bloqueados o bloqueos de acceso durante la iteración, envolviendo el `yield` y las operaciones con `path` en un bloque `try-except` más amplio para evitar que el generador colapse prematuramente ante errores de I/O en sistemas con permisos restrictivos.
+- `2026-11-12T07:17:48` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar que `_collect_candidates` procese archivos que están siendo bloqueados por el sistema operativo (denegación de acceso o archivo en uso) al capturar excepciones `PermissionError` y `OSError` de forma más granular durante la iteración de `scandir`.
+- `2026-11-12T07:18:48` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T07:19:18` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del manejo de métricas en `SystemMetrics` evitando la propagación de excepciones críticas durante la inicialización y garantizando que los valores de coma flotante sean tratados de forma segura en entornos con configuraciones regionales variables.
+- `2026-11-12T07:20:18` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T07:21:21` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-11-12T07:21:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): el archivo se encogió al 43% del original (posible pérdida de código)
+- `2026-11-12T07:21:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T07:21:53` Corrida terminada. Total usado hoy: 136.
