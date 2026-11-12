@@ -1403,3 +1403,56 @@ FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_pa
 - `2026-11-12T02:22:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
 - `2026-11-12T02:22:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-12T02:22:24` Corrida terminada. Total usado hoy: 20.
+- `2026-11-12T02:30:33` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-11-12T02:31:35` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-12T02:32:41` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché TTL (Time-To-Live) global para las validaciones de `is_protected_path` y se refactorizó `_validate_structural_safety` para evitar cálculos repetitivos de regex y normalizaciones de rutas en bucles, mejorando significativamente el rendimiento al escanear directorios grandes.
+- `2026-11-12T02:33:08` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo centralizado implementando un sistema de caché de atributos en la clase `Scanner` para evitar llamadas redundantes al sistema de archivos (`os.stat`) durante el procesamiento de entradas ya visitadas, reduciendo la carga de E/S.
+- `2026-11-12T02:33:37` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-11-12T02:33:50` Tests FALLARON:
+```
+app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+4 failed, 295 passed in 1.55s
+
+```
+- `2026-11-12T02:33:50` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó `_resolve_and_cache_path` y `_is_valid_executable` para evitar llamadas redundantes a `Path.resolve()` y `path.exists()`, consolidando la lógica de validación de rutas mediante un uso más eficiente de las cachés existentes y reduciendo la profundidad de las ramas de ejecución.
+- `2026-11-12T02:33:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-12T02:33:50` Corrida terminada. Total usado hoy: 24.

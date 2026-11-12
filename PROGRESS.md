@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 68
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 218
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-10 | 42 | 3 | 13 | 1 | 75 |
+| 2026-11-10 | 39 | 3 | 13 | 1 | 74 |
 | 2026-11-11 | 133 | 14 | 47 | 14 | 142 |
-| 2026-11-12 | 10 | 0 | 8 | 1 | 1 |
+| 2026-11-12 | 12 | 1 | 8 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **46**
-- rendimiento: **33**
-- seguridad defensiva: **32**
+- rendimiento: **35**
+- seguridad defensiva: **29**
 - robustez ante casos límite: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
+- `safety.py`: **19**
 - `memory.py`: **18**
-- `safety.py`: **18**
-- `duplicates.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **15**
+- `duplicates.py`: **16**
 - `settings.py`: **15**
+- `healthscore.py`: **14**
 - `organizer.py`: **14**
 - `assistant.py`: **13**
+- `scanner.py`: **11**
 - `branding.py`: **11**
-- `scanner.py`: **10**
 - `startup.py`: **10**
 - `browser.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-12T02:33:08` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo centralizado implementando un sistema de caché de atributos en la clase `Scanner` para evitar llamadas redundantes al sistema de archivos (`os.stat`) durante el procesamiento de entradas ya visitadas, reduciendo la carga de E/S.
+- `2026-11-12T02:32:41` **safety.py** (rendimiento): Se implementó un mecanismo de caché TTL (Time-To-Live) global para las validaciones de `is_protected_path` y se refactorizó `_validate_structural_safety` para evitar cálculos repetitivos de regex y normalizaciones de rutas en bucles, mejorando significativamente el rendimiento al escanear directorios grandes.
 - `2026-11-12T02:22:21` **quarantine.py** (rendimiento): Optimicé el rendimiento de `_get_sha256` y `_is_file_in_use_by_system` implementando un mecanismo de caché más eficiente basado en `os.stat` (inodo/mtime) que evita I/O redundante y llamadas costosas a `ctypes` al verificar archivos ya analizados en la misma iteración de bucle.
 - `2026-11-12T02:11:02` **duplicates.py** (rendimiento): Optimizé el rendimiento de la detección de duplicados implementando una estrategia de filtrado temprano: ahora los archivos pequeños (menor o igual a `PARTIAL_READ_BYTES`) omiten el paso de hash parcial y pasan directamente al hash completo, evitando el costo de dos lecturas de disco sobre archivos que, por definición, se leen de forma atómica y eficiente en una sola operación de E/S.
 - `2026-11-12T02:10:38` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando llamadas redundantes a `resolve()` (que accede a disco) por lógica de validación basada en `pathlib.Path.parts` y `is_relative_to` (disponible desde Python 3.9), reduciendo drásticamente la latencia en escaneos profundos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-11T14:48:57` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad del módulo mediante la adición de docstrings detallados en funciones internas y la clarificación de tipos, facilitando el mantenimiento y la comprensión de la lógica de escaneo y hashing.
 - `2026-11-11T14:39:48` **branding.py** (legibilidad y documentación): Mejora de la mantenibilidad mediante la adición de Type Hints explícitos, docstrings enriquecidos y la corrección de una inconsistencia técnica en `_hex_to_rgb` para garantizar robustez ante formatos CSS no estándar.
 - `2026-11-11T14:39:00` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_build_payload` y `_call_gemini`, extrayendo la lógica de construcción de URL y validación de seguridad a constantes o pasos explícitos para clarificar el flujo de datos.
-- `2026-11-11T14:29:41` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones preventivas sobre las filas del CSV y reemplazando el `except Exception` genérico por un bloque de manejo de errores más específico y local, evitando que un fallo en una sola entrada corrompa el proceso de lectura de todo el registro.
-- `2026-11-11T14:29:26` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` añadiendo validaciones de tipo explícitas y manejo de errores ante datos malformados, asegurando que la configuración cargada sea siempre consistente con el esquema `AppSettings`.

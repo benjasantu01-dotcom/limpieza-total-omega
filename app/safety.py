@@ -50,15 +50,17 @@ class PathValidationResult(NamedTuple):
 # Cachés para optimización de rendimiento: TTL de 5s y límite de 1024 entradas para evitar bloat
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
 _NEGATIVE_SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
-_STRUCTURAL_CACHE: Final[dict[str, bool]] = {}
+_STRUCTURAL_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 _FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
 _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
-_PROTECTION_CACHE: Final[dict[str, bool]] = {}
+_PROTECTION_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 
-def _is_cache_valid(cache_map: dict[any, float], key: any) -> bool:
+def _is_cache_valid(cache_map: dict[any, float | tuple[any, float]], key: any) -> bool:
     """Verifica si la entrada en caché está dentro del periodo de validez."""
     if key not in cache_map: return False
-    if time.monotonic() - cache_map[key] > 5.0:
+    val = cache_map[key]
+    ts = val[1] if isinstance(val, tuple) else val
+    if time.monotonic() - ts > 5.0:
         del cache_map[key]
         return False
     return True
@@ -330,10 +332,8 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     if not isinstance(path_str, str) or not path_str:
         return 0
     now = time.monotonic()
-    if path_str in _ATTR_CACHE:
-        val, ts = _ATTR_CACHE[path_str]
-        if now - ts < 5.0:
-            return val
+    if _is_cache_valid(_ATTR_CACHE, path_str):
+        return _ATTR_CACHE[path_str][0]
     try:
         long_p = _to_long_path(path_str)
         attrs = ctypes.windll.kernel32.GetFileAttributesW(long_p)
@@ -909,26 +909,23 @@ def is_protected_path(path: PathLike) -> bool:
     """Evalúa si la ruta está dentro de directorios del sistema o es crítica."""
     if path is None: return True
     path_str = str(path)
-    if path_str in _PROTECTION_CACHE:
-        return _PROTECTION_CACHE[path_str]
+    if _is_cache_valid(_PROTECTION_CACHE, path_str):
+        return _PROTECTION_CACHE[path_str][0]
 
     try:
         norm_p = _normalize_resolved(path_str)
         norm_str = os.path.normcase(str(norm_p))
         
         if any(norm_str.startswith(r) for r in _get_system_root_paths()):
-            _PROTECTION_CACHE[path_str] = True
-            return True
-        
-        if any(part.lower() in PROTECTED_DIR_NAMES for part in norm_p.parts):
-            _PROTECTION_CACHE[path_str] = True
-            return True
-        
-        attrs = _get_file_attrs(norm_str)
-        is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(norm_p.parts) <= 1
+            is_protected = True
+        elif any(part.lower() in PROTECTED_DIR_NAMES for part in norm_p.parts):
+            is_protected = True
+        else:
+            attrs = _get_file_attrs(norm_str)
+            is_protected = (attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT))) or len(norm_p.parts) <= 1
         
         if len(_PROTECTION_CACHE) > 2048: _PROTECTION_CACHE.clear()
-        _PROTECTION_CACHE[path_str] = is_protected
+        _PROTECTION_CACHE[path_str] = (is_protected, time.monotonic())
         return is_protected
     except (OSError, AttributeError, ValueError, TypeError):
         return True
@@ -983,7 +980,7 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """Verifica que la estructura léxica de la ruta no sea maliciosa."""
-    if path_string in _STRUCTURAL_CACHE:
+    if _is_cache_valid(_STRUCTURAL_CACHE, path_string):
         return
 
     if not isinstance(path_string, str):
@@ -1019,7 +1016,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     _validate_path_depth_and_root_access(target_path)
 
     if len(_STRUCTURAL_CACHE) > 2048: _STRUCTURAL_CACHE.clear()
-    _STRUCTURAL_CACHE[path_string] = True
+    _STRUCTURAL_CACHE[path_string] = (True, time.monotonic())
 
 def _validate_path_depth_and_root_access(target_path: Path) -> None:
     """Verifica límites de profundidad y previene operaciones en la raíz."""

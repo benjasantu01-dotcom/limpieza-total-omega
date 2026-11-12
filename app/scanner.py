@@ -274,6 +274,7 @@ class Scanner:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
         self.safe_cache: set[str] = set()
+        self.attr_cache: dict[str, os.stat_result] = {}
         self.base_root_real: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
         self._relevant_exts: set[str] = set(SUSPICIOUS_ALL_EXTS)
@@ -344,8 +345,13 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Aplica la secuencia de checks heurísticos definidos en ALL_CHECKS."""
-        stats: Optional[os.stat_result] = _safe_stat(entry)
-        if stats is None: return
+        path_str = str(path)
+        stats = self.attr_cache.get(path_str)
+        if stats is None:
+            stats = _safe_stat(entry)
+            if stats: self.attr_cache[path_str] = stats
+            else: return
+            
         for check_fn in ALL_CHECKS:
             try:
                 finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts, stats)
