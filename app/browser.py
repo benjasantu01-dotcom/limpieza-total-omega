@@ -342,6 +342,9 @@ def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL
     """
     if not isinstance(target, Path): return False
     try:
+        # Validación de integridad de componentes de nombre
+        if any(any(ord(c) < 32 for c in part) for part in target.parts): return False
+        
         # Validación recursiva de padres para detectar junctions intermedios
         curr = target
         while str(curr) != os.path.abspath(os.path.sep):
@@ -354,7 +357,7 @@ def _is_target_valid(target: Any, base_norm: str, kernel: Optional[ctypes.WinDLL
         if _is_system_hidden(str(target), kernel): return False
         
         target_name = getattr(target, 'name', None)
-        if not target_name or any(c in target_name for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in target_name):
+        if not target_name or any(c in target_name for c in PATH_FORBIDDEN_CHARS):
             return False
 
         target_parts = getattr(target, 'parts', None)

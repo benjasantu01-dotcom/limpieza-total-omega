@@ -1353,3 +1353,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - N
 - `2026-11-13T09:09:33` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-11-13T09:09:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T09:09:33` Corrida terminada. Total usado hoy: 216.
+- `2026-11-13T09:16:51` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-11-13T09:17:21` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se mejoró la robustez de `_is_target_valid` para prevenir de forma proactiva el acceso a rutas que contengan caracteres de control o nombres prohibidos antes de procesar su estructura, reforzando el cumplimiento de las políticas de seguridad en la navegación de directorios.
+- `2026-11-13T09:17:48` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha endurecido el proceso de escaneo recursivo en `walk_files` incorporando una verificación explícita de `is_safe_to_modify` para cada entrada detectada durante la iteración, garantizando que el escáner no profundice ni reporte archivos que violarían las políticas de seguridad incluso si la ruta raíz inicial fue validada, además de reforzar la robustez ante errores de permisos.
+- `2026-11-13T09:18:12` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de la función `_process_entry` al integrar la validación de `is_protected_path` directamente sobre la ruta resuelta (`resolve()`), previniendo que manipulaciones de rutas mediante enlaces simbólicos o nombres ambiguos escapen a los chequeos de seguridad antes de procesar el archivo.
+- `2026-11-13T09:18:22` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.__setattr__, SystemMetrics.get_clamped_metric
+- `2026-11-13T09:18:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T09:18:22` Corrida terminada. Total usado hoy: 220.

@@ -347,7 +347,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     
                     entry_path = Path(entry.path)
-                    if (skip_protected and is_protected_path(entry_path)) or not is_safe_to_modify(entry_path):
+                    
+                    # Chequeo riguroso de seguridad para cada entrada encontrada
+                    if not is_safe_to_modify(entry_path) or (skip_protected and is_protected_path(entry_path)):
                         continue
                     
                     # 2. Obtención de metadatos y validación de tipos
