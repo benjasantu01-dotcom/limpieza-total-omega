@@ -1367,3 +1367,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - N
 - `2026-11-13T09:29:33` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_atomic_isolate_file` implementando una validación de `st_nlink` antes y durante la copia, asegurando que no se pueda usar un archivo con enlaces físicos (Hard Links) para evadir las verificaciones de integridad ni causar condiciones de carrera (TOCTOU) al reemplazar archivos en el destino.
 - `2026-11-13T09:29:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T09:29:33` Corrida terminada. Total usado hoy: 224.
+- `2026-11-13T09:37:13` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-11-13T09:37:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-13T09:38:30` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado un endurecimiento en `_validate_preconditions` para asegurar que el check de `app_root` sea exhaustivo, utilizando `resolve()` para comparar rutas canónicas y prevenir ataques de bypass mediante enlaces simbólicos o inconsistencias en el sistema de archivos al intentar modificar el directorio de trabajo del binario.
+- `2026-11-13T09:38:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-13T09:39:10` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_read_and_parse_json` al implementar una validación de propiedad del archivo (`st_uid`) antes de la lectura, alineándola con las políticas de seguridad de escritura y evitando ataques de pre-creación de enlaces simbólicos o manipulación de archivos por otros usuarios.
+- `2026-11-13T09:39:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T09:39:10` Corrida terminada. Total usado hoy: 228.

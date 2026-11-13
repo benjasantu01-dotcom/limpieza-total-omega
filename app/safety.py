@@ -1146,10 +1146,11 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     _check_container_permissions(target_path)
 
     try:
-        app_root = Path(getattr(sys, 'executable', os.getcwd())).parent
-        if target_path.is_relative_to(app_root):
+        # Validación robusta de la raíz de la app mediante resolución canónica
+        app_path = Path(sys.executable).parent if getattr(sys, 'frozen', False) else Path(os.getcwd()).resolve()
+        if target_path.resolve().is_relative_to(app_path):
             raise UnsafePathError("Protección: No se puede modificar el directorio de la aplicación.", SafetyValidationErrorCode.APP_DIRECTORY_VIOLATION, SafetyValidationCategory.PERMISSION)
-    except (ValueError, TypeError, AttributeError):
+    except (ValueError, TypeError, AttributeError, RuntimeError):
         pass
 
     if is_running_as_admin():
@@ -1165,7 +1166,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
 
         file_id = _get_file_id(guard.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
-            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
 
         if guard.is_locked():
             raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
@@ -1189,7 +1190,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     except UnsafePathError:
         raise
     except (OSError, PermissionError, ValueError, AttributeError, Exception) as e:
-        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError(f"Error accediendo a precondiciones: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
     """Valida límites de la operación frente al alcance permitido."""
@@ -1254,12 +1255,12 @@ def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
     try:
         resolved = node.resolve()
         if resolved in visited:
-            raise UnsafePathError(f"Referencia circular detectada: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError(f"Referencia circular detectada: {node}", SafetyValidationErrorCode.CIRCULAR_REFERENCE, SafetyValidationCategory.INTEGRITY)
         visited.add(resolved)
         
         if _is_system_directory_junction(str(node)):
             if _get_final_path_normalized(node) is None:
-                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                raise UnsafePathError(f"Punto de reparse inaccesible: {node}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
     except (OSError, RuntimeError, PermissionError, AttributeError):
         pass
 
@@ -1312,7 +1313,7 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
     except (OSError, PermissionError, UnsafePathError, AttributeError, Exception) as e:
         if isinstance(e, UnsafePathError):
             raise
-        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationErrorCode.INTEGRITY)
+        raise UnsafePathError(f"Validación de seguridad fallida: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """

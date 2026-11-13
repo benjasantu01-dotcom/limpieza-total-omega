@@ -392,8 +392,10 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
         st_post = os.fstat(fd)
         
         # Validación de integridad de archivo contra posibles escrituras concurrentes
+        # y verificación adicional de propiedad UID en el file descriptor abierto
         if (st_post.st_ino != st_initial.st_ino or st_post.st_dev != st_initial.st_dev or 
             st_post.st_mtime != st_initial.st_mtime or st_post.st_size != st_initial.st_size or
+            (hasattr(os, 'getuid') and st_post.st_uid != os.getuid()) or
             st_post.st_size < MIN_SETTINGS_SIZE):
             return None
             
