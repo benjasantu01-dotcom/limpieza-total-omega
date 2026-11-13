@@ -774,6 +774,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists(): raise FileNotFoundError("Archivo origen no existe.")
     _check_for_reparse_points(source)
     
+    if source.stat().st_nlink > 1:
+        raise UnsafePathError("Aislamiento denegado: el archivo de origen contiene enlaces físicos.")
+    
     resolved_source = _is_path_canonical(source)
     resolved_dest = _is_path_canonical(destination)
     

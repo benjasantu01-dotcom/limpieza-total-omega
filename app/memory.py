@@ -328,7 +328,6 @@ def _is_path_safe(path_str: str) -> bool:
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
     """
     Valida la integridad del ejecutable mediante la API GetModuleFileNameExW.
-    Utiliza un buffer pre-asignado para evitar fugas de memoria en llamadas repetitivas.
     """
     if not handle or handle == INVALID_HANDLE_VALUE:
         return False
@@ -344,14 +343,12 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: GetModNameFunc) -> Optional[wintypes.HANDLE]:
     """
     Obtiene un handle de proceso y verifica que sea seguro manipularlo.
-    Valida el estado del ciclo de vida (EXIT_CODE) antes de aceptar la operación.
     """
     handle = _get_process_handle(pid, access)
     if not handle: return None
-    exit_code = wintypes.DWORD()
     try:
+        exit_code = wintypes.DWORD()
         if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            WindowsAPI.kernel32.CloseHandle(handle)
             return None
         if _is_process_executable_safe(handle, path_buf, get_mod_name_func):
             return handle
@@ -434,7 +431,6 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita la liberación del working set físico de un proceso tras validar permisos.
-    Usa la API EmptyWorkingSet, que es una operación de bajo nivel del subsistema de memoria.
     """
     if not _is_windows or WindowsAPI.kernel32 is None or WindowsAPI.psapi is None:
         return False, "Operación no soportada."
@@ -442,8 +438,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         target_pid = int(pid)
     except (ValueError, TypeError): 
         return False, "El PID debe ser un valor numérico válido."
-    if target_pid <= 0 or _is_system_process(target_pid) or not hasattr(WindowsAPI.psapi, "EmptyWorkingSet"):
-        return False, "Operación no permitida: PID protegido o función no disponible."
     
     path_buf = ctypes.create_unicode_buffer(1024)
     handle = _get_handle_for_safe_proc(target_pid, WinAccessMasks.TRIM_REQUIRED, path_buf, WindowsAPI.psapi.GetModuleFileNameExW)
@@ -452,15 +446,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso inexistente/en zona restringida."
         
     try:
-        # Validación final de integridad
-        path_str = path_buf.value
-        if not path_str or not _is_path_safe(path_str):
-            return False, "Operación denegada: ruta de proceso protegida."
-        
-        exit_code = wintypes.DWORD()
-        if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            return False, "El proceso terminó antes de poder liberar su memoria."
-            
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud de liberación."
