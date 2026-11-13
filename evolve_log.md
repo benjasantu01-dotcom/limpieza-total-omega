@@ -572,3 +572,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T13:15:13` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_iter_process_memory` implementando un manejo defensivo ante la posible falta de `psapi.GetModuleFileNameExW` (que puede fallar o retornar rutas malformadas en procesos privilegiados) y asegurando que `handle` siempre se cierre mediante un bloque `try/finally` explícito dentro del bucle de iteración.
 - `2026-11-13T13:15:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T13:15:13` Corrida terminada. Total usado hoy: 312.
+- `2026-11-13T13:22:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-13T13:22:47` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-11-13T13:22:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-13T13:23:00` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-13T13:24:02` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_safe_unlink` y `_is_item_purgable` añadiendo una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de borrado, garantizando que el sistema no intente eliminar archivos en rutas que hayan sido marcadas como inseguras tras el aislamiento original, mitigando posibles condiciones de carrera en el estado de la configuración de seguridad.
+- `2026-11-13T13:24:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-13T13:25:01` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos de archivos bloqueados por el SO implementando `_is_file_accessible` mediante una verificación de `HANDLE` con `ShareMode` compartido (lectura/escritura/borrado), permitiendo confirmar si un archivo está bloqueado exclusivamente por otro proceso sin intentar abrirlo para escritura, evitando así errores de `PermissionError` inesperados en `_get_path_stat_robust`.
+- `2026-11-13T13:25:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T13:25:01` Corrida terminada. Total usado hoy: 316.

@@ -378,6 +378,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     Elimina un archivo de forma segura mediante validación previa de integridad y reintentos.
     """
     if not path or not path.exists() or not path.is_file(): return True
+    if not is_safe_to_modify(path): return False
     
     def _attempt_unlink():
         _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)
@@ -950,6 +951,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 def _is_item_purgable(file_path: Optional[Path], item: Optional[QuarantineItem] = None) -> bool:
     """Verifica si un ítem cumple los criterios de seguridad para purgado."""
     if file_path is None or not file_path.exists() or not file_path.is_file(): return False
+    if not is_safe_to_modify(file_path): return False
     try:
         _check_for_reparse_points(file_path)
         if _is_file_in_use_by_system(file_path): return False

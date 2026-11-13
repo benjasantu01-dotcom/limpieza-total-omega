@@ -138,13 +138,31 @@ class SafetyGuard:
         """Determina si el SO mantiene un bloqueo sobre la ruta (exclusivo o sistema)."""
         if not self.is_nt: return False
         try:
-            return _is_file_in_use_exclusive(self.path_str) or _is_file_in_use_by_system(self.path_str)
+            return not _is_file_accessible(self.path_str) or _is_file_in_use_by_system(self.path_str)
         except (OSError, FileNotFoundError, AttributeError, TypeError):
             return True
 
     def get_descriptor(self) -> SecurityDescriptor:
         """Crea una instantánea inmutable de las propiedades de seguridad de la ruta."""
         return SecurityDescriptor.from_path(self.path_str)
+
+def _is_file_accessible(path_str: str) -> bool:
+    """Verifica si un archivo permite apertura compartida (no exclusivo)."""
+    if os.name != 'nt': return True
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.CreateFileW(
+        _to_long_path(path_str), 
+        0, 
+        0x07, # FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+        None, 
+        3, # OPEN_EXISTING
+        FILE_FLAG_BACKUP_SEMANTICS, 
+        None
+    )
+    if handle == INVALID_HANDLE_VALUE:
+        return False
+    kernel32.CloseHandle(handle)
+    return True
 
 class FILE_ID_128(ctypes.Structure):
     _fields_ = [("Identifier", ctypes.c_ubyte * 16)]
@@ -200,19 +218,6 @@ def _get_volume_serial(root_path: str) -> int:
             return val
     except Exception: pass
     return 0
-
-def _is_file_in_use_exclusive(path_str: str) -> bool:
-    """Intenta abrir el archivo para escritura exclusiva con flags permisivos."""
-    if os.name != 'nt': return False
-    kernel32 = ctypes.windll.kernel32
-    path_long = _to_long_path(path_str)
-    handle = kernel32.CreateFileW(path_long, 0x40000000, 0x07, None, 3, 0, None)
-    if handle == INVALID_HANDLE_VALUE:
-        return True
-    try:
-        return False
-    finally:
-        kernel32.CloseHandle(handle)
 
 def _get_file_id(path_str: str) -> tuple[int, int, int, int]:
     """Genera un identificador único (Volumen + FileID) mediante handles de sistema."""
@@ -287,7 +292,7 @@ class SecurityDescriptor(NamedTuple):
             risk_flags = (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | 
                           Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)
             is_protected = bool(attrs & risk_flags) or _is_file_owned_by_system(path_str)
-            is_in_use = is_protected or _is_file_in_use_exclusive(path_str)
+            is_in_use = is_protected or not _is_file_accessible(path_str)
             
             return cls(
                 attrs=attrs,
