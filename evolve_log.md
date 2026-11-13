@@ -742,3 +742,4 @@ ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflict
 - `2026-11-13T14:56:06` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T14:56:06` Corrida terminada. Total usado hoy: 350.
 - `2026-11-13T15:04:04` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-11-13T15:14:16` Presupuesto diario agotado (350 usados). Corte hasta mañana.
