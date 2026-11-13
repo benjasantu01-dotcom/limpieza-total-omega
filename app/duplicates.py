@@ -119,7 +119,16 @@ def _is_valid_candidate(path: Path, st_size: int = -1) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula hash SHA256 completo. Usa un caché global de sesión para evitar I/O redundante."""
+    """
+    Calcula hash SHA256 completo de un archivo.
+    
+    Args:
+        path: Ruta del archivo.
+        chunk_size: Bloque de lectura para optimizar memoria (defecto 1MB).
+        
+    Returns:
+        Hexdigest del archivo o None si ocurre un error de lectura.
+    """
     if not isinstance(path, Path) or not path.is_file(): return None
     if path in _full_hash_cache: return _full_hash_cache.get(path)
     if not _safe_path_check(path): return None
@@ -137,7 +146,16 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula hash SHA256 sobre los primeros bytes (fingerprint rápida)."""
+    """
+    Calcula hash SHA256 sobre los primeros bytes para una fingerprint rápida.
+    
+    Args:
+        path: Ruta del archivo.
+        read_bytes: Cantidad de bytes iniciales a leer.
+        
+    Returns:
+        Hexdigest del bloque o None si ocurre un error.
+    """
     if not isinstance(path, Path) or not path.is_file(): return None
     if path in _partial_cache: return _partial_cache.get(path)
     if not _safe_path_check(path): return None
