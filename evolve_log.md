@@ -1331,3 +1331,10 @@ FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - N
 - `2026-11-13T08:37:16` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: He mejorado la robustez de `_collect_candidates` ante errores de entrada y concurrencia de sistema de archivos, asegurando que el uso de `os.scandir` maneje correctamente las excepciones de permisos y rutas bloqueadas sin abortar la recolección, y validando que las rutas resultantes no sean parte de puntos de reparse que hayan cambiado durante la ejecución.
 - `2026-11-13T08:37:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T08:37:16` Corrida terminada. Total usado hoy: 204.
+- `2026-11-13T08:45:55` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-11-13T08:46:38` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `compute_score` para prevenir el uso de datos parcialmente inicializados o inconsistentes, asegurando que si `SystemMetrics` no pasa `is_finite`, el motor retorne un estado de error controlado en lugar de intentar calcular con valores potencialmente `NaN` o `Inf` que corromperían el score final.
+- `2026-11-13T08:47:49` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-13T08:48:16` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-11-13T08:48:34` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scan_for_junk` y `_process_directory` ante casos límite como rutas inexistentes o inaccesibles, asegurando que `os.scandir` maneje correctamente las excepciones de permisos y el uso de `path` no normalizados, evitando que una entrada individual bloquee el escaneo completo.
+- `2026-11-13T08:48:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T08:48:34` Corrida terminada. Total usado hoy: 208.

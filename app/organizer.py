@@ -316,8 +316,8 @@ def _process_directory(current_path: str, junk_candidates: List[JunkFile], depth
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(entry.path, junk_candidates, depth + 1, protected_cache, visited)
                     else:
-                        ext = os.path.splitext(entry.name)[1].lower()
                         stats = entry.stat(follow_symlinks=False)
+                        ext = Path(entry.name).suffix.lower()
                         if _is_valid_junk_entry(entry.name, ext, stats) and not _is_system_hidden(entry):
                             junk_candidates.append(JunkFile(
                                 Path(entry.path), 
