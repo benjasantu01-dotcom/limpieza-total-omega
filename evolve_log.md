@@ -756,3 +756,16 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T02:02:22` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-13T02:02:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T02:02:22` Corrida terminada. Total usado hoy: 48.
+- `2026-11-13T02:08:22` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-11-13T02:08:24` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T02:08:24` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-13T02:08:45` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T02:08:45` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-13T02:09:15` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T02:09:15` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-13T02:10:09` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_validate_and_sanitize_data` en `assistant.py` mediante la validación explícita de tipos antes de la asignación y la implementación de un mecanismo de respaldo (fallback) más seguro para evitar que datos mal formados corrompan el estado del `SystemContext`.
+- `2026-11-13T02:10:45` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-13T02:10:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-13T02:11:00` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-13T02:11:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T02:11:00` Corrida terminada. Total usado hoy: 52.

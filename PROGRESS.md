@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 78
+- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 35 | 5 | 16 | 5 | 45 |
+| 2026-11-11 | 33 | 4 | 15 | 5 | 45 |
 | 2026-11-12 | 130 | 11 | 60 | 12 | 137 |
-| 2026-11-13 | 9 | 3 | 2 | 2 | 32 |
+| 2026-11-13 | 10 | 3 | 2 | 2 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **38**
-- legibilidad y documentación: **36**
 - robustez ante casos límite: **35**
-- manejo de errores y validación de entradas: **33**
+- legibilidad y documentación: **34**
+- manejo de errores y validación de entradas: **34**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -35,17 +35,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `settings.py`: **16**
 - `healthscore.py`: **16**
-- `memory.py`: **14**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `safety.py`: **13**
+- `memory.py`: **13**
 - `scanner.py`: **12**
 - `startup.py`: **12**
-- `organizer.py`: **8**
 - `branding.py`: **8**
+- `organizer.py`: **7**
 - `browser.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T02:10:09` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_and_sanitize_data` en `assistant.py` mediante la validación explícita de tipos antes de la asignación y la implementación de un mecanismo de respaldo (fallback) más seguro para evitar que datos mal formados corrompan el estado del `SystemContext`.
 - `2026-11-13T00:38:59` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para archivos que exceden el límite de tamaño de 2GB (`MAX_FILE_SIZE`) en `_validate_file_operations_security`, evitando intentos de manipulación sobre archivos masivos que podrían comprometer la estabilidad del sistema o disparar errores de I/O no controlados.
 - `2026-11-13T00:38:00` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de la función `_perform_secure_copy` añadiendo una validación explícita mediante `ensure_safe_to_modify` sobre el archivo destino *antes* de la escritura, mitigando un posible escenario de "Time-of-check to time-of-use" (TOCTOU) donde un atacante podría intentar crear un enlace simbólico en el destino mientras el archivo temporal aún no existe o está siendo abierto.
 - `2026-11-13T00:37:07` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una validación de "punto de montaje" comparando `st_dev` entre el archivo origen y el directorio destino (dentro de la misma unidad), previniendo errores de `os.replace` al cruzar volúmenes y protegiendo contra el movimiento accidental entre particiones.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T16:09:25` **duplicates.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `_process_entry` y `_collect_candidates` mediante la consolidación de bloques `try-except` y la adición de verificaciones de tipo `isinstance` para prevenir `AttributeError` ante entradas malformadas o rutas que cambian su estado de existencia durante el escaneo.
 - `2026-11-12T16:08:58` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y permisos de lectura dentro del bucle `while` en `walk_files` para manejar de manera robusta los casos donde una subcarpeta es eliminada o sus permisos cambian durante la ejecución, evitando que el escaneo se aborte prematuramente.
 - `2026-11-12T15:51:43` **safety.py** (rendimiento): Se ha optimizado el rendimiento de `is_protected_path` centralizando el cálculo de rutas raíz del sistema mediante una única llamada eficiente a `os.normcase` durante la inicialización, evitando el re-procesamiento de listas en cada llamada y reduciendo la complejidad de las comparaciones de string.
-- `2026-11-12T15:48:52` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la validación de extensiones mediante conversión a `Path` y múltiples llamadas a `os.path.splitext` por una verificación directa sobre el string del nombre del archivo usando `endswith` sobre una tupla precalculada, reduciendo la carga de objetos y llamadas a sistema en el bucle principal.

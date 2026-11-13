@@ -552,9 +552,14 @@ class SystemContext:
         for k, spec in _VALIDATORS.items():
             val = self._apply_field(source, k, spec)
             if val is not None:
-                # Forzar validación de tipo según la spec antes de asignar
-                validated_val = int(val) if spec.type_hint is int else float(val)
-                updates[k] = validated_val
+                # Forzar conversión de tipo estricta antes de la asignación
+                try:
+                    if spec.type_hint is int:
+                        updates[k] = int(val)
+                    else:
+                        updates[k] = float(val)
+                except (ValueError, TypeError):
+                    continue
         
         if (cleaned_grade := self._extract_grade(source)):
             updates["grade"] = cleaned_grade
