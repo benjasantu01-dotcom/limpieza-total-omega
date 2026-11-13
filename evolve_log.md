@@ -769,3 +769,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T02:11:00` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-11-13T02:11:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T02:11:00` Corrida terminada. Total usado hoy: 52.
+- `2026-11-13T02:18:33` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-11-13T02:19:01` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `summarize` y `_collect_summary_data` capturando posibles excepciones en `format_size` y `register_file`, además de validar la integridad de `size` tras el `lstat` para evitar propagar valores inválidos que pudieran causar errores en cálculos posteriores.
+- `2026-11-13T02:19:28` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de entrada y validación de tipos, reemplazando chequeos implícitos por verificaciones explícitas antes de cualquier operación con `pathlib` o llamadas al sistema, evitando posibles excepciones de tipo `TypeError` al procesar entradas mal formadas.
+- `2026-11-13T02:20:14` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del pipeline de cálculo mediante la validación explícita de `SystemMetrics` ante valores `None` o estados no finitos, y agregué bloques `try-except` defensivos en las funciones de renderizado y resumen para evitar cierres inesperados por datos corruptos.
+- `2026-11-13T02:21:06` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-13T02:21:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T02:21:06` Corrida terminada. Total usado hoy: 56.

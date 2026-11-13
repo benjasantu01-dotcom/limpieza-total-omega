@@ -119,7 +119,7 @@ class ExtStats:
 
     def add(self, size: int) -> None:
         """Incrementa el contador y la suma de bytes para la extensión."""
-        if size >= 0:
+        if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
 
@@ -135,7 +135,7 @@ class GlobalStats:
 
     def register_file(self, size: int, ext: str) -> None:
         """Actualiza las estadísticas globales y las de la extensión."""
-        if size >= 0:
+        if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1
             self.ext_stats[ext].add(size)
@@ -153,7 +153,7 @@ class FolderMetrics:
 
     def add(self, size: int) -> None:
         """Incrementa los bytes y el contador de archivos para la carpeta actual."""
-        if size >= 0:
+        if isinstance(size, int) and size >= 0:
             self.size += size
             self.file_count += 1
 
@@ -278,15 +278,18 @@ class DriveUsage:
 
 def format_size(num: Union[int, float, None]) -> str:
     """Convierte bytes a representación legible para humanos (B, KB, MB, GB, TB)."""
-    if not isinstance(num, (int, float)) or num < 0:
+    try:
+        if not isinstance(num, (int, float)) or num < 0:
+            return "0 B"
+        value = float(num)
+        for unit in ("B", "KB", "MB", "GB", "TB"):
+            if value < 1024 or unit == "TB":
+                decimals = 0 if unit == "B" else 1
+                return f"{value:.{decimals}f} {unit}"
+            value /= 1024
+        return f"{value:.1f} TB"
+    except (ValueError, TypeError, OverflowError):
         return "0 B"
-    value = float(num)
-    for unit in ("B", "KB", "MB", "GB", "TB"):
-        if value < 1024 or unit == "TB":
-            decimals = 0 if unit == "B" else 1
-            return f"{value:.{decimals}f} {unit}"
-        value /= 1024
-    return f"{value:.1f} TB"
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
@@ -418,6 +421,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size in walk_files(directory, skip_protected):
         try:
+            if not isinstance(size, int) or size < 0:
+                continue
             stats.register_file(size, _get_extension(str(path)))
             
             if limit > 0:
