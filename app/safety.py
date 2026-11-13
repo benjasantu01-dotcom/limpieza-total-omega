@@ -1036,6 +1036,10 @@ def is_sensitive_file(path: PathLike) -> bool:
         return _is_sensitive_extension(ext)
     except (TypeError, ValueError, OSError, AttributeError): return True 
 
+def _is_device_path(path_str: str) -> bool:
+    """Verifica si una cadena de texto corresponde a un espacio de nombres reservado por el SO."""
+    return any(path_str.startswith(p) for p in ("\\\\.\\", "\\\\?\\", "//./"))
+
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """Verifica que la estructura léxica de la ruta no sea maliciosa."""
     if _is_cache_valid(_STRUCTURAL_CACHE, path_string):
@@ -1050,24 +1054,34 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _is_spoofing_detected(path_string):
         raise UnsafePathError("Secuencias de escape visual detectadas.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
     
-    if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
+    # Bloqueo estricto para evitar acceso a controladores/dispositivos (Namespace)
+    if _is_device_path(path_string) and not path_string.startswith(LONG_PATH_PREFIX):
         raise UnsafePathError("Acceso a Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
+        
     if _is_unc_path(path_string) and not _is_unc_path_accessible(path_string):
         raise UnsafePathError("Rutas UNC/Red bloqueadas o inaccesibles.", SafetyValidationErrorCode.UNC_PATH, SafetyValidationCategory.ENVIRONMENT)
+        
     if ".." in path_string.split(os.sep):
         raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.STRUCTURE)
+        
     if _is_path_too_long(path_string):
         raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG, SafetyValidationCategory.STRUCTURE)
+        
     if "\0" in path_string:
         raise UnsafePathError("Inyección de carácter nulo.", SafetyValidationErrorCode.NULL_CHAR, SafetyValidationCategory.STRUCTURE)
+        
     if _has_invalid_chars(path_string):
         raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
+        
     if unicodedata.normalize('NFKC', path_string) != path_string:
         raise UnsafePathError("Codificación de caracteres sospechosa.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING, SafetyValidationCategory.STRUCTURE)
+        
     if _has_alternate_data_stream(target_path.name):
         raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED, SafetyValidationCategory.STRUCTURE)
+        
     if _is_device_file(target_path):
         raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.STRUCTURE)
+        
     if _RESERVED_NAMES_PATTERN.fullmatch(target_path.name):
         raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME, SafetyValidationCategory.STRUCTURE)
 
@@ -1123,7 +1137,8 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     
-    if any(guard.path_str.startswith(p) for p in ("\\\\.\\", "\\\\?\\")):
+    # Bloqueo estricto para evitar Namespace de dispositivos (Windows)
+    if _is_device_path(guard.path_str):
         raise UnsafePathError("Prohibido uso de rutas de dispositivo en modificación.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     # Refuerzo: El chequeo de permisos del padre es mandatorio antes de cualquier I/O
@@ -1145,14 +1160,14 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
              final_path = _get_final_path_normalized(target_path)
              if not final_path.drive == target_path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
         file_id = _get_file_id(guard.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
 
         if guard.is_locked():
-            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationErrorCode.INTEGRITY)
+            raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
 
         sd = guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:

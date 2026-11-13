@@ -238,6 +238,13 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 class Scanner:
     """
     Motor de escaneo que gestiona el contexto y el recorrido de un árbol de directorios.
+    
+    Attributes:
+        results: Lista de sospechas encontradas durante el escaneo.
+        seen_normcase: Conjunto de rutas procesadas para evitar redundancias.
+        attr_cache: Caché de metadatos para optimizar el acceso a disco.
+        base_root_real: Ruta raíz absoluta inicializada para el escaneo.
+        now_ts: Marca de tiempo de inicio del proceso de escaneo.
     """
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
@@ -249,13 +256,16 @@ class Scanner:
         self._base_sep: str = self.base_root_real + os.sep
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
+        """Verifica que la entrada permanezca dentro del ámbito de la ruta raíz."""
         norm_entry = _get_canonical_path(entry_path)
         return bool(norm_entry and (norm_entry == self.base_root_real or norm_entry.startswith(self._base_sep)))
 
     def _has_invalid_name(self, name: str) -> bool:
+        """Detecta nombres de archivo con caracteres no válidos para el sistema de archivos."""
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
+        """Determina si un nodo del sistema es un punto de reanálisis (Junction/Symlink)."""
         try:
             stats = entry.stat(follow_symlinks=False)
             tag = getattr(stats, "st_reparse_tag", 0)
@@ -264,6 +274,7 @@ class Scanner:
             return True
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
+        """Valida que la entrada sea accesible, no protegida y no una referencia externa."""
         try:
             if not entry.path or self._has_invalid_name(entry.name) or self._is_reparse_point(entry): return False
             norm_path = _get_canonical_path(entry.path)
@@ -274,6 +285,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
+        """Gestiona la inserción de subdirectorios en la pila de exploración con límite de profundidad."""
         if depth >= SCAN_LIMITS.max_recursion_depth: return
         norm_path = _get_canonical_path(entry.path)
         if norm_path and norm_path not in visited:
@@ -281,6 +293,7 @@ class Scanner:
             stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
+        """Filtra archivos según una lista de extensiones sospechosas."""
         _, ext = os.path.splitext(name)
         return ext.lower() in self._relevant_exts
 
@@ -313,6 +326,7 @@ class Scanner:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
+    """Ejecuta un análisis heurístico sobre un único archivo."""
     if not _is_valid_path_structure(str(path)) or not _is_readable(path): return []
     try:
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
@@ -327,6 +341,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
+    """Escanea un directorio completo de forma iterativa y segura."""
     if directory is None: return []
     abs_path_str = _get_canonical_path(str(directory))
     if not abs_path_str or _cached_is_protected(abs_path_str): return []
@@ -346,6 +361,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     except Exception: return []
 
 def run_windows_defender_quick_scan() -> str:
+    """Solicita a Windows Defender un escaneo rápido del equipo."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

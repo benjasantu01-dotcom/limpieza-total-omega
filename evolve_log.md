@@ -1228,3 +1228,41 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T07:36:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-13T07:36:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T07:36:14` Corrida terminada. Total usado hoy: 180.
+- `2026-11-13T07:44:41` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-11-13T07:45:41` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_preconditions` y `_validate_structural_safety`, extrayendo la lógica de validación de nombres de dispositivos a una función única y clarificando los flujos de decisión con comentarios explicativos del "porqué", siguiendo las normas de documentación técnica.
+- `2026-11-13T07:46:11` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `scanner.py` añadiendo tipos específicos (como `ScanResult` y `TraversalStack`) en las firmas de los métodos y actualizando los docstrings para explicar la intención de las heurísticas, facilitando la comprensión del flujo de datos en el motor de escaneo.
+- `2026-11-13T07:46:53` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _ValidatorEntry, _ValidatorEntry.__init__, _Validators._parse_as_type
+- `2026-11-13T07:47:07` Tests FALLARON:
+```
+ble_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:173
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:173: SyntaxWarning: invalid escape sequence '\A'
+    raw_cmd: Cadena de comando cruda (ej: '"C:\Apps\App.exe" /s').
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.83s
+
+```
+- `2026-11-13T07:47:07` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación y legibilidad de las funciones complejas `_resolve_and_cache_path` y `_resolve_path_from_command` mediante la adición de docstrings estructurados, tipado explícito de retornos y la clarificación del flujo de control en la resolución de rutas.
+- `2026-11-13T07:47:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T07:47:07` Corrida terminada. Total usado hoy: 184.
