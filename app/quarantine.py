@@ -374,17 +374,19 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: int = 0) -> bool:
     """
-    Elimina un archivo de forma segura mediante validación previa de integridad.
+    Elimina un archivo de forma segura mediante validación previa de integridad y reintentos.
     """
     if not path or not path.exists() or not path.is_file(): return True
-    try:
+    
+    def _attempt_unlink():
         _validate_file_for_unlink(path, expected_hash, expected_inode, expected_device)
         parent: Path = path.parent
-        _check_io_error_context(path.unlink)
+        path.unlink()
         if parent.exists():
             _sync_directory(parent)
-        
-        time.sleep(0.01)
+
+    try:
+        _check_io_error_context(_attempt_unlink)
         return not path.exists()
     except (UnsafePathError, OSError, PermissionError, RuntimeError):
         return not path.exists()

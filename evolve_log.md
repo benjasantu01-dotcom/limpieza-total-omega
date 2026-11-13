@@ -913,3 +913,13 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T04:12:26` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del cálculo de salud mediante la validación explícita de `SystemMetrics` ante valores `NaN` o `Inf` durante la ejecución, asegurando que `compute_score` siempre retorne un resultado coherente incluso si las métricas de entrada se corrompen durante el ciclo de vida de la aplicación.
 - `2026-11-13T04:12:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T04:12:26` Corrida terminada. Total usado hoy: 100.
+- `2026-11-13T04:20:48` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-11-13T04:21:50` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-11-13T04:21:54` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-13T04:22:00` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-13T04:23:16` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-13T04:24:20` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_process_executable_safe` y `_extract_process_info` para manejar casos donde `GetModuleFileNameExW` o la lectura de rutas fallan (retornando rutas vacías o inválidas), evitando falsos positivos de seguridad al validar contra `is_protected_path`.
+- `2026-11-13T04:24:47` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo una validación de profundidad y ciclo en `_is_recursive_violation` y se añadió una verificación de `os.access` con `os.W_OK` al mover archivos para prevenir fallos silenciosos por permisos denegados en el destino durante `stage_for_review`.
+- `2026-11-13T04:25:26` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante errores transitorios de E/S y condiciones de carrera en `_safe_unlink` mediante la implementación de un reintento sutil (backoff exponencial) en la eliminación, asegurando que la operación de limpieza sea más resiliente ante el bloqueo temporal de descriptores por parte de sistemas de indexación o antivirus.
+- `2026-11-13T04:25:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T04:25:26` Corrida terminada. Total usado hoy: 104.

@@ -250,7 +250,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         except (ValueError, TypeError):
             return None
         ws_val: BytesValue = _safe_int_conversion(parts[2])
-        if len(parts) > 3 and parts[3].strip():
+        if len(parts) > 3:
             path_val = parts[3].strip()
             if path_val and is_protected_path(Path(path_val)):
                 return None
@@ -316,7 +316,10 @@ GetModNameFunc = Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]
 def _is_path_safe(path_str: str) -> bool:
     """Valida que una ruta de ejecutable no resida en zonas protegidas del sistema."""
     if not path_str: return False
-    return not is_protected_path(Path(path_str))
+    try:
+        return not is_protected_path(Path(path_str))
+    except (ValueError, RuntimeError):
+        return False
 
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
     """Valida que el ejecutable asociado al handle del proceso no esté en una ruta protegida."""

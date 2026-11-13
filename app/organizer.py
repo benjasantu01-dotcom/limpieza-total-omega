@@ -206,7 +206,8 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
-        return src_resolved == dest_resolved or src_resolved in dest_resolved.parents
+        # Verifica igualdad o si el destino es padre del origen (bloqueando recursión destructiva)
+        return src_resolved == dest_resolved or dest_resolved in src_resolved.parents
     except (OSError, ValueError, RuntimeError):
         return True
 
@@ -365,7 +366,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
         
-        if not is_safe_to_modify(dest_base):
+        # Validación de permisos de escritura en el destino antes de procesar
+        if not is_safe_to_modify(dest_base) or not os.access(dest_base, os.W_OK):
             return None
         
         for junk_file in files:
