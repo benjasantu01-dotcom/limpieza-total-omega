@@ -565,3 +565,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T13:05:17` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de la función `walk_files` ante errores de acceso a disco durante el escaneo recursivo, asegurando que los fallos al obtener atributos de un archivo o directorio no interrumpan el flujo de trabajo y se gestionen de forma silenciosa y segura.
 - `2026-11-13T13:05:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T13:05:17` Corrida terminada. Total usado hoy: 308.
+- `2026-11-13T13:12:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-13T13:12:43` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo explícito de disponibilidad de acceso mediante `os.access` en `_safe_path_check` para prevenir excepciones por permisos denegados al intentar listar o leer archivos, incrementando la robustez frente a errores de E/S en carpetas con permisos restringidos.
+- `2026-11-13T13:13:24` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-11-13T13:14:33` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-13T13:15:13` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_iter_process_memory` implementando un manejo defensivo ante la posible falta de `psapi.GetModuleFileNameExW` (que puede fallar o retornar rutas malformadas en procesos privilegiados) y asegurando que `handle` siempre se cierre mediante un bloque `try/finally` explícito dentro del bucle de iteración.
+- `2026-11-13T13:15:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T13:15:13` Corrida terminada. Total usado hoy: 312.

@@ -368,12 +368,10 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
     
-    # Pre-lookup de punteros a funciones para rendimiento dentro del loop
     get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
     get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
     open_proc = WindowsAPI.kernel32.OpenProcess
     close_h = WindowsAPI.kernel32.CloseHandle
-    
     path_buf = ctypes.create_unicode_buffer(1024)
     
     for pid in pids[:count]:

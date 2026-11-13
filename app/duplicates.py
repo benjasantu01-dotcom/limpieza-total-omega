@@ -90,6 +90,7 @@ def _safe_path_check(path: Path) -> bool:
     """Valida seguridad, permisos de acceso y evita puntos de reparse."""
     try:
         if not path.exists(): return False
+        if not os.access(path, os.R_OK): return False
         if not is_safe_to_modify(path): return False
         if is_junction(path): return False
         return not is_protected_path(path.resolve(strict=True))
