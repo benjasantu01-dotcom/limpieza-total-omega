@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 80
+- Rechazadas por guardia de seguridad: 81
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 11 | 1 | 6 | 0 | 24 |
+| 2026-11-11 | 11 | 1 | 6 | 0 | 20 |
 | 2026-11-12 | 130 | 11 | 60 | 12 | 137 |
-| 2026-11-13 | 42 | 6 | 14 | 4 | 46 |
+| 2026-11-13 | 44 | 6 | 15 | 4 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **36**
-- seguridad defensiva: **34**
+- seguridad defensiva: **36**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
+- `duplicates.py`: **19**
 - `quarantine.py`: **19**
-- `duplicates.py`: **18**
 - `healthscore.py`: **17**
 - `assistant.py`: **16**
 - `memory.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T04:52:55` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_safe_path_check` y `_process_entry` al verificar explícitamente que las rutas no sean puntos de reparse antes de cualquier acceso, previniendo el seguimiento involuntario de estructuras fuera del árbol de directorios esperado.
+- `2026-11-13T04:52:27` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_safe_to_modify` antes de procesar cada entrada del sistema de archivos, asegurando que cualquier ruta (especialmente enlaces o rutas con permisos restringidos) sea filtrada correctamente antes de cualquier acceso a metadatos, siguiendo estrictamente el patrón de chequeo de seguridad sin romper la lógica del iterador.
 - `2026-11-13T04:43:30` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_target_valid` para garantizar que no solo se valide la ruta tras la unión, sino que se verifique estrictamente la ausencia de *junctions* intermedios mediante una resolución recursiva de componentes de la ruta.
 - `2026-11-13T04:42:20` **assistant.py** (seguridad defensiva): Se endureció la validación de `_is_safe_payload_structure` al agregar `isinstance(val, Path)` y una restricción más estricta sobre los tipos permitidos, asegurando que ninguna estructura compleja (como objetos complejos o rutas) pueda ser serializada hacia la API, bloqueando posibles vías de inyección de datos sensibles a través del motor remoto.
 - `2026-11-13T04:41:40` **startup.py** (robustez ante casos límite): Se reforzó la robustez frente a archivos corruptos o bloqueados en `entries_from_folders` añadiendo un manejo de excepciones más granular que evita la interrupción del escaneo ante permisos denegados (AccessDenied) o archivos bloqueados por el SO.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T04:12:06` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de I/O en `_collect_candidates` y `_process_entry` al gestionar explícitamente el caso de rutas con caracteres Unicode inválidos o nombres de archivo extremadamente largos en Windows, asegurando que el proceso de escaneo no se interrumpa abruptamente.
 - `2026-11-13T04:11:39` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` ante archivos bloqueados o con metadatos inaccesibles (comunes en sistemas reales) añadiendo una captura de `OSError` más granular en el acceso a los atributos, evitando que un único error de lectura aborte un escaneo completo.
 - `2026-11-13T04:11:11` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos bloqueados o inaccesibles añadiendo una validación explícita de `OSError` y `PermissionError` en `_is_target_valid` antes de realizar operaciones de estadísticas (stat), asegurando que el escáner sea resiliente ante el bloqueo exclusivo de archivos comunes en navegadores abiertos durante la ejecución.
-- `2026-11-13T04:02:25` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` implementando un mecanismo de transacciones más estricto, asegurando que si una actualización parcial falla o contiene tipos inválidos, el estado previo se preserve intacto sin dejar el objeto en un estado inconsistente.
-- `2026-11-13T04:00:58` **settings.py** (rendimiento): Se ha optimizado la validación de tipos mediante la eliminación de múltiples llamadas innecesarias a `DEFAULTS.get()` dentro de los loops y verificaciones, aprovechando que `AppSettings` y `_VALIDATOR_MAP` son estructuras estáticas, lo que reduce la sobrecarga de búsqueda en cada iteración de `validate` y `_is_structure_valid`.

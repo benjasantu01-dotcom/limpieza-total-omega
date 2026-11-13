@@ -102,8 +102,9 @@ def _safe_path_check(path: Path) -> bool:
     try:
         if not path.exists(): return False
         if not is_safe_to_modify(path): return False
+        if is_junction(path): return False
         abs_path = path.resolve(strict=True)
-        return not is_protected_path(abs_path) and not is_junction(abs_path)
+        return not is_protected_path(abs_path)
     except (OSError, RuntimeError, ValueError):
         return False
 
@@ -201,9 +202,8 @@ def _process_entry(
     """Evalúa una entrada de directorio para BFS, gestionando bloqueos por acceso denegado."""
     if entry is None or not hasattr(entry, 'path'): return
     try:
-        # En caso de nombres Unicode o rutas demasiado largas, fallamos con gracia
         entry_path = Path(entry.path)
-        if entry.is_symlink(): return
+        if entry.is_symlink() or is_junction(entry_path): return
         if not _safe_path_check(entry_path): return
         
         stat = entry.stat(follow_symlinks=False)

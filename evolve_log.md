@@ -937,3 +937,11 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T04:43:30` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_target_valid` para garantizar que no solo se valide la ruta tras la unión, sino que se verifique estrictamente la ausencia de *junctions* intermedios mediante una resolución recursiva de componentes de la ruta.
 - `2026-11-13T04:43:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T04:43:30` Corrida terminada. Total usado hoy: 112.
+- `2026-11-13T04:51:30` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-11-13T04:52:27` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_safe_to_modify` antes de procesar cada entrada del sistema de archivos, asegurando que cualquier ruta (especialmente enlaces o rutas con permisos restringidos) sea filtrada correctamente antes de cualquier acceso a metadatos, siguiendo estrictamente el patrón de chequeo de seguridad sin romper la lógica del iterador.
+- `2026-11-13T04:52:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-13T04:52:55` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_safe_path_check` y `_process_entry` al verificar explícitamente que las rutas no sean puntos de reparse antes de cualquier acceso, previniendo el seguimiento involuntario de estructuras fuera del árbol de directorios esperado.
+- `2026-11-13T04:53:21` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-11-13T04:54:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-13T04:54:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T04:54:15` Corrida terminada. Total usado hoy: 116.
