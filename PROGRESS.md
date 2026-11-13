@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 78
+- Rechazadas por guardia de seguridad: 79
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 48 | 5 | 18 | 7 | 68 |
+| 2026-11-11 | 48 | 5 | 18 | 7 | 64 |
 | 2026-11-12 | 130 | 11 | 60 | 12 | 137 |
-| 2026-11-13 | 4 | 2 | 0 | 1 | 1 |
+| 2026-11-13 | 6 | 2 | 1 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **40**
 - robustez ante casos límite: **35**
-- seguridad defensiva: **33**
+- seguridad defensiva: **35**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **23**
 - `quarantine.py`: **20**
 - `duplicates.py`: **18**
+- `healthscore.py`: **17**
 - `settings.py`: **17**
-- `healthscore.py`: **16**
 - `assistant.py`: **15**
-- `memory.py`: **14**
+- `memory.py`: **15**
 - `safety.py`: **13**
 - `scanner.py`: **12**
 - `startup.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T00:28:34` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` y `_iter_process_memory` unificando la validación de rutas mediante `is_protected_path` antes de cualquier interacción con el proceso, asegurando que el uso de `path_buf` sea consistente y no procese rutas que violen las restricciones de seguridad.
+- `2026-11-13T00:27:19` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva encapsulando las constantes de configuración críticas (`WEIGHTS` y `_METRIC_LIMITS`) mediante el uso de `MappingProxyType`, evitando la modificación accidental o malintencionada de las reglas de negocio durante la ejecución.
 - `2026-11-13T00:18:10` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una comprobación explícita mediante `is_safe_to_modify` para asegurar que, aunque sea un módulo de solo lectura, la ruta analizada no solo sea "no protegida" sino también tratable por el motor de la app, evitando procesar rutas que violen las políticas de aislamiento de archivos.
 - `2026-11-13T00:17:03` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al reforzar la validación de `SYSTEM_PROMPT` y `PRIVACY_NOTICE` asegurando que no contengan caracteres peligrosos, y encapsulé el acceso a los criterios de salud dentro de una propiedad privada para prevenir mutaciones externas no autorizadas o inyecciones a través del diccionario de criterios.
 - `2026-11-13T00:11:50` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo un manejo de excepciones más granular para `Path.resolve()` y `path.exists()`, previniendo que rutas con caracteres inválidos (o dispositivos bloqueados) interrumpan el escaneo de registros.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T15:40:30` **memory.py** (rendimiento): Optimizé el rendimiento de `_iter_process_memory` pre-alocando recursos y evitando el re-mapeo de funciones de API dentro del bucle, además de reemplazar la creación redundante de objetos `Path` por comparaciones de strings directas para reducir la presión sobre el recolector de basura.
 - `2026-11-12T15:37:01` **healthscore.py** (rendimiento): Optimicé el rendimiento del proceso de cálculo reemplazando las llamadas repetitivas y costosas a `getattr` y `getattr` con un acceso directo a los atributos dentro del bucle del pipeline, y eliminando validaciones redundantes en `SystemMetrics` durante el acceso a datos.
 - `2026-11-12T15:28:54` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de estadísticas (`_collect_summary_data`) eliminando la llamada redundante a `is_protected_path` dentro del loop, ya que `walk_files` ya realiza este filtrado de forma nativa.
-- `2026-11-12T15:27:36` **assistant.py** (rendimiento): Optimicé el método `SystemContext._apply_updates` para reducir drásticamente el número de operaciones de borrado y recreación de cachés (`del self.__dict__[...]`), centralizando la invalidación en un solo punto y evitando iteraciones redundantes sobre las métricas.
-- `2026-11-12T15:18:50` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos y descriptivos, especialmente en la lógica de validación de rutas y cachés, y se extrajeron las verificaciones de seguridad de `_is_valid_registry_path` a una función auxiliar nombrada `_is_path_syntax_safe` para clarificar la separación entre sintaxis y resolución de disco.

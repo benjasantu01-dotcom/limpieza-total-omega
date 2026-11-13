@@ -311,6 +311,11 @@ def _get_process_handle(pid: int, access_mask: int) -> Optional[wintypes.HANDLE]
 
 GetModNameFunc = Callable[[wintypes.HANDLE, Any, ctypes.Array, int], int]
 
+def _is_path_safe(path_str: str) -> bool:
+    """Valida que una ruta de ejecutable no resida en zonas protegidas del sistema."""
+    if not path_str: return False
+    return not is_protected_path(Path(path_str))
+
 def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Array, get_mod_name_func: GetModNameFunc) -> bool:
     """Valida que el ejecutable del proceso no se encuentre en rutas protegidas."""
     if not handle or handle == INVALID_HANDLE_VALUE:
@@ -320,9 +325,7 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         result = get_mod_name_func(handle, None, path_buffer, len(path_buffer))
         if result <= 0:
             return True 
-        path_str: str = path_buffer.value
-        if not path_str: return False
-        return not is_protected_path(Path(path_str))
+        return _is_path_safe(path_buffer.value)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return True
 
@@ -437,8 +440,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso inexistente/en zona restringida."
         
     try:
-        if is_protected_path(Path(path_buf.value)):
-            WindowsAPI.kernel32.CloseHandle(handle)
+        # Validación redundante pero crítica: re-chequeo tras obtener handle exclusivo
+        if not _is_path_safe(path_buf.value):
             return False, "Operación denegada: el proceso reside en una zona protegida."
         
         exit_code = wintypes.DWORD()

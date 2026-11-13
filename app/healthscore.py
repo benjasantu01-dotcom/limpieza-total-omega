@@ -14,6 +14,7 @@ El proceso de cálculo sigue tres pasos fundamentales:
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Any, Final, NamedTuple, Annotated, Callable, TypeAlias, Protocol, Tuple
+from types import MappingProxyType
 from enum import Enum
 from pathlib import Path
 import math
@@ -35,7 +36,7 @@ _BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
 ])
 _MAX_MSG_LEN: Final[int] = 128
 
-_METRIC_LIMITS: Final[Dict[str, Tuple[float, float]]] = {
+_METRIC_LIMITS: Final = MappingProxyType({
     "junk_mb": (0.0, 1048576.0),
     "duplicate_mb": (0.0, 1048576.0),
     "suspicious_count": (0.0, 5000.0),
@@ -44,7 +45,7 @@ _METRIC_LIMITS: Final[Dict[str, Tuple[float, float]]] = {
     "memory_available_percent": (0.0, 100.0),
     "disk_free_percent": (0.0, 100.0),
     "quarantined_count": (0.0, 10000.0)
-}
+})
 
 _VALIDATION_KEYS: Final[Tuple[str, ...]] = (
     "junk_mb", "suspicious_count", "suspicious_warnings", 
@@ -159,9 +160,9 @@ WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
-WEIGHTS: Final[Dict[MetricKey, int]] = {
+WEIGHTS: Final = MappingProxyType({
     "seguridad": 30, "disco": 20, "memoria": 18, "basura": 14, "duplicados": 10, "arranque": 8,
-}
+})
 
 # --- Factorías de Scorers ---
 

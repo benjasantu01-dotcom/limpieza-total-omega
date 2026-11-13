@@ -517,3 +517,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-13T00:18:10` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una comprobación explícita mediante `is_safe_to_modify` para asegurar que, aunque sea un módulo de solo lectura, la ruta analizada no solo sea "no protegida" sino también tratable por el motor de la app, evitando procesar rutas que violen las políticas de aislamiento de archivos.
 - `2026-11-13T00:18:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T00:18:10` Corrida terminada. Total usado hoy: 8.
+- `2026-11-13T00:26:29` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-11-13T00:26:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-13T00:27:19` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva encapsulando las constantes de configuración críticas (`WEIGHTS` y `_METRIC_LIMITS`) mediante el uso de `MappingProxyType`, evitando la modificación accidental o malintencionada de las reglas de negocio durante la ejecución.
+- `2026-11-13T00:28:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: ensure_safety_in_task, wrapper
+- `2026-11-13T00:28:34` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `trim_working_set` y `_iter_process_memory` unificando la validación de rutas mediante `is_protected_path` antes de cualquier interacción con el proceso, asegurando que el uso de `path_buf` sea consistente y no procese rutas que violen las restricciones de seguridad.
+- `2026-11-13T00:28:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T00:28:34` Corrida terminada. Total usado hoy: 12.
