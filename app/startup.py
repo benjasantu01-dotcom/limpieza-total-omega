@@ -302,7 +302,12 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Retorna rutas de carpetas 'Startup' tras validar accesibilidad y seguridad."""
+    """
+    Retorna una lista de objetos Path correspondientes a las carpetas de inicio.
+    
+    Verifica la existencia, accesibilidad y si la ruta es un símbolo de enlace
+    (prohibido por seguridad) antes de incluirlas en la lista.
+    """
     global _FOLDERS_CACHE
     if _FOLDERS_CACHE is not None:
         return _FOLDERS_CACHE
@@ -337,10 +342,13 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
-    Valida un archivo encontrado en carpetas de inicio bajo reglas de seguridad.
+    Evalúa un archivo dentro de una carpeta de inicio para crear un objeto StartupEntry.
     
     Args:
-        entry: Objeto DirEntry que representa el archivo a evaluar.
+        entry: Objeto DirEntry que representa el archivo del sistema a evaluar.
+        
+    Returns:
+        Un objeto StartupEntry si es un ejecutable válido, o None en caso contrario.
     """
     if not hasattr(entry, 'path'): return None
     if entry.path in _PROCESS_CACHE:
@@ -368,7 +376,12 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 
 
 def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEntries:
-    """Escanea las carpetas de inicio y retorna las entradas detectadas."""
+    """
+    Escanea las carpetas de inicio proporcionadas y retorna una lista de StartupEntry detectados.
+    
+    Args:
+        folders: Iterable de objetos Path a escanear. Si es None, usa startup_folders().
+    """
     found_entries: StartupEntries = []
     scan_folders: Iterable[Path] = folders if folders is not None else startup_folders()
     processed_paths: Set[str] = set()
@@ -404,7 +417,12 @@ def _is_path_syntax_safe(path_str: str) -> bool:
 
 
 def _is_valid_registry_path(path_str: str) -> bool:
-    """Verifica la integridad de la ruta resolviendo su existencia y seguridad."""
+    """
+    Verifica la integridad de una cadena de registro resolviendo la existencia y seguridad de la ruta.
+    
+    Returns:
+        True si la ruta es segura, absoluta y no protegida.
+    """
     if not _is_path_syntax_safe(path_str):
         return False
     
@@ -458,7 +476,13 @@ def _is_registry_entry_safe(name: str, command: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Parsea la salida cruda de PowerShell (CSV) a una lista de objetos StartupEntry."""
+    """
+    Parsea la salida cruda en formato CSV de PowerShell a una lista de objetos StartupEntry.
+    
+    Args:
+        csv_text: Salida cruda capturada de la ejecución de PowerShell.
+        source: Identificador del origen (default "registro").
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -493,7 +517,12 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
-    """Invoca PowerShell para extraer programas de inicio definidos en el Registro."""
+    """
+    Invoca PowerShell para extraer programas de inicio definidos en las claves del Registro.
+    
+    Retorna:
+        Lista de objetos StartupEntry parseados desde el Registro.
+    """
     if os.name != "nt":
         return []
     
@@ -542,7 +571,12 @@ def list_startup_entries() -> StartupEntries:
 
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:
-    """Clasifica el impacto en el rendimiento según volumen de entradas detectadas."""
+    """
+    Clasifica el impacto en el rendimiento según volumen de entradas detectadas.
+    
+    Args:
+        entries: Iterable de StartupEntry a evaluar.
+    """
     count: int = len(entries) if isinstance(entries, list) else sum(1 for _ in entries)
     if count <= 5: return "ok"
     if count <= 10: return "info"
@@ -551,7 +585,15 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera un informe unificado con los programas de inicio detectados."""
+    """
+    Genera un informe unificado con los programas de inicio detectados.
+    
+    Args:
+        entries: Lista opcional de entradas. Si no se provee, se usa list_startup_entries().
+        
+    Returns:
+        Una lista de strings representando el informe para ser mostrado en la UI.
+    """
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

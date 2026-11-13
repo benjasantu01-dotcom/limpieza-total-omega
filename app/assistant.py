@@ -658,12 +658,11 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
 def context_as_text(context: SystemContext) -> str:
     """Serializa las métricas clave de salud a texto plano, garantizando seguridad."""
     if context.is_empty: return ""
-    snap: MetricsDict = context.metrics_snapshot
+    snap = context.metrics_snapshot
 
     def gen_lines() -> Iterable[str]:
         for m in _CONTEXT_SCHEMA:
-            val = snap.get(m.key, -1.0)
-            if val >= 0.0:
+            if (val := snap.get(m.key, -1.0)) >= 0.0:
                 line = f"{m.key}: {val:.{m.precision}f}{m.suffix}"
                 if _ensure_safe_text(line):
                     yield line
