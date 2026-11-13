@@ -1151,3 +1151,23 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T06:27:20` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-11-13T06:27:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T06:27:20` Corrida terminada. Total usado hoy: 152.
+- `2026-11-13T06:33:25` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-11-13T06:33:28` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T06:33:28` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-13T06:33:48` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T06:33:48` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-13T06:34:18` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T06:34:18` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-13T06:34:33` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T06:34:33` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-13T06:34:53` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T06:34:53` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-13T06:35:24` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T06:35:24` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-13T06:36:23` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_apply_updates` en `SystemContext` para asegurar que la transacción atómica sea realmente segura: ahora verifica explícitamente que los tipos de datos coincidan con los atributos existentes antes de aplicar cambios, evitando inyecciones de tipos inesperados y mejorando el manejo de errores ante datos malformados.
+- `2026-11-13T06:36:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-13T06:36:31` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-13T06:36:41` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-11-13T06:37:01` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-11-13T06:37:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T06:37:01` Corrida terminada. Total usado hoy: 156.

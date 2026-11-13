@@ -6,39 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 77
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 1 | 0 | 1 | 0 | 0 |
-| 2026-11-12 | 130 | 11 | 60 | 12 | 137 |
-| 2026-11-13 | 48 | 6 | 16 | 5 | 77 |
+| 2026-11-12 | 129 | 11 | 59 | 12 | 137 |
+| 2026-11-13 | 49 | 6 | 16 | 5 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **42**
 - seguridad defensiva: **40**
-- legibilidad y documentación: **34**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **34**
+- legibilidad y documentación: **32**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `quarantine.py`: **20**
-- `duplicates.py`: **18**
+- `duplicates.py`: **17**
 - `healthscore.py`: **16**
+- `assistant.py`: **15**
 - `settings.py`: **15**
-- `memory.py`: **14**
 - `safety.py`: **14**
 - `scanner.py`: **14**
-- `assistant.py`: **14**
+- `memory.py`: **13**
 - `startup.py`: **12**
 - `organizer.py`: **10**
 - `branding.py`: **6**
@@ -46,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T06:36:23` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_apply_updates` en `SystemContext` para asegurar que la transacción atómica sea realmente segura: ahora verifica explícitamente que los tipos de datos coincidan con los atributos existentes antes de aplicar cambios, evitando inyecciones de tipos inesperados y mejorando el manejo de errores ante datos malformados.
 - `2026-11-13T05:14:09` **settings.py** (seguridad defensiva): Se ha restringido el acceso de escritura de `perform_atomic_write` para exigir explícitamente que el directorio padre no solo sea seguro, sino que sea un directorio real (no un enlace simbólico o punto de reparse) para prevenir ataques de secuestro de rutas durante la creación del archivo temporal.
 - `2026-11-13T05:13:02` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando un chequeo de identidad de volumen mediante seriales de disco en `_validate_volume_integrity` y `_is_volume_readonly`, asegurando que no operemos en dispositivos montados dinámicamente o removibles que podrían cambiar de estado durante la ejecución, elevando así la protección defensiva ante condiciones de carrera (TOCTOU) a nivel de hardware/volumen.
 - `2026-11-13T05:03:56` **quarantine.py** (seguridad defensiva): Mejoré `_perform_secure_copy` integrando una verificación de inodo tras el `fsync` y antes de la finalización, asegurando que el archivo temporal no haya sido reemplazado o manipulado durante el proceso de streaming, fortaleciendo la defensa contra condiciones de carrera (TOCTOU).
@@ -60,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T04:32:11` **safety.py** (robustez ante casos límite): Se añadió un mecanismo de protección contra "carreras de archivos" (TOCTOU) durante la normalización y resolución inicial, verificando la consistencia entre el nombre de ruta y su identificador de archivo en el primer punto de contacto para prevenir el uso de rutas que cambian de significado semántico tras la normalización.
 - `2026-11-13T04:25:26` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores transitorios de E/S y condiciones de carrera en `_safe_unlink` mediante la implementación de un reintento sutil (backoff exponencial) en la eliminación, asegurando que la operación de limpieza sea más resiliente ante el bloqueo temporal de descriptores por parte de sistemas de indexación o antivirus.
 - `2026-11-13T04:24:47` **organizer.py** (robustez ante casos límite): Se introdujo una validación de profundidad y ciclo en `_is_recursive_violation` y se añadió una verificación de `os.access` con `os.W_OK` al mover archivos para prevenir fallos silenciosos por permisos denegados en el destino durante `stage_for_review`.
-- `2026-11-13T04:24:20` **memory.py** (robustez ante casos límite): Se reforzó la robustez de `_is_process_executable_safe` y `_extract_process_info` para manejar casos donde `GetModuleFileNameExW` o la lectura de rutas fallan (retornando rutas vacías o inválidas), evitando falsos positivos de seguridad al validar contra `is_protected_path`.

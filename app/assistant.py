@@ -578,17 +578,19 @@ class SystemContext:
         return True
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
-        """Actualiza el estado interno mediante una transacción atómica."""
+        """Actualiza el estado interno mediante una transacción atómica y validación de tipos."""
         if not isinstance(updates, dict) or not updates: return
         
         try:
             temp_state = copy.deepcopy(self.__dict__)
             for key, value in updates.items():
                 if key in temp_state:
-                    val_type = type(temp_state[key])
-                    # Validación de tipos básica durante la aplicación
-                    if isinstance(value, (int, float)):
-                        temp_state[key] = val_type(value)
+                    current_val = temp_state[key]
+                    # Validación estricta: asegurar que no inyectamos tipos incompatibles
+                    if isinstance(current_val, (int, float, bool)) and isinstance(value, (int, float)):
+                        temp_state[key] = type(current_val)(value)
+                    elif isinstance(current_val, str) and isinstance(value, str):
+                        temp_state[key] = value
             
             temp_state["analyzed"] = True
             
