@@ -251,7 +251,8 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
             return None
         ws_val: BytesValue = _safe_int_conversion(parts[2])
         if len(parts) > 3 and parts[3].strip():
-            if is_protected_path(Path(parts[3].strip())):
+            path_val = parts[3].strip()
+            if path_val and is_protected_path(Path(path_val)):
                 return None
         if _is_valid_process(proc_name, pid_val, ws_val):
             return ProcessMemory(proc_name, pid_val, ws_val)
@@ -440,9 +441,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso inexistente/en zona restringida."
         
     try:
-        # Validación redundante pero crítica: re-chequeo tras obtener handle exclusivo
-        if not _is_path_safe(path_buf.value):
-            return False, "Operación denegada: el proceso reside en una zona protegida."
+        # Validación final de integridad
+        path_str = path_buf.value
+        if not path_str or not _is_path_safe(path_str):
+            return False, "Operación denegada: ruta de proceso protegida."
         
         exit_code = wintypes.DWORD()
         if WindowsAPI.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) == 0 or exit_code.value != STILL_ACTIVE_EXIT_CODE:

@@ -776,3 +776,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T02:21:06` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-13T02:21:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T02:21:06` Corrida terminada. Total usado hoy: 56.
+- `2026-11-13T02:28:44` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-11-13T02:29:15` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_extract_process_info` y `trim_working_set` añadiendo validaciones preventivas sobre el tipo y estado de los datos, garantizando que operaciones críticas no procedan con punteros nulos o estados inconsistentes.
+- `2026-11-13T02:29:42` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante una validación de tipo más estricta y el manejo explícito de excepciones durante la iteración, asegurando que un fallo en un archivo individual no detenga el procesamiento del resto de la lista.
+- `2026-11-13T02:30:25` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-13T02:30:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-13T02:30:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T02:30:28` Corrida terminada. Total usado hoy: 60.
