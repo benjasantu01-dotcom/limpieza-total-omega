@@ -542,3 +542,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T12:33:57` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: wrapper
 - `2026-11-13T12:33:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T12:33:57` Corrida terminada. Total usado hoy: 296.
+- `2026-11-13T12:41:22` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-11-13T12:41:53` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `_iter_process_memory` pre-calculando las firmas de las funciones de API fuera del bucle y reutilizando el buffer de ruta (`path_buf`) para evitar reasignaciones de memoria costosas en cada iteración de los procesos.
+- `2026-11-13T12:42:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-11-13T12:43:32` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: He optimizado el cálculo de hashes SHA256 implementando un sistema de caché persistente basada en metadatos (inodo/mtime) que evita el re-escaneo innecesario de archivos que no han cambiado, reduciendo significativamente la E/S en operaciones repetitivas sobre el mismo sandbox.
+- `2026-11-13T12:43:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 98): unterminated string literal (detected at line 98)
+- `2026-11-13T12:43:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T12:43:35` Corrida terminada. Total usado hoy: 300.

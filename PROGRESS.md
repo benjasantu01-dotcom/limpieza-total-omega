@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 75
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 223
 
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 74 | 7 | 34 | 3 | 90 |
-| 2026-11-13 | 106 | 9 | 41 | 7 | 133 |
+| 2026-11-12 | 73 | 6 | 34 | 2 | 89 |
+| 2026-11-13 | 107 | 9 | 42 | 8 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **41**
+- seguridad defensiva: **40**
 - legibilidad y documentación: **37**
 - robustez ante casos límite: **33**
-- rendimiento: **28**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `quarantine.py`: **19**
 - `duplicates.py`: **18**
-- `assistant.py`: **15**
+- `memory.py`: **15**
 - `safety.py`: **14**
 - `scanner.py`: **14**
 - `settings.py`: **14**
-- `memory.py`: **14**
+- `assistant.py`: **14**
 - `startup.py`: **11**
 - `organizer.py`: **11**
 - `browser.py`: **7**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T12:41:53` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando las firmas de las funciones de API fuera del bucle y reutilizando el buffer de ruta (`path_buf`) para evitar reasignaciones de memoria costosas en cada iteración de los procesos.
 - `2026-11-13T12:33:07` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la iteración repetida sobre `PIPELINE_DEFINITIONS` y el acceso dinámico por un pre-cálculo estructurado, reduciendo la carga de ejecución en la interfaz cada vez que se refresca el panel de salud.
 - `2026-11-13T12:32:29` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando un `set` para `visited_paths` con el fin de evitar el procesamiento redundante de directorios que ya fueron analizados, mejorando el rendimiento en estructuras de archivos profundas o con múltiples enlaces.
 - `2026-11-13T12:22:42` **assistant.py** (rendimiento): Optimicé el método `context_as_text` para evitar la creación innecesaria de objetos intermedios y mejorar la eficiencia del rendimiento al iterar sobre el esquema de métricas mediante un generador y acceso directo al diccionario `snapshot`.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T11:31:57` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito contra valores `None` al procesar atributos del sistema, garantizando que si `entry.stat()` falla, la función retorne un resultado coherente en lugar de propagar errores o continuar con estados incompletos.
 - `2026-11-13T11:31:44` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` y sus funciones de apoyo mediante la implementación de una validación de `None` y tipos más estricta al inicio de los flujos críticos, evitando propagar excepciones de bajo nivel cuando se recibe entrada corrupta o inesperada desde módulos externos.
 - `2026-11-13T11:30:18` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el valor del parámetro `item_id` en las funciones `restore_item` y `purge_item` para prevenir el procesamiento de identificadores vacíos, malformados o inyectados, mejorando la robustez ante entradas de usuario no esperadas.
-- `2026-11-13T11:21:31` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo explícitas y capturas de excepciones más granulares, evitando que un fallo en un archivo individual interrumpa la operación completa de limpieza y garantizando que las rutas procesadas sean siempre instancias de `Path` válidas.

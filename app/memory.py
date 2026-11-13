@@ -364,17 +364,22 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
     if not WindowsAPI.psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(bytes_written)):
         return
     
-    pmc: PROCESS_MEMORY_COUNTERS = PROCESS_MEMORY_COUNTERS()
+    pmc = PROCESS_MEMORY_COUNTERS()
     pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
     count: int = min(bytes_written.value // ctypes.sizeof(wintypes.DWORD), 2048)
-    get_mod_name: GetModNameFunc = WindowsAPI.psapi.GetModuleFileNameExW
-    get_mem_info: Callable[[wintypes.HANDLE, Any, int], int] = WindowsAPI.psapi.GetProcessMemoryInfo
-    path_buf: ctypes.Array = ctypes.create_unicode_buffer(1024)
+    
+    # Pre-lookup de punteros a funciones para rendimiento dentro del loop
+    get_mod_name = WindowsAPI.psapi.GetModuleFileNameExW
+    get_mem_info = WindowsAPI.psapi.GetProcessMemoryInfo
+    open_proc = WindowsAPI.kernel32.OpenProcess
+    close_h = WindowsAPI.kernel32.CloseHandle
+    
+    path_buf = ctypes.create_unicode_buffer(1024)
     
     for pid in pids[:count]:
         if pid <= 0 or _is_system_process(pid): continue
-        handle = _get_process_handle(pid, WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION)
-        if not handle: continue
+        handle = open_proc(WinAccessMasks.PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        if not handle or handle == INVALID_HANDLE_VALUE: continue
         try:
             if get_mem_info(handle, ctypes.byref(pmc), pmc.cb):
                 if 0 < pmc.WorkingSetSize < MAX_VALID_PROCESS_MEM_BYTES:
@@ -386,7 +391,7 @@ def _iter_process_memory() -> Iterator[ProcessMemory]:
         except (ctypes.ArgumentError, OSError, ValueError, RuntimeError, Exception):
             continue
         finally:
-            WindowsAPI.kernel32.CloseHandle(handle)
+            close_h(handle)
 
 def _get_process_snapshot(limit: int) -> List[ProcessMemory]:
     return heapq.nlargest(limit, _iter_process_memory())
