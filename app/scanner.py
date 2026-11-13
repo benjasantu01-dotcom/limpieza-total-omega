@@ -242,11 +242,10 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
-        self.safe_cache: set[str] = set()
         self.attr_cache: dict[str, os.stat_result] = {}
         self.base_root_real: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
-        self._relevant_exts: set[str] = set(SUSPICIOUS_ALL_EXTS)
+        self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
         self._base_sep: str = self.base_root_real + os.sep
 
     def _is_inside_base_root(self, entry_path: str) -> bool:

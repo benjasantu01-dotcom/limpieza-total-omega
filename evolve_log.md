@@ -892,3 +892,10 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T03:43:14` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el proceso de escaneo sustituyendo la validación de extensiones mediante múltiples llamadas a `endswith()` por una búsqueda eficiente en un `frozenset` (`JUNK_EXTENSIONS`) ya existente, además de evitar la recreación de objetos `Path` innecesarios dentro del bucle de `os.scandir`.
 - `2026-11-13T03:43:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T03:43:14` Corrida terminada. Total usado hoy: 88.
+- `2026-11-13T03:50:15` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-11-13T03:51:05` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el rendimiento del cálculo de hashes SHA256 mediante la implementación de un mecanismo de validación de caché basado en `(st_dev, st_ino, st_mtime, st_ctime)`, reduciendo drásticamente las operaciones de E/S innecesarias en archivos grandes o accedidos frecuentemente.
+- `2026-11-13T03:51:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-11-13T03:52:14` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: BY_HANDLE_FILE_INFORMATION, FileMetadata, SafetyState, ValidationContext, WIN32_FILE_ATTRIBUTE_DATA, _CheckResult, _IntegrityCheck
+- `2026-11-13T03:52:32` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento del escaneo reemplazando la lógica de concatenación manual de rutas por un cálculo de prefijo único y pre-calculado, además de reemplazar búsquedas lineales (`in list`) por búsquedas O(1) usando `frozenset` para todas las extensiones relevantes, reduciendo la sobrecarga en directorios con miles de archivos.
+- `2026-11-13T03:52:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T03:52:32` Corrida terminada. Total usado hoy: 92.

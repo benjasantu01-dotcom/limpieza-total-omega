@@ -303,7 +303,7 @@ class QuarantineItem:
 def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
     """
     Calcula el hash del archivo utilizando streaming para memoria constante.
-    Usa una caché basada en inodo y mtime para acelerar escaneos repetidos.
+    Usa una caché basada en metadatos (inodo, dispositivo, tiempos) para optimizar.
     """
     if path is None: return ""
     try:
@@ -311,12 +311,11 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
         key = (st_res.st_dev, st_res.st_ino, st_res.st_mtime, getattr(st_res, 'st_ctime', 0.0))
         now = time.monotonic()
         
-        # Uso de caché con tiempo de expiración
+        # Uso de caché con TTL corto (60s) para evitar re-cálculos intensivos
         if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < 60.0):
             return _HASH_CACHE[key][0]
         
         with open(path, "rb") as f:
-            # Hash eficiente con soporte a la API moderna si está disponible
             if hasattr(hashlib, "file_digest"):
                 res = hashlib.file_digest(f, "sha256").hexdigest()
             else:
@@ -333,8 +332,7 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
 def _is_file_in_use_by_system(path: Path) -> bool:
     """
     Verifica si un archivo está en uso por el sistema o procesos externos.
-    Realiza una comprobación de inodos y exclusividad. Cachea resultados breves
-    para evitar latencia en escaneos masivos.
+    Realiza una comprobación de inodos y exclusividad. Cachea resultados breves.
     """
     if path is None or not path.exists(): return False
     try:
@@ -377,7 +375,6 @@ def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0, expected_device: int = 0) -> bool:
     """
     Elimina un archivo de forma segura mediante validación previa de integridad.
-    Requiere que el inodo y hash coincidan con el registro de cuarentena para evitar borrados accidentales.
     """
     if not path or not path.exists() or not path.is_file(): return True
     try:
@@ -395,7 +392,6 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
 def _check_path_syntax_integrity(path: Path) -> None:
     """
     Previene inyecciones mediante validación de caracteres, profundidad y longitud.
-    Valida normalización Unicode para evitar evasión de filtros por nombre.
     """
     if path is None: raise UnsafePathError("Ruta nula recibida.")
     path = _is_path_canonical(path)
@@ -442,7 +438,7 @@ def _ensure_path_ownership(path: Path) -> None:
         except OSError: raise UnsafePathError("No se pudo verificar la propiedad del directorio.")
 
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Prepara y valida el directorio de cuarentena, asegurando que sea seguro."""
+    """Prepara y valida el directorio de cuarentena."""
     if not base or not str(base).strip(): raise ValueError("El directorio base no puede estar vacío.")
     try:
         path: Path = _is_path_canonical(Path(str(base)).expanduser())
@@ -570,7 +566,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         
     try:
         st = m_path.stat()
-        # Validación de caché usando metadatos de archivo (sin leer el JSON)
         if not force_reload and base_dir in _MANIFEST_CACHE:
             cached_items, cached_mtime, cached_size = _MANIFEST_CACHE[base_dir]
             if cached_mtime == st.st_mtime and cached_size == st.st_size: 
@@ -586,7 +581,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         needs_cleanup = False
         for entry in data:
             item = QuarantineItem.from_dict(entry)
-            # Solo verificar integridad si el ítem es válido según el schema
             if item and item.verify_integrity(base_dir / item.stored_name):
                 valid_items.append(item)
             else:
@@ -603,8 +597,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
-    Persiste el manifiesto usando escritura atómica: escribe en un temporal
-    y realiza un os.replace, garantizando que el archivo nunca quede corrupto.
+    Persiste el manifiesto usando escritura atómica.
     """
     base_path: Path = quarantine_dir(base)
     target_path: Path = _manifest_path(base_path)
@@ -617,7 +610,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         
     temp_name: Optional[str] = None
     try:
-        # Uso de delete=False para manejar el reemplazo manualmente tras fsync
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             temp_name = tf.name
             tf.write(encoded)
@@ -666,7 +658,6 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
         try:
             fd = os.open(str(temp_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
             try:
-                # Verificación de integridad tras creación exclusiva
                 st = os.fstat(fd)
                 if st.st_nlink != 1:
                     os.close(fd)
@@ -693,14 +684,12 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
         
         _ensure_disk_space(temp_dest.parent, st.st_size)
         
-        # Validación de seguridad del destino antes de la escritura para mitigar TOCTOU
         ensure_safe_to_modify(temp_dest)
         ensure_safe_to_modify(temp_dest.parent)
         
         def _copy():
             with open(source, "rb") as f_src:
                 with open(temp_dest, "wb") as f_dst:
-                    # Validar nuevamente que el temporal sea un archivo simple antes de escribir
                     if os.path.islink(temp_dest): raise UnsafePathError("Inyección de enlace durante copia.")
                     shutil.copyfileobj(f_src, f_dst)
                     f_dst.flush()
@@ -747,10 +736,7 @@ class IsolationManager:
     """Gestiona validaciones para asegurar la atomicidad de aislamiento."""
     @staticmethod
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
-        """
-        Verificación TOCTOU: compara el inodo y dispositivo original antes y
-        durante el proceso, abortando si el archivo fue reemplazado.
-        """
+        """Verificación TOCTOU: compara inodo y dispositivo durante la copia."""
         if source is None or not source.exists(): raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
         current_stat = source.stat()
         if current_stat.st_ino != original_stat.st_ino or current_stat.st_dev != original_stat.st_dev: 
@@ -987,7 +973,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if purgado_ids:
             new_items = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
-            # Asegurar persistencia tras el purgado masivo
             _sync_directory(root_path)
         
         return len(purgado_ids)
