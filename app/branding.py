@@ -349,13 +349,10 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = _DEFAULT_SVG_
     if destination is None: return None
     try:
         target = Path(destination).resolve()
-        # Verificar seguridad antes de tocar nada
         if not is_safe_to_modify(target): return None
-        
         parent = target.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-            
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
     except (OSError, PermissionError, IOError, AttributeError):
@@ -399,6 +396,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         center_x = x + SHIELD_CENTER_X * scale
         for seg in get_gradient_segments(n):
             for i in range(seg.start_index, seg.end_index):
+                if i >= len(params): break
                 p = params[i]
                 canvas.create_rectangle(center_x - p[0], base_y + p[1], center_x + p[0], base_y + p[2], fill=seg.hex_color, outline="")
     except (AttributeError, TypeError, ValueError, IndexError): pass

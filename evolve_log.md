@@ -556,3 +556,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T12:54:49` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` y `entries_from_folders` introduciendo un filtrado de rutas mediante `is_protected_path` antes de realizar operaciones costosas de I/O (`os.scandir` o resolución de paths), minimizando el tiempo de ejecución en sistemas con muchas carpetas protegidas.
 - `2026-11-13T12:54:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T12:54:49` Corrida terminada. Total usado hoy: 304.
+- `2026-11-13T13:01:49` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-13T13:02:35` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de la ingestión de datos agregando una verificación de integridad de tipo estricta en el método `_apply_updates` y un manejo de errores más defensivo frente a posibles desbordamientos de enteros durante la actualización de `SystemContext`.
+- `2026-11-13T13:02:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-13T13:02:39` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-11-13T13:03:28` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se mejora la robustez de `save_logo_svg` y `draw_logo` ante entradas inválidas, asegurando que `target.parent.mkdir` sea seguro y que los cálculos de geometría no provoquen errores en tiempo de ejecución al recibir valores extremos.
+- `2026-11-13T13:04:24` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-11-13T13:05:17` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de la función `walk_files` ante errores de acceso a disco durante el escaneo recursivo, asegurando que los fallos al obtener atributos de un archivo o directorio no interrumpan el flujo de trabajo y se gestionen de forma silenciosa y segura.
+- `2026-11-13T13:05:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T13:05:17` Corrida terminada. Total usado hoy: 308.

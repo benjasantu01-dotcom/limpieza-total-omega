@@ -362,7 +362,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(entry.path)
                     
                     elif entry.is_file(follow_symlinks=False):
-                        size = getattr(st, 'st_size', None)
+                        size = getattr(st, 'st_size', 0)
                         if isinstance(size, int) and size >= 0:
                             yield entry_path, size
         except (PermissionError, FileNotFoundError, OSError, ValueError):

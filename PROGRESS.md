@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 76
-- Sin cambios (nada sustancial que mejorar): 10
+- Rechazadas por guardia de seguridad: 75
+- Sin cambios (nada sustancial que mejorar): 9
 - Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 69 | 6 | 34 | 2 | 89 |
-| 2026-11-13 | 111 | 9 | 42 | 8 | 134 |
+| 2026-11-12 | 68 | 6 | 33 | 1 | 88 |
+| 2026-11-13 | 114 | 9 | 42 | 8 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **37**
-- seguridad defensiva: **36**
+- robustez ante casos límite: **36**
+- seguridad defensiva: **35**
 - rendimiento: **33**
-- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
+- `quarantine.py`: **18**
 - `duplicates.py`: **17**
 - `safety.py`: **15**
 - `scanner.py`: **15**
 - `settings.py`: **15**
+- `assistant.py`: **15**
 - `memory.py`: **15**
-- `assistant.py`: **14**
 - `startup.py`: **12**
 - `organizer.py`: **11**
 - `browser.py`: **6**
-- `branding.py`: **5**
+- `branding.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T13:05:17` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la función `walk_files` ante errores de acceso a disco durante el escaneo recursivo, asegurando que los fallos al obtener atributos de un archivo o directorio no interrumpan el flujo de trabajo y se gestionen de forma silenciosa y segura.
+- `2026-11-13T13:03:28` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` y `draw_logo` ante entradas inválidas, asegurando que `target.parent.mkdir` sea seguro y que los cálculos de geometría no provoquen errores en tiempo de ejecución al recibir valores extremos.
+- `2026-11-13T13:02:35` **assistant.py** (robustez ante casos límite): Mejoré la robustez de la ingestión de datos agregando una verificación de integridad de tipo estricta en el método `_apply_updates` y un manejo de errores más defensivo frente a posibles desbordamientos de enteros durante la actualización de `SystemContext`.
 - `2026-11-13T12:54:49` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_folders` introduciendo un filtrado de rutas mediante `is_protected_path` antes de realizar operaciones costosas de I/O (`os.scandir` o resolución de paths), minimizando el tiempo de ejecución en sistemas con muchas carpetas protegidas.
 - `2026-11-13T12:54:13` **settings.py** (rendimiento): Se optimizó la validación del esquema de configuración en `_is_structure_valid` sustituyendo el uso de `set()` (que recrea colecciones en cada llamada) por una comparación secuencial directa, reduciendo la presión sobre el recolector de basura en operaciones frecuentes.
 - `2026-11-13T12:53:40` **scanner.py** (rendimiento): Se ha optimizado la gestión de caché de atributos en `Scanner` pasando de un diccionario genérico (`self.attr_cache`) a una estructura de tamaño acotado (usando `collections.OrderedDict` para comportamiento LRU manual o simplemente limitando su crecimiento) para prevenir fugas de memoria durante escaneos masivos de disco; además, se pre-compilaron las tuplas de extensiones para evitar conversiones redundantes.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T12:12:21` **scanner.py** (legibilidad y documentación): Mejoré la documentación de los métodos de la clase `Scanner` y las funciones auxiliares, añadiendo type hints faltantes y docstrings explicativos para aclarar las responsabilidades, especialmente en la gestión de seguridad de rutas y el flujo de estados durante el escaneo.
 - `2026-11-13T12:11:49` **safety.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `PathContext` para encapsular de forma coherente el estado de validación (ruta, string y guard), mejorando la legibilidad de las firmas de los métodos privados y reduciendo la redundancia de parámetros en el pipeline `_execute_safety_pipeline`.
 - `2026-11-13T11:51:55` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en las funciones de cálculo, la clarificación del flujo del `Pipeline` mediante `TypeHints` extendidos y la consolidación de la lógica de rangos en `SystemMetrics` para asegurar que el comportamiento del motor sea auditable y predecible.
-- `2026-11-13T11:51:39` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazaron los `type checks` redundantes por validaciones basadas en `isinstance` (o eliminadas cuando eran innecesarias), mejorando la legibilidad técnica y la robustez frente a errores de tipo inesperados.
-- `2026-11-13T11:51:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad añadiendo type hints faltantes en funciones internas y estructurando mejor los docstrings para clarificar el flujo de datos entre `walk_files` y los recolectores de métricas.
-- `2026-11-13T11:42:42` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a funciones críticas de manipulación geométrica y de color, y refinando los tipos de las constantes `SHIELD_BASE_COORDS` y los parámetros de renderizado para clarificar el flujo de transformación afín.
