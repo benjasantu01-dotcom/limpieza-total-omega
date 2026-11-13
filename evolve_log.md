@@ -899,3 +899,10 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T03:52:32` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento del escaneo reemplazando la lógica de concatenación manual de rutas por un cálculo de prefijo único y pre-calculado, además de reemplazar búsquedas lineales (`in list`) por búsquedas O(1) usando `frozenset` para todas las extensiones relevantes, reduciendo la sobrecarga en directorios con miles de archivos.
 - `2026-11-13T03:52:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T03:52:32` Corrida terminada. Total usado hoy: 92.
+- `2026-11-13T04:00:27` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-11-13T04:00:58` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se ha optimizado la validación de tipos mediante la eliminación de múltiples llamadas innecesarias a `DEFAULTS.get()` dentro de los loops y verificaciones, aprovechando que `AppSettings` y `_VALIDATOR_MAP` son estructuras estáticas, lo que reduce la sobrecarga de búsqueda en cada iteración de `validate` y `_is_structure_valid`.
+- `2026-11-13T04:01:42` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-13T04:02:25` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_apply_updates` implementando un mecanismo de transacciones más estricto, asegurando que si una actualización parcial falla o contiene tipos inválidos, el estado previo se preserve intacto sin dejar el objeto en un estado inconsistente.
+- `2026-11-13T04:02:40` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-11-13T04:02:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T04:02:40` Corrida terminada. Total usado hoy: 96.

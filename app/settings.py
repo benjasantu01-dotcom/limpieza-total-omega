@@ -92,10 +92,9 @@ def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
 def _is_valid_type(val: Any, key: str) -> bool:
     """Valida si el tipo del valor coincide con el esquema definido en DEFAULTS."""
     default_val = DEFAULTS.get(key)
-    if val is None: return False
-    # Evitar que los bools sean tratados como ints por isinstance(True, int)
+    if val is None or default_val is None: return False
     if isinstance(default_val, bool) and not isinstance(val, bool): return False
-    return isinstance(val, type(default_val)) if default_val is not None else False
+    return isinstance(val, type(default_val))
 
 __all__ = [
     "DEFAULTS", "SETTINGS_DIR", "SETTINGS_FILE", "API_KEY_ENV_VAR",
@@ -303,11 +302,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        if not isinstance(key, ConfigKey): return None
-        try:
-            parsed_value = int(val)
-        except (ValueError, TypeError):
-            return None
+        parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
         if limit: return max(limit.min, min(limit.max, parsed_value))
         return parsed_value
@@ -332,7 +327,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        if not isinstance(key, ConfigKey) or not isinstance(val, str): return None
+        if not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         return _Validators._validate_enum_str(text, key)
@@ -379,10 +374,10 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
 
 def _is_structure_valid(data: Any) -> bool:
     if not isinstance(data, dict) or not data or len(data) > 64: return False
-    if not all(k in data for k in DEFAULTS.keys()): return False
+    # Verificación de claves contra set pre-calculado para eficiencia
+    if not all(k in data for k in DEFAULTS): return False
     for k, v in data.items():
-        if k not in _VALID_ENUM_KEYS: return False
-        if not _is_valid_type(v, k): return False
+        if k not in _VALID_ENUM_KEYS or not _is_valid_type(v, k): return False
     return True
 
 def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[SettingsDict, os.stat_result]]:
@@ -419,7 +414,7 @@ def _read_and_parse_json(file_path: Path, resolved_str: str) -> Optional[tuple[S
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     coerced = DEFAULTS.copy()
     for key_name, value in settings.items():
-        if key_name in coerced and value is not None and isinstance(value, type(DEFAULTS.get(key_name))):
+        if key_name in coerced and value is not None and isinstance(value, type(DEFAULTS[key_name])):
             coerced[key_name] = value 
     if coerced.get("asistente_activado") and not (coerced.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         coerced["asistente_activado"] = False

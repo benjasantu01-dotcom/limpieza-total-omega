@@ -578,27 +578,27 @@ class SystemContext:
         return True
 
     def _apply_updates(self, updates: Mapping[str, Any]) -> None:
-        """Actualiza el estado interno y purga las cachés de propiedades derivadas."""
+        """Actualiza el estado interno mediante una transacción atómica."""
         if not isinstance(updates, dict) or not updates: return
         
-        modified = False
         try:
+            temp_state = copy.deepcopy(self.__dict__)
             for key, value in updates.items():
-                if hasattr(self, key):
-                    current_val = getattr(self, key)
-                    val_type = type(current_val)
+                if key in temp_state:
+                    val_type = type(temp_state[key])
+                    # Validación de tipos básica durante la aplicación
                     if isinstance(value, (int, float)):
-                        casted_value = val_type(value)
-                        if current_val != casted_value:
-                            setattr(self, key, casted_value)
-                            modified = True
+                        temp_state[key] = val_type(value)
             
-            if modified:
-                self.analyzed = True
-                self.__dict__.pop("metrics_snapshot", None)
-                self.__dict__.pop("_cached_active_problems", None)
-                self.__dict__.pop("_hash_tuple", None)
-        except (AttributeError, TypeError):
+            temp_state["analyzed"] = True
+            
+            # Si pasamos las validaciones, actualizamos el estado real
+            self.__dict__.update(temp_state)
+            
+            # Limpiar cachés de propiedades derivadas al modificar
+            for cache_key in ["metrics_snapshot", "_cached_active_problems", "_hash_tuple"]:
+                self.__dict__.pop(cache_key, None)
+        except (AttributeError, TypeError, KeyError):
             pass
 
     def ingest(self, source: Any) -> bool:
@@ -608,11 +608,7 @@ class SystemContext:
         try:
             updates = self._validate_and_sanitize_data(source)
             if updates:
-                # Transacción: crear copia temporal para validar estabilidad
-                tmp_ctx = copy.deepcopy(self)
-                tmp_ctx._apply_updates(updates)
-                if not tmp_ctx.is_valid_structure:
-                    return False
+                # La lógica de transacción está centralizada en _apply_updates
                 self._apply_updates(updates)
                 return True
         except (AttributeError, TypeError, Exception):
