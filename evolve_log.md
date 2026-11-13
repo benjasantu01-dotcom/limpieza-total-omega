@@ -954,3 +954,11 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T05:04:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-11-13T05:04:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T05:04:49` Corrida terminada. Total usado hoy: 120.
+- `2026-11-13T05:11:53` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-11-13T05:11:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-13T05:13:02` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `ensure_safe_to_modify` implementando un chequeo de identidad de volumen mediante seriales de disco en `_validate_volume_integrity` y `_is_volume_readonly`, asegurando que no operemos en dispositivos montados dinámicamente o removibles que podrían cambiar de estado durante la ejecución, elevando así la protección defensiva ante condiciones de carrera (TOCTOU) a nivel de hardware/volumen.
+- `2026-11-13T05:13:32` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-13T05:14:09` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha restringido el acceso de escritura de `perform_atomic_write` para exigir explícitamente que el directorio padre no solo sea seguro, sino que sea un directorio real (no un enlace simbólico o punto de reparse) para prevenir ataques de secuestro de rutas durante la creación del archivo temporal.
+- `2026-11-13T05:14:27` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-11-13T05:14:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T05:14:27` Corrida terminada. Total usado hoy: 124.

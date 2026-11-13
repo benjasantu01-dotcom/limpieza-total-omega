@@ -181,8 +181,11 @@ class _SettingsManager:
             if not is_safe_to_modify(str(config_path)): return False
             parent_dir = config_path.parent
             if is_protected_path(str(parent_dir)): return False
-            if not parent_dir.exists() or not os.access(parent_dir, os.W_OK): return False
-            if _Validators._is_reparse_point(str(parent_dir)): return False
+            
+            # Verificación estricta: el padre debe ser directorio real (no symlink/junction)
+            st_parent = parent_dir.lstat()
+            if not stat.S_ISDIR(st_parent.st_mode) or _Validators._is_reparse_point(str(parent_dir)): return False
+            if not os.access(parent_dir, os.W_OK): return False
             
             resolved_path = config_path.resolve()
             resolved_str = str(resolved_path)

@@ -56,6 +56,7 @@ _STRUCTURAL_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 _FILE_ID_CACHE: Final[dict[str, tuple[int, int, int, int]]] = {}
 _ATTR_CACHE: Final[dict[str, tuple[int, float]]] = {}
 _PROTECTION_CACHE: Final[dict[str, tuple[bool, float]]] = {}
+_VOLUME_SERIAL_CACHE: Final[dict[str, tuple[int, float]]] = {}
 
 def _is_cache_valid(cache_map: dict[any, float | tuple[any, float]], key: any, ttl: float = 5.0) -> bool:
     """Verifica si la entrada en caché está dentro del periodo de validez."""
@@ -178,6 +179,21 @@ class SafetyState(NamedTuple):
     descriptor: SecurityDescriptor
     stat_result: os.stat_result
     file_id: tuple[int, int, int, int]
+
+def _get_volume_serial(root_path: str) -> int:
+    """Obtiene el número de serie de volumen para validar integridad persistente."""
+    if os.name != 'nt' or not root_path: return 0
+    if _is_cache_valid(_VOLUME_SERIAL_CACHE, root_path):
+        return _VOLUME_SERIAL_CACHE[root_path][0]
+    
+    serial = ctypes.c_ulong(0)
+    try:
+        if ctypes.windll.kernel32.GetVolumeInformationW(root_path, None, 0, ctypes.byref(serial), None, None, None, 0):
+            val = serial.value
+            _VOLUME_SERIAL_CACHE[root_path] = (val, time.monotonic())
+            return val
+    except Exception: pass
+    return 0
 
 def _is_file_in_use_exclusive(path_str: str) -> bool:
     """
@@ -385,7 +401,7 @@ class ProtectionReason(Enum):
     ACCESS_WRITE = auto()
     TOCTOU_VIOLATION = auto()
     SPARSE_FILE = auto()
-    DEVICE_FILE = auto()
+    DEVICE_FILE_DETECTED = auto()
     VOLUME_RESTRICTED = auto()
     SYSTEM_OWNER = auto()
     VIRTUAL_DRIVE = auto()
@@ -572,7 +588,8 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
     if _is_unc_path(path_str): return False
     try:
         drive = os.path.splitdrive(path_str)[0] + "\\"
-        if not os.path.exists(drive): return False
+        serial = _get_volume_serial(drive)
+        if not serial: return True
         flags = ctypes.c_ulong(0)
         if ctypes.windll.kernel32.GetVolumeInformationW(drive, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & 0x80000)
@@ -587,7 +604,6 @@ def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
     try:
         drive = os.path.splitdrive(path_str)[0] + "\\"
         kernel32 = ctypes.windll.kernel32
-        # Captura errores de dispositivo no disponible para evitar excepciones inesperadas
         err_mode = kernel32.SetErrorMode(0x0001)
         res = kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0)
         kernel32.SetErrorMode(err_mode)
@@ -673,6 +689,10 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     is_unc = _is_unc_path(path_s)
     
     try:
+        serial = _get_volume_serial(anchor)
+        if not serial and not is_unc:
+            raise UnsafePathError("Volumen sin serial detectable (inestable).", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.ENVIRONMENT)
+            
         restrictions = [
             (_is_volume_shadow_copy(path_s), "Volumen de instantánea bloqueado.", SafetyValidationErrorCode.VOLUME_SHADOW_COPY),
             (_is_volume_busy_or_invalid(path_s), "Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR),
@@ -1125,7 +1145,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
              final_path = _get_final_path_normalized(target_path)
              if not final_path.drive == target_path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
         file_id = _get_file_id(guard.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
@@ -1142,7 +1162,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
             parent = target_path.parent
             if parent.exists():
                 if os.name == 'nt' and _is_volume_readonly(guard.path_str):
-                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationErrorCode.ENVIRONMENT)
+                    raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationCategory.ENVIRONMENT)
         except (OSError, PermissionError, AttributeError):
             pass
         
