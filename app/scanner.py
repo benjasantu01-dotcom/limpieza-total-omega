@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
+from collections import OrderedDict
 from typing import List, Optional, Union, Final, Protocol, NamedTuple, Sequence, Tuple, TypeAlias, TYPE_CHECKING
 from safety import is_protected_path
 
@@ -45,6 +46,7 @@ class ScannerLimits(NamedTuple):
     recent_file_window_hours: int = 24
     reparse_point_mask: int = FILE_ATTRIBUTE_REPARSE_POINT
     max_recursion_depth: int = 50
+    cache_max_size: int = 1024
 
 SCAN_LIMITS: Final = ScannerLimits()
 
@@ -77,9 +79,7 @@ RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|L
 INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[<>:\"|?*]")
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 
-SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
-SUSPICIOUS_CONTENT_EXT: Final[frozenset[str]] = frozenset({".pdf"})
-SUSPICIOUS_ALL_EXTS: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1", ".pdf"})
+SUSPICIOUS_ALL_EXTS: Final[Tuple[str, ...]] = (".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1", ".pdf")
 SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
 TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
 SYSTEM32_LOWER: Final[str] = "system32"
@@ -224,10 +224,10 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen_normcase: set[str] = set()
-        self.attr_cache: dict[str, os.stat_result] = {}
+        self.attr_cache: OrderedDict[str, os.stat_result] = OrderedDict()
         self.base_root_real: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
-        self._relevant_exts: Final[Tuple[str, ...]] = tuple(SUSPICIOUS_ALL_EXTS)
+        self._relevant_exts: Final[Tuple[str, ...]] = SUSPICIOUS_ALL_EXTS
         self._base_sep: str = self.base_root_real + os.sep
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
@@ -290,7 +290,12 @@ class Scanner:
         path_str = str(path)
         stats = self.attr_cache.get(path_str) or _safe_stat(entry)
         if not stats: return
-        self.attr_cache[path_str] = stats
+        
+        if path_str not in self.attr_cache:
+            if len(self.attr_cache) >= SCAN_LIMITS.cache_max_size:
+                self.attr_cache.popitem(last=False)
+            self.attr_cache[path_str] = stats
+            
         for check_fn in ALL_CHECKS:
             try:
                 finding = check_fn(path, entry, self.now_ts, stats)
