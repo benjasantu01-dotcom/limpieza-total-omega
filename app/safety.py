@@ -509,6 +509,10 @@ def _has_invalid_chars(path_str: Optional[str]) -> bool:
     if not isinstance(path_str, str) or not path_str: return True
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
+def _is_spoofing_detected(text: str) -> bool:
+    """Detecta secuencias Unicode usadas para ofuscación o spoofing visual."""
+    return bool(re.search(r'[\u200E\u200F\u202A-\u202E\u206A-\u206F]', text))
+
 def _is_path_empty_or_whitespace(path_str: str) -> bool:
     """Valida que la cadena de ruta no sea nula o vacía."""
     return not isinstance(path_str, str) or not path_str or path_str.strip() == ""
@@ -889,7 +893,7 @@ def normalize(path: PathLike) -> Path:
         sub_path = anchor_path
         for part in parts:
             if part in (os.sep, os.altsep): continue
-            if re.match(r'[\u200E\u200F\u202A-\u202E]', part):
+            if _is_spoofing_detected(part):
                 raise UnsafePathError("Spoofing visual detectado en nombre de componente.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
             sub_path = os.path.join(sub_path, part)
             if os.path.exists(sub_path) and _is_system_directory_junction(sub_path):
@@ -1009,7 +1013,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if len(target_path.name) > MAX_FILENAME_LENGTH:
         raise UnsafePathError("Nombre de archivo demasiado largo.", SafetyValidationErrorCode.FILENAME_TOO_LONG, SafetyValidationCategory.STRUCTURE)
 
-    if re.search(r'[\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_string):
+    if _is_spoofing_detected(path_string):
         raise UnsafePathError("Secuencias de escape visual detectadas.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
     
     if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
@@ -1194,7 +1198,7 @@ def _validate_path_components(path: Path) -> None:
 
 def _verify_path_integrity_at_node(node: Path, visited: set[Path]) -> None:
     """Valida la integridad de un nodo individual para prevenir spoofing y ciclos."""
-    if re.search(r'[\u200E\u200F\u202A-\u202E]', node.name):
+    if _is_spoofing_detected(node.name):
         raise UnsafePathError(f"Spoofing de nombres detectado en: {node.name}", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE)
     
     try:
@@ -1282,7 +1286,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
             return PathValidationResult(False, UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.STRUCTURE))
         
         path_str = str(path).strip()
-        if re.search(r'[\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str):
+        if _is_spoofing_detected(path_str):
             return PathValidationResult(False, UnsafePathError("Secuencias de control visual bloqueadas.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
         
         p = normalize(path_str)

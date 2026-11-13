@@ -84,7 +84,7 @@ def _sync_directory(directory: Path) -> None:
     """
     if not directory.is_dir():
         return
-    fd = -1
+    fd: int = -1
     try:
         dir_abs = _is_path_canonical(directory)
         fd = os.open(str(dir_abs), os.O_RDONLY)
@@ -192,22 +192,21 @@ def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -
 def _is_file_exclusive(path: Path) -> bool:
     """
     Determina si un archivo puede abrirse para acceso exclusivo (sin bloqueos).
-    En Windows, intenta abrir el archivo denegando todo acceso compartido.
-    En POSIX, verifica mediante flock. Retorna False si está en uso.
+    En Windows, usa CreateFileW con flags de exclusión. En POSIX, usa flock.
     """
     if path is None or not path.exists():
         return False
-    if os.name == 'nt':
-        try:
-            INVALID_HANDLE_VALUE = -1
-            handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
-            if handle == INVALID_HANDLE_VALUE: return False
-            ctypes.windll.kernel32.CloseHandle(handle)
-            return True
-        except (OSError, AttributeError, PermissionError):
-            return False
     
-    fd = -1
+    if os.name == 'nt':
+        # 0x80000000 = GENERIC_READ, 0 = dwShareMode (exclusivo)
+        INVALID_HANDLE_VALUE = -1
+        handle = ctypes.windll.kernel32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x80, None)
+        if handle == INVALID_HANDLE_VALUE: return False
+        ctypes.windll.kernel32.CloseHandle(handle)
+        return True
+    
+    # Lógica POSIX
+    fd: int = -1
     try:
         fd = os.open(path, os.O_RDONLY)
         fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -312,17 +311,19 @@ def _get_sha256(path: Path, st_stat: Optional[os.stat_result] = None) -> str:
         key = (st_res.st_dev, st_res.st_ino, st_res.st_mtime, getattr(st_res, 'st_ctime', 0.0))
         now = time.monotonic()
         
+        # Uso de caché con tiempo de expiración
         if key in _HASH_CACHE and (now - _HASH_CACHE[key][1] < 60.0):
             return _HASH_CACHE[key][0]
         
         with open(path, "rb") as f:
+            # Hash eficiente con soporte a la API moderna si está disponible
             if hasattr(hashlib, "file_digest"):
                 res = hashlib.file_digest(f, "sha256").hexdigest()
             else:
-                sha256_hash = hashlib.sha256()
+                sha256_hasher = hashlib.sha256()
                 while chunk := f.read(CHUNK_SIZE):
-                    sha256_hash.update(chunk)
-                res = sha256_hash.hexdigest()
+                    sha256_hasher.update(chunk)
+                res = sha256_hasher.hexdigest()
         
         _HASH_CACHE[key] = (res, now)
         return res
