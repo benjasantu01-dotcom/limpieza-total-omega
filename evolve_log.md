@@ -1200,3 +1200,10 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T06:57:35` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` y `load_manifest` mediante la captura explícita de excepciones durante la serialización/deserialización, evitando que fallos parciales en el JSON corrompan el estado de la aplicación o dejen el bucle principal en un estado inconsistente.
 - `2026-11-13T06:57:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T06:57:36` Corrida terminada. Total usado hoy: 164.
+- `2026-11-13T07:04:01` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-11-13T07:04:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-11-13T07:05:20` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una captura selectiva de excepciones en el método `_execute_safety_pipeline` para evitar que errores inesperados durante el proceso de normalización o validación de rutas causen una falla catastrófica en el bucle principal, devolviendo un `PathValidationResult` con un mensaje de diagnóstico claro en lugar de propagar una excepción sin contexto.
+- `2026-11-13T07:05:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-11-13T07:06:28` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_structure_valid` para garantizar que la configuración cargada contenga exactamente las claves esperadas, evitando claves residuales o maliciosas que podrían haber sido inyectadas en un archivo JSON modificado manualmente.
+- `2026-11-13T07:06:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T07:06:28` Corrida terminada. Total usado hoy: 168.

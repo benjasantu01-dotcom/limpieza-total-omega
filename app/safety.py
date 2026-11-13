@@ -1145,7 +1145,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
              final_path = _get_final_path_normalized(target_path)
              if not final_path.drive == target_path.drive:
-                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
+                  raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationErrorCode.INTEGRITY)
 
         file_id = _get_file_id(guard.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
@@ -1358,8 +1358,8 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         return PathValidationResult(True)
     except UnsafePathError as e:
         return PathValidationResult(False, e)
-    except Exception as e:
-        return PathValidationResult(False, UnsafePathError(f"Falla inesperada: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY))
+    except (OSError, PermissionError, RuntimeError, ValueError, TypeError, AttributeError) as e:
+        return PathValidationResult(False, UnsafePathError(f"Falla inesperada en pipeline: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.INTEGRITY))
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
     """Booleano de conveniencia para validar seguridad sin lanzar excepciones."""

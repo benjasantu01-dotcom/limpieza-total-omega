@@ -377,8 +377,8 @@ def _is_file_secure_to_read(file_path: Path, resolved_str: str, st: os.stat_resu
 
 def _is_structure_valid(data: Any) -> bool:
     if not isinstance(data, dict) or not data or len(data) > 64: return False
-    # Verificación de claves contra set pre-calculado para eficiencia
-    if not all(k in data for k in DEFAULTS): return False
+    # Verificación estricta: debe contener exactamente las claves de DEFAULTS
+    if set(data.keys()) != set(DEFAULTS.keys()): return False
     for k, v in data.items():
         if k not in _VALID_ENUM_KEYS or not _is_valid_type(v, k): return False
     return True
