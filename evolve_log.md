@@ -485,3 +485,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T11:10:42` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez del manejo de entradas y rutas en `duplicates.py` mediante validaciones de tipo explícitas (`isinstance`) y chequeos contra valores vacíos (`None`, listas vacías) antes de realizar operaciones de disco o iteraciones, evitando excepciones inesperadas en flujos de datos no controlados.
 - `2026-11-13T11:10:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T11:10:42` Corrida terminada. Total usado hoy: 264.
+- `2026-11-13T11:19:16` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-11-13T11:19:44` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez en `compute_score` mediante la validación temprana de `metrics` y el uso de `_clamp` para evitar propagación de valores fuera de rango en cálculos intermedios.
+- `2026-11-13T11:20:51` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: wrapper
+- `2026-11-13T11:21:19` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_is_process_executable_safe` y `_get_handle_for_safe_proc` mediante la captura explícita de `ctypes.WinError`, evitando que errores de acceso al sistema bloqueen el ciclo de diagnóstico.
+- `2026-11-13T11:21:31` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo explícitas y capturas de excepciones más granulares, evitando que un fallo en un archivo individual interrumpa la operación completa de limpieza y garantizando que las rutas procesadas sean siempre instancias de `Path` válidas.
+- `2026-11-13T11:21:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T11:21:31` Corrida terminada. Total usado hoy: 268.

@@ -365,10 +365,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             return None
         
         for junk_file in files:
+            if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path):
+                continue
             try:
-                if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path) or not junk_file.path.is_file():
-                    continue
-                if junk_file.path.is_symlink() or _is_junction(junk_file.path):
+                if not junk_file.path.is_file() or junk_file.path.is_symlink() or _is_junction(junk_file.path):
                     continue
                 if not _is_safe_for_disk_op(junk_file, dest_base):
                     continue
@@ -379,7 +379,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                     if _validate_file_identity(junk_file, junk_file.path) and os.access(junk_file.path, os.R_OK):
                         os.replace(str(junk_file.path), str(target_path))
             except (OSError, PermissionError, RuntimeError) as e:
-                logger.warning(f"Error procesando archivo {getattr(junk_file, 'path', 'desconocido')}: {e}")
+                logger.warning(f"Error procesando {junk_file.path}: {e}")
                 continue
         return dest_base
     except (OSError, PermissionError, RuntimeError) as e:
@@ -395,7 +395,7 @@ def _is_same_file_identity(path: Path, expected_ino: int) -> bool:
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Calcula la ruta de destino garantizando unicidad mediante un timestamp."""
-    if not isinstance(junk_file.modified, datetime): return None
+    if not isinstance(junk_file.modified, datetime) or not isinstance(dest_base, Path): return None
     try:
         timestamp = int(junk_file.modified.timestamp())
         safe_name = f"{junk_file.path.stem}_{timestamp}{junk_file.path.suffix}"
@@ -419,15 +419,20 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
-                if item.is_file() and not item.is_symlink() and not _is_junction(item):
-                    if not is_protected_path(item) and Path(item.name).suffix.lower() in JUNK_EXTENSIONS and not _is_file_locked(item):
-                        stat_before = item.stat()
-                        ensure_safe_to_modify(item)
-                        if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
-                            item.unlink()
-                            count += 1
+                if not isinstance(item, Path) or not item.is_file():
+                    continue
+                if item.is_symlink() or _is_junction(item):
+                    continue
+                if is_protected_path(item) or item.suffix.lower() not in JUNK_EXTENSIONS or _is_file_locked(item):
+                    continue
+                
+                stat_before = item.stat()
+                ensure_safe_to_modify(item)
+                if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
+                    item.unlink()
+                    count += 1
             except (OSError, PermissionError, RuntimeError) as e:
-                logger.warning(f"Error al eliminar {item.name}: {e}")
+                logger.warning(f"Error al eliminar {getattr(item, 'name', 'archivo')}: {e}")
                 continue
         return count
     except (OSError, PermissionError, RuntimeError):

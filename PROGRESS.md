@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 89 | 8 | 41 | 5 | 97 |
-| 2026-11-13 | 89 | 9 | 32 | 6 | 128 |
+| 2026-11-12 | 88 | 7 | 40 | 5 | 96 |
+| 2026-11-13 | 92 | 9 | 33 | 6 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **41**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **37**
 - rendimiento: **32**
-- legibilidad y documentación: **31**
+- legibilidad y documentación: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `quarantine.py`: **20**
 - `duplicates.py`: **18**
-- `healthscore.py`: **17**
+- `healthscore.py`: **18**
 - `assistant.py`: **16**
-- `settings.py`: **15**
+- `memory.py`: **15**
 - `safety.py`: **14**
-- `memory.py`: **14**
+- `settings.py`: **14**
 - `scanner.py`: **12**
 - `startup.py`: **11**
-- `organizer.py`: **10**
+- `organizer.py`: **11**
 - `browser.py`: **7**
 - `branding.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T11:21:31` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo explícitas y capturas de excepciones más granulares, evitando que un fallo en un archivo individual interrumpa la operación completa de limpieza y garantizando que las rutas procesadas sean siempre instancias de `Path` válidas.
+- `2026-11-13T11:21:19` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_process_executable_safe` y `_get_handle_for_safe_proc` mediante la captura explícita de `ctypes.WinError`, evitando que errores de acceso al sistema bloqueen el ciclo de diagnóstico.
+- `2026-11-13T11:19:44` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez en `compute_score` mediante la validación temprana de `metrics` y el uso de `_clamp` para evitar propagación de valores fuera de rango en cálculos intermedios.
 - `2026-11-13T11:10:42` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de entradas y rutas en `duplicates.py` mediante validaciones de tipo explícitas (`isinstance`) y chequeos contra valores vacíos (`None`, listas vacías) antes de realizar operaciones de disco o iteraciones, evitando excepciones inesperadas en flujos de datos no controlados.
 - `2026-11-13T11:10:32` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante archivos con metadatos corruptos o inaccesibles, añadiendo validaciones explícitas antes de procesar el tamaño (`size`) para evitar excepciones no contempladas durante el recorrido del disco.
 - `2026-11-13T09:39:10` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` al implementar una validación de propiedad del archivo (`st_uid`) antes de la lectura, alineándola con las políticas de seguridad de escritura y evitando ataques de pre-creación de enlaces simbólicos o manipulación de archivos por otros usuarios.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T09:09:18` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la clase `SystemContext` implementando una validación de tipo estricta en `_apply_updates` que previene el desbordamiento de enteros o la inyección de tipos inesperados en los atributos del objeto, asegurando que la estructura de datos interna se mantenga íntegra tras cualquier actualización.
 - `2026-11-13T09:07:29` **startup.py** (robustez ante casos límite): Mejoré la robustez ante rutas de registro malformadas o inexistentes en `_is_valid_registry_path`, asegurando que `Path.resolve()` no falle ante cadenas que contienen caracteres inválidos o estructuras que Windows no puede resolver, envolviéndolo en un bloque de control más estricto y añadiendo una validación de longitud previa.
 - `2026-11-13T09:06:57` **settings.py** (robustez ante casos límite): Se mejora la robustez del cargador `_read_and_parse_json` ante condiciones de carrera (TOCTOU) y posibles archivos corruptos o truncados, asegurando que la lectura del archivo sea consistente mediante la verificación del tamaño y contenido tras la apertura del descriptor de archivo, previniendo errores de `json.load` en archivos parcialmente escritos.
-- `2026-11-13T08:58:23` **safety.py** (robustez ante casos límite): Mejoré la resiliencia ante rutas inexistentes y estados de carrera (Race Conditions) durante la fase de normalización inicial en `normalize`, asegurando que `_normalize_resolved` no intente resolver dispositivos o rutas mal formadas que provoquen excepciones inesperadas antes de que las reglas de seguridad puedan filtrar el acceso.
-- `2026-11-13T08:57:00` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante errores de concurrencia y acceso denegado (específicamente durante la escritura del archivo en el sandbox) introduciendo un chequeo explícito de la existencia del archivo de destino inmediatamente antes de la operación de movimiento (`os.replace`), previniendo errores de sistema ante colisiones inesperadas entre hilos o procesos.
-- `2026-11-13T08:48:34` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `scan_for_junk` y `_process_directory` ante casos límite como rutas inexistentes o inaccesibles, asegurando que `os.scandir` maneje correctamente las excepciones de permisos y el uso de `path` no normalizados, evitando que una entrada individual bloquee el escaneo completo.

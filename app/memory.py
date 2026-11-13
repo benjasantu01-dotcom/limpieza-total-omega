@@ -337,7 +337,7 @@ def _is_process_executable_safe(handle: wintypes.HANDLE, path_buffer: ctypes.Arr
         if result <= 0:
             return True 
         return _is_path_safe(path_buffer.value)
-    except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
+    except (ctypes.WinError, OSError, RuntimeError, ValueError, TypeError, AttributeError):
         return True
 
 def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get_mod_name_func: GetModNameFunc) -> Optional[wintypes.HANDLE]:
@@ -352,7 +352,7 @@ def _get_handle_for_safe_proc(pid: int, access: int, path_buf: ctypes.Array, get
             return None
         if _is_process_executable_safe(handle, path_buf, get_mod_name_func):
             return handle
-    except (ctypes.ArgumentError, OSError):
+    except (ctypes.WinError, ctypes.ArgumentError, OSError):
         pass
     WindowsAPI.kernel32.CloseHandle(handle)
     return None
@@ -449,7 +449,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if WindowsAPI.psapi.EmptyWorkingSet(handle) != 0:
             return True, f"Working set liberado. {TRIM_WARNING}"
         return False, "El sistema operativo rechazó la solicitud de liberación."
-    except (ctypes.ArgumentError, OSError, Exception):
+    except (ctypes.WinError, ctypes.ArgumentError, OSError, Exception):
         return False, "Error interno al intentar liberar memoria del proceso."
     finally:
         WindowsAPI.kernel32.CloseHandle(handle)

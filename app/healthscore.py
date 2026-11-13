@@ -327,14 +327,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
-    total: int = 0
+    total: float = 0.0
     recs: List[str] = []
     
     for entry in PIPELINE_DEFINITIONS:
         try:
-            ratio = entry.scorer(metrics)
-            p = int(ratio * entry.weight)
-            metric_breakdown[entry.area] = p
+            ratio = _clamp(entry.scorer(metrics))
+            p = float(ratio * entry.weight)
+            metric_breakdown[entry.area] = int(p)
             total += p
             for rule in entry.rules:
                 if rule.check(metrics, ratio):
@@ -347,7 +347,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         msg = _sanitize_msg("Existen elementos en cuarentena.")
         if msg: recs.append(msg)
             
-    final_score = int(_clamp(float(total), 0.0, 100.0))
+    final_score = int(_clamp(total, 0.0, 100.0))
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
