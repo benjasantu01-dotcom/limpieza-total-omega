@@ -521,3 +521,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T12:03:52` ➖ Sin cambios en quarantine.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de Type Hints en retornos de funciones (como `_get_sha256` y `_is_file_exclusive`), la estandarización de docstrings para aclarar el propósito de funciones críticas y la clarificación de nombres de variables en el flujo de transferencia atómica, facilitando la comprensión del mantenimiento de integridad.
 - `2026-11-13T12:03:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T12:03:52` Corrida terminada. Total usado hoy: 284.
+- `2026-11-13T12:10:22` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-11-13T12:10:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-11-13T12:11:49` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujo un `NamedTuple` llamado `PathContext` para encapsular de forma coherente el estado de validación (ruta, string y guard), mejorando la legibilidad de las firmas de los métodos privados y reduciendo la redundancia de parámetros en el pipeline `_execute_safety_pipeline`.
+- `2026-11-13T12:12:21` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación de los métodos de la clase `Scanner` y las funciones auxiliares, añadiendo type hints faltantes y docstrings explicativos para aclarar las responsabilidades, especialmente en la gestión de seguridad de rutas y el flujo de estados durante el escaneo.
+- `2026-11-13T12:12:43` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidatorEntry, _ValidatorEntry.__init__
+- `2026-11-13T12:12:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T12:12:43` Corrida terminada. Total usado hoy: 288.

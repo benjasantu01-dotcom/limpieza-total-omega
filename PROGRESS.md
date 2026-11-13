@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 74
+- Rechazadas por guardia de seguridad: 75
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 80 | 7 | 37 | 3 | 93 |
-| 2026-11-13 | 100 | 9 | 37 | 7 | 131 |
+| 2026-11-12 | 78 | 7 | 36 | 3 | 92 |
+| 2026-11-13 | 102 | 9 | 39 | 7 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **39**
-- legibilidad y documentación: **34**
+- robustez ante casos límite: **37**
+- legibilidad y documentación: **36**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
 - `quarantine.py`: **20**
 - `healthscore.py`: **19**
-- `duplicates.py`: **18**
+- `diskreport.py`: **19**
+- `duplicates.py`: **17**
 - `memory.py`: **15**
-- `safety.py`: **14**
+- `safety.py`: **15**
 - `assistant.py`: **14**
+- `scanner.py`: **14**
 - `settings.py`: **14**
-- `scanner.py`: **13**
 - `organizer.py`: **11**
 - `startup.py`: **10**
 - `browser.py`: **7**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T12:12:21` **scanner.py** (legibilidad y documentación): Mejoré la documentación de los métodos de la clase `Scanner` y las funciones auxiliares, añadiendo type hints faltantes y docstrings explicativos para aclarar las responsabilidades, especialmente en la gestión de seguridad de rutas y el flujo de estados durante el escaneo.
+- `2026-11-13T12:11:49` **safety.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `PathContext` para encapsular de forma coherente el estado de validación (ruta, string y guard), mejorando la legibilidad de las firmas de los métodos privados y reduciendo la redundancia de parámetros en el pipeline `_execute_safety_pipeline`.
 - `2026-11-13T11:51:55` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en las funciones de cálculo, la clarificación del flujo del `Pipeline` mediante `TypeHints` extendidos y la consolidación de la lógica de rangos en `SystemMetrics` para asegurar que el comportamiento del motor sea auditable y predecible.
 - `2026-11-13T11:51:39` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazaron los `type checks` redundantes por validaciones basadas en `isinstance` (o eliminadas cuando eran innecesarias), mejorando la legibilidad técnica y la robustez frente a errores de tipo inesperados.
 - `2026-11-13T11:51:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad añadiendo type hints faltantes en funciones internas y estructurando mejor los docstrings para clarificar el flujo de datos entre `walk_files` y los recolectores de métricas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T11:19:44` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez en `compute_score` mediante la validación temprana de `metrics` y el uso de `_clamp` para evitar propagación de valores fuera de rango en cálculos intermedios.
 - `2026-11-13T11:10:42` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de entradas y rutas en `duplicates.py` mediante validaciones de tipo explícitas (`isinstance`) y chequeos contra valores vacíos (`None`, listas vacías) antes de realizar operaciones de disco o iteraciones, evitando excepciones inesperadas en flujos de datos no controlados.
 - `2026-11-13T11:10:32` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante archivos con metadatos corruptos o inaccesibles, añadiendo validaciones explícitas antes de procesar el tamaño (`size`) para evitar excepciones no contempladas durante el recorrido del disco.
-- `2026-11-13T09:39:10` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` al implementar una validación de propiedad del archivo (`st_uid`) antes de la lectura, alineándola con las políticas de seguridad de escritura y evitando ataques de pre-creación de enlaces simbólicos o manipulación de archivos por otros usuarios.
-- `2026-11-13T09:38:30` **safety.py** (seguridad defensiva): Se ha implementado un endurecimiento en `_validate_preconditions` para asegurar que el check de `app_root` sea exhaustivo, utilizando `resolve()` para comparar rutas canónicas y prevenir ataques de bypass mediante enlaces simbólicos o inconsistencias en el sistema de archivos al intentar modificar el directorio de trabajo del binario.

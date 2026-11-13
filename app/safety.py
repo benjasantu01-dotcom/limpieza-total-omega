@@ -49,6 +49,12 @@ class PathValidationResult(NamedTuple):
     is_valid: bool
     error: Optional[UnsafePathError] = None
 
+class PathContext(NamedTuple):
+    """Encapsula el estado de una ruta bajo inspección para el pipeline de seguridad."""
+    path: Path
+    path_str: str
+    guard: SafetyGuard
+
 # Cachés para optimización de rendimiento: TTL de 5s y límite de 1024 entradas para evitar bloat
 _SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
 _NEGATIVE_SECURITY_CACHE: Final[dict[tuple[int, int, int, int], float]] = {}
@@ -1132,14 +1138,14 @@ def _check_container_permissions(target_path: Path) -> None:
     except (OSError, PermissionError, AttributeError):
         pass
 
-def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> None:
+def _validate_preconditions(ctx: PathContext) -> None:
     """Validación exhaustiva de precondiciones para autorizar acceso."""
-    guard = SafetyGuard(target_path)
+    target_path = ctx.path
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED, SafetyValidationCategory.STRUCTURE)
     
     # Bloqueo estricto para evitar Namespace de dispositivos (Windows)
-    if _is_device_path(guard.path_str):
+    if _is_device_path(ctx.path_str):
         raise UnsafePathError("Prohibido uso de rutas de dispositivo en modificación.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED, SafetyValidationCategory.PERMISSION)
     
     # Refuerzo: El chequeo de permisos del padre es mandatorio antes de cualquier I/O
@@ -1154,36 +1160,36 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         pass
 
     if is_running_as_admin():
-        if _is_file_owned_by_system(guard.path_str) or _is_kernel_managed(guard.path_str):
+        if _is_file_owned_by_system(ctx.path_str) or _is_kernel_managed(ctx.path_str):
             raise UnsafePathError("Operación denegada en modo privilegiado.", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION, SafetyValidationCategory.PERMISSION)
 
     try:
         # Pre-chequeo de reparse point externo antes de operaciones de E/S
-        if os.name == 'nt' and _is_system_directory_junction(guard.path_str):
+        if os.name == 'nt' and _is_system_directory_junction(ctx.path_str):
              final_path = _get_final_path_normalized(target_path)
              if not final_path.drive == target_path.drive:
                   raise UnsafePathError("Redirección de reparse point hacia otro volumen.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED, SafetyValidationCategory.INTEGRITY)
 
-        file_id = _get_file_id(guard.path_str)
+        file_id = _get_file_id(ctx.path_str)
         if _is_cache_valid(_NEGATIVE_SECURITY_CACHE, file_id):
             raise UnsafePathError("Acceso bloqueado: ruta conocida como insegura.", SafetyValidationErrorCode.GENERIC, SafetyValidationCategory.INTEGRITY)
 
-        if guard.is_locked():
+        if ctx.guard.is_locked():
             raise UnsafePathError("Archivo bloqueado por otro proceso o sistema.", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
 
-        sd = guard.get_descriptor()
+        sd = ctx.guard.get_descriptor()
         if sd.attrs != INVALID_FILE_ATTRIBUTES:
             _validate_security_descriptor_attributes(sd)
             
         try:
             parent = target_path.parent
             if parent.exists():
-                if os.name == 'nt' and _is_volume_readonly(guard.path_str):
+                if os.name == 'nt' and _is_volume_readonly(ctx.path_str):
                     raise UnsafePathError("Directorio contenedor en volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY, SafetyValidationCategory.ENVIRONMENT)
         except (OSError, PermissionError, AttributeError):
             pass
         
-        if _is_kernel_managed(guard.path_str):
+        if _is_kernel_managed(ctx.path_str):
             raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION)
         
         _validate_volume_integrity(target_path)
@@ -1279,12 +1285,12 @@ def _validate_no_reparse_traversal(path: Path) -> None:
             if not target.is_relative_to(root_anchor):
                 raise UnsafePathError(f"Escape inseguro detectado: {current}", SafetyValidationErrorCode.OUT_OF_BOUNDS, SafetyValidationCategory.INTEGRITY)
 
-def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
+def _validate_file_operations_security(ctx: PathContext, allow_sensitive: bool, base: Optional[Path]) -> None:
     """
     Realiza la inspección final de seguridad antes de autorizar cualquier operación de 
     escritura sobre un archivo. Verifica permisos, bloqueos y consistencia de estado.
     """
-    guard = SafetyGuard(p)
+    p = ctx.path
     if not p.exists():
         raise UnsafePathError(f"El archivo fue eliminado: {p.name}", SafetyValidationErrorCode.ACCESS_DENIED, SafetyValidationCategory.INTEGRITY)
     
@@ -1296,15 +1302,15 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
     if not os.access(p, os.W_OK):
         raise UnsafePathError(f"Permisos insuficientes de escritura: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION)
 
-    if guard.is_locked():
+    if ctx.guard.is_locked():
         raise UnsafePathError(f"Archivo en uso: {p.name}", SafetyValidationErrorCode.FILE_IN_USE, SafetyValidationCategory.INTEGRITY)
     
     try:
         state = SafetyState(
             path=p,
-            descriptor=guard.get_descriptor(),
+            descriptor=ctx.guard.get_descriptor(),
             stat_result=_get_path_stat_robust(p),
-            file_id=_get_file_id(guard.path_str)
+            file_id=_get_file_id(ctx.path_str)
         )
         
         if os.name == 'nt': 
@@ -1344,10 +1350,10 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
             return PathValidationResult(False, UnsafePathError("Secuencias de control visual bloqueadas.", SafetyValidationErrorCode.INVALID_CHARS, SafetyValidationCategory.STRUCTURE))
         
         p = normalize(path_str)
-        guard = SafetyGuard(p)
+        ctx = PathContext(p, str(p), SafetyGuard(p))
         
         # 1. Verificaciones críticas de seguridad estática
-        if _is_kernel_managed(guard.path_str):
+        if _is_kernel_managed(ctx.path_str):
             return PathValidationResult(False, UnsafePathError(f"Protección: Modificación de archivo de sistema crítico bloqueada: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE, SafetyValidationCategory.PERMISSION))
         
         if not allow_sensitive and is_sensitive_file(p):
@@ -1355,7 +1361,7 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
         
         # 2. Verificaciones estructurales y de integridad léxica
         _validate_path_components(p)
-        _validate_structural_safety(p, guard.path_str)
+        _validate_structural_safety(p, ctx.path_str)
         
         # 3. Verificaciones de contexto y entorno
         base = None
@@ -1365,12 +1371,12 @@ def _execute_safety_pipeline(path: PathLike, *, allow_sensitive: bool = False, b
                 return PathValidationResult(False, UnsafePathError(f"Directorio base inválido: {e}", SafetyValidationErrorCode.IO_ERROR, SafetyValidationCategory.STRUCTURE))
         
         _validate_boundary_conditions(p, base_dir)
-        _validate_preconditions(p, base_dir)
+        _validate_preconditions(ctx)
         
         # 4. Verificaciones profundas de E/S e integridad
         if p.exists():
             if os.name == 'nt': _validate_ntfs_reparse_redirection(p, base)
-            _validate_file_operations_security(p, allow_sensitive, base)
+            _validate_file_operations_security(ctx, allow_sensitive, base)
         else:
             if p.parent.exists() and not os.access(p.parent, os.W_OK):
                 return PathValidationResult(False, UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED, SafetyValidationCategory.PERMISSION))
