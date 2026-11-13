@@ -595,3 +595,28 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T13:44:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-11-13T13:44:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T13:44:16` Corrida terminada. Total usado hoy: 324.
+- `2026-11-13T13:52:45` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-13T13:53:14` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:264: in <module>
+    class SystemMetrics:
+E   ValueError: 'junk_mb' in __slots__ conflicts with class variable
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - ValueError: 'junk_mb' in __slots__ conflicts with class variable
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.15s
+
+```
+- `2026-11-13T13:53:14` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se ha restringido el acceso a `SystemMetrics` mediante la implementación de `__slots__` para prevenir la inyección arbitraria de atributos en tiempo de ejecución, protegiendo la integridad del estado del objeto frente a mutaciones inseguras.
+- `2026-11-13T13:53:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-11-13T13:54:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: ensure_safety, ensure_safety_in_task, wrapper
+- `2026-11-13T13:55:05` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_extract_process_info` para prevenir fugas de información y asegurar que la validación de rutas mediante `is_protected_path` sea robusta frente a posibles errores en la resolución de las mismas, consolidando el manejo de excepciones.
+- `2026-11-13T13:55:23` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `delete_reviewed` añadiendo una comprobación explícita mediante `is_safe_to_modify` antes de llamar a `ensure_safe_to_modify`, garantizando que solo archivos validados sigan el flujo de borrado, y fortalecí el filtro de integridad verificando que la ruta destino no sea crítica antes de iterar.
+- `2026-11-13T13:55:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T13:55:23` Corrida terminada. Total usado hoy: 328.

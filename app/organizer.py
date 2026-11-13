@@ -427,10 +427,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                     continue
                 
                 stat_before = item.stat()
-                ensure_safe_to_modify(item)
-                if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
-                    item.unlink()
-                    count += 1
+                # Verifica explícitamente seguridad antes de proceder con la destrucción
+                if is_safe_to_modify(item):
+                    ensure_safe_to_modify(item)
+                    if item.exists() and _is_same_file_identity(item, stat_before.st_ino):
+                        item.unlink()
+                        count += 1
             except (OSError, PermissionError, RuntimeError) as e:
                 logger.warning(f"Error al eliminar {getattr(item, 'name', 'archivo')}: {e}")
                 continue
