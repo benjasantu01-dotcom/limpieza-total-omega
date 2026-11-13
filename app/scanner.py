@@ -252,7 +252,7 @@ class Scanner:
         self.attr_cache: dict[str, os.stat_result] = {}
         self.base_root_real: str = _get_canonical_path(str(base_root))
         self.now_ts: float = datetime.now().timestamp()
-        self._relevant_exts: Final[frozenset[str]] = SUSPICIOUS_ALL_EXTS
+        self._relevant_exts: Final[Tuple[str, ...]] = tuple(SUSPICIOUS_ALL_EXTS)
         self._base_sep: str = self.base_root_real + os.sep
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
@@ -293,9 +293,8 @@ class Scanner:
             stack.append((entry.path, depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Filtra archivos según una lista de extensiones sospechosas."""
-        _, ext = os.path.splitext(name)
-        return ext.lower() in self._relevant_exts
+        """Filtra archivos según una lista de extensiones sospechosas mediante búsqueda O(1)."""
+        return name.lower().endswith(self._relevant_exts)
 
     def process_entry(self, entry: os.DirEntry, stack: TraversalStack, depth: int, visited: VisitedNodes) -> None:
         """Procesa una entrada del sistema de archivos, decidiendo si explorar o analizar."""

@@ -548,8 +548,12 @@ class SystemContext:
         for k, spec in _VALIDATORS.items():
             val = self._apply_field(source, k, spec)
             if val is not None:
+                # Validar coerción exacta al tipo esperado en el spec antes de guardar
                 try:
-                    updates[k] = int(val) if spec.type_hint is int else float(val)
+                    if spec.type_hint is int:
+                        updates[k] = int(val)
+                    else:
+                        updates[k] = float(val)
                 except (ValueError, TypeError):
                     continue
         

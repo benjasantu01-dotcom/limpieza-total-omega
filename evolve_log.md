@@ -1287,3 +1287,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T08:18:46` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento de `_get_file_id` reemplazando la creación innecesaria de objetos `Path` y el uso intensivo de `path.exists()` por una validación directa mediante handles de Windows con `FILE_FLAG_BACKUP_SEMANTICS`, aprovechando la caché existente para reducir drásticamente las llamadas al sistema durante el escaneo recursivo.
 - `2026-11-13T08:18:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T08:18:46` Corrida terminada. Total usado hoy: 196.
+- `2026-11-13T08:25:25` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-11-13T08:25:55` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo reemplazando la lógica de filtrado de extensiones en `Scanner.process_entry` por una búsqueda O(1) basada en el conjunto `self._relevant_exts`, evitando llamadas innecesarias a `os.path.splitext` y el procesamiento de archivos irrelevantes mediante un chequeo de nombre directo con `str.endswith`.
+- `2026-11-13T08:26:25` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-11-13T08:26:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-11-13T08:27:22` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `ingest` mediante una validación de tipos más estricta durante el proceso de actualización, evitando que valores inesperados (como `float` en campos definidos como `int`) corrompan el estado interno del contexto antes de su aplicación.
+- `2026-11-13T08:27:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T08:27:22` Corrida terminada. Total usado hoy: 200.
