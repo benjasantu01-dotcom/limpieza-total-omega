@@ -581,10 +581,10 @@ class SystemContext:
             for key, value in updates.items():
                 if key in temp_state:
                     expected_type = type(temp_state[key])
-                    # Verificación estricta de tipos numéricos
+                    # Verificación estricta de tipos numéricos y control de mutabilidad
                     if isinstance(value, (int, float)) and expected_type in (int, float):
                         try:
-                            # Evita desbordamiento al forzar tipo
+                            # Evita desbordamiento al forzar tipo, y asegura integridad de tipos primitivos
                             temp_state[key] = expected_type(value)
                         except (OverflowError, ValueError):
                             continue

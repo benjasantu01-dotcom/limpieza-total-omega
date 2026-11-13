@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 76
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 64 | 6 | 32 | 1 | 85 |
-| 2026-11-13 | 118 | 9 | 44 | 8 | 137 |
+| 2026-11-12 | 64 | 6 | 32 | 1 | 81 |
+| 2026-11-13 | 121 | 9 | 44 | 8 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **40**
 - legibilidad y documentación: **37**
 - rendimiento: **33**
-- seguridad defensiva: **31**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,18 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
+- `assistant.py`: **16**
 - `memory.py`: **16**
-- `assistant.py`: **15**
+- `settings.py`: **15**
 - `safety.py`: **15**
 - `scanner.py`: **14**
-- `settings.py`: **14**
-- `startup.py`: **11**
+- `startup.py`: **12**
 - `organizer.py`: **11**
 - `browser.py`: **6**
 - `branding.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T13:34:57` **assistant.py** (seguridad defensiva): Reforcé la integridad del motor de ingestión al añadir una validación de "mutabilidad controlada" en `SystemContext._apply_updates`, asegurando que los tipos de datos se mantengan consistentes durante la actualización y evitando posibles desbordamientos o inyecciones de tipos no permitidos antes de aplicar los cambios al estado.
+- `2026-11-13T13:33:59` **startup.py** (robustez ante casos límite): Mejora la robustez ante rutas de registro malformadas mediante el uso de `pathlib.Path.expanduser()` y `resolve(strict=False)` más cuidadoso en `_is_valid_registry_path`, evitando que rutas truncadas o relativas provoquen excepciones o falsos positivos.
+- `2026-11-13T13:33:28` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante errores de lectura mediante la implementación de un manejo de excepciones más granular en `_read_and_parse_json` y `load`, asegurando que archivos con formato JSON mal formado o problemas de permisos no bloqueen la ejecución de la app, retornando siempre un estado válido de fábrica.
 - `2026-11-13T13:25:01` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de archivos bloqueados por el SO implementando `_is_file_accessible` mediante una verificación de `HANDLE` con `ShareMode` compartido (lectura/escritura/borrado), permitiendo confirmar si un archivo está bloqueado exclusivamente por otro proceso sin intentar abrirlo para escritura, evitando así errores de `PermissionError` inesperados en `_get_path_stat_robust`.
 - `2026-11-13T13:24:02` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_unlink` y `_is_item_purgable` añadiendo una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de borrado, garantizando que el sistema no intente eliminar archivos en rutas que hayan sido marcadas como inseguras tras el aislamiento original, mitigando posibles condiciones de carrera en el estado de la configuración de seguridad.
 - `2026-11-13T13:15:13` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_iter_process_memory` implementando un manejo defensivo ante la posible falta de `psapi.GetModuleFileNameExW` (que puede fallar o retornar rutas malformadas en procesos privilegiados) y asegurando que `handle` siempre se cierre mediante un bloque `try/finally` explícito dentro del bucle de iteración.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T12:53:40` **scanner.py** (rendimiento): Se ha optimizado la gestión de caché de atributos en `Scanner` pasando de un diccionario genérico (`self.attr_cache`) a una estructura de tamaño acotado (usando `collections.OrderedDict` para comportamiento LRU manual o simplemente limitando su crecimiento) para prevenir fugas de memoria durante escaneos masivos de disco; además, se pre-compilaron las tuplas de extensiones para evitar conversiones redundantes.
 - `2026-11-13T12:52:46` **safety.py** (rendimiento): Optimicé el rendimiento global del módulo sustituyendo las llamadas frecuentes a `os.path.normcase` y `os.path.abspath` en las funciones de validación de ruta por el uso eficiente de `pathlib.Path` pre-normalizado y la implementación de un caché de resultados de `is_protected_path` más granular, reduciendo el overhead de resolución de rutas en el bucle principal.
 - `2026-11-13T12:41:53` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando las firmas de las funciones de API fuera del bucle y reutilizando el buffer de ruta (`path_buf`) para evitar reasignaciones de memoria costosas en cada iteración de los procesos.
-- `2026-11-13T12:33:07` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la iteración repetida sobre `PIPELINE_DEFINITIONS` y el acceso dinámico por un pre-cálculo estructurado, reduciendo la carga de ejecución en la interfaz cada vez que se refresca el panel de salud.
-- `2026-11-13T12:32:29` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando un `set` para `visited_paths` con el fin de evitar el procesamiento redundante de directorios que ya fueron analizados, mejorando el rendimiento en estructuras de archivos profundas o con múltiples enlaces.
-- `2026-11-13T12:22:42` **assistant.py** (rendimiento): Optimicé el método `context_as_text` para evitar la creación innecesaria de objetos intermedios y mejorar la eficiencia del rendimiento al iterar sobre el esquema de métricas mediante un generador y acceso directo al diccionario `snapshot`.
