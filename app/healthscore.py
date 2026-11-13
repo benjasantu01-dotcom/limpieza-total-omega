@@ -167,7 +167,7 @@ WEIGHTS: Final[MappingProxyType[str, int]] = MappingProxyType({
 # --- Factorías de Scorers ---
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Crea un calculador de ratio lineal con caché. Si inverse es True, mayor valor implica menor salud."""
+    """Crea un calculador de ratio lineal. Si inverse es True, mayor valor implica menor salud."""
     @lru_cache(maxsize=32)
     def scorer(val: float) -> NormalizedRatio:
         if limit <= 0.0 or not _is_finite_numeric(val): return 0.0
@@ -226,30 +226,36 @@ PIPELINE_DEFINITIONS: Final[Tuple[PipelineEntry, ...]] = (
 
 @lru_cache(maxsize=16)
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
+    """Calcula el ratio de salud para archivos basura."""
     return _JUNK_SCORER(_validate_numeric(junk_mb, 0.0, 0.0, float('inf')))
 
 @lru_cache(maxsize=16)
 def score_security(suspicious_count: int | float, warnings: int | float = 0) -> NormalizedRatio: 
+    """Puntúa la seguridad basada en amenazas detectadas y advertencias."""
     count = _validate_numeric(suspicious_count, 0.0, 0.0, 5000.0)
     warn = _validate_numeric(warnings, 0.0, 0.0, 5000.0)
     return _clamp(1.0 - ((count * 0.05) + (warn * 0.25)))
 
 @lru_cache(maxsize=16)
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
+    """Normaliza la disponibilidad de memoria RAM respecto al umbral definido."""
     val = _validate_numeric(available_percent, 0.0, 0.0, 100.0)
     return _clamp(val / _LIMIT_RAM_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
+    """Normaliza el espacio en disco disponible respecto al umbral definido."""
     val = _validate_numeric(free_percent, 0.0, 0.0, 100.0)
     return _clamp(val / _LIMIT_DISK_PERCENT)
 
 @lru_cache(maxsize=16)
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
+    """Calcula el ratio de salud respecto al peso de duplicados detectados."""
     return _DUP_SCORER(_validate_numeric(duplicate_mb, 0.0, 0.0, float('inf')))
 
 @lru_cache(maxsize=16)
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
+    """Puntúa el impacto de programas configurados al inicio del sistema."""
     return _STARTUP_SCORER(_validate_numeric(startup_count, 0.0, 0.0, 1000.0))
 
 # --- Modelos de Datos ---
@@ -296,6 +302,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool: 
+        """Verifica que todas las métricas contengan valores numéricos finitos."""
         return all(_is_finite_numeric(getattr(self, f, 0.0)) for f in _ALL_METRICS)
 
 @dataclass
@@ -311,18 +318,8 @@ class HealthResult:
 
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
-def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
-    results: List[str] = []
-    for rule in rules:
-        try:
-            if rule.check(metrics, normalized_ratio):
-                msg = rule.message_factory(metrics)
-                if msg: results.append(msg)
-        except Exception:
-            continue
-    return results
-
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
+    """Ejecuta el pipeline principal de evaluación de salud del sistema."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de entrada inválidos."])
     
@@ -351,6 +348,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recs or ["El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
+    """Genera una representación visual en barra de texto para el desglose."""
     try:
         if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0: return ""
         p = max(0, min(points, max_val))
@@ -359,6 +357,7 @@ def _render_bar(points: int, max_val: int) -> str:
         return ""
 
 def summarize(result: HealthResult | None) -> List[str]:
+    """Genera un reporte legible en formato de lista de strings."""
     try:
         if not isinstance(result, HealthResult): return ["Error: Informe no disponible."]
         lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]

@@ -194,7 +194,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve(strict=True)
-        # Se asegura que la ruta sea una carpeta y que pase el filtro de seguridad básico
         if not p.is_dir() or _is_unc_path(p) or is_protected_path(p) or not is_safe_to_modify(p):
             return None
         return p
@@ -322,9 +321,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que recorre recursivamente el sistema de archivos de forma iterativa.
-    Usa un conjunto `visited_inodes` (dispositivo + inodo) para detectar y 
-    evitar la recursión circular causada por enlaces simbólicos o puntos de montaje.
+    Generador que recorre recursivamente el sistema de archivos.
+    
+    Usa 'os.scandir' para obtener datos de stat al iterar, minimizando llamadas de disco.
+    Implementa prevención de recursión infinita mediante 'visited_inodes'.
     """
     root_path = _validate_root(directory)
     if not root_path: return
@@ -426,7 +426,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             continue
         stats.register_file(size, _get_extension(str(path)))
         
-        # Mantenimiento de min-heap para archivos top-n
         if limit > 0:
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, (size, path))

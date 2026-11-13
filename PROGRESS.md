@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 73
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 85 | 7 | 38 | 4 | 94 |
-| 2026-11-13 | 97 | 9 | 35 | 6 | 129 |
+| 2026-11-12 | 83 | 7 | 37 | 4 | 93 |
+| 2026-11-13 | 100 | 9 | 36 | 6 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **31**
-- rendimiento: **29**
+- legibilidad y documentación: **34**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `diskreport.py`: **19**
-- `healthscore.py`: **18**
-- `duplicates.py`: **17**
-- `safety.py`: **15**
+- `diskreport.py`: **20**
+- `quarantine.py`: **20**
+- `healthscore.py`: **19**
+- `duplicates.py`: **18**
 - `settings.py`: **15**
 - `assistant.py`: **15**
 - `memory.py`: **15**
+- `safety.py`: **14**
 - `scanner.py`: **13**
 - `startup.py`: **11**
 - `organizer.py`: **11**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T11:51:55` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en las funciones de cálculo, la clarificación del flujo del `Pipeline` mediante `TypeHints` extendidos y la consolidación de la lógica de rangos en `SystemMetrics` para asegurar que el comportamiento del motor sea auditable y predecible.
+- `2026-11-13T11:51:39` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazaron los `type checks` redundantes por validaciones basadas en `isinstance` (o eliminadas cuando eran innecesarias), mejorando la legibilidad técnica y la robustez frente a errores de tipo inesperados.
+- `2026-11-13T11:51:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad añadiendo type hints faltantes en funciones internas y estructurando mejor los docstrings para clarificar el flujo de datos entre `walk_files` y los recolectores de métricas.
 - `2026-11-13T11:42:42` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a funciones críticas de manipulación geométrica y de color, y refinando los tipos de las constantes `SHIELD_BASE_COORDS` y los parámetros de renderizado para clarificar el flujo de transformación afín.
 - `2026-11-13T11:40:39` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la validación al reemplazar el uso de `getattr` en `_is_structure_valid` y `validate` con una verificación explícita de tipos basada en el esquema de `DEFAULTS`, asegurando que cualquier clave extra o tipo incorrecto en el JSON sea rechazado en lugar de potencialmente ignorado.
 - `2026-11-13T11:31:57` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito contra valores `None` al procesar atributos del sistema, garantizando que si `entry.stat()` falla, la función retorne un resultado coherente en lugar de propagar errores o continuar con estados incompletos.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T11:10:32` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante archivos con metadatos corruptos o inaccesibles, añadiendo validaciones explícitas antes de procesar el tamaño (`size`) para evitar excepciones no contempladas durante el recorrido del disco.
 - `2026-11-13T09:39:10` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_read_and_parse_json` al implementar una validación de propiedad del archivo (`st_uid`) antes de la lectura, alineándola con las políticas de seguridad de escritura y evitando ataques de pre-creación de enlaces simbólicos o manipulación de archivos por otros usuarios.
 - `2026-11-13T09:38:30` **safety.py** (seguridad defensiva): Se ha implementado un endurecimiento en `_validate_preconditions` para asegurar que el check de `app_root` sea exhaustivo, utilizando `resolve()` para comparar rutas canónicas y prevenir ataques de bypass mediante enlaces simbólicos o inconsistencias en el sistema de archivos al intentar modificar el directorio de trabajo del binario.
-- `2026-11-13T09:29:33` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_atomic_isolate_file` implementando una validación de `st_nlink` antes y durante la copia, asegurando que no se pueda usar un archivo con enlaces físicos (Hard Links) para evadir las verificaciones de integridad ni causar condiciones de carrera (TOCTOU) al reemplazar archivos en el destino.
-- `2026-11-13T09:28:38` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` y sus ayudantes (`_get_handle_for_safe_proc`), asegurando que las validaciones de integridad se realicen estrictamente con la lógica de `is_protected_path` antes de ejecutar cualquier llamada a la API de Windows, evitando race conditions mediante el uso de un handle ya verificado y cerrado correctamente en el bloque `finally`.
-- `2026-11-13T09:18:12` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de la función `_process_entry` al integrar la validación de `is_protected_path` directamente sobre la ruta resuelta (`resolve()`), previniendo que manipulaciones de rutas mediante enlaces simbólicos o nombres ambiguos escapen a los chequeos de seguridad antes de procesar el archivo.
