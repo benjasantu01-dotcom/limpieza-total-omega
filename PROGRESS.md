@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 78
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-11 | 48 | 5 | 18 | 7 | 72 |
+| 2026-11-11 | 48 | 5 | 18 | 7 | 68 |
 | 2026-11-12 | 130 | 11 | 60 | 12 | 137 |
-| 2026-11-13 | 2 | 1 | 0 | 1 | 0 |
+| 2026-11-13 | 4 | 2 | 0 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **40**
 - robustez ante casos límite: **35**
+- seguridad defensiva: **33**
 - rendimiento: **32**
-- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `quarantine.py`: **20**
 - `duplicates.py`: **18**
 - `settings.py`: **17**
 - `healthscore.py`: **16**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `memory.py`: **14**
 - `safety.py`: **13**
 - `scanner.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T00:18:10` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `walk_files` incorporando una comprobación explícita mediante `is_safe_to_modify` para asegurar que, aunque sea un módulo de solo lectura, la ruta analizada no solo sea "no protegida" sino también tratable por el motor de la app, evitando procesar rutas que violen las políticas de aislamiento de archivos.
+- `2026-11-13T00:17:03` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al reforzar la validación de `SYSTEM_PROMPT` y `PRIVACY_NOTICE` asegurando que no contengan caracteres peligrosos, y encapsulé el acceso a los criterios de salud dentro de una propiedad privada para prevenir mutaciones externas no autorizadas o inyecciones a través del diccionario de criterios.
 - `2026-11-13T00:11:50` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_registry_path` y `_resolve_and_cache_path` añadiendo un manejo de excepciones más granular para `Path.resolve()` y `path.exists()`, previniendo que rutas con caracteres inválidos (o dispositivos bloqueados) interrumpan el escaneo de registros.
 - `2026-11-13T00:11:10` **scanner.py** (robustez ante casos límite): Se ha robustecido el escaneo mediante la implementación de un manejo defensivo ante archivos con rutas extremadamente largas (superior a `MAX_PATH` de Windows) o nombres con caracteres nulos, previniendo errores de `OSError` que interrumpían la iteración del `scandir`.
 - `2026-11-12T16:28:13` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de E/S y condiciones de carrera al implementar una validación de `os.fsync` más estricta durante el salvado del manifiesto y la purga, asegurando que el estado en disco refleje los cambios en el manifiesto incluso ante fallos transitorios de los controladores de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-12T15:28:54` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de estadísticas (`_collect_summary_data`) eliminando la llamada redundante a `is_protected_path` dentro del loop, ya que `walk_files` ya realiza este filtrado de forma nativa.
 - `2026-11-12T15:27:36` **assistant.py** (rendimiento): Optimicé el método `SystemContext._apply_updates` para reducir drásticamente el número de operaciones de borrado y recreación de cachés (`del self.__dict__[...]`), centralizando la invalidación en un solo punto y evitando iteraciones redundantes sobre las métricas.
 - `2026-11-12T15:18:50` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos y descriptivos, especialmente en la lógica de validación de rutas y cachés, y se extrajeron las verificaciones de seguridad de `_is_valid_registry_path` a una función auxiliar nombrada `_is_path_syntax_safe` para clarificar la separación entre sintaxis y resolución de disco.
-- `2026-11-12T15:17:23` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la suite de heurísticas estandarizando la documentación mediante docstrings detallados, añadiendo type hints faltantes y estructurando la lógica de validación para eliminar redundancias en las funciones `check_*`.
-- `2026-11-12T15:09:17` **quarantine.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados y type hints en las funciones de manipulación de bajo nivel (`_safe_unlink`, `_is_file_exclusive`, `_is_file_in_use_by_system`), clarificando las precondiciones de seguridad y el manejo de excepciones para futuros desarrolladores.

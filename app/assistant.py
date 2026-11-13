@@ -261,11 +261,12 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
-# Mapa para acceso eficiente a criterios por clave de métrica
-_CRITERIOS_MAP_IMMUTABLE: Final[Dict[str, Tuple[ProblemCriterion, ...]]] = {
-    k: tuple(c for c in _CRITERIOS_SALUD if c.metric_key == k)
-    for k in {c.metric_key for c in _CRITERIOS_SALUD}
-}
+def _get_criterios_map() -> Dict[str, Tuple[ProblemCriterion, ...]]:
+    """Devuelve mapa de acceso eficiente a criterios, encapsulado para integridad."""
+    return {k: tuple(c for c in _CRITERIOS_SALUD if c.metric_key == k)
+            for k in {c.metric_key for c in _CRITERIOS_SALUD}}
+
+_CRITERIOS_MAP_IMMUTABLE: Final[Dict[str, Tuple[ProblemCriterion, ...]]] = _get_criterios_map()
 _KEYS_WITH_CRITERIA: Final[frozenset[str]] = frozenset(_CRITERIOS_MAP_IMMUTABLE.keys())
 
 class AreaExplanation(NamedTuple):
