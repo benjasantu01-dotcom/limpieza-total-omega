@@ -877,3 +877,10 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-11-13T03:24:16` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
 - `2026-11-13T03:24:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T03:24:16` Corrida terminada. Total usado hoy: 80.
+- `2026-11-13T03:29:52` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-11-13T03:30:24` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-11-13T03:30:48` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-13T03:31:12` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-11-13T03:31:19` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-11-13T03:31:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T03:31:19` Corrida terminada. Total usado hoy: 84.
