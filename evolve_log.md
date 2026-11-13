@@ -531,3 +531,39 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-11-13T00:38:59` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para archivos que exceden el límite de tamaño de 2GB (`MAX_FILE_SIZE`) en `_validate_file_operations_security`, evitando intentos de manipulación sobre archivos masivos que podrían comprometer la estabilidad del sistema o disparar errores de I/O no controlados.
 - `2026-11-13T00:38:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T00:38:59` Corrida terminada. Total usado hoy: 16.
+- `2026-11-13T00:46:51` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-11-13T00:47:21` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-11-13T00:47:50` ➖ Sin cambios en settings.py (enfoque: seguridad defensiva). Motivo: Se reforzó `_read_and_parse_json` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) mediante la verificación de inodos tras abrir el descriptor de archivo, asegurando que el archivo leído sea el mismo que fue validado inicialmente.
+- `2026-11-13T00:48:17` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.79s
+
+```
+- `2026-11-13T00:48:17` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_is_valid_registry_path` y `_resolve_and_cache_path` asegurando que las rutas no solo sean sintácticamente correctas, sino que además se verifiquen explícitamente mediante `is_protected_path` antes de cualquier resolución de sistema de archivos, evitando seguimientos de enlaces simbólicos o acceso a rutas restringidas por políticas de seguridad centralizadas.
+- `2026-11-13T00:48:18` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T00:48:18` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-11-13T00:48:38` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T00:48:38` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-11-13T00:49:08` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "status": 
+- `2026-11-13T00:49:08` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-11-13T00:49:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T00:49:08` Corrida terminada. Total usado hoy: 20.
