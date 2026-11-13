@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 76
+- Rechazadas por guardia de seguridad: 77
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-11-12 | 64 | 6 | 32 | 1 | 81 |
-| 2026-11-13 | 121 | 9 | 44 | 8 | 138 |
+| 2026-11-12 | 64 | 6 | 32 | 1 | 77 |
+| 2026-11-13 | 123 | 9 | 45 | 8 | 139 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **41**
 - legibilidad y documentación: **37**
+- seguridad defensiva: **34**
 - rendimiento: **33**
-- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `quarantine.py`: **19**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
@@ -40,11 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **14**
 - `startup.py`: **12**
 - `organizer.py`: **11**
+- `branding.py`: **7**
 - `browser.py`: **6**
-- `branding.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-11-13T13:44:05` **diskreport.py** (seguridad defensiva): Reforcé la integridad del escaneo en `walk_files` mediante la validación redundante del estado de los archivos (`lstat`) antes de procesar su contenido, asegurando que si un archivo desaparece o cambia sus permisos durante el recorrido, la excepción se capture localmente evitando la propagación de errores.
+- `2026-11-13T13:43:10` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita para asegurar que la ruta de destino no sea un archivo protegido, delegando la responsabilidad de verificar que sea seguro modificarla antes de intentar cualquier operación de escritura.
 - `2026-11-13T13:34:57` **assistant.py** (seguridad defensiva): Reforcé la integridad del motor de ingestión al añadir una validación de "mutabilidad controlada" en `SystemContext._apply_updates`, asegurando que los tipos de datos se mantengan consistentes durante la actualización y evitando posibles desbordamientos o inyecciones de tipos no permitidos antes de aplicar los cambios al estado.
 - `2026-11-13T13:33:59` **startup.py** (robustez ante casos límite): Mejora la robustez ante rutas de registro malformadas mediante el uso de `pathlib.Path.expanduser()` y `resolve(strict=False)` más cuidadoso en `_is_valid_registry_path`, evitando que rutas truncadas o relativas provoquen excepciones o falsos positivos.
 - `2026-11-13T13:33:28` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante errores de lectura mediante la implementación de un manejo de excepciones más granular en `_read_and_parse_json` y `load`, asegurando que archivos con formato JSON mal formado o problemas de permisos no bloqueen la ejecución de la app, retornando siempre un estado válido de fábrica.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-11-13T12:54:49` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_folders` introduciendo un filtrado de rutas mediante `is_protected_path` antes de realizar operaciones costosas de I/O (`os.scandir` o resolución de paths), minimizando el tiempo de ejecución en sistemas con muchas carpetas protegidas.
 - `2026-11-13T12:54:13` **settings.py** (rendimiento): Se optimizó la validación del esquema de configuración en `_is_structure_valid` sustituyendo el uso de `set()` (que recrea colecciones en cada llamada) por una comparación secuencial directa, reduciendo la presión sobre el recolector de basura en operaciones frecuentes.
 - `2026-11-13T12:53:40` **scanner.py** (rendimiento): Se ha optimizado la gestión de caché de atributos en `Scanner` pasando de un diccionario genérico (`self.attr_cache`) a una estructura de tamaño acotado (usando `collections.OrderedDict` para comportamiento LRU manual o simplemente limitando su crecimiento) para prevenir fugas de memoria durante escaneos masivos de disco; además, se pre-compilaron las tuplas de extensiones para evitar conversiones redundantes.
-- `2026-11-13T12:52:46` **safety.py** (rendimiento): Optimicé el rendimiento global del módulo sustituyendo las llamadas frecuentes a `os.path.normcase` y `os.path.abspath` en las funciones de validación de ruta por el uso eficiente de `pathlib.Path` pre-normalizado y la implementación de un caché de resultados de `is_protected_path` más granular, reduciendo el overhead de resolución de rutas en el bucle principal.
-- `2026-11-13T12:41:53` **memory.py** (rendimiento): Optimicé el rendimiento de `_iter_process_memory` pre-calculando las firmas de las funciones de API fuera del bucle y reutilizando el buffer de ruta (`path_buf`) para evitar reasignaciones de memoria costosas en cada iteración de los procesos.

@@ -349,9 +349,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if not is_safe_to_modify(entry_path) or (skip_protected and is_protected_path(entry_path)):
                         continue
                     
-                    try:
-                        st = entry.stat(follow_symlinks=False)
-                    except (PermissionError, OSError):
+                    # Verificación de integridad: el archivo puede haber cambiado mientras iteramos
+                    st = _safe_stat(entry_path)
+                    if not st:
                         continue
                         
                     if entry.is_dir(follow_symlinks=False):

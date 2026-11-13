@@ -588,3 +588,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-11-13T13:34:57` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la integridad del motor de ingestión al añadir una validación de "mutabilidad controlada" en `SystemContext._apply_updates`, asegurando que los tipos de datos se mantengan consistentes durante la actualización y evitando posibles desbordamientos o inyecciones de tipos no permitidos antes de aplicar los cambios al estado.
 - `2026-11-13T13:34:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-11-13T13:34:57` Corrida terminada. Total usado hoy: 320.
+- `2026-11-13T13:42:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-11-13T13:43:10` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita para asegurar que la ruta de destino no sea un archivo protegido, delegando la responsabilidad de verificar que sea seguro modificarla antes de intentar cualquier operación de escritura.
+- `2026-11-13T13:43:37` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: DirectoryScanner._is_path_allowed
+- `2026-11-13T13:44:05` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Reforcé la integridad del escaneo en `walk_files` mediante la validación redundante del estado de los archivos (`lstat`) antes de procesar su contenido, asegurando que si un archivo desaparece o cambia sus permisos durante el recorrido, la excepción se capture localmente evitando la propagación de errores.
+- `2026-11-13T13:44:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-11-13T13:44:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-11-13T13:44:16` Corrida terminada. Total usado hoy: 324.
